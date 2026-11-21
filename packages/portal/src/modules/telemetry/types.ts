@@ -80,8 +80,11 @@ export interface TelemetryCall {
   readonly roleHeld: null;
 }
 
-/** A call with the identity the telemetry grouping gave it: the span ids of its attempts. Never sent on the wire. */
-export interface MonitoredCall extends TelemetryCall { readonly attemptSpans: ReadonlyArray<string> }
+/** Where a defect call died: the declared step (`-` when none explains it: the operation itself) and the error's tag. */
+export interface CallFailure { readonly step: string; readonly tag: string }
+
+/** A call with what the grouping gives it: its `id` (the runtime's `call.id`, else its attempt spans) and, on a defect, its `failure`. Never sent on the wire. */
+export interface MonitoredCall extends TelemetryCall { readonly id: string; readonly failure?: CallFailure }
 
 /** From the spans of the window. */
 export interface CallsView {
@@ -164,7 +167,7 @@ export interface TelemetryApi {
   readonly read: (blueprint: BlueprintWire, live: PortalLive) => Effect.Effect<PortalTelemetry>;
   /** Every call the traces hold that started in `[since, now]`, newest first, with no row limit: what the monitor counts (M1.49). */
   readonly calls: (blueprint: BlueprintWire, traces: ReadonlyMap<string, WindowTrace>, environment: string, window: { readonly since: number; readonly now: number }) => ReadonlyArray<MonitoredCall>;
-  /** The one identity of a call: its trace and the span ids of its attempts, never a time. Two calls that look alike in every value are two calls. */
+  /** The one identity of a call (`MonitoredCall.id`), never a time: two calls that look alike in every value are two calls. */
   readonly identity: (call: MonitoredCall) => string;
   /** One trace, scrubbed: `undefined` when the source has none of it. */
   readonly trace: (live: PortalLive, trace: string) => Effect.Effect<Availability<TraceView | undefined>>;

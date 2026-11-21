@@ -1,6 +1,5 @@
 import { Effect } from "effect";
 import { Telemetry } from "#modules/telemetry/service.js";
-import type { WindowTrace } from "#modules/telemetry/types.js";
 import type { MonitorApi } from "./types.ts";
 import { evaluate } from "./internal/evaluate.ts";
 import { keep } from "./internal/issues.ts";
@@ -16,11 +15,10 @@ const read: MonitorApi["read"] = (blueprint, live, ledger) =>
       Effect.map((traces) => [ms, traces] as const),
       Effect.catchCause(() => Effect.succeed([ms, undefined] as const)),
     ));
-    const tracesBy = new Map<number, ReadonlyMap<string, WindowTrace> | undefined>(read);
     // Each window is grouped into calls once per read; every rule and the issues read that.
     const grouped = new Map(read.flatMap(([ms, traces]) => (traces === undefined ? [] : [[ms, Telemetry.calls(blueprint, traces, live.environment, { since: live.now - ms, now: live.now })] as const])));
     const callsIn = (ms: number) => grouped.get(ms);
-    const issues = yield* keep(blueprint, live, tracesBy.get(live.windowMs), callsIn(live.windowMs), ledger);
+    const issues = yield* keep(blueprint, live, callsIn(live.windowMs), ledger);
     return { environment: live.environment, now: live.now, alerts: evaluate(rules, callsIn), issues };
   });
 

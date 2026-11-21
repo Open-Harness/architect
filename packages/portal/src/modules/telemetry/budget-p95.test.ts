@@ -6,7 +6,7 @@ import { ROWS_MAX } from "./types.ts";
 import { Telemetry } from "./service.ts";
 
 const NOW = 1_800_000_000_000;
-const blueprint = { model: { operations: { "a.go": { budget: { p95Ms: 100 }, errors: [], refusals: [] } } } } as unknown as BlueprintWire;
+const blueprint = { model: { operations: { "a.go": { budget: { p95Ms: 100 }, errors: [], refusals: [], steps: {} } } } } as unknown as BlueprintWire;
 const call = (n: number, ms: number): readonly [string, WindowTrace] => [`t${n}`, { logs: [], spans: [{ spanId: `s${n}`, parentSpanId: "", name: "a.go", ms, start: NOW - 1000 - n, status: 1, attrs: { operation: "a.go", attempt: 1 } }] }];
 
 describe("the window's p95", () => {

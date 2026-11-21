@@ -12,12 +12,13 @@ const rule = (target: number) => ({
   id: "latency:a.go", kind: "latency" as const, labels: { environment: "*", operation: "a.go", severity: "page", owner: "blueprint/a.ts" },
   target, windowDays: 28, thresholdMs: 100, minCalls: 2, alerts: [{ name: "fast", burn: 10, windowsMs: [60 * MIN, 5 * MIN], severity: "page" }],
 });
-const wire = (target = 0.9): BlueprintWire => ({ digest: "d", model: { operations: { "a.go": { hash: "h1", file: "blueprint/a.ts" } }, alertRules: [rule(target)] } }) as unknown as BlueprintWire;
+const STEPS = Object.fromEntries(["load", "record", "first", "second"].map((k) => [k, { name: `a.go.${k}`, type: "database" }]));
+const wire = (target = 0.9): BlueprintWire => ({ digest: "d", model: { operations: { "a.go": { hash: "h1", file: "blueprint/a.ts", steps: STEPS } }, alertRules: [rule(target)] } }) as unknown as BlueprintWire;
 
 const call = (n: number, ms: number, start = NOW - MIN, defect?: { step: string; tag: string }): readonly [string, WindowTrace] => {
   const id = String(n).padStart(8, "0");
   const op: WindowSpan = { spanId: `s${n}`, parentSpanId: "", name: "a.go", ms, start, status: defect ? 2 : 1, attrs: { operation: "a.go", attempt: 1, ...(defect ? { defect: "Error: x", "error.tag": defect.tag } : {}) } };
-  const step: ReadonlyArray<WindowSpan> = defect ? [{ spanId: `t${n}`, parentSpanId: op.spanId, name: `a.go.${defect.step}`, ms: 1, start, status: 2, attrs: {} }] : [];
+  const step: ReadonlyArray<WindowSpan> = defect ? [{ spanId: `t${n}`, parentSpanId: op.spanId, name: `a.go.${defect.step}`, ms: 1, start, status: 2, attrs: { "step.kind": "database" } }] : [];
   return [id, { spans: [op, ...step], logs: [] }];
 };
 const liveOf = (traces: ReadonlyArray<readonly [string, WindowTrace]>, at = NOW, historyMs?: number): PortalLive => ({
@@ -96,8 +97,8 @@ describe("issues", () => {
     const at = NOW - 5 * MIN;
     const span = (id: string, parent: string, name: string, extra: Record<string, unknown> = {}): WindowSpan => ({ spanId: id, parentSpanId: parent, name, ms: 100, start: at, status: 2, attrs: extra });
     const trace: readonly [string, WindowTrace] = ["00000001", { logs: [], spans: [
-      span("a1", "", "a.go", { operation: "a.go", attempt: 1, "call.id": "A", "error.tag": "Boom", defect: "x" }), span("a2", "a1", "a.go.record"),
-      span("b1", "", "a.go", { operation: "a.go", attempt: 1, "call.id": "B", "error.tag": "Boom", defect: "x" }), span("b2", "b1", "a.go.record"),
+      span("a1", "", "a.go", { operation: "a.go", attempt: 1, "call.id": "A", "error.tag": "Boom", defect: "x" }), span("a2", "a1", "a.go.record", { "step.kind": "database" }),
+      span("b1", "", "a.go", { operation: "a.go", attempt: 1, "call.id": "B", "error.tag": "Boom", defect: "x" }), span("b2", "b1", "a.go.record", { "step.kind": "database" }),
     ] }];
     const ledger = held();
     expect((await read(wire(), liveOf([trace]), ledger)).issues[0]).toMatchObject({ key: "a.go/record/Boom", occurrences: 2 });
@@ -109,7 +110,7 @@ describe("issues", () => {
     const trace: readonly [string, WindowTrace] = ["00000001", { logs: [], spans: [
       span("a1", "", "a.go", NOW - 5 * MIN, { operation: "a.go", attempt: 1, "call.id": "A", "error.tag": "TagA", defect: "x" }),
       span("b1", "", "a.go", NOW - 5 * MIN + 10, { operation: "a.go", attempt: 1, "call.id": "B", "error.tag": "TagB", defect: "x" }),
-      span("a2", "a1", "a.go.first", NOW - 5 * MIN + 1), span("b2", "b1", "a.go.second", NOW - 5 * MIN + 11),
+      span("a2", "a1", "a.go.first", NOW - 5 * MIN + 1, { "step.kind": "database" }), span("b2", "b1", "a.go.second", NOW - 5 * MIN + 11, { "step.kind": "database" }),
     ] }];
     expect((await read(wire(), liveOf([trace]), held())).issues.map((i) => i.key)).toEqual(["a.go/first/TagA", "a.go/second/TagB"]);
   });
@@ -134,7 +135,7 @@ describe("issues", () => {
 
   it("regressed: the same defect after the operation's own declaration changed; an old call read again is not it", async () => {
     const ledger = held();
-    const changed = { ...wire(), model: { ...wire().model, operations: { "a.go": { hash: "h2", file: "blueprint/a.ts" } } } } as unknown as BlueprintWire;
+    const changed = { ...wire(), model: { ...wire().model, operations: { "a.go": { hash: "h2", file: "blueprint/a.ts", steps: STEPS } } } } as unknown as BlueprintWire;
     const old = dies(1, NOW - 5 * MIN);
     await read(wire(), liveOf([old]), ledger);
     expect((await read(changed, liveOf([old], NOW + MIN), ledger)).issues[0]).toMatchObject({ regressed: false });
@@ -142,10 +143,40 @@ describe("issues", () => {
     expect((await read(changed, liveOf([old, back], NOW + 3 * MIN), ledger)).issues[0]).toMatchObject({ regressed: true, occurrences: 2, firstSeen: { hash: "h1" }, lastSeen: { hash: "h2" } });
   });
 
-  it("a defect no step span explains opens none, and a ledger holding junk is an empty one", async () => {
-    const bare = call(1, 5, NOW - MIN);
-    const noStep: readonly [string, WindowTrace] = [bare[0], { ...bare[1], spans: [{ ...bare[1].spans[0]!, status: 2 }] }];
+  const sp = (id: string, parent: string, name: string, status: number, attrs: Record<string, unknown> = {}, start = NOW - MIN): WindowSpan => ({ spanId: id, parentSpanId: parent, name, ms: 5, start, status, attrs });
+  const attempt = (extra: Record<string, unknown> = {}) => sp("op", "", "a.go", 2, { operation: "a.go", attempt: 1, "call.id": "C1", defect: "x", "error.tag": "Boom", ...extra });
+  const keys = async (spans: ReadonlyArray<WindowSpan>, w = wire()) => (await read(w, liveOf([["0000000a", { logs: [], spans }]]), held())).issues.map((i) => i.key);
+
+  it("the step is the deepest declared step: an errored adapter span under it, and a recovered one under an earlier step, are never the step", async () => {
+    expect(await keys([
+      attempt(),
+      sp("s1", "op", "a.go.load", 1, { "step.kind": "database" }), sp("x1", "s1", "sql.execute", 2),
+      sp("s2", "op", "a.go.record", 2, { "step.kind": "database" }), sp("x2", "s2", "sql.execute", 2),
+    ])).toEqual(["a.go/record/Boom"]);
+  });
+
+  it("a dying commit is the step `commit`, which the blueprint does not declare but the runtime names", async () => {
+    expect(await keys([attempt(), sp("s1", "op", "a.go.load", 1, { "step.kind": "database" }), sp("c1", "op", "a.go.commit", 2, { "step.kind": "commit" })])).toEqual(["a.go/commit/Boom"]);
+  });
+
+  it("a defect no declared step explains is the operation itself, step `-`: a read's, or a die outside every step", async () => {
+    expect(await keys([attempt(), sp("x1", "op", "sql.execute", 2)])).toEqual(["a.go/-/Boom"]);
+  });
+
+  it("a span that only looks like a step (a name under the operation, no `step.kind`) is not one", async () => {
+    expect(await keys([attempt(), sp("s1", "op", "a.go.record", 2)])).toEqual(["a.go/-/Boom"]);
+  });
+
+  it("a call is its `call.id`: read again with an attempt added between the reads, it counts once", async () => {
+    const ledger = held();
+    const one = [attempt({ attempt: 1 }), sp("s1", "op", "a.go.record", 2, { "step.kind": "database" })];
+    const two = [...one, sp("op2", "", "a.go", 2, { operation: "a.go", attempt: 2, "call.id": "C1", defect: "x", "error.tag": "Boom" }, NOW - MIN + 50), sp("s2", "op2", "a.go.record", 2, { "step.kind": "database" }, NOW - MIN + 51)];
+    await read(wire(), liveOf([["0000000a", { logs: [], spans: one }]]), ledger);
+    expect((await read(wire(), liveOf([["0000000a", { logs: [], spans: two }]], NOW + MIN), ledger)).issues).toMatchObject([{ key: "a.go/record/Boom", occurrences: 1 }]);
+  });
+
+  it("a ledger holding junk is an empty one", async () => {
     const junk: MonitorLedger = { get: () => Effect.succeed("nonsense"), put: () => Effect.void };
-    expect((await read(wire(), liveOf([noStep]), junk)).issues).toEqual([]);
+    expect((await read(wire(), liveOf([dies(1, NOW - MIN)]), junk)).issues).toHaveLength(1);
   });
 });

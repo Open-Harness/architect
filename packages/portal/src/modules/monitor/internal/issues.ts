@@ -3,10 +3,9 @@
 // is read (`seen` holds the calls still inside the window, by id, and is pruned as they leave it: a call that left cannot come back at a later `now`).
 import { Effect } from "effect";
 import { Telemetry } from "#modules/telemetry/service.js";
-import type { MonitoredCall, PortalLive, WindowTrace } from "#modules/telemetry/types.js";
+import type { MonitoredCall, PortalLive } from "#modules/telemetry/types.js";
 import type { BlueprintWire } from "#modules/wire/types.js";
 import type { IssueRow, MonitorLedger, Seen } from "../types.ts";
-import { failureOf } from "./failing.ts";
 
 const KEY = "monitor/issues";
 
@@ -58,7 +57,7 @@ const rowOf = (key: string, issue: Stored, blueprint: BlueprintWire): IssueRow =
 
 /** The issues the window's defects open, joined to the ones the ledger holds, written back when they changed. `calls` is `undefined` when the window could not be read. */
 export const keep = (
-  blueprint: BlueprintWire, live: PortalLive, traces: ReadonlyMap<string, WindowTrace> | undefined, calls: ReadonlyArray<MonitoredCall> | undefined, ledger: MonitorLedger | undefined,
+  blueprint: BlueprintWire, live: PortalLive, calls: ReadonlyArray<MonitoredCall> | undefined, ledger: MonitorLedger | undefined,
 ): Effect.Effect<ReadonlyArray<IssueRow>> =>
   Effect.gen(function* () {
     const before = ledger === undefined ? {} : heldOf(yield* ledger.get(KEY).pipe(Effect.catchCause(() => Effect.succeed(undefined))));
@@ -66,7 +65,7 @@ export const keep = (
     // Oldest first, so first and last seen fall out in order and a tie is the same on every read.
     const defects = (calls ?? []).filter((c) => c.outcome === "defect").sort((a, b) => a.start - b.start || (callId(a) < callId(b) ? -1 : 1));
     for (const call of defects) {
-      const failure = failureOf(call, traces?.get(call.trace));
+      const { failure } = call;
       if (failure === undefined) continue;
       const hash = blueprint.model.operations[call.operation]?.hash ?? "";
       held = add(held, `${call.operation}/${failure.step}/${failure.tag}`, call, failure.step, failure.tag, hash, live);
