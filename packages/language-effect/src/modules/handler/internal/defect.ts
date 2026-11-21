@@ -15,3 +15,6 @@ export const defectAttributes = (cause: Cause.Cause<unknown>): Record<string, st
   defect: Cause.pretty(cause).split("\n")[0] ?? "",
   "error.tag": tagOf(Cause.squash(cause)),
 });
+
+/** The tag alone, for the span a defect passes through (a step's, a commit's): it is what lets a reader tell the step that carried this call's failure from one that errored and was recovered. */
+export const defectTag = (cause: Cause.Cause<unknown>): Record<string, string> => ({ "error.tag": tagOf(Cause.squash(cause)) });

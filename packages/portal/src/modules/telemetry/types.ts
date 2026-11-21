@@ -83,8 +83,11 @@ export interface TelemetryCall {
 /** Where a defect call died: the declared step (`-` when none explains it: the operation itself) and the error's tag. */
 export interface CallFailure { readonly step: string; readonly tag: string }
 
-/** A call with what the grouping gives it: its `id` (the runtime's `call.id`, else its attempt spans) and, on a defect, its `failure`. Never sent on the wire. */
-export interface MonitoredCall extends TelemetryCall { readonly id: string; readonly failure?: CallFailure }
+/** A call with what the grouping gives it: its `id` (the runtime's `call.id`, else its attempt spans) and, on every defect, its `failure`. Never sent on the wire. */
+export type MonitoredCall = TelemetryCall & { readonly id: string } & (
+  | { readonly outcome: "defect"; readonly failure: CallFailure }
+  | { readonly outcome: Exclude<Outcome, "defect">; readonly failure?: undefined }
+);
 
 /** From the spans of the window. */
 export interface CallsView {

@@ -49,7 +49,7 @@ export const stepsOf = (blueprint: BlueprintWire): OperationSteps =>
   Object.fromEntries(Object.entries(blueprint.model.operations).map(([op, o]) => [op, Object.fromEntries(Object.entries(o.steps ?? {}).map(([key, step]) => [step.name, key]))]));
 
 /** The runtime's own span of the commit: kind `commit`, named `<operation>.commit` (handler `service.ts`). It is the step `commit`, though no blueprint declares it. */
-const COMMIT = "commit";
+export const COMMIT = "commit";
 
 /**
  * The declared step this span is of `operation`, or `undefined`: a span is a step when it carries a string `step.kind` and its name is one the operation's

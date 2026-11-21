@@ -18,7 +18,7 @@ const wire = (target = 0.9): BlueprintWire => ({ digest: "d", model: { operation
 const call = (n: number, ms: number, start = NOW - MIN, defect?: { step: string; tag: string }): readonly [string, WindowTrace] => {
   const id = String(n).padStart(8, "0");
   const op: WindowSpan = { spanId: `s${n}`, parentSpanId: "", name: "a.go", ms, start, status: defect ? 2 : 1, attrs: { operation: "a.go", attempt: 1, ...(defect ? { defect: "Error: x", "error.tag": defect.tag } : {}) } };
-  const step: ReadonlyArray<WindowSpan> = defect ? [{ spanId: `t${n}`, parentSpanId: op.spanId, name: `a.go.${defect.step}`, ms: 1, start, status: 2, attrs: { "step.kind": "database" } }] : [];
+  const step: ReadonlyArray<WindowSpan> = defect ? [{ spanId: `t${n}`, parentSpanId: op.spanId, name: `a.go.${defect.step}`, ms: 1, start, status: 2, attrs: { "step.kind": "database", "error.tag": defect.tag } }] : [];
   return [id, { spans: [op, ...step], logs: [] }];
 };
 const liveOf = (traces: ReadonlyArray<readonly [string, WindowTrace]>, at = NOW, historyMs?: number): PortalLive => ({
@@ -97,8 +97,8 @@ describe("issues", () => {
     const at = NOW - 5 * MIN;
     const span = (id: string, parent: string, name: string, extra: Record<string, unknown> = {}): WindowSpan => ({ spanId: id, parentSpanId: parent, name, ms: 100, start: at, status: 2, attrs: extra });
     const trace: readonly [string, WindowTrace] = ["00000001", { logs: [], spans: [
-      span("a1", "", "a.go", { operation: "a.go", attempt: 1, "call.id": "A", "error.tag": "Boom", defect: "x" }), span("a2", "a1", "a.go.record", { "step.kind": "database" }),
-      span("b1", "", "a.go", { operation: "a.go", attempt: 1, "call.id": "B", "error.tag": "Boom", defect: "x" }), span("b2", "b1", "a.go.record", { "step.kind": "database" }),
+      span("a1", "", "a.go", { operation: "a.go", attempt: 1, "call.id": "A", "error.tag": "Boom", defect: "x" }), span("a2", "a1", "a.go.record", { "step.kind": "database", "error.tag": "Boom" }),
+      span("b1", "", "a.go", { operation: "a.go", attempt: 1, "call.id": "B", "error.tag": "Boom", defect: "x" }), span("b2", "b1", "a.go.record", { "step.kind": "database", "error.tag": "Boom" }),
     ] }];
     const ledger = held();
     expect((await read(wire(), liveOf([trace]), ledger)).issues[0]).toMatchObject({ key: "a.go/record/Boom", occurrences: 2 });
@@ -110,7 +110,7 @@ describe("issues", () => {
     const trace: readonly [string, WindowTrace] = ["00000001", { logs: [], spans: [
       span("a1", "", "a.go", NOW - 5 * MIN, { operation: "a.go", attempt: 1, "call.id": "A", "error.tag": "TagA", defect: "x" }),
       span("b1", "", "a.go", NOW - 5 * MIN + 10, { operation: "a.go", attempt: 1, "call.id": "B", "error.tag": "TagB", defect: "x" }),
-      span("a2", "a1", "a.go.first", NOW - 5 * MIN + 1, { "step.kind": "database" }), span("b2", "b1", "a.go.second", NOW - 5 * MIN + 11, { "step.kind": "database" }),
+      span("a2", "a1", "a.go.first", NOW - 5 * MIN + 1, { "step.kind": "database", "error.tag": "TagA" }), span("b2", "b1", "a.go.second", NOW - 5 * MIN + 11, { "step.kind": "database", "error.tag": "TagB" }),
     ] }];
     expect((await read(wire(), liveOf([trace]), held())).issues.map((i) => i.key)).toEqual(["a.go/first/TagA", "a.go/second/TagB"]);
   });
@@ -151,12 +151,12 @@ describe("issues", () => {
     expect(await keys([
       attempt(),
       sp("s1", "op", "a.go.load", 1, { "step.kind": "database" }), sp("x1", "s1", "sql.execute", 2),
-      sp("s2", "op", "a.go.record", 2, { "step.kind": "database" }), sp("x2", "s2", "sql.execute", 2),
+      sp("s2", "op", "a.go.record", 2, { "step.kind": "database", "error.tag": "Boom" }), sp("x2", "s2", "sql.execute", 2),
     ])).toEqual(["a.go/record/Boom"]);
   });
 
   it("a dying commit is the step `commit`, which the blueprint does not declare but the runtime names", async () => {
-    expect(await keys([attempt(), sp("s1", "op", "a.go.load", 1, { "step.kind": "database" }), sp("c1", "op", "a.go.commit", 2, { "step.kind": "commit" })])).toEqual(["a.go/commit/Boom"]);
+    expect(await keys([attempt(), sp("s1", "op", "a.go.load", 1, { "step.kind": "database" }), sp("c1", "op", "a.go.commit", 2, { "step.kind": "commit", "error.tag": "Boom" })])).toEqual(["a.go/commit/Boom"]);
   });
 
   it("a defect no declared step explains is the operation itself, step `-`: a read's, or a die outside every step", async () => {
@@ -167,10 +167,22 @@ describe("issues", () => {
     expect(await keys([attempt(), sp("s1", "op", "a.go.record", 2)])).toEqual(["a.go/-/Boom"]);
   });
 
+  it("a step that errored and was recovered is not blamed for a later die outside every step: only a step with the attempt's own error.tag is a candidate", async () => {
+    // `load` died with Other and the handler recovered; the call then died at the answer check with Boom, in no step.
+    expect(await keys([attempt(), sp("s1", "op", "a.go.load", 2, { "step.kind": "database", "error.tag": "Other" })])).toEqual(["a.go/-/Boom"]);
+    // The same tag as the attempt's is the attempt's own failure: blamed.
+    expect(await keys([attempt(), sp("s1", "op", "a.go.load", 2, { "step.kind": "database", "error.tag": "Boom" })])).toEqual(["a.go/load/Boom"]);
+  });
+
+  it("a call that ran out of tries (every attempt ended ok on a commit conflict, then the runtime died outside them) opens `<op>/commit/Error`: the runtime's own die is an Error", async () => {
+    const conflicted = (n: number) => [sp(`op${n}`, "", "a.go", 1, { operation: "a.go", attempt: n, "call.id": "C9" }, NOW - MIN + n), sp(`c${n}`, `op${n}`, "a.go.commit", 1, { "step.kind": "commit", "commit.outcome": "conflict" }, NOW - MIN + n)];
+    expect(await keys([...conflicted(1), ...conflicted(2)])).toEqual(["a.go/commit/Error"]);
+  });
+
   it("a call is its `call.id`: read again with an attempt added between the reads, it counts once", async () => {
     const ledger = held();
-    const one = [attempt({ attempt: 1 }), sp("s1", "op", "a.go.record", 2, { "step.kind": "database" })];
-    const two = [...one, sp("op2", "", "a.go", 2, { operation: "a.go", attempt: 2, "call.id": "C1", defect: "x", "error.tag": "Boom" }, NOW - MIN + 50), sp("s2", "op2", "a.go.record", 2, { "step.kind": "database" }, NOW - MIN + 51)];
+    const one = [attempt({ attempt: 1 }), sp("s1", "op", "a.go.record", 2, { "step.kind": "database", "error.tag": "Boom" })];
+    const two = [...one, sp("op2", "", "a.go", 2, { operation: "a.go", attempt: 2, "call.id": "C1", defect: "x", "error.tag": "Boom" }, NOW - MIN + 50), sp("s2", "op2", "a.go.record", 2, { "step.kind": "database", "error.tag": "Boom" }, NOW - MIN + 51)];
     await read(wire(), liveOf([["0000000a", { logs: [], spans: one }]]), ledger);
     expect((await read(wire(), liveOf([["0000000a", { logs: [], spans: two }]], NOW + MIN), ledger)).issues).toMatchObject([{ key: "a.go/record/Boom", occurrences: 1 }]);
   });

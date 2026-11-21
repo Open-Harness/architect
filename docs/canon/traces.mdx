@@ -121,9 +121,11 @@ wrong state, a role that said no. A defect is a failure nothing declared: a bug,
 broke its own declaration. Effect would end a span in error for both, so every span goes through `spanned`, which ends
 it OK for a typed failure and in error only when the work dies:
 
-```ts file=packages/language-effect/src/modules/handler/internal/span.ts name=spanned lines=10-15
+```ts file=packages/language-effect/src/modules/handler/internal/span.ts name=spanned lines=11-18
 export const spanned = (name: string, attributes: Record<string, unknown>) => <A, E, R>(work: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
   work.pipe(
+    // A span a defect passes through carries its tag (M1.49): the attempt's own failure is told from a step that died and was recovered by the same tag.
+    Effect.tapCause((cause) => (Cause.hasDies(cause) ? Effect.annotateCurrentSpan(defectTag(cause)) : Effect.void)),
     Effect.result,
     Effect.withSpan(name, { attributes }),
     Effect.flatMap((outcome) => (Result.isFailure(outcome) ? Effect.fail(outcome.failure) : Effect.succeed(outcome.success))),

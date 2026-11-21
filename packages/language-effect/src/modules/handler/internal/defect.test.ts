@@ -1,6 +1,6 @@
 import { Cause } from "effect";
 import { describe, expect, it } from "vitest";
-import { defectAttributes } from "./defect.ts";
+import { defectAttributes, defectTag } from "./defect.ts";
 
 class Unreachable extends Error { readonly _tag = "LedgerUnreachable"; }
 class Plain extends Error {}
@@ -15,5 +15,11 @@ describe("defectAttributes", () => {
     expect(defectAttributes(Cause.die(new Error("x")))["error.tag"]).toBe("Error");
     expect(defectAttributes(Cause.die("a string"))["error.tag"]).toBe("Error");
     expect(defectAttributes(Cause.die({ plain: true }))["error.tag"]).toBe("Error");
+  });
+});
+
+describe("defectTag", () => {
+  it("is the tag alone", () => {
+    expect(defectTag(Cause.die(new Unreachable("x")))).toEqual({ "error.tag": "LedgerUnreachable" });
   });
 });

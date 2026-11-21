@@ -419,7 +419,7 @@ these; changing one is the author's, with a reason.
 - **The route.** `GET /_portal/v1/monitor?digest=<digest>`, guarded as `snapshot` is (400 without a digest, 409 for another blueprint's, 404 without a live source), answers
   `{ environment, now, alerts, issues }` evaluated over `live.source.window(ms, now)` and `live.metrics.window(ms, now)` for each window an alert names. The portal reads no
   clock and sends nothing from local.
-- **Issues.** One per (operation, step, `error.tag`), the step being the deepest failing step span; a refusal opens none; `occurrences` counts calls, never evaluations.
+- **Issues.** One per (operation, step, `error.tag`), the step being the deepest failing step span; a refusal opens none; `occurrences` counts calls, never evaluations. *Superseded by M1-49-issue-attribution, 21 November 2026 (the step is a declared step).*
   The defect span carries `error.tag` (the error's `_tag`, else its constructor name).
 - **The ledger.** `PortalContext.ledger?: { get(key): Effect<unknown>, put(key, value): Effect<void> }`, opaque JSON by key. `firstSeen` and `lastSeen` are the call's
   start and the operation's declaration hash (`model.operations[op].hash`) in the wire in force then; `regressed` is the two hashes differing.

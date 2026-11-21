@@ -27,10 +27,15 @@ There were three rounds of findings on #447, all valid, in two causal classes:
 2. **A step is a declared step.** A span is a step of operation `op` when it carries `step.kind` and its name is
    `model.operations[op].steps[k].name`, read from the blueprint on the wire and never written as a string. The
    runtime's commit span counts as the step `commit`. Adapter spans are walked through but never chosen. Among declared
-   step spans under the failing attempt that ended as errors, the deepest is chosen, and on a tie the latest.
+   step spans under the failing attempt that ended as errors **with the attempt's own `error.tag`**, the deepest is chosen, and on a tie
+   the latest. A step that errored and was recovered carries another tag (the runtime writes `error.tag` on every span a defect passes
+   through), so a later die outside every step is not blamed on it. The commit step is the runtime's own phase, named for its
+   span kind, and is not on the wire: the one step name written as a string, on purpose.
 3. **A defect that no declared step explains still opens an issue, keyed to the operation itself** (step `-`). Examples
    are a read's defect, or a die outside every step, such as the answer check. Every defect counted in a burn can be
-   found on the Issues page; today such defects open none.
+   found on the Issues page; today such defects open none. A defect call whose attempts all ended ok (they lost the commit race 64
+   times and the runtime died outside them) opens `<op>/commit/Error`: the runtime records no tag for it, and `Error` is what its own
+   fallback gives a plain error. So `failure` is set on every defect call.
 4. **The local feed's 30-minute history is not extended here.** In `ortho dev` a burn whose long window exceeds the feed
    reads `unknown`, as the monitor now says honestly. Check 39 proves the fast burn through its own trace source.
    Making a local world fire it is snag #450, in prove's `portal-feed`.
@@ -41,3 +46,8 @@ There were three rounds of findings on #447, all valid, in two causal classes:
 - **Dropping defects outside every step.** The defect burn would then count calls no issue explains.
 - **Matching step names by pattern (`<op>.<word>`).** That writes a name rule outside the declaration; the declared
   names are already on the wire.
+
+## Supersedes
+
+- design/later.md: "an issue's step is the deepest failing step span" → "an issue's step is the deepest declared step span that errored with the failed attempt's own `error.tag`"
+- design/later.md: "A defect two steps down, and a call with no step span at all, are not judged." → "A defect two declared steps down, and the `-` and out-of-tries cases, are not judged."

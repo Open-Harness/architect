@@ -42,9 +42,8 @@ const callOf = (trace: string, operation: string, { spans: attempts, unresolved 
   const end = Math.max(...ordered.map((s) => s.start + s.ms));
   const durationMs = round(end - first.start);
   const outcome = unresolved ? { outcome: "unknown" as const, refusal: null } : outcomeOf(ordered[ordered.length - 1]!, all);
-  const failure = outcome.outcome === "defect" ? failureOf(ordered, all, operation, steps) : undefined;
-  return {
-    trace, operation, start: first.start, ...(unresolved ? { outcome: "unknown" as const, refusal: null } : outcomeOf(ordered[ordered.length - 1]!, all)),
+  const base = {
+    trace, operation, start: first.start, ...outcome,
     caller: ordered.map(callerOf).find((k) => k !== undefined) ?? "unknown",
     attempts: new Set(ordered.map(numberOf)).size,
     durationMs,
@@ -52,8 +51,8 @@ const callOf = (trace: string, operation: string, { spans: attempts, unresolved 
     overBudget: budget !== undefined && durationMs > budget,
     journey, requestKey: ordered.map((s) => text(s.attrs["request.key"])).find((k) => k !== undefined) ?? null, roleHeld: null,
     id: identityOf(trace, ordered),
-    ...(failure === undefined ? {} : { failure }),
   };
+  return outcome.outcome === "defect" ? { ...base, outcome: outcome.outcome, failure: failureOf(ordered, all, operation, steps) } : { ...base, outcome: outcome.outcome };
 };
 
 /**
