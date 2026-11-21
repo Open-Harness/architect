@@ -25,6 +25,9 @@
       "Secret": {
         "type": "text",
         "max": 512
+      },
+      "Way": {
+        "type": "schema"
       }
     },
     "things": {
@@ -485,10 +488,14 @@
           {
             "kind": "role-of",
             "role": "organization.owner",
-            "path": "organization"
+            "path": "organization",
+            "via": [
+              "device",
+              "session"
+            ]
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "organization": "organization"
         },
@@ -508,7 +515,7 @@
         "budget": {
           "p95Ms": 250
         },
-        "hash": "12a4457690ea752f"
+        "hash": "13b1d071bf6d24ea"
       },
       "invitation.accept": {
         "kind": "operation",
@@ -565,10 +572,15 @@
         "allowed": [
           {
             "kind": "role",
-            "role": "invitation.invitee"
+            "role": "invitation.invitee",
+            "via": [
+              "device",
+              "key",
+              "session"
+            ]
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "invitation": "invitation"
         },
@@ -584,7 +596,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "92e1725c49048e8d"
+        "hash": "70314ea959c43146"
       },
       "invitation.revoke": {
         "kind": "operation",
@@ -1023,6 +1035,12 @@
               "max": 254
             },
             "ref": "person.email"
+          },
+          "via": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Way"
           }
         },
         "move": null,
@@ -1044,7 +1062,7 @@
         "budget": {
           "p95Ms": 100
         },
-        "hash": "79e085de8acc5c10"
+        "hash": "f6abef87ce0c498a"
       },
       "session.sign-in": {
         "kind": "operation",
@@ -2447,13 +2465,13 @@
   },
   "dependsOnByOperation": {
     "api-key.create": {
-      "operation:api-key.create": "12a4457690ea752f",
+      "operation:api-key.create": "13b1d071bf6d24ea",
       "thing:api-key": "dec54cf75bd4acb9",
       "thing:organization": "24a71fadb70bce98",
       "thing:person": "ad771ebabdfe3e0e"
     },
     "invitation.accept": {
-      "operation:invitation.accept": "92e1725c49048e8d",
+      "operation:invitation.accept": "70314ea959c43146",
       "thing:invitation": "7c1d13c393ddaa62",
       "thing:membership": "e6505be81a7030e4",
       "thing:organization": "24a71fadb70bce98",
@@ -2492,7 +2510,7 @@
       "thing:person": "ad771ebabdfe3e0e"
     },
     "session.show": {
-      "operation:session.show": "79e085de8acc5c10",
+      "operation:session.show": "f6abef87ce0c498a",
       "thing:person": "ad771ebabdfe3e0e",
       "thing:session": "455311c2adae1097"
     },
@@ -2507,9 +2525,9 @@
     }
   },
   "docs": {
-    "api-key/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# api-key.create\n\nCreate an API key in an organisation. The key itself is shown once.\n\n**Who may call:** the owner of its organization.\n\n**Budget:** p95 250ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| organization | api-key.organization |\n| name | api-key.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| apiKey | api-key.id |\n| key | Secret (secret) |\n\n## Steps\n\n- `api-key.create.issue` (database)\n- `api-key.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization; the handler never runs |\n\n## Worked examples\n\n### an owner makes an api key\n\nStarts from the world `founded`.\n\n- **bob can't make a key in ada's organisation.** `bob` (signed in) calls and sends organization the world's organization, name `bob's key`, and is refused with NotAllowed, AR-001.\n- **ada makes a key; the secret is shown once.** `ada` (role organization.owner) calls and sends organization the world's organization, name `ci`, and gets back an answer matching `^key_[0-9a-z]+$` and gets back an answer matching `^.+$`.\n- **bob makes a key in his own organisation.** `bob` (signed in) calls and sends organization the last call's organization, name `bob's own key`, and gets back an answer matching `^key_[0-9a-z]+$` and gets back an answer matching `^.+$`.\n\n## How to call\n\n```sh\nstarter api-key create --organization <organization> --name <name>\n```\n\nHTTP: `POST /api-key/create` with the payload as JSON. SDK: `Sdk.api-key.create(payload)`.\n",
+    "api-key/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# api-key.create\n\nCreate an API key in an organisation. The key itself is shown once.\n\n**Who may call:** the owner of its organization by device or session.\n\n**Budget:** p95 250ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| organization | api-key.organization |\n| name | api-key.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| apiKey | api-key.id |\n| key | Secret (secret) |\n\n## Steps\n\n- `api-key.create.issue` (database)\n- `api-key.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization by device or session; the handler never runs |\n\n## Worked examples\n\n### an owner makes an api key\n\nStarts from the world `founded`.\n\n- **bob can't make a key in ada's organisation.** `bob` (signed in) calls and sends organization the world's organization, name `bob's key`, and is refused with NotAllowed, AR-001.\n- **ada makes a key; the secret is shown once.** `ada` (role organization.owner) calls and sends organization the world's organization, name `ci`, and gets back an answer matching `^key_[0-9a-z]+$` and gets back an answer matching `^.+$`.\n- **bob makes a key in his own organisation.** `bob` (signed in) calls and sends organization the last call's organization, name `bob's own key`, and gets back an answer matching `^key_[0-9a-z]+$` and gets back an answer matching `^.+$`.\n\n## How to call\n\n```sh\nstarter api-key create --organization <organization> --name <name>\n```\n\nHTTP: `POST /api-key/create` with the payload as JSON. SDK: `Sdk.api-key.create(payload)`.\n",
     "api-key/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# api-key\n\nA key an agent or a service calls with, on behalf of whoever created it. Better Auth keeps its hash.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| organization | organization.id |\n| name | text |\n| createdBy | person.id |\n\n## Operations\n\n- [api-key.create](create.md): Create an API key in an organisation. The key itself is shown once.\n",
-    "invitation/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.accept\n\nAccept an invitation and become a member of its organisation.\n\n**Who may call:** the invitee of the invitation.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| organization | invitation.organization |\n| membership | membership.id |\n\n## Move\n\n`accept`: from pending to accepted, emitting InvitationAccepted.\n\n## Steps\n\n- `invitation.accept.join` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InvitationNotPending | 40 | IN-900 | the invitation is in a state accept can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the invitee of the invitation; the handler never runs |\n\n## Worked examples\n\n### an invitation is used once\n\nStarts from the world `invited`.\n\n- **olga accepts the invitation ada sent her.** `olga` (signed in) calls and sends invitation the world's invitation, and gets back the world's organization and gets back an answer matching `^mem_[0-9a-z]+$`.\n- **accepting it again is refused.** `olga` (signed in) calls and sends invitation the world's invitation, and is refused with InvitationNotPending, IN-900, carrying state `accepted`.\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **bob can't accept olga's invitation.** `bob` (signed in) calls and sends invitation the last call's invitation, and is refused with NotAllowed, AR-001.\n- **olga accepts and joins ada's organisation.** `olga` (signed in) calls and sends invitation the last call's invitation, and gets back the world's organization and gets back an answer matching `^mem_[0-9a-z]+$`.\n\n## How to call\n\n```sh\nstarter invitation accept --invitation <invitation>\n```\n\nHTTP: `POST /invitation/accept` with the payload as JSON. SDK: `Sdk.invitation.accept(payload)`.\n",
+    "invitation/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.accept\n\nAccept an invitation and become a member of its organisation.\n\n**Who may call:** the invitee of the invitation by device or key or session.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| organization | invitation.organization |\n| membership | membership.id |\n\n## Move\n\n`accept`: from pending to accepted, emitting InvitationAccepted.\n\n## Steps\n\n- `invitation.accept.join` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InvitationNotPending | 40 | IN-900 | the invitation is in a state accept can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the invitee of the invitation by device or key or session; the handler never runs |\n\n## Worked examples\n\n### an invitation is used once\n\nStarts from the world `invited`.\n\n- **olga accepts the invitation ada sent her.** `olga` (signed in) calls and sends invitation the world's invitation, and gets back the world's organization and gets back an answer matching `^mem_[0-9a-z]+$`.\n- **accepting it again is refused.** `olga` (signed in) calls and sends invitation the world's invitation, and is refused with InvitationNotPending, IN-900, carrying state `accepted`.\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **bob can't accept olga's invitation.** `bob` (signed in) calls and sends invitation the last call's invitation, and is refused with NotAllowed, AR-001.\n- **olga accepts and joins ada's organisation.** `olga` (signed in) calls and sends invitation the last call's invitation, and gets back the world's organization and gets back an answer matching `^mem_[0-9a-z]+$`.\n\n## How to call\n\n```sh\nstarter invitation accept --invitation <invitation>\n```\n\nHTTP: `POST /invitation/accept` with the payload as JSON. SDK: `Sdk.invitation.accept(payload)`.\n",
     "invitation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation\n\nAn offer to join an organisation, sent to an email address.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| organization | organization.id |\n| email | person.email |\n| invitedBy | person.id |\n\n## Machine\n\nStates: pending, accepted, revoked. A move from the wrong state is refused InvitationNotPending (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| send | (creates) | pending | InvitationSent |\n| accept | pending | accepted | InvitationAccepted |\n| revoke | pending | revoked | InvitationRevoked |\n\n## Events\n\n- `InvitationAccepted`: carries invitation (invitation.id), membership (membership.id); emitted by the move accept\n- `InvitationRevoked`: carries invitation (invitation.id); emitted by the move revoke\n- `InvitationSent`: carries invitation (invitation.id), email (invitation.email); emitted by the move send\n\n## Roles\n\n- invitee\n\n## Operations\n\n- [invitation.accept](accept.md): Accept an invitation and become a member of its organisation.\n- [invitation.revoke](revoke.md): Withdraw an invitation that hasn't been accepted.\n- [invitation.send](send.md): Invite someone to an organisation by email.\n",
     "invitation/revoke.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.revoke\n\nWithdraw an invitation that hasn't been accepted.\n\n**Who may call:** the owner of its invitation.organization.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`revoke`: from pending to revoked, emitting InvitationRevoked.\n\n## Steps\n\n- `invitation.revoke.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InvitationNotPending | 40 | IN-900 | the invitation is in a state revoke can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its invitation.organization; the handler never runs |\n\n## Worked examples\n\n### an invitation is used once\n\nStarts from the world `invited`.\n\n- **ada can't revoke an invitation that has been accepted.** `ada` (role organization.owner) calls and sends invitation the world's invitation, and is refused with InvitationNotPending, IN-900, carrying state `accepted`.\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **olga, a member but not the owner, can't revoke it.** `olga` (signed in) calls and sends invitation the last call's invitation, and is refused with NotAllowed, AR-001.\n- **ada revokes it.** `ada` (role organization.owner) calls and sends invitation the last call's invitation, and is answered.\n\n## How to call\n\n```sh\nstarter invitation revoke --invitation <invitation>\n```\n\nHTTP: `POST /invitation/revoke` with the payload as JSON. SDK: `Sdk.invitation.revoke(payload)`.\n",
     "invitation/send.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.send\n\nInvite someone to an organisation by email.\n\n**Who may call:** the owner of its organization.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| organization | invitation.organization |\n| email | invitation.email |\n\n## Answer\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Move\n\n`send`: from nothing (it creates) to pending, emitting InvitationSent.\n\n## Steps\n\n- `invitation.send.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization; the handler never runs |\n\n## Worked examples\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **bob can't invite anyone to it.** `bob` (signed in) calls and sends organization the world's organization, email the cast's olga email, and is refused with NotAllowed, AR-001.\n- **ada invites olga by her email.** `ada` (role organization.owner) calls and sends organization the world's organization, email the cast's olga email, and gets back an answer matching `^inv_[0-9a-z]+$`.\n- **ada sends a second invitation.** `ada` (role organization.owner) calls and sends organization the world's organization, email the cast's bob email, and gets back an answer matching `^inv_[0-9a-z]+$`.\n\n## How to call\n\n```sh\nstarter invitation send --organization <organization> --email <email>\n```\n\nHTTP: `POST /invitation/send` with the payload as JSON. SDK: `Sdk.invitation.send(payload)`.\n",
@@ -2521,7 +2539,7 @@
     "person/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# person\n\nSomeone who signs in. Better Auth keeps people; the project refers to them by id.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| email | text |\n| name | text |\n\n## Operations\n\n- [person.sign-up](sign-up.md): Sign up with an email address and a password.\n",
     "person/sign-up.md": "<!-- Generated from the blueprint. Do not edit. -->\n# person.sign-up\n\nSign up with an email address and a password.\n\n**Who may call:** anyone.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| email | person.email |\n| password | Password (secret) |\n| name | person.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| person | person.id |\n\n## Steps\n\n- `person.sign-up.create` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| PersonEmailTaken | 11 | PE-001 | declared in errors.ts |\n\n## Worked examples\n\n### sign up and sign in\n\nStarts from an empty world.\n\n- **the newcomer signs up.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, name `Newcomer`, and gets back an answer matching `^per_[0-9a-z]+$`.\n- **signing up again with the same email is refused.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, name `Newcomer again`, and is refused with PersonEmailTaken, PE-001.\n\n## How to call\n\n```sh\nstarter person sign-up --email <email> --password <password> --name <name>\n```\n\nHTTP: `POST /person/sign-up` with the payload as JSON. SDK: `Sdk.person.sign-up(payload)`.\n",
     "session/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session\n\nA person's signed-in session, issued by Better Auth.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| person | person.id |\n\n## Operations\n\n- [session.show](show.md): Who is signed in.\n- [session.sign-in](sign-in.md): Sign in with email and password. The token is the bearer for every later call.\n",
-    "session/show.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session.show\n\nWho is signed in.\n\n**Who may call:** anyone signed in.\n\n**Budget:** p95 100ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| person | person.id |\n| email | person.email |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## Worked examples\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **ada sees who she is signed in as.** `ada` (role organization.owner) calls and sends nothing, and gets back the cast's ada person and gets back the cast's ada email.\n\n### sign up and sign in\n\nStarts from an empty world.\n\n- **before signing up the newcomer is nobody.** `newcomer` (anyone) calls and sends nothing, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\nstarter session show\n```\n\nHTTP: `POST /session/show` with the payload as JSON. SDK: `Sdk.session.show(payload)`.\n",
+    "session/show.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session.show\n\nWho is signed in.\n\n**Who may call:** anyone signed in.\n\n**Budget:** p95 100ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| person | person.id |\n| email | person.email |\n| via | Way |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## Worked examples\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **ada sees who she is signed in as.** `ada` (role organization.owner) calls and sends nothing, and gets back the cast's ada person and gets back the cast's ada email.\n\n### sign up and sign in\n\nStarts from an empty world.\n\n- **before signing up the newcomer is nobody.** `newcomer` (anyone) calls and sends nothing, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\nstarter session show\n```\n\nHTTP: `POST /session/show` with the payload as JSON. SDK: `Sdk.session.show(payload)`.\n",
     "session/sign-in.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session.sign-in\n\nSign in with email and password. The token is the bearer for every later call.\n\n**Who may call:** anyone.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| email | person.email |\n| password | Password (secret) |\n\n## Answer\n\n| field | value |\n|---|---|\n| session | session.id (secret) |\n| token | Secret (secret) |\n\n## Steps\n\n- `session.sign-in.verify` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SessionCredentialsWrong | 10 | SE-001 | declared in errors.ts |\n\n## Worked examples\n\n### sign up and sign in\n\nStarts from an empty world.\n\n- **a wrong password is refused.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password { redacted: true }, and is refused with SessionCredentialsWrong, SE-001.\n- **the right password answers a session and a token.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, and gets back an answer matching `^ses_[0-9a-z]+$` and gets back an answer matching `^.+$`.\n\n## How to call\n\n```sh\nstarter session sign-in --email <email> --password <password>\n```\n\nHTTP: `POST /session/sign-in` with the payload as JSON. SDK: `Sdk.session.sign-in(payload)`.\n",
     "system/health.md": "<!-- Generated from the blueprint. Do not edit. -->\n# system.health\n\nIs the application up?\n\n**Who may call:** anyone.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| status | Ok |\n\n## Refusals\n\n(none)\n\n## Worked examples\n\n### health is up\n\nStarts from an empty world.\n\n- **anyone can ask if the application is up.** `visitor` (anyone) calls and sends nothing, and gets back `ok`.\n\n## How to call\n\n```sh\nstarter system health\n```\n\nHTTP: `POST /system/health` with the payload as JSON. SDK: `Sdk.system.health(payload)`.\n",
     "system/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# system\n\nThe running application itself.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n\n## Operations\n\n- [system.health](health.md): Is the application up?\n"
@@ -2540,5 +2558,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "aa5823e55e5625dd5d9f4dbd84fd4d960f256facf53b665cdf43e5d78c3f9667"
+  "digest": "76de61a696e1135c31a5925fb619e1fc9d05890163b2e8d1ebd45e6f903d3580"
 }

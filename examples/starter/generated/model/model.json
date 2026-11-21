@@ -21,6 +21,9 @@
     "Secret": {
       "type": "text",
       "max": 512
+    },
+    "Way": {
+      "type": "schema"
     }
   },
   "things": {
@@ -481,10 +484,14 @@
         {
           "kind": "role-of",
           "role": "organization.owner",
-          "path": "organization"
+          "path": "organization",
+          "via": [
+            "device",
+            "session"
+          ]
         }
       ],
-      "agentTool": true,
+      "agentTool": false,
       "refs": {
         "organization": "organization"
       },
@@ -504,7 +511,7 @@
       "budget": {
         "p95Ms": 250
       },
-      "hash": "12a4457690ea752f"
+      "hash": "13b1d071bf6d24ea"
     },
     "invitation.accept": {
       "kind": "operation",
@@ -561,10 +568,15 @@
       "allowed": [
         {
           "kind": "role",
-          "role": "invitation.invitee"
+          "role": "invitation.invitee",
+          "via": [
+            "device",
+            "key",
+            "session"
+          ]
         }
       ],
-      "agentTool": true,
+      "agentTool": false,
       "refs": {
         "invitation": "invitation"
       },
@@ -580,7 +592,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "92e1725c49048e8d"
+      "hash": "70314ea959c43146"
     },
     "invitation.revoke": {
       "kind": "operation",
@@ -1019,6 +1031,12 @@
             "max": 254
           },
           "ref": "person.email"
+        },
+        "via": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Way"
         }
       },
       "move": null,
@@ -1040,7 +1058,7 @@
       "budget": {
         "p95Ms": 100
       },
-      "hash": "79e085de8acc5c10"
+      "hash": "f6abef87ce0c498a"
     },
     "session.sign-in": {
       "kind": "operation",
