@@ -28,8 +28,8 @@ There were three rounds of findings on #447, all valid, in two causal classes:
    `model.operations[op].steps[k].name`, read from the blueprint on the wire and never written as a string. The
    runtime's commit span counts as the step `commit`. Adapter spans are walked through but never chosen. Among declared
    step spans under the failing attempt that ended as errors **with the attempt's own `error.tag`**, the deepest is chosen, and on a tie
-   the latest. A step that errored and was recovered carries another tag (the runtime writes `error.tag` on every span a defect passes
-   through), so a later die outside every step is not blamed on it. The commit step is the runtime's own phase, named for its
+   the latest. A step that errored and was recovered is passed over when it carries a *different* tag (the runtime writes `error.tag` on every span a defect passes
+   through), so a later die outside every step is not blamed on it. Known limit: when a recovered step and the later die carry the same tag (two plain `Error`s, say), the step is still blamed, because a tag cannot tell them apart. The commit step is the runtime's own phase, named for its
    span kind, and is not on the wire: the one step name written as a string, on purpose.
 3. **A defect that no declared step explains still opens an issue, keyed to the operation itself** (step `-`). Examples
    are a read's defect, or a die outside every step, such as the answer check. Every defect counted in a burn can be

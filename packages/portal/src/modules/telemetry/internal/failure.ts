@@ -4,7 +4,10 @@
 import type { CallFailure, WindowSpan } from "../types.ts";
 import { COMMIT, stepOf, type OperationSteps } from "./spans.ts";
 
-/** The tag of a defect the runtime itself raised outside every attempt (it ran out of tries): a plain `Error`, which is the tag the runtime's own fallback gives one. */
+/**
+ * The tag of a defect the runtime itself raised outside every attempt (it ran out of tries): a plain `Error`. It mirrors the fallback of `tagOf` in
+ * packages/language-effect/src/modules/handler/internal/defect.ts:6, which owns the rule; change the two together.
+ */
 const RUNTIME_TAG = "Error";
 
 /** The step of a defect no declared step explains: the operation itself. */
@@ -26,9 +29,10 @@ const candidates = (root: WindowSpan, tag: string, spans: ReadonlyArray<WindowSp
 };
 
 /**
- * Every defect call has a failure. A step is a candidate only when it ended as an error and its `error.tag` is the attempt's own (the runtime writes it on every span a defect passes through; a span from a source that wrote none is taken as the attempt's): a step that errored and was recovered
- * is not blamed for a later die outside every step. A call whose attempts all ended ok (they lost their commit race 64 times, and the runtime died outside them) died
- * in the commit: `commit`, tagged as the runtime's own die.
+ * Every defect call has a failure. A step is a candidate only when it ended as an error and its `error.tag` is the attempt's own (the runtime writes it on every span a
+ * defect passes through; a span from a source that wrote none is taken as the attempt's). So a step that errored and was recovered is passed over when it carries a
+ * *different* tag; with the same tag (two plain `Error`s) it is still blamed, a known limit. A call whose attempts all ended ok (they lost their commit race 64 times,
+ * and the runtime died outside them) died in the commit: `commit`, tagged as the runtime's own die.
  */
 export const failureOf = (attempts: ReadonlyArray<WindowSpan>, spans: ReadonlyArray<WindowSpan>, operation: string, steps: OperationSteps): CallFailure => {
   const failing = [...attempts].filter((a) => a.status === 2).sort((a, b) => b.start - a.start)[0];
