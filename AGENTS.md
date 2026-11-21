@@ -41,6 +41,8 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   parallel. A goal may run in any harness (Claude Code, Codex, OpenCode, Amp) and coordinates only through the repository and
   GitHub: its brief's "Where it stands", its goal's milestone and `goal-<n>` label, and Snag and Ask issues in that milestone
   (`design/decisions/K32-goals-coordinate-themselves.md`, `K33-github-native.md`; the `github` skill says how).
+  A slice another goal needs lands early, by a branch cut at the commit that ends it and merged into `goal/stage-1`
+  by a merge commit, so two goals never wait on each other's whole landing (`K38-early-landing.md`).
 - **Spikes** answer one question in throwaway code under `spikes/<name>/`, on a `spike/<name>` branch. Each ends with
   a README (question, tried, found, the decision it supports, open risks) and is merged into `main` for the record.
   Spike code is never imported by packages.
