@@ -67,7 +67,12 @@ const moved = (attempts: ReadonlyArray<WindowSpan>, all: ReadonlyArray<WindowSpa
 /** Per operation, the nearest-rank p95 of every call's duration in the window. */
 const p95Of = (all: ReadonlyArray<TelemetryCall>): Readonly<Record<string, number>> => {
   const by = new Map<string, Array<number>>();
-  for (const c of all) by.set(c.operation, [...(by.get(c.operation) ?? []), c.durationMs]);
+  // Appended in place: copying the bucket per call made a busy window quadratic (40,000 calls took about a minute).
+  for (const c of all) {
+    const bucket = by.get(c.operation);
+    if (bucket === undefined) by.set(c.operation, [c.durationMs]);
+    else bucket.push(c.durationMs);
+  }
   return Object.fromEntries([...by].map(([op, d]) => { const sorted = [...d].sort((a, b) => a - b); return [op, sorted[Math.ceil(0.95 * sorted.length) - 1]!]; }));
 };
 
