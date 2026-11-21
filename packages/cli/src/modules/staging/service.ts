@@ -1,12 +1,13 @@
-import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
 import { Effect } from "effect";
 import { Compiler, nodeSource } from "@orthograph/compiler";
 import { StagingFailed, StagingRefused, type Credentials, type Options, type Plan, type Said, type StagingApi, type Tools } from "./types.ts";
 import { up } from "./internal/deploy.ts";
 import { destroy } from "./internal/destroy.ts";
 import { live } from "./internal/live.ts";
+import { appOf } from "./internal/app.ts";
 import { plan, prefixOf, render, stagingUrl } from "./internal/plan.ts";
+export { proveAddress } from "./internal/address.ts";
 
 const said = (out: string): Said => ({ out, err: "", exit: 0 });
 const refusal = (message: string, exit: number): Said => ({ out: "", err: `${message.trimEnd()}\n`, exit });
@@ -19,12 +20,7 @@ const planOf = (options: Options): Effect.Effect<Plan, StagingRefused> =>
       Effect.provide(nodeSource(root)),
       Effect.mapError((e) => new StagingRefused({ message: e._tag === "BlueprintInvalid" ? `the blueprint is invalid:\n  - ${e.problems.join("\n  - ")}` : e.message })),
     );
-    const config = yield* Effect.tryPromise({
-      try: () => import(pathToFileURL(join(root, "ortho.config.ts")).href) as Promise<{ readonly default?: { readonly kind?: string; readonly name?: unknown } }>,
-      catch: () => new StagingRefused({ message: "ortho.config.ts is missing or does not load: the project's name is read from it" }),
-    });
-    const app = config.default?.name;
-    if (config.default?.kind !== "config" || typeof app !== "string") return yield* new StagingRefused({ message: "ortho.config.ts does not export Blueprint.config({ name })" });
+    const app = yield* appOf(root);
     return yield* plan({ model, app, environment, run });
   });
 

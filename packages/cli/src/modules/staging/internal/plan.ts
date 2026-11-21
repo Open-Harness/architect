@@ -8,7 +8,7 @@ export const ENVIRONMENT = "staging";
 export const SHORT = "stg";
 /** A name Cloudflare would refuse: a Worker's is 63 characters or fewer on `workers.dev`; none is stated for D1, so 63 is held there too (M7-cloud, addendum of 21 November 2026). */
 export const MAX_NAME = 63;
-const RUN = /^[a-z0-9]{1,20}$/;
+export const RUN = /^[a-z0-9]{1,20}$/;
 
 /** `plugged-in` is `pluggedin`: an app's letters and digits only. */
 const slug = (app: string) => app.toLowerCase().replace(/[^a-z0-9]/g, "");
