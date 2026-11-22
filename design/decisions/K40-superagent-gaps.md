@@ -68,7 +68,7 @@ export const Account = Blueprint.thing({
 });  // source: the connection it came through (its mount)
 // machine: seen → listed → unlisted
 export const listed = Blueprint.role(Account, {
-  actor: { mount: Account.fields.source, id: Account.fields.id }, while: [machine.states.listed],
+  actor: { mount: Account.fields.source, id: Account.fields.id }, while: [machine.states.listed],   // Superseded by GOAL17-source-from, 22 November 2026: it also takes `within: Account.fields.superagent`, so a listed account of one superagent is never admitted for another's call
 });
 // blueprint/things/ticket/verbs/accept.ts
 allowed: [listed.of("account")],

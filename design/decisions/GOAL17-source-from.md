@@ -60,8 +60,27 @@ with no new code", K39) is not possible.
 
 ```ts
 // plugins/intake/src/modules/source/types.ts
-import type { Adapter, AdapterCall, AdapterEvent, ErrorClass } from "orthograph";
-import type { Schema } from "effect";
+import type { Adapter, Call, AnyErrorClass } from "orthograph";   // `Call` (plugins/types.ts:61) and `AnyErrorClass` (errors/types.ts) exist today
+import { Schema } from "effect";
+import type { Strength } from "../gate/types.ts";
+
+/** One outside account as a person writes it in a form. `id` is the service's stable id, `login` what people type. Defined here, once. */
+export const AccountRef = Schema.Struct({ id: Schema.String, login: Schema.String });
+export type AccountRef = typeof AccountRef.Type;
+export interface Seen extends AccountRef { readonly bot: boolean }       // what a `sync` answers: a listed account's `bot` is stored
+
+/** What a source's `githubSource(config)` answers, and `Superagent.declare({ connections })` lists. */
+export interface Connection { readonly kind: "connection"; readonly source: string; readonly config: unknown }
+export interface Scope { readonly listened: boolean; readonly observed: boolean; readonly row: string }
+export interface ContextMessage { readonly id: string; readonly from: string; readonly at: string; readonly text: string; readonly meta?: Readonly<Record<string, string>> }
+export type Cells = Readonly<Record<"listed" | "unlisted" | "unnamed", Strength>>;     // Strength is the gate's (gate/types.ts)
+export interface AdmissionRow { readonly id: string; readonly label: string; readonly cells: Cells }
+
+/** A call's argument and answer. Slice 4's generator types each `Call` with them: today `Call` has `mode` and `errors` only. */
+export type ArgsOf<C extends Call> = C extends Call<any, infer A, any> ? A : never;
+export type ResultOf<C extends Call> = C extends Call<any, any, infer R> ? R : never;
+/** Goal 11's (M5.03) typed event; today an adapter's `events` are `unknown`. */
+export interface AdapterEvent<P> { readonly kind: "event"; readonly payload: P }
 
 /** What one event says about a trigger. Pure data: there is no author here (see Account, below). */
 export interface Mapped<Addr> {
@@ -75,7 +94,7 @@ export interface Mapped<Addr> {
   readonly meta?: Readonly<Record<string, string>>;
 }
 
-export interface Ctx<Cfg> { readonly config: Cfg; readonly me: AccountRef }   // the connection's own account: its events are dropped
+export interface Ctx<Cfg> { readonly config: Cfg; readonly me: AccountRef }   // the connection's own account: its events are dropped by `id`
 
 export type EventsOf<A> = A extends { readonly events: infer E } ? E : {};      // needs Goal 11's `events` generic (below)
 export type PayloadOf<E> = E extends AdapterEvent<infer P> ? P : never;
@@ -94,20 +113,21 @@ export interface SourceSpec<A extends Adapter, Cfg extends { readonly me: Accoun
 }
 
 export interface Reply<A, Addr> {
-  readonly call: AdapterCall;                                          // must be a call of A
+  readonly call: Call;                                                 // must be a call of A
   readonly args: (m: { address: Addr; text: string; key: string }) => ArgsOf<this["call"]>;   // `key` = the outgoing message's id
-  readonly landed: (message: ContextMessage & { meta?: Record<string, string> }, key: string) => boolean;  // read from history: did a send that "failed" actually land?
-  readonly gone: ReadonlyArray<ErrorClass>;                            // declared errors that mean "never deliverable": dropped, not retried
+  readonly landed: (message: ContextMessage, key: string) => boolean;  // read from history: did a send that "failed" actually land?
+  /** Error classes the reply call itself declares (`this.call.errors`, plugins/types.ts:65): "never deliverable", dropped, not retried. */
+  readonly gone: ReadonlyArray<AnyErrorClass>;
 }
 export interface History<A, Addr> {
-  readonly call: AdapterCall;
+  readonly call: Call;
   readonly args: (thread: Addr, cursor?: string) => ArgsOf<this["call"]>;
   readonly page: (answer: ResultOf<this["call"]>) => { messages: ReadonlyArray<ContextMessage>; next?: string };
 }
 export interface PolicyPart<A, Cfg> {                                  // this source's part of the Policy (a thing with versions, K40 fix 2)
   readonly schema: Schema.Schema<unknown>;                             // e.g. `bots`, saved inside Policy.parts[<mount>]
   readonly rows: (config: Cfg) => ReadonlyArray<AdmissionRow>;         // row ids must equal `scope`'s `row`
-  readonly sync?: { call: AdapterCall; accounts: (answer: unknown) => ReadonlyArray<AccountRef> };   // collaborators, a user group
+  readonly sync?: { call: Call; accounts: (answer: ResultOf<Call>) => ReadonlyArray<Seen> };   // collaborators, a user group
 }
 export interface Environment<Addr> {                                   // execution variables, no credentials (below)
   readonly variables: Readonly<Record<string, string>>;                // name → one-line description, shown in Settings even when off
@@ -124,6 +144,11 @@ export interface SourcesApi {
   readonly timer: (spec: { every: string; says: string }) => SourceKind<{ every: string; says: string }>;   // no adapter; Timers wait
 }
 ```
+
+**`me` is `{ id, login }`**, written by whoever makes the connection (the portal form, or `superagent.create`'s payload).
+`id` is what counts: the source's own messages are dropped by it (below). `login` only matches a mention in a message's
+text, so a wrong `login` costs a missed `addressed`, never a wrong sender. The brief's examples pass
+`me: { id: "<bot id>", login: "<bot login>" }`.
 
 `config`, `scope` and `me` are the three keys beyond the brief's six. Without `config` there is no `github({ repo })`.
 Without `scope` a connection hears the whole of GitHub. Without `me` the source cannot drop its own messages (001, "Drops
@@ -142,6 +167,37 @@ the bot's own messages"). `reply`, `history` and `closed` are optional (PostHog 
 | `environment` | declared names, and a pure function of the trigger | See "How `environment` reaches the executor". |
 | `config`, `scope` | schema; `(config, mapped) → { listened, observed, row }` | A connection is stored with its validated config. One mount serves many superagents, so each event is offered to every active connection of that mount, and `scope` picks the ones that listen. |
 
+### Errors are per call
+
+Today an adapter has no `errors` of its own. A `Call` carries a list of error classes (`Call.errors`,
+`plugins/types.ts:61-65`, set by `p.call({ errors: [...] })`, `:205`). The generator (slice 4) writes each error class once
+per adapter, named from the spec's response (`NotFound` for a 404, `ChannelNotFound` for Slack's `channel_not_found`),
+exports them from the adapter's package beside the adapter, and lists each on the calls that can answer it. So a source
+imports the class (`import github, { NotFound } from "@orthograph/github"`) and `gone` holds classes. The compiler
+checks that each one is in `reply.call.errors`; nothing about a `gone` error reaches past the call that declares it.
+
+### The small functions the sketches use
+
+Types are in the block above. Each function below is the plugin's own, with its signature, so the sketches are whole.
+
+```ts
+// plugins/intake/src/modules/source/service.ts: shared, pure
+export const mentions = (text: string, login: string): boolean => new RegExp(`(^|\\W)@${login}(\\W|$)`, "i").test(text);
+export const observedRow: Cells = { listed: "explicit", unlisted: "none", unnamed: "none" };       // a person's own words, or nothing
+export const inferredOnly: Cells = { listed: "none", unlisted: "none", unnamed: "inferred" };      // a service with no sender (PostHog)
+// plugins/intake/blueprint/sources/github.ts
+const groups = { issue: "issues", comment: "comments", review: "reviews", check: "checks" } as const;
+const group = (kind: string): "issues" | "comments" | "reviews" | "checks" | undefined => (groups as Record<string, "issues" | "comments" | "reviews" | "checks">)[kind];
+const owner = (a: Addr): string => a.repository.split("/")[0] ?? "";                              // Addr is the file's own type
+const name = (a: Addr): string => a.repository.split("/")[1] ?? "";
+// plugins/intake/blueprint/sources/slack.ts and posthog.ts: each turns its own answer into a ContextMessage
+const toMessage = (m: SlackMessage): ContextMessage => ({ id: m.ts, from: m.user ?? m.bot_id ?? "", at: m.ts, text: m.text ?? "", ...(m.metadata ? { meta: { key: m.metadata.event_payload.key } } : {}) });
+const slackRows = (c: { channels: ReadonlyArray<string> }): ReadonlyArray<AdmissionRow> => c.channels.map((id) => ({ id, label: id, cells: observedRow }));
+```
+
+(`SlackMessage` and `PostHogIssue` are the generated adapters' own answer types. PostHog's `toMessage` has the same
+shape over `(r: PostHogIssue) => ContextMessage`.)
+
 ### One GitHub, one Slack and one PostHog source
 
 Call names come from the generator's naming of each spec's `operationId` (GitHub's `issues/create-comment` is
@@ -150,9 +206,10 @@ Call names come from the generator's naming of each spec's `operationId` (GitHub
 ```ts
 // plugins/intake/blueprint/sources/github.ts
 import { Schema } from "effect";
-import github from "@orthograph/github";
+import github, { NotFound } from "@orthograph/github";
 import { Source } from "../things/source/thing.ts";
-import { AccountRef, mentions } from "../things/account/refs.ts";
+import { AccountRef } from "../../src/modules/source/types.ts";
+import { mentions } from "../../src/modules/source/service.ts";
 
 type Addr = { repository: string; number: number };
 const Config = Schema.Struct({
@@ -179,7 +236,7 @@ export const githubSource = Source.from(github, {
     call: github.calls.issues.createComment,
     args: (m) => ({ owner: owner(m.address), repo: name(m.address), issue_number: m.address.number, body: `${m.text}\n<!-- orthograph:${m.key} -->` }),
     landed: (message, key) => message.text.includes(`<!-- orthograph:${key} -->`),
-    gone: [github.errors.NotFound],                       // issue deleted: never deliverable
+    gone: [NotFound],                                     // issue deleted: never deliverable (one of createComment's declared errors)
   },
   history: {
     call: github.calls.issues.listComments,
@@ -197,6 +254,8 @@ export const githubSource = Source.from(github, {
 
 ```ts
 // plugins/intake/blueprint/sources/slack.ts: Slack's event schemas are written by hand (slice 4), the calls are generated
+import slack, { ChannelNotFound, IsArchived } from "@orthograph/slack";
+import { AccountRef } from "../../src/modules/source/types.ts";   // as in github.ts
 type Addr = { channel: string; ts: string };                     // `ts` is the thread's root message
 export const slackSource = Source.from(slack, {
   config: Schema.Struct({ me: AccountRef, channels: Schema.Array(Schema.String), directMessages: Schema.Boolean }),
@@ -211,7 +270,7 @@ export const slackSource = Source.from(slack, {
     call: slack.calls.chat.postMessage,
     args: (m) => ({ channel: m.address.channel, thread_ts: m.address.ts, text: m.text, metadata: { event_type: "orthograph", event_payload: { key: m.key } } }),
     landed: (message, key) => message.meta?.["key"] === key,
-    gone: [slack.errors.ChannelNotFound, slack.errors.IsArchived],
+    gone: [ChannelNotFound, IsArchived],
   },
   history: { call: slack.calls.conversations.replies, args: (a, cursor) => ({ channel: a.channel, ts: a.ts, ...(cursor ? { cursor } : {}) }),
     page: (r) => ({ messages: r.messages.map(toMessage), next: r.response_metadata?.next_cursor || undefined }) },
@@ -224,6 +283,7 @@ export const slackSource = Source.from(slack, {
 
 ```ts
 // plugins/intake/blueprint/sources/posthog.ts: its alert webhook's payload is written once, in the adapter (K39)
+import posthog from "@orthograph/posthog";
 type Addr = { project: string; issue: string };
 export const posthogSource = Source.from(posthog, {
   config: Schema.Struct({ me: AccountRef, project: Schema.String, kinds: Schema.Array(Schema.Literals("errorIssue", "alert")) }),
@@ -258,8 +318,9 @@ Two layers, so a typo fails in the editor and again in `ortho check`:
   - the source is active, and the mount does not include an event or call it uses: "`github` mounted at
     `blueprint/adapters/github.ts` does not include `events.issueComment`, which `githubSource` maps: add
     `g.include(g.events.issueComment)`".
-  - a `reply`, `history` or `sync` call is not one of the adapter's calls, or a `gone` error is not one of the
-    reply call's declared errors.
+  - a `reply`, `history` or `sync` call is not one of the adapter's calls, or a `gone` error is not in
+    `reply.call.errors` (a call's own list, "Errors are per call").
+  - `config` has no `me` of the `{ id, login }` shape.
   - `environment.of` returns a key not in `variables`, or a name breaks the variable rules below.
   - a connection in a `Superagent.declare` names `events` that no `Mapped.kind` of the source produces. A runtime
     `superagent.create` is checked by the same schema and kind list.
@@ -310,15 +371,31 @@ and the door or poll stored. `trigger.receive` does four things, in order:
    not a policy list.
 
 K40's role `listed = Blueprint.role(Account, { actor: { mount: Account.fields.source, id: Account.fields.id }, while: [listed] })`
-then matches because `Account.source` holds the **mount's name** (a text field, not `Source.fields.id`). K40's example
+matches because `Account.source` holds the **mount's name** (a text field, not `Source.fields.id`). K40's example
 wrote `Source.fields.id`; this record fixes it to the mount name, since a mount is what the caller carries
 (`roles/types.ts:18`, `{ kind: "service"; mount }`). One mount serves several superagents, so an Account's key is
-`(superagent, source, id)` and "its listed accounts are its own" holds by the row, not by the mount.
+`(superagent, source, id)`, and the mount and id alone would admit one superagent's listed account for another's call.
+**A GOAL17 refinement of K40 fix 1:** the role also compares the row's `superagent` to the call's own.
+
+```ts
+export const listed = Blueprint.role(Account, {
+  actor: { mount: Account.fields.source, id: Account.fields.id },
+  within: Account.fields.superagent,           // the call's `superagent` must equal this row's: a new key on the role form
+  while: [machine.states.listed],
+});
+// blueprint/things/ticket/verbs/accept.ts: the payload carries both `superagent` and `account`; the compiler refuses an
+// operation that uses `listed.of("account")` and has no `superagent` field to compare
+allowed: [listed.of("account")],
+```
+
+So the caller (mount `github`, id `583231`) is admitted for a call naming the Account row `(sag_A, github, 583231)` only
+when the call's `superagent` is `sag_A`. A listed account of superagent A is never admitted for a call about B, even
+if the payload names A's row. K40's `actor:` text gets a "Superseded by GOAL17-source-from" note beside it.
 
 ### How `environment` reaches the executor without credentials
 
 ```ts
-// intake's `ticket.launch` workflow step, then the sandbox adapter's exec (K40 fixes 4 and 6)
+// the executor's first tool call opens its sandbox (a launch is an Assignment, GOAL17-executor-slots), through the sandbox adapter's exec (K40 fixes 4 and 6)
 const env = source.environment.of(trigger.mapped);        // pure, from stored data only
 yield* sandbox.exec({ sandbox, command, env: { ...env, GH_TOKEN: github.lend({ … }) } })   // the only secret path is `lend`
 ```
@@ -352,7 +429,7 @@ Orthograph's packages once they have worked.
 | Dependent | Why it cares |
 |---|---|
 | Goal 11 (M5.03, `catchUp`) | a typed `events` on `Adapter` and `ViewOf`; `include` of events; `Blueprint.event(…, { id, actor })`; `meta.actor`; the door's `Inbox.accept` storing the actor. This record is the first user of all of them. |
-| Goal 3 (M2.03, K40 fix 1) | the `service` caller's `actor`, and the role form `actor:`. `Account.source` is the mount's name. |
+| Goal 3 (M2.03, K40 fix 1) | the `service` caller's `actor`, and the role form `actor:`, which gains `within`. `Account.source` is the mount's name, and the key is `(superagent, source, id)`. |
 | `17-superagent.md`, slice 4 | the generator emits `events` as typed values with a `MissingEvent` sentinel, and an event's `id` and `actor` slots (by hand); its conformance checks every `reply` and `history` call against the stand-in |
 | Slice 7 (intake handlers) | `trigger.receive`, `account.seen`, `thread.closed` and the gate take `Mapped` and `TriggerView`; journeys call `trigger.receive` directly with a mapped payload |
 | Slice 9 (agents) | `environment.of` and `lend` meet at the sandbox's `exec`; `reply` and `history` are among the included calls an executor holds as tools |
@@ -415,17 +492,17 @@ The lead applied these to the brief with this record.
 
 - `design/goals/17-superagent.md`: "sources/{github,slack,posthog,webhook,timer}.ts         each a Source.from mapping" → "blueprint/sources/{github,slack,posthog,webhook,timer}.ts   each a Source.from mapping"
 - `design/goals/17-superagent.md`: "plugins/intake/sources/github.ts" → "plugins/intake/blueprint/sources/github.ts"
-- `design/goals/17-superagent.md`: "reply: github.calls.issues.createComment," → "reply: { call: github.calls.issues.createComment, args, landed, gone: [github.errors.NotFound] },"
+- `design/goals/17-superagent.md`: "reply: github.calls.issues.createComment," → "reply: { call: github.calls.issues.createComment, args, landed, gone: [NotFound] },"
 - `design/goals/17-superagent.md`: "history: github.calls.issues.listComments," → "history: { call: github.calls.issues.listComments, args, page },"
 - `design/goals/17-superagent.md`: "closed: github.events.pullRequest," → "closed: { pullRequest: (e) => (e.action === "closed" ? `issue/${e.pull_request.number}` : undefined) },"
 - `design/goals/17-superagent.md`: "policyPart: GithubPolicy," → "policyPart: { schema, rows, sync: { call: github.calls.repos.listCollaborators, accounts } },"
-- `design/goals/17-superagent.md`: "environment: (t) => ({ GITHUB_REPOSITORY: t.repository, GITHUB_NUMBER: t.number })," → "environment: { variables, of: (m) => ({ GITHUB_REPOSITORY: m.channel.repository, GITHUB_NUMBER: String(m.channel.number) }) },"
-- `design/goals/17-superagent.md`: "github({ repo: "acme/widgets", events: ["issues", "comments", "reviews", "checks"] })," → "githubSource({ repo: "acme/widgets", me: "github:<the app's bot id>", events: ["issues", "comments", "reviews", "checks"] }),"
-- `design/goals/17-superagent.md`: "slack({ channels: ["#eng"], directMessages: true })," → "slackSource({ channels: ["#eng"], me: "slack:<the app's bot id>", directMessages: true }),"
+- `design/goals/17-superagent.md`: "environment: (t) => ({ GITHUB_REPOSITORY: t.repository, GITHUB_NUMBER: t.number })," → "of: (m) => ({ GITHUB_REPOSITORY: m.channel.repository, GITHUB_NUMBER: String(m.channel.number) }),"
+- `design/goals/17-superagent.md`: "github({ repo: "acme/widgets", events: ["issues", "comments", "reviews", "checks"] })," → "githubSource({ repo: "acme/widgets", me: { id: "<bot id>", login: "<bot login>" }, events: ["issues", "comments", "reviews", "checks"] }),"
+- `design/goals/17-superagent.md`: "slack({ channels: ["#eng"], directMessages: true })," → "slackSource({ channels: ["#eng"], me: { id: "<bot id>", login: "<bot login>" }, directMessages: true }),"
 - `design/goals/17-superagent.md`: "posthog({ project: "web", kinds: ["errorIssue", "alert"] })," → "posthogSource({ project: "web", kinds: ["errorIssue", "alert"] }),"
-- `design/goals/17-superagent.md`: "github({ repo: "acme/widgets", events: ["issues"] })," → "githubSource({ repo: "acme/widgets", me: "github:<the app's bot id>", events: ["issues"] }),"
-- `design/goals/17-superagent.md`: "slack({ channels: ["#triage"] })," → "slackSource({ channels: ["#triage"], me: "slack:<the app's bot id>" }),"
+- `design/goals/17-superagent.md`: "github({ repo: "acme/widgets", events: ["issues"] })," → "githubSource({ repo: "acme/widgets", me: { id: "<bot id>", login: "<bot login>" }, events: ["issues"] }),"
+- `design/goals/17-superagent.md`: "slack({ channels: ["#triage"] })," → "slackSource({ channels: ["#triage"], me: { id: "<bot id>", login: "<bot login>" } }),"
 - `design/goals/17-superagent.md`: "    timer({ every: "1 week"" → "    Source.timer({ every: "1 week""
 - `design/goals/17-superagent.md`: "`Source.from`, the mapping a connection adds to its adapter |" → "`Source.from`, the mapping a connection adds to its adapter, with `Source.timer` (GOAL17-source-from) |"
 
-Dated record, kept as written, with "Superseded by GOAL17-source-from, 22 November 2026" beside it: `K40-superagent-gaps.md` fix 1, `source: Source.fields.id` becomes the mount's name plus a `superagent` field.
+Dated record, kept as written, with "Superseded by GOAL17-source-from, 22 November 2026" beside each change: `K40-superagent-gaps.md` fix 1, `source: Source.fields.id` becomes the mount's name plus a `superagent` field, and the role `actor: { mount, id }` gains `within: Account.fields.superagent`.

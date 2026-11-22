@@ -24,18 +24,19 @@ Two switches can disagree. A person pauses in Settings while the machine says `l
 which one the eval pass, the outbox or a launch asks. And nothing says how a held delivery is held. The tempting way
 is for each operation to refuse while paused. That loses the work: the outbox marks a refusal `refused`, which is
 done and never retried (`M5-reach-out.md:107-109, :204`). The prototype's rule (`003-execution.md`, "Pause
-processing") is that pause stops dispatch, new Evals, Eval timeouts, Input delivery and replies. A launch under way
-waits. Sources keep recording. A running turn is not interrupted. An Eval's deadline moves later by the pause's length.
+processing") is that pause stops dispatch, new Evals, Eval timeouts, Input delivery and replies. A launch waits for its
+seat. Sources keep recording. A running turn is not interrupted. An Eval's deadline moves later by the pause's length.
 
 ## The call
 
 **One switch: the Superagent's state `paused`.** Settings has no `pause`. The person's pause is
 `superagent.pause`, and `resume` is its pair. "Pause everything" in the portal calls `superagent.pause` once per
 superagent. It is not a state, so there is still one switch per superagent. Both moves are for a signed-in person
-only. A main agent may propose neither: pausing stops the agent's own mouth, and only a person may let it speak again.
+only, through a session (`Via.session`): no device or key caller may pause or resume, and a main agent may propose
+neither. Pausing stops the agent's own mouth, and only a person may let it speak again.
 
 **Held work stays as rows and is checked at the door that releases it.** A held kind is never refused and never
-dropped. It waits where it already waits (an outbox row, an eval record, a parked launch), and the door that would
+dropped. It waits where it already waits (an outbox row, an eval record, a pending Assignment), and the door that would
 release it asks the switch first.
 
 ### What the blueprint declares
@@ -63,7 +64,7 @@ one `database` step (`operations/types.ts:48-62`). Their arithmetic is pure and 
 `plugins/superagent/src/modules/pause/` (six slots), so a journey can prove every cell:
 
 ```ts
-// modules/pause/types.ts: pure. Times are the world's clock in ms; uint(64) values are bigint (values/types.ts:37)
+// plugins/superagent/src/modules/pause/types.ts: pure. Times are the world's clock in ms; uint(64) values are bigint (values/types.ts:37)
 export interface PauseClock { readonly pausedAt: bigint | undefined; readonly pausedFor: bigint }
 
 /** How long the superagent has run: the world's clock with every pause taken out. Frozen while paused. */
@@ -79,41 +80,65 @@ export const resuming = (c: PauseClock & { pausedFrom: "observing" | "live" }, n
 
 ### What the app lists as held
 
-Plugins stay independent: `tickets` does not import `superagent`. So the one place that names what the switch holds is
-the app's feature file. Each held kind is an outbox delivery (`event` to `operation`), and its event carries `superagent`.
+Plugins stay independent: `tickets` and `intake` import nothing of `superagent`. So the one place that names what the
+switch holds is the app's feature file. Each entry is one **delivery**: an event and the operation its outbox hop calls.
+Every event named here carries `superagent`, which becomes the row's `hold`. The names are the brief's event list
+(`17-superagent.md`, "Its events"); this record makes `EvalDelivered` and `ReplyQueued`, and GOAL17-executor-slots
+makes the rest.
 
 ```ts
 // examples/superagent/blueprint/features/superagent.ts
 export const pausable = processing.holds({
-  held: [                                                        // the row stays `pending`; the drain skips it
-    { event: intake.events.EvalQueued,      to: agents.operations.tell,    superagent: (e) => e.superagent },  // evals to the main agent
-    { event: tickets.events.InputQueued,    to: agents.operations.tell,    superagent: (e) => e.superagent },  // inputs to executors
-    { event: tickets.events.ReplyQueued,    to: tickets.operations.send,   superagent: (e) => e.superagent },  // replies and acknowledgements
-    { event: tickets.events.LaunchRequested, to: tickets.operations.launch, superagent: (e) => e.superagent }, // executor launches
+  held: [                                                    // the row stays `pending`; the drain skips it
+    { event: intake.events.EvalStarted,        to: eval.operations.delivered },        // starts the eval's clock, so it waits
+    { event: intake.events.EvalDelivered,      to: agent.operations.tell },            // the eval, told to the main agent
+    { event: tickets.events.InputRouted,       to: agent.operations.tell },            // any message, a person's too, to a running executor
+    { event: tickets.events.AssignmentQueued,  to: superagent.operations.fill },       // a waiting Assignment gets a seat only through fill
+    { event: tickets.events.AssignmentEnded,   to: superagent.operations.fill },       // a freed seat is not refilled
+    { event: tickets.events.AssignmentStarted, to: agent.operations.tell },            // a launch or a wake: the Input that woke it
+    { event: tickets.events.AssignmentStarted, to: input.operations.route },       // the other Inputs that waited for the seat
+    { event: tickets.events.ReplyQueued,       to: outgoingMessage.operations.send },  // replies and acknowledgements
   ],
-  unheld: [                                                      // each one says why it is not held
-    { event: intake.events.TriggerReceived,  reason: "sources keep recording" },
-    { event: superagent.events.SuperagentResumed, reason: "the event that ends the hold" },
-    { event: superagent.events.SuperagentPaused,  reason: "tells the portal" },
+  unheld: [                                                  // each says why it is not held
+    { event: tickets.events.InputStored,          to: input.operations.route,      reason: "rows only: routes an Input or queues an Assignment; the tell and the seat stay held" },
+    { event: agents.events.AgentIdled,            to: assignment.operations.turnEnded, reason: "a turn that ends during a pause gives its seat back; fill stays held" },
+    { event: intake.events.TriggerReceived,       to: input.operations.store,          reason: "sources keep recording; the Input's tell stays held" },
+    { event: superagent.events.SuperagentCreated, to: eval.operations.due,              reason: "starts the eval pass; a new superagent is never paused" },
+    { event: superagent.events.SuperagentResumed, to: eval.operations.due,              reason: "the event that ends the hold" },
+    { event: superagent.events.SuperagentResumed, to: superagent.operations.fill,       reason: "the event that ends the hold" },
   ],
 });
 ```
 
-The compiler refuses the app when a delivery's event carries `superagent` and is in neither list, so a new kind of
-work cannot slip past the pause. It also refuses a `held` row whose event is one of the hold thing's own moves
-(`SuperagentResumed` held would deadlock the resume), and a hold whose thing lives in another store than the
-producing thing. That is the same rule as "writes to two stores" (`operations/types.ts:15`). Every held kind above
-fans out from the default database (`M5-reach-out.md:117-121`: all fan-out runs from D1), where the Superagent
-lives, because it declares no `lives`.
+**`agent.tell` has no other door.** It is `allowed: [Blueprint.system]` and runs only as the `to` of an outbox hop. The
+compiler refuses a handler or step that calls it, so a person's message to a running executor, a launch's first Input
+and an eval all reach an agent through a held hop. `reap` is unheld too: it ends only the Assignment of an executor
+that is already idle, so it moves no work. The seat sweep and the eval pass are `Timers` chains, not hops, so the lists
+do not name them; the table below says what each does.
+
+`AgentIdled` is `@orthograph/agents`' own event and names no superagent, so it is listed with a NULL `hold`: a listed
+event needs no `superagent` field. The compiler refuses the app when a delivery (event and `to`) whose event carries
+`superagent` is in neither list, or
+when one event has deliveries on both lists (the unheld work then needs its own event). A new kind of work cannot slip
+past the pause, and the lists cannot disagree about one event. Other deliveries of events that carry `superagent`
+(`TicketEnded`'s, say) are added to a list by the slice that declares them; this record lists every one the four seam
+records introduce. It also refuses a `held` row whose event is one of the hold thing's own moves (`SuperagentResumed`
+held would deadlock the resume), and a hold whose thing lives in another store than the producing thing. That is the
+same rule as "writes to two stores" (`operations/types.ts:15`). Every held kind above fans out from the default
+database (`M5-reach-out.md:117-121`: all fan-out runs from D1), where the Superagent lives, because it declares no
+`lives`.
 
 ### How each held kind checks the switch
 
 | Work | Held where | What a person sees while paused |
 |---|---|---|
-| Eval delivery to the main agent, input delivery to executors, replies, acknowledgements | the outbox drain's claim | rows stay `pending`; `attempts` does not grow; replies keep their order |
-| Executor launches | the same claim for the first hop. Each later step runs `launch.gate`: if paused, `activity.await(SuperagentResumed, { match: { superagent } })` | a launch not yet taken waits; one under way parks at its next step and keeps its slot (see executor slots) |
-| The eval pass (batching, expiry, waking an ended ticket) | one `Timers.at` chain, ended while paused | no new Eval; no Eval times out; a person's message to an ended ticket waits |
-| Trigger recording, source polling, `positionAdvanced` | not held | triggers keep arriving |
+| Evals: `EvalStarted` to `eval.delivered`, `EvalDelivered` to `agent.tell` | the outbox drain's claim | rows stay `pending`; `attempts` does not grow; no Eval is delivered, so none has a clock yet |
+| A message to a running executor, from anyone: `InputRouted` to `agent.tell` | the same claim | the Input is stored and waiting; it is told on resume, in order per executor |
+| Launches and wakes: `AssignmentQueued` and `AssignmentEnded` to `fill`; `AssignmentStarted` to `agent.tell` and `input.route` | the same claim | an Assignment stays `pending` and takes **no seat**; seats already held stay held; there is no half-done launch to park |
+| Replies, acknowledgements: `ReplyQueued` to `send` | the same claim | rows stay `pending`; replies keep their order |
+| The eval pass (batching, expiry, waking an ended ticket) | one `Timers.at` chain, ended while paused | no new Eval; no Eval times out; a person's message to an ended ticket waits as an Input |
+| The seat sweep (`reap`, then `fill`), every 30 s | a `Timers.at` chain; `fill` reads the switch on its first line | `reap` frees idle seats; `fill` starts nothing |
+| Bookkeeping in `unheld`: Inputs routed or Assignments queued, a finished turn's seat freed, triggers recorded, source polling, `positionAdvanced` | not held | rows are written as always; the line of waiting Assignments grows |
 | A turn already running, a person's `stop`, `retry`, `dismiss` | not held | a running turn is not interrupted; a person can still act |
 
 **The outbox.** `_outbox` (`M5-reach-out.md:60-71`) gains one column, `hold`, written with the row at fan-out. It is
@@ -141,7 +166,7 @@ returning the superagent, so the next claim takes every due row, in `(to, subjec
 outbox row, so the post-commit kick fires. The once-a-minute Cron is the backstop (`M5-reach-out.md:111-116`).
 
 **The eval deadline.** An Eval stores no deadline. It stores `activeAtStart` (the active clock when `eval.delivered`
-ran) and `timeoutMs`. It is expired when the superagent has run `timeoutMs` since then:
+ran, a held hop) and `timeoutMs`. It is expired when the superagent has run `timeoutMs` since then:
 
 ```ts
 // modules/pause/types.ts, continued
@@ -157,19 +182,22 @@ So the deadline "moves later by the pause's length" without any row being rewrit
 a 60 s eval gives a deadline of 360, and a second pause adds its own length again. The pass is the only reader:
 
 ```ts
-// plugins/intake/src/modules/evals/service.ts: one pass, then the next. Timers decides when; nothing sleeps by itself
+// plugins/intake/src/modules/evals/service.ts: one pass, then the next. Timers decides when; nothing sleeps by itself.
+// `Supers` is a port intake declares (types.ts) and the app implements from superagent's `pause` module: `get`, and
+// `expired`, the function above. Intake imports no other plugin.
 export const pass = (superagent: SuperagentId): Effect.Effect<void, never, Timers | Supers | Evals> =>
   Effect.gen(function* () {
     const timers = yield* Timers;
     const now = BigInt(yield* Clock.currentTimeMillis);
-    const sa = yield* (yield* Supers).get(superagent);
+    const supers = yield* Supers;
+    const sa = yield* supers.get(superagent);
     if (sa.state === "paused" || sa.state === "retired") return;          // not re-armed: resume arms it
     yield* (yield* Evals).batch(superagent);                                // waiting triggers become Evals
-    yield* (yield* Evals).expire(superagent, (e) => expired(e, sa, now));   // `delivered` and not decided in time
+    yield* (yield* Evals).expire(superagent, (e) => supers.expired(e, sa, now));   // `delivered` and not decided in time
     yield* timers.at(Number(now) + 2_000, owner(superagent), "evals.due", pass(superagent));
   });
 
-// armed by SuperagentCreated and SuperagentResumed (both unheld); once only, because Timers.pending lists the owner's timers
+// armed by `eval.due`, the unheld delivery of SuperagentCreated and SuperagentResumed; once only, because Timers.pending lists the owner's timers
 export const arm = (superagent: SuperagentId) => Effect.gen(function* () {
   const timers = yield* Timers;
   if ((yield* timers.pending).some((t) => t.owner === owner(superagent) && t.name === "evals.due")) return;
@@ -184,9 +212,19 @@ not move a timer. It reads stored fields each time and stops re-arming while pau
 ### What is recorded
 
 - `SuperagentPaused { superagent, from, at }` and `SuperagentResumed { superagent, to, at, length }`, each in the
-  journal with its own outbox row, so the Overview page and `Health` can show "paused since …, N held".
-- Nothing per held row. `superagent.health` (the derived-reads seam) adds `held: { replies, inputs, evals, launches }`,
-  counted from `_outbox` rows the view hides. `GET /_world/outbox` (`M5-reach-out.md:230`) lists the same rows as `pending`.
+  journal with its move. Only `SuperagentResumed` has deliveries (both unheld, above).
+- Two events this record adds, both through the outbox and both held:
+
+  ```ts
+  // plugins/intake/blueprint/things/eval/events.ts: `eval.delivered`'s move; its hop tells the main agent
+  export const EvalDelivered = Blueprint.event({ superagent: Superagent.fields.id, eval: Eval.fields.id });
+  // plugins/tickets/blueprint/things/outgoing-message/events.ts: `reply`'s move; its hop sends the message
+  export const ReplyQueued = Blueprint.event({ superagent: Superagent.fields.id, ticket: Ticket.fields.id, message: OutgoingMessage.fields.id });
+  ```
+- Nothing per held row, and no count of held work anywhere a read could reach. The Overview shows a paused
+  superagent from the Superagent's own `state` and `pausedAt`, which `superagent.health` answers beside its problems
+  (GOAL17-derived-reads): a read of records only, with no `held` counts. An operator who wants the held rows has
+  `GET /_world/outbox` (`M5-reach-out.md:230`), which lists them as `pending`.
 - No `EvalExpired` is added. An Eval that times out still ends `unavailable`, as it does today.
 
 ### A kill during a pause loses nothing
@@ -194,10 +232,10 @@ not move a timer. It reads stored fields each time and stops re-arming while pau
 | Piece | Where it lives | Why a kill cannot lose it |
 |---|---|---|
 | The pause | the Superagent row, with `SuperagentPaused`, in one commit | all or nothing (`K3-stores-and-sources.md:29`) |
-| A held reply, input, eval or launch | an `_outbox` row written in the commit of the move that produced it | the row is the work; no fiber holds a copy (`M5-reach-out.md:87`) |
+| A held hop (a reply, a message, an eval, a seat or a first Input) | an `_outbox` row written in the commit of the move that produced it | the row is the work; no fiber holds a copy (`M5-reach-out.md:87`) |
 | A trigger that arrives meanwhile | a Trigger row, idempotent by source and event | recorded as always |
 | An eval's remaining time | `activeAtStart`, `timeoutMs`, `pausedFor` | no timer holds it; the pass recomputes |
-| A parked launch | an `await` row on `SuperagentResumed` (`M5-reach-out.md:272-276`) | the engine owns it |
+| A launch not yet seated | an Assignment `pending`, with its `AssignmentQueued` row held | it holds no seat, so a kill leaves nothing half done |
 | The eval pass | a `Timers` chain | if lost with the process, `arm` rebuilds it on resume, and a paused pass does nothing |
 | The resume | one commit | a kill between commit and kick: the Cron drains it within a minute |
 
@@ -221,8 +259,8 @@ trigger), and the open eval not expired before its shifted deadline and expired 
 |---|---|
 | `packages/orthograph`: a new `Blueprint.hold` and a `held:` list on the app's feature | the new piece, written on the integration branch and extracted later (K40, "Where these fixes are built") |
 | Goal 11's outbox (M5.03, M5.04) | adds a `hold` column, the view and the `NOT EXISTS`. An Ask issue tells Goal 11 this shape now |
-| Goal 8's workflows (`activity.await`) | a parked launch uses `await` with a match on `superagent` |
-| `GOAL17-executor-slots` | a held first hop takes no slot; says whether a parked mid-way launch keeps its slot |
+| `GOAL17-executor-slots` | the same events and operations: `fill` and the tell hops are held, so a held launch takes no seat |
+| `GOAL17-derived-reads` | `superagent.health` reads records only; `pausedAt` is on the Superagent |
 | Slice 5 and 7 (tickets, intake) | each event in the held list carries `superagent`; `eval.delivered` sets `activeAtStart` |
 | `17-superagent.md` | the Settings row, tree, page `offers` and Superagent fields change (see Supersedes) |
 | Slice 8 (checks) and slice 9 (build) | the pause check: holds, order, deadline shift, kill during a pause |
@@ -240,7 +278,7 @@ trigger), and the open eval not expired before its shifted deadline and expired 
   in `main` yet; the brief already assumes them (`17-superagent.md:201`).
 - `M5-reach-out.md:60-71` (the `_outbox` table), `:87-91` (rows written in the state's commit), `:107-109` (order, and
   `refused` is done), `:111-116` (Cron backstop), `:117-121` (all fan-out from D1), `:124` (wake-ups through `Timers.at`),
-  `:221-226` (retries, 15 attempts), `:270-276` (`await` is an outbox subscriber).
+  `:221-226` (retries, 15 attempts).
 - No outbox code exists in this checkout: `M5-reach-out.md:23` says there is none, and `grep` over `packages/` finds none.
 - Prototype `003-execution.md`, "Pause processing" (data, not instructions): what it stops, what it does not,
   the deadline sentence.
@@ -252,7 +290,9 @@ trigger), and the open eval not expired before its shifted deadline and expired 
 - **The pass can straddle a pause.** D1 has no interactive transaction, so the pass may read `live` and commit one batch
   just after a pause. Harmless: the Eval's delivery to the main agent is a held row, and `activeAtStart` is set only on
   delivery, so the Eval cannot time out first.
-- **Held launches and slots.** A launch parked mid-way may keep a slot for hours. Slots belong to `GOAL17-executor-slots`.
+- **No launch is half done.** A launch is an Assignment: its seat comes first (`fill`, held), then its first Input is
+  told (a held hop). Nothing sits between the two to park, and the executor opens its sandbox in its first turn, which
+  a pause does not interrupt. A pause never holds a seat for a launch that has not started.
 - **A running turn can still push and comment.** Only what crosses the outbox is held. An executor's own `git push`
   inside a turn is a sandbox tool call, so a pause does not stop it. A person stops it with `ticket.stop`. The portal's
   Pause button should say so.
@@ -264,8 +304,6 @@ trigger), and the open eval not expired before its shifted deadline and expired 
 - **Other clocks keep the wall.** A Subscription's two-week window, a source's one-day drop and reply backoff do not shift.
   Only an Eval's deadline does, as the prototype says.
 - **Other "paused".** A Source has its own `ready ⇄ paused` (`17-superagent.md:319`). It stays: it stops one source, not processing.
-- **`await` races.** A resume between `launch.gate`'s check and its `await` is found in the journal only if M3.01 keeps
-  `M5-reach-out.md:278-279`'s rule (an event before the wait is not lost). If it does not, the gate reads the state again after registering.
 
 ## Supersedes
 
@@ -277,3 +315,5 @@ The lead applied these to the brief with this record.
 - `design/goals/17-superagent.md`: "to: "paused" },            // sources keep recording" → "to: "paused", emits: SuperagentPaused },   // holds evals, launches, deliveries and replies (GOAL17-pause); sources keep recording"
 - `design/goals/17-superagent.md`: "to: ["observing", "live"] },          // back to pausedFrom" → "to: ["observing", "live"], emits: SuperagentResumed },   // back to pausedFrom; adds the pause to pausedFor"
 - `design/goals/17-superagent.md`: "`evals.due` (system, every 2 s unless paused)" → "`evals.due` (system, every 2 s; not re-armed while the superagent is paused)"
+- `design/goals/17-superagent.md`: "Its events: `superagentCreated`, `triggerReceived`, `triggerRequeued`, `evalStarted`, `decisionRecorded`," → "Its events: `superagentCreated`, `superagentPaused`, `superagentResumed`, `triggerReceived`, `triggerRequeued`, `evalStarted`, `evalDelivered`, `decisionRecorded`,"
+- `design/goals/17-superagent.md`: "system problems; 24-hour counts; executor load." → "system problems; whether it is paused, from `pausedAt`; 24-hour counts; executor load."

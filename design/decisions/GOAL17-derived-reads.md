@@ -16,7 +16,7 @@ Goal 17's pages, its generated CLI, its MCP and its agents all need four answers
 |---|---|---|
 | `ticket.stage` | one ticket's row of the stage table: who it waits for, and why | seven rows, first match wins, over the ticket's newest Report, Assignment, Attention and Inputs (prototype `003`, lines 9 to 17) |
 | `ticket.waiting` | every ticket whose stage is a person's | the same table, over every ticket of one superagent |
-| `superagent.health` | each source's, kind of stored work's and channel's problems, shown after three failures in a row | the counts sit on records in three plugins |
+| `superagent.health` | each source's and each channel's problems, shown after three failures in a row, and whether the superagent is paused | the counts sit on records in two plugins (Source, OutgoingMessage), and `pausedAt` on the Superagent |
 | `superagent.proposals` | proposals waiting for a person | stored, but a page can't pin `state: "waiting"` (see "Proposals, named") |
 
 Today `Blueprint.read` has two forms, and both answer from one thing's own fields:
@@ -82,8 +82,8 @@ export interface Look<T extends Thing = Thing> {
   readonly take: "newest" | "all";
   readonly max: number;                        // 1 for newest; at most this many for all (1 to 100)
 }
-/** A found record: its fields, its state, and `at`, its place in the order records were made (never a clock). */
-export type Found<T extends Thing> = InstanceOf<T> & { readonly at: number };
+/** A found record: its fields and its state. Order between two things is a stored `seq`, never a clock and never a rowid. */
+export type Found<T extends Thing> = InstanceOf<T>;
 
 export interface Derive<R extends Thing, L extends { readonly [name: string]: Look }, A extends FieldsInput> {
   readonly kind: "derive";
@@ -145,9 +145,27 @@ export const stageOf = (t: InstanceOf<typeof Ticket>, f: Facts): StageRow =>
   : f.assignment === undefined || f.assignment.state === "pending" ? row("working", "queued", "Queued")
   : f.report?.state === "waiting" || f.assignment.state === "ended" ? row("idle",   "none",     "Waiting for a Trigger")
   :                                                              row("working", "none",     "Working");
-// "no person's message since" is a comparison of places, never of times:
-const blockedSince = (f: Facts) => (f.report?.state === "blocked" || f.report?.state === "failed") && !(f.person !== undefined && f.person.at > f.report.at);
+// "no person's message since the report" compares the `seq` each record stored, never a time and never a rowid
+// (a rowid counts one table, so an Input's and a Report's cannot be put in order):
+const blockedSince = (f: Facts) => (f.report?.state === "blocked" || f.report?.state === "failed") && !(f.person !== undefined && f.person.seq > f.report.seq);
 ```
+
+**How two tables are put in order: `seq`.** A rowid counts one table, so an Input's and a Report's cannot be compared.
+Ticket gets a per-ticket sequence, bumped in the same commit as each Input and each Report, and each of those stores
+the value it was given:
+
+```ts
+// plugins/tickets/blueprint/things/ticket/thing.ts, input/thing.ts, report/thing.ts
+seq: Blueprint.uint(64),    // Ticket: the last number given, 0 at accept. Input and Report: the number this record was given
+// input.store, ticket.report and ticket.accept: one `database` step writes Ticket.seq + 1 and the record, with that value, in the commit
+```
+
+Two writers on one ticket race on the Ticket row's version. The loser's commit conflicts and the call runs again
+(`host-cloudflare/src/modules/store/internal/commit.ts:39`), reads the new `seq` and takes the next, so no two records
+of one ticket share a `seq`, and a person's Input is later than a Report exactly when its `seq` is larger. The prototype
+also clears "Input undelivered" on a success, a new Assignment or the Ticket's end. `undelivered` looks for the newest
+Input in `failed`, which is enough: a success moves the Input to `delivered`, a new Assignment's `input.route` moves a
+failed Input back to `waiting` (the retry), and an ended ticket is the table's first row.
 
 ```ts
 // plugins/superagent/blueprint/things/superagent/derive.ts + verbs/health.ts
@@ -156,7 +174,8 @@ export const Health = Blueprint.derive(Superagent, {
   adds: { problems: Blueprint.list(Problem), more: Blueprint.bool() },   // Problem: { kind, id, name, failures }, names and ids only
   is: healthOf,                                  // keeps each watched record whose failures reached its `after`
 });
-export default Blueprint.read(Superagent, { by: "id", fields: ["name", "state"], derive: Health,
+// `pausedAt` is the Superagent's own field: Overview says "paused since …" from it, and health holds no count of held work
+export default Blueprint.read(Superagent, { by: "id", fields: ["name", "state", "pausedAt"], derive: Health,
   allowed: [Blueprint.signedIn, itsMain], budget: { p95: "200 millis" } });
 
 // each plugin names what can fail, beside the thing, and never imports superagent's health
@@ -167,6 +186,18 @@ export default Blueprint.problem(Source, { kind: "source", of: Source.fields.sup
 export default Blueprint.problem(OutgoingMessage, { kind: "channel", of: OutgoingMessage.fields.superagent, name: OutgoingMessage.fields.id,
   failures: OutgoingMessage.fields.failures, after: 3 });
 ```
+
+**Where each count lives.** A derive reads records, so every count is a field of a record. `Source.failures` counts polls
+failed in a row (the brief's Source row), written in the commit of the failed poll and zeroed by a success; `failAfter`
+is 3 by default. `OutgoingMessage.failures` is written in the commit of each failed `send` and zeroed by a sent one.
+The outbox already has `_outbox.attempts`, and the two are not the same fact written twice. `attempts` is the host's own
+retry count of one delivery (5 s doubling to 300 s, a dead end at 15: `M5-reach-out.md:221-226`). It lives in a host
+table, which a derive cannot read (`Store.list` lists things, not `_outbox`), and `ortho outbox redeliver` resets it.
+`failures` is the count a person reads, "this message failed three times in a row", and a record a
+derive can look at. Retry reads `attempts`; health reads `failures`; neither feeds the other.
+
+**What health does not hold.** No count of held work, and no outbox row: a paused superagent shows from its own
+`state` and `pausedAt` (GOAL17-pause), and an operator reads held rows from `GET /_world/outbox`.
 
 ```ts
 // plugins/superagent/blueprint/things/proposal/verbs/waiting.ts: a stored list, no derive
@@ -201,17 +232,8 @@ events, and its rows hold only fields the events carry. That makes the stage a s
 and it waits for Goal 11. It is the right tool at a scale this app doesn't have. Because `derive:` names looks and a
 function, not how they run, a view can back one later with no change to a blueprint. Risk 2 is the trigger.
 
-**The store change.** One, small. `Listed` gains `ranks`, the rowid the store already selects and drops:
-
-```ts
-// packages/host-cloudflare/src/modules/store/internal/list.ts:22,25 (today)
-SELECT rowid AS "_cursor", * FROM …                      return { items, next: rows.length > limit ? String(kept[kept.length - 1]!["_cursor"]) : null };
-// after
-return { items, ranks: kept.map((r) => Number(r["_cursor"])), next: … };       // records/types.ts:56's `Listed` gains `ranks`
-```
-
-A look's `at` is its rank, which is how "no person's message since the report" is a comparison of places and never
-of clocks (`Order`'s own rule, `operations/types.ts:97`).
+**No store change.** A derive needs no rank from the store. The only order it compares across tables is `seq`, a
+stored field, so `Listed` stays as it is.
 
 ### 5. How it reaches the portal, CLI, MCP and an agent without being written four times
 
@@ -231,13 +253,13 @@ the function.
 
 ### 6. How it pages
 
-The cursor stays what it is: the rowid of the last root scanned (`read.ts:27`, `CURSOR`). A derived list works in
-three steps, in `byList`:
+The cursor stays what it is: the store's own `next` for the list of roots (`read.ts:27`, `CURSOR`). A derived list works
+in steps, in `byList`:
 
-1. take a batch of roots from the store with `where` (stored fields) and `state`, from `after`;
-2. for each root, run its looks (store queries on `by`), then `is`; drop rows `only` or a derived `where` rejects;
-3. stop when `page` rows are kept, or `scan` roots are read (default 200, at most 1000), or the roots end. `next` is
-   the rank of the last root read when more follow, else null.
+1. take one store page of roots (`page` of them) with `where` (stored fields) and `state`, from `after`;
+2. for each root, run its looks (store queries on `by`), then `is`; keep the rows `only` or a derived `where` accepts;
+3. stop when at least one row is kept, or `scan` roots have been read (default 200, at most 1000), or the roots end.
+   `next` is the store's `next` after the last page read, or null when the roots end.
 
 So **a page may hold fewer rows than `page` and still have a `next`** when a filter such as `stage = person` rejects
 most roots. A caller keeps going until `next` is null; the portal's piece loops, and the generated CLI prints `next` for the caller to pass back. A by-id derived
@@ -275,7 +297,7 @@ list with a pinned state needs only `only`.
 |---|---|---|---|
 | Floor-first | ✅ ships the read, in every door, on today's stores | ❌ waits for Goal 11's outbox and rebuild | ✅ works today |
 | Reversibility | ✅ one word on a read; a view can back it later | ⚠️ a table and a rebuild to undo | ✅ |
-| Blast radius | ⚠️ `orthograph`, compiler, one store field | ❌ a new declaration, host table, CLI | ✅ none |
+| Blast radius | ⚠️ `orthograph`, compiler, the read handler | ❌ a new declaration, host table, CLI | ✅ none |
 | Correctness | ✅ never stored, so never stale against records; pure, checkable | ⚠️ a stored copy, event-fed | ❌ not marked read-only; a handler may write; MCP asks approval |
 | Parallelizable | ✅ stage, health and proposals each a file | ⚠️ | ✅ |
 | Fit | ✅ reads are already served, checked, shown | ⚠️ events lack the fields | ⚠️ pages show it as an offer |
@@ -286,8 +308,9 @@ list with a pinned state needs only `only`.
 |---|---|
 | `packages/orthograph` | `operations/types.ts:116-166` gains `derive`, `only`; new `derive` module (`Blueprint.derive`, `newest`, `all`, `problem`, `problems`) |
 | `packages/compiler` | `describe.ts:223-241` (`readModel`) records `derive`; five new refusals: a look's `by` is not the root's id, a look at an actor thing (as `describe.ts:227`), an `adds` name that is a stored field, `where` names neither, `max` outside 1 to 100 |
-| `packages/language-effect` | `handler/internal/read.ts:32-56` runs looks and `is`; `records/types.ts:56` `Listed.ranks` |
-| `packages/host-cloudflare` | `store/internal/list.ts:22-25` returns the ranks |
+| `packages/language-effect` | `handler/internal/read.ts:32-56` runs looks and `is` |
+| `@orthograph/tickets` | `Ticket.seq`, and `seq` on Input and Report, bumped in the commit that makes each |
+| `GOAL17-pause` | `superagent.health` carries no `held` counts; `pausedAt` is read from the Superagent |
 | SDK, CLI, MCP, docs | nothing written: they read the model's `answer` |
 | Goal 6 (portal map) | none; its Ask (the lead files it) says "tickets by stage" is a read, not a page's own query |
 | Goal 10 (agents, M4.07) | none; `toolsOf` already takes reads as MCP does |
@@ -298,7 +321,8 @@ list with a pinned state needs only `only`.
 
 - Reads today: `operations/types.ts:116-134`, `operations/service.ts:25-54` (`idRead`, `listRead`), `read.ts:27-56`.
 - The doors take reads already: `server.ts:112`, `sdk.ts:87`, `cli.ts:85, :125`, `tool.ts:25, :83`, `describe.ts:238`.
-- A list is D1 only, in rowid order: `records/types.ts:72`, `host-cloudflare/src/modules/store/service.ts:37-42`, `list.ts:22-25`.
+- A list is D1 only, in rowid order, and a conflict runs the call again: `records/types.ts:72`,
+  `host-cloudflare/src/modules/store/service.ts:37-42`, `list.ts:22-25`, `store/internal/commit.ts:39`.
 - Goal 6 reads payload fields only: `checks.ts:42, :50` on `origin/goal-6/app-projection-build`; `MAP-language.md` point 4.
 - The prototype's own rules, read as data: stage table `docs/003-execution.md:9-17`; "each kind of work reports an error
   only after one item failed three times in a row", `:159`; a source "after three failed polls in a row by default",
@@ -308,10 +332,14 @@ list with a pinned state needs only `only`.
 
 ## Open risks
 
-1. **A failing count must live on a record.** A derive sees things, not host tables (`Store.list`). Source,
-   OutgoingMessage and Assignment can carry `failures`, written in the same commit as the failure and zeroed by the
-   success. A kind of stored work with no record (an `agent.tell`, a `Timers` wait) needs a counter on the thing it is
-   about, or its problem can't be shown. Slice 5 names each; none is read from the outbox.
+1. **A failing count must live on a record.** A derive sees things, not host tables (`Store.list`). Source and
+   OutgoingMessage carry `failures`, written in the same commit as the failure and zeroed by the success. A kind of
+   stored work with no record of its own (an `agent.tell` that cannot be told, a `Timers` wait) needs a counter on the
+   thing it is about, or its problem can't be shown: Input's `deliveryFailed` and an Eval's `unavailable` already show
+   as the stage's "Input undelivered" and on the Eval page, and slice 5 adds a `Blueprint.problem` for any more. None is
+   read from the outbox.
+7. **`seq` makes a ticket's records contend.** Every Input and Report writes the Ticket row, so two arriving together
+   conflict once and run again. That is a cost per ticket, never across tickets.
 2. **N+1.** A page of 50 tickets with five looks is up to 250 small D1 reads. The declaration doesn't change when
    the cost does: a look can take the batch's ids in one query (`whereIn`), and a view can back the read (Option B).
    `budget` and slice 6's check on 500 tickets catch it first.
@@ -331,6 +359,13 @@ The lead applied these to the brief with this record.
 - `design/goals/17-superagent.md`: "`proposals` (person: those waiting)" → "`proposal.waiting` (a read of those waiting, GOAL17-derived-reads)"
 - `design/goals/17-superagent.md`: "derived read, tickets | `ticket.waiting` lists" → "derived read, tickets | `ticket.stage` reads one ticket's row of the stage table; `ticket.waiting` lists"
 - `design/goals/17-superagent.md`: "superagent.operations.proposals" → "proposal.operations.waiting"
-- `design/goals/17-superagent.md`: "blueprint/things/ticket/verbs/stage.ts  the stage table, a derived read" → "blueprint/things/ticket/derive.ts       the stage table, once"
+- `design/goals/17-superagent.md`: "shows: [tickets.operations.waiting," → "shows: [ticket.operations.waiting,"
+- `design/goals/17-superagent.md`: "offers: [tickets.operations.stop, tickets.operations.retry," → "offers: [ticket.operations.stop, ticket.operations.retry,"
+- `design/goals/17-superagent.md`: "blueprint/things/ticket/verbs/stage.ts  the stage table, a derived read" → "blueprint/things/ticket/derive.ts       the stage table, once; verbs/{stage,waiting}.ts its two reads (GOAL17-derived-reads)"
 - `design/goals/17-superagent.md`: "| `Source.from`, executor slots, pause, derived reads |" → "| `Source.from` and `Source.timer`, executor slots, `Blueprint.hold` for pause, `derive:`, `only:` and `Blueprint.problem` for derived reads |"
 - `design/goals/17-superagent.md`: "`Superagent.declare`, and proposals |" → "`Superagent.declare`, proposals, and slice 2's forms"
+- `design/goals/17-superagent.md`: "each source's, each kind of stored work's and each channel's problems, shown once one has failed three times in a row |" → "each source's and each channel's problems (each a record's `failures` count), shown once one has failed three times in a row; a paused superagent shows from its own `pausedAt` |"
+- `design/goals/17-superagent.md`: "| Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off` |" → "| Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off`; `failures` counts polls failed in a row and a success zeroes it, `failAfter` is 3 (GOAL17-derived-reads) |"
+- `design/goals/17-superagent.md`: "| Ticket | thing, tickets; `open → ended → open`, `stopped` |" → "| Ticket | thing, tickets; `open → ended → open`, `stopped`; `seq`, a count bumped in the commit of each Input and Report (GOAL17-derived-reads) |"
+- `design/goals/17-superagent.md`: "| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped |" → "| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped; each with `seq`, the ticket's count when it was made (GOAL17-derived-reads) |"
+- `design/goals/17-superagent.md`: "| Outgoing message | thing, tickets; `pending → sent`, `dropped` |" → "| Outgoing message | thing, tickets; `pending → sent`, `dropped`; `failures` counts sends failed in a row and a sent one zeroes it (GOAL17-derived-reads) |"
