@@ -57,7 +57,8 @@ const jobEnv = (extra: Record<string, string>) => ({ ...Object.fromEntries(Objec
 
 const post = (path: string, body: unknown, authorization?: string, method = "POST") => fetch(`${logbook}${path}`, { method, headers: { connection: "close", "content-type": "application/json", ...(authorization === undefined ? {} : { authorization }) }, body: JSON.stringify(body) });
 const rows = () => fetch(`${logbook}/verdicts`).then((r) => r.json() as Promise<Array<Record<string, unknown>>>);
-const verdict = (operation: string) => ({ revision: "abc1234", environment: "test", operation, verdict: "pass" });
+/** A verdict for the revision that was proved: whether a token may post one for any other revision is not pinned either way (issue #503). */
+const verdict = (operation: string) => ({ revision, environment: "test", operation, verdict: "pass" });
 const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString("base64url");
 
 beforeAll(async () => {
@@ -175,17 +176,18 @@ describe("03: a pull request's verdicts are signed with GitHub's token (M7.05), 
       expect(await rows()).toEqual(before);
     });
 
-    it("refuses what a pull request's token must not do: record a production release (the same token may put its revision's model)", async () => {
-      const token = await mint(issuer, "pr");
-      expect((await post("/models/abc1234", { a: 1 }, `Bearer ${token}`, "PUT")).status).toBe(200);
-      const res = await post("/releases", { version: "1.0.0", revision: "abc1234" }, `Bearer ${await mint(issuer, "pr")}`);
+    // The model of a release's revision is put by the main workflow's token; what a pull request's token may put or post for another revision is #503's question, and is not pinned here.
+    const MODEL = "feedbee";
+    it("refuses what a pull request's token must not do: record a production release", async () => {
+      expect((await post(`/models/${MODEL}`, { a: 1 }, `Bearer ${await mint(issuer, "main-release")}`, "PUT")).status).toBe(200);
+      const res = await post("/releases", { version: "1.0.0", revision: MODEL }, `Bearer ${await mint(issuer, "pr")}`);
       expect(res.status, "a pull request's token recorded a release").toBe(403);
       expect((await fetch(`${logbook}/releases/latest`)).status).toBe(404);
     });
 
     it("takes the release workflow's token on main for that release", async () => {
-      expect((await post("/models/abc1234", { a: 1 }, `Bearer ${await mint(issuer, "main-release")}`, "PUT")).status).toBe(200);
-      const res = await post("/releases", { version: "1.0.1", revision: "abc1234" }, `Bearer ${await mint(issuer, "main-release")}`);
+      expect((await post(`/models/${MODEL}`, { a: 1 }, `Bearer ${await mint(issuer, "main-release")}`, "PUT")).status).toBe(200);
+      const res = await post("/releases", { version: "1.0.1", revision: MODEL }, `Bearer ${await mint(issuer, "main-release")}`);
       expect(res.status, await res.text()).toBe(200);
     });
 

@@ -29,22 +29,24 @@ const SNAPSHOT = (name: string) => `node e2e/staging/leftovers.mjs snapshot "$EV
 const cond = (step: Step) => (step.if === undefined ? undefined : String(step.if).replace(/^\s*\$\{\{\s*|\s*\}\}\s*$/g, "").trim());
 
 type Step = Record<string, unknown> & { id?: string; name?: string; if?: unknown; run?: string; uses?: string; env?: Record<string, string>; with?: Record<string, unknown> };
-interface Want { readonly id: string; readonly if?: string; readonly continues?: boolean; readonly run?: string | RegExp; readonly env: Record<string, string> | "prove" | "logbook" }
+interface Want { readonly id: string; readonly if?: string; readonly name?: string; readonly continues?: boolean; readonly run?: string | RegExp; readonly env: Record<string, string> | "prove" | "logbook" }
 
 /** What each named step must be, in order. `credentials` and `prove` are judged by what they do and by their shape; the others are pinned. */
 const STEPS: ReadonlyArray<Want> = [
   { id: "credentials", env: CREDENTIALS },
-  { id: "cap", env: { GH_TOKEN: "${{ github.token }}", WORKFLOW_FILE: "test-worlds.yml" }, run: "node tools/release/world-cap.mjs" },
+  // The step's name is what GitHub's jobs API shows, and the cap counts runs by it (check 04): a run whose job got past a step called `cap` made a world.
+  { id: "cap", name: "cap", env: { GH_TOKEN: "${{ github.token }}", WORKFLOW_FILE: "test-worlds.yml" }, run: "node tools/release/world-cap.mjs" },
   { id: "plan", env: {}, run: /^mkdir -p "\$EVIDENCE\/private"\n\$ORTHO env up test --plan --run "\$RUN" --root examples\/plugged-in > "\$EVIDENCE\/plan\.json"\necho "prefix=\$\(jq -r \.prefix "\$EVIDENCE\/plan\.json"\)" >> "\$GITHUB_OUTPUT"$/ },
-  { id: "before", env: CREDENTIALS, run: SNAPSHOT("before") },
   { id: "up", env: CREDENTIALS, continues: true, run: '$ORTHO env up test --run "$RUN" --root examples/plugged-in' },
   // The logbook is stood up for this run and destroyed with its world (decided by the Goal 15 lead): a step of the run's own, under the run's prefix, after the world is up and before prove. Nothing long-lived.
   { id: "logbook", env: CREDENTIALS, continues: true, if: "steps.up.outcome == 'success'", run: /^\$ORTHO env up logbook --run "\$RUN" --root examples\/plugged-in( >> "\$GITHUB_OUTPUT")?$/ },
   { id: "prove", env: "prove", continues: true, if: "steps.up.outcome == 'success'", run: /^\$ORTHO prove --env test --root examples\/plugged-in( --only "[A-Za-z0-9 ]+")? 2>&1 \| tee "\$EVIDENCE\/prove\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/ },
   { id: "destroy", env: CREDENTIALS, if: ALWAYS, run: '$ORTHO env destroy test --run "$RUN" --root examples/plugged-in' },
+  // The run's own logbook goes with its world, whatever happened (the lead's call, #500): it is its own environment, so its own step.
+  { id: "destroy-logbook", env: CREDENTIALS, if: ALWAYS, run: '$ORTHO env destroy logbook --run "$RUN" --root examples/plugged-in' },
   { id: "after", env: CREDENTIALS, if: ALWAYS, run: SNAPSHOT("after") },
   { id: "judge", if: ALWAYS, env: { PREFIX: "${{ steps.plan.outputs.prefix }}", UP: "${{ steps.up.outcome }}" },
-    run: /^args=\(--prefix "\$PREFIX" --after "\$EVIDENCE\/private\/after\.json" --before "\$EVIDENCE\/private\/before\.json"\)\nif \[ "\$UP" = success \]; then args\+=\(--during "\$EVIDENCE\/private\/during\.json" --plan "\$EVIDENCE\/plan\.json"\); fi\nnode e2e\/staging\/leftovers\.mjs judge "\$\{args\[@\]\}" 2>&1 \| tee "\$EVIDENCE\/verdict\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/ },
+    run: /^args=\(--prefix "\$PREFIX" --after "\$EVIDENCE\/private\/after\.json"\)\nif \[ "\$UP" = success \]; then args\+=\(--during "\$EVIDENCE\/private\/during\.json" --plan "\$EVIDENCE\/plan\.json"\); fi\nnode e2e\/staging\/leftovers\.mjs judge "\$\{args\[@\]\}" 2>&1 \| tee "\$EVIDENCE\/verdict\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/ },
   { id: "evidence", if: ALWAYS, env: { PREFIX: "${{ steps.plan.outputs.prefix }}" }, run: 'node e2e/staging/leftovers.mjs filter "$PREFIX" "$EVIDENCE/private" "$EVIDENCE"' },
 ];
 const FINAL_IF = "always() && (steps.up.outcome == 'failure' || steps.prove.outcome == 'failure')";
@@ -99,6 +101,7 @@ export const problems = (source: string): ReadonlyArray<string> => {
     const run = String(step.run ?? "").trim().replace(/\n\s*/g, "\n");
     if (want.run !== undefined && !(typeof want.run === "string" ? run === want.run : want.run.test(run))) out.push(`${label}: its script is not the one this check pins (${typeof want.run === "string" ? want.run : String(want.run).slice(0, 60)}...)`);
     if (run === "") out.push(`${label} has no script`);
+    if (want.name !== undefined && step.name !== want.name) out.push(`${label}: its name is ${JSON.stringify(step.name)}, and must be ${JSON.stringify(want.name)} (the cap counts runs by the name GitHub shows)`);
     const env = step.env ?? {};
     if (want.env === "prove") {
       // The logbook's address is data (a variable or an earlier step's output), never typed; nothing here can stand in for the job's own token.
