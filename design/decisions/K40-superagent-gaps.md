@@ -39,7 +39,7 @@ The steps, and the fix each one needs:
 | 1 | the door verifies it; was the Mac asleep when it came? | 5 |
 | 2 | the gate's role asks "is octocat listed?" | 1 |
 | 3 | Ticket T-42 is accepted; its Mandate pins Policy version 3 | 2 |
-| 4 | T-42's agent gets the comment; the judge gets the "maybe" messages | 3 |
+| 4 | T-42's agent gets the comment; the main agent gets every candidate the gate lets through | 3 |
 | 5 | the agent runs `pytest` and `git push` in a sandbox | 4, 6 |
 | 6 | three weeks later a reviewer comments; T-42's agent wakes with all its memory | 3 |
 
@@ -161,13 +161,14 @@ export const itsAgent = Blueprint.role(Ticket, { agent: Ticket.fields.agent });
   id. A handler that needs a person still refuses an agent acting as itself. The portal's chat keeps the form "an
   agent for a person" (M2-auth fork 2). `Via.agent` names both forms: the one with no person has `via: "agent"` too,
   so an operation marked `.notVia(Via.agent)` refuses both.
-- **The judge** is one `Agent` of kind `judge`, about `gate`, on a cheap model. It gets the "maybe" messages through
-  `agent.tell` and answers through a `decide` tool, which is an operation. It judges only; it never routes.
+- **The main agent** is one `Agent` of kind `main`, about its superagent, on a cheap model. It gets every candidate
+  the gate lets through via `agent.tell`, and assesses and routes them through operations (`eval.decide`,
+  `decision.route`). A stranger's text never reaches it.
 - **The runs list** becomes Pi's runs inside each agent, read from its conversation. A run is no longer a row.
 
 **Owner.** Goal 10. This changes M4-agents calls 1 and 2, `@orthograph/agents`' things and the M4.10 row. The `agent`
-caller without a person is Goal 3's (M2.03). **Needed by** the superagent's Tickets-and-agents slice and its judge
-slice.
+caller without a person is Goal 3's (M2.03). **Needed by** the superagent's Tickets-and-agents slice and its main
+agent slice.
 
 ### 4. The sandbox is an adapter that speaks pi-env over a socket
 
@@ -247,7 +248,7 @@ expiry. The App's private key never leaves the adapter.
 - **A run started by an event, through a standing delegation from a person** (round 1, Q3 A). Fix 3 makes it
   unnecessary: the agent acts as itself, with authority from its Ticket's Mandate.
 - **A new run that `continues` the last one** (round 1, Q4 A). A Pi conversation lasts indefinitely.
-- **One model call as an adapter step** (round 1, Q7 A). The judge is a durable agent with its own memory
+- **One model call as an adapter step** (round 1, Q7 A). The main agent is a durable agent with its own memory
   (Aaron: "it's not like a one-time thing… it can get better over time").
 - **The agent inside its thing's actor** (round 2, Q2 A). Aaron: "Why can't the agent just be its own thing?" The
   outbox already carries the hop.
