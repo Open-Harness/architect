@@ -11,3 +11,4 @@ blueprint and the logbook's facts.
 - `generated/` is made by `ortho generate --root examples/work`: the `work` CLI, `@work/sdk`, the MCP server (the
   manager's and the runs' tools), docs and the portal wire.
 - `src/` holds the handler scaffolds. None is written yet; journeys come first, from another agent.
+<!-- probe -->
