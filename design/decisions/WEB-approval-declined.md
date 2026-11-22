@@ -37,10 +37,9 @@ November 2026).
   model's per-thing codes would change for every app. That breaks Goal 5's rule that existing generated files stay as
   they are.
 
-Slice 1's checks (#494) first pinned `AR-003`, before Goal 4's use of it was seen; they and the build move to
-`AR-007` in the same landing.
+Slice 1's checks (#494) and its build (#508) first used `AR-003`, before Goal 4's use of it was seen and before this
+file existed. They move to `AR-007` in their own pull requests, before #508 merges.
 
 ## Supersedes
 
-- `e2e/ui-layer/02-actions-approvals.test.ts`: "refused as AR-003" → "refused as AR-007"
-- `packages/orthograph/src/modules/actions/` (slice 1's build, #508): "a no is the refusal `AR-003`" → "a no is the refusal `AR-007`"
+Nothing recorded before this file named the outcome of a no.
