@@ -16,7 +16,7 @@ one outside system:
 | 1 | **its shape**, owned by the outside system (an OpenAPI document, an ABI, another app's model) | one owner per shape; types generated from it, never retyped |
 | 2 | **its calls out**, as typed exports with declared errors | a handler calls them as steps, so every call is a span and every failure is a value |
 | 3 | **its events in**, as a door that verifies, decodes and calls one of our operations | everything that changes our state is an operation call |
-| 4 | **a principal**, `service(<mount>)`, for what comes in through that door | roles can allow it, `who may call` judges it |
+| 4 | **a principal**, `service(<mount>)` with the outside account that sent the event (K40), for what comes in through that door | roles can allow it, `who may call` judges it |
 | 5 | **its secrets**, declared by export | the key never appears as a string, and only the adapter reads its value ([`secrets.md`](secrets.md)) |
 | 6 | **a stand-in for worlds**, and a conformance test against it | journeys run without the real thing; the stand-in is checked against the real contract |
 
@@ -223,5 +223,5 @@ response types, which come from the contract.
   proposal treats it as a declared, labelled stand-in, never silently.
 - Some outside systems publish no machine-readable contract (Resend has an OpenAPI document; many don't). Those
   adapters are hand-written and only as good as their conformance test.
-- Events that arrive out of order or twice: the door uses `idempotent: "request"` keyed by the event's id, and a move
+- Events that arrive out of order or twice: the door keys each event by the object it is about, never by a delivery id, so a webhook and a catch-up poll settle once (K40), and a move
   that may arrive twice by another path declares `unchanged` (K21).

@@ -9,7 +9,7 @@ K34 makes those needs, not milestone order, the rule for when a goal may build.
 ## How a goal stays independent
 
 1. **It owns paths, and only its own.** A goal's brief lists the packages and folders it owns. Anything outside them
-   is an Ask issue to the owner (K32; K33 in #301).
+   is an Ask issue to the owner (K32; K33 in #301), except on an integration branch, Goal 17's `goal/superagent` (K39): it builds the framework fixes its app needs there, announces each by an Ask issue, and the conductor merges them back.
 2. **New work is a new package or a new module.** A goal that adds to the core (`orthograph`, the compiler, a host)
    adds new modules only, and proves that a blueprint not using them generates byte for byte what it did before (the
    rule K31 set for the app map).
@@ -58,7 +58,7 @@ later goals read, apart from M1.24 and M1.49, and M7.01) counts as landed. A sli
 | 16 · Capxul on Orthograph | M7.10 and M7.11 and the Capxul calls of 20 November: which plugins exist, which are new, which are Capxul's own; then its first feature in its staging | 1.0 and after | ready | `decisions/M7-capxul.md`, Capxul's own repository | M7.11: M7.05 (Goal 15); its first feature, by the Capxul calls of 20 November rather than a needs cell: stage 3 (Goal 13) |
 
 Off the 1.0 path, kept for later and not a goal yet: the factory and the work board (M3.04 to M3.15 and M3.17 to M3.26,
-M3.08 among them), the builder's tools and workspaces (M4.11 to M4.15, M4.17 to M4.25), Stripe, Resend and the other
+M3.08 among them), the builder's tools and workspaces (M4.11 to M4.15, M4.17 to M4.24; M4.25 is Goal 17's, K39), Stripe, Resend and the other
 adapters (M5.05 to M5.15), and the Foreman (`design/foreman/`), which these build towards.
 
 ## What can run at once

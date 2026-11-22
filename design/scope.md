@@ -132,7 +132,7 @@ core everything else uses.
 ### Off v1.0's path
 
 The factory and the work board (M3.04 to M3.21), the bench and the builder's tools (M4.11 to M4.14), workspaces and
-the building agents (M4.17 to M4.25), Stripe, Resend, adapters from OpenAPI, outbox and views (M5.04 to M5.13), and
+the building agents (M4.17 to M4.25; M4.25 is Goal 17's since K39, 22 November 2026), Stripe, Resend, adapters from OpenAPI, outbox and views (M5.04 to M5.13), and
 Capxul on Orthograph (M7.07 to M7.11). Most are None; the work board and E2B workspaces are Spiked.
 
 ## 4. Holes no slice owns
