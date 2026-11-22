@@ -277,7 +277,8 @@ allocator is needed: check the name is free, then list it here in the pull reque
 
 | ID | File | Taken by |
 |---|---|---|
-| WEB-approval-declined | [`../decisions/WEB-approval-declined.md`](../decisions/WEB-approval-declined.md) | slice 1: a person's no is `ApprovalDeclined`, `AR-003` |
+| CI-ratchet-suites | [`../decisions/CI-ratchet-suites.md`](../decisions/CI-ratchet-suites.md) | slice 1: a builder may shrink every e2e suite's ratchet list |
+| WEB-approval-declined | [`../decisions/WEB-approval-declined.md`](../decisions/WEB-approval-declined.md) | slice 1: a person's no is `ApprovalDeclined`, `AR-007` |
 
 ## The done check
 
@@ -320,4 +321,4 @@ From Goal 3's pace (a medium slice takes three to six hours from opening to merg
 22 November 2026. Slice 1 has landed: the actions module is in `orthograph`, so a program can now ask a person before it
 acts, and a refusal tells the caller that nothing was written. The goal's own test target is in place and green through
 its list of expected failures. Slice 2, the checks for the web building blocks, is being written. Slices 3 and 4 wait on
-Goal 3 letting an operation say it needs a person's yes (#466).
+Goal 3 letting an operation say it needs a person's yes, which this goal has asked for.
