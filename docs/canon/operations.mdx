@@ -225,7 +225,7 @@ what does the work. `database` is the store's, `wait` is a timer's. The kinds ar
 
 **Every required step must run, in order.** Eval 6 checks it on every answered call; an `optional` step may be absent:
 
-```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=134-147
+```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=139-152
 /** 6. Every required step of an answered call ran in its own span; all observed steps ran in declared order. */
 export const steps: PerOperation = (op, evidence) =>
   verdict("steps", op.name, evidence.flatMap((e) => {
