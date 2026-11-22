@@ -28,7 +28,7 @@ turns out wrong, you change the blueprint, and Orthograph names exactly what the
 
 ## Thirty seconds, spoken
 
-About eighty-five words, written for the ear.
+About eighty words, written for the ear.
 
 > Agents can write code now. What they can't do is keep a week of work true to the plan, because the plan is a
 > chat or a markdown file that nothing checks.

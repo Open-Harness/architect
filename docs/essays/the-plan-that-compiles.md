@@ -92,6 +92,7 @@ export const oneHolderPerName = Blueprint.invariant.unique(Handle.fields.name, {
 export const oneNamePerPerson = Blueprint.invariant.unique(Handle.fields.owner, {
   while: [machine.states.claimed],
   refuse: HandleAlreadyOwned,
+  description: "you already hold a name",
 });
 ```
 
@@ -128,7 +129,7 @@ changes together.
 
 What the model can't say is what the operation does. That is the handler, and it is the only code anyone
 writes by hand. Orthograph writes the handler file once, with a header that spells out everything the runtime
-already does around it, and then the file belongs to you. Here is the body of the claim handler:
+already does around it, and then the file belongs to you. Here is the body of the claim handler, with its comments removed:
 
 ```ts
 // examples/plugged-in/src/handle/claim.ts
@@ -229,8 +230,8 @@ and its exit code 10, is declared once. The server, the docs, the MCP tool's des
 the portal all show it, and none of them was typed by hand. The only way to change it is to change the declaration.
 
 So the surface where slop can appear shrinks to the handlers, and the handlers are judged by journeys someone else
-wrote. A second check holds the generators honest: a grid of every building block against every output, 331 cards
-in all, each one an automated test that, say, the command line tool carries every refusal. All 331 pass in CI.
+wrote. A second check holds the generators honest: a grid of building blocks against outputs, 331 automated checks
+in all, each one testing that, say, the command line tool carries every refusal. All 331 pass in CI.
 
 ## What "built for agents" means here
 
@@ -291,6 +292,6 @@ standard the running system is judged against. Orthograph is that plan, made exe
 
 Sources, at `origin/goal/stage-1` `eb3ff614`: the Plugged In files quoted above; `design/process/log.md` (the climb
 from 0 to 8 of 8, the stop at 5 of 8, and the refusal quoted from a stale design page); `design/scope.md` (what is
-built, the grid's 331 cards, the 56 of 56 steps); `design/decisions/K28-releases.md` (the three releases);
+built, the grid's 331 checks, the 56 of 56 steps); `design/decisions/K28-releases.md` (the three releases);
 `packages/prove/src/modules/evals/README.md` (the nine evals); `packages/prove/src/modules/impact/README.md`
 (staleness and `prove --changed`).

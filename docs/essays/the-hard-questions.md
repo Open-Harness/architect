@@ -88,7 +88,7 @@ CREATE UNIQUE INDEX "handle_oneHolderPerName" ON "handle" ("name") WHERE "state"
 **The answer.** There are ceilings today, and here are the real ones:
 
 - one host, Cloudflare Workers, and one language for handlers, Effect;
-- no real adapter for an outside service yet; Stripe and Resend are decided, not built;
+- no real adapter for an outside service yet; Stripe and Resend are designed, not built, and off 1.0's path;
 - no workflows for work that waits days, no agents running inside an app, no moves made by time;
 - a journey can't send a malformed payload or compare one answer with the one before it;
 - no generated screens yet; they are being built for the beta.
@@ -174,7 +174,8 @@ for agents.
   refusal the operation never declared doesn't compile. With `throw`, any function can fail with anything and the
   type system can't see it.
 - **Dependencies are given, not reached for.** A handler asks for `Records`, `Ids` or `Auth` and the runtime
-  provides them. The same handler runs unchanged in a world, in a test and on a deployed Worker.
+  provides them. The same handler runs unchanged in a world and in a test, and the same bundle is what a
+  deployed Worker will run.
 - **Every step is a span.** A declared step runs inside Effect's tracing, so `handle.claim.record` appears in the
   trace without the handler writing any telemetry.
 - **Nothing hidden.** The project's own rules forbid `async`, `await`, `try`, `throw`, reading the wall clock and
@@ -191,7 +192,8 @@ only one forever.
 **The objection.** Tying a framework to one vendor's runtime is a strange choice.
 
 **The answer.** It is a choice of focus, not a belief. Workers, D1 and Durable Objects let a world be a real
-server with a real database on a laptop, started and destroyed in seconds, with no container. That is what makes
+server with a real database on a laptop, with no container. A full prove of Plugged In, world and all, takes about
+half a minute. That is what makes
 proving every journey on every change cheap enough to do. In the design, a host is a kind of plugin, so Cloudflare
 is the first host. A Node host has been named, and it is not scheduled. Today, Orthograph runs on Cloudflare only.
 

@@ -108,7 +108,7 @@ the portal are built into the generators today. Each generated file opens with a
 `// Generated from blueprint/projections/sdk.ts. Do not edit.`, and `ortho check` fails if any of them differs from
 what the model renders. **Runs today.**
 
-Here is what one declaration becomes in the command line tool, unedited:
+Here is what one declaration becomes in the command line tool (an excerpt of the help; the global flags are cut):
 
 ```text
 $ plugged-in handle claim --help
@@ -122,7 +122,7 @@ FLAGS
   --name handle-name    A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page. Text.
 ```
 
-And in the generated docs page for the same operation, the refusals table:
+And in the generated docs page for the same operation, the refusals table (aligned here for reading):
 
 ```text
 | refusal             | exit | code   | when                                                                        |
@@ -135,9 +135,10 @@ And in the generated docs page for the same operation, the refusals table:
 Below that table, the docs page lists worked examples. They are the journeys' steps, retold in sentences, so the
 docs can't describe behaviour the system doesn't prove.
 
-**The grid** keeps "falls out" honest. It is a table of every building block (refusals, events, budgets, roles and
-the rest) against every output, and each cell is an automated check that the output carries that block: does the
-SDK carry the events, does the command line carry the refusals. There are 331 cells, and all of them pass in CI.
+**The grid** keeps "falls out" honest. It is a table of building blocks (refusals, events, budgets, roles and the
+rest) against outputs, and each cell switched on is an automated check that the output carries that block, for every
+subject in the app: does the SDK carry the events, does the command line carry the refusals. That comes to 331
+checks, and all of them pass in CI.
 **Runs today.**
 
 ## Handlers in frames
@@ -224,7 +225,7 @@ A plugin is built once and mounted anywhere, by one file. There are five kinds:
 | Kind | What it adds | Where it stands |
 |---|---|---|
 | **feature** | more of what the system is: things, operations, handlers, journeys | mounting **runs today**; one feature exists, `@orthograph/wallets` |
-| **adapter** | what is outside the system: calls out, events in, a stand-in for worlds | the descriptor **runs today**; no real adapter yet, Stripe and Resend are **decided for 1.0** |
+| **adapter** | what is outside the system: calls out, events in, a stand-in for worlds | the descriptor **runs today**; no real adapter yet; Stripe and Resend are designed, and off 1.0's path |
 | **projection** | how people and programs reach the system | **runs today** for seven outputs; docs and the portal are still built in |
 | **language** | what behaviour is written in | **decided for 1.0**; Effect is a package today |
 | **host** | where it runs, how it is reached and deployed | **decided for 1.0**; Cloudflare is a package today |
@@ -244,11 +245,11 @@ built** for the beta; today sign-in runs inside the Cloudflare host and each app
 
 ## Journeys and starting worlds
 
-A journey is a story through real operations. Here is the start of "claim a handle", as its author wrote it:
+A journey is a story through real operations. Here is part of "claim a handle", as its author wrote it (an excerpt):
 
 ```ts
 // journeys/claim-a-handle.ts
-// Journey-author file. The builder of handle.claim never edits it.
+// Journey-author file. The builder of handle.claim never edits it (AGENTS.md, ...).
 export default Blueprint.journey("claim a handle", {
   cast: { aaron: Blueprint.signedIn, visitor: Blueprint.anyone },
   steps: (s) => [
@@ -259,6 +260,7 @@ export default Blueprint.journey("claim a handle", {
       noEvents(),
       spans({ present: ["handle.resolve", "handle.resolve.load"] }),
     ),
+    // two more steps
     s.step(
       "aaron claims the free name",
       s.aaron.run(claim, { name: "firstpage" }),
@@ -267,7 +269,7 @@ export default Blueprint.journey("claim a handle", {
       machine.isIn(s.last.handle, "claimed"),
       spans({ present: ["handle.claim", "handle.claim.record", "handle.claim.commit"] }),
     ),
-    // six more steps
+    // four more steps
   ],
 });
 ```
@@ -332,7 +334,7 @@ prove ✔
 
 Notice two honest lines in it. `link.add` answers within its budget at the median but not at the 95th percentile,
 and the full report says so as a line for review. And coverage says plainly which refusal no journey can reach yet,
-and why. **Runs today**, on one machine. Proving against a deployed staging address is **being built**.
+and why. **Runs today**, on one machine. Proving against a deployed staging address is built and checked, and has not yet been run against a real account.
 
 ## Staleness, and the climb
 
@@ -397,7 +399,8 @@ Orthograph's screens are built in layers, and only the top layer is the app auth
 The app's map (its pages, routes, who may open each, and what each shows and offers) is declared in the blueprint
 under `blueprint/app/`. A component of the app's own that shows a read and offers operations, such as Plugged In's
 list of links that can be reordered and removed, declares its wiring there too, and its behaviour stays in code.
-Both are **decided for 1.0**, so docs, an agent's map of the app and journeys through the pages can all read them.
+The map is **being built**, and the component declaration is **decided for 1.0**, so docs, an agent's map of the app
+and journeys through the pages can all read them.
 
 ## One feature, start to finish
 
@@ -444,7 +447,7 @@ This page has marked each part as it went. The larger gaps, together:
 - There is one host and one language.
 - The journey language can't yet send a malformed payload, compare one answer with the one before it, or give each
   journey a world of its own.
-- Workflows, durable agents inside an app, time-driven moves and the on-chain stages are decided for 1.0, not built.
+- Workflows, durable agents inside an app, time-driven moves and the on-chain stages are designed for 1.0, not built.
 
 ---
 
