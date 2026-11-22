@@ -4,7 +4,7 @@ Owns `orthograph/actions`: the port from agent-native's `defineAction` (M1.23, K
 operation an `options(host)` in agent-native's field names; a host calls `defineAction(options, approver)` to wrap it.
 
 - `defineAction`: approval waits here, never in `run`. An action that `needsApproval` asks the approver once per call unless the
-  host already holds a yes (`approvedToolCallKey`); a no is the refusal `AR-003`. Whatever `run` rejects with that is not an
+  host already holds a yes (`approvedToolCallKey`); a no is the refusal `AR-007`. Whatever `run` rejects with that is not an
   `ActionRefusal` becomes a plain `Error` with a fixed message and nothing of the original.
 - `ActionRefusal`: a real `Error` with the members agent-native reads by duck typing (`actionContractError`, `noWrite`,
   `errorCode`, `statusCode: 422`, `details`).

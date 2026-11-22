@@ -70,7 +70,7 @@ export interface ActionRefusalShape extends Error {
 }
 
 /** Refusal codes the module itself raises. */
-export const RefusalCodes = { notAllowed: "AR-001", idempotencyConflict: "AR-002", approvalDeclined: "AR-003" } as const;
+export const RefusalCodes = { notAllowed: "AR-001", idempotencyConflict: "AR-002", approvalDeclined: "AR-007" } as const;
 
 export interface ActionsApi {
   readonly defineAction: <Args, Answer>(options: ActionOptions<Args, Answer>, approver: Approver) => Action<Args, Answer>;

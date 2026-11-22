@@ -26,7 +26,7 @@ describe("actions", () => {
     expect(defect.message).not.toContain("secret");
   });
 
-  it("the wrapper asks once for needsApproval, never when the host approved, and a no is AR-003", async () => {
+  it("the wrapper asks once for needsApproval, never when the host approved, and a no is AR-007", async () => {
     let ran = 0;
     const asked: string[] = [];
     const yes = { ask: (r: { action: string }) => (asked.push(r.action), Promise.resolve(true)) };
@@ -37,7 +37,7 @@ describe("actions", () => {
     await Actions.defineAction(options(run, true), no).run({ n: 1 }, { caller: "x", approvedToolCallKey: "k" });
     expect(asked).toHaveLength(1);
     const declined = await rejected(Actions.defineAction(options(run, true), no).run({ n: 1 }));
-    expect(declined).toMatchObject({ errorCode: "AR-003" });
+    expect(declined).toMatchObject({ errorCode: "AR-007" });
     expect(ran).toBe(2);
   });
 
