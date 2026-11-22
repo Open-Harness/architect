@@ -7,6 +7,7 @@ folder README.
 
 | Folder | Slice | What it proves |
 |---|---|---|
+| [`feature/`](feature/README.md) | M4.02 (green at M4.10) | the agents feature mounted in acme: twelve journeys (the frame's seven, journey 5 split in two, the request key, the closed values, the full pool, Gate M4 item 1) pass whole, and planted wrong copies each fail their own step |
 
 ## Running them
 

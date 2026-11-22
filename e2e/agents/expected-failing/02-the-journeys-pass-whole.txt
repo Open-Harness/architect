@@ -1,0 +1,16 @@
+# Written before the agents feature is built (the check comes first). Red until M4.10 mounts @orthograph/agents in acme:
+# the fixture does not load without the package. Due before Gate M4.
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > budget: "a spent budget fails the run" passes all 9 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > cancels: "cancelling stops the tools" passes all 9 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > closed: "the loop closes a run with closed values" passes all 29 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > evictModel: "eviction with a reply held repeats one request" passes all 8 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > evictTool: "eviction in the tool phase makes no extra request" passes all 9 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > gate: "the support agent spends for bob" passes all 7 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > key: "the same key starts one run" passes all 8 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > no journey of the fixture fails or is left out, acme's own journeys still pass, and the prove ends well
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > nothing this prove started is left running: no world, no stand-in model server
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > person: "an agent is refused what its person is refused" passes all 8 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > pool: "a full pool refuses" passes all 8 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > starter: "only the starter steers or cancels" passes all 6 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > starts: "a run starts and reads back" passes all 7 steps
+agents/feature/02-the-journeys-pass-whole.test.ts > 02 M4.10: the agents journeys pass, mounted in acme > steers: "steering reaches the transcript" passes all 7 steps

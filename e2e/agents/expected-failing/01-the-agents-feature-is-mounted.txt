@@ -1,0 +1,7 @@
+# Written before the agents feature is built (the check comes first). Red until M4.10 mounts @orthograph/agents in acme:
+# the fixture does not load without the package. Due before Gate M4.
+agents/feature/01-the-agents-feature-is-mounted.test.ts > 01 M4.10: acme mounts the agents feature > a person starts, reads, steers and cancels a run; only the system finishes, fails, waits or wakes one
+agents/feature/01-the-agents-feature-is-mounted.test.ts > 01 M4.10: acme mounts the agents feature > a run starts only by a session or a key: never an agent (M4-agents call 1)
+agents/feature/01-the-agents-feature-is-mounted.test.ts > 01 M4.10: acme mounts the agents feature > an operation marked `.notVia(Via.agent)` is never an agent's tool
+agents/feature/01-the-agents-feature-is-mounted.test.ts > 01 M4.10: acme mounts the agents feature > the fixture loads: `ortho generate` succeeds with the mount, the adapter, three agents and twelve journeys
+agents/feature/01-the-agents-feature-is-mounted.test.ts > 01 M4.10: acme mounts the agents feature > the fixture's own things are in the model: the run and the agent, and the read the agents use to find an allowance

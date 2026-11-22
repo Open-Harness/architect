@@ -1,0 +1,4 @@
+# Written before the agents feature is built (the check comes first). Red until M4.10 mounts @orthograph/agents in acme:
+# the fixture does not load without the package. Due before Gate M4.
+agents/feature/05-planted-the-gate-keys-and-closed-values.test.ts > 05 M4.10: the gate's journey, the key, the closed values and the pool judge every step > each planted wrong journey fails exactly its own step, and the other steps pass
+agents/feature/05-planted-the-gate-keys-and-closed-values.test.ts > 05 M4.10: the gate's journey, the key, the closed values and the pool judge every step > the planted run leaves nothing running
