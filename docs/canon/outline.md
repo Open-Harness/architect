@@ -1,12 +1,23 @@
 # The canon's outline
 
-There are thirty concept pages and three reference pages, in the order a newcomer reads them. Each page explains
+There are thirty-two concept pages and three reference pages, in the order a newcomer reads them. Each page explains
 one idea, and each word in the glossary (`design/docs/index.html`, the table headed "Word") has exactly one page that
 owns it. Other pages link to that page and never explain the word again.
 
 A page's **job** is the one idea it carries. Its **questions** are the ones a reader brings to it: if a question
 isn't answered on the page, the page isn't done. **Links** are the pages it leans on. **Owns** is the list of glossary
 words this page defines, so the check can find a word explained twice.
+
+## Who it is for, and what it covers
+
+The canon is for Aaron, and for anyone who builds on Orthograph or helps build it (Aaron, 22 November 2026: "these docs
+are primarily for me ... and anybody else who wants to look at, build on, or help building the library ... we also need
+docs for what's going to be canon for 1.0"). So it describes all of 1.0, built or not, and every page is written now,
+without waiting for its code. What keeps that honest is the status each part carries (`README.md`, "How a page earns
+its place"): **proved** parts quote the real file, so they break when the code moves; **specified** parts quote their
+decision in a `planned=<slice>` fence, and the slice's goal says who is building it; a part the design hasn't settled
+is a `<Note kind="question">`, raised as an Ask in the goal that owns it. When a slice lands, its fence becomes a
+quote and its part becomes proved. Recorded in K37 (`design/decisions/K37-canon-for-1.0.md`).
 
 ## Layers: the order pages are written in
 
@@ -25,14 +36,19 @@ level, and the details wait for the layers that own them.
 | 2 · the core | `things`, `machines`, `invariants`, `operations` (with steps), `roles`, `handlers` | 1 |
 | 3 · proof | `journeys`, `proof`, `traces`, `stand-ins` | 2, and the doors (replay) |
 | 4 · data in depth | `stores`, `views`, sources (on `adapters`) | 2 and 3 |
-| 5 · plugins in depth | `features`, `adapters`, `projections`, `portal`, `secrets` | 1 to 4 |
-| 6 · running | `workflows`, `environments` | 4 and 5 |
-| 7 · what Orthograph ships | `auth`, `agents`, `factory`, `agent-kit` | everything above |
+| 5 · plugins in depth | `features`, `adapters`, `projections`, `ui`, `portal`, `secrets`, `chains-and-wallets` | 1 to 4 |
+| 6 · running | `time`, `workflows`, `environments` | 4 and 5 |
+| 7 · what Orthograph ships | `auth`, `agents`; after 1.0, `factory` and `agent-kit` | everything above |
 
-**Examples.** Layers 1 and 2 teach with the sign-up sheet, `examples/signup` (Aaron, 18 November 2026): one thing,
-open to anyone, and nothing in it that needs explaining from outside. From layer 4 on, the end-to-end example is K5's
-community workshop: drafts in D1, a governance contract, a publish workflow, and later Noir. acme stays the fixture
-the tests and gates run on.
+**Examples.** One example runs through the whole canon: Plugged In, `examples/plugged-in`, the app 1.0 is built as
+(K9). Each page takes its example from the stage that needs it. Stage 1 (claim `@name`, a public page of links) teaches
+layers 1 to 3, the database and actor stores, the projections, `ui`, `portal`, `secrets`, `environments` and sign-in.
+Stage 2 (a wallet, paid by handle) teaches `chains-and-wallets`, the chain store, adapters from an ABI, `on:` and the
+stand-in chain. Stage 3 (a Safe with the budgets plugin) teaches `features` by a plugin of our own, `time` (budgets are
+per month), `workflows` (owners sign above a budget) and `agents` (an agent spends under its hat). Stage 4 (the same club,
+private, on Aztec) teaches the private side of `languages-and-hosts` and `things`. A page contrasts a second example only
+where the reader is choosing between kinds, as `plugins` does with GitHub and Stripe. acme stays the fixture the tests
+and gates run on, and `examples/signup` is deleted once no page quotes it (ST1.08).
 
 **Names.** The framework is Orthograph, its command `ortho` (K5, "Names"). Pages say Orthograph and `ortho` in prose,
 and quote code by today's paths and output (K6, `design/naming.md`).
@@ -88,6 +104,7 @@ links there. It doesn't guess.
 | 19 | `features` | Adding to what the system is | feature, export, root feature | What does a feature add? How does my app use what a feature exports? How is a feature proved alone? | plugins, stores, auth | M1 · tooling M2 |
 | 20 | `adapters` | Bringing the outside in, both ways, and sources | adapter, call, source, `on:`, `service(<mount>)` | How do I call Stripe? How do events come in? Where does a database we don't own go? A contract we didn't write? | plugins, data, stand-ins, secrets, roles | core M1 · Stripe M5 · sources M5 |
 | 21 | `projections` | What the model becomes, as plugins | output, artifact, the replay rule | What does each projection make from one operation? Why must every client leave the same evidence? How is a projection mounted? | plugins, doors, portal, proof | built · as plugins M1.11 to M1.13 |
+| 31 | `ui` | The screens a person uses, made from the operations they call | page, piece, parts, component, web host | What do I write for a screen, and what is generated? How does a form get its fields, help text and refusals? Where does a component of my own go, and what may it hold? Why does the browser never decide what an operation allows? | doors, projections, operations, portal | being built: M1.22, M1.23, ST1.25 to ST1.28 (K29; Goals 5 and 6) |
 | 22 | `portal` | The builder's place to understand and plan with the running system | portal, note, live evidence | What does the portal show first, and why? How does live evidence light up the declaration? What is ported from agent-native, and what isn't? | projections, doors, data, traces | design M1.25 · port M1.23, M1.24 · built M1.13 |
 | 23 | `secrets` | A value the description names but never holds | secret, stored, generated, runtime / release / builder | Who may read a secret? Where does its value come from per environment? Why never in a world? | adapters, environments | M2 |
 | 30 | `chains-and-wallets` | How Orthograph reaches a chain, and the wallet that signs and sends on it | chain port, signer, wallet, confirmation depth, submission, chain in a world | How does Orthograph reach a chain? What is a wallet, and where does its key live? What does a send do, and what does `confirmed` mean? How does a world get a chain? What did K7 decide about contracts, and which of it is built? | languages-and-hosts, plugins, data, stores, operations, doors, journeys, proof, stand-ins | device half built · contracts M6.10 · linking M2.13 |
@@ -96,6 +113,7 @@ links there. It doesn't guess.
 
 | # | Page | Job | Owns | Questions a reader brings | Links | Milestone |
 |---|---|---|---|---|---|---|
+| 32 | `time` | One clock for the whole system, which a world can move | clock, `Timers`, a move made by time, the world's clock | How does a budget reset each month, in every environment? Why does every wait go through `Timers`? How does a world move time, on the server, the chain and the indexer at once? | machines, workflows, proof, environments, chains-and-wallets | decided: M8 (K23; Goal 9) |
 | 24 | `workflows` | Durable work: processes that wait, and work across stores and owners | workflow, activity, the replay rule for workflows | When do I need a workflow and not a step? Why does an activity run once even after an eviction? How do I work across D1 and a chain? | stores, adapters, agents, operations | M3.01 |
 | 25 | `environments` | Where each projection lives, and how a revision moves | environment, place, promote, release, version, rollback, destroy | What goes in an environment file, and what doesn't? How is a version worked out? How do I roll back? | projections, secrets, stores, proof | built locally · cloud M7 |
 
@@ -105,8 +123,8 @@ links there. It doesn't guess.
 |---|---|---|---|---|---|---|
 | 26 | `auth` | Identity and tenancy, as two features | `@orthograph/auth`, `@orthograph/organizations`, membership, invitation, `holds` | Why two plugins? What do I mount, and what do I get in each client? How do my roles use organisations? | roles, features, secrets | M2 |
 | 27 | `agents` | Durable agents inside the app: runs, declarations, model providers | run, `Blueprint.agent`, model provider | What is a run, and where does its loop live? Who may start one? How is an agent limited? How does the portal's chat use one? | features, roles, adapters, workflows | M4 · the portal's chat M4.16 |
-| 28 | `factory` | The feature that builds projects: work worked out from facts | mission, milestone, task, attention, fact, worker | Where do tasks come from? What closes one? People or agents? | agents, proof, handlers | M3 · its portal surfaces parked (M3.14) |
-| 29 | `agent-kit` | How any agent builds an Orthograph app | agent kit, skill, role definition, code mode, `bp` | What does `ortho new` give my agents? What may a builder touch? Why code mode? | factory, handlers, journeys | parked with the skills design (M3.12) |
+| 28 | `factory` | The feature that builds projects: work worked out from facts | mission, milestone, task, attention, fact, worker | Where do tasks come from? What closes one? People or agents? | agents, proof, handlers | after 1.0: M3 · its portal surfaces parked (M3.14) |
+| 29 | `agent-kit` | How any agent builds an Orthograph app | agent kit, skill, role definition, code mode, `bp` | What does `ortho new` give my agents? What may a builder touch? Why code mode? | factory, handlers, journeys | after 1.0: parked with the skills design (M3.12) |
 
 ## Reference (generated, never hand-written)
 
@@ -143,6 +161,11 @@ links there. It doesn't guess.
 - **`doors`** is apart from `operations` and `projections` (K5). An operation says what a call is; `doors` says what
   enforces it and what reaches it: the served operation, the SDK contract, the CLI, MCP and actions. `projections` is
   how those outputs are made and mounted.
+- **`ui`** has its own page, apart from `doors` and `projections` (K29). `doors` says an action holds no authority;
+  `projections` says how web output is made. A reader building a screen asks what to write and what is generated, and
+  that is `ui`'s alone.
+- **`time`** has its own page, apart from `workflows` (K23). A move made by time needs no workflow, and a world moving
+  the clock is a question about proof and every store at once, not about durable work.
 - **`portal`** replaces "the app" (K5 decision 1). It is our own template on pieces ported from agent-native, for the
   builder, not an agent-native app.
 - **`agents`** and **`agent-kit`** stay apart. One is durable agents inside your app (a feature, M4); the other is
