@@ -5,7 +5,7 @@ milestone: "Goal 14: the club"
 release: "1.0"
 branch: goal/club
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
   model: claude-opus-5-5  # the model id it runs on
@@ -108,6 +108,22 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Started 22 November 2026 by a Claude Code lead. `goal/club` has `goal/stage-1` merged in. Slice 1, the spike on Noir and
-Aztec, is running on `spike/aztec-club`. Slices 5 to 8 wait on the vault goal's budgets journeys and feature. The lead
-rewrites this section at every slice merge.
+**Parked on 22 November 2026** by the conductor, on Aaron's "narrow to the path": the Beta path and the two long poles
+run first. It resumes by the conductor's word.
+
+- **Landed:** `goal/stage-1` merged into `goal/club` (#459), and this brief set to running, then parked.
+- **Slice 1, the spike, in review:** `spikes/aztec-club/` on `spike/aztec-club`, pull request #504 into `main`. Its
+  answer: yes, the budgets declaration and a ballot map one to one onto a Noir contract, and in a world that verifies
+  proofs a tampered and an empty proof are refused and the public total doesn't move; no member's address is in any
+  transaction once a sponsor pays the fees. Three limits: every holder of the club's key reads every allowance, each
+  spend's amount is public, and a proof against a re-built block must be proved again. Three cases are not tested
+  (verification off, the ballot passing with all three members, a second ballot refused); the README names the command
+  for each.
+- **Open asks:** #495 to Goal 4 (a `ChainPort` for every chain family, and `Blueprint.store.chain.aztec()`), #496 to
+  Goal 13 (the budgets feature with an Aztec choice, its journeys neutral on the store kind, both landed early). Slice 5
+  is linked as blocked by both.
+- **Next, on resuming:** merge #504 if it hasn't merged; run the three missing cases, two commands (`club.ts verified ballots`, then
+  `club.ts control tamper`) and add them to its README; write `design/decisions/ST4-aztec.md` (slice 2): versions,
+  `chain.aztec` as a keyed store address, `language-noir`'s mapping from the spike's table, `chain-aztec`'s port steps
+  (prove for sign, a sponsor for fees, sync before proving, one re-prove on `Block header not found`, every wait
+  through `Timers`), and `proofs: "verified"` worlds on `setupLocalNetwork`. Then slices 3 and 4.
