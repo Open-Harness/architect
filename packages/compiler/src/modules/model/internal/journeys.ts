@@ -1,4 +1,4 @@
-import { NotAllowed, type Allowed, type Assertion, type Call, type FieldsInput, type Thing } from "orthograph";
+import { NotAllowed, type Allowed, type Assertion, type Call, type ClockCall, type FieldsInput, type Thing } from "orthograph";
 import { Blanks, ErrorNames, EventNames, Scripting } from "orthograph/server";
 import type { AllowedModel, JourneyModel, OperationModel, StartingWorldModel } from "../types.ts";
 import type { Layout } from "./layout.ts";
@@ -25,8 +25,8 @@ const blanksIn = (value: unknown): ReadonlyArray<string> => {
 };
 
 /** A step's blanks: in its call's payload and in each check (the check itself, its fields, its id or its value). */
-const stepBlanks = (step: { readonly call: Call; readonly checks: ReadonlyArray<Assertion> }) => [
-  ...blanksIn(step.call.payload),
+const stepBlanks = (step: { readonly call: Call | ClockCall; readonly checks: ReadonlyArray<Assertion> }) => [
+  ...(step.call.kind === "call" ? blanksIn(step.call.payload) : []),
   ...step.checks.flatMap((c) => (Blanks.isBlank(c) ? [(c as { readonly what: string }).what]
     : c.kind === "emits" || c.kind === "refuses" ? blanksIn(c.fields) : c.kind === "is-in" ? blanksIn(c.id) : c.kind === "expect-equal" ? blanksIn(c.value) : [])),
 ];
@@ -42,7 +42,9 @@ export const storiesOf = (
   const castOf = (cast: Readonly<Record<string, Allowed>>, file: string) =>
     Object.fromEntries(Object.entries(cast).map(([name, role]) => [name, allowed(role, file)]));
 
-  const callOf = (call: Call) => {
+  const callOf = (call: Call | ClockCall) => {
+    // A step that moves the world's clock has no operation: the model leaves it out until time is built (M8.07).
+    if (call.kind === "clock-call") return undefined;
     const operation = names.get(call.operation);
     if (operation === undefined) return undefined;
     // A blank operation has no model to read visibility from, but its payload fields are declared: redact by declaration.
@@ -53,6 +55,7 @@ export const storiesOf = (
     return {
       actor: call.actor, operation, payload: publicData(call.payload, secret),
       ...(call.request === undefined ? {} : { request: call.request }),
+      ...(call.due === undefined ? {} : { due: call.due }),
     };
   };
 
@@ -92,7 +95,7 @@ export const storiesOf = (
     const steps = declared.map((step) => {
       const call = callOf(step.call);
       return call === undefined
-        ? { title: step.title, skipped: "operation is outside the model" }
+        ? { title: step.title, skipped: step.call.kind === "clock-call" ? "time is not built yet: M8.07" : "operation is outside the model" }
         : { title: step.title, call, checks: step.checks.filter((c) => !Blanks.isBlank(c)).map(checkOf) };
     });
     const starts = Blanks.isBlank(j.starts) ? null : j.starts ?? null;

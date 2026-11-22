@@ -7,7 +7,7 @@ makes its folder: the model, the api, the server, the sdk, the cli and the mcp a
 mounts no projection gets those six as if mounted, headers as they were. Still fixed here, until M1.13: `generated/docs`, `generated/portal` and the handler scaffolds. Generated files start with the do-not-edit line; scaffolds say where they came from
 and are the project's from then on.
 
-A move made by time says when it happens (`internal/when.ts`, in M8-checks call 10's words): on its operation's docs page
+A move made by time says when it happens (`@orthograph/projections` names, `when.ts`, in M8-checks call 10's words): on its operation's docs page
 and its thing's page, in its MCP tool description (plain text) and in its handler scaffold. A blueprint with none renders
 byte for byte as before.
 

@@ -178,6 +178,8 @@ export interface JourneyCallModel {
   readonly operation: string;
   readonly payload: Readonly<Record<string, unknown>>;
   readonly request?: string;
+  /** The keeper's call: the instant the move made by time was due (M8-checks call 4). */
+  readonly due?: string;
 }
 
 export interface JourneyModel {
