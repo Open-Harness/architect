@@ -1,7 +1,7 @@
 # Where Orthograph stands
 
 The conductor's state, written so that a fresh session (on this account or another one) can pick up the work without
-the old conversations. Snapshot of 21 November 2026, 11:00 UTC, by the 🎛 conductor (first written 09:35). Written because the week's Claude
+the old conversations. Snapshot of 21 November 2026, 11:00 UTC, by the 🎛 conductor (first written 09:35); the lanes rewritten on 22 November. Written because the week's Claude
 usage was 71% spent and the work may move to another account. Sessions, Remote Control and claude.ai artifacts do not
 move with the account. The repository does, so everything needed is here or linked from here.
 
@@ -30,28 +30,27 @@ code allows.
 
 ## The lanes
 
-Every lane runs as a goal: one lead, one branch, one done check, merged by pull requests that pass CI, have every
-thread resolved and a 🔍 reviewer that wrote none of it. Leads merge `goal/stage-1` in at every slice start, never
-rebase, and never push to another lane's branch.
+**22 November 2026: narrowed to the critical path** (Aaron: "Narrow to the path"). The Beta path and the two long
+poles run at full speed; the other goals finish the slice they were on, set `status: parked` in their brief and stop,
+and resume by the conductor's word. Each goal's own state is its brief's "Where it stands", on its branch, and its
+GitHub milestone (K32, K33); read those before this table, which is only the index.
 
-| Lane | Branch | Brief (read it word for word) | Done check | Where it stood |
-|---|---|---|---|---|
-| 🎯 Goal 3: stage 1 of Plugged In (the beta, critical path) | `goal/stage-1` | `design/goals/03-stage-1-hill-climbed.md` | `nx run e2e:stage1`, staging included | 7 of 7 journeys green and a required check. Merged today: M2.01 (people, roles, auth and organisations), S-27, the chains page (M1.39), the checks for S-33 and S-34 (#278). In flight: main merged in with the draft guards on its branch-only jobs (#277); the compiler fixes for S-33 and S-34, ready (#288); six reviewed drafts waiting for CI (#267, #280, #281, #290, #291, #292); staging up and destroy reworked on **Alchemy** (#282, `alchemy` 2.0.0-beta.87 pinned), whose first live staging run has the conductor's go after its 🔍; an Effect bump to 4.1.4 that Alchemy needs, landing on `main` first on its own (#295, `chore/effect-4.1.4`) |
-| 🎯 Goal 4: on chain, end to end (1.0) | `goal/on-chain` | `design/goals/04-on-chain.md` on its branch, and the lead's own skill and state (#284) | `nx run e2e:on-chain` in CI | Start-up, the chain decision, budgets journeys and the red done check merged. Open: the money decision (#287), the lead's state (#284), slice 3's checks (#283, failed review: no throwaway build has shown they can pass). Its seam slice waits for Goal 3's M2.05. It has read Goal 7's spike: nothing in its plan changes; the hat-wearer spender is a stage 3 call |
-| 🎯 Goal 5: the UI layer (generated pieces on UI SDK) | `goal/ui-layer`, from `goal/stage-1` | `design/goals/05-ui-layer.md` (in #272) | in the brief | Not started. K24 is on `main`; K29 (#272) is in CI. Start its lead when #272 is on `main` |
-| 🎯 Goal 7: Safe, Hats and a budgets module (stage 3, the base for Capxul) | `goal/safe-hats`, from `main` | `design/goals/07-safe-hats.md` | a 🔍 reviewer runs `spikes/safe-hats-module/run-all.sh` from a clean checkout, all green | **Done check passed** in the Foreman thread's 🔍 run (all eight steps, from a clean clone); #294's own verdict comment and the goal file's "Where it stands" still to follow. Run on Codex headless, steered by the Foreman thread; Codex is stopped. Lands by #294. Holds the hat budgets module, its fuzz, an Anvil run and a draft decision, `ST3-budgets.md` |
-| 🎯 Goal 6: the new portal (our components, the app map) | `goal/portal`, from `goal/stage-1` | `design/goals/06-portal.md` (in #285) | `nx run e2e:portal-next` | Not started. K31 (#285) goes ready after #272. Start its lead when #285 is on `main` |
+| Goal | Branch | Role now | Note |
+|---|---|---|---|
+| 🎯 3: stage 1 of Plugged In | `goal/stage-1` | **Beta path, the spine** | Staging fully green on 21 November (run 3: the story passed against the deployed Worker, then destroyed clean). Monitor (M1.49) merged; principals and agent keys (#297) next |
+| 🎯 5: the UI layer | `goal/ui-layer` | **Beta path** | Started 22 November; takes up Goal 6's theme |
+| 🎯 6: the new portal | `goal/portal` | **Beta path** | Started 22 November; lands the theme early (K38), then the map language (with K36's components), the shell, and the cutover off HeroUI |
+| 🎯 15: release and the cloud | `goal/release` | **Beta path** | Aaron granted all eight credentials of the release pass (M7.13) on 22 November; the goal asks him directly for each step he must do himself |
+| 🎯 4: on chain | `goal/on-chain` | **Long pole** | Stalled about a day; told to resume on 22 November. Lands M6.09 early for Goal 9 (#442) |
+| 🎯 9: time | `goal/time` | **Long pole** | Lands M8.09 early for Goal 4 (#443) |
+| 🎯 7: Safe, Hats and budgets | `goal/safe-hats` | Open | #294 has been red since 21 November; its done check passed earlier. Needs a lead to land it |
+| 🎯 8 workflows, 10 agents, 11 events, 12 wallets, 14 club, 16 Capxul | their `goal/<name>` branches | **Parked** after their current slice | Started 22 November; each brief's "Where it stands" says where it stopped |
+| 🎯 13: the vault | `goal/vault` | Not started | Waits on Goal 4's M6.01, Goal 7's ST3.01 and Goal 8's M3.01 |
 
-How Goals 5 and 6 meet the others (agreed 21 November):
-- Goal 6 owns the Orthograph theme package (its first slice) and the app-map language. Goal 5 owns actions and
-  `@orthograph/web`, and uses UI SDK's default tokens until the theme lands. Neither edits the other's packages.
-- The app-map language is additive: new modules only in `orthograph` and the compiler, with byte-identical output for
-  any blueprint that declares no app or pages, and a check that proves it.
-- The new portal is a new package, `packages/portal-next`, reading the same data API. Every portal check runs against
-  both clients, and the new client's failures sit in `e2e/portal-next/expected-failing.txt`, a list that may only
-  shrink. When it is empty, the conductor and Goal 3's lead agree a freeze, and one cutover pull request into
-  `goal/stage-1` swaps the assets, deletes the old client and HeroUI, and needs Goal 3's lead's yes.
-- Goal 5's screens are part of Goal 3's done check. Its sign-in piece waits for the auth plugin (M2.05).
+Decisions of 21 to 22 November that every lead reads on `main`: K36 (composite components declare their wiring),
+K38 (a slice another goal needs lands early, by a branch cut at its commit and merged by a merge commit). K37 is
+reserved for the 📚 canon thread, whose map (a Whiteboard artifact) waits on Aaron's yes to its settled clashes and
+its retire, merge or keep list.
 
 ## Other threads
 
