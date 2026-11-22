@@ -122,8 +122,7 @@ branch protection on `main` or `goal/stage-1`; each item reverts by one commit.
 
 ## Supersedes
 
-Part A supersedes nothing. Part B, when built, changes these words; the CI builder makes the edits in the same pull
-requests, under the rule in `AGENTS.md`:
-
-- `.agents/skills/threads/SKILL.md`: "the target branch's own push run checks every merge" → "`main`'s and `goal/stage-1`'s own push run checks every merge; a goal branch's merges are checked when it lands (CI-integration B2)"
-- `design/decisions/CI-drafts.md` (dated, noted in place): "Left for later: running only the e2e suites a change touches" → planned as CI-integration B3
+Nothing yet: Part A only adds rules. Part B, when built, changes live words, so its builder adds a Supersedes section
+to its own pull requests and rewrites them there, under the rule in `AGENTS.md`. Those words are the `threads` skill's
+"the target branch's own push run checks every merge" (B2 keeps that only for `main` and `goal/stage-1`), and
+CI-drafts' "Left for later: running only the e2e suites a change touches" (B3 builds it).
