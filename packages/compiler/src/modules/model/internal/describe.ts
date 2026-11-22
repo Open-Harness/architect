@@ -11,6 +11,7 @@ import { RUNS_NEEDS, deviceProblems } from "./device.ts";
 import { environmentsOf } from "./environments.ts";
 import { storiesOf } from "./journeys.ts";
 import { hashOf } from "./hash.ts";
+import { alertRulesOf } from "./rules.ts";
 import { crossStore, storesOf } from "./stores.ts";
 import { breakersOf, declaredErrors, invariantsOf } from "./invariants.ts";
 import { camel, pascal, type Layout } from "./layout.ts";
@@ -253,8 +254,9 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   const stores = storesOf(layout, problems);
   const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel);
   const allBlanks = { ...blanks, ...journeyBlanks };
+  const alertRules = alertRulesOf({ operations, refusals, things, journeys: stories.journeys, environments });
   return {
-    model: { refusals, values, things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}) },
+    model: { refusals, values, things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
     problems,
   };
 };

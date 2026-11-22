@@ -2432,7 +2432,1204 @@
         "publish": {},
         "hash": "e264584f19862db6"
       }
-    }
+    },
+    "alertRules": [
+      {
+        "id": "anomaly:AR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-001",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:IN-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "IN-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:OR-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "OR-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:PE-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "PE-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/person/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:SE-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SE-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/session/errors.ts"
+        }
+      },
+      {
+        "id": "defect:api-key.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "api-key.create",
+          "severity": "page",
+          "owner": "blueprint/things/api-key/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:invitation.accept",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.accept",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/accept.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:invitation.revoke",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.revoke",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/revoke.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:invitation.send",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.send",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/send.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:membership.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "membership.get",
+          "severity": "page",
+          "owner": "blueprint/things/membership/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:organization.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "organization.create",
+          "severity": "page",
+          "owner": "blueprint/things/organization/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:organization.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "organization.get",
+          "severity": "page",
+          "owner": "blueprint/things/organization/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:person.sign-up",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "person.sign-up",
+          "severity": "page",
+          "owner": "blueprint/things/person/verbs/sign-up.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:session.show",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "session.show",
+          "severity": "page",
+          "owner": "blueprint/things/session/verbs/show.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:session.sign-in",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "session.sign-in",
+          "severity": "page",
+          "owner": "blueprint/things/session/verbs/sign-in.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:system.health",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "system.health",
+          "severity": "page",
+          "owner": "blueprint/things/system/verbs/health.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:api-key.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "api-key.create",
+          "severity": "page",
+          "owner": "blueprint/things/api-key/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 250,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:invitation.accept",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.accept",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/accept.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:invitation.revoke",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.revoke",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/revoke.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:invitation.send",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.send",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/send.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:membership.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "membership.get",
+          "severity": "page",
+          "owner": "blueprint/things/membership/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:organization.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "organization.create",
+          "severity": "page",
+          "owner": "blueprint/things/organization/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 250,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:organization.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "organization.get",
+          "severity": "page",
+          "owner": "blueprint/things/organization/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:person.sign-up",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "person.sign-up",
+          "severity": "page",
+          "owner": "blueprint/things/person/verbs/sign-up.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 400,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:session.show",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "session.show",
+          "severity": "page",
+          "owner": "blueprint/things/session/verbs/show.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 100,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:session.sign-in",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "session.sign-in",
+          "severity": "page",
+          "owner": "blueprint/things/session/verbs/sign-in.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 400,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:system.health",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "system.health",
+          "severity": "page",
+          "owner": "blueprint/things/system/verbs/health.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "verdict:an invitation is used once:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "an invitation is used once",
+          "severity": "page",
+          "owner": "journeys/an-invitation-is-used-once.ts"
+        }
+      },
+      {
+        "id": "verdict:an invitation is used once:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "an invitation is used once",
+          "severity": "page",
+          "owner": "journeys/an-invitation-is-used-once.ts"
+        }
+      },
+      {
+        "id": "verdict:an invitation is used once:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "an invitation is used once",
+          "severity": "page",
+          "owner": "journeys/an-invitation-is-used-once.ts"
+        }
+      },
+      {
+        "id": "verdict:an invitation is used once:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "an invitation is used once",
+          "severity": "page",
+          "owner": "journeys/an-invitation-is-used-once.ts"
+        }
+      },
+      {
+        "id": "verdict:an owner makes an api key:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "an owner makes an api key",
+          "severity": "page",
+          "owner": "journeys/an-owner-makes-an-api-key.ts"
+        }
+      },
+      {
+        "id": "verdict:an owner makes an api key:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "an owner makes an api key",
+          "severity": "page",
+          "owner": "journeys/an-owner-makes-an-api-key.ts"
+        }
+      },
+      {
+        "id": "verdict:an owner makes an api key:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "an owner makes an api key",
+          "severity": "page",
+          "owner": "journeys/an-owner-makes-an-api-key.ts"
+        }
+      },
+      {
+        "id": "verdict:an owner makes an api key:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "an owner makes an api key",
+          "severity": "page",
+          "owner": "journeys/an-owner-makes-an-api-key.ts"
+        }
+      },
+      {
+        "id": "verdict:health is up:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "health is up",
+          "severity": "page",
+          "owner": "journeys/health-is-up.ts"
+        }
+      },
+      {
+        "id": "verdict:health is up:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "health is up",
+          "severity": "page",
+          "owner": "journeys/health-is-up.ts"
+        }
+      },
+      {
+        "id": "verdict:health is up:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "health is up",
+          "severity": "page",
+          "owner": "journeys/health-is-up.ts"
+        }
+      },
+      {
+        "id": "verdict:health is up:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "health is up",
+          "severity": "page",
+          "owner": "journeys/health-is-up.ts"
+        }
+      },
+      {
+        "id": "verdict:invite and accept:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "invite and accept",
+          "severity": "page",
+          "owner": "journeys/invite-and-accept.ts"
+        }
+      },
+      {
+        "id": "verdict:invite and accept:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "invite and accept",
+          "severity": "page",
+          "owner": "journeys/invite-and-accept.ts"
+        }
+      },
+      {
+        "id": "verdict:invite and accept:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "invite and accept",
+          "severity": "page",
+          "owner": "journeys/invite-and-accept.ts"
+        }
+      },
+      {
+        "id": "verdict:invite and accept:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "invite and accept",
+          "severity": "page",
+          "owner": "journeys/invite-and-accept.ts"
+        }
+      },
+      {
+        "id": "verdict:sign up and sign in:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "sign up and sign in",
+          "severity": "page",
+          "owner": "journeys/sign-up-and-sign-in.ts"
+        }
+      },
+      {
+        "id": "verdict:sign up and sign in:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "sign up and sign in",
+          "severity": "page",
+          "owner": "journeys/sign-up-and-sign-in.ts"
+        }
+      },
+      {
+        "id": "verdict:sign up and sign in:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "sign up and sign in",
+          "severity": "page",
+          "owner": "journeys/sign-up-and-sign-in.ts"
+        }
+      },
+      {
+        "id": "verdict:sign up and sign in:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "sign up and sign in",
+          "severity": "page",
+          "owner": "journeys/sign-up-and-sign-in.ts"
+        }
+      }
+    ]
   },
   "dependsOnByOperation": {
     "api-key.create": {
@@ -2529,5 +3726,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "ce4cdb172f389428e8eba85192844a95d9b416783e578ae4c689a0ed01811c1d"
+  "digest": "1b6f3e90df5835af42cbc3695b4a0393a309f984a15cb170ba8cfcbf26ed54f3"
 }
