@@ -384,7 +384,7 @@ agent: how long a start takes, and whether anything is left).
 
 | id | what | needs | kind | done when | size |
 |---|---|---|---|---|---|
-| M4.01 | H1 and H2 under the frame: the Run thing, where Pi runs (a Durable Object per run, Node for the bench), the local model server and model, pinned | none (K34) | decision | `decisions/M4-agents.md` written | S |
+| M4.01 ✅ | H1 and H2 under the frame: the Run thing, where Pi runs (a Durable Object per run, Node for the bench), the local model server and model, pinned | none (K34) | decision | [`decisions/M4-agents.md`](decisions/M4-agents.md) written | S |
 | M4.02 | Journeys for the agents feature, prose then steps | M4.01 | checks | they fail on empty handlers | M |
 | M4.03 | The floor (A0): the run record and folder, the trusted scorer, check 4 as the first runner | M4.01 | build | check 4 runs through the runner and writes a scored record | M |
 | M4.04 | The Pi Durable seam on Node SQLite (A1) | M4.03 | build | a run survives a process kill and resumes its transcript | M |

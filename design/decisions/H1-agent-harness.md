@@ -142,7 +142,7 @@ It is question 1. **The key is never read, printed or searched for by anyone bui
 
 ## 7. The recommendation (H1.1 to H1.9)
 
-**H1.1 Wrap Pi Durable behind an Effect seam, in a new package `@architect/agent`. Pin `pi-durable`, `pi-ai`, `chord`,
+**H1.1 Wrap Pi Durable behind an Effect seam, in a new package `@architect/agent`. (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`, a feature plugin.) Pin `pi-durable`, `pi-ai`, `chord`,
 `pi-codemode`, `pi-schema` and `pi-telemetry` at 1.5.0 exactly.** 1.5.0 was published 2 November 2026, so it is 14 days old today:
 the oldest-enough version, and 1.5.1 and 1.5.2 (9 and 10 November) are not allowed until 23 and 24 November. The seam is the only
 place that touches Pi; if Pi breaks or is dropped, only the seam changes, and Option E is the way out (section 8).
@@ -156,7 +156,7 @@ the package has `async`. The Durable Object class and the CLI entry are the name
 **H1.3 Time is ours.** `now` is `Clock`; `setTimer` is `Timers.at(...)` with the disarm as fiber interruption; `onWake` sets a Durable
 Object alarm (host) or, on Node, is absent and the Harness's own timer is replaced by `Timers`. Set provider-level retries to zero so all
 retrying is Pi's stored `sleepUntil`, because `pi-ai`'s in-request retry uses a plain `setTimeout` (`packages/ai/src/utils/provider-retry.ts:88`).
-The agent runs *outside* any world (it is dev tooling), so its `Timers` is a real-clock layer; stepped-clock tests of agent waits are layer 5.
+The agent runs *outside* any world (it is dev tooling), so its `Timers` is a real-clock layer; stepped-clock tests of agent waits are layer 5. (Superseded by M4-agents, 22 November 2026: an agent in a world waits on the world's clock.)
 
 **H1.4 Models: use `pi-ai`'s providers, not Effect AI.** A `Models` registry from run config `{ provider, model, thinking }`,
 the built-in Anthropic provider, and a `commandcode` provider written with `createProvider` (about 40 lines, plus a price table read
