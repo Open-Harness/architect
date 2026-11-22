@@ -5,11 +5,11 @@ milestone: "Goal 11: events in and out"
 release: "1.0"
 branch: goal/events
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude       # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-22     # the date it started
 done_check: nx run e2e:events
 owns:
   - packages/orthograph/src/modules/events/
@@ -97,4 +97,8 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+Running since 22 November 2026, led in Claude Code on claude-opus-5-5. `goal/stage-1` merged in (#454). Slice 1 is
+decided: `decisions/M5-reach-out.md` settles the outbox (a table beside the journal, drained by a Durable Object per
+store), the door and the inbox, `on:` keyed by event id, the `system` and `service` principals, retries and redelivery,
+views and the event side of a workflow's wait. Slice 5 waits on Goal 8's M3.01 (Ask #462). Next: slice 2's journeys and
+slice 3's checks, each by an author, then slice 3's build, landed early for Goal 12.
