@@ -17,8 +17,8 @@ One example runs through it: Plugged In, [`examples/plugged-in`](../../examples/
 built as (K9). `outline.md` says which stage teaches which page, and K37 records the switch. acme stays the fixture the
 tests and gates run on.
 
-The map behind this plan, drawn for Aaron's review, is the canon board:
-https://claude.ai/code/artifact/1ec0cf04-7096-44f5-a182-7c42b55ee37b (section 8 is the plan for 1.0).
+The map behind this plan, drawn for Aaron's review, is the canon board (a convenience: the link dies with the account,
+and `outline.md` and K37 are the record): https://claude.ai/code/artifact/1ec0cf04-7096-44f5-a182-7c42b55ee37b.
 
 `design/docs/index.html` stays the single source until the canon covers what it covers. Then the canon replaces it,
 and the decisions record the switch.

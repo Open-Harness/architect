@@ -42,13 +42,14 @@ level, and the details wait for the layers that own them.
 
 **Examples.** One example runs through the whole canon: Plugged In, `examples/plugged-in`, the app 1.0 is built as
 (K9). Each page takes its example from the stage that needs it. Stage 1 (claim `@name`, a public page of links) teaches
-layers 1 to 3, the database and actor stores, the projections, `ui`, `portal`, `secrets`, `environments` and sign-in.
+layers 1 to 3, the database and actor stores, the projections, `ui`, `portal`, `secrets`, `environments` (locally; the cloud is M7) and sign-in.
 Stage 2 (a wallet, paid by handle) teaches `chains-and-wallets`, the chain store, adapters from an ABI, `on:` and the
 stand-in chain. Stage 3 (a Safe with the budgets plugin) teaches `features` by a plugin of our own, `time` (budgets are
 per month), `workflows` (owners sign above a budget) and `agents` (an agent spends under its hat). Stage 4 (the same club,
 private, on Aztec) teaches the private side of `languages-and-hosts` and `things`. A page contrasts a second example only
-where the reader is choosing between kinds, as `plugins` does with GitHub and Stripe. acme stays the fixture the tests
-and gates run on, and `examples/signup` is deleted once no page quotes it (ST1.08).
+where the reader is choosing between kinds, as `plugins` does with GitHub and Stripe. Off 1.0's path, and so written
+last and marked so: `views` (M5), with `factory` and `agent-kit`. acme stays the fixture the tests and gates run on,
+and `examples/signup` is deleted once no page quotes it (ST1.08).
 
 **Names.** The framework is Orthograph, its command `ortho` (K5, "Names"). Pages say Orthograph and `ortho` in prose,
 and quote code by today's paths and output (K6, `design/naming.md`).
@@ -63,7 +64,7 @@ links there. It doesn't guess.
 
 | # | Page | Job | Owns | Questions a reader brings | Links | Milestone |
 |---|---|---|---|---|---|---|
-| 1 | `orthograph` | Describe a system once; each operation is enforced in one place, and everything else falls out | the loop, projection (as an idea), behaviour as the only freehand, Orthograph | What is Orthograph? What is made for me, and what is the only code I write by hand? How does the loop close? | blueprint, languages-and-hosts, plugins, data, doors | built (the loop closes at M3) |
+| 1 | `orthograph` | Describe a system once; each operation is enforced in one place, and everything else falls out | the loop, projection (as an idea), behaviour as the only freehand, Orthograph | What is Orthograph, and who is it for? What do I write, and what is made for me? What is the only code I write by hand? How does the loop close? | blueprint, languages-and-hosts, plugins, data, doors | built (the loop closes at M3) |
 | 2 | `blueprint` | What you write, and the model it compiles to | blueprint, declaration, model, name from path, `ortho check` | What goes in `blueprint/`, and where does each declaration live? How does a name come from its path, and why is it never written as a string? What is the model, and what does `ortho check` tell me? | orthograph, things, operations, journeys, plugins, handlers | built · blanks and journeys in the model M1.03 |
 | 3 | `languages-and-hosts` | What behaviour is written in, and where it runs | language, host, `runs` | What is a language, and what does it own? What is a host, and what does it supply? Why does a language never choose where it runs? Where does a chain fit? | orthograph, doors, data, handlers | Effect and Cloudflare built · chain languages decided in K7, built M6.01 onwards |
 | 4 | `plugins` | Built once, mounted anywhere: the five kinds and the one-file mount | plugin, feature, adapter, projection (as kinds), mount, choose, include, narrow, omit, choice, setting, need | What are the five kinds, and how do I pick? What can a mount say, and why only that? A choice or a setting? | orthograph, features, adapters, projections | M1.06 to M1.13 |
@@ -95,7 +96,7 @@ links there. It doesn't guess.
 | # | Page | Job | Owns | Questions a reader brings | Links | Milestone |
 |---|---|---|---|---|---|---|
 | 17 | **`stores`** | Where a thing's state is written, and the commit that makes a place a store | store, store kind, default store, commit, migration | Can I have more than one database? Why can't KV or R2 hold a thing? What does a commit promise? What about a database I don't own? | data, things, views, adapters, workflows, environments | database, actor built · stores M1.17 · chain decided in K7 and K25, built M6.10 |
-| 18 | `views` | Lists across stores and sources, kept from events | view, data map | How do I list things that live as actors, or across stores? How fresh is a view? Where do I see all my data? | data, stores, machines, adapters | M5 |
+| 18 | `views` | Lists across stores and sources, kept from events | view, data map | How do I list things that live as actors, or across stores? How fresh is a view? Where do I see all my data? | data, stores, machines, adapters | after 1.0: M5 |
 
 ## Layer 5: plugins in depth
 
