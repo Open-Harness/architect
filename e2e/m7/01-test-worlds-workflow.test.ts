@@ -10,7 +10,8 @@
 // killed outright is the local half's: `packages/prove/src/modules/test-worlds/test-worlds.test.ts` kills a run with SIGKILL and finds the world gone after its lifetime. A per-run stack that outlives a dead runner is an open decision (the pull request).
 // Red today on one reason: the file does not exist. Controls, true today: the judge fails each planted wrong workflow below (a plant is one edit of the parsed file, so none depends on the file's layout); the staging workflow is not mistaken for this one.
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse, stringify } from "yaml";
@@ -80,6 +81,93 @@ describe("01: the test-worlds workflow (M7.05), judged from its text", () => {
     expect(job(parse(real) as Doc)["timeout-minutes"] * 60_000).toBeLessThan(lifetime);
   });
 
+  // M7-cloud.md, rule 2: after destroy, the listing fails only on a resource carrying THIS run's prefix (the world's and the logbook's), and no other run's matters: pull requests overlap, and each run's world and
+  // logbook are made and destroyed while another's are up. The `judge` step's own script is run (bash, from the repository, on listings written here), with the account's names of other runs and other apps beside ours.
+  describe("the judge step fails on this run's leftovers and on nothing else in the account", () => {
+    const PREFIX = "ortho-pluggedin-test-pr7r190000001";
+    const judged = (after: Record<string, string[]>) => {
+      present("its judge step is the one that is run");
+      const dir = mkdtempSync(join(tmpdir(), "ortho-m7-judge-"));
+      try {
+        mkdirSync(join(dir, "private"));
+        writeFileSync(join(dir, "private/after.json"), JSON.stringify(["workers", "d1", "durable-object-namespaces", "r2"].map((label) => ({ label, names: after[label] ?? [] }))));
+        const body = String(job(parse(real) as Doc).steps.find((s) => s["id"] === "judge")?.["run"] ?? "");
+        const done = spawnSync("bash", ["-c", body], { cwd: repo, encoding: "utf8", env: { PATH: process.env["PATH"] ?? "", PREFIX, UP: "failure", EVIDENCE: dir } });
+        return { status: done.status, said: `${done.stdout}${done.stderr}` };
+      } finally { rmSync(dir, { recursive: true, force: true }); }
+    };
+    const others = { workers: ["someone-elses-app", "ortho-pluggedin-test-pr9r190000002-worker", "ortho-pluggedin-test-pr7r1900000012-worker", "ortho-pluggedin-stg-pr7r190000001-worker", "ortho-pluggedin-test-pr9r190000002-logbook"], d1: ["ortho-pluggedin-test-pr9r190000002-db", "ortho-pluggedin-test-pr7r1900000012-db"], r2: ["ortho-pluggedin-test-pr9r190000002-bucket"] };
+    it("passes when only other runs' and other apps' resources are in the account (an overlapping pull request's world appearing mid-run)", () => {
+      const r = judged(others);
+      expect([r.status, r.said]).toEqual([0, expect.stringContaining("STAGING CLEAN")]);
+    });
+    it.each([
+      ["a Worker of this run's", { workers: [`${PREFIX}-worker`] }],
+      ["the run's logbook Worker", { workers: [`${PREFIX}-logbook`] }],
+      ["a database of the run's", { d1: [`${PREFIX}-db`] }],
+      ["a database of the run's logbook", { d1: [`${PREFIX}-logbook-db`] }],
+      ["a Durable Object namespace of the run's Worker", { "durable-object-namespaces": [`${PREFIX}-worker:World:ns1`] }],
+      ["a bucket of the run's", { r2: [`${PREFIX}-bucket`] }],
+    ] as const)("fails on %s, beside everyone else's", (_name, mine) => {
+      const r = judged({ ...others, ...Object.fromEntries(Object.entries(mine).map(([k, v]) => [k, [...((others as Record<string, string[]>)[k] ?? []), ...v]])) });
+      expect(r.status, r.said).toBe(1);
+      expect(r.said).toContain("STAGING FAILED");
+    });
+    it("does not pass a listing it cannot read", () => {
+      present("its judge step is the one that is run");
+      const body = String(job(parse(real) as Doc).steps.find((s) => s["id"] === "judge")?.["run"] ?? "");
+      const dir = mkdtempSync(join(tmpdir(), "ortho-m7-judge-"));
+      try {
+        mkdirSync(join(dir, "private"));
+        const done = spawnSync("bash", ["-c", body], { cwd: repo, encoding: "utf8", env: { PATH: process.env["PATH"] ?? "", PREFIX, UP: "failure", EVIDENCE: dir } });
+        expect(done.status).not.toBe(0);
+      } finally { rmSync(dir, { recursive: true, force: true }); }
+    });
+  });
+
+  // When `up` succeeded the judge also compares the listing taken while the world was up (`during.json`, written by the `during` step) with the plan: `up` made exactly what the plan said, under the prefix. The same real
+  // script, with UP=success, on files written here: every file it reads must be one a pinned step writes.
+  describe("the judge step, after a successful up: the world is what the plan said", () => {
+    const PREFIX = "ortho-pluggedin-test-pr7r190000001";
+    const MINE = { workers: [`${PREFIX}-worker`], d1: [`${PREFIX}-db`], "durable-object-namespaces": [`${PREFIX}-worker:World:ns1`] } as Record<string, string[]>;
+    const PLAN = { app: "plugged-in", environment: "test", run: "pr7r190000001", prefix: PREFIX, resources: [{ kind: "worker", name: `${PREFIX}-worker` }, { kind: "d1", name: `${PREFIX}-db`, binding: "DB" }, { kind: "durable-object-namespace", script: `${PREFIX}-worker`, class: "World" }] };
+    const OTHERS = { workers: ["someone-elses-app", "ortho-pluggedin-test-pr9r190000002-worker"], d1: ["ortho-pluggedin-test-pr9r190000002-db"] } as Record<string, string[]>;
+    const listing = (names: Record<string, string[]>) => ["workers", "d1", "durable-object-namespaces", "r2"].map((label) => ({ label, names: names[label] ?? [] }));
+    const merged = (a: Record<string, string[]>, b: Record<string, string[]>) => Object.fromEntries(["workers", "d1", "durable-object-namespaces", "r2"].map((k) => [k, [...(a[k] ?? []), ...(b[k] ?? [])]]));
+    const judged = (files: { after?: unknown; during?: unknown; plan?: unknown }) => {
+      present("its judge step is the one that is run");
+      const dir = mkdtempSync(join(tmpdir(), "ortho-m7-judge-"));
+      try {
+        mkdirSync(join(dir, "private"));
+        if (files.after !== undefined) writeFileSync(join(dir, "private/after.json"), JSON.stringify(files.after));
+        if (files.during !== undefined) writeFileSync(join(dir, "private/during.json"), JSON.stringify(files.during));
+        if (files.plan !== undefined) writeFileSync(join(dir, "plan.json"), JSON.stringify(files.plan));
+        const body = String(job(parse(real) as Doc).steps.find((s) => s["id"] === "judge")?.["run"] ?? "");
+        const done = spawnSync("bash", ["-c", body], { cwd: repo, encoding: "utf8", env: { PATH: process.env["PATH"] ?? "", PREFIX, UP: "success", EVIDENCE: dir } });
+        return { status: done.status, said: `${done.stdout}${done.stderr}` };
+      } finally { rmSync(dir, { recursive: true, force: true }); }
+    };
+    const clean = { after: listing(OTHERS), during: listing(merged(OTHERS, MINE)), plan: PLAN };
+    it("a clean run exits 0: what was up is the plan, and nothing of the run's is left, with other runs' resources beside", () => {
+      const r = judged(clean);
+      expect([r.status, r.said]).toEqual([0, expect.stringContaining("STAGING CLEAN")]);
+    });
+    it.each(["after", "during", "plan"] as const)("a missing %s file fails the job (the file is one a pinned step writes, and without it nothing is judged)", (gone) => {
+      const r = judged({ ...clean, [gone]: undefined });
+      expect(r.status, r.said).not.toBe(0);
+    });
+    it("a world that is not what the plan said fails: a planned resource not made, and one made that was not planned", () => {
+      const lacking = judged({ ...clean, during: listing(merged(OTHERS, { workers: MINE["workers"]!, d1: MINE["d1"]! })) });
+      expect([lacking.status, lacking.said]).toEqual([1, expect.stringContaining("NOT MADE")]);
+      const extra = judged({ ...clean, during: listing(merged(OTHERS, merged(MINE, { r2: [`${PREFIX}-bucket`] }))) });
+      expect([extra.status, extra.said]).toEqual([1, expect.stringContaining("NOT PLANNED")]);
+    });
+    it("a leftover after destroy fails it, whatever else is right", () => {
+      const r = judged({ ...clean, after: listing(merged(OTHERS, { workers: [`${PREFIX}-logbook`] })) });
+      expect(r.status, r.said).toBe(1);
+    });
+  });
+
   describe("the credentials step refuses, before anything is made, and says which are missing", () => {
     const SENTINEL = "sentinel-5c1e0d7a";
     // The step's own `run:`, as GitHub reads it, run by bash with only these variables. The sentinel stands where a credential would; it is not one.
@@ -133,7 +221,7 @@ describe("01: the test-worlds workflow (M7.05), judged from its text", () => {
       ["no job guard at all", () => plant((d) => { delete job(d)["if"]; }), /`if` is undefined/],
       ["another workflow name", () => plant((d) => { d["name"] = "test-worlds"; }), /name is "test-worlds"/],
       ["another job name", () => plant((d) => { job(d)["name"] = "prove"; }), /job's name/],
-      ["a second job", () => plant((d) => { d.jobs["extra"] = { "runs-on": "ubuntu-latest", steps: [{ run: "echo hi" }] }; }), /the jobs/],
+      ["a second job", () => plant((d) => { (d.jobs as Record<string, unknown>)["extra"] = { "runs-on": "ubuntu-latest", steps: [{ run: "echo hi" }] }; }), /the jobs/],
       ["runs of one pull request that cancel each other midway", () => plant((d) => { d["concurrency"]["cancel-in-progress"] = true; }), /serialised/],
       ["one group for every pull request", () => plant((d) => { d["concurrency"].group = "test-worlds"; }), /serialised/],
       // ---- the id token and the credentials ----
@@ -149,15 +237,16 @@ describe("01: the test-worlds workflow (M7.05), judged from its text", () => {
       ["the local issuer standing in for GitHub", () => plant((d, s) => { s("prove")["env"]["ORTHO_OIDC_ISSUER"] = "${{ vars.ORTHO_LOGBOOK_URL }}"; }), /ORTHO_OIDC/],
       ["the runner's token request typed by hand", () => plant((d, s) => { s("prove")["env"]["ACTIONS_ID_TOKEN_REQUEST_URL"] = "${{ vars.ORTHO_LOGBOOK_URL }}"; }), /ACTIONS_ID_TOKEN/],
       ["a typed prefix", () => plant((d, s) => { s("plan")["run"] += "\n# ortho-pluggedin-test-1"; }), /typed prefix/],
-      ["another secret", () => plant((d, s) => { s("before")["env"]["CLOUDFLARE_API_TOKEN"] = "${{ secrets.NPM_TOKEN }}"; }), /expression/],
+      ["another secret", () => plant((d, s) => { s("after")["env"]["CLOUDFLARE_API_TOKEN"] = "${{ secrets.NPM_TOKEN }}"; }), /expression/],
       ["the whole secrets object", () => plant((d, s) => { s("up")["env"]["CLOUDFLARE_API_TOKEN"] = "${{ toJSON(secrets) }}"; }), /expression/],
       ["the account's id from a secret", () => plant((d, s) => { s("up")["env"]["CLOUDFLARE_ACCOUNT_ID"] = "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"; }), /expression/],
       ["a credential in the plan step", () => plant((d, s) => { s("plan")["env"] = { CLOUDFLARE_API_TOKEN: TOKEN }; }), /plan: its env/],
       ["a credential in the judge step", () => plant((d, s) => { s("judge")["env"]["CLOUDFLARE_API_TOKEN"] = TOKEN; }), /judge: its env/],
       ["a credential in the evidence step", () => plant((d, s) => { s("evidence")["env"]["CLOUDFLARE_API_TOKEN"] = TOKEN; }), /evidence: its env/],
       ["the account's id left out of destroy", () => plant((d, s) => { delete s("destroy")["env"]["CLOUDFLARE_ACCOUNT_ID"]; }), /destroy: its env/],
-      ["the production environment", () => plant((d) => { job(d)["environment"] = "production"; }), /environment/],
-      ["no environment", () => plant((d) => { delete job(d)["environment"]; }), /environment/],
+      ["the production environment", () => plant((d) => { job(d)["environment"] = "production"; }), /names the environment/],
+      ["the staging environment (admits only main and goal/*, so a pull request never enters it)", () => plant((d) => { job(d)["environment"] = "staging"; }), /names the environment/],
+      ["an environment given as an object", () => plant((d) => { job(d)["environment"] = { name: "staging" }; }), /names the environment/],
       ["a fork's code checked out", () => plant((d) => { const c = job(d).steps.find((s) => /actions\/checkout/.test(s["uses"] ?? "")); if (c === undefined) throw new Error("no checkout"); c["with"] = { ref: "${{ github.event.pull_request.head.sha }}" }; }), /expression|checkout/],
       ["a timeout of a day", () => plant((d) => { job(d)["timeout-minutes"] = 1440; }), /timeout/],
       ["no timeout", () => plant((d) => { delete job(d)["timeout-minutes"]; }), /timeout/],
@@ -192,13 +281,27 @@ describe("01: the test-worlds workflow (M7.05), judged from its text", () => {
       ["destroy that only echoes", () => plant((d, s) => { s("destroy")["run"] = `echo ${s("destroy")["run"]}`; }), /destroy: its script/],
       ["destroy of staging", () => plant((d, s) => { s("destroy")["run"] = '$ORTHO env destroy staging --run "$RUN" --root examples/plugged-in'; }), /destroy: its script/],
       ["destroy by a typed name", () => plant((d, s) => { s("destroy")["run"] = "wrangler delete --name x"; }), /destroy: its script|reaches the account/],
-      ["no listing before", () => plant((d, s) => { s("before")["id"] = "beforehand"; }), /no step with id before/],
+      ["a listing before the world, for a diff of the whole account (overlapping runs would fail each other)", () => plant((d) => { const st = job(d).steps; st.splice(st.findIndex((x) => x["id"] === "up"), 0, { name: "before", id: "before", run: 'node e2e/staging/leftovers.mjs snapshot "$EVIDENCE/private/before.json"', env: { CLOUDFLARE_API_TOKEN: TOKEN, CLOUDFLARE_ACCOUNT_ID: "${{ vars.CLOUDFLARE_ACCOUNT_ID }}" } }); }), /before: its script|four actions|order|no step/],
+      ["no listing while the world is up (the judge reads during.json when up succeeded)", () => plant((d, s) => { s("during")["id"] = "meanwhile"; }), /no step with id during/],
+      ["a during listing that is taken whatever happened to up", () => plant((d, s) => { delete s("during")["if"]; }), /during: its \`if\`/],
+      ["a during listing that is a dry run", () => plant((d, s) => { s("during")["run"] = "echo node e2e/staging/leftovers.mjs snapshot"; }), /during: its script/],
+      ["a during listing written elsewhere than the judge reads", () => plant((d, s) => { s("during")["run"] = 'node e2e/staging/leftovers.mjs snapshot "$EVIDENCE/during.json"'; }), /during: its script/],
+      ["a during listing that holds no credential", () => plant((d, s) => { delete s("during")["env"]; }), /during: its env/],
+      ["a during listing taken after the logbook is up (the plan would not match)", () => plant((d) => { const st = job(d).steps; const at = st.findIndex((x) => x["id"] === "during"); const [x] = st.splice(at, 1); st.splice(st.findIndex((y) => y["id"] === "logbook") + 1, 0, x!); }), /order/],
+      ["no logbook destroy", () => plant((d, s) => { s("destroy-logbook")["id"] = "gone"; }), /no step with id destroy-logbook/],
+      ["a logbook destroy that does not always run", () => plant((d, s) => { delete s("destroy-logbook")["if"]; }), /destroy-logbook: its `if`/],
+      ["a logbook destroy that runs only when prove passed", () => plant((d, s) => { s("destroy-logbook")["if"] = "success()"; }), /destroy-logbook: its `if`/],
+      ["a logbook destroy that swallows its failure", () => plant((d, s) => { s("destroy-logbook")["continue-on-error"] = true; }), /destroy-logbook: continue-on-error/],
+      ["a logbook destroy that is a dry run", () => plant((d, s) => { s("destroy-logbook")["run"] = '$ORTHO env destroy logbook --plan --run "$RUN" --root examples/plugged-in'; }), /destroy-logbook: its script/],
+      ["a logbook destroy with no run (the long-lived logbook goes)", () => plant((d, s) => { s("destroy-logbook")["run"] = "$ORTHO env destroy logbook --root examples/plugged-in"; }), /destroy-logbook: its script/],
+      ["a logbook destroy before the logbook is made", () => plant((d) => { const st = job(d).steps; const at = st.findIndex((x) => x["id"] === "destroy-logbook"); const [x] = st.splice(at, 1); st.splice(st.findIndex((y) => y["id"] === "logbook"), 0, x!); }), /order/],
+      ["a cap step under another name (the cap counts runs by it)", () => plant((d, s) => { s("cap")["name"] = "the day's cap"; }), /its name is/],
       ["the listing after destroy that does not always run", () => plant((d, s) => { delete s("after")["if"]; }), /after: its `if`/],
       ["the listing after that keeps going when it cannot read", () => plant((d, s) => { s("after")["continue-on-error"] = true; }), /after: continue-on-error/],
       ["the judgement that does not always run", () => plant((d, s) => { delete s("judge")["if"]; }), /judge: its `if`/],
       ["the judgement that continues on error", () => plant((d, s) => { s("judge")["continue-on-error"] = true; }), /judge: continue-on-error/],
       ["a judgement whose exit is 0", () => plant((d, s) => { s("judge")["run"] = String(s("judge")["run"]).replace('exit "${PIPESTATUS[0]}"', "exit 0"); }), /judge: its script|hides a failure/],
-      ["a judgement that does not take --before (a change without the prefix goes unseen)", () => plant((d, s) => { s("judge")["run"] = String(s("judge")["run"]).replace('--before "$EVIDENCE/private/before.json"', ""); }), /judge: its script/],
+      ["a judgement that compares the whole account before and after (another run's resources would fail this one)", () => plant((d, s) => { s("judge")["run"] = String(s("judge")["run"]).replace('--after "$EVIDENCE/private/after.json"', '--after "$EVIDENCE/private/after.json" --before "$EVIDENCE/private/before.json"'); }), /judge: its script/],
       ["a judgement with the prefix typed", () => plant((d, s) => { s("judge")["env"]["PREFIX"] = "ortho-pluggedin-test-1"; }), /judge: its env|typed prefix/],
       ["the whole account's listing uploaded", () => plant((d) => { upload(d)["with"]["path"] += "\ntmp/test-worlds/private/after.json"; }), /evidence upload/],
       ["a glob for the evidence", () => plant((d) => { upload(d)["with"]["path"] += "\ntmp/test-worlds/*"; }), /evidence upload/],
@@ -210,6 +313,11 @@ describe("01: the test-worlds workflow (M7.05), judged from its text", () => {
       ["prove that never runs", () => plant((d, s) => { s("prove")["if"] = "false"; }), /prove: its `if`/],
       ["prove for staging", () => plant((d, s) => { s("prove")["run"] = String(s("prove")["run"]).replace("--env test", "--env staging"); }), /prove: its script/],
       ["prove that ends the job before destroy is read", () => plant((d, s) => { delete s("prove")["continue-on-error"]; }), /prove: continue-on-error/],
+      ["no logbook step (the run's own logbook is stood up for it)", () => plant((d, s) => { s("logbook")["id"] = "elsewhere"; }), /no step with id logbook/],
+      ["a logbook step that stands a long-lived one", () => plant((d, s) => { s("logbook")["run"] = '$ORTHO env up logbook --root examples/plugged-in'; }), /logbook: its script/],
+      ["a logbook step after prove", () => plant((d) => { const st = job(d).steps; const at = st.findIndex((x) => x["id"] === "logbook"); const [l] = st.splice(at, 1); st.splice(st.findIndex((x) => x["id"] === "prove") + 1, 0, l!); }), /order/],
+      ["a logbook step that never runs", () => plant((d, s) => { s("logbook")["if"] = "false"; }), /logbook: its `if`/],
+      ["prove's logbook from a repository variable (a long-lived one)", () => plant((d, s) => { s("prove")["env"]["ORTHO_LOGBOOK_URL"] = "${{ vars.ORTHO_LOGBOOK_URL }}"; }), /ORTHO_LOGBOOK_URL|expression/],
       ["prove with no logbook", () => plant((d, s) => { delete s("prove")["env"]["ORTHO_LOGBOOK_URL"]; }), /ORTHO_LOGBOOK_URL/],
       ["prove with the logbook's address typed", () => plant((d, s) => { s("prove")["env"]["ORTHO_LOGBOOK_URL"] = "https://logbook.example.workers.dev"; }), /ORTHO_LOGBOOK_URL/],
       ["prove with a secret as a variable", () => plant((d, s) => { s("prove")["env"]["ORTHO_X"] = "${{ secrets.CLOUDFLARE_API_TOKEN }}"; }), /ORTHO_LOGBOOK_URL holding/],
@@ -237,7 +345,7 @@ describe("01: the test-worlds workflow (M7.05), judged from its text", () => {
       ["pnpm's setup that installs by itself", () => plant((d) => { const n = job(d).steps.find((x) => /pnpm\/action-setup/.test(x["uses"] ?? "")); if (n === undefined) throw new Error("no action-setup"); n["with"] = { run_install: true }; }), /takes no inputs/],
       ["a checkout that leaves the token in .git/config", () => plant((d) => { const c = job(d).steps.find((x) => /actions\/checkout/.test(x["uses"] ?? "")); if (c === undefined) throw new Error("no checkout"); delete c["with"]; }), /checkout is exactly/],
       ["the install after the world is up", () => plant((d) => { const steps = job(d).steps; const at = steps.findIndex((x) => x["run"] === "pnpm install --frozen-lockfile"); const [i] = steps.splice(at, 1); steps.splice(steps.findIndex((x) => x["id"] === "up") + 1, 0, i!); }), /comes after the credentials step/],
-      ["a step named by a secret", () => plant((d, s) => { s("before")["name"] = `before ${TOKEN}`; }), /holds an expression/],
+      ["a step named by a secret", () => plant((d, s) => { s("after")["name"] = `after ${TOKEN}`; }), /holds an expression/],
       ["a branch filter on the pull request", () => plant((d) => { d["on"].pull_request.branches = ["main"]; }), /filters/],
       // ---- the last step ----
       ["no final failure step", () => plant((d) => { job(d).steps = job(d).steps.filter((s) => s["id"] !== undefined); }), /final step/],
