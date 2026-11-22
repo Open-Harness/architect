@@ -5,7 +5,7 @@ milestone: "Goal 16: Capxul on Orthograph"
 release: "1.0"
 branch: goal/capxul
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
   model: claude-opus-5-5 # the model id it runs on
@@ -89,14 +89,24 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Running since 22 November 2026, led in Claude Code on claude-opus-5-5.
+**Parked on 22 November 2026**, by the conductor's word after Aaron's "Narrow to the path": the Beta path (Goals 3, 5,
+6 and 15) and the two long poles (Goals 4 and 9) run first. It resumes by the conductor's word. Led until then in Claude
+Code on claude-opus-5-5.
 
-- **Slice 1, the map, is done** (`decisions/M7-capxul.md`). Of Capxul's plugins, Orthograph already has or plans the
-  keys, sign-in, budgets, organisations, handles, agents and the chain adapters; Capxul keeps its accounts, parties,
-  invoices, payments, books, approvals, permissions and payroll as its own; and Orthograph must still grow money as a
-  value, a mail adapter, reports and a few smaller pieces, which nobody owns yet.
-- **Slice 2, the first feature, waits.** It is one person getting paid: an invoice with a pay link, paid from any
-  wallet, settled only by the chain, and booked. Money arrives at the person's Safe before it is deployed; paying a
-  supplier from it is the second feature. It needs pieces from five other goals (the map's section 4), asked for by issue. It is built in Capxul's own repository once Capxul's goal there starts.
+- **Landed.** `goal/capxul` caught up with `goal/stage-1` and set running (#458). Slice 1, the map of Capxul's plugins,
+  is `decisions/M7-capxul.md` (#487). Of Capxul's plugins, Orthograph already has or plans the keys, sign-in,
+  budgets, organisations, handles, agents and the chain adapters. Capxul keeps its accounts, parties, invoices,
+  payments, books, approvals, permissions and payroll as its own. Orthograph must still grow money as a value, a mail
+  adapter, reports and a few smaller pieces, which nobody owns yet.
+- **Open.** Slice 2, Capxul's first feature, is one person getting paid: an invoice with a pay link, paid from any
+  wallet into the person's Safe before it is deployed, settled only by the chain, and booked. It waits on pieces from
+  five other goals, asked by issue and left open while parked: signed verdicts (#444, Goal 15), the token adapter
+  (#485, Goal 12), the chain follower (#475, Goal 4) and events coming in (#477, Goal 11), with staging on Goal 3's
+  own path. Two asks serve later features: deploying and sending from a Safe (#484, Goal 13) and signing in with a
+  Safe (#486, Goal 3). The decision's section 5 leaves three questions for the conductor.
+- **Next, on resuming.** Merge `goal/stage-1` in, read this goal's open issues, and check which of those five pieces
+  have landed. Then have an author who is not the builder write the first feature's journeys (the decision's section
+  4), red on empty handlers, in Capxul's own repository once its goal there starts; build when the pieces are in; and
+  land M7.11's record here early (K38).
 
 The lead rewrites this section at every slice merge.

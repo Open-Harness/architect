@@ -209,9 +209,15 @@ repository").
 
 ## Supersedes
 
-- `design/goals/map.md`, Goal 16's row: "its first feature, by the Capxul calls of 20 November rather than a needs cell: stage 3 (Goal 13)" → "M7.11: M7.05 (Goal 15), ST2.02 (Goal 12), M6.09 (Goal 4), M5.03 (Goal 11), M7.04 (Goal 3), by `decisions/M7-capxul.md`"; its graph's edge `G13 --> G16` → edges from Goals 12, 4, 11 and 3; and "Then Goal 16's feature." (after stage 3) → a line of its own, after the four early landings.
-- `design/goals/16-capxul.md`: "The feature needs the vault goal and the release goal's signed verdicts." → "The feature needs pieces from five other goals: …"; slice 2's "stage 3, by the Capxul calls (Goal 13)" → the slices above.
-- `design/decisions/K9-growing-example.md:400` (dated, keeps its words with a note) and `design/milestones.md`, "After workable": "Capxul's first plugin, the wallet, is stage 2." → "Capxul's first feature, one person getting paid, reads stage 2's token adapter and the chain's events (`decisions/M7-capxul.md`)."
+- design/goals/map.md: "its first feature, by the Capxul calls of 20 November rather than a needs cell: stage 3 (Goal 13)" → "ST2.02 (Goal 12), M6.09 (Goal 4), M5.03 (Goal 11), M7.04 (Goal 3), by `decisions/M7-capxul.md`"
+- design/goals/map.md: "stage 3 slices. Then Goal 16's feature." → "As Goals 4, 11, 12 and 15 land M6.09, M5.03, ST2.02 and M7.05 early: Goal 16's first feature, one person getting paid."
+- design/goals/map.md: "G13 --> G16" → "G12 -->|ST2.02| G16, G4 -->|M6.09| G16, G11 -->|M5.03| G16, G3 -->|M7.04| G16"
+- design/goals/16-capxul.md: "The feature needs the vault goal and the release goal's signed verdicts." → "The feature needs pieces from five other goals: the release goal's signed verdicts, a token, the chain's events coming in, and a staging to run in."
+- design/goals/16-capxul.md: "stage 3, by the Capxul calls (Goal 13)" → "M7.05 (Goal 15), ST2.02 (Goal 12), M6.09 (Goal 4), M5.03 (Goal 11), M7.04 (Goal 3)"
+- design/milestones.md: "Capxul's first plugin, the wallet, is stage 2." → "Capxul's first feature, one person getting paid, reads stage 2's token adapter and the chain's events (`decisions/M7-capxul.md`)."
+
+`design/decisions/K9-growing-example.md:400`, a dated record, keeps its words on Capxul's first plugin with a
+"Superseded by M7-capxul" note.
 
 Test drive call 3 ("Capxul's own code first, extracted when a second app needs it") stands. It was made while the
 organisations plugin existed only on paper; Capxul's companies come after its first two features, by which time
