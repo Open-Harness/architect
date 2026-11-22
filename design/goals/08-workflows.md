@@ -106,9 +106,9 @@ and the two long poles (Goals 4 and 9). It resumes by the conductor's word. Lead
 - **Open:** Ask #462 (Goal 11) wants M3.01 landed early into `goal/stage-1` (K38). Not started: on resume, cut
   `goal/workflows-early-M3.01` at slice 1's merge and open it into `goal/stage-1`. Goal 9 answered the `Timers` Ask
   (#467) with `M8-timers-shape` (#483); slice 3 still waits on M8.07.
-- **Not started:** slice 2 (M3.27), the journeys and checks. An author subagent began it and stopped before pushing
-  anything; nothing of it is on GitHub.
-- **Next, on resume:** the early landing for #462; then slice 2 by an author who is not the builder, against
+- **Begun, not finished:** slice 2 (M3.27), the journeys and checks. An author subagent stopped mid-slice; its work is
+  saved, unreviewed and with no pull request, as one WIP commit on `goal-8/m3-27-check`.
+- **Next, on resume:** the early landing for #462; then slice 2 finished from that branch by an author who is not the builder, against
   `DurableTimers` in `TimersMemory`; then slice 3 once M8.07 is on `goal/stage-1`, with its Asks to Goal 3 (the
   compiler and generators know `blueprint/workflows/`, the lint rule, a delivery hook after a call commits).
 - **Decisions this goal makes:** `M3-workflows`.
