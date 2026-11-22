@@ -25,7 +25,7 @@ slice 12's real run. Aaron would rather not make a key for testing.
 
 ## Evidence
 
-- `GET http://localhost:8317/v1/models` on 22 November 2026 lists both models, among others.
+- `GET http://localhost:8317/v1/models`, read by the lead on Aaron's Mac on 22 November 2026, lists both models among others; it cannot be replayed off that machine.
 
 ## Open risks
 
