@@ -1,0 +1,16 @@
+{
+  "name": "@workflows/source",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "orthograph": "workspace:*",
+    "@orthograph/language-effect": "workspace:*",
+    "@orthograph/workflows": "workspace:*",
+    "@effect/platform-cloudflare": "4.1.4",
+    "effect": "4.1.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261101.1"
+  }
+}

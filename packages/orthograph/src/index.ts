@@ -19,6 +19,7 @@ import { Roles } from "#modules/roles/service.js";
 import { Stores } from "#modules/stores/service.js";
 import { Things } from "#modules/things/service.js";
 import { Values } from "#modules/values/service.js";
+import { Workflows } from "#modules/workflows/service.js";
 import { Visibilities } from "#modules/visibility/service.js";
 
 export const Blueprint = Object.freeze({
@@ -36,6 +37,7 @@ export const Blueprint = Object.freeze({
   ...Environments,
   ...Plugins,
   ...Secrets,
+  ...Workflows,
   config: Configs.config,
   NotAllowed,
   todo: Blanks.todo,
@@ -59,6 +61,7 @@ export type { Operation, Read, ReadAnswer, Order, Page, ListPayload, ListItem, S
 export type { Blank } from "#modules/blanks/types.js";
 export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, Ref, Refusal } from "#modules/journeys/types.js";
 export type { Environment, EnvironmentSpec } from "#modules/environments/types.js";
+export type { Workflow, WorkflowSpec, WorkflowHandler, ActivityDeclaration, CallActivity, AwaitActivity, TimerActivity, ActivitiesOf, StartsOf } from "#modules/workflows/types.js";
 export type { Secret } from "#modules/secrets/types.js";
 export type { Identity as IdentityKind } from "#modules/identity/types.js";
 export type { CloudProvider, Database } from "#modules/cloud/types.js";

@@ -88,6 +88,9 @@ importers:
       '@orthograph/prove':
         specifier: workspace:*
         version: link:../packages/prove
+      '@orthograph/workflows':
+        specifier: workspace:*
+        version: link:../packages/workflows
     devDependencies:
       '@anthropic-ai/claude-agent-sdk':
         specifier: 0.3.316
@@ -101,6 +104,12 @@ importers:
       '@orthograph/services':
         specifier: workspace:*
         version: link:../packages/services
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
+      miniflare:
+        specifier: 5.20261101.0-beta
+        version: 5.20261101.0-beta(@types/node@24.19.2)
       playwright:
         specifier: 1.65.1
         version: 1.65.1
@@ -252,6 +261,28 @@ importers:
       '@orthograph/portal':
         specifier: workspace:*
         version: link:../../packages/portal
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../../packages/orthograph
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: 5.20261101.1
+        version: 5.20261101.1
+
+  examples/workflows:
+    dependencies:
+      '@effect/platform-cloudflare':
+        specifier: 4.1.4
+        version: 4.1.4(@alchemy.run/cloudflare@2.0.0-beta.87(@effect/platform-node@4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0)))(@types/node@24.19.2)(@typescript/typescript6@6.0.2)(alchemy@2.0.0-beta.87(@effect/platform-node@4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0)))(@types/react@19.3.0)(effect@4.1.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(ws@8.22.1))(effect@4.1.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)))(effect@4.1.4)
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../../packages/language-effect
+      '@orthograph/workflows':
+        specifier: workspace:*
+        version: link:../../packages/workflows
       effect:
         specifier: 4.1.4
         version: 4.1.4
@@ -691,6 +722,18 @@ importers:
       '@orthograph/language-effect':
         specifier: workspace:*
         version: link:../language-effect
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
+
+  packages/workflows:
+    dependencies:
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../language-effect
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
       orthograph:
         specifier: workspace:*
         version: link:../orthograph
@@ -1698,6 +1741,15 @@ packages:
     peerDependencies:
       effect: ^4.1.2
 
+  '@effect/platform-cloudflare@4.1.4':
+    resolution: {integrity: sha512-9XKvbJt8jwh2UsT/txzmbfFsW5aQ8AyA96dAbqLy2mTLKsVBIa0POlowpfkXLLOZkay0CDiWIRvIkU1YI/2JNA==}
+    peerDependencies:
+      '@alchemy.run/cloudflare': '>=2.0.0-beta.85 <3'
+      effect: ^4.1.4
+    peerDependenciesMeta:
+      '@alchemy.run/cloudflare':
+        optional: true
+
   '@effect/platform-node-shared@4.1.4':
     resolution: {integrity: sha512-DWdfphHGOFJNj/mYadgpT3jIm8aRXDcPrQiGXFBH4p2H4XmA7iYMrPsI8NxVgZ7kNX0q1+FGJZJama0tINHRAg==}
     engines: {node: '>=22.19.0'}
@@ -1713,6 +1765,11 @@ packages:
 
   '@effect/sql-d1@4.1.4':
     resolution: {integrity: sha512-x7UtDPNCgcAz6lvGbrf0INHxztV0qV8i4qleqPb31ADeilz7MnGYJ5Qhprqod+ySBUNPdsvXNRE9vm36TznIdg==}
+    peerDependencies:
+      effect: ^4.1.4
+
+  '@effect/sql-sqlite-do@4.1.4':
+    resolution: {integrity: sha512-qeL9J7hgjvKmZu86d6jnzjts+lqxz/Lm/KOPka71++fl30sx9QoQLdHgmzC92S0TydC5EGO7i7rJRhLv4FV+qw==}
     peerDependencies:
       effect: ^4.1.4
 
@@ -8275,6 +8332,14 @@ snapshots:
       '@distilled.cloud/core': 1.0.0-rc.20(effect@4.1.4)
       effect: 4.1.4
 
+  '@effect/platform-cloudflare@4.1.4(@alchemy.run/cloudflare@2.0.0-beta.87(@effect/platform-node@4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0)))(@types/node@24.19.2)(@typescript/typescript6@6.0.2)(alchemy@2.0.0-beta.87(@effect/platform-node@4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0)))(@types/react@19.3.0)(effect@4.1.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(ws@8.22.1))(effect@4.1.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)))(effect@4.1.4)':
+    dependencies:
+      '@cloudflare/workers-types': 5.20261101.1
+      '@effect/sql-sqlite-do': 4.1.4(effect@4.1.4)
+      effect: 4.1.4
+    optionalDependencies:
+      '@alchemy.run/cloudflare': 2.0.0-beta.87(@effect/platform-node@4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0)))(@types/node@24.19.2)(@typescript/typescript6@6.0.2)(alchemy@2.0.0-beta.87(@effect/platform-node@4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0)))(@types/react@19.3.0)(effect@4.1.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(ws@8.22.1))(effect@4.1.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+
   '@effect/platform-node-shared@4.1.4(effect@4.1.4)':
     dependencies:
       '@types/ws': 8.18.2
@@ -8297,6 +8362,10 @@ snapshots:
   '@effect/sql-d1@4.1.4(effect@4.1.4)':
     dependencies:
       '@cloudflare/workers-types': 5.20261118.1
+      effect: 4.1.4
+
+  '@effect/sql-sqlite-do@4.1.4(effect@4.1.4)':
+    dependencies:
       effect: 4.1.4
 
   '@emnapi/core@1.4.5':

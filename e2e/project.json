@@ -114,6 +114,29 @@
       "options": { "command": "nx run e2e:m1-checks" },
       "cache": false
     },
+    "workflows-checks": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.workflows.config.ts workflows" },
+      "cache": false
+    },
+    "workflows-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/workflows-report.json tmp/workflows-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/workflows-errors.json vitest run --root e2e --config vitest.workflows-ratchet.config.ts workflows --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/workflows-report.json; node e2e/ratchet/check.ts tmp/workflows-report.json e2e/workflows/expected-failing tmp/workflows-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "workflows": {
+      "metadata": { "description": "Goal 8's done check: the workflows journeys (M3.27). Red until M3.28 builds workflows; `workflows-ratchet` is the CI gate meanwhile." },
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:workflows-checks" },
+      "cache": false
+    },
     "m8-checks": {
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot} --config vitest.m8.config.ts m8" },
