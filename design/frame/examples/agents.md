@@ -72,7 +72,7 @@ export default Blueprint.operation(Run, {
   answer: { run: Run.fields.id },
   move: machine.moves.start,
   errors: [AgentUnknown, ModelRefused, OverBudget],
-  allowed: [signedIn.via(Via.session, Via.key)],     // a person starts a run; an agent may not, unless the mount allows it
+  allowed: [signedIn.via(Via.session, Via.key)],     // K40: an agent is its own thing, made by any operation allowed to create one
   steps: {
     open: Blueprint.step.use(Agent.open),            // the loop, in the run's own Durable Object
   },

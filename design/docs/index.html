@@ -831,8 +831,8 @@ turn 1  allowance.get    <span class="ok">✔</span>
 turn 2  allowance.spend  <span class="ok">✔</span>  remaining 88          as agent for bob (the grantee rule passed)
 done    spent 3¢   trace 9c1e…</code></pre>
 <p>The run's record is a row, so runs can be listed. Its loop is Pi Durable in that run's own Durable Object, so a
-crash resumes it mid-turn. A builder agent is the same feature, given project tools instead of operations. By default
-only a person can start a run. A mount can allow agents to start runs, but you have to choose that.</p>
+crash resumes it mid-turn. A builder agent is the same feature, given project tools instead of operations. An agent is
+its own thing, living in its own actor; any operation allowed to create one makes one, and events reach it through the outbox (K40).</p>
 </section>
 
 <section class="s" id="guide-factory">
