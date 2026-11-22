@@ -39,8 +39,8 @@ itself.
 | Dependent | Why it cares |
 |---|---|
 | M5.02 (journeys for payments and notifications) | needs the journey surface below: `s.<mount>.sends`, `s.world.settles`, `s.world.redeliver`, `calledBy` |
-| M5.03 (doors and `on:`) | builds Q2, Q3 and Q4 |
-| M5.04 (the outbox for every move) | builds Q1 and Q5 |
+| M5.03 (doors and `on:`) | builds Q2 and Q3 on M2.03's principals (Q4), with Q1's default-store enqueue and drain for inbound events |
+| M5.04 (the outbox for every move) | extends Q1 to move commits in every store and actor, and proves crash recovery and redelivery (Q5) |
 | M5.05 (views at runtime) | builds Q6 |
 | M3.16 (`emits:`, Goal 11) and M3.01 (workflows, Goal 8) | an operation's own event rides the same outbox; a workflow's wait is a subscriber (Q7) |
 | ST2.04 (Goal 12) and M6.09 (Goal 4) | the chain follower's events reach `on:` through Q2's inbox, as `service(chain)` |
@@ -93,10 +93,10 @@ The call:
    A thing lives in one store, so all of one subject's events are in one journal and one order.
 2. **Every event has an id.** `_journal` gains `"id" TEXT NOT NULL UNIQUE`, made at commit by the runtime's `Ids` (`evt_…`),
    and `Entry` gains `id`. The id is what `on:` handlers and views dedupe by. SQLite cannot add a `NOT NULL UNIQUE` column
-   to a table with rows, and an applied migration is never edited, so M5.04's migration rebuilds `_journal`, giving each
-   existing row `id = 'evt_m_' || <where> || '_' || seq`, where `<where>` is the store's binding (`DB`, or a declared
-   store's) or, in an actor, its name (`<table>:<id>`): a prefix `Ids` never makes, and one no two journals share, since
-   each journal's `seq` starts at 1.
+   to a table with rows, and an applied migration is never edited, so the migration rebuilds `_journal` (default store
+   in M5.03, the rest in M5.04). Each existing row gets `id = 'evt_m_' || <where> || '_' || seq`, where `<where>` is the
+   store's binding (`DB`, or a declared store's) or the actor's name (`<table>:<id>`). `Ids` never makes this prefix;
+   the store or actor name makes ids distinct even though each journal's `seq` starts at 1.
 3. **Drained by a Durable Object per store**, `Outbox`, named after the store's binding (`DB`, or a declared store's).
    After a commit that wrote rows the Worker kicks it under `waitUntil`, as counted work. It takes the due rows in
    `(to, subject, seq)` order, claims each (`state = claimed`, a fresh `claim` token, `due = now + lease`), delivers it
@@ -108,6 +108,12 @@ The call:
    `claimed`. `delivered`, `refused` and `failed` are done, so one S24 defect never freezes a subject's later events. A
    failed row redelivered later (Q5.3) then arrives after newer events: an operation judges it by its thing's state, as it
    judges any call, and a view skips any event whose `seq` is not above the `seq` its row last applied (Q6.2).
+   **Missed kick.** The post-commit kick is a latency shortcut, not the recovery mechanism. A generated Worker that
+   uses the outbox has a Cloudflare Cron Trigger once a minute. Its `scheduled` handler kicks each outbox-enabled D1
+   store's `Outbox`, including idle stores; the drain itself finds pending rows and expired claims using the same
+   claim and ordering rules. A crash after the D1 commit and before the first kick therefore cannot strand a row.
+   M5.03 wires this for the inbox's default store; M5.04 extends it to declared stores and checks the crash window
+   with no later producer request. A Worker without an outbox does not gain a trigger.
 4. **An actor's events go home first.** An actor's outbox has one subscriber, `home`. The actor itself copies each entry
    into the default database's `_journal` (deduped by id) with that event's real outbox rows in the same batch: so every
    event, whatever its thing's home, is in a D1 journal, which `/_world/facts/journal`, views and rebuilds read, and all
@@ -117,9 +123,9 @@ The call:
    the first that fails, so the home journal gets one actor's events in that actor's order.
 5. **Every wait through `Timers`.** The drain's wake-ups (the next due row, a lease's end, a renewal) are `Timers.at`. On
    a real clock that is the object's alarm (K23, "a Durable Object alarm … only in a real world"). No world steps time
-   until Goal 9's M8.06 and M8.07 land (the Worker has no `Timers` and nothing calls `fire` today), so M5.04 builds only
+   until Goal 9's M8.06 and M8.07 land (the Worker has no `Timers` and nothing calls `fire` today). The drain builds only
    the real-clock half, inside `host-cloudflare/src/modules/outbox/`, and refuses to start on a stepped or scaled clock,
-   naming M8.07. M8.07 replaces it with the world's table (asked of Goal 9 when M5.04 starts).
+   naming M8.07. M8.07 replaces it with the world's table.
 6. **Which clock the checks run on.** Until M8.07, M5's journeys and checks run in real-clock worlds. A world sets the
    lease and the first backoff short (`ORTHO_OUTBOX_LEASE`, default 30 s, and `ORTHO_OUTBOX_BACKOFF`, default 1 s, both
    refused outside a world), so a kill-and-restart check waits a couple of seconds, not half a minute. Once M8.07 lands,
@@ -152,8 +158,9 @@ The call:
 
 1. **A door per adapter mount** at `/_in/<mount>`. The adapter declares how its sender signs (`door: { verify }`: an
    HMAC scheme by header, prefix and tolerance, or the adapter's own verifier in its `src/`), where the event's id and
-   type are, and its events as `Blueprint.event` schemas. The secret is the adapter's declared signing secret, read only
-   by its layer (S21: its `provision` registers the door at promote).
+   type are (in headers or in the body), and its events as `Blueprint.event` schemas. A GitHub-style sender signs just
+   the raw body with HMAC-SHA256 and sends its delivery id separately. The secret is the adapter's declared signing
+   secret, read only by its layer (S21: its `provision` registers the door at promote).
 2. **What the door answers.** A bad or stale signature: 401, nothing written, span `in.<mount>.refused`
    (`refusal: BadSignature`); the signature is compared in constant time. A type the mount does not include: 200, nothing
    written (vendors send many). An included event that does not decode: 200, nothing written, and a defect on the span,
@@ -171,11 +178,13 @@ The call:
 ### Q3. `on:`, and idempotency by event id
 
 ```ts
+// blueprint/things/payment/roles.ts
+export const checkoutSender = Blueprint.role(Payment, { service: stripe });
 // blueprint/things/payment/verbs/settle.ts
 export default Blueprint.operation(Payment, {
   payload: { checkout: Payment.fields.checkout },
   move: machine.moves.settle,
-  allowed: [Blueprint.service(stripe)],
+  allowed: [checkoutSender],
   on: [Blueprint.on(stripe.events.checkoutCompleted, (e) => ({ checkout: e.data.object.id }))],
 });
 // blueprint/things/notification/verbs/invite.ts: our own event, delivered by the system
@@ -199,24 +208,15 @@ The call:
 
 ### Q4. Who delivers: `system` and `service(<mount>)`
 
-```ts
-// orthograph/src/modules/roles/types.ts: added, nothing removed
-export type Principal =
-  | { readonly kind: "anonymous" }
-  | { readonly kind: "person"; readonly person: string; readonly email?: string }
-  | { readonly kind: "system"; readonly by: "outbox" }
-  | { readonly kind: "service"; readonly source: string };   // a mount's name, or "chain" for the chain host
-// Builtin gains { kind: "system" } and { kind: "service"; source }, as Blueprint.system,
-// Blueprint.service(<mount>) and Blueprint.service.chain
-```
+M5.03 uses Goal 3's [M2.03 principals](M2-auth.md), not its own. The runtime delivers our own events as
+`{ kind: "system" }`, and a mount's events as `{ kind: "service", mount }`. A service role declared with
+`Blueprint.role(Thing, { service: adapterMount })` admits only that mount; `Blueprint.system` admits only the system.
+`Blueprint.anyone` admits both, just as it admits all other principals. A person or agent cannot acquire either identity
+through a public door. The SDK, CLI and MCP leave out an operation that only a service role or `Blueprint.system` admits.
 
-Our own events are delivered as `system`; a mount's as `service(<mount>)`, and the follower's as `service.chain` (the
-chain is a host, not a mount, so the compiler refuses a mount named `chain`). Each is admitted only by an
-operation that names it, and refused `NotAllowed` by every other, even one open to `Blueprint.anyone`: the same rule
-M8-checks call 4 gives `Blueprint.keeper`. Neither can reach a door: no session, key or MCP token makes one. Their request
-keys are keyed by `system` and `service:<source>`. Goal 9's keeper is K23's "built-in `system` principal"; when M8.10
-builds it, it may be `{ kind: "system", by: "keeper" }` behind its own `Blueprint.keeper`, and the two stay separate in
-`allowed`. The SDK, CLI and MCP leave out an operation only these admit (the default `takes` rule).
+The chain host has no public door and uses the reserved identity `service(chain)`. No adapter mount may be named
+`chain`. The chain host's explicit role binding is a seam to agree with Goals 3 and 4 before wiring the follower;
+`Inbox.accept` keeps `source: "chain"` and does not need a second principal type. This does not change the keeper's rules.
 
 ### Q5. Retries, an undeliverable event, and redelivery (S24 A)
 
@@ -273,15 +273,15 @@ M3.01 (Goal 8) owns the declaration, wake-up and replay. From the event side, se
   the deliveries' events are then in the step's journal, because a delivery runs in the trace of the event that caused
   it (a child span `outbox.<to>`). Refuses `NeverSettled` after its limit, naming the rows.
 - `s.world.redeliver(event)`: redelivers the last such event to all its subscribers (Q5.3).
-- `calledBy(Blueprint.service(stripe))` and `calledBy(Blueprint.system)`: the step's operation span carries the principal.
+- `calledBy` distinguishes the system from a service and checks the latter's mount using the principal recorded for the call.
 - Anything finer (killing a delivery, a failed row's shape) is the author's to name in `M5-checks`, as M8-checks did for
   time.
 
 ## What changes
 
-- `orthograph`: the `events` module gains `Blueprint.on` and the `meta` type; `roles` gains `system` and `service`
-  (added only); `operations` gains `on:` (M5.03). `Blueprint.view` (M5.05).
-- `language-effect`: `Entry.id`, `Commit.outbox`, the delivery run with its forced key, `Access` admitting the new
+- `orthograph`: the `events` module gains `Blueprint.on` and the `meta` type; `operations` gains `on:` (M5.03).
+  `Blueprint.view` (M5.05).
+- `language-effect`: `Entry.id`, `Commit.outbox`, and the delivery run with its forced key and the existing M2.03
   principals (M5.03, M5.04). Every wrapper over `Store` and `Records` (the logging one, `handler/service.ts:116`) passes
   the new fields on.
 - `host-cloudflare`: new modules `events` (`Inbound`, `Inbox`) and `outbox` (`Outbox`, its alarm), `_journal.id`,
