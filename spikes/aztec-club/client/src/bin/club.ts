@@ -29,11 +29,15 @@ const first = (e: unknown) => String((e as Error)?.message ?? e).split("\n")[0]!
 
 // Addresses must be known before genesis so the network can fund them with fee juice.
 const t0 = now();
+// Every world made here is stopped on every path, its wallets first, and a wallet that fails to stop never keeps a
+// network running (Codex on #504).
 const pre = await setupLocalNetwork({ config: { realProofs: false } as never });
-const scratch = await Device.create(pre.node as never, { ephemeral: true, pxe: { proverEnabled: false } });
-const addresses = [];
-for (const k of keys) addresses.push((await scratch.createSchnorrInitializerlessAccount(k.secret, k.salt, k.signing)).address);
-await scratch.stop(); await pre.stop();
+const addresses: Person["address"][] = [];
+try {
+  const scratch = await Device.create(pre.node as never, { ephemeral: true, pxe: { proverEnabled: false } });
+  try { for (const k of keys) addresses.push((await scratch.createSchnorrInitializerlessAccount(k.secret, k.salt, k.signing)).address); }
+  finally { await scratch.stop().catch(() => undefined); }
+} finally { await pre.stop(); }
 // Every fee is paid by the shared sponsor, so no member is a fee payer (only the treasurer, who deploys, holds fee juice).
 const fpc = await getContractInstanceFromInstantiationParams(SponsoredFPCContract.artifact, { salt: new Fr(SPONSORED_FPC_SALT) });
 const fee = { paymentMethod: new SponsoredFeePaymentMethod(fpc.address) };
@@ -41,11 +45,10 @@ const fee = { paymentMethod: new SponsoredFeePaymentMethod(fpc.address) };
 const tNet = now();
 const net = await setupLocalNetwork({ fundedAddresses: [addresses[0]!, fpc.address], config: { realProofs, bbBinaryPath: bb, bbWorkingDirectory: resolve(root, "runtime/bb") } as never });
 const node = net.node as never as Parameters<typeof Device.create>[0];
-await waitForNode(node as never);
-note("world started", { realProofs, nodeReportsRealProofs: ((await (node as any).getNodeInfo()) as any).realProofs, startMs: Math.round(now() - tNet) });
-
+const people: Person[] = [];
 try {
-  const people: Person[] = [];
+  await waitForNode(node as never);
+  note("world started", { realProofs, nodeReportsRealProofs: ((await (node as any).getNodeInfo()) as any).realProofs, startMs: Math.round(now() - tNet) });
   for (const [i, k] of keys.entries()) {
     const wallet = await Device.create(node, { ephemeral: true, pxe: { proverEnabled: true } });
     await wallet.registerContract(fpc, SponsoredFPCContract.artifact);
@@ -148,8 +151,8 @@ try {
     } catch (e) { note(label, { accepted: false, refused: first(e), footprintBefore: before, footprintAfter: await footprint() }); }
   }
   note("final", { footprint: await footprint(), proposal: await proposal(), totalMs: Math.round(now() - t0) });
-  for (const p of people) await p.wallet.stop();
 } finally {
+  for (const p of people) await p.wallet.stop().catch(() => undefined);
   await net.stop();
   // The node object lives in this process; what must be gone is its L1 (anvil) and the node's own loops.
   const l1Gone = await fetch(net.l1RpcUrl, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }) }).then(() => false, () => true);
