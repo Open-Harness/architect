@@ -1,7 +1,0 @@
-src/modules/abi/decode.test.ts > Abi.decodeResult > a dynamic array is one element, an array, empty or not
-src/modules/abi/decode.test.ts > Abi.decodeResult > a function with no outputs answers an empty list from empty data
-src/modules/abi/decode.test.ts > Abi.decodeResult > a string, and several outputs as one element each, in order
-src/modules/abi/decode.test.ts > Abi.decodeResult > a tuple is an object by its component names
-src/modules/abi/decode.test.ts > Abi.decodeResult > an address comes back checksummed
-src/modules/abi/decode.test.ts > Abi.decodeResult > data that does not decode is a ChainFault, never a throw and never a value
-src/modules/abi/decode.test.ts > Abi.decodeResult > the answer is always a list, one element per output: a single uint256 is [value], from zero to the largest
