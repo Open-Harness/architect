@@ -98,6 +98,16 @@ D1 database name as of today, so D1 is held to the same 63, to be safe. The plan
 either; check 37 pins it (`e2e/m1/staging-plan.ts`). The lead's call, 21 November 2026; it only refuses, so raising it later
 breaks nothing.
 
+## Addendum, 21 November 2026: prove against staging belongs to M7.04
+
+`ortho prove --env staging --run <id>` (what the hand-run staging workflow's "the story" step calls, `.github/workflows/staging.yml`) had no slice. The goal
+file's Staging section puts "the story" in the M7.03/M7.04 workflow, and the story needs a deployed Worker to judge, so it goes to **M7.04** (deploy and destroy),
+which makes the Worker. The lead's call, 21 November 2026. Check 41 (`e2e/m1/41-m7-04-prove-staging.test.ts`) pins it: the address is `<prefix>-worker.<subdomain>.workers.dev`
+from check 37's prefix and the variable `ORTHO_STAGING_SUBDOMAIN` (set by the workflow from the output of an earlier `subdomain` step, `e2e/staging/subdomain.mjs`, which holds the token and reads the account's
+subdomain with `GET /accounts/<id>/workers/subdomain`, writing only `subdomain=<name>` to the step output and printing nothing of the response; the story step holds none); `ORTHO_STAGING_ORIGIN` (loopback only) replaces the address so the same code is judged against a world
+served on this machine. Prove judges the journeys and not the nine evals (staging has no collector until an external sink is set). The workflow's `--only` now names
+the story's real journey, "a person claims a page and shares it": `--only "the story"` matched no journey.
+
 ## Supersedes
 
 - design/frame/secrets.md: "which one `Cloudflare.secrets` means is a" → "`Cloudflare.secrets` means each Worker's own secrets, not the account-level Secrets Store"

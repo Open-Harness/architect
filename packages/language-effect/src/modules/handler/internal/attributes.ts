@@ -17,6 +17,9 @@ export const payloadAttributes = (payload: object, fields: FieldsInput): Record<
 export const principalAttributes = (principal: { readonly kind: string; readonly person?: string }): Record<string, string> =>
   principal.kind === "person" && principal.person ? { "principal.person": principal.person } : { "principal.kind": principal.kind };
 
+/** The request key a call was made with, as the caller sent it (never the store's `<op>|<who>|<key>`): an id, so traced. Only a key the operation honours (M1.12a). */
+export const requestAttributes = (request: string | undefined): Record<string, string> => (request === undefined ? {} : { "request.key": request });
+
 /**
  * An answer as span attributes, `answer.<field>`, kept as it came (a number stays a number) so a wrong shape shows.
  * A list's `items` are whole instances, so each is cut down to the thing's traceable fields (and `state`) first.

@@ -1,0 +1,58 @@
+## 8 web components: snapshot
+[
+ {
+  "ref": "c1",
+  "component": "handle-claim",
+  "actions": [
+   "setName",
+   "submit"
+  ],
+  "label": "Claim your name",
+  "name": ""
+ }
+]
+
+## 8 web components: act
+{
+ "ok": true,
+ "steps": [
+  {
+   "step": 0,
+   "ref": "c1",
+   "changes": [
+    {
+     "component": "handle-claim",
+     "label": "Claim your name",
+     "key": "name",
+     "value": "firstpage"
+    }
+   ]
+  },
+  {
+   "step": 1,
+   "ref": "c1",
+   "result": "pending"
+  }
+ ],
+ "appeared": [],
+ "values": {}
+}
+
+## 8 web components: events heard, and calls
+{
+ "heard": [
+  "namechange:CustomEvent:[\"reason\",\"event\",\"source\",\"value\"]",
+  "send:CustomEvent:[\"reason\",\"event\",\"settle\",\"source\",\"value\"]",
+  "done:CustomEvent:[\"value\"]"
+ ],
+ "calls": [
+  {
+   "verb": "handle.claim",
+   "payload": {
+    "name": "firstpage"
+   },
+   "via": "agent"
+  }
+ ]
+}
+

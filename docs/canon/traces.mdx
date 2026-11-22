@@ -77,7 +77,7 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
 3. **The operation's span opens**, named after the operation, with the caller on it and the call's name, `call.id`, which every attempt of one call shares (O3):
 
    ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=155
-   spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal) }),
+   spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
    ```
 
 4. **Traceable payload fields are written on it** (`service.ts:56`).
@@ -163,6 +163,8 @@ field fails closed. The caller is written as `principal.person`, or `principal.k
   the read.
 - **`attempt` above 1**, after a commit with `commit.outcome=conflict`, is a version race. Many of them mean
   contention on one thing (see `stores`).
+- **`request.key`** is the idempotency key the call was made with, as the caller sent it, on the operation's span (and on `<operation>.refused`)
+  of an operation that honours one. It is an id, so it is traced. The portal's calls table shows it and filters by it.
 - **`request.replayed=true`** is a retry with the same request key that changed nothing (`service.ts:60`).
 - **Each step's width against the budget** shows which step is slow. `spend` must answer within `p95: "150 millis"`.
 
@@ -295,7 +297,7 @@ Mark text traced only when it is a code you search by. If a person typed it, lea
 | The operation's span, opened after the role check | `packages/language-effect/src/modules/handler/service.ts:94` | built |
 | One span per step | `packages/language-effect/src/modules/handler/service.ts:40` | built |
 | Refusal and defect written on the span | `packages/language-effect/src/modules/handler/service.ts:87` | built |
-| Refusals end OK, defects in error | `packages/language-effect/src/modules/handler/internal/span.ts:10` | built |
+| Refusals never end as errors, defects do | `packages/language-effect/src/modules/handler/internal/span.ts:10` | built |
 | The attribute allowlist | `packages/language-effect/src/modules/handler/internal/attributes.ts:8` | built |
 | `spans({ present, absent })` in journeys | `packages/orthograph/src/modules/journeys/types.ts:119` | built |
 | Sinks | `packages/orthograph/src/modules/telemetry/types.ts:23` | built |
@@ -311,7 +313,7 @@ Mark text traced only when it is a code you search by. If a person typed it, lea
 | Part | Status | Slice | Proved by |
 |---|---|---|---|
 | Operation and step spans, made from the declaration | proved | layer 2 | the `spans(…)` assertions in acme's journeys |
-| Refusals end OK, defects in error | proved | layer 2 | `packages/language-effect/src/modules/handler/handler.test.ts:169` |
+| Refusals never end as errors, defects do | proved | layer 2 | `packages/language-effect/src/modules/handler/handler.test.ts:169` |
 | Public fields only | proved | layer 2 | `packages/language-effect/src/modules/handler/internal/attributes.test.ts` |
 | Local and Axiom sinks, `ortho telemetry trace` | proved | layer 2 | `packages/prove/src/modules/sinks/sinks.test.ts`, `packages/cli/src/modules/telemetry/telemetry.test.ts` |
 | The commit span and `attempt` | proved | M1.18 | a forced conflict shows both spans and both attributes |

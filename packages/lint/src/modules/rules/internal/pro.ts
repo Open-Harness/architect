@@ -5,7 +5,7 @@ import { everyImport } from "./imports.ts";
 const PRO = "@heroui" + "-pro";
 
 /**
- * HeroUI Pro behind one package (F7, M1.34). `no-restricted-imports` bans Pro's scope too, but oxlint puts a
+ * One package behind the portal's components (F7, M1.34; today HeroUI Pro, K24 moves it to UI SDK). `no-restricted-imports` bans Pro's scope too, but oxlint puts a
  * pattern's message in its help, which the GitHub reporter drops; this rule says where to import from in the
  * diagnostic itself, in every reporter. Off in `packages/portal-ui` and `spikes/` (`.oxlintrc.json`).
  */

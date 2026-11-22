@@ -20,7 +20,7 @@ const UPLOAD = "          path: |\n            tmp/staging/plan.json\n          
 const MKDIR = "mkdir -p \"$EVIDENCE/private\"\n";
 
 describe("the staging workflow", () => {
-  test("is what the check says: by hand only, destroy and the listing always, two credentials in four steps, nothing printed", () => {
+  test("is what the check says: by hand only, destroy and the listing always, two credentials only in the steps that talk to Cloudflare, nothing printed", () => {
     assert.deepEqual(problems(real), []);
   });
 });
@@ -65,18 +65,30 @@ describe("the judge fails each planted wrong workflow", () => {
     ["no step ids on up and the story (their outcomes would be empty)", () => swap("        id: up\n", "").replace("        id: story\n", ""), /no step with id up/],
     ["destroy before the story", () => swap("      - name: the story\n", `      - name: destroy early\n        id: destroy\n        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root examples/plugged-in\n        env:\n          ${TOKEN}\n          CLOUDFLARE_ACCOUNT_ID: \${{ vars.CLOUDFLARE_ACCOUNT_ID }}\n      - name: the story\n`).replace("      - name: destroy\n        id: destroy\n", "      - name: destroy\n        id: destroyed\n"), /not in the order|no step with id destroy/],
     ["no snapshot before up", () => swap('snapshot "$EVIDENCE/private/before.json"', 'snapshot "$EVIDENCE/private/x.json"'), /before: its script/],
-    ["the final failure step that never fails", () => swap("exit 1\n", "exit 2\n"), /final failure: its script|no step/],
+    ["the final failure step that never fails", () => real.replace(/exit 1\n(?![\s\S]*exit 1\n)/, "exit 2\n"), /final failure: its script|no step/],
     ["the final failure step skipped", () => swap("if: always() && (steps.up.outcome == 'failure' || steps.story.outcome == 'failure')", "if: false"), /no step the final failure/],
     ["the final failure step on the wrong outcomes", () => swap("if: always() && (steps.up.outcome == 'failure' || steps.story.outcome == 'failure')", "if: always() && steps.up.outcome == 'success' && steps.story.outcome == 'success'"), /no step the final failure/],
-    ["the final failure step that only echoes exit 1", () => swap("          exit 1\n", "          echo exit 1\n"), /final failure: its script/],
+    ["the final failure step that only echoes exit 1", () => real.replace(/          exit 1\n(?![\s\S]*          exit 1\n)/, "          echo exit 1\n"), /final failure: its script/],
     // ---- the job ----
-    ["a second job", () => `${real}  other:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n`, /2 jobs/],
+    ["a second job", () => `${real}  other:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n`, /must be exactly "refuse" then "staging"/],
     ["no timeout", () => swap("    timeout-minutes: 30\n", ""), /no timeout/],
     ["a timeout of 0.001 minutes", () => swap("timeout-minutes: 30", "timeout-minutes: 0.001"), /no timeout/],
-    ["a job that is never run", () => swap("    runs-on: ubuntu-latest\n", "    runs-on: ubuntu-latest\n    if: false\n"), /the job has if/],
-    ["a matrix", () => swap("    runs-on: ubuntu-latest\n", "    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        x: [1, 2]\n"), /the job has strategy/],
-    ["write permissions on the job", () => swap("    runs-on: ubuntu-latest\n", "    runs-on: ubuntu-latest\n    permissions:\n      contents: write\n      id-token: write\n"), /the job has permissions/],
-    ["a shell chosen for every step", () => swap("    runs-on: ubuntu-latest\n", "    runs-on: ubuntu-latest\n    defaults:\n      run:\n        shell: bash -x {0}\n"), /the job has defaults/],
+    ["the goal-branch guard missing", () => swap("    if: startsWith(github.ref, 'refs/heads/goal/')\n", ""), /staging job's `if`/],
+    ["the guard widened to any branch", () => swap("startsWith(github.ref, 'refs/heads/goal/')\n    runs-on", "startsWith(github.ref, 'refs/heads/')\n    runs-on"), /staging job's `if`/],
+    ["the guard widened to every ref", () => swap("    if: startsWith(github.ref, 'refs/heads/goal/')\n", "    if: always()\n"), /staging job's `if`/],
+    ["the guard on the tag form of a goal ref", () => swap("    if: startsWith(github.ref, 'refs/heads/goal/')\n", "    if: startsWith(github.ref, 'refs/tags/goal/')\n"), /staging job's `if`/],
+    ["no refuse job", () => { const t = real.replace(/  # A dispatch on any ref[\s\S]*?\n  staging:/, "  staging:"); return t; }, /must be exactly "refuse" then "staging"/],
+    ["refuse that runs on every dispatch", () => swap("    if: \"!startsWith(github.ref, 'refs/heads/goal/')\"\n", ""), /refuse job's `if`/],
+    ["refuse that runs on the goal branch too", () => swap("    if: \"!startsWith(github.ref, 'refs/heads/goal/')\"\n", "    if: always()\n"), /refuse job's `if`/],
+    ["refuse that does not fail", () => swap("          exit 1\n", "          exit 0\n"), /refuse job must be one step/],
+    ["refuse that does not name the ref", () => swap(" this dispatch is on $REF\"", " this dispatch is refused\""), /refuse job must be one step/],
+    ["refuse given the token", () => swap("        env:\n          REF: ${{ github.ref }}\n", `        env:\n          REF: \${{ github.ref }}\n          ${TOKEN}\n`), /refuse job holds only REF/],
+    ["refuse given the protected environment", () => swap("    timeout-minutes: 5\n", "    timeout-minutes: 5\n    environment: staging\n"), /refuse job is only/],
+    ["refuse that checks the code out", () => swap("    steps:\n      - name: refuse\n", "    steps:\n      - uses: actions/checkout@v7.0.1\n      - name: refuse\n"), /refuse job must be one step/],
+    ["a job that is never run", () => swap("    if: startsWith(github.ref, 'refs/heads/goal/')\n", "    if: false\n"), /staging job's `if`/],
+    ["a matrix", () => swap("    if: startsWith(github.ref, 'refs/heads/goal/')\n    runs-on: ubuntu-latest\n", "    if: startsWith(github.ref, 'refs/heads/goal/')\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        x: [1, 2]\n"), /the job has strategy/],
+    ["write permissions on the job", () => swap("    if: startsWith(github.ref, 'refs/heads/goal/')\n    runs-on: ubuntu-latest\n", "    if: startsWith(github.ref, 'refs/heads/goal/')\n    runs-on: ubuntu-latest\n    permissions:\n      contents: write\n      id-token: write\n"), /the job has permissions/],
+    ["a shell chosen for every step", () => swap("    if: startsWith(github.ref, 'refs/heads/goal/')\n    runs-on: ubuntu-latest\n", "    if: startsWith(github.ref, 'refs/heads/goal/')\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        shell: bash -x {0}\n"), /the job has defaults/],
     ["a step with a shell of its own", () => swap("        id: plan\n", "        id: plan\n        shell: bash -x {0}\n"), /plan has shell/],
     ["a run cancelled midway", () => swap("cancel-in-progress: false", "cancel-in-progress: true"), /serialised/],
     ["write permissions", () => swap("  contents: read", "  contents: write"), /permissions are not/],
@@ -85,7 +97,20 @@ describe("the judge fails each planted wrong workflow", () => {
     // ---- credentials, and nothing printed ----
     ["the token in the job's env", () => swap("      EVIDENCE: tmp/staging\n", `      EVIDENCE: tmp/staging\n      ${TOKEN}\n`), /job's env/],
     ["the token in the workflow's env", () => swap("permissions:\n", `env:\n  ${TOKEN}\npermissions:\n`), /top level/],
-    ["the token on the story, which needs none", () => swap("        id: story\n", `        id: story\n        env:\n          ${TOKEN}\n`).replace("        id: story\n        env:\n", "        id: story\n        env:\n"), /story: its env/],
+    ["a second secret on the story", () => swap("          ORTHO_STAGING_SUBDOMAIN:", "          EXTRA: ${{ secrets.OTHER }}\n          ORTHO_STAGING_SUBDOMAIN:"), /story: its env|the expression/],
+    ["the story's token from a different secret name", () => { const t = real.replace(/(- name: the story[\s\S]*?CLOUDFLARE_API_TOKEN: )\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/, "$1${{ secrets.OTHER_TOKEN }}"); assert.notEqual(t, real); return t; }, /story: its env|the expression/],
+    ["the story's account from a secret rather than the variable up uses", () => { const t = real.replace(/(- name: the story[\s\S]*?CLOUDFLARE_ACCOUNT_ID: )\$\{\{ vars\.CLOUDFLARE_ACCOUNT_ID \}\}/, "$1${{ secrets.CLOUDFLARE_API_TOKEN }}"); assert.notEqual(t, real); return t; }, /story: its env/],
+    ["the story with the token but no account", () => { const t = real.replace(/(- name: the story[\s\S]*?)          CLOUDFLARE_ACCOUNT_ID: \$\{\{ vars\.CLOUDFLARE_ACCOUNT_ID \}\}\n/, "$1"); assert.notEqual(t, real); return t; }, /story: its env/],
+    ["the story with the account but no token", () => { const t = real.replace(/(- name: the story[\s\S]*?)          CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}\n/, "$1"); assert.notEqual(t, real); return t; }, /story: its env/],
+    ["the story with no subdomain (its address cannot be formed)", () => swap("          ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}\n", ""), /story: its env/],
+    ["the story's subdomain taken from a secret", () => swap("ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}", "ORTHO_STAGING_SUBDOMAIN: ${{ secrets.CLOUDFLARE_WORKERS_SUBDOMAIN }}"), /story: its env|the expression/],
+    ["the story's subdomain typed in", () => swap("ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}", "ORTHO_STAGING_SUBDOMAIN: acme"), /story: its env/],
+    ["no subdomain step", () => swap("      - name: subdomain\n        id: subdomain\n", "      - name: other\n        id: other\n"), /no step with id subdomain/],
+    ["the subdomain step after the story", () => { const t = real.replace(/      # The account's workers\.dev subdomain, read[\s\S]*?CLOUDFLARE_ACCOUNT_ID: \$\{\{ vars\.CLOUDFLARE_ACCOUNT_ID \}\}\n\n/, ""); return t.replace("      # Destroy always runs", `      - name: subdomain\n        id: subdomain\n        if: steps.up.outcome == 'success'\n        run: node e2e/staging/subdomain.mjs "$GITHUB_OUTPUT"\n        env:\n          ${TOKEN}\n          CLOUDFLARE_ACCOUNT_ID: \${{ vars.CLOUDFLARE_ACCOUNT_ID }}\n\n      # Destroy always runs`); }, /not in the order/],
+    ["the subdomain step without the token", () => swap("        run: node e2e/staging/subdomain.mjs \"$GITHUB_OUTPUT\"\n        env:\n          " + TOKEN + "\n", "        run: node e2e/staging/subdomain.mjs \"$GITHUB_OUTPUT\"\n        env:\n"), /subdomain: its env/],
+    ["the subdomain step printing the response", () => swap('node e2e/staging/subdomain.mjs "$GITHUB_OUTPUT"', 'curl -s "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" | tee "$GITHUB_OUTPUT"'), /subdomain: its script/],
+    ["the subdomain step that runs even when up failed", () => swap("        id: subdomain\n        if: steps.up.outcome == 'success'\n", "        id: subdomain\n        if: always()\n"), /subdomain: its `if`/],
+    ["the subdomain step that may fail quietly", () => swap("        id: subdomain\n", "        id: subdomain\n        continue-on-error: true\n"), /subdomain: continue-on-error/],
     ["the token on the plan", () => swap("        id: plan\n", `        id: plan\n        env:\n          ${TOKEN}\n`), /plan: its env/],
     ["the token on the judgement", () => swap("          UP: ${{ steps.up.outcome }}\n\n      # The run's own", `          UP: \${{ steps.up.outcome }}\n          ${TOKEN}\n\n      # The run's own`), /judge: its env/],
     ["destroy without the token", () => swap(`${DESTROY_HEAD}        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root examples/plugged-in\n        env:\n          ${TOKEN}\n`, `${DESTROY_HEAD}        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root examples/plugged-in\n        env:\n          X: y\n`), /destroy: its env/],

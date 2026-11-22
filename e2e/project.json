@@ -27,7 +27,7 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "node --test {projectRoot}/totals/test-totals.mjs {projectRoot}/staging/leftovers.test.mjs {projectRoot}/staging/workflow.test.mjs" },
+      "options": { "command": "node --test {projectRoot}/totals/test-totals.mjs {projectRoot}/staging/leftovers.test.mjs {projectRoot}/staging/workflow.test.mjs {projectRoot}/staging/subdomain.test.mjs" },
       "cache": false
     },
     "m0-names": {
@@ -112,6 +112,28 @@
     "m1": {
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m1-checks" },
+      "cache": false
+    },
+    "m8-checks": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.m8.config.ts m8" },
+      "cache": false
+    },
+    "m8-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/m8-report.json tmp/m8-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/m8-errors.json vitest run --root e2e --config vitest.m8-ratchet.config.ts m8 --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/m8-report.json; node e2e/ratchet/check.ts tmp/m8-report.json e2e/m8/expected-failing tmp/m8-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "m8": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:m8-checks" },
       "cache": false
     }
   }

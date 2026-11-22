@@ -10,9 +10,11 @@ session. Every thread is one **thread type**. Its title starts with the type's e
 at a glance: `<emoji> <Type>: <subject>`, for example `🔨 Builder: L1.13 generators v0`. Where your
 agent has tags or labels, tag it `thread:<type>`, in your agent's form (the table at the end).
 
-The conductor starts threads, briefs them and lands what they make. Report to it when you finish, when you're blocked,
-and when a decision is needed: message it if your agent can reach the conductor's thread, and in every case end each
-turn with a `TO THE CONDUCTOR` block or a one-line status, because the conductor also reads threads directly.
+A goal reports through its own files and GitHub, not to a chat (K32): its brief's "Where it stands", rewritten at
+every merge; its snag file; a `goal-<n>` label on its pull requests and issues; and an issue labelled for another goal
+when it needs that goal to act. A goal may run in any harness and never depends on reaching the conductor. A thread
+the conductor started also ends each turn with a `TO THE CONDUCTOR` block or a one-line status, and messages it where
+its agent can, but anything a message settles is written into a file or an issue.
 
 `AGENTS.md` binds every type. That covers its standing rules, the gate, and "Lanes, leads and the conductor".
 
@@ -30,8 +32,9 @@ turn with a `TO THE CONDUCTOR` block or a one-line status, because the conductor
 
 ## Rules every type keeps
 
-- **Land on a fresh base.** Merge a pull request only when it has no conflicts and CI ran on a head that includes the
-  current target branch. Two pull requests that were each green can break the branch together.
+- **Land without a catch-up run.** Merge a pull request when it has no conflicts and CI is green on the head that will
+  merge; the target branch's own push run checks every merge, and a red one is fixed first (`design/decisions/CI-drafts.md`).
+  Bring a branch up to date only for a real conflict or a change it needs.
 - **Every build pull request needs a 🔍 pass,** as well as CI: a builder's pull request into a goal or milestone branch
   as much as a layer into `main`. The build pull requests are where runtime defects merge. The 🔍 pass is the gate;
   Codex is advisory (`AGENTS.md`): ask it with `@codex review` when it is available, answer what it posts before the
@@ -39,9 +42,10 @@ turn with a `TO THE CONDUCTOR` block or a one-line status, because the conductor
 - **Slices that share one contract go on one branch,** built in order. If one slice changes a type, a generated file or
   a header another reads, or promises what another delivers, they are one branch, not two threads. Before starting a
   thread, check the thread list for one already doing the job.
-- **Decision IDs come from one allocator.** On a goal, the lead keeps a "Decision IDs" list in the goal file on its
-  branch; elsewhere, the conductor keeps it in `design/handoff.md`. Ask for the next ID before you write the file.
-  Never mint one yourself.
+- **Decisions are named, and lettered IDs come from one list.** A goal names its calls by milestone or area and a
+  slug (`M6-money`, `ST3-budgets`), records each in its brief, and first checks no file starts with that name on `main`
+  or any open branch. Lettered IDs (`K32`) are for calls that cross goals; the conductor keeps their list in
+  `design/handoff.md`, and you ask it for one rather than minting it (K32).
 - **Never push to a merged branch.** Before pushing, check the pull request is still open
   (`gh pr view <n> --json state`). Once it has merged, cut a fresh branch from the target.
 - **Push before you end a turn.** Commit and push your branch before every report, as work in progress if need be. A

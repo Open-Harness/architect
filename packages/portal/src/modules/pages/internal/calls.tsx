@@ -7,7 +7,7 @@ import { NOT_YET, callsOf, doorRefusalsOf, refusalCount, tallyOf, truncatedOf, w
 import { refusalsFor } from "./model.ts";
 import { NotYet } from "./not-yet.tsx";
 
-const FILTERS = [["environment", true], ["caller", true], ["outcome", true], ["request-key", false], ["over-budget", true], ["window", false]] as const;
+const FILTERS = ["environment", "caller", "outcome", "request-key", "over-budget", "window"] as const;
 type Chosen = Readonly<Record<"environment" | "caller" | "outcome" | "over-budget", string>>;
 const ALL: Chosen = { environment: "", caller: "", outcome: "", "over-budget": "" };
 const COLUMNS = [["time", "Time"], ["environment", "Environment"], ["caller", "Caller"], ["outcome", "Outcome"], ["duration", "Duration"], ["request-key", "Request key"], ["attempts", "Attempts"]] as const;
@@ -47,9 +47,13 @@ const Footer = ({ data, op, shown }: { readonly data: PortalData; readonly op: O
 const Table = ({ data, op }: { readonly data: PortalData; readonly op: OperationWire }) => {
   const why = whyNot(data, "calls");
   const [chosen, setChosen] = useState<Chosen>(ALL);
+  const [key, setKey] = useState("");
   const held = callsOf(data, [op.name]);
+  // The key is in the window's spans (M1.12a) or it is not there yet: a source from before the span carried it holds none, and says so instead of `none` per row.
+  const keyed = held.some((c) => c.requestKey !== null);
+  const shownKey = (c: { readonly requestKey: string | null }) => c.requestKey ?? (keyed ? "none" : NOT_YET);
   const rows = held.filter((c) =>
-    (chosen.environment === "" || c.environment === chosen.environment) && (chosen.caller === "" || c.caller === chosen.caller)
+    (key === "" || (c.requestKey ?? "").includes(key)) && (chosen.environment === "" || c.environment === chosen.environment) && (chosen.caller === "" || c.caller === chosen.caller)
     && (chosen.outcome === "" || c.outcome === chosen.outcome) && (chosen["over-budget"] === "" || String(c.overBudget) === chosen["over-budget"]));
   const options: Readonly<Record<keyof Chosen, ReadonlyArray<readonly [string, string]>>> = {
     environment: [...new Set(held.map((c) => c.environment))].map((e) => [e, e] as const),
@@ -61,9 +65,11 @@ const Table = ({ data, op }: { readonly data: PortalData; readonly op: Operation
     <>
       <h3>Calls</h3>
       <div className="filters">
-        {FILTERS.map(([name, available]) => (
-          <span key={name} data-portal="calls-filter" data-filter={name} data-available={String(available)}>
-            {name === "request-key" ? <>request key <NotYet hole="request-key" what="no span carries the idempotency key yet" /></>
+        {FILTERS.map((name) => (
+          <span key={name} data-portal="calls-filter" data-filter={name} data-available={String(name === "request-key" ? keyed : name !== "window")}>
+            {name === "request-key" ? (keyed
+              ? <label>request key{" "}<input type="search" value={key} placeholder="part of a key" onChange={(e) => { setKey(e.target.value); }} /></label>
+              : <>request key <NotYet hole="request-key" what="no span in this window carries an idempotency key" /></>)
               : name === "window" ? <>window <span className="meta">is the portal's, fixed at its environment's window</span></>
               : (
                 <label>{name}{" "}
@@ -84,10 +90,10 @@ const Table = ({ data, op }: { readonly data: PortalData; readonly op: Operation
           {rows.map((c, i) => (
             <tr key={`${c.trace}:${c.start}:${i}`} data-portal="call-row" data-trace={c.trace} data-operation={c.operation} data-outcome={c.outcome} {...(c.refusal === null ? {} : { "data-refusal": c.refusal })}
               data-caller-kind={c.caller} data-attempts={String(c.attempts)} data-duration-ms={String(c.durationMs)} data-over-budget={String(c.overBudget)}
-              data-environment={c.environment} data-start={String(c.start)} data-request-key="not yet" data-role-held="not yet">
+              data-environment={c.environment} data-start={String(c.start)} data-request-key={shownKey(c)} data-role-held="not yet">
               <td><a href={`/portal/traces/${c.trace}`}>{new Date(c.start).toISOString()}</a></td>
               <td>{c.environment}</td><td>{c.caller}</td><td>{c.refusal === null ? c.outcome : `${c.outcome} ${c.refusal}`}</td>
-              <td>{`${c.durationMs} ms${c.overBudget ? " over budget" : ""}`}</td><td>not yet</td><td>{c.attempts}</td>
+              <td>{`${c.durationMs} ms${c.overBudget ? " over budget" : ""}`}</td><td>{shownKey(c)}</td><td>{c.attempts}</td>
             </tr>
           ))}
         </tbody>

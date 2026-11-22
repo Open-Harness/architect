@@ -1,0 +1,874 @@
+{
+ "collections": {
+  "board": {
+   "meta": {
+    "order": [
+     "e23",
+     "e25",
+     "e1",
+     "e2",
+     "e3",
+     "e4",
+     "e5",
+     "e6",
+     "e7",
+     "e8",
+     "e9",
+     "e10",
+     "e11",
+     "e12",
+     "e13",
+     "e14",
+     "e15",
+     "e16",
+     "e17",
+     "e18",
+     "e19",
+     "e20",
+     "e21",
+     "e22",
+     "e24",
+     "e26",
+     "e27",
+     "e28",
+     "e29",
+     "e30",
+     "e31"
+    ],
+    "title": "Orthograph On Chain",
+    "v": 1
+   }
+  },
+  "elements": {
+   "e118": {
+    "h": 282,
+    "html": "<title>Done, for the Solidity piece: each step&#x27;s check</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">Done, for the Solidity piece: each step&#x27;s check</span></div><pre>M6.10  the chain store compiles; refusal codes are locked, and swapping two never moves them\nM6.11  forge build compiles the generated contract; the SDK reaches every function\nM6.12  the scaffold&#x27;s tests run and fail as &quot;not written&quot;: 0 passed, 24 failed\nM6.13  with your hook filled in: 24 passed; the fuzz finds no difference from TypeScript; a planted bug is caught\nM6.14  a revert on chain reaches your server code as the named refusal\nM6.15  a signed spend works end to end; a wrong signer is refused before anything is sent\nM6.16  ortho prove on Anvil shows each operation signed by its person\nM6.17  promoting twice with the same bytecode deploys nothing the second time</pre><p>From design/milestones.md. Done is when all eight pass on goal/stage-1, then the gate.</p></div>",
+    "type": "html",
+    "w": 1448,
+    "x": 24,
+    "y": 9323
+   },
+   "e2": {
+    "size": "large",
+    "text": "The chain plumbing is built; the blueprint half is not.",
+    "type": "text",
+    "x": 0,
+    "y": -150
+   },
+   "e72": {
+    "h": 741,
+    "text": "Roles on chain, as a standard",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 3020
+   },
+   "e25": {
+    "h": 332,
+    "text": "Open, for the DX work with Aaron",
+    "type": "container",
+    "w": 720,
+    "x": 776,
+    "y": 1150
+   },
+   "e122": {
+    "h": 262,
+    "html": "<title>Is the chain a host, or a store?</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">Is the chain a host, or a store?</span></div><pre>// design/ledger.md, LAH-04 (high)\n&quot;Whether chain is a host (Host.chain),\n a store kind supplied by language-solidity,\n or both is not settled&quot;</pre><p>K25 made it a store. The host half is still open: where does on-chain code &quot;run&quot;?</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 520,
+    "y": 9785
+   },
+   "e64": {
+    "size": "body",
+    "text": "**Q2 · Who is a person on chain?**",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 2132
+   },
+   "e114": {
+    "h": 321,
+    "html": "<title>Who owns which file</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">Who owns which file</span></div><pre>blueprint/                      you write it             the source of truth\n  stores/budgets.ts             you                      the contract&#x27;s name comes from this path\n  things/allowance/…            you                      fields, machine, roles, refusals\n  refusals.lock                 generated, checked in    a published refusal code never changes\ngenerated/solidity/             generated                &quot;Do not edit&quot;; ortho check fails on any edit\n  BudgetsBase.sol               generated                one function per operation\n  surface.json                  generated                clients are made from it, never from the ABI\n  test/, conformance/           generated                the Foundry tests and the fuzz\nsrc/Budgets.sol                 written once, yours      &quot;Yours from now on&quot;; only the hooks\nthe deployments                 recorded by promote      an address per environment, plus the bytecode hash</pre><p>Names come from paths, never strings. A field that can&#x27;t be public (an email, a secret) is refused on chain.</p></div>",
+    "type": "html",
+    "w": 1448,
+    "x": 24,
+    "y": 8401
+   },
+   "e13": {
+    "color": "peach",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**8 · A world with a chain**\nBuilt: Anvil as a plain process, keys made and funded by the world, gone when it ends. It mines a block a second until milestone 8 makes it stand still.\nNot built: a vault per organisation; journeys signed by each person.\n*Partly built · M6.16*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 520,
+    "y": 800
+   },
+   "e102": {
+    "h": 301,
+    "html": "<title>The Solidity projection</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">The Solidity projection</span></div><pre>@orthograph/language-solidity\nkind: projection\n\nrenders the .sol, the tests,\nsurface.json and your scaffold\n\nmounts itself the first time\na thing lives in a chain store</pre><p>Designed only. Today the package is one line: export {}.</p></div>",
+    "type": "html",
+    "w": 350,
+    "x": 24,
+    "y": 6912
+   },
+   "e91": {
+    "h": 320,
+    "html": "<title>One contract, keyed by organisation</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">B</span><span class=\"t\">One contract, keyed by organisation</span></div><pre><span class=\"k\">mapping</span>(<span class=\"k\">bytes32</span> organization =&gt;\n  <span class=\"k\">mapping</span>(<span class=\"k\">bytes32</span> id =&gt; <span class=\"n\">Allowance</span>))\n  <span class=\"k\">internal</span> _allowances;</pre><p>One deploy, cheapest to change. Every organisation&#x27;s money sits in one contract, so one bug or one upgrade touches all of them.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 520,
+    "y": 5432
+   },
+   "e29": {
+    "color": "yellow",
+    "h": 130,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Signing and the relayer**\nTyped data (EIP-712) per signed operation; who pays gas",
+    "type": "shape",
+    "w": 208,
+    "x": 800,
+    "y": 1328
+   },
+   "e87": {
+    "h": 533,
+    "html": "<title>Your functions, generated modifiers</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">B</span><span class=\"t\">Your functions, generated modifiers</span></div><pre><span class=\"m\">// src/Vault.sol: yours</span>\n<span class=\"k\">function</span> spend(<span class=\"k\">bytes32</span> id, <span class=\"k\">uint128</span> amount)\n  <span class=\"k\">external</span>\n  onlyHolder(id)\n  moves(id, <span class=\"n\">Move</span>.<span class=\"n\">Spend</span>)\n{\n  <span class=\"n\">Allowance</span> storage a = _allowances[id];\n  <span class=\"k\">if</span> (a.spent + amount &gt; a.limit)\n    <span class=\"k\">revert</span> <span class=\"n\">AllowanceExceeded</span>(a.limit - a.spent);\n  a.spent += amount;\n  token.transfer(a.member, amount);\n  <span class=\"k\">emit</span> <span class=\"n\">AllowanceSpent</span>(id, amount);\n}</pre><p>More freedom. Forget a modifier or the event and the contract disagrees with the blueprint; the check can only warn.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 520,
+    "y": 4827
+   },
+   "e68": {
+    "size": "body",
+    "text": "**Q3 · What does each value become in Solidity?**",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 2563
+   },
+   "e86": {
+    "h": 533,
+    "html": "<title>Generated base, your hook</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">A</span><span class=\"t\">Generated base, your hook</span><span class=\"b rec\">Recommended</span></div><pre><span class=\"m\">// generated/solidity/VaultBase.sol</span>\n<span class=\"k\">function</span> spend(<span class=\"k\">bytes32</span> id, <span class=\"k\">uint128</span> amount)\n  <span class=\"k\">external</span> onlyHolder(id)       <span class=\"m\">// role</span>\n{\n  <span class=\"n\">Allowance</span> storage a = _allowances[id];\n  _move(a, <span class=\"n\">Move</span>.<span class=\"n\">Spend</span>);         <span class=\"m\">// machine</span>\n  _spend(a, amount);            <span class=\"m\">// your hook</span>\n  <span class=\"k\">emit</span> <span class=\"n\">AllowanceSpent</span>(id, amount);\n}\n\n<span class=\"m\">// src/Vault.sol: scaffolded once, yours</span>\n<span class=\"k\">function</span> _spend(<span class=\"n\">Allowance</span> storage a,\n  <span class=\"k\">uint128</span> amount) <span class=\"k\">internal</span> override\n{\n  <span class=\"k\">if</span> (a.spent + amount &gt; a.limit)\n    <span class=\"k\">revert</span> <span class=\"n\">AllowanceExceeded</span>(a.limit - a.spent);\n  a.spent += amount;\n  token.transfer(a.member, amount);\n}</pre><p>Role, machine and event can&#x27;t be skipped; you write only the body, as the spike did. When the blueprint can declare a bound, the limit check moves into the generated half.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 24,
+    "y": 4827
+   },
+   "e69": {
+    "h": 301,
+    "html": "<title>Worked out from the value</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">A</span><span class=\"t\">Worked out from the value</span><span class=\"b ok\">Chosen</span></div><pre>uint(128)                 <span class=\"k\">uint128</span>\nid(<span class=\"s\">&quot;alw&quot;</span>)                 <span class=\"k\">bytes32</span>\ntext()                    <span class=\"k\">string</span>\naccount()                 <span class=\"k\">address</span>\n\nemail()                   refused\nvisibility.secret(...)    refused\nvisibility.private(...)   refused</pre><p>A public chain shows every field, so the compiler refuses what must stay hidden. Money gets its own round.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 24,
+    "y": 2603
+   },
+   "e28": {
+    "color": "yellow",
+    "h": 130,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Money**\nAn amount that knows its token and decimals, can go negative, same in Effect and Solidity",
+    "type": "shape",
+    "w": 208,
+    "x": 1264,
+    "y": 1174
+   },
+   "e90": {
+    "h": 320,
+    "html": "<title>A small copy per organisation</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">A</span><span class=\"t\">A small copy per organisation</span><span class=\"b rec\">Recommended</span></div><pre><span class=\"m\">// generated/solidity/VaultFactory.sol</span>\n<span class=\"k\">function</span> open(<span class=\"k\">bytes32</span> organization)\n  <span class=\"k\">external</span> <span class=\"k\">returns</span> (<span class=\"k\">address</span> vault)\n{\n  vault = <span class=\"n\">Clones</span>.cloneDeterministic(\n    implementation, organization);\n  <span class=\"n\">Vault</span>(vault).initialize(organization);\n}</pre><p>Each organisation&#x27;s money has its own address, known before it exists, and a copy costs far less than a full deploy. Safe makes accounts the same way.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 24,
+    "y": 5432
+   },
+   "e103": {
+    "h": 301,
+    "html": "<title>The chain adapter</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">The chain adapter</span></div><pre>@orthograph/chain-evm\nkind: adapter\n\nprepare, simulate, sign,\nsubmit, track, follow\n\nany EVM network, Anvil included</pre><p>Built (M1.30 to M1.32), with the wallets plugin for signing (M1.29).</p></div>",
+    "type": "html",
+    "w": 350,
+    "x": 390,
+    "y": 6912
+   },
+   "e12": {
+    "color": "peach",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**7 · The follower**\nOne per contract; reads come from its view.\nBuilt: following events with a checkpoint, and noticing when the chain takes one back.\nNot built: the follower as an actor with a stored checkpoint.\n*Partly built · M6.09*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 0,
+    "y": 800
+   },
+   "e115": {
+    "h": 369,
+    "text": "The life cycle",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 8838
+   },
+   "e65": {
+    "h": 359,
+    "html": "<title>An account field</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">A</span><span class=\"t\">An account field</span><span class=\"b ok\">Chosen</span></div><pre><span class=\"m\">// blueprint/things/allowance/thing.ts</span>\nfields: {\n  member: <span class=\"n\">Blueprint</span>.account(), <span class=\"m\">// CAIP-10</span>\n  limit: <span class=\"n\">Amount</span>,\n  spent: <span class=\"n\">Amount</span>,\n},\n\n<span class=\"m\">// blueprint/things/allowance/roles.ts</span>\n<span class=\"k\">export</span> <span class=\"k\">const</span> holder = <span class=\"n\">Blueprint</span>.role(<span class=\"n\">Allowance</span>, {\n  who: <span class=\"n\">Allowance</span>.fields.member,\n});</pre><p>On chain, the signer is compared with member. Person ids never go on chain.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 24,
+    "y": 2172
+   },
+   "e123": {
+    "h": 262,
+    "html": "<title>What is language-effect?</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">What is language-effect?</span></div><pre>packages/language-effect   the runtime generated\n                           code imports\npackages/projections       where the Effect\n                           renderers actually live</pre><p>The name says &quot;language&quot;, the package is a runtime. The same word does two jobs.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 1016,
+    "y": 9785
+   },
+   "e24": {
+    "size": "small",
+    "text": "- **K7, chain languages** (decided 18 Nov): our contracts are stores, other people's are sources; one submission lifecycle; `chain` is a family of store kinds\n- **The chain spike**: one mini DAO on EVM, Solana and Aztec; Solidity hand-written in the shape a generator would emit\n- **The allowance-on-chain example**: the first DX sketch, from blueprint to scaffold, journeys and two actors\n- **chain-evm and wallets**: built, tested, merged\n- **Noir notes** (N1): Aztec comes later; Solidity must not close its seams\n- **Stage 3, the vault**: Capxul's budgets on a Safe need all nine steps",
+    "type": "text",
+    "wrap": 672,
+    "x": 24,
+    "y": 1174
+   },
+   "e73": {
+    "size": "body",
+    "text": "Every option holds accounts. The blueprint's role is the same on every chain; each chain renders it its own way.",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 3044
+   },
+   "e3": {
+    "color": "green",
+    "h": 40,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Built, with tests",
+    "type": "shape",
+    "w": 136,
+    "x": 1040,
+    "y": -150
+   },
+   "e119": {
+    "h": 350,
+    "text": "The same unease, elsewhere",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 9721
+   },
+   "e112": {
+    "h": 398,
+    "html": "<title>What it renders from one operation</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">What it renders from one operation</span></div><pre><span class=\"m\">// generated/solidity/BudgetsBase.sol: Do not edit.</span>\n<span class=\"k\">function</span> spend(<span class=\"k\">address</span> safe, <span class=\"k\">bytes32</span> id, <span class=\"k\">uint128</span> amount)\n  <span class=\"k\">external</span>\n{\n  <span class=\"n\">Allowance</span> storage a = _allowances[safe][id];\n  _onlyMember(a);                 <span class=\"m\">// the role</span>\n  _move(a, <span class=\"n\">Move</span>.<span class=\"n\">Spend</span>);           <span class=\"m\">// the machine; refuses with its code</span>\n  _spend(a, amount);              <span class=\"m\">// your hook, in src/Budgets.sol</span>\n  _execute(safe, a.token, 0,      <span class=\"m\">// the account adapter</span>\n    abi.encodeCall(<span class=\"n\">IERC20</span>.transfer, (msg.sender, amount)));\n  <span class=\"k\">emit</span> <span class=\"n\">AllowanceSpent</span>(safe, id, amount);\n}</pre><p>Role, machine, your hook, the account, the event: the same order every time.</p></div>",
+    "type": "html",
+    "w": 700,
+    "x": 772,
+    "y": 7863
+   },
+   "e15": {
+    "from": "e6",
+    "fromSide": "right",
+    "to": "e7",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e104": {
+    "h": 301,
+    "html": "<title>The account adapter</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">The account adapter</span></div><pre>@orthograph/safe\nkind: adapter\n\nhow our module acts for\nan account: on a Safe,\nexecTransactionFromModule</pre><p>Designed only. Safe first; ERC-7579 accounts later, as another adapter.</p></div>",
+    "type": "html",
+    "w": 350,
+    "x": 756,
+    "y": 6912
+   },
+   "e8": {
+    "color": "white",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**3 · Generated tests and the scaffold**\nYou fill in one file. Tests cover every move, wrong signer and replayed signature; a fuzz runs the TypeScript machine against the contract.\nThe spike did this by hand: 1,500 steps, no differences.\n*Designed only · M6.12, M6.13*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 1040,
+    "y": 0
+   },
+   "e97": {
+    "h": 937,
+    "text": "Step back: what we are building",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 6300
+   },
+   "e78": {
+    "h": 818,
+    "text": "One role, three chains",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 3853
+   },
+   "e81": {
+    "h": 436,
+    "html": "<title>EVM · Solidity</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">EVM · Solidity</span></div><pre><span class=\"k\">mapping</span>(<span class=\"k\">bytes32</span> role =&gt;\n  <span class=\"k\">mapping</span>(<span class=\"k\">address</span> =&gt; <span class=\"k\">uint256</span>)) <span class=\"k\">internal</span> _held;\n\n<span class=\"k\">function</span> hasRole(<span class=\"k\">bytes32</span> role, <span class=\"k\">address</span> a)\n  <span class=\"k\">external</span> <span class=\"k\">view</span> <span class=\"k\">returns</span> (<span class=\"k\">bool</span>)\n{\n  <span class=\"k\">return</span> _held[role][a] &gt; 0;\n}\n\n<span class=\"m\">// Membership moves into &quot;active&quot;</span>\n<span class=\"k\">bytes32</span> role = keccak256(\n  abi.encode(<span class=\"s\">&quot;director&quot;</span>, company));\n_held[role][person] += 1;\n<span class=\"k\">emit</span> <span class=\"n\">RoleGranted</span>(role, person, msg.sender);</pre><p>OpenZeppelin&#x27;s interface. Anyone can ask who holds what.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 24,
+    "y": 4211
+   },
+   "e19": {
+    "from": "e10",
+    "fromSide": "right",
+    "to": "e11",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e108": {
+    "h": 398,
+    "html": "<title>The seam that exists: a projection</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">The seam that exists: a projection</span></div><pre><span class=\"m\">// packages/orthograph/src/modules/plugins/types.ts:114</span>\ninterface <span class=\"n\">ProjectionSpec</span> {\n  host: <span class=\"n\">Host</span>[];             <span class=\"m\">// worker | node | browser | world</span>\n  takes?: (op) =&gt; boolean;  <span class=\"m\">// which operations it renders</span>\n  render: (project) =&gt; <span class=\"n\">Effect</span>&lt;<span class=\"n\">Output</span>[]&gt;;   <span class=\"m\">// model in, files out</span>\n  ships: <span class=\"n\">Ships</span>[];           <span class=\"m\">// what promote does with them</span>\n}\n\n<span class=\"m\">// packages/projections/src/modules/server/service.ts:12</span>\n<span class=\"k\">export</span> <span class=\"k\">const</span> server = <span class=\"n\">Blueprint</span>.projection({\n  host: [<span class=\"n\">Host</span>.worker], ships: [<span class=\"n\">Ships</span>.deploy], render });\n\n<span class=\"m\">// blueprint/projections/server.ts: how an app mounts it</span>\n<span class=\"k\">export</span> <span class=\"k\">default</span> <span class=\"n\">Blueprint</span>.<span class=\"k\">use</span>(server);</pre><p>Built. The server, SDK, CLI and MCP are all projections on this seam.</p></div>",
+    "type": "html",
+    "w": 700,
+    "x": 24,
+    "y": 7393
+   },
+   "e4": {
+    "color": "peach",
+    "h": 40,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Partly built",
+    "type": "shape",
+    "w": 136,
+    "x": 1192,
+    "y": -150
+   },
+   "e74": {
+    "h": 359,
+    "html": "<title>Our roles, behind OpenZeppelin&#x27;s interface</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">A</span><span class=\"t\">Our roles, behind OpenZeppelin&#x27;s interface</span><span class=\"b ok\">Chosen</span></div><pre><span class=\"m\">// one role id per instance</span>\n<span class=\"k\">bytes32</span> role = keccak256(abi.encode(<span class=\"s\">&quot;director&quot;</span>, company));\n\n<span class=\"k\">function</span> hasRole(<span class=\"k\">bytes32</span> role, <span class=\"k\">address</span> account)\n  <span class=\"k\">external</span> <span class=\"k\">view</span> <span class=\"k\">returns</span> (<span class=\"k\">bool</span>);\n\n<span class=\"m\">// a Membership moves into &quot;active&quot;</span>\n<span class=\"k\">emit</span> <span class=\"n\">RoleGranted</span>(role, person, msg.sender);\n\n<span class=\"m\">// grantRole reverts NotAllowed unless the</span>\n<span class=\"m\">// blueprint declares who grants</span></pre><p>The chain is the authority. Roles keep their instance, and wallets, Safe and explorers can read them.</p></div>",
+    "type": "html",
+    "w": 712,
+    "x": 24,
+    "y": 3084
+   },
+   "e23": {
+    "h": 332,
+    "text": "What it stands on",
+    "type": "container",
+    "w": 720,
+    "x": 0,
+    "y": 1150
+   },
+   "e124": {
+    "size": "body",
+    "text": "*Replaced on 20 November: an organisation is not deployed. Our contract is one module that any Safe switches on. See \"Step back\" below.*",
+    "type": "text",
+    "wrap": 820,
+    "x": 640,
+    "y": 5392
+   },
+   "e62": {
+    "h": 456,
+    "html": "<title>Inline names</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">B</span><span class=\"t\">Inline names</span><span class=\"b no\">Not chosen</span></div><pre>lives: <span class=\"n\">Blueprint</span>.chain.evm({\n  <span class=\"k\">contract</span>: <span class=\"s\">&quot;AllowanceVault&quot;</span>,\n  per: <span class=\"s\">&quot;organization&quot;</span>,\n}),</pre><p>How the chain-languages decision wrote it. Two names as strings, repeated on every thing.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 520,
+    "y": 1644
+   },
+   "e63": {
+    "h": 456,
+    "html": "<title>One contract per thing</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">C</span><span class=\"t\">One contract per thing</span><span class=\"b no\">Not chosen</span></div><pre>lives: <span class=\"n\">Blueprint</span>.chain.evm({\n  per: <span class=\"n\">Organization</span>,\n}),</pre><p>Nothing to name, but a role held through another thing&#x27;s rows can&#x27;t be checked: those rows sit in another contract.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 1016,
+    "y": 1644
+   },
+   "e22": {
+    "from": "e13",
+    "fromSide": "right",
+    "to": "e14",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e75": {
+    "h": 359,
+    "html": "<title>OpenZeppelin AccessControl, imported as it is</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">B</span><span class=\"t\">OpenZeppelin AccessControl, imported as it is</span><span class=\"b no\">Not chosen</span></div><pre><span class=\"k\">contract</span> <span class=\"n\">Company</span> <span class=\"k\">is</span> <span class=\"n\">AccessControl</span> {\n  <span class=\"k\">bytes32</span> <span class=\"k\">constant</span> <span class=\"n\">DIRECTOR_ROLE</span> = keccak256(<span class=\"s\">&quot;DIRECTOR&quot;</span>);\n}\n\n<span class=\"m\">// an admin calls</span>\ngrantRole(<span class=\"n\">DIRECTOR_ROLE</span>, olga);</pre><p>One director list for the whole contract, so no &quot;director of this company&quot;. Membership rows and grants become two truths.</p></div>",
+    "type": "html",
+    "w": 712,
+    "x": 760,
+    "y": 3084
+   },
+   "e109": {
+    "h": 398,
+    "html": "<title>The loop: ortho generate</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">The loop: ortho generate</span></div><pre><span class=\"m\">// packages/generators/src/modules/sync/service.ts:10</span>\nmodel  = <span class=\"n\">Compiler</span>.model(blueprint/)      <span class=\"m\">// read every file, fold in mounts</span>\nfiles  = <span class=\"n\">Render</span>.files(model)             <span class=\"m\">// every mounted projection&#x27;s render</span>\nfor (f of files) {\n  <span class=\"k\">if</span> (f.scaffold &amp;&amp; exists(f.path)) continue;   <span class=\"m\">// scaffolds: written once</span>\n  write(f.path, f.content);\n}\ndelete orphans under generated/\n\n<span class=\"m\">// every generated file starts:</span>\n<span class=\"m\">// Generated from blueprint/projections/server.ts. Do not edit.</span>\n<span class=\"m\">// every scaffold starts:</span>\n<span class=\"m\">// Scaffolded from blueprint/things/…. Yours from now on.</span></pre><p>Built. ortho check re-renders and fails if anything in generated/ was edited.</p></div>",
+    "type": "html",
+    "w": 700,
+    "x": 772,
+    "y": 7393
+   },
+   "e5": {
+    "color": "white",
+    "h": 40,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Designed only",
+    "type": "shape",
+    "w": 152,
+    "x": 1344,
+    "y": -150
+   },
+   "e59": {
+    "h": 1348,
+    "text": "Step 1, the blueprint",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 1580
+   },
+   "e18": {
+    "from": "e9",
+    "fromSide": "right",
+    "to": "e10",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e80": {
+    "size": "body",
+    "text": "compiles to",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 4171
+   },
+   "e96": {
+    "h": 358,
+    "html": "<title>Each copy upgrades itself</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">C</span><span class=\"t\">Each copy upgrades itself</span></div><pre><span class=\"k\">function</span> _authorizeUpgrade(<span class=\"k\">address</span>)\n  <span class=\"k\">internal</span> override onlyRole(<span class=\"n\">OWNER</span>) {}\n<span class=\"m\">// each organisation&#x27;s owner approves</span>\n<span class=\"m\">// taking the new code</span></pre><p>Each organisation chooses when to take new code. A thousand organisations take a thousand approvals.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 1016,
+    "y": 5824
+   },
+   "e79": {
+    "h": 262,
+    "html": "<title>Written once, in the blueprint</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">Written once, in the blueprint</span></div><pre><span class=\"m\">// blueprint/things/company/roles.ts</span>\n<span class=\"k\">export</span> <span class=\"k\">const</span> director = <span class=\"n\">Blueprint</span>.role(<span class=\"n\">Company</span>, {\n  holds: <span class=\"n\">Membership</span>.fields.company,\n  who: <span class=\"n\">Membership</span>.fields.account,\n  where: { seat: <span class=\"s\">&quot;director&quot;</span> },\n  while: [<span class=\"s\">&quot;active&quot;</span>],\n});</pre><p>The same journeys and the same refusal, [AR-001] NotAllowed, on every chain. Only what it compiles to changes.</p></div>",
+    "type": "html",
+    "w": 1448,
+    "x": 24,
+    "y": 3877
+   },
+   "e105": {
+    "h": 301,
+    "html": "<title>The chain store</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">The chain store</span></div><pre>in orthograph, the front door\n\nBlueprint.store.chain.evm()\n\na store kind, like database\nor actor: where a thing lives</pre><p>Decided (K25), not built. The compiler still refuses &quot;chain&quot; today.</p></div>",
+    "type": "html",
+    "w": 350,
+    "x": 1122,
+    "y": 6912
+   },
+   "e9": {
+    "color": "peach",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**4 · The contract's client**\nA typed call for each operation; a revert arrives as the declared error.\nBuilt: turning a revert into its refusal code.\nNot built: generating the client.\n*Partly built · M6.14*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 0,
+    "y": 400
+   },
+   "e14": {
+    "color": "white",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**9 · Deploy per environment**\nDeployed once per environment; redeployed only when the bytecode changes.\nOpen: redeploying a vault that holds money is a migration, and nothing checks it yet.\n*Designed only · M6.17*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 1040,
+    "y": 800
+   },
+   "e113": {
+    "h": 369,
+    "text": "What goes where",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 8377
+   },
+   "e83": {
+    "h": 436,
+    "html": "<title>Aztec · Noir</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">Aztec · Noir</span></div><pre><span class=\"m\">// storage</span>\ndirectors: <span class=\"n\">Map</span>&lt;<span class=\"n\">Field</span>,\n  <span class=\"n\">Map</span>&lt;<span class=\"n\">AztecAddress</span>, <span class=\"n\">PrivateSet</span>&lt;<span class=\"n\">HeldNote</span>&gt;&gt;&gt;,\n\n<span class=\"k\">fn</span> assert_director(<span class=\"k\">self</span>, company: <span class=\"n\">Field</span>) {\n  <span class=\"k\">let</span> mine = <span class=\"k\">self</span>.storage.directors\n    .at(company)\n    .at(<span class=\"k\">self</span>.msg_sender())\n    .get_notes(<span class=\"n\">NoteGetterOptions</span>::new()\n      .set_limit(1));\n  <span class=\"k\">assert</span>(mine.len() == 1,\n    <span class=\"s\">&quot;[AR-001] NotAllowed&quot;</span>);\n}</pre><p>Private. Checked and proved on the caller&#x27;s device: the chain learns a director acted, not which one. Revoking uses up the note. No public hasRole, which would undo the privacy.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 1016,
+    "y": 4211
+   },
+   "e95": {
+    "h": 358,
+    "html": "<title>One beacon upgrades every copy</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">B</span><span class=\"t\">One beacon upgrades every copy</span><span class=\"b rec\">Recommended</span></div><pre><span class=\"m\">// every organisation&#x27;s copy points here</span>\n<span class=\"n\">UpgradeableBeacon</span> beacon;\nbeacon.upgradeTo(newImplementation);\n\n<span class=\"m\">// blueprint/storage.lock: generated,</span>\n<span class=\"m\">// append-only, checked like refusals.lock</span>\n<span class=\"n\">Allowance</span>  member  <span class=\"k\">address</span>\n           limit   <span class=\"k\">uint128</span>\n           spent   <span class=\"k\">uint128</span></pre><p>Money stays put, and one call upgrades every organisation. The check refuses a change that would scramble stored fields. Who may upgrade is a declared role, with a delay so organisations can leave first.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 520,
+    "y": 5824
+   },
+   "e106": {
+    "h": 956,
+    "text": "How code gets rendered",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 7329
+   },
+   "e17": {
+    "from": "e8",
+    "fromSide": "bottom",
+    "to": "e9",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e110": {
+    "size": "body",
+    "text": "**Proposed:** Solidity is one more projection on the same seam.",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 7823
+   },
+   "e60": {
+    "size": "body",
+    "text": "**Q1 · Where is the contract declared?**",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 1604
+   },
+   "e21": {
+    "from": "e12",
+    "fromSide": "right",
+    "to": "e13",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e76": {
+    "h": 262,
+    "html": "<title>OpenZeppelin AccessManager, one authority contract</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">C</span><span class=\"t\">OpenZeppelin AccessManager, one authority contract</span><span class=\"b no\">Not chosen</span></div><pre><span class=\"k\">contract</span> <span class=\"n\">Vault</span> <span class=\"k\">is</span> <span class=\"n\">AccessManaged</span> {\n  <span class=\"k\">function</span> spend(...) <span class=\"k\">external</span> restricted { ... }\n}\n\nmanager.grantRole(<span class=\"n\">DIRECTOR</span>, olga, delay);\nmanager.setTargetFunctionRole(vault, [spend.selector], <span class=\"n\">DIRECTOR</span>);</pre><p>One place for every role, with delays. Still no per-company roles, and one more contract to deploy and trust.</p></div>",
+    "type": "html",
+    "w": 712,
+    "x": 24,
+    "y": 3475
+   },
+   "e99": {
+    "h": 476,
+    "html": "<title>What you write</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">What you write</span></div><pre><span class=\"m\">// blueprint/stores/budgets.ts: a chain store; the contract is &quot;Budgets&quot;</span>\n<span class=\"k\">export</span> <span class=\"k\">default</span> <span class=\"n\">Blueprint</span>.store.chain.evm();\n\n<span class=\"m\">// blueprint/things/allowance/thing.ts</span>\n<span class=\"k\">export</span> <span class=\"k\">const</span> <span class=\"n\">Allowance</span> = <span class=\"n\">Blueprint</span>.thing({\n  fields: { id: <span class=\"n\">Blueprint</span>.id(<span class=\"s\">&quot;alw&quot;</span>),\n    safe: <span class=\"n\">Safe</span>.fields.account,          <span class=\"m\">// the account it spends from</span>\n    member: <span class=\"n\">Blueprint</span>.account(),         <span class=\"m\">// who may spend</span>\n    limit: <span class=\"n\">Amount</span>, spent: <span class=\"n\">Amount</span> },\n  lives: budgets,\n});\n<span class=\"m\">// + its machine (active, exhausted, revoked), roles, refusals</span>\n\n<span class=\"m\">// src/Budgets.sol: written for you once, then yours</span>\n<span class=\"k\">function</span> _spend(<span class=\"n\">Allowance</span> storage a, <span class=\"k\">uint128</span> amount) <span class=\"k\">internal</span> override {\n  <span class=\"k\">if</span> (a.spent + amount &gt; a.limit) <span class=\"k\">revert</span> <span class=\"n\">AllowanceExceeded</span>(a.limit - a.spent);\n  a.spent += amount;\n}</pre><p>You write the blueprint and one hook in Solidity. That is all.</p></div>",
+    "type": "html",
+    "w": 700,
+    "x": 24,
+    "y": 6364
+   },
+   "e6": {
+    "color": "white",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**1 · The blueprint says it lives on chain**\nA thing names a chain store; each value knows its Solidity type.\nToday: things live in a database or an actor, values have no Solidity type, and the compiler refuses chain operations.\n*Designed only · M6.10*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 0,
+    "y": 0
+   },
+   "e7": {
+    "color": "white",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**2 · Solidity, compiled from the blueprint**\nThe machine, the roles and one custom error per refusal, with codes kept in a lock file.\nToday: the Solidity package is empty. The spike's contract shows the shape, written by hand.\n*Placeholder · M6.10, M6.11*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 520,
+    "y": 0
+   },
+   "e77": {
+    "h": 262,
+    "html": "<title>Generated modifiers only</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">D</span><span class=\"t\">Generated modifiers only</span><span class=\"b no\">Not chosen</span></div><pre><span class=\"k\">modifier</span> onlyDirector(<span class=\"k\">bytes32</span> company) {\n  <span class=\"k\">if</span> (_director[company][msg.sender] == 0) <span class=\"k\">revert</span> <span class=\"n\">NotAllowed</span>();\n  _;\n}</pre><p>Works, but nothing outside our own code can read who holds what.</p></div>",
+    "type": "html",
+    "w": 712,
+    "x": 760,
+    "y": 3475
+   },
+   "e98": {
+    "size": "body",
+    "text": "**The end state.** Write a thing once and say where it lives. Everything else is generated or checked.",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 6324
+   },
+   "e20": {
+    "from": "e11",
+    "fromSide": "bottom",
+    "to": "e12",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e61": {
+    "h": 456,
+    "html": "<title>A chain store, named by its file</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">A</span><span class=\"t\">A chain store, named by its file</span><span class=\"b ok\">Chosen</span></div><pre><span class=\"m\">// blueprint/stores/vault.ts</span>\n<span class=\"k\">export</span> <span class=\"k\">default</span> <span class=\"n\">Blueprint</span>.store.chain.evm({\n  per: <span class=\"n\">Organization</span>,\n});\n\n<span class=\"m\">// blueprint/things/allowance/thing.ts</span>\n<span class=\"k\">import</span> vault <span class=\"k\">from</span> <span class=\"s\">&quot;../../stores/vault.ts&quot;</span>;\n<span class=\"k\">export</span> <span class=\"k\">const</span> <span class=\"n\">Allowance</span> = <span class=\"n\">Blueprint</span>.thing({\n  <span class=\"m\">// …</span>\n  lives: vault,\n});\n\n<span class=\"m\">// blueprint/environments/staging.ts</span>\nstores: {\n  vault: <span class=\"n\">Chain</span>.evm.network(<span class=\"s\">&quot;base-sepolia&quot;</span>),\n},</pre><p>The contract is Vault, from the file&#x27;s name. Several things can share it.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 24,
+    "y": 1644
+   },
+   "e111": {
+    "h": 398,
+    "html": "<title>packages/language-solidity (proposed)</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">packages/language-solidity (proposed)</span></div><pre>packages/language-solidity/\n  package.json     <span class=\"s\">&quot;orthograph&quot;</span>: { <span class=\"s\">&quot;kind&quot;</span>: <span class=\"s\">&quot;projection&quot;</span> }\n  sol/             <span class=\"n\">Solidity</span> the generated code imports:\n                   <span class=\"n\">Machine</span>.sol, <span class=\"n\">Roles</span>.sol, <span class=\"n\">Refusals</span>.sol\n  src/main.ts      <span class=\"k\">export</span> <span class=\"k\">const</span> solidity = <span class=\"n\">Blueprint</span>.projection({\n                     host: [<span class=\"n\">Host</span>.chain], takes: livesOnChain,\n                     ships: [<span class=\"n\">Ships</span>.<span class=\"k\">contract</span>], render })\n  src/modules/\n    <span class=\"k\">contract</span>/      renders <span class=\"n\">BudgetsBase</span>.sol\n    scaffold/      renders src/<span class=\"n\">Budgets</span>.sol, once\n    surface/       renders surface.json\n    tests/         renders the <span class=\"n\">Foundry</span> tests and the fuzz\n    lock/          keeps refusals.lock, append-only</pre><p>Each module has the usual six slots. The same seam as the server projection, plus a chain host.</p></div>",
+    "type": "html",
+    "w": 700,
+    "x": 24,
+    "y": 7863
+   },
+   "e16": {
+    "from": "e7",
+    "fromSide": "right",
+    "to": "e8",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e107": {
+    "size": "body",
+    "text": "**Built today, for the server and SDK:** one loop, and a projection is a function from the model to files.",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 7353
+   },
+   "e94": {
+    "h": 358,
+    "html": "<title>Never: new code, new contract</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">A</span><span class=\"t\">Never: new code, new contract</span></div><pre><span class=\"m\">// a new bytecode hash deploys a new Vault</span>\n<span class=\"m\">// old vaults keep their money until a</span>\n<span class=\"m\">// declared migration moves it out</span></pre><p>Simplest to trust. Every change to the logic strands money in the old contract until a migration moves it, and nothing checks migrations yet.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 24,
+    "y": 5824
+   },
+   "e82": {
+    "h": 436,
+    "html": "<title>Solana · Anchor</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">Solana · Anchor</span></div><pre>#[derive(<span class=\"n\">Accounts</span>)]\n<span class=\"k\">pub</span> <span class=\"k\">struct</span> <span class=\"n\">CreateBudget</span>&lt;&#x27;info&gt; {\n  #[account(seeds = [\n    <span class=\"s\">b&quot;director&quot;</span>,\n    company.key().as_ref(),\n    caller.key().as_ref(),\n  ], bump)]\n  <span class=\"k\">pub</span> held: <span class=\"n\">Account</span>&lt;&#x27;info, <span class=\"n\">Held</span>&gt;,\n  <span class=\"k\">pub</span> caller: <span class=\"n\">Signer</span>&lt;&#x27;info&gt;,\n  <span class=\"m\">// …</span>\n}\n\nemit_cpi!(<span class=\"n\">RoleGranted</span> { role, person });</pre><p>No standard. The role holds if that account exists, and Anchor refuses before our code runs. The client works out the account and passes it in. Leaving the role closes it and returns the rent.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 520,
+    "y": 4211
+   },
+   "e66": {
+    "h": 359,
+    "html": "<title>Person ids, and a registry</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">B</span><span class=\"t\">Person ids, and a registry</span><span class=\"b no\">Not chosen</span></div><pre>fields: { member: <span class=\"n\">Person</span>.fields.id },\n\n<span class=\"m\">// generated</span>\n<span class=\"k\">mapping</span>(<span class=\"k\">bytes32</span> person =&gt; <span class=\"k\">address</span>) account;\n<span class=\"m\">// written by the server&#x27;s key</span></pre><p>The contract trusts the server again.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 520,
+    "y": 2172
+   },
+   "e89": {
+    "size": "body",
+    "text": "**Q2 · What does per: Organization mean on chain?**",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 5392
+   },
+   "e31": {
+    "color": "yellow",
+    "h": 130,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**What things are called**\nThe names an author writes and sees at each step",
+    "type": "shape",
+    "w": 208,
+    "x": 1264,
+    "y": 1328
+   },
+   "e120": {
+    "size": "body",
+    "text": "**Where two ideas may be sharing one name, like the organisation and the Safe were.** Each needs a call.",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 9745
+   },
+   "e27": {
+    "color": "yellow",
+    "h": 130,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Time on chain**\nPeriods reset lazily on the next call; `NotDue`; the keeper's role",
+    "type": "shape",
+    "w": 208,
+    "x": 1032,
+    "y": 1174
+   },
+   "e70": {
+    "h": 301,
+    "html": "<title>Written by hand on each value</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">B</span><span class=\"t\">Written by hand on each value</span><span class=\"b no\">Not chosen</span></div><pre><span class=\"k\">export</span> <span class=\"k\">const</span> <span class=\"n\">Amount</span> = <span class=\"n\">Blueprint</span>.value(\n  <span class=\"n\">Blueprint</span>.uint(128),\n  { solidity: <span class=\"s\">&quot;uint128&quot;</span> },\n);</pre><p>Two truths that can drift apart.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 520,
+    "y": 2603
+   },
+   "e85": {
+    "size": "body",
+    "text": "**Q1 · Where does your Solidity go?**",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 4787
+   },
+   "e93": {
+    "size": "body",
+    "text": "**Q3 · Can a deployed contract's code change?**",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 5784
+   },
+   "e100": {
+    "h": 476,
+    "html": "<title>What you get</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">What you get</span></div><pre>generated/solidity/BudgetsBase.sol   the contract: machine, roles, refusals\ngenerated/solidity/surface.json      every function, its role, refusals, events\ngenerated/solidity/test/             every move from every state, wrong signers, replays\ngenerated/solidity/conformance/      the fuzz: the TypeScript machine against the contract\ngenerated/sdk/                       a typed client: simulate, sign, submit, track\nblueprint/refusals.lock              each refusal&#x27;s code on the wire, never reused\n\non `ortho prove`    a local chain (Anvil), a Safe, our module enabled, the journeys signed\non `ortho promote`  deployed per environment, only when the bytecode changed\nwhile running       the relayer submits, the follower reads it back, corrections included</pre><p>Everything here is generated or checked. None of it is hand-configured.</p></div>",
+    "type": "html",
+    "w": 700,
+    "x": 772,
+    "y": 6364
+   },
+   "e11": {
+    "color": "peach",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**6 · Waiting for confirmation**\nSimulated, submitted, included, confirmed; or dropped, reverted, corrected.\nBuilt: tracking a submission until its event is seen.\nNot built: showing it in the SDK and hooks.\n*Partly built · M6.15*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 1040,
+    "y": 400
+   },
+   "e116": {
+    "h": 321,
+    "html": "<title>From blueprint to a deployed contract</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">From blueprint to a deployed contract</span></div><pre>1  write      blueprint/ and src/Budgets.sol                               you\n2  generate   ortho generate: generated/solidity/                         the loop is built; the Solidity renderer is M6.10 to M6.11\n3  build      forge build                                                 M6.11\n4  check      ortho check: forge test, plus the fuzz against TypeScript   M6.12 to M6.13\n5  prove      ortho prove --env local: Anvil, a Safe, our module          Anvil is built (M1.31); the world with a chain is M6.16\n              enabled, every journey signed by its person\n6  promote    ortho promote staging: deploy and verify, only if the       M6.17\n              bytecode hash changed\n7  run        the SDK simulates, the wallet signs, the relayer submits,   chain-evm and wallets are built; relayer M6.07,\n              the follower confirms                                        follower M6.09, SDK M6.14 to M6.15</pre><p>Every step is a command you already know. Only steps 2 to 7 gain a chain.</p></div>",
+    "type": "html",
+    "w": 1448,
+    "x": 24,
+    "y": 8862
+   },
+   "e117": {
+    "h": 330,
+    "text": "What done looks like",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 9299
+   },
+   "e10": {
+    "color": "peach",
+    "h": 250,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**5 · Sign, simulate, submit**\nBuilt: the chain port, simulating before every send, and the wallets plugin with four signers.\nNot built: calling a contract, typed-data signatures, the relayer.\n*Partly built · M6.07, M6.15*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 456,
+    "x": 520,
+    "y": 400
+   },
+   "e101": {
+    "size": "body",
+    "text": "**Solidity is not one plugin. It is four pieces, and one of them is built.**",
+    "type": "text",
+    "wrap": 1440,
+    "x": 24,
+    "y": 6872
+   },
+   "e92": {
+    "h": 320,
+    "html": "<title>A full contract per organisation</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">C</span><span class=\"t\">A full contract per organisation</span></div><pre>new <span class=\"n\">Vault</span>(organization); <span class=\"m\">// full bytecode each time</span></pre><p>Isolated, but every organisation pays a full deploy, and new code means redeploying each one.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 1016,
+    "y": 5432
+   },
+   "e84": {
+    "h": 1443,
+    "text": "Step 2, the Solidity",
+    "type": "container",
+    "w": 1496,
+    "x": 0,
+    "y": 4763
+   },
+   "e1": {
+    "size": "title",
+    "text": "On chain: from blueprint to a deployed contract",
+    "type": "text",
+    "x": 0,
+    "y": -240
+   },
+   "e71": {
+    "h": 301,
+    "html": "<title>The thing kept as bytes</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">C</span><span class=\"t\">The thing kept as bytes</span><span class=\"b no\">Not chosen</span></div><pre><span class=\"k\">struct</span> <span class=\"n\">Allowance</span> {\n  <span class=\"k\">bytes</span> data; <span class=\"m\">// abi.encode(fields)</span>\n}</pre><p>The contract can&#x27;t check a limit or a role on bytes.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 1016,
+    "y": 2603
+   },
+   "e26": {
+    "color": "yellow",
+    "h": 130,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Roles across things**\nA declared role works the same in Solidity: a generated count and modifier",
+    "type": "shape",
+    "w": 208,
+    "x": 800,
+    "y": 1174
+   },
+   "e121": {
+    "h": 262,
+    "html": "<title>Projection, or language?</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"t\">Projection, or language?</span></div><pre><span class=\"m\">// design/frame/projections.md:364</span>\n<span class=\"n\">Blueprint</span>.projection({ host: [<span class=\"n\">Host</span>.chain], … })\n\n<span class=\"m\">// design/decisions/K17-everything-falls-out.md:104</span>\ninterface <span class=\"n\">TargetSpec</span> { frame, scaffold, guards,\n  wire, refusal, surface }    <span class=\"m\">// &quot;a language&quot;</span></pre><p>Two seams are designed for &quot;renders code&quot;. Only projections are built. One has to absorb the other.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 24,
+    "y": 9785
+   },
+   "e30": {
+    "color": "yellow",
+    "h": 130,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**A vault per organisation**\nOr one contract with a mapping; and where Capxul's Safe fits",
+    "type": "shape",
+    "w": 208,
+    "x": 1032,
+    "y": 1328
+   },
+   "e67": {
+    "h": 359,
+    "html": "<title>Person ids, wallet swapped in</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">C</span><span class=\"t\">Person ids, wallet swapped in</span><span class=\"b no\">Not chosen</span></div><pre>fields: { member: <span class=\"n\">Person</span>.fields.id },\n\n<span class=\"m\">// stored on chain as whichever wallet</span>\n<span class=\"m\">// was linked when it was written</span></pre><p>A second or new wallet loses what the old one held.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 1016,
+    "y": 2172
+   },
+   "e88": {
+    "h": 533,
+    "html": "<title>No Solidity by hand</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#15171c}\nbody{font:14px/1.45 -apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,sans-serif;color:#e6e8ee}\n.c{height:100%;padding:14px 16px;display:flex;flex-direction:column;gap:10px;border:1px solid #2b303a;border-radius:10px;overflow:auto}\n.h{display:flex;align-items:baseline;gap:8px}.l{font-weight:700;color:#8f9ab0}.t{font-weight:650;font-size:15px}\n.b{margin-left:auto;font-size:11px;font-weight:650;padding:2px 9px;border-radius:99px;white-space:nowrap}\n.ok{background:#1d4430;color:#8fe0b0}.rec{background:#1d3557;color:#9cc8ff}.no{background:#2a2e37;color:#8f96a5}\npre{margin:0;padding:10px 12px;background:#0b0d11;border-radius:6px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6dae3;overflow:auto;white-space:pre}\np{margin:0;color:#b3b9c6;font-size:13px}.k{color:#ff8f7e}.s{color:#a5d6ff}.m{color:#6f788a;font-style:italic}.n{color:#d2a8ff}</style><div class=\"c\"><div class=\"h\"><span class=\"l\">C</span><span class=\"t\">No Solidity by hand</span></div><pre><span class=\"m\">// blueprint/things/allowance/invariants.ts</span>\n<span class=\"k\">export</span> <span class=\"k\">const</span> withinLimit =\n  <span class=\"n\">Blueprint</span>.invariant.bound(\n    <span class=\"n\">Allowance</span>.fields.spent, <span class=\"s\">&quot;&lt;=&quot;</span>,\n    <span class=\"n\">Allowance</span>.fields.limit);\n\n<span class=\"m\">// blueprint/things/allowance/verbs/spend.ts</span>\nsteps: {\n  pay: <span class=\"n\">Blueprint</span>.step.transfer({\n    to: <span class=\"n\">Allowance</span>.fields.member,\n  }),\n},</pre><p>The goal for simple contracts, but bounds and transfer steps aren&#x27;t designed yet, so nothing ships until they are. It can grow out of A.</p></div>",
+    "type": "html",
+    "w": 456,
+    "x": 1016,
+    "y": 4827
+   }
+  }
+ }
+}

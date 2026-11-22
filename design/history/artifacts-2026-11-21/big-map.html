@@ -1,0 +1,251 @@
+<title>Orthograph Big Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drafting sheet. One column of plates, each a numbered drawing of one view of the project. */
+:root {
+  --bg: #f3f5f8; --sheet: #ffffff; --ink: #18202b; --muted: #5b6676; --rule: #d8dee7; --accent: #1f5fbf;
+  --built: #1d7a46; --built-bg: #e3f3ea; --partial: #9a6a00; --partial-bg: #fbf0d6; --spiked: #6b4fbf; --spiked-bg: #ece7fb;
+  --none: #a33a3a; --none-bg: #f8e3e3; --decided: #1f5fbf; --decided-bg: #e2ebfa;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #10151c; --sheet: #161d27; --ink: #e4e9f0; --muted: #9aa6b6; --rule: #2a3442; --accent: #7aa7ee;
+  --built: #6fd19a; --built-bg: #173326; --partial: #e6bd5c; --partial-bg: #3a2f14; --spiked: #b9a4f5; --spiked-bg: #2a2342;
+  --none: #ef8f8f; --none-bg: #3c1f22; --decided: #8fb6f2; --decided-bg: #1d2b44; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #10151c; --sheet: #161d27; --ink: #e4e9f0; --muted: #9aa6b6; --rule: #2a3442; --accent: #7aa7ee;
+  --built: #6fd19a; --built-bg: #173326; --partial: #e6bd5c; --partial-bg: #3a2f14; --spiked: #b9a4f5; --spiked-bg: #2a2342;
+  --none: #ef8f8f; --none-bg: #3c1f22; --decided: #8fb6f2; --decided-bg: #1d2b44; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--body); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 22px; }
+header h1 { font: 800 clamp(28px, 5vw, 40px)/1.1 var(--display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+header p { margin: 8px 0 0; color: var(--muted); max-width: 70ch; }
+.stamp { font: 500 12px var(--mono); color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+section { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 20px 22px; min-width: 0; }
+h2 { font: 700 20px/1.25 var(--display); margin: 0 0 4px; display: flex; gap: 10px; align-items: baseline; }
+h2 .no { font: 500 12px var(--mono); color: var(--accent); }
+h3 { font: 700 15px var(--display); margin: 18px 0 6px; }
+.lede { color: var(--muted); margin: 0 0 14px; max-width: 75ch; }
+p { margin: 0 0 10px; max-width: 75ch; }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+a { color: var(--accent); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+th { font: 600 11px var(--body); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; font: 600 11px var(--body); letter-spacing: 0.03em; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.built { color: var(--built); background: var(--built-bg); } .partial { color: var(--partial); background: var(--partial-bg); }
+.spiked { color: var(--spiked); background: var(--spiked-bg); } .none { color: var(--none); background: var(--none-bg); }
+.decided { color: var(--decided); background: var(--decided-bg); }
+.releases { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.rel { border: 1px solid var(--rule); border-radius: 6px; padding: 14px; display: grid; gap: 6px; align-content: start; }
+.rel b { font: 700 16px var(--display); }
+.bar { height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+.rel small { color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.grid2 > * { min-width: 0; }
+pre { background: var(--bg); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; overflow-x: auto; font: 12.5px/1.5 var(--mono); margin: 0 0 10px; }
+ul { margin: 0 0 10px; padding-left: 20px; } li { margin: 3px 0; }
+details { border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 10px; }
+summary { cursor: pointer; font-weight: 600; }
+summary:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mermaid { background: var(--sheet); }
+.kpis { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 12px; }
+.kpis div { display: grid; } .kpis strong { font: 800 26px var(--display); font-variant-numeric: tabular-nums; } .kpis span { color: var(--muted); font-size: 13px; }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="stamp">Sheet of 21 November 2026, 11:00 UTC · drawn by the conductor</div>
+  <h1>Orthograph Big Map</h1>
+  <p>Every goal and the thread running it, the integration branches, what is built and what isn't, what you can run and audit today, the UI layer in the blueprint, and how a new account picks it all up. Status words come from <code>design/scope.md</code>, read from the code, and are updated where work has landed since.</p>
+</header>
+
+<section>
+  <h2><span class="no">01</span> Where we are</h2>
+  <p class="lede">Three releases (K28). We are building toward the preview and the beta at once. Goal 3 carries both, and the other goals build 1.0's foundations beside it.</p>
+  <div class="releases">
+    <div class="rel"><b>Preview</b><div class="bar"><i style="width:80%"></i></div>
+      <small>Gate M1 on main, plus the packages on npm under <code>next</code>.</small>
+      <span>Most of milestone 1 is built on <code>goal/stage-1</code>. Still to land: request keys in traces, derived monitoring, the machine graphs, then stage 1 merges into main and you run <code>npm publish</code>.</span></div>
+    <div class="rel"><b>Beta</b><div class="bar"><i style="width:35%"></i></div>
+      <small>Gate M2 plus Goal 3's done check, with a real staging run.</small>
+      <span>Plugged In's 7 journeys are green (56 of 56 steps). Milestone 2 has started: the people-and-roles decision is merged, its journeys are being written, and the staging deploy is reworked on Alchemy.</span></div>
+    <div class="rel"><b>1.0</b><div class="bar"><i style="width:12%"></i></div>
+      <small>Stages 2 to 4: wallets, Safe with budgets and agents, a private club.</small>
+      <span>On-chain checks are being written (Goal 4). The Safe and Hats spike is done (Goal 7), and so is the durable workflows spike.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="no">02</span> The goals and who runs them</h2>
+  <p class="lede">Each goal has one lead thread, one branch, one done check. A goal ends when its done check passes on its branch and the branch merges.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Goal</th><th>Thread</th><th>Branch</th><th>Ends when</th><th>Now</th></tr></thead>
+    <tbody>
+      <tr><td><b>3 · Stage 1 of Plugged In</b><br><small>the beta, critical path</small></td><td>🎯 Goal 3 lead</td><td class="mono">goal/stage-1</td><td><code>nx run e2e:stage1</code> green, staging included; merges to main twice (preview, then done)</td><td><span class="chip partial">Running</span> Over a dozen merged today. Ready: main catch-up with the draft guards, and the compiler fixes for two snags. 6 reviewed drafts queued for CI. Staging on Alchemy in review.</td></tr>
+      <tr><td><b>4 · On chain, end to end</b><br><small>1.0, stages 2 and 3</small></td><td>🎯 Goal 4 lead</td><td class="mono">goal/on-chain</td><td><code>nx run e2e:on-chain</code> green in CI</td><td><span class="chip partial">Running</span> Start, chain decision, budgets journeys and the red done check merged. Money decision and lead state ready. Slice 3's checks failed review: nobody has shown a correct build can pass them.</td></tr>
+      <tr><td><b>7 · Safe, Hats, budgets</b><br><small>the base for Capxul</small></td><td>🧑‍🏭 Foreman, steering Codex</td><td class="mono">goal/safe-hats</td><td>a reviewer runs <code>spikes/safe-hats-module/run-all.sh</code> from a clean clone, all green</td><td><span class="chip built">Done check passed</span> All 8 steps, in the Foreman thread's review run. <a href="https://github.com/AaronAbuUsama/architect/pull/294">#294</a> is in CI and merges when green.</td></tr>
+      <tr><td><b>5 · The UI layer</b><br><small>generated pieces on UI SDK</small></td><td>not started</td><td class="mono">goal/ui-layer</td><td>in its brief, <code>design/goals/05-ui-layer.md</code></td><td><span class="chip decided">Waiting</span> Starts when <a href="https://github.com/AaronAbuUsama/architect/pull/272">#272</a> (K29) is on main. Its CI is running.</td></tr>
+      <tr><td><b>6 · The new portal</b><br><small>our components, the app map</small></td><td>not started</td><td class="mono">goal/portal</td><td><code>nx run e2e:portal-next</code>, then one cutover into stage 1</td><td><span class="chip decided">Waiting</span> Starts when <a href="https://github.com/AaronAbuUsama/architect/pull/285">#285</a> (K31) is on main, after #272.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Other threads</h3>
+  <ul>
+    <li><b>📐 UI thread:</b> wrote K29 and K31 and the Goal 5 and 6 briefs, and lands them.</li>
+    <li><b>🧭 What Orthograph is:</b> done. The model guide, K30 and the goal in the README are on main.</li>
+    <li><b>🎬 Demo thread:</b> done. The durable workflows spike is on main, and the answer is yes.</li>
+    <li><b>Capxul thread:</b> rebuilding the storyboard canvas with the latest calls.</li>
+    <li><b>🗺 Map thread:</b> idle.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="no">03</span> How the branches integrate</h2>
+  <p class="lede">Slice pull requests land on a goal branch; goal branches land on main. Drafts run no CI. A pull request is marked ready after its review and runs CI once. Each lane has at most two ready at a time.</p>
+  <pre class="mermaid">
+flowchart LR
+  subgraph G3[Goal 3]
+    s3[goal-3/* slice PRs] --> stage1[goal/stage-1]
+  end
+  subgraph G4[Goal 4]
+    s4[goal-4/* slice PRs] --> onchain[goal/on-chain]
+  end
+  subgraph G56[Goals 5 and 6, not cut yet]
+    ui[goal/ui-layer] -.-> stage1
+    portal[goal/portal] -.-> stage1
+  end
+  stage1 -->|preview merge at Gate M1, final at done check| main((main))
+  onchain -->|at its done check| main
+  safehats[goal/safe-hats] -->|PR 294| main
+  docs[claude/* and conductor/* decision PRs] --> main
+  m1[m1, finished] -.- main
+  </pre>
+  <div class="kpis">
+    <div><strong>301 → 44</strong><span>branches on GitHub, before two new ones</span></div>
+    <div><strong>481 → 160</strong><span>branches on this Mac</span></div>
+    <div><strong>257 + 321</strong><span>deleted: already inside main or a goal branch</span></div>
+  </div>
+  <div class="grid2">
+    <div><h3>Integration branches (5)</h3>
+      <ul><li><code>main</code>: the record</li><li><code>goal/stage-1</code>: Goal 3</li><li><code>goal/on-chain</code>: Goal 4</li><li><code>goal/safe-hats</code>: Goal 7, merging</li><li><code>m1</code>: finished, kept for its protection rules</li></ul></div>
+    <div><h3>Open pull request branches (16)</h3>
+      <ul><li><b>Goal 3:</b> <code>m1-12a-build</code>, <code>m1-12a-check</code>, <code>m1-49-check</code>, <code>m1-50-check</code>, <code>m2-02-check</code>, <code>m7-03-build</code>, <code>prove-staging-check</code>, <code>s33-s34-build</code>, <code>s35-check</code>, <code>main-merge-nov21</code>, <code>chore/effect-4.1.4</code> (the Effect update)</li>
+      <li><b>Goal 4:</b> <code>m6-money</code>, <code>m610-check</code>, <code>state-skill</code></li>
+      <li><b>UI:</b> <code>claude/design-ui-layer-942878</code> (#272), <code>claude/app-map-portal</code> (#285)</li></ul></div>
+  </div>
+  <details><summary>24 unfinished branches left alone (never merged; deleting them loses work)</summary>
+    <p>All from 16 to 20 November. Most are early experiments, superseded builds or process notes. These need your yes before they go.</p>
+    <p class="mono">author/m0-names · author/stage4-checks · author/stage4-graph-checks · build/M0.05 · build/portal-pro · claude/design-agent-harness-e6e8ff · claude/docs-canon-cf2c38 · claude/process-applied-ci · claude/process-applied-rest · claude/process-log-127 · codex/links-staging · design/kits-decision · design/work-blueprint · experimental/portal-pro · fix/operation-span-first · goal-3/ci-timeouts · goal-3/grid-invariant · goal-3/han-11-build · goal-3/han-11-check · layer/4 · links/stage-1 · m1-12-clients · m1-13-portal · spike/work-real</p>
+  </details>
+  <details><summary>Why there are still 126 worktrees on this Mac</summary>
+    <p>Every thread and subagent works in its own folder. 113 local branches stay because a folder still has them checked out. Clearing those folders belongs to the threads that made them. Run the app's worktree cleanup once the goals are idle.</p>
+  </details>
+</section>
+
+<section>
+  <h2><span class="no">04</span> What is built, by area</h2>
+  <p class="lede">Condensed from the scope map. <span class="chip built">Built</span> has passing tests, <span class="chip partial">Partial</span> is missing a named piece, <span class="chip spiked">Spiked</span> is proved only in throwaway code, <span class="chip none">None</span> means nothing exists yet.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Area</th><th>Release</th><th>Built</th><th>Still open</th></tr></thead>
+    <tbody>
+      <tr><td><b>Core:</b> blueprint, compiler, outputs, proof</td><td>Preview</td><td><span class="chip built">Built</span> things, machines, operations, errors, events, rules, visibility, stores, generated server, SDK, CLI and docs, plugins, <code>ortho prove</code>, the climb and grid (331 of 331), telemetry. Prove now stops on a broken source.</td><td><span class="chip partial">Partial</span> values, MCP request keys, portal viewer · <span class="chip none">None</span> request key in traces (in review), monitor and graphs (checks in review), Node host, npm preview</td></tr>
+      <tr><td><b>Stage 1:</b> workable</td><td>Beta</td><td><span class="chip built">Built</span> Plugged In's 7 journeys, a required check</td><td><span class="chip partial">Partial</span> auth and organisations as plugins, secrets, <code>ortho add</code> · <span class="chip none">None</span> kinds of caller (decision merged), roles, <code>ortho new</code>, the handles plugin, the three screens, proof against a deployed address · <span class="chip spiked">Spiked</span> staging (Alchemy build in review)</td></tr>
+      <tr><td><b>App UI</b></td><td>Beta, then 1.0</td><td><span class="chip decided">Decided</span> UI SDK is the base (K24, on main) · <span class="chip built">Built</span> one package behind the portal's components (HeroUI, being phased out)</td><td><span class="chip spiked">Spiked</span> a generated piece per operation, agent marks, actions, approvals asked once · <span class="chip partial">Partial</span> portal chat. K29 and K31 make these Goals 5 and 6.</td></tr>
+      <tr><td><b>On chain and wallets</b></td><td>1.0</td><td><span class="chip built">Built</span> wallet keys and signing, the EVM adapter with Anvil per world, confirmation depth</td><td><span class="chip partial">Partial</span> browser signer, relayer, follower · <span class="chip spiked">Spiked</span> SIWE linking, chain store and Solidity output, contract client, <b>Safe, Hats and budgets (Goal 7, new)</b> · <span class="chip none">None</span> pay by handle, webhooks, language and host plugin kinds</td></tr>
+      <tr><td><b>Workflows, agents, time</b></td><td>1.0</td><td><span class="chip built">Built</span> an agent writes a handler from a brief</td><td><span class="chip spiked">Spiked</span> <b>durable workflows (new, yes)</b>, a durable agent run, the world clock · <span class="chip partial">Partial</span> timers · <span class="chip none">None</span> model adapters, tools from operations</td></tr>
+      <tr><td><b>Stage 4 and release</b></td><td>1.0</td><td><span class="chip partial">Partial</span> local Homebrew tap and binary</td><td><span class="chip spiked">Spiked</span> private club core on Noir, CI-signed verdicts · <span class="chip none">None</span> real npm, GitHub releases</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="no">05</span> What you can run and audit today</h2>
+  <div class="grid2">
+    <div>
+      <h3>Run it</h3>
+      <ul>
+        <li><b>The beta's proof:</b> on <code>goal/stage-1</code>, <code>pnpm nx run e2e:stage1</code> runs Plugged In's 7 journeys locally.</li>
+        <li><b>The Safe with hats spike:</b> on <code>goal/safe-hats</code>, <code>spikes/safe-hats-module/run-all.sh</code> runs the Safe and Hats proofs, the budgets module, the fuzz and the Anvil run.</li>
+        <li><b>The on-chain done check:</b> on <code>goal/on-chain</code>, <code>pnpm nx run e2e:on-chain</code>. It is red by design until the slices land.</li>
+        <li><b>Climb a journey yourself:</b> in <code>examples/plugged-in</code>, run <code>ortho prove --env local</code>.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Audit it</h3>
+      <ul>
+        <li><b>What's built against what's claimed:</b> <code>design/scope.md</code>, read from the code, not from the milestone ticks.</li>
+        <li><b>Every call and why:</b> <code>design/decisions/</code>. Start with K28 (releases), K24 (UI SDK), K29 (UI layer) and K31 (app map).</li>
+        <li><b>Each goal's own account:</b> the "Where it stands" section in its goal file, and its snag log (<code>03-snags.md</code>, <code>04-snags.md</code>).</li>
+        <li><b>The reviews:</b> every merged pull request carries a 🔍 verdict comment. Codex's findings are answered in their threads.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="no">06</span> The UI SDK layer, in the blueprint</h2>
+  <p class="lede">K29 and K31, both in review. You declare meaning and the map, never the look. Everything between the blueprint and UI SDK's widgets is generated.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Layer</th><th>What it is</th><th>Written by</th><th>Lives in</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Blueprint</td><td>what things mean</td><td>you</td><td class="mono">blueprint/</td></tr>
+      <tr><td>2 · Action</td><td>one per operation: who calls it, the payload check, a refusal that writes nothing, approval asked once</td><td>generated</td><td class="mono">generated/actions/</td></tr>
+      <tr><td>3 · Piece</td><td>one per operation: a UI SDK primitive bound to its action, with React parts</td><td>generated</td><td class="mono">generated/web/</td></tr>
+      <tr><td>4 · Pages</td><td>the look. The map of pages, routes, navigation and the shell is declared in the blueprint (K31)</td><td>you</td><td class="mono">src/web/, blueprint/app/</td></tr>
+      <tr><td>5 · Widgets</td><td>inputs, dialogs, keyboard, screen readers, the agent bridge</td><td>UI SDK</td><td class="mono">@ui-sdk/*</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid2">
+    <div><h3>Mount the projection once</h3>
+<pre>// blueprint/projections/web.ts
+import { Blueprint } from "orthograph";
+import { web } from "@orthograph/projections";
+
+export default Blueprint.use(web, { frameworks: ["react"] });</pre>
+    <h3>The app and its navigation</h3>
+<pre>// blueprint/app/app.ts
+export default Blueprint.app({
+  description: "Claim a name and keep a public page of links.",
+  layout: Blueprint.layout.sidebar,
+  home,
+  nav: [
+    Blueprint.nav.group({ title: "Your page", pages: [profile, edit] }),
+    Blueprint.nav.group({ title: "Settings", pages: [account], folded: true }),
+  ],
+});</pre></div>
+    <div><h3>One page: the what, never the look</h3>
+<pre>// blueprint/app/pages/profile.ts
+export default Blueprint.page({
+  description: "A claimed name's public page and its links.",
+  route: { path: "/@:handle", params: { handle: Handle.fields.name } },
+  parent: home,
+  allowed: [Blueprint.anyone],
+  shows: [get],
+  offers: [add, order, release],
+});</pre>
+    <p>The palette, the breadcrumbs and the agent's map are worked out from these declarations. A blueprint with no <code>app/</code> folder generates exactly what it generates today, and a check proves it.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="no">07</span> Handing this off</h2>
+  <p class="lede">Sessions, Remote Control and these claude.ai pages belong to the account. Git and GitHub survive a switch, so everything a new account needs is in the repository.</p>
+  <ul>
+    <li><b>Start here:</b> open a fresh worktree from <code>main</code> and read <code>AGENTS.md</code>, then <code>.agents/skills/kanban/STATE.md</code>, the conductor's resume file. It lists every goal, its branch, brief and done check, and what waits on you.</li>
+    <li><b>Restart each lead from its brief:</b> <code>design/goals/03-…</code> to <code>07-…</code>. Each lead's own state is in its goal file's "Where it stands" section and its snag log.</li>
+    <li><b>The pages:</b> snapshots of the boards and grills are in <code>design/history/artifacts-2026-11-21/</code>. This map will be added there too.</li>
+    <li><b>Live state:</b> <code>gh pr list</code> shows what's in flight, and the integration branches above show what's landed.</li>
+  </ul>
+  <h3>Waiting on you</h3>
+  <ul>
+    <li>Nothing blocking. Parked: an AWS runner for CI (needs your written yes for a credential), GitHub Pro at about $4 a month, and a yes to delete the 24 unfinished branches.</li>
+  </ul>
+</section>
+</div>

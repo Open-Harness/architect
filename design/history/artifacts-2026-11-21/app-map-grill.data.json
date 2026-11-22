@@ -1,0 +1,340 @@
+{
+ "collections": {
+  "board": {
+   "meta": {
+    "title": "App map grill",
+    "v": 1
+   }
+  },
+  "elements": {
+   "e2": {
+    "size": "large",
+    "text": "Declare the map once; the shell falls out.",
+    "type": "text",
+    "x": 0,
+    "y": -160
+   },
+   "e25": {
+    "color": "green",
+    "h": 112,
+    "kind": "rounded",
+    "size": "small",
+    "stroke": "ink",
+    "text": "**⌘K palette**\nthe pages you may open, and the operations you may call here",
+    "type": "shape",
+    "w": 360,
+    "x": 492,
+    "y": 424
+   },
+   "e13": {
+    "color": "blue",
+    "h": 36,
+    "kind": "rounded",
+    "size": "small",
+    "text": "▸ **Settings** (folded)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 196,
+    "x": 12,
+    "y": 216
+   },
+   "e29": {
+    "color": "blue",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`blueprint/app/pages/profile.ts`\n`export default Blueprint.page({`\n`  route: \"/@:handle\",`\n`  params: { handle: Handle.fields.name },`\n`  shows: [profile.get],`\n`  offers: [link.add, link.order, handle.release],`\n`  who: [Roles.anyone],`\n`});`\n*The what, never the look.*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 540,
+    "x": 960,
+    "y": 290
+   },
+   "e28": {
+    "color": "blue",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`blueprint/app/app.ts`\n`export default Blueprint.app({`\n`  layout: Layout.sidebar,`\n`  nav: [`\n`    Nav.group(\"Your page\", [pages.profile, pages.edit]),`\n`    Nav.group(\"Settings\", [pages.account], { folded: true }),`\n`  ],`\n`});`\n*Switchers and the account menu come from mounted plugins.*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 540,
+    "x": 960,
+    "y": 36
+   },
+   "e12": {
+    "color": "blue",
+    "h": 32,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Edit links",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 28,
+    "y": 164
+   },
+   "e24": {
+    "size": "small",
+    "text": "**Page** `/@:handle`, laid out by your code in `src/web/pages/profile.tsx`",
+    "type": "text",
+    "x": 268,
+    "y": 96
+   },
+   "e3": {
+    "color": "blue",
+    "h": 40,
+    "kind": "rounded",
+    "size": "small",
+    "text": "You declare it in the blueprint",
+    "type": "shape",
+    "w": 230,
+    "x": 0,
+    "y": -96
+   },
+   "e15": {
+    "color": "purple",
+    "h": 48,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Account menu\n(auth plugin)",
+    "type": "shape",
+    "w": 196,
+    "x": 12,
+    "y": 520
+   },
+   "e8": {
+    "color": "white",
+    "h": 580,
+    "hollow": true,
+    "kind": "rect",
+    "stroke": "ink",
+    "text": "",
+    "type": "shape",
+    "w": 220,
+    "x": 0,
+    "y": 0
+   },
+   "e19": {
+    "color": "green",
+    "h": 36,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Search  ⌘K",
+    "type": "shape",
+    "w": 150,
+    "x": 730,
+    "y": 10
+   },
+   "e4": {
+    "color": "green",
+    "h": 40,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Falls out: generated or derived",
+    "type": "shape",
+    "w": 230,
+    "x": 254,
+    "y": -96
+   },
+   "e23": {
+    "color": "yellow",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "stroke": "ink",
+    "text": "The app's own link list:\ndrag to reorder",
+    "type": "shape",
+    "w": 280,
+    "x": 572,
+    "y": 280
+   },
+   "e22": {
+    "color": "green",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "The add-a-link piece:\ntitle and address",
+    "type": "shape",
+    "w": 280,
+    "x": 268,
+    "y": 280
+   },
+   "e5": {
+    "color": "purple",
+    "h": 40,
+    "kind": "rounded",
+    "size": "small",
+    "text": "A mounted plugin brings it",
+    "type": "shape",
+    "w": 230,
+    "x": 508,
+    "y": -96
+   },
+   "e18": {
+    "color": "green",
+    "h": 36,
+    "kind": "rounded",
+    "size": "small",
+    "text": "+ Add link",
+    "type": "shape",
+    "w": 150,
+    "x": 560,
+    "y": 10
+   },
+   "e9": {
+    "color": "purple",
+    "h": 48,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Organization switcher\n(organizations plugin)",
+    "type": "shape",
+    "w": 196,
+    "x": 12,
+    "y": 12
+   },
+   "e14": {
+    "color": "ink",
+    "size": "small",
+    "text": "*the middle scrolls when the groups run long*",
+    "type": "text",
+    "wrap": 180,
+    "x": 24,
+    "y": 360
+   },
+   "e17": {
+    "color": "green",
+    "h": 36,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Home  ›  @aaron",
+    "type": "shape",
+    "w": 260,
+    "x": 236,
+    "y": 10
+   },
+   "e21": {
+    "color": "green",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "The profile read's piece: the page's name and its links, in order",
+    "type": "shape",
+    "w": 584,
+    "x": 268,
+    "y": 136
+   },
+   "e6": {
+    "color": "yellow",
+    "h": 40,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Your own code",
+    "type": "shape",
+    "w": 230,
+    "x": 762,
+    "y": -96
+   },
+   "e7": {
+    "color": "white",
+    "h": 580,
+    "kind": "rect",
+    "text": "",
+    "type": "shape",
+    "w": 900,
+    "x": 0,
+    "y": 0
+   },
+   "e20": {
+    "color": "yellow",
+    "h": 476,
+    "kind": "rounded",
+    "text": "",
+    "type": "shape",
+    "w": 632,
+    "x": 244,
+    "y": 80
+   },
+   "e16": {
+    "color": "white",
+    "h": 56,
+    "hollow": true,
+    "kind": "rect",
+    "stroke": "ink",
+    "text": "",
+    "type": "shape",
+    "w": 680,
+    "x": 220,
+    "y": 0
+   },
+   "e31": {
+    "from": "e29",
+    "fromSide": "bottom",
+    "to": "e30",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e27": {
+    "text": "**What you'd write, if every answer is A**",
+    "type": "text",
+    "x": 960,
+    "y": 0
+   },
+   "e11": {
+    "color": "blue",
+    "h": 32,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Public page",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 28,
+    "y": 124
+   },
+   "e10": {
+    "color": "blue",
+    "h": 36,
+    "kind": "rounded",
+    "size": "small",
+    "text": "▾ **Your page**",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 196,
+    "x": 12,
+    "y": 80
+   },
+   "e1": {
+    "size": "title",
+    "text": "Where does the app's map live?",
+    "type": "text",
+    "x": 0,
+    "y": -230
+   },
+   "e26": {
+    "color": "white",
+    "h": 110,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Today, in the portal:** the things tree and the ⌘K index are read from the model (`nav.ts`), but the five rail panels, their fixed pages and every route are written by hand (`nav.ts`, `route.ts`). Plugged In has no map at all. UI SDK has menus, navigation, a command palette, a tree and collapsibles, but no sidebar, breadcrumb, shell or router.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 900,
+    "x": 0,
+    "y": 620
+   },
+   "e30": {
+    "color": "green",
+    "h": 220,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**What falls out**\n- the router, and a typed link to every page\n- the sidebar and its groups\n- the breadcrumb, from routes and their params\n- the palette: what you may open and call here\n- the agent's map: where it can go, what it can do\n- a docs page per screen, and journeys through pages in prove\n- a stale mark on your page code when its operations change",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 540,
+    "x": 960,
+    "y": 584
+   }
+  }
+ }
+}

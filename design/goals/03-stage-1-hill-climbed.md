@@ -1,4 +1,78 @@
+---
+goal: 3
+title: stage 1 of Plugged In, hill-climbed through its journeys
+milestone: "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys"
+release: beta
+branch: goal/stage-1
+base: main
+status: running        # ready | running | landing | done | parked
+lead:
+  harness: claude-code
+  model: claude-opus-5-5
+  since: 2026-11-21
+done_check: nx run e2e:stage1
+owns:
+  - design/goals/03-stage-1-hill-climbed.md
+  - design/goals/03-snags.md
+  - examples/plugged-in/
+  - e2e/stage1/
+  - e2e/climb/
+  - e2e/m1/
+  - e2e/m2/
+  - e2e/staging/
+  - .github/workflows/staging.yml
+  - packages/cli/src/modules/staging/
+  - packages/projections/src/modules/infra/
+  - packages/auth/
+  - packages/organizations/
+slices:
+  - "1 · M1.12a, the request key on every attempt's span, with check 38 (#281)"
+  - "2 · M1.49, monitoring derived from the model, check 39 (#290)"
+  - "3 · M1.50, one Graph for machines, the map and the worlds, check 40 (#280)"
+  - "4 · M7.03 and M7.04, staging up and destroy through Alchemy, and prove --env staging (#282, #291)"
+  - "5 · S-35, the unique check indexed by rule and key, not cubic (#292)"
+  - "6 · M1.15, Gate M1, then the preview merge into main (after 1, 2, 3, 4, 5)"
+  - "7 · M2.02, journeys for both plugins (#267, #297)"
+  - "8 · M2.03, the five principals, paired with M2.02's principal part (#297)"
+  - "9 · M2.04, secrets by declaration"
+  - "10 · M2.05, auth, identity (with M2.24 and M2.25)"
+  - "11 · M2.06, auth, ways in (with M2.26)"
+  - "12 · M2.07, organizations (with M2.18, M2.22 and M2.23)"
+  - "13 · M2.08, journeys through the clients"
+  - "14 · M2.09, ortho new scaffolds Plugged In (with M2.27)"
+  - "15 · M2.10, ortho new feature and publish --local"
+  - "16 · M2.11, the work app mounts auth"
+  - "17 · M2.05b, the host's Better Auth removed (after 16)"
+  - "18 · ST1.03, ST1.04, ST1.06 to ST1.08, stage 1's own slices"
+  - "19 · M2.13 to M2.22, the rest of M2"
+  - "20 · M2.12, Gate M2, the stage 1 gate (after 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19)"
+  - "21 · The staging run, then the stage 1 merge into main (after 6, 20)"
+---
 # Goal 3: stage 1 of Plugged In, hill-climbed through its journeys
+
+**To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 3. Read `AGENTS.md` and
+`design/goals/03-stage-1-hill-climbed.md`, and run it." Nothing else is needed. Milestone `Goal 3: stage 1, hill-climbed`, label
+`release:beta` (K33). The front matter above is what the sync reads; this file stays the whole context (K32).
+
+## The goal, in plain words
+
+- **In one sentence:** Take the example app, Plugged In, to its first release: every journey a person or an agent
+  takes through it passes on this computer, in test and on a real staging site, with sign-in and organizations built in.
+- **Why:** The framework's parts each pass their own checks, but no real app has been built with them from end to end
+  yet. Running one app's journeys is how we find what is missing, and we fix it in the framework, not in the app.
+- **When it's done, you can:** start a new app from the starter, sign in as a person or as an agent, join an
+  organization, claim a name and add links, and send the app to a short-lived staging site that is torn down after.
+- **It is:** the framework's last first-release pieces, its first staging deploy, and the sign-in and organizations
+  work, each landed with its checks written first by someone who didn't build it.
+- **It isn't:** the web building blocks or the new portal (two other goals), anything on a blockchain (its own goal),
+  or a production deploy.
+- **Done when:** the example app's first-release checks all pass on this goal's branch, and the branch merges into the
+  main line for the first beta.
+- **Waits on:** nothing to start. The early preview waits on the first milestone's checks passing; the blockchain goal
+  waits on our sign-in work.
+- **Words used:** a journey: one thing a person or an agent does, written as steps a test runs. Staging: a real copy
+  of the app on Cloudflare, made for one run and destroyed after. Hill-climbing: run every journey, fix the framework
+  where one fails, and run again.
 
 ## Aaron's words, 19 November 2026
 
@@ -62,8 +136,13 @@ skills or the process.
 > - **The handoff:** keep `design/handoff.md` and `STATE.md` current after every merge, and move each card on the board
 >   (the `kanban` skill), so a fresh or compacted session continues where you stopped.
 >
-> Each time a journey turns green, report to the conductor session that started you, in two or three lines: the
-> journey, how many tries it took, its snags and what they changed.
+> Each time a journey turns green, say so in "Where it stands" below, in two or three lines: the journey, how many
+> tries it took, its snags and what they changed. Goals coordinate through git and GitHub (K32, K33), not through a
+> session: at every slice start, read the open Ask issues in milestone `Goal 3: stage 1, hill-climbed` and the open
+> `goal-3` issues and pull requests into `goal/stage-1`, and answer each before starting the slice. A new snag is a Snag
+> issue in that milestone, and `03-snags.md` keeps the record. Every comment you or your agents post on GitHub starts
+> with `[goal-3 · <role> · <harness> · <model>]`, and every new pull request carries `harness:<harness>` and
+> `role:<role>` once those labels exist.
 
 ## The bound
 
@@ -78,8 +157,9 @@ skills or the process.
 - **One cloud piece: staging,** on `workers.dev`. See "Staging".
 - **At most three builders at once,** and every agent stops the processes it starts before it reports.
 
-**Aaron's override, recorded.** "Nothing in a milestone starts until the previous milestone's gate passes on `main`"
-(`AGENTS.md`) is replaced, for M1, M2 and stage 1 only, by one integration branch under the conductor's control. The
+**Aaron's override, recorded.** The rule then in `AGENTS.md`, that a milestone waited for the previous milestone's
+gate on `main`, is replaced, for M1, M2 and stage 1, by one integration branch under the conductor's control (K34
+since made needs, not milestone order, the rule for every goal). The
 gates still order the landing, not the work.
 
 ## The five roles
@@ -210,5 +290,63 @@ It passes only when all of these hold, in CI on `goal/stage-1`:
 
 ## Landing
 
-When the done check passes, open one pull request from `goal/stage-1` to `main`. It merges when Gates M1 and M2 pass on
-it, `nx run e2e:stage1` passes in CI, and a 🔍 reviewer passed the whole branch. Then tag `plugged-in/stage-1`.
+Two merges. First the preview (K28): once Gate M1's slices are green on `goal/stage-1`, open one pull request from
+`goal/stage-1` to `main`. It merges when CI is green, Gate M1 passes on it, and a 🔍 reviewer that wrote none of it passed
+the whole branch; the goal then carries on from its branch. Then, when the done check passes, open one more pull
+request from `goal/stage-1` to `main`. It merges when Gates M1 and M2 pass on it, `nx run e2e:stage1` passes in CI, and
+a 🔍 reviewer passed the whole branch. Then tag `plugged-in/stage-1`.
+
+K28 decides the preview merge and the three releases: [`K28-releases.md`](../decisions/K28-releases.md).
+
+## Where it stands
+
+Rewritten at every slice merge. Last rewritten on 21 November 2026, at `goal/stage-1` `cb8ddd51`. A fresh lead in any harness starts here, then reads `design/handoff.md` (the ids and the lines of work), `design/goals/03-snags.md`, and the open issues in milestone `Goal 3: stage 1, hill-climbed`. Sessions don't carry over; everything below is in the repository or on GitHub.
+
+**Where the goal is.** M1's slices are on `goal/stage-1` except four: M1.12a, M1.49, M1.50, and M7.03 with M7.04 for staging. Gate M1 (M1.15) has not run yet. Plugged In's seven journeys are green in local and test (`e2e-stage1`, a required check). The climb is green: 331 of 331 cell-and-subject pairs. M2 has started: its decision (M2.01) is in, M2.02's moved journeys have passed review, and its principal journeys are written as a pair with M2.03's build. Staging is planned, checked and built on Alchemy, but has never deployed.
+
+**How pull requests run (CI-drafts, #293).** Every pull request opens as a draft, and a draft runs no CI (`goal/stage-1`'s own jobs carry the guard since [#277](https://github.com/AaronAbuUsama/architect/pull/277)). The 🔍 reads the draft and runs the affected checks locally. Then the pull request is marked ready and CI runs once. At most two of this lane's pull requests are ready at a time.
+
+**Merged on 20 and 21 November** (newest first):
+- [#277](https://github.com/AaronAbuUsama/architect/pull/277): `main` merged in (K28 releases, #293's draft rule), the draft guard on this branch's own jobs, the state docs.
+- [#288](https://github.com/AaronAbuUsama/architect/pull/288): S-33 and S-34's build. A refusal field must be the same value as the key's, compared strictly, and rule names may not clash ignoring case.
+- [#264](https://github.com/AaronAbuUsama/architect/pull/264): S-27. A journey check that throws fails its step, not the run.
+- [#263](https://github.com/AaronAbuUsama/architect/pull/263): M2.01, the M2-auth decision (principals, roles, `.via`, `issues:`), G12 (paired landing) and M2.05b.
+- [#271](https://github.com/AaronAbuUsama/architect/pull/271): M1.39, the canon's chains-and-wallets page.
+- [#278](https://github.com/AaronAbuUsama/architect/pull/278), [#266](https://github.com/AaronAbuUsama/architect/pull/266), [#269](https://github.com/AaronAbuUsama/architect/pull/269), [#268](https://github.com/AaronAbuUsama/architect/pull/268), [#265](https://github.com/AaronAbuUsama/architect/pull/265), [#261](https://github.com/AaronAbuUsama/architect/pull/261): S-33 and S-34's checks, staging's checks (check 37), S-31, S-17, S-29, stage 1's journeys.
+- On `main`: [#295](https://github.com/AaronAbuUsama/architect/pull/295), effect 4.1.4, for Alchemy's peer range.
+
+**In flight.** Each pull request goes into `goal/stage-1`.
+
+| PR | What it does | State, and the next step |
+|---|---|---|
+| [#291](https://github.com/AaronAbuUsama/architect/pull/291) | Check 41, `ortho prove --env staging`; `staging.yml` runs only from a `goal/` branch and refuses elsewhere | Passed 🔍. Ready, merges once CI is green. Then a builder for M7.04's prove side |
+| [#302](https://github.com/AaronAbuUsama/architect/pull/302) | `main` merged in again: effect 4.1.4 everywhere, including the packages only this branch has; K30 | Draft, under 🔍 |
+| [#282](https://github.com/AaronAbuUsama/architect/pull/282) | M7.03 and M7.04: staging up and destroy through an Alchemy stack generated into `generated/infra`; destroy runs Alchemy's, then always the prefix sweep, which works with no state | Passed 🔍. After #302 lands it merges the base in, so its copy of the bump drops out. Then ready |
+| [#281](https://github.com/AaronAbuUsama/architect/pull/281) | M1.12a, the request key on every attempt's span and in the portal, build and check 38 (G12) | Passed 🔍. Draft, waiting for a slot. Close [#270](https://github.com/AaronAbuUsama/architect/pull/270) when it merges |
+| [#292](https://github.com/AaronAbuUsama/architect/pull/292) | S-35's checks: a deterministic count, a 40,000-row bound, and controls for scope and rule | Passed 🔍. Draft, waiting for a slot. Then a builder indexes held rows by rule and key once per check |
+| [#290](https://github.com/AaronAbuUsama/architect/pull/290) | Check 39, M1.49's derived monitor | Passed 🔍. Draft, waiting for a slot. Then a builder |
+| [#280](https://github.com/AaronAbuUsama/architect/pull/280) | Check 40, M1.50's one Graph for machines, the map and the worlds | Passed 🔍. Draft, waiting for a slot. Then a builder |
+| [#267](https://github.com/AaronAbuUsama/architect/pull/267) | M2.02's moved journeys, the auth and organizations stand-ins | Passed 🔍. Draft, waiting for a slot |
+| [#297](https://github.com/AaronAbuUsama/architect/pull/297) | M2.02's principal journeys (person, agent, system, service) as check 42, and the `lacks` journey check; M2.03's build lands on the same branch (G12) | Draft. The author is finishing (check numbering, `lacks`, the hostile pass). Then a 🔍, then the M2.03 builder |
+| this pull request | K33's front matter on this brief, the start line, the coordination paragraph, this section | Draft, under 🔍. Closes #299 |
+
+**Next, in order.**
+1. Land the drafts above, two at a time: #302, then #282, then the rest in the table's order.
+2. A one-file pull request to `main` adding `staging.yml` as it stands here, so it can be dispatched. Its `refuse` job stops a run anywhere but a `goal/` branch.
+3. The first live staging run, dispatched on `goal/stage-1`: our prefix only, under $10, destroy after, the sweep's proof that nothing is left, and the cost. The story step is red until check 41's builder lands; up and destroy are proved either way.
+4. Builders for checks 39, 40 and 41, and for S-35. Then the M2.03 builder on #297.
+5. The preview merge. Once Gate M1's slices are green here, one pull request from `goal/stage-1` to `main`, with CI green, Gate M1 passing and a 🔍 of the whole branch (K28). Then M1.51 and Aaron's npm publish under `next`.
+6. M2.04 to M2.11 in the pairs `design/decisions/M2-auth.md` maps, then M2.05b and Gate M2 (M2.12).
+
+**Open snags that matter.**
+- S-35, the cubic unique check: checks in #292, build next.
+- [#304](https://github.com/AaronAbuUsama/architect/issues/304) (S-36): S-19's write-order ratio measured 16.0055 against a bar of 16 once under load. A checks author backs it with a count.
+- JOU-13 (no journey can force a race) has no slice. Check 38 forces one in e2e, a pattern a journey API could borrow.
+
+**Agreements with other lanes**
+- **The conductor** owns `.agents/skills/kanban/STATE.md` on `main`. Never edit it here; take main's version at each merge of `main`.
+- **Goal 4** (on-chain, `goal/on-chain`): when M2.05 merges, tell it the commit, as an Ask-free comment on its goal issue.
+- **Goal 5** (the UI layer, `goal/ui-layer`, K29): ST1.25 to ST1.28 and M1.22 and M1.23 are its work. The portal moves off HeroUI there (ST1.27). Don't build portal screens here that it replaces.
+- **Goal 6** (the portal, K31): its cutover asks Goal 3 through a `goal-3` pull request that adds a freeze line, and merging it is the freeze.
+- **Aaron's standing authority** (21 November): anything waiting on him goes ahead on the recommendation, and the call is recorded.
+- **M1.37** (the MCP output schema) is left as it is, by the conductor's call.

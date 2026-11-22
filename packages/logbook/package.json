@@ -9,7 +9,7 @@
     "#modules/*.js": "./src/modules/*.ts"
   },
   "dependencies": {
-    "effect": "4.1.1",
+    "effect": "4.1.4",
     "jose": "6.2.15",
     "wrangler": "4.156.1"
   },

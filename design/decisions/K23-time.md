@@ -61,7 +61,8 @@ It holds, with five things the design has to answer:
 
 1. **Libraries inside the world read the wall clock themselves.** Our lint covers our code, not our dependencies.
    Better Auth 1.7.15, which runs inside the world's Worker and its Durable Object, expires invitations against the
-   wall clock:
+   wall clock (Superseded by M8-checks, 20 November 2026: Orthograph never loads Better Auth's organization plugin, so
+   there are no invitations; sessions still expire this way):
 
    ```js
    // node_modules/better-auth/dist/plugins/organization/adapter.mjs:774
@@ -211,7 +212,7 @@ fails as `NeverQuiet`, naming each process still busy.
 
 | System | Reads the world's time through | Moved by |
 |---|---|---|
-| The server (Worker, Durable Objects) | Effect's `Clock`, provided at the entry from the world's instant, fixed for the whole request (as workerd fixes `Date` during a request). In a stepped or scaled world the entry also gives `Date` the world's time, so libraries that read it (Better Auth, jose) agree: a `Date` proxy installed once, and each request run inside `AsyncLocalStorage` with the world's instant, never a global assignment; every entry does this itself, each Durable Object included (amended by spike M8.05, `spikes/world-time-in-worker/`); that is an entry file's job, which the lint rule allows | the controller, at each step |
+| The server (Worker, Durable Objects) | Effect's `Clock`, provided at the entry from the world's instant, fixed for the whole request (as workerd fixes `Date` during a request). (Superseded by M8-checks, 20 November 2026: the world's instant, live, so a handler that reads `Clock` after a durable sleep reads the instant the sleep woke at.) In a stepped or scaled world the entry also gives `Date` the world's time, so libraries that read it (Better Auth, jose) agree: a `Date` proxy installed once, and each request run inside `AsyncLocalStorage` with the world's instant, never a global assignment; every entry does this itself, each Durable Object included (amended by spike M8.05, `spikes/world-time-in-worker/`); that is an entry file's job, which the lint rule allows | the controller, at each step |
 | The database | times passed as parameters; the lint rule gains SQL's `now()`, `CURRENT_TIMESTAMP` and `datetime('now')` | nothing to move |
 | `Timers` | a row in the world's timer table (stepped, scaled); a Durable Object alarm or the engine's sleep (real) | fired by the controller |
 | The chain (`ChainPort.clock`, one per family) | the latest block's timestamp | EVM: Anvil started at the world's start with interval 0; a step sets the next block's timestamp and mines one block, whole seconds only. Aztec: the warp plus the L1 blocks finality needs (stage 4) |

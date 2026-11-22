@@ -1,0 +1,381 @@
+{
+ "collections": {
+  "board": {
+   "meta": {
+    "order": [
+     "e32",
+     "e33",
+     "e34",
+     "e35",
+     "e36",
+     "e37",
+     "e38",
+     "e39",
+     "e40",
+     "e41",
+     "e42",
+     "e43",
+     "e44",
+     "e45",
+     "e46",
+     "e47",
+     "e48",
+     "e49",
+     "e50",
+     "e51",
+     "e52",
+     "e53",
+     "e54",
+     "e55",
+     "e56",
+     "e57",
+     "e58",
+     "e59",
+     "e60",
+     "e61",
+     "e62",
+     "e63",
+     "e64",
+     "e65"
+    ],
+    "title": "UI on Orthograph",
+    "v": 1
+   }
+  },
+  "elements": {
+   "e48": {
+    "color": "white",
+    "h": 320,
+    "kind": "rounded",
+    "text": "**4 · Your page**\nHand-written. Built from the generated pieces.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 280,
+    "x": 24,
+    "y": 1256
+   },
+   "e33": {
+    "h": 800,
+    "text": "What the two spikes proved",
+    "type": "container",
+    "w": 600,
+    "x": 1600,
+    "y": 0
+   },
+   "e64": {
+    "color": "yellow",
+    "h": 240,
+    "kind": "rounded",
+    "text": "**What it waits on**\n- actions, planned for milestone 3\n- value kinds and approval in the blueprint\n- a slice that generates the typed pieces\n\nAll four are recorded as gaps on main ([228](https://github.com/AaronAbuUsama/architect/pull/228)).",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 392,
+    "x": 2284,
+    "y": 348
+   },
+   "e44": {
+    "color": "green",
+    "h": 320,
+    "kind": "rounded",
+    "text": "**One action serves everything**\nThe page, MCP and the CLI call the same action. It knows who is calling (a person, or an agent for that person), returns a declared refusal without writing anything, and asks for approval once.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 364,
+    "x": 1152,
+    "y": 408
+   },
+   "e52": {
+    "h": 460,
+    "html": "<title>Your own component</title><style>:root{color-scheme:light dark}html,body{margin:0;height:100%}body{font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#fbfbf8;color:#1d1d1b}pre{margin:0;padding:14px 16px;white-space:pre;overflow:auto;height:100%;box-sizing:border-box;tab-size:2}.c{color:#8a8a80;font-style:italic}.s{color:#2f7d4a}.k{color:#7a3fb0;font-weight:600}.t{color:#1f5fbf;font-weight:600}@media (prefers-color-scheme:dark){body{background:#1f1f1d;color:#ecebe6}.c{color:#8f8e86}.s{color:#7fc79a}.k{color:#c49cf0}.t{color:#7fb2ff}}</style><pre>// src/web/document.ts   (yours: your own component, on UI SDK)\nimport { definePrimitive, createChange } from &quot;@ui-sdk/core&quot;;\n\nexport const document = definePrimitive({\n  name: &quot;document&quot;,\n  options: { blocks: &quot;value&quot;, onBlocksChange: &quot;callback&quot; },\n  controlled: [&quot;blocks&quot;],          // the agent can read every block\n  state: (o) =&gt; ({ blocks: o.blocks ?? [] }),\n  api: (context) =&gt; {\n    const change = createChange(context);\n    return {\n      setText: (id, text) =&gt; change(&quot;blocks&quot;, withText(id, text)),\n      insert: (after, kind) =&gt; change(&quot;blocks&quot;, withBlock(after, kind)),\n      move: (id, to) =&gt; change(&quot;blocks&quot;, moved(id, to)),\n    };\n  },\n  agent: { actions: [&quot;setText&quot;, &quot;insert&quot;, &quot;move&quot;] },\n});\n// Saving goes through a generated action: savePage.run(...)</pre><script>document.querySelectorAll('pre').forEach(function(p){var h=p.textContent.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});h=h.replace(/(\\/\\/[^\\n]*)|(\"[^\"\\n]*\"|`[^`\\n]*`)|\\b(import|from|export|default|const|return)\\b|\\b(Blueprint|definePrimitive|defineAction|createChange)\\b/g,function(m,c,s,k,t){return c?'<span class=c>'+c+'</span>':s?'<span class=s>'+s+'</span>':k?'<span class=k>'+k+'</span>':'<span class=t>'+t+'</span>'});p.innerHTML=h;});</script>",
+    "type": "html",
+    "w": 800,
+    "x": 328,
+    "y": 1600
+   },
+   "e53": {
+    "color": "white",
+    "h": 460,
+    "kind": "rounded",
+    "text": "**When to write one**\nLike the editor. Declaring `blocks` as controlled lets an agent read the whole page; `agent.actions` limits what it may do. Anything saved goes through a generated action, which checks the role.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 364,
+    "x": 1152,
+    "y": 1600
+   },
+   "e45": {
+    "color": "green",
+    "h": 480,
+    "kind": "rounded",
+    "text": "**3 · The typed piece**\nGenerated on UI SDK: a form per operation, a button per move, a list per read.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 280,
+    "x": 24,
+    "y": 752
+   },
+   "e65": {
+    "color": "yellow",
+    "h": 124,
+    "kind": "rounded",
+    "text": "**Open:** bring actions forward from milestone 3, so stage 1's screens can use them?",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 392,
+    "x": 2284,
+    "y": 612
+   },
+   "e32": {
+    "h": 2228,
+    "text": "The stack: from what things mean down to the widgets",
+    "type": "container",
+    "w": 1540,
+    "x": 0,
+    "y": 0
+   },
+   "e49": {
+    "h": 320,
+    "html": "<title>Your page</title><style>:root{color-scheme:light dark}html,body{margin:0;height:100%}body{font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#fbfbf8;color:#1d1d1b}pre{margin:0;padding:14px 16px;white-space:pre;overflow:auto;height:100%;box-sizing:border-box;tab-size:2}.c{color:#8a8a80;font-style:italic}.s{color:#2f7d4a}.k{color:#7a3fb0;font-weight:600}.t{color:#1f5fbf;font-weight:600}@media (prefers-color-scheme:dark){body{background:#1f1f1d;color:#ecebe6}.c{color:#8f8e86}.s{color:#7fc79a}.k{color:#c49cf0}.t{color:#7fb2ff}}</style><pre>// src/web/claim.tsx   (yours: the layout and the look)\nimport { HandleClaimForm } from &quot;../../generated/web/handle-claim&quot;;\nimport { claim } from &quot;../../generated/actions&quot;;\n\nexport const ClaimPage = () =&gt; (\n  &lt;main className=&quot;claim&quot;&gt;\n    &lt;h1&gt;Pick your name&lt;/h1&gt;\n    &lt;HandleClaimForm\n      action={claim}\n      onDone={({ handle }) =&gt; navigate(&quot;/edit&quot;)}\n    /&gt;\n  &lt;/main&gt;\n);</pre><script>document.querySelectorAll('pre').forEach(function(p){var h=p.textContent.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});h=h.replace(/(\\/\\/[^\\n]*)|(\"[^\"\\n]*\"|`[^`\\n]*`)|\\b(import|from|export|default|const|return)\\b|\\b(Blueprint|definePrimitive|defineAction|createChange)\\b/g,function(m,c,s,k,t){return c?'<span class=c>'+c+'</span>':s?'<span class=s>'+s+'</span>':k?'<span class=k>'+k+'</span>':'<span class=t>'+t+'</span>'});p.innerHTML=h;});</script>",
+    "type": "html",
+    "w": 800,
+    "x": 328,
+    "y": 1256
+   },
+   "e42": {
+    "color": "green",
+    "h": 320,
+    "kind": "rounded",
+    "text": "**2 · The action**\nGenerated, one per operation. The spine.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 280,
+    "x": 24,
+    "y": 408
+   },
+   "e54": {
+    "color": "white",
+    "h": 120,
+    "kind": "rounded",
+    "text": "**6 · Widgets**\nUI SDK, underneath everything.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 280,
+    "x": 24,
+    "y": 2084
+   },
+   "e39": {
+    "color": "white",
+    "h": 360,
+    "kind": "rounded",
+    "text": "**1 · The blueprint**\nWhat things mean. Real Plugged In code, as it is today.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 280,
+    "x": 24,
+    "y": 24
+   },
+   "e58": {
+    "color": "white",
+    "h": 264,
+    "kind": "rounded",
+    "text": "**Catches they found**\n- A refusal reaches an agent only through UI SDK's `pending` and `error` keys, read from its code, not its docs.\n- Who pressed (person or agent) reaches only callbacks, so the send goes through `dispatch` and `settle`: one shared function.\n- A React-controlled text box swallows UI SDK's \"/\" menu. Let UI SDK own the value.\n- An agent can't read text outside a component's declared state.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 552,
+    "x": 1624,
+    "y": 512
+   },
+   "e35": {
+    "h": 760,
+    "text": "Decided, and what it waits on",
+    "type": "container",
+    "w": 440,
+    "x": 2260,
+    "y": 0
+   },
+   "e62": {
+    "color": "white",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**Verdict: derive, don't declare**\nNo components or screens in the blueprint. Generate typed pieces from operations, reads and moves; add only the missing meaning. Reopen only if a component ever carries meaning no operation has.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 552,
+    "x": 1624,
+    "y": 1796
+   },
+   "e63": {
+    "color": "white",
+    "h": 300,
+    "kind": "rounded",
+    "text": "**Your calls, 20 November**\n- All in on UI SDK; HeroUI is phased out ([217](https://github.com/AaronAbuUsama/architect/pull/217)).\n- Actions first: the action is the spine, UI SDK the widget layer.\n- Derive, don't declare: no components or screens in the blueprint.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 392,
+    "x": 2284,
+    "y": 24
+   },
+   "e34": {
+    "h": 1150,
+    "text": "Set aside: declaring components in the blueprint",
+    "type": "container",
+    "w": 600,
+    "x": 1600,
+    "y": 880
+   },
+   "e59": {
+    "h": 260,
+    "html": "<title>Set aside: a declared component</title><style>:root{color-scheme:light dark}html,body{margin:0;height:100%}body{font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#fbfbf8;color:#1d1d1b}pre{margin:0;padding:14px 16px;white-space:pre;overflow:auto;height:100%;box-sizing:border-box;tab-size:2}.c{color:#8a8a80;font-style:italic}.s{color:#2f7d4a}.k{color:#7a3fb0;font-weight:600}.t{color:#1f5fbf;font-weight:600}@media (prefers-color-scheme:dark){body{background:#1f1f1d;color:#ecebe6}.c{color:#8f8e86}.s{color:#7fc79a}.k{color:#c49cf0}.t{color:#7fb2ff}}</style><pre>// blueprint/components/link-editor.ts   (set aside)\nexport default Blueprint.component({\n  description: &quot;Your links, in order.&quot;,\n  shows: getProfile,              // the read it shows\n  does: { add, order, remove },   // actions it may call\n  parts: {\n    row: Blueprint.part.each(Link),    // LinkEditor.Row\n    adder: Blueprint.part.form(add),   // LinkEditor.Adder\n  },\n})</pre><script>document.querySelectorAll('pre').forEach(function(p){var h=p.textContent.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});h=h.replace(/(\\/\\/[^\\n]*)|(\"[^\"\\n]*\"|`[^`\\n]*`)|\\b(import|from|export|default|const|return)\\b|\\b(Blueprint|definePrimitive|defineAction|createChange)\\b/g,function(m,c,s,k,t){return c?'<span class=c>'+c+'</span>':s?'<span class=s>'+s+'</span>':k?'<span class=k>'+k+'</span>':'<span class=t>'+t+'</span>'});p.innerHTML=h;});</script>",
+    "type": "html",
+    "w": 552,
+    "x": 1624,
+    "y": 904
+   },
+   "e38": {
+    "size": "small",
+    "text": "Everything in one place: your three calls of 20 November, the stack with real code, what the spikes proved, and the idea we set aside. White is what you write, green is generated, yellow is still open.",
+    "type": "text",
+    "wrap": 1500,
+    "x": 0,
+    "y": -112
+   },
+   "e55": {
+    "color": "white",
+    "h": 120,
+    "kind": "rounded",
+    "text": "The text box, picker, date field, dialog, menu, focus, keyboard and screen readers, styled by `--ui-*` tokens. We never write keyboard handling ourselves.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 1188,
+    "x": 328,
+    "y": 2084
+   },
+   "e43": {
+    "h": 320,
+    "html": "<title>The action</title><style>:root{color-scheme:light dark}html,body{margin:0;height:100%}body{font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#fbfbf8;color:#1d1d1b}pre{margin:0;padding:14px 16px;white-space:pre;overflow:auto;height:100%;box-sizing:border-box;tab-size:2}.c{color:#8a8a80;font-style:italic}.s{color:#2f7d4a}.k{color:#7a3fb0;font-weight:600}.t{color:#1f5fbf;font-weight:600}@media (prefers-color-scheme:dark){body{background:#1f1f1d;color:#ecebe6}.c{color:#8f8e86}.s{color:#7fc79a}.k{color:#c49cf0}.t{color:#7fb2ff}}</style><pre>// generated/handle-claim.action.ts   (generated, never edited)\nexport const options = (host: ActionHost) =&gt; ({\n  name: &quot;handle.claim&quot;,\n  description: &quot;Claim a free name for your public page.&quot;,\n  readOnly: false,\n  needsApproval: false,      // from the blueprint, once declarable\n  agentTool: true,\n  errors: { HandleTaken: &quot;HN-001&quot;, HandleAlreadyOwned: &quot;HN-002&quot; },\n  run: (args, ctx) =&gt; host.call(&quot;handle.claim&quot;, args, ctx),\n});\n\nexport const handleClaimAction = (host: ActionHost) =&gt;\n  defineAction(options(host), host.ask);</pre><script>document.querySelectorAll('pre').forEach(function(p){var h=p.textContent.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});h=h.replace(/(\\/\\/[^\\n]*)|(\"[^\"\\n]*\"|`[^`\\n]*`)|\\b(import|from|export|default|const|return)\\b|\\b(Blueprint|definePrimitive|defineAction|createChange)\\b/g,function(m,c,s,k,t){return c?'<span class=c>'+c+'</span>':s?'<span class=s>'+s+'</span>':k?'<span class=k>'+k+'</span>':'<span class=t>'+t+'</span>'});p.innerHTML=h;});</script>",
+    "type": "html",
+    "w": 800,
+    "x": 328,
+    "y": 408
+   },
+   "e56": {
+    "color": "white",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**First spike: a verb is a component** ([215](https://github.com/AaronAbuUsama/architect/pull/215))\nOne operation became one generated UI SDK form of 73 lines, in React and as web components. An agent found it, filled it and sent it. A refusal failed the agent's step with its code. Pretend server, no browser.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 552,
+    "x": 1624,
+    "y": 24
+   },
+   "e40": {
+    "h": 360,
+    "html": "<title>The blueprint</title><style>:root{color-scheme:light dark}html,body{margin:0;height:100%}body{font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#fbfbf8;color:#1d1d1b}pre{margin:0;padding:14px 16px;white-space:pre;overflow:auto;height:100%;box-sizing:border-box;tab-size:2}.c{color:#8a8a80;font-style:italic}.s{color:#2f7d4a}.k{color:#7a3fb0;font-weight:600}.t{color:#1f5fbf;font-weight:600}@media (prefers-color-scheme:dark){body{background:#1f1f1d;color:#ecebe6}.c{color:#8f8e86}.s{color:#7fc79a}.k{color:#c49cf0}.t{color:#7fb2ff}}</style><pre>// blueprint/things/handle/verbs/claim.ts   (today, real)\nimport { Blueprint } from &quot;orthograph&quot;;\nimport { Handle } from &quot;../thing.ts&quot;;\nimport { HandleAlreadyOwned, HandleTaken } from &quot;../errors.ts&quot;;\nimport { machine } from &quot;../machine.ts&quot;;\n\nexport default Blueprint.operation(Handle, {\n  description: &quot;Claim a free name for your public page.&quot;,\n  payload: { name: Handle.fields.name },\n  answer: { handle: Handle.fields.id },\n  move: machine.moves.claim,\n  errors: [HandleTaken, HandleAlreadyOwned],\n  allowed: [Blueprint.signedIn],\n  idempotent: &quot;request&quot;,\n});</pre><script>document.querySelectorAll('pre').forEach(function(p){var h=p.textContent.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});h=h.replace(/(\\/\\/[^\\n]*)|(\"[^\"\\n]*\"|`[^`\\n]*`)|\\b(import|from|export|default|const|return)\\b|\\b(Blueprint|definePrimitive|defineAction|createChange)\\b/g,function(m,c,s,k,t){return c?'<span class=c>'+c+'</span>':s?'<span class=s>'+s+'</span>':k?'<span class=k>'+k+'</span>':'<span class=t>'+t+'</span>'});p.innerHTML=h;});</script>",
+    "type": "html",
+    "w": 800,
+    "x": 328,
+    "y": 24
+   },
+   "e60": {
+    "color": "white",
+    "h": 240,
+    "kind": "rounded",
+    "text": "**The case for it**\n- The types reach the page.\n- The page's agent gets exactly the blueprint's actions.\n- Journeys run through the real page; the portal lists every screen.\n- An agent writes a small declaration the compiler checks.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 552,
+    "x": 1624,
+    "y": 1188
+   },
+   "e37": {
+    "size": "large",
+    "text": "Actions are the spine; screens use generated, typed pieces.",
+    "type": "text",
+    "x": 0,
+    "y": -176
+   },
+   "e36": {
+    "size": "title",
+    "text": "UI on Orthograph",
+    "type": "text",
+    "x": 0,
+    "y": -250
+   },
+   "e61": {
+    "color": "white",
+    "h": 320,
+    "kind": "rounded",
+    "text": "**The case against it**\n- Every win comes from generating pieces out of what the blueprint already says.\n- The agent's real limit is the action: anything that saves goes through one, and it checks the role.\n- Screens change daily, meaning slowly; this ties UI churn to the proven core.\n- It repeats UI SDK, whose components already declare state and agent steps.\n- It's the scope creep you wanted to avoid.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 552,
+    "x": 1624,
+    "y": 1452
+   },
+   "e41": {
+    "color": "yellow",
+    "h": 360,
+    "kind": "rounded",
+    "text": "**Add the missing meaning**\n- what kind a value is: a handle, a web address, a choice\n- approval on an operation\n\nSecret and private fields already exist; only their mapping onto the page's agent marks is missing. Every output uses these, not just screens.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 364,
+    "x": 1152,
+    "y": 24
+   },
+   "e57": {
+    "color": "white",
+    "h": 230,
+    "kind": "rounded",
+    "text": "**Second spike: a real world** ([222](https://github.com/AaronAbuUsama/architect/pull/222))\nThe same form claimed a real name through Plugged In's real code, in Chromium, for a person and for an agent, and replayed a real journey. Secret, hidden and person-only marks map cleanly; approval can't be declared yet. 16 tests.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 552,
+    "x": 1624,
+    "y": 258
+   },
+   "e50": {
+    "color": "white",
+    "h": 320,
+    "kind": "rounded",
+    "text": "**Pages are yours**\nArrange the generated pieces however you like. Rename a field in the blueprint and this stops compiling. Nothing about pages goes in the blueprint.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 364,
+    "x": 1152,
+    "y": 1256
+   },
+   "e46": {
+    "h": 480,
+    "html": "<title>The typed piece</title><style>:root{color-scheme:light dark}html,body{margin:0;height:100%}body{font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#fbfbf8;color:#1d1d1b}pre{margin:0;padding:14px 16px;white-space:pre;overflow:auto;height:100%;box-sizing:border-box;tab-size:2}.c{color:#8a8a80;font-style:italic}.s{color:#2f7d4a}.k{color:#7a3fb0;font-weight:600}.t{color:#1f5fbf;font-weight:600}@media (prefers-color-scheme:dark){body{background:#1f1f1d;color:#ecebe6}.c{color:#8f8e86}.s{color:#7fc79a}.k{color:#c49cf0}.t{color:#7fb2ff}}</style><pre>// generated/handle-claim.react.tsx   (generated, on UI SDK)\nimport { Field, FieldDescription, FieldLabel } from &quot;@ui-sdk/react/field&quot;;\nimport { Input } from &quot;@ui-sdk/react/input&quot;;\n\nexport const HandleClaimForm = ({ action, onDone }) =&gt; {\n  const [name, setName] = useState(&quot;&quot;);\n  return (\n    &lt;parts.Root aria-label=&quot;Claim handle&quot; name={name} onDone={onDone}\n      onSend={(payload, details) =&gt; details.settle(action.run(payload, {\n        caller: callerOf(details.source), approved: true }))}&gt;\n      &lt;Field name=&quot;name&quot;&gt;\n        &lt;FieldLabel&gt;Name&lt;/FieldLabel&gt;\n        &lt;Input value={name} onValueChange={setName} /&gt;\n        &lt;FieldDescription&gt;Up to 32 lowercase letters and digits.&lt;/FieldDescription&gt;\n      &lt;/Field&gt;\n      &lt;parts.Refusal&gt;{(s) =&gt; `Refused: ${s.name} (${s.code})`}&lt;/parts.Refusal&gt;\n      &lt;parts.Submit&gt;Claim&lt;/parts.Submit&gt;\n    &lt;/parts.Root&gt;\n  );\n};</pre><script>document.querySelectorAll('pre').forEach(function(p){var h=p.textContent.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});h=h.replace(/(\\/\\/[^\\n]*)|(\"[^\"\\n]*\"|`[^`\\n]*`)|\\b(import|from|export|default|const|return)\\b|\\b(Blueprint|definePrimitive|defineAction|createChange)\\b/g,function(m,c,s,k,t){return c?'<span class=c>'+c+'</span>':s?'<span class=s>'+s+'</span>':k?'<span class=k>'+k+'</span>':'<span class=t>'+t+'</span>'});p.innerHTML=h;});</script>",
+    "type": "html",
+    "w": 800,
+    "x": 328,
+    "y": 752
+   },
+   "e47": {
+    "color": "green",
+    "h": 480,
+    "kind": "rounded",
+    "text": "**What the agent sees**\nThe agent bridge lists exactly the action's steps. A refusal fails the agent's step with its code. Inputs, labels and help text come from the blueprint's values.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 364,
+    "x": 1152,
+    "y": 752
+   },
+   "e51": {
+    "color": "white",
+    "h": 460,
+    "kind": "rounded",
+    "text": "**5 · Your own component**\nHand-written on UI SDK, only when nothing generated fits.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 280,
+    "x": 24,
+    "y": 1600
+   }
+  }
+ }
+}
