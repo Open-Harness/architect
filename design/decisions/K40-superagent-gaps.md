@@ -64,7 +64,7 @@ events: { issueComment: Blueprint.event(IssueComment, {
 
 // the app: an outside account is a thing, and listing it is a move made in the portal
 export const Account = Blueprint.thing({
-  fields: { source: Source.fields.id, id: Blueprint.text(), login: Blueprint.text(), bot: Blueprint.bool() }, machine,
+  fields: { source: Source.fields.id, id: Blueprint.text(), login: Blueprint.text(), bot: Blueprint.bool() }, machine,   // Superseded by GOAL17-source-from, 22 November 2026: `source` is the mount's name, plus a `superagent` field
 });  // source: the connection it came through (its mount)
 // machine: seen → listed → unlisted
 export const listed = Blueprint.role(Account, {
