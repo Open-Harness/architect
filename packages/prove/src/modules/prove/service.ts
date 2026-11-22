@@ -12,7 +12,7 @@ import { Impact } from "#modules/impact/service.js";
 import { ProveFailed, type ProveApi } from "./types.ts";
 import { handlerHashes } from "#modules/verdicts/internal/proof.js";
 import { closing, exercise } from "./internal/exercise.ts";
-import { PORTAL_WINDOW_MS, standWorld } from "./internal/stand.ts";
+import { PORTAL_HISTORY_MS, PORTAL_WINDOW_MS, standWorld } from "./internal/stand.ts";
 import { Warm } from "#modules/warm/service.js";
 import { fingerprint } from "#modules/warm/internal/source.js";
 import { proveInTest } from "./internal/test-run.ts";
@@ -86,7 +86,7 @@ export const Prove: ProveApi = {
       // The collector and the world outlive each prove: a prove that finds them uses them (ST1.24).
       const dir = resolve(root, Names.folder, "dev-telemetry");
       const collector = yield* Collectors.local(dir, privateKeys(model)).pipe(Effect.mapError(failed));
-      const feed = yield* PortalFeed.serve({ source: collector, metrics: FileMetrics.open(dir), environment: "local", windowMs: PORTAL_WINDOW_MS }).pipe(Effect.mapError(failed));
+      const feed = yield* PortalFeed.serve({ source: collector, metrics: FileMetrics.open(dir), environment: "local", windowMs: PORTAL_WINDOW_MS, historyMs: PORTAL_HISTORY_MS }).pipe(Effect.mapError(failed));
       const { url, log } = yield* Worlds.start({ root, port, name: "dev", otlp: collector.url, portalFeed: feed.url, environment: "local", secretEnv: sinks.secretEnv, nonce }).pipe(Effect.mapError(failed));
       yield* Warm.publish(root, { pid, url, collector: collector.url, telemetry: dir, startedAt, sources, nonce }).pipe(Effect.mapError(failed));
       return { url, log, notes: sinks.notes };
