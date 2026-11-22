@@ -3,6 +3,7 @@ import { Data, type Effect } from "effect";
 import type { BlueprintSource, SourceError } from "#modules/source/types.js";
 import type { ValueMeta } from "orthograph";
 import type { MountModel } from "#modules/mounts/types.js";
+import type { AppModel } from "#modules/app/types.js";
 
 export type { MountModel, ValueMeta };
 
@@ -242,6 +243,8 @@ export interface Model {
   readonly environments?: Readonly<Record<string, EnvironmentModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
+  /** The app's map: its pages, components and navigation (K31, K36). Present only when the blueprint has an `app/` folder. */
+  readonly app?: AppModel;
 }
 
 /** A blueprint the compiler refuses, with every problem found, each naming its file. */
