@@ -170,7 +170,7 @@ as run 1 / run 2.
 ## The decision it supports
 
 **M3.01, the shape of `Blueprint.workflow`.** Effect's `effect/workflow`, through `@effect/platform-cloudflare` 4.1.3's
-`CloudflareWorkflowEngine`, is the engine. The Effect and platform-cloudflare pins are 4.1.3, as M3.02 bumps them.
+`CloudflareWorkflowEngine`, is the engine. The Effect and platform-cloudflare pins are 4.1.3, as M3.02 bumps them. (Superseded by M3-workflows, 22 November 2026.)
 
 - **An activity** is an `Activity.make` named after the activity's key in the declaration (`freeze`, `propose`). The
   generated code always passes `Activity.idempotencyKey(name)` to the operation it calls as its request key. That is

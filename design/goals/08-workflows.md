@@ -5,7 +5,7 @@ milestone: "Goal 8: workflows"
 release: "1.0"
 branch: goal/workflows
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
   harness: null        # claude | amp | codex, set by the lead when it starts
   model: null          # the model id it runs on
@@ -96,4 +96,13 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+22 November 2026, lead on Claude (claude-opus-5-5).
+
+- **Slice 1 (M3.01) is decided:** `design/decisions/M3-workflows.md`. A workflow is a declaration in
+  `blueprint/workflows/` and a handler in `src/workflows/`, with three kinds of activity (`call`, `await`, `after`/`at`)
+  on Effect's engine; every `call` carries its request key; every wait goes through `Timers`. It lands early into
+  `goal/stage-1` (K38) for Goals 11 and 13.
+- **`Timers` across processes** is asked of Goal 9 in #467 (a wake that survives the run's eviction, and named counted
+  work across processes). Slice 3 waits on its answer and on M8.07.
+- **Next:** slice 2, the journeys and checks, by an author who is not the builder.
+- **Decisions this goal makes:** `M3-workflows`.
