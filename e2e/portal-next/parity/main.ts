@@ -11,4 +11,7 @@ const out = `${run.stdout}${run.stderr}`;
 process.stdout.write(out);
 const passing = out.split("\n").filter((line) => line.includes("newly passing, take it off the list:"));
 for (const line of passing) console.log(line.replace(/^(::warning::|WARNING: )/, process.env["GITHUB_ACTIONS"] === "true" ? "::error::" : "ERROR: "));
+// One number per run, for the curve of the list's length over time.
+const red = /ratchet: (\d+) failing/.exec(out)?.[1];
+if (red !== undefined) console.log(`parity-red: ${red}`);
 process.exit(run.status === 0 && passing.length === 0 ? 0 : 1);
