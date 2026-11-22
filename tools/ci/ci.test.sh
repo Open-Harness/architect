@@ -275,7 +275,9 @@ aff_repo() { # <changed file>...; a repository whose branch x-build changes thos
   local dir; dir="$(mktemp -d "$scratch/aff.XXXX")"
   git -C "$dir" init -q -b base; git -C "$dir" config user.email ci@example.invalid; git -C "$dir" config user.name ci
   mkdir -p "$dir/packages/prove" "$dir/packages/cli" "$dir/packages/portal" "$dir/e2e" "$dir/docs/canon" "$dir/design/docs"
-  for f in packages/prove/a packages/cli/a packages/portal/a e2e/a docs/canon/a design/docs/a root.json; do echo 1 > "$dir/$f"; done
+  mkdir -p "$dir/packages/cli/test/fixtures" "$dir/e2e/fixtures"
+  printf '**/test/fixtures/**\n' > "$dir/.nxignore"
+  for f in packages/prove/a packages/cli/a packages/cli/test/fixtures/a packages/portal/a e2e/a e2e/fixtures/a docs/canon/a design/docs/a root.json; do echo 1 > "$dir/$f"; done
   git -C "$dir" add -A && git -C "$dir" commit -qm base && git -C "$dir" checkout -qb x-build
   local f; for f in "$@"; do echo 2 >> "$dir/$f"; done
   git -C "$dir" add -A && git -C "$dir" commit -qm change
@@ -292,9 +294,13 @@ expect "affected: a portal change reaches prove and e2e by the graph" 0 want "$r
 r=$(aff_repo packages/cli/a)
 expect "affected: a cli change reaches e2e and prove (prove runs the CLI)" 0 want "$r" "cli e2e" "affected_e2e=true affected_prove=true"
 r=$(aff_repo docs/canon/a)
-expect "affected: a canon change touches neither suite" 0 want "$r" "canon" "affected_e2e=false affected_prove=false"
+expect "affected: a canon change reaches e2e (e2e/m1 reads it), not prove" 0 want "$r" "canon" "affected_e2e=true affected_prove=false"
 r=$(aff_repo design/docs/a)
 expect "affected: a design-docs project change touches neither suite" 0 want "$r" "docs" "affected_e2e=false affected_prove=false"
+r=$(aff_repo packages/cli/test/fixtures/a)
+expect "affected: a file .nxignore hides from Nx runs everything" 0 want "$r" "" "affected_e2e=true affected_prove=true"
+r=$(aff_repo e2e/fixtures/a)
+expect "affected: e2e/fixtures is copied by prove's tests, so everything runs" 0 want "$r" "e2e" "affected_e2e=true affected_prove=true"
 r=$(aff_repo e2e/a)
 expect "affected: an e2e change runs e2e, not prove" 0 want "$r" "e2e" "affected_e2e=true affected_prove=false"
 r=$(aff_repo root.json)
