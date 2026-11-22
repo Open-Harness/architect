@@ -58,8 +58,9 @@ operations, then its checks, then its handlers.
 
 - **The gate is code; only the maybe messages reach a model.** The gate reads the allowed list, the mention, the bot
   list and the admission table, giving explicit, inferred or none. Explicit asks are accepted and follow-ups on a
-  followed thread go to their ticket, with no model. Inferred ones go to the judge, which answers through one
-  operation, `decision.record`. The prototype's main session, which routed everything, becomes the judge narrowed to
+  followed thread go to their ticket, with no model. Inferred ones, which come only from people or bots the
+  policy admits, go to the judge, which answers through one operation, `decision.record`; in `auto` that operation
+  accepts the ticket. A stranger's text never reaches a model. The prototype's main session, which routed everything, becomes the judge narrowed to
   these. `observe` comes before `auto`.
 - **The judge's memory.** Its conversation, summarised by Pi as it grows. A person's `decision.overrule` and every
   policy save are added to it, so it learns from being corrected.
@@ -80,8 +81,10 @@ operations, then its checks, then its handlers.
   (`check`, `prove`, `generate`) on top.
 - **Pushing.** `ticket.push` bundles the branch from the sandbox and pushes it through the GitHub adapter, so the key
   never enters the sandbox.
-- **No effects queue of our own.** Pi stores each tool call's intent before it runs, and the outward operations are
-  idempotent by (conversation, Pi task, call), so a reply goes out once and in order without the outbox or a workflow.
+- **No effects queue of our own.** Pi stores each tool call's intent before it runs. The outward operations are
+  declared `replay: "safe"`, so a call a kill cut off is rerun as the same call, and each has a natural key that makes
+  the rerun a no-op (`push` by its head, `openPull` by its branch, `ack` and `reply` by their trigger). So a reply goes
+  out once and in order without the outbox or a workflow.
   Every wait goes through Goal 9's `Timers`.
 - **The GitHub adapter's shape.** M4.25 is widened to what the superagent uses, with GitHub's names (`pulls.create`,
   the `pullRequest` event, whose merged close replaces `pullRequest.merged`), typed by hand from GitHub's OpenAPI
@@ -89,13 +92,16 @@ operations, then its checks, then its handlers.
 - **The panel** becomes portal pages on the app map (K31, K36), with "Needs you" first.
 - **The model.** DeepSeek, through `@orthograph/openai` (M4-agents call 5), mounted as `deepseek` with its key
   declared; the judge on the cheapest model that judges well. Every check runs on the stand-in model with no key.
-- **Status `ready`.** The framework fixes are designed as K40; slice 2, the blueprint, starts once K40 lands.
+- **Status `ready`.** The framework fixes are designed as K40 by their own 📐 thread. K40 is slice 2's first step, as
+  `AGENTS.md` places a decision before the first step that needs it: taken from that thread if it has landed, written
+  from its notes if not. Nothing else stops the goal starting.
 
 ## What it touches
 
 | Dependent | How |
 |---|---|
 | `design/goals/map.md` | Goal 17's row; M4.25 is now Goal 17's; rule 1's exception for an integration branch |
+| `AGENTS.md`, "How work flows" | K34's rule gains the integration branch's exception: it builds what it needs there |
 | Goals 3, 10, 11 | the framework fixes made on `goal/superagent` to K40's design, each announced by an Ask issue and merged back by the conductor |
 | M4.25 | built in Goal 17's slice 9, as `@orthograph/github` |
 | M4.17, M4.18 | stay unowned; the `ortho` workspace later sits on `@orthograph/sandbox` |

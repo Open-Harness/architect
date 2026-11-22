@@ -31,7 +31,8 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 ## How work flows
 
 - **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). No slice
-  starts until what it needs has landed, in any milestone order (K34); a milestone is done when its gate passes on `main`.
+  starts until what it needs has landed, in any milestone order (K34), except on an integration branch, which builds
+  what it needs there to its owner's design and is merged back by the conductor (Goal 17's, K39); a milestone is done when its gate passes on `main`.
   The goals and what each needs are in `design/goals/map.md`. Ideas for later go in `design/later.md`,
   never into code.
 - **Goals.** Work runs as goals in `design/goals/`: one long autonomous run with a bound and a single done check. A

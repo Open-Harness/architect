@@ -22,10 +22,10 @@ slices:
   - "3 · Checks for stage one (after 2)"
   - "4 · Stage one's handlers: triggers, the gate, policy, tickets, prompts (after 3)"
   - "5 · Checks for the conversations and the sandbox (after 2)"
-  - "6 · A ticket's conversation, in its sandbox (after 4, 5)"
+  - "6 · A ticket's conversation, in its sandbox (after 4, 5, 9)"
   - "7 · The judge: a cheap durable agent for the maybe messages (after 4, 5)"
   - "8 · Checks for GitHub (after 2)"
-  - "9 · GitHub: the App, its signed door, its calls and its stand-in (after 4, 8)"
+  - "9 · GitHub: the App, its signed door, its calls and its stand-in (after 8)"
   - "10 · The pages and the goal check (after 6, 7, 9)"
   - "11 · Extract the plugins, and hand the branch over (after 10)"
 ---
@@ -57,9 +57,13 @@ Earendil's post of 1 October 2026), and the calls in [`K39-superagent.md`](../de
   runs on your own machine first.
 - **Done when:** its tests pass on a stand-in GitHub, from a mention to a merged pull request, with a repeated webhook
   making one ticket, a stranger's mention making none, and a ticket's agent surviving a kill.
-- **Waits on:** nothing. Where it needs a piece of the framework that another goal hasn't landed yet, it builds that
-  piece here, to the design, and the conductor merges it back.
-- **Words used:** a trigger: one event from GitHub. A thread: an issue or a pull request and its comments. A ticket:
+- **Waits on:** no other goal. Its first step is the design of the framework fixes it needs, which a designer thread
+  is writing now. Where it needs a piece another goal hasn't landed yet, it builds that piece here, to that goal's
+  design, and the conductor merges it back.
+- **Built where:** on an integration branch: one branch where the app and its framework fixes are built together, then
+  handed back whole.
+- **Words used:** a webhook: the message GitHub sends when something happens. A stand-in GitHub: a small fake GitHub
+  on this machine, over a real git repository, so the tests need no account or key. A trigger: one event from GitHub. A thread: an issue or a pull request and its comments. A ticket:
   one piece of work the agent was allowed to do. A conversation: one agent's memory, kept for as long as the thing it
   works for, every new message added to it. A sandbox: a folder with a shell where the agent edits and tests. The
   gate: fixed rules in code that decide who may ask. The judge: a cheap agent that reads the messages that might be
@@ -309,7 +313,8 @@ export default Blueprint.operation(Ticket, {
   answer: { branch: BranchName, head: CommitSha },
   allowed: [ticketAgent.self],                  // K40: only this ticket's own conversation
   steps: { bundle: Blueprint.step.call(sandbox.operations.bundle), push: Blueprint.step.call(github.calls.branches.push) },
-  idempotent: "request",                        // keyed by (conversation, Pi task, call), so a resumed turn never pushes twice
+  replay: "safe",                               // after a kill, Pi reruns this same call, never asks the model again
+  idempotent: { by: ["ticket", "head"] },       // pushing a head already pushed is a no-op, so a rerun pushes once
 });
 ```
 
@@ -329,7 +334,8 @@ export default Blueprint.agent({
 The judge's memory is its own conversation, summarised by Pi as it grows. When a person overrules a decision in the
 portal, `decision.overrule` tells the judge what it said and what the person said instead; a policy save tells it
 what changed. That is how it gets better. In `observe` its `decision.record` writes "would accept" and starts nothing;
-in `auto` it calls `ticket.accept`. The prototype's always-open main session, which routed everything, is the judge
+in `auto` the same operation accepts the ticket itself. The judge sees only inferred triggers, which come from people
+or bots the policy already admits: a stranger's text never reaches a model. The prototype's always-open main session, which routed everything, is the judge
 narrowed to the maybe messages: explicit asks and follow-ups never reach a model, the gate routes them in code.
 
 ### The sandbox, as Pi's execution environment
@@ -379,7 +385,10 @@ Aaron writes "@superagent add a test for the slug parser" on issue 12 of the tes
    from a person resumes the ticket and lands in the same conversation, under the same mandate.
 
 If the machine is killed in step 6, `ortho dev` reopens the conversation's storage and Pi carries on from its last
-step: a committed model reply is never asked for again, and a push already made is not made twice.
+step: a committed model reply is never asked for again. Every outward operation is declared `replay: "safe"`, so Pi
+reruns a call the kill cut off instead of asking the model again, and each has a natural key that makes the rerun a
+no-op: `push` by the head it pushes, `openPull` by its branch (an open pull request for it is returned), `ack` and
+`reply` by the trigger they answer.
 
 ## The developer's day
 
@@ -404,25 +413,25 @@ has landed there, and built here to its design if not.
 | # | Slice | After | Uses | Done when |
 |---|---|---|---|---|
 | 1 | The plan and its calls, decided | — | — | this brief and K39 on `main` |
-| 2 | **Stage one: the blueprint.** Every thing, machine, event, error and operation above, in the plugins and the app, with empty handlers; and the framework fixes the blueprint itself needs (the outside actor, things with versions, an agent `for` a thing), to K40 | 1 | K40; Goal 3's callers (M2.03) | `ortho check` passes; the generated docs, CLI and MCP list every operation; a blueprint without these plugins generates byte for byte as before |
+| 2 | **Stage one: the blueprint.** Every thing, machine, event, error and operation above, in the plugins and the app, with empty handlers, the GitHub plugin's events and door declared too; and the framework fixes the blueprint itself needs (the outside actor, things with versions, an agent `for` a thing, an adapter's events and door). Its first step is K40, the fixes' design: taken from the gaps thread if it has landed, written by this slice from that thread's notes if not | 1 | K40; Goal 3's callers (M2.03) and secrets (M2.04); Goal 11's events and doors (M5.03) | `ortho check` passes; the generated docs, CLI and MCP list every operation; a blueprint without these plugins generates byte for byte as before |
 | 3 | Checks for stage one: every gate cell of the prototype's `002`; a trigger twice stored once; a stale policy save refused; a follow-up reaching its ticket with no gate; stop withdrawing the mandate | 2 | — | they fail on empty handlers |
-| 4 | Stage one's handlers: intake, tickets and prompts, with triggers sent straight to `trigger.receive` | 3 | — | slice 3 passes |
-| 5 | Checks for the conversations and the sandbox: one conversation per ticket, found again after a restart; a message while it works steers it; a write outside the sandbox refused; a kill mid-turn resumes with no second committed model call; the judge in `observe` records "would accept" and starts nothing; an overrule reaches the judge | 2 | — | they fail on empty handlers |
-| 6 | A ticket's conversation, in its sandbox: the `ticket` agent, `ticket.tell`, the outward operations, the sandbox with its `local` provider | 4, 5 | Goal 10's `@orthograph/agents` (M4-agents' Node host), and K40's agent `for` a thing | slice 5's ticket and sandbox checks pass; 0 folders and 0 processes left |
+| 4 | Stage one's handlers: intake, tickets and prompts. Its journeys call `trigger.receive` directly, as the source's caller; the webhook path through the door is slice 9's | 3 | — | slice 3 passes |
+| 5 | Checks for the conversations and the sandbox: one conversation per ticket, found again after a restart; a message while it works steers it; a write outside the sandbox refused; a kill mid-turn resumes with no second committed model call; a kill mid-`push` and mid-`openPull` leaves one branch update and one pull request; the judge sees no stranger's text; the judge in `observe` records "would accept" and starts nothing; an overrule reaches the judge | 2 | — | they fail on empty handlers |
+| 6 | A ticket's conversation, in its sandbox: the `ticket` agent, `ticket.tell`, the outward operations, the sandbox with its `local` provider | 4, 5, 9 | Goal 10's `@orthograph/agents` (M4-agents' Node host), and K40's agent `for` a thing | slice 5's ticket and sandbox checks pass; 0 folders and 0 processes left |
 | 7 | The judge: the cheap durable agent for the maybe messages, `observe` then `auto` | 4, 5 | as slice 6 | slice 5's judge checks pass |
-| 8 | Checks for GitHub: every call the app uses against the stand-in; a signed webhook accepted and a bad signature refused; the same delivery twice made one trigger | 2 | — | they fail on an empty adapter |
-| 9 | GitHub: the App's calls out, its signed door and events in, its secrets, the stand-in GitHub | 4, 8 | Goal 11's doors and `on:` (M5.03), Goal 3's secrets (M2.04) | slice 8 passes |
+| 8 | Checks for GitHub: every call the app uses against the stand-in; a signed webhook accepted and decoded, and a bad signature refused | 2 | — | they fail on an empty adapter |
+| 9 | GitHub: the App's calls out, its signed door and events in, its secrets, the stand-in GitHub | 8 | Goal 11's doors and `on:` (M5.03), Goal 3's secrets (M2.04) | slice 8 passes |
 | 10 | The pages and `e2e:superagent`; then, with Aaron's yes, one run on a real test repository | 6, 7, 9 | Goal 6's page map (slice 3) | the goal check below passes |
 | 11 | Extract the plugins into `packages/` as `@orthograph/github`, `sandbox`, `intake`, `tickets` and `prompts`, and hand the branch over | 10 | — | the goal check still passes from `packages/`; the conductor has the branch and its list of framework fixes to merge back |
 
 **What runs at once.** After slice 2, three lanes of checks start side by side, each in its own thread: stage one
-(3), the conversations and the sandbox (5), and GitHub (8). Their builds follow: 4, then 6 and 7 together, while 9
-runs beside them.
+(3), the conversations and the sandbox (5), and GitHub (8). Then 4 and 9 build side by side; then the judge (7) and
+the ticket's conversation (6), which also needs 9's calls out.
 
 **The goal check, `nx run e2e:superagent`,** on the stand-in GitHub and the stand-in model: an allowed person's
 mention gets one acknowledgement and a pull request; the same webhook twice makes one ticket; a stranger's mention
 makes none; a review comment reaches the same conversation with no gate; killing the agents' runner mid-turn resumes
-it with no second committed model call; the merge ends the ticket and a later comment resumes it in the same
+it with no second committed model call, and killing it mid-push leaves one branch update and one pull request; the merge ends the ticket and a later comment resumes it in the same
 conversation; a person's stop withdraws the mandate; afterwards no sandbox folder or process is left.
 
 ## The framework fixes it builds
@@ -474,4 +483,4 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
 ## Where it stands
 
 Slice 1 lands with this brief and K39 (22 November 2026). The branch is cut from `goal/stage-1`. The framework fixes
-are being designed as K40. Slice 2, the blueprint, starts once K40 lands.
+are being designed as K40 by their own thread; slice 2 takes K40 as its first step.
