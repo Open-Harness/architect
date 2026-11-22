@@ -7,6 +7,7 @@ folder README.
 
 | Folder | Slice | What it proves |
 |---|---|---|
+| `durable/` | 4 (M4.04, #377) | a run killed with SIGKILL, in the tool phase or with the model's reply in flight, resumes from its SQLite file in a fresh process under the same run id; no committed step is requested or committed twice; request keys belong to their run and task; usage carries on; time and waits are the injected `Clock` and `Timers` (`durable/README.md` names the surface it assumes) |
 
 ## Running them
 

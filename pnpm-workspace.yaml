@@ -6,11 +6,14 @@ packages:
 allowBuilds:
   # HeroUI Pro's installer downloads the licensed build with a credential; a plain install gets the registry's empty shell and
   # runs nothing. The CI job that holds the secret runs the installer itself (`packages/portal-ui/tools/pro.mjs`, F7).
+  # pi-ai (the agents seam's model library, 1.5.0) pulls these in; neither's install script is needed to run it.
+  "@google/genai": false
   "@heroui-pro/react": false
   # heroui-pro's keyring helper; its native build only serves a login on a person's own machine.
   "@zowe/secrets-for-zowe-sdk": false
   esbuild: true
   nx: true
+  protobufjs: false
   workerd: true
 overrides:
   # Better Auth would resolve 0.29.9 (12 November 2026), under two weeks old; one copy keeps its types whole.
