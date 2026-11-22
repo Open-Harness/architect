@@ -5,7 +5,7 @@ milestone: "Goal 8: workflows"
 release: "1.0"
 branch: goal/workflows
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: null        # claude | amp | codex, set by the lead when it starts
   model: null          # the model id it runs on
@@ -96,13 +96,19 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-22 November 2026, lead on Claude (claude-opus-5-5).
+Parked on 22 November 2026, by the conductor's word: Aaron narrowed the work to the Beta path (Goals 3, 5, 6 and 15)
+and the two long poles (Goals 4 and 9). It resumes by the conductor's word. Lead on Claude (claude-opus-5-5).
 
-- **Slice 1 (M3.01) is decided:** `design/decisions/M3-workflows.md`. A workflow is a declaration in
-  `blueprint/workflows/` and a handler in `src/workflows/`, with three kinds of activity (`call`, `await`, `after`/`at`)
-  on Effect's engine; every `call` carries its request key; every wait goes through `Timers`. It lands early into
-  `goal/stage-1` (K38) for Goals 11 and 13.
-- **`Timers` across processes** is asked of Goal 9 in #467 (a wake that survives the run's eviction, and named counted
-  work across processes). Slice 3 waits on its answer and on M8.07.
-- **Next:** slice 2, the journeys and checks, by an author who is not the builder.
+- **Landed:** slice 1 (M3.01), the shape of a workflow: `design/decisions/M3-workflows.md`, merged into
+  `goal/workflows`. A workflow is a declaration in `blueprint/workflows/` and a handler in `src/workflows/`, with three
+  kinds of activity (`call`, `await`, `after`/`at`) on Effect's engine; every `call` carries its request key; every
+  wait goes through Goal 9's `DurableTimers`.
+- **Open:** Ask #462 (Goal 11) wants M3.01 landed early into `goal/stage-1` (K38). Not started: on resume, cut
+  `goal/workflows-early-M3.01` at slice 1's merge and open it into `goal/stage-1`. Goal 9 answered the `Timers` Ask
+  (#467) with `M8-timers-shape` (#483); slice 3 still waits on M8.07.
+- **Not started:** slice 2 (M3.27), the journeys and checks. An author subagent began it and stopped before pushing
+  anything; nothing of it is on GitHub.
+- **Next, on resume:** the early landing for #462; then slice 2 by an author who is not the builder, against
+  `DurableTimers` in `TimersMemory`; then slice 3 once M8.07 is on `goal/stage-1`, with its Asks to Goal 3 (the
+  compiler and generators know `blueprint/workflows/`, the lint rule, a delivery hook after a call commits).
 - **Decisions this goal makes:** `M3-workflows`.

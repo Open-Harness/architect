@@ -118,8 +118,8 @@ slice 3; until it lands, journey 1's replay catches a body that isn't the same t
 - **Deduplication is the engine's.** A deferred keeps its first exit; a second delivery, or an event after the
   `within` timer already won, wakes nothing (finding 3). So `deliver` may be called at least once, never needs a
   lock, and `within` is a timer that completes the same deferred with `None`: the first exit wins. The timer is set
-  with the run's id as `owner` and the activity's key (with `/for`) as `name`; when the event wins, the wake clears it
-  with `Timers.clear(owner, name)`, so a stepped world's `due` never stops at a dead timer. When the timer wins, its
+  with the run's path as `owner` (`workflows/<workflow>/<execution>`) and the activity's key (with `/for`) as `name`;
+  when the event wins, the wake clears it with `DurableTimers.clear(owner, name)`, so a stepped world's `due` never stops at a dead timer. When the timer wins, its
   wait row is deleted the same way.
 - **Who calls `deliver`.** The outbox (Goal 11's M5.04) for the app's own events, and the follower for chain events
   (`on:`, M5.03). Until the outbox lands, the host delivers right after a call's commit, which can lose a wake if the
@@ -134,10 +134,12 @@ slice 3; until it lands, journey 1's replay catches a body that isn't the same t
   replay doesn't set it again, and it reads the world's time when it was first set (finding 4).
 - The world fires the row by handing the token back, and the host completes the deferred through the engine. A timer
   fired twice wakes once (finding 3).
-- **That needs `Timers` across processes**, which is Goal 9's M8.07. Goal 8 proposed the shape in Ask #467: `set(at,
-  owner, name, wake)` and `clear(owner, name)`, once per owner and name, with `wake` a stored kind and JSON payload;
-  a host-side `TimerWakes` that the world calls once per firing and that returns only after the work it woke is
-  counted. This decision follows Goal 9's answer there; the names may change, the meaning may not.
+- **That needs `Timers` across processes**, which is Goal 9's M8.07. Asked in #467 and answered by Goal 9 there, in
+  `design/decisions/M8-timers-shape.md` (#483): a second service beside `Timers`, `DurableTimers.set(at, owner, name,
+  wake)` and `.clear(owner, name)`, once per owner and name while pending (a replayed activity sets nothing new), with
+  `wake` a stored kind and JSON payload; and the host's `TimerWakes.wake(timer)`, given at the composition root through
+  `wakesByKind({ workflow: … })`, called at least once per firing and returning only after the work it woke holds its
+  own `Busy` token. `TimersMemory` already provides both over one table, so slice 2's checks run in-process today.
 - In a real world the row can be an alarm or the engine's own clock behind the same seam (spike, "The decision it
   supports"); the workflow can't tell.
 
@@ -147,9 +149,10 @@ slice 3; until it lands, journey 1's replay catches a body that isn't the same t
   through the workflow registration's context. The engine and its Durable Object keep the platform's clock, so its
   60-second resume guard fires in real time.
 - **A run is counted work.** The run's object takes a token from the world's count when an attempt starts and gives
-  it back when the attempt's result is saved, named `workflow:<name>/<run>` so `NeverQuiet` can name it. The timer's
+  it back when the attempt's result is saved, named by `Busy.as("workflows/<workflow>/<execution>")` so `NeverQuiet` can name it. The timer's
   wake takes the token before it returns, so a stepped world's `advance` waits for the replay it started (finding 8).
-  Both rest on `Busy` across processes, also asked in #467.
+  Both rest on `Busy` across processes (M8.07, #467). The engine's Durable Object, which we don't generate, wraps its
+  `fetch`, RPC and `alarm` in the host's entry wrapper from M8.06.
 - **A run that dies inside an activity** comes back on the engine's guard alarm, 60 real seconds later. A stepped
   world's quiet-wait pokes every parked run's object (a harmless `resume`) instead of waiting for it.
 
@@ -158,8 +161,8 @@ slice 3; until it lands, journey 1's replay catches a body that isn't the same t
 | Path | What | Depends on |
 |---|---|---|
 | `packages/orthograph/src/modules/workflows/` (new module, added only) | `Blueprint.workflow`, `Blueprint.activity.{call,await,after,at}`, the `Workflow`, `Activity` and `WorkflowHandler` types | Effect |
-| `packages/workflows/` (`@orthograph/workflows`, new) | turns a declaration and its handler into an `effect/workflow` `Workflow` and its activities; the request keys; `WorkflowEvents`; the timer waits; `WorkflowRefused` | `effect`, `orthograph`, `language-effect` (`Timers`, `Busy`, `Journal`) |
-| `packages/host-cloudflare/src/modules/workflows/` (new module) | the run's Durable Object, made from `makeClusterWorkflowProgram(ctx)` so it can set the world's instant at its entry and count work without forking the engine; the waits table; the `"workflow"` handler for `TimerWakes` | `@effect/platform-cloudflare`, `@orthograph/workflows` |
+| `packages/workflows/` (`@orthograph/workflows`, new) | turns a declaration and its handler into an `effect/workflow` `Workflow` and its activities; the request keys; `WorkflowEvents`; the timer waits; `WorkflowRefused` | `effect`, `orthograph`, `language-effect` (`DurableTimers`, `Busy`, `Journal`) |
+| `packages/host-cloudflare/src/modules/workflows/` (new module) | the run's Durable Object, made from `makeClusterWorkflowProgram(ctx)` so it can set the world's instant at its entry and count work without forking the engine; the waits table; the `workflow` handler for `wakesByKind` | `@effect/platform-cloudflare`, `@orthograph/workflows` |
 | `examples/workflows/` | the workshop's publish, cut down: a draft frozen into a revision, a stand-in operation that emits `ProposalOpened`, the cooldown, the link | the above |
 | `e2e/workflows/` | the journeys and checks (slice 2, M3.27) | |
 
@@ -216,10 +219,8 @@ The journeys `e2e/workflows` lists, each red on empty handlers:
 
 ## Supersedes
 
-- design/decisions/K5-the-whole-shape.md: "Blueprint.activity.client(proposal.open, { by: \"member\" })" → "a
-  person's part is an operation they call; the workflow `await`s its event (M3-workflows section 1)"
-- design/decisions/K5-the-whole-shape.md: "{ match: { proposal: \"propose.proposal\", digest: \"freeze.digest\" } }"
-  → "the handler passes `match` as values"
-- design/walkthrough/journey.md: the same two phrases, quoted from K5 → the same new words
-- spikes/effect-workflow-workerd/README.md: "The Effect and platform-cloudflare pins are 4.1.3, as M3.02 bumps them."
-  → "4.1.4, as `effect` is on `goal/stage-1`"
+- design/decisions/K5-the-whole-shape.md: "Blueprint.activity.client(proposal.open" → "Blueprint.activity.call(proposal.open), the member calls it and the workflow awaits its event (section 1)"
+- design/decisions/K5-the-whole-shape.md: "{ match: { proposal:" → "the handler passes match as values"
+- spikes/effect-workflow-workerd/README.md: "pins are 4.1.3, as M3.02 bumps them" → "pins are 4.1.4, matching `effect` on `goal/stage-1`"
+
+`design/walkthrough/journey.md` quoted K5's sketch; its two lines are rewritten to the new words.
