@@ -208,7 +208,7 @@ so the comment would count twice.
 ```ts
 // packages/github (Blueprint.adapter)
 events: { issueComment: Blueprint.event(IssueComment, {
-  id: (e) => `comment:${e.comment.id}:${e.action}`,    // the same id from the door and from the poll
+  id: (e) => `comment:${e.comment.id}:${e.action}:${e.comment.updated_at}`,   // one change; the same from door and poll
 }) },
 catchUp: {
   every: "5 minutes",                                  // through Timers, and once when the world starts
@@ -218,7 +218,9 @@ catchUp: {
 // the cursor moves only after its events are accepted
 ```
 
-An event's id is the identity of what it's about, so a webhook and a poll of one comment settle once. An adapter
+An event's id is the identity of one change to what it's about: the object, the action and the object's own version
+(GitHub's `updated_at`), which the webhook and the poll both carry. A webhook and a poll of one change settle once, and
+a comment edited twice is two events. An adapter
 whose sender offers no object id keys by delivery and declares no `catchUp`.
 
 **Owner.** Goal 11 (M5.03 and a slice for `catchUp`). The interval is a `Timers` wait (Goal 9's). **Needed by** the
@@ -298,7 +300,12 @@ Live docs, rewritten in this change:
 - design/frame/examples/agents.md: "// a person starts a run; an agent may not, unless the mount allows it" → "// a person starts this run; under K40 an agent is its own thing instead"
 - design/frame/examples/agents.md: "unless the app narrows its mount to allow agents" → "Answered by K40 (22 November 2026): an agent is its own thing"
 - design/ledger.md: "Who may start an agent run: only a person, unless the app's mount allows agents (S15)." → "Who may make an agent: any operation allowed to create one, under its roles; an agent is its own thing (K40, replacing S15)."
-- design/docs/index.html: "only a person can start a run. A mount can allow agents to start runs, but you have to choose that." → "its own thing, living in its own actor; any operation allowed to create one makes one, and events reach it through the outbox (K40)."
+- design/docs/index.html: "only a person can start a run. A mount can allow agents to start runs, but you have to choose that." → "An agent is its own thing, living in its own actor, which holds its Pi Durable conversation."
+- design/docs/index.html: "It adds a <code>Run</code> thing" → "It adds an <code>Agent</code> thing"
+- design/docs/index.html: "It needs auth, so every run belongs to someone." → "Any operation allowed to create an agent makes one, under its own roles."
+- design/docs/index.html: "thing run (start, steer, cancel; finish and fail by system)" → "thing agent (made by any operation allowed to create one; told by system)"
+- design/docs/index.html: "The run's record is a row, so runs can be listed." → "A run is one input and its answer inside the conversation, not a row."
+- design/docs/index.html: "acme run start --agent support" → "(none: an agent is made by an operation and told through the outbox)"
 - design/frame/questions.md: "**A**: an agent starting agents spends money with no person." → "K40 (22 November 2026) replaces all three: an agent is its own thing, made by any operation allowed to create one, under that operation's roles."
 
 ## Dated records
