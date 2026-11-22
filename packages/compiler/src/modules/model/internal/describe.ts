@@ -134,7 +134,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
 
   // The keeper is refused NotAllowed by every operation that doesn't list it, even one open to anyone (M8-checks call 4):
   // so once a blueprint has a keeper, no operation's refusals leave NotAllowed out. A blueprint with none is unchanged.
-  const keeperUsed = [...layout.things.values()].some((t) => [...t.verbs.values()].some((v) => v.declaration.allowed.some((a) => a.kind === "keeper")));
+  const keeperUsed = [...layout.things.values()].some((t) => [...t.verbs.values()].some((v) => Array.isArray(v.declaration.allowed) && v.declaration.allowed.some((a) => a.kind === "keeper")));
   const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
 
   const operations: Record<string, OperationModel> = {};
