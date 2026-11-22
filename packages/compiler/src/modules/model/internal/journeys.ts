@@ -24,9 +24,9 @@ const blanksIn = (value: unknown): ReadonlyArray<string> => {
   return Object.values(value).flatMap((v) => (Blanks.isBlank(v) ? [v.what] : []));
 };
 
-/** A step's blanks: in its call's payload and in each check (the check itself, its fields, its id or its value). */
-const stepBlanks = (step: { readonly call: Call | ClockCall; readonly checks: ReadonlyArray<Assertion> }) => [
-  ...(step.call.kind === "call" ? blanksIn(step.call.payload) : []),
+/** A step's blanks: in its call's payload and due instant (the keeper's) and in each check (the check itself, its fields, its id or its value). */
+export const stepBlanks = (step: { readonly call: Call | ClockCall; readonly checks: ReadonlyArray<Assertion> }) => [
+  ...(step.call.kind === "call" ? [...blanksIn(step.call.payload), ...blanksIn(step.call.due)] : []),
   ...step.checks.flatMap((c) => (Blanks.isBlank(c) ? [(c as { readonly what: string }).what]
     : c.kind === "emits" || c.kind === "refuses" ? blanksIn(c.fields) : c.kind === "is-in" ? blanksIn(c.id) : c.kind === "expect-equal" ? blanksIn(c.value) : [])),
 ];
@@ -55,7 +55,7 @@ export const storiesOf = (
     return {
       actor: call.actor, operation, payload: publicData(call.payload, secret),
       ...(call.request === undefined ? {} : { request: call.request }),
-      ...(call.due === undefined ? {} : { due: call.due }),
+      ...(typeof call.due === "string" ? { due: call.due } : {}),
     };
   };
 
