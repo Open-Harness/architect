@@ -41,7 +41,7 @@ GitHub milestone (K32, K33); read those before this table, which is only the ind
 | 🎯 5: the UI layer | `goal/ui-layer` | **Beta path** | Started 22 November; uses UI SDK's default tokens until Goal 6's theme lands (K38) |
 | 🎯 6: the new portal | `goal/portal` | **Beta path** | Started 22 November; lands the theme early (K38), then the map language (with K36's components), the shell, and the cutover off HeroUI |
 | 🎯 15: release and the cloud | `goal/release` | **Beta path** | Aaron granted all eight credentials of the release pass (M7.13) on 22 November; the goal asks him directly for each step he must do himself |
-| 🎯 4: on chain | `goal/on-chain` | **Long pole** | Stalled about a day; told to resume on 22 November. Lands M6.09 early for Goal 9 (#442) |
+| 🎯 4: on chain | `goal/on-chain` | **Long pole** | Stalled about a day, resumed on 22 November: #331 merging stage-1 in and answering its last Codex finding. Lands M6.09 early for Goal 9 (#442, agreed) |
 | 🎯 9: time | `goal/time` | **Long pole** | Lands M8.09 early for Goal 4 (#443) |
 | 🎯 7: Safe, Hats and budgets | `goal/safe-hats` | Open | #294 is blocked, not merged, since 21 November; its done check passed earlier. Needs a lead to land it |
 | 🎯 8 workflows, 10 agents, 11 events, 12 wallets, 14 club, 16 Capxul | their `goal/<name>` branches | **Parking** after their current slice | Started 22 November; each will set `status: parked` and say in "Where it stands" where it stopped |
