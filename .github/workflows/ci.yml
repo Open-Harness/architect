@@ -71,7 +71,7 @@ jobs:
   # request, like the layer gates: no prove test reads design/ or a doc outside packages/ (CI-speed.md).
   prove-tests:
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_prove == 'false'))) }}
     name: prove-tests (${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
@@ -125,7 +125,8 @@ jobs:
           sparse-checkout: tools/ci
       - run: tools/ci/gate.sh "check-static=$STATIC" "docs:prove-tests=$PROVE"
         env:
-          DOCS_ONLY: ${{ needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true' }}
+          # gate.sh's flag for "the skipped shards are expected": a docs-only pull request, or one prove's tests do not reach.
+          DOCS_ONLY: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_prove == 'false') }}
           STATIC: ${{ needs.check-static.result }}
           PROVE: ${{ needs.prove-tests.result }}
 
@@ -229,6 +230,9 @@ jobs:
     outputs:
       docs_only: ${{ steps.diff.outputs.docs_only }}
       fast: ${{ steps.diff.outputs.fast }}
+      # Which suites the change touches (tools/ci/affected.sh, CI-integration.md B3). True unless the step below ran and said false.
+      affected_e2e: ${{ steps.aff.outputs.affected_e2e || 'true' }}
+      affected_prove: ${{ steps.aff.outputs.affected_prove || 'true' }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -246,12 +250,29 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
+      # Only a pull request that runs real suites asks which ones. A push, a docs-only or a fast pull request needs no answer.
+      # Should any step here fail, `changes` fails and every job runs.
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        uses: pnpm/action-setup@v6.1.0
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        run: pnpm install --frozen-lockfile
+      - id: aff
+        if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        run: |
+          tools/ci/affected.sh "origin/$BASE_REF" HEAD e2e prove | tee -a "$GITHUB_OUTPUT"
+        env:
+          BASE_REF: ${{ github.base_ref }}
 
   # Gate 1 (L1.60): the seven checks of layer one, run as a user runs Orthograph (D2 #74).
   e2e-layer1:
     # Skipped on a docs-only pull request, where a skip counts as passed. Should `changes` itself fail, this runs.
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -286,7 +307,7 @@ jobs:
     # Skipped on a docs-only pull request, where a skip counts as passed. Should `changes` itself fail, this runs.
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
     needs: [changes, portal-ui]
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -338,7 +359,7 @@ jobs:
   # e2e/m8/expected-failing/, and fails on any other. Skipped on a docs-only pull request, like the gates above.
   e2e-m8:
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -382,7 +403,7 @@ jobs:
   e2e-m1-shard:
     needs: [changes, portal-ui]
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false'))) }}
     name: e2e-m1-shard (${{ matrix.shard }}/4)
     strategy:
       fail-fast: false
@@ -465,7 +486,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - run: tools/ci/gate.sh "docs:e2e-m1-shard=$SHARDS"
         env:
-          DOCS_ONLY: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true') }}
+          DOCS_ONLY: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false') }}
           SHARDS: ${{ needs.e2e-m1-shard.result }}
       - uses: pnpm/action-setup@v6.1.0
         if: needs.e2e-m1-shard.result == 'success'
@@ -528,7 +549,7 @@ jobs:
   # Skipped on a docs-only pull request (CI-speed.md), where a skip counts as passed. Should `changes` itself fail, this runs.
   e2e-climb:
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -559,7 +580,7 @@ jobs:
   # signs its verdicts with the local OIDC issuer of e2e/layer2/services.ts. About 1 minute on a Mac, so one runner and one job (CI-speed.md).
   e2e-stage1:
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && ((github.event_name == 'pull_request' && github.base_ref == 'goal/stage-1') || github.ref == 'refs/heads/goal/stage-1') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && ((github.event_name == 'pull_request' && github.base_ref == 'goal/stage-1') || github.ref == 'refs/heads/goal/stage-1') && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_e2e == 'false'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -590,7 +611,7 @@ jobs:
     needs: [changes, portal-ui]
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
     # Skipped on a docs-only pull request (CI-speed.md): the grid reads generated docs under examples/, never a docs-only path.
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
