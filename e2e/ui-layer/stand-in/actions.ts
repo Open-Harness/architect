@@ -7,7 +7,7 @@ import { NotAllowed } from "orthograph";
 import type { ActionContext, ActionHost, ActionOptions, ActionsModule } from "../contract.ts";
 
 export const Payloads = {
-  noteAdd: Schema.Struct({ room: Schema.String, text: Schema.String, tag: Schema.optionalKey(Schema.String) }),
+  noteAdd: Schema.Struct({ room: Schema.String, text: Schema.String, tag: Schema.optionalKey(Schema.String), due: Schema.optionalKey(Schema.NullOr(Schema.String)) }),
   noteRemove: Schema.Struct({ room: Schema.String, noteId: Schema.String }),
   noteList: Schema.Struct({ room: Schema.String }),
   noteExport: Schema.Struct({ room: Schema.String, format: Schema.Literals(["csv", "json"]) }),
