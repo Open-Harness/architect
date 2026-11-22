@@ -9,9 +9,9 @@ K34 makes those needs, not milestone order, the rule for when a goal may build.
 ## How a goal stays independent
 
 1. **It owns paths, and only its own.** A goal's brief lists the packages and folders it owns. Anything outside them
-   is an Ask issue to the owner (K32; K33 in #301). The one exception is an integration branch, Goal 17's
-   `goal/superagent` (K39): it builds the framework fixes its app needs there, announces each by an Ask issue, and the
-   conductor merges them back.
+   is an Ask issue to the owner (K32; K33 in #301), except on an integration branch, Goal 17's `goal/superagent`
+   (K39): it builds the framework fixes its app needs there, announces each by an Ask issue, and the conductor merges
+   them back.
 2. **New work is a new package or a new module.** A goal that adds to the core (`orthograph`, the compiler, a host)
    adds new modules only, and proves that a blueprint not using them generates byte for byte what it did before (the
    rule K31 set for the app map).

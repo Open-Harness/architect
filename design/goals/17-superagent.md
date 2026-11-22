@@ -105,7 +105,7 @@ lanes run side by side and each moves out whole in slice 14.
 
 | Piece | Becomes | Kind | What it brings |
 |---|---|---|---|
-| Superagent | `@orthograph/superagent` | feature | the Superagent thing and its machine, making one, and the two kinds of agent (main, executor) |
+| Superagent | `@orthograph/superagent` | feature | the Superagent thing and its machine, making one, Proposal, the health read, and the two kinds of agent (main, executor) |
 | Intake | `@orthograph/intake` | feature | Source, Account, Trigger, Thread, Correlation, Eval, Decision, Policy, the gate, and `Source.from`, the mapping a connection adds to its adapter |
 | Tickets | `@orthograph/tickets` | feature | Mandate, Ticket, Subscription, Assignment, Input, Report, Attention, Outgoing message, and the ticket stage read |
 | Prompts | `@orthograph/prompts` | feature | PromptSet: the team's prompt sections, skills and overrides, with versions |
@@ -137,6 +137,7 @@ examples/superagent/                          new · the app
   plugins/
     superagent/                               becomes @orthograph/superagent
       blueprint/things/superagent/{thing,machine,events}.ts   verbs/{create,update,go-live,pause,resume,retire}.ts
+      blueprint/things/proposal/{thing,machine}.ts   verbs/{approve,reject}.ts
       blueprint/agents/{main,executor}.ts  agents/{main,executor}.md
     intake/                                   becomes @orthograph/intake
       blueprint/things/{source,account,trigger,thread,correlation,eval,decision,policy}/…
@@ -324,16 +325,17 @@ declared event. The operations are named here; their payloads follow the prototy
 | Decision | thing, intake | `route` (main: 1 to 20 items, each accept, attach, stop or ignore); `dismiss` (person) |
 | Policy | thing with versions, intake (K40 fix 2), one per superagent | `save`, `get`, `history`, `restore`, `sync` (person; main proposes); a Mandate pins `Policy.revision` |
 | Mandate | thing, tickets; `held → withdrawn`, `revoked` | `revalidate` (system, before a resume) |
-| Ticket | thing, tickets; `open → ended → open`, `stopped` | `attach`, `requestStatus`, `note` (main); `stop`, `retry` (person, main); `end`, `resume`, `policyChanged` (system) |
-| Subscription | thing, tickets; own, attached, context, bound | `follow`, `unrelated` (executor) |
+| Ticket | thing, tickets; `open → ended → open`, `stopped` | `accept` (system, on a route's accept: the Mandate, Ticket, Subscription, Assignment, Input and executor in one commit); `attach`, `requestStatus`, `note` (main); `stop`, `retry` (person, main); `end`, `resume`, `policyChanged` (system) |
+| Subscription | thing, tickets; own, attached, context, bound | `thread.follow`, `thread.unrelated` (executor); a source polls a subscribed thread while a live ticket follows it, and for two weeks after the later of its last trigger and the following tickets' end |
 | Assignment | thing, tickets; `pending → running → ended` | `started`, `interrupted`, `turnEnded` (system) |
 | Input | thing, tickets | `delivered`, `read`, `deliveryFailed` (system) |
-| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped | `report`, `ack`, `handback` (executor); `dropped` ends the ticket with no message |
+| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped | `ticket.report`, `ticket.ack`, `trigger.handback` (executor); `dropped` ends the ticket with no message |
 | Attention | thing, tickets | made by a report's question; answered by a person's next trigger |
 | Outgoing message | thing, tickets; `pending → sent`, `dropped` | `reply` (main, executor, by purpose); `withdraw` (system); retried from 5 s doubling to 300 s, in order per ticket and conversation |
 | PromptSet | thing with versions, prompts | `save` (person; main proposes); `preview`, `history` (person); `compose(role)` (system, every model request) |
 | Settings | thing with versions, the app; execution variables, blocked commands | `save` (person; main proposes); `pause` (person: an eval's deadline moves later by the pause's length) |
 | Proposal | thing, superagent; `waiting → approved`, `rejected` | made when a main agent calls a configuration change; `approve`, `reject` (person) |
+| Health | derived read, superagent | `superagent.health`: each source's, each kind of stored work's and each channel's problems, shown once one has failed three times in a row |
 | Ticket stage | derived read, tickets | `ticket.waiting` lists every ticket whose stage is person |
 
 Its events: `superagentCreated`, `triggerReceived`, `triggerRequeued`, `evalStarted`, `decisionRecorded`,
@@ -371,7 +373,8 @@ export default Blueprint.agent({
   tools: [
     read, decision.route, eval.context, eval.read, eval.decide,
     ticket.retry, ticket.requestStatus, ticket.note, trigger.requeue, thread.unsubscribe, reply,
-    superagent.create, settings.save, policy.sync, prompts.save,   // each only records a Proposal
+    superagent.create, superagent.update, policy.save, policy.sync,  // each only records a Proposal
+    account.list, settings.save, prompts.save,
     Pi.bash, Pi.read, Pi.skills,
   ],
   hooks: { beforeTool: noWait },                // it never waits: no sleep; shell 30 s; a job wait 5 s
@@ -415,7 +418,7 @@ export default Blueprint.page({
   description: "Tickets waiting for a person, with their action; system problems; 24-hour counts; executor load.",
   route: { path: "/agents/:superagent" },
   allowed: [Blueprint.signedIn.via(Via.session)],
-  shows: [tickets.operations.waiting, superagent.operations.health],
+  shows: [tickets.operations.waiting, superagent.operations.health, superagent.operations.proposals],
   offers: [tickets.operations.stop, tickets.operations.retry, settings.operations.pause],
 });
 ```
@@ -503,7 +506,7 @@ checks run side by side, each in its own thread: stage one (6), the agents and t
 (10). Then 7, 9 and 11 build side by side, and 12 joins them.
 
 **K40's "Needed by", in this goal's slices.** The GitHub door is slice 11 and the gate slice 7; Policy and Prompts are
-slice 7; tickets and agents, the main agent and the executor are slice 9.
+slice 7; the tickets' things are slices 5 and 7, and their agents, the main agent and the executor slice 9.
 
 **The goal check, `nx run e2e:superagent`,** on the stand-ins and the stand-in model, with no keys:
 
@@ -529,7 +532,7 @@ Where each part of the prototype's docs lives in this plan, so nothing is droppe
 | `000` Philosophy | the agent answers for its work; a person stays responsible; the design follows | "The goal, in plain words"; proposals a person approves |
 | `001` Domain model | the flow, the concepts, the rejected concepts, what is reusable | the pieces; the spec, translated (one row per concept); the plugins |
 | `002` Authorization | eval and subscriptions, handing back, context-only threads, strength, admission, bots, routing, accept mode and rules, the policy version, resume and stop, revalidation, an eval that doesn't finish | the gate; `Policy` with versions; Mandate; slice 6's checks |
-| `003` Execution | ticket stages; the executor, background work and slots, preparing a directory, concurrency, execution variables; merging by the Delivery requirements prompt; how a ticket ends; retry, restart, stored work, source and channel failure, pause, invalid configuration | the spec table's Ticket, Report, Outgoing message, Source and Settings rows; "The two agents"; slices 8 and 9 |
+| `003` Execution | ticket stages; the executor, background work and slots, preparing a directory, concurrency, execution variables; merging by the Delivery requirements prompt; how a ticket ends; follow-ups and context threads, polled two weeks past the last trigger; retry, restart, stored work, source and channel failure, pause, invalid configuration | the spec table's Ticket, Report, Outgoing message, Source and Settings rows; "The two agents"; slices 8 and 9 |
 | `004` Prompts | what a team writes, built-in parts, assembly and precedence, versions | PromptSet with versions; `prompts.compose` |
 | `005` Panel | three questions, the tabs, reading records, settings groups, search, principles | "A page"; slice 12 |
 | `006` Deployment | what runs, accounts, install, start and stop, the hourly check, the management API, setup checks | "How it runs"; credentials; the generated CLI and MCP stand in for the management API; Slack for Feishu |

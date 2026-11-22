@@ -32,7 +32,7 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
    (`006-deployment.md:33`); here signed webhooks replace reading notifications, so an App is the better fit.
 4. **Who may ask, and where the rules live.** Runtime data: the policy (allowed lists, bots, admission, rules, accept
    mode), the prompts and the settings are things with versions, edited in the portal or by the main agent on a
-   person's ask; each Mandate records the version it was accepted under. The gaps this exposes are designed in their
+   person's ask (narrowed by the proposals call: the main agent proposes, a person applies); each Mandate records the version it was accepted under. The gaps this exposes are designed in their
    own 📐 thread: that is K40.
 5. **The sandbox is its own piece.** Aaron first took a plain `@orthograph/sandbox` feature ("this makes sense"); in
    K40's second grill round he chose an adapter that speaks pi-env over a socket (K40 fix 4). `@orthograph/sandbox` is
@@ -75,7 +75,7 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
 
 - **A superagent is a thing, and the actor.** `Superagent` holds its name, purpose, connections, playbook and slots,
   with versions (K40 fix 2). Its machine is `observing → live ⇄ paused → retired`; its operations are `create`,
-  `update`, `goLive`, `pause`, `resume` and `retire`. `create` is allowed to a person and to a superagent's main agent.
+  `update`, `goLive`, `pause`, `resume` and `retire`. `create` is allowed to a signed-in person; a main agent's call records a Proposal (below).
   A blueprint can also declare one (`Superagent.declare`), which is the same create at the first deploy. Its main agent
   acts as it; each executor acts as it for its own ticket only (K40 fix 3's `agent:` role form).
 - **Rules change at runtime; the engine changes by deploy.** Connections, policy, prompts, playbook and settings are
@@ -196,8 +196,13 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
 - `design/milestones.md`, M4.18's needs: "| M4.17, M4.25 | build |" → "| M4.17, M4.25, the sandbox (Goal 17) | build |"
 - `design/milestones.md`, M4.19: "The `e2b` choice: our template," → "The sandbox's `e2b` provider (`@orthograph/sandbox`, K39), for workspaces: our template,"
 - `design/later.md`: "for `@orthograph/workspaces`, beside `localCopy` and `e2b`" → "for `@orthograph/sandbox`, beside `local` and `e2b` (K39, K40)"
+- `AGENTS.md`: "in any milestone order (K34); a milestone is done" → "in any milestone order (K34), except on an integration branch, which builds what it needs there to its owner's design and is merged back by the conductor (Goal 17's, K39); a milestone is done"
+- `design/goals/map.md`, rule 1: "is an Ask issue to the owner (K32; K33 in #301)." → "is an Ask issue to the owner (K32; K33 in #301), except on an integration branch, Goal 17's `goal/superagent` (K39): it builds the framework fixes its app needs there, announces each by an Ask issue, and the conductor merges them back."
+- `design/frame/examples/factory.md`: "| `pullRequest.merged` |" → "| `pullRequest`, its merged close (K39) |"
+- `design/ledger.md`, ADA-13: "`pullRequest.merged` in, Gitea as stand-in) has no slice. | design/frame/examples/factory.md:171 | open |" → "`pullRequest` and its merged close in, Gitea as stand-in) has no slice. | design/frame/examples/factory.md:171 | superseded by K39: it is M4.25, built by Goal 17 |"
+- `design/scope.md`: "the building agents (M4.17 to M4.25), Stripe" → "the building agents (M4.17 to M4.25; M4.25 is Goal 17's since K39, 22 November 2026), Stripe"
 - `design/milestones.md`, beside the stages: "(M3.20, M4.17 to M4.25, K10)" → "(M3.20, M4.17 to M4.25, K10; M4.25 built by Goal 17, K39)"
 
 Dated records keep their words and gain a "Superseded by K39, 22 November 2026" note: `design/decisions/K10-factory.md`
-section 3's choices table and its floor items 2 and 6 (`localCopy`, `e2b`), and `design/scope.md`'s off-path list.
+section 3's choices table and its floor items 2 and 6 (`localCopy`, `e2b`).
 `K10-factory.md`'s `pullRequests.open` and `pullRequest.merged` stay as the record of that day.
