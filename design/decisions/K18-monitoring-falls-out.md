@@ -402,6 +402,30 @@ Axiom UI → Monitors → Notifiers → (clicked per environment, not in the rep
 **Recommendation: A.** Routes are bindings, so they sit next to the sinks. "Lowering only" means the model's own
 severity is the most anyone can be woken for.
 
+## Addendum, 21 November 2026 (M1.49's check, the checks author): the fixed shapes
+
+Nothing above changes. Where K18 left a shape open, check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) fixes it, and this is the one place that records it. A builder owes
+these; changing one is the author's, with a reason.
+
+- **Rules.** `model.alertRules` in `generated/model/model.json` and in the portal's `generated/portal/blueprint.json` (the wire keeps it). Each is
+  `{ id, kind: latency | defect | anomaly | verdict, labels, ... }`. Ids: `latency:<operation>`, `defect:<operation>`, `anomaly:<code>`,
+  `verdict:<journey name>:<environment>`. Labels are exactly `environment` (`*` for latency, defect and anomaly; the environment's name on a verdict), the subject
+  (`operation`, `code` or `journey`), `severity` (page, except an anomaly: ticket) and `owner` (the operation's or journey's `file`; for an anomaly the file of the thing
+  whose errors declare the code, `orthograph` for the runtime's). A latency or defect rule has `target`, `windowDays`, `minCalls` and three `alerts` (fast, slow, ticket);
+  a latency rule also `thresholdMs`, the operation's `budget.p95Ms`.
+- **Firing.** A burn alert fires when `bad >= burn * (1 - target) * calls` holds over both its windows (equality fires; decided in integers, never by dividing floats) and
+  its short window held at least `minCalls` calls. Every call in the window counts, a refusal included: a refusal is a good call for the defect objective, and a latency call
+  is bad when it took longer than `thresholdMs`, whatever it ended as. A defect call is bad when it ended as a defect.
+- **The route.** `GET /_portal/v1/monitor?digest=<digest>`, guarded as `snapshot` is (400 without a digest, 409 for another blueprint's, 404 without a live source), answers
+  `{ environment, now, alerts, issues }` evaluated over `live.source.window(ms, now)` and `live.metrics.window(ms, now)` for each window an alert names. The portal reads no
+  clock and sends nothing from local.
+- **Issues.** One per (operation, step, `error.tag`), the step being the deepest failing step span; a refusal opens none; `occurrences` counts calls, never evaluations.
+  The defect span carries `error.tag` (the error's `_tag`, else its constructor name).
+- **The ledger.** `PortalContext.ledger?: { get(key): Effect<unknown>, put(key, value): Effect<void> }`, opaque JSON by key. `firstSeen` and `lastSeen` are the call's
+  start and the operation's declaration hash (`model.operations[op].hash`) in the wire in force then; `regressed` is the two hashes differing.
+- **The pages.** `/portal/monitor/alerts`, `/portal/monitor/issues` and the worst-first list on `/portal`, with the `data-portal` hooks listed at the head of
+  `e2e/m1/monitor-judge.ts`. An issue row also shows its occurrences and first and last seen, and an alert row its state, as text a person reads.
+
 ## At a glance
 
 | # | Joint | Recommendation |

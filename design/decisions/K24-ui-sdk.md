@@ -62,7 +62,8 @@ one package for that reason).
 3. **The portal moves over piece by piece**, behind the same seam. `@orthograph/portal-ui` keeps its own names
    (F7, decision 2); their insides change from HeroUI Pro to UI SDK one export at a time. The data grid and the board
    go last, because UI SDK has neither: we build them on its behaviours, as F7's fallback already planned for the
-   board (dnd-kit then, `createReorder` and `createTransfer` now).
+   board (dnd-kit then, `createReorder` and `createTransfer` now). Superseded by K29 and K31, 21 November 2026: the portal is rebuilt
+   as a new client beside the old one, and the old client and `portal-ui` are deleted at cutover.
 4. **HeroUI comes out** when nothing imports it: the Pro peer dependency, the `HEROUI_AUTH_TOKEN` install, the lint
    ban's exception and the CI cache all go in the same change.
 5. **Pin exactly, three days old.** UI SDK is a beta that changes daily. It is pinned like every dependency

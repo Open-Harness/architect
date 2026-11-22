@@ -2011,7 +2011,7 @@
   "title": "Journeys through the clients",
   "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "Journeys through the clients: a world runs steps through the SDK, with --through cli|mcp (actions join in M3, with M1.22) (journeys/internal/world.ts:85 calls HTTP directly today); settles snags S-11, S-16 and S-20"
+  "what": "Journeys through the clients: a world runs steps through the SDK, with --through cli|mcp (actions join with M1.22, in stage 1, K29) (journeys/internal/world.ts:85 calls HTTP directly today); settles snags S-11, S-16 and S-20"
  },
  "M2-09": {
   "doneWhen": "npm create orthograph demo from Verdaccio, then ortho prove --env local is green; the template's blueprint/ and src/ are identical to examples/plugged-in's on the same commit; once plugged-in/stage-1 is tagged (M2.12), the check compares against the tag",
@@ -4942,7 +4942,7 @@
    "M3.03",
    "M6.15"
   ],
-  "needsText": "ST3.05, M3.03, M6.15",
+  "needsText": "ST3.05, M3.28, M6.15",
   "order": 523,
   "plain": "",
   "pr": null,
