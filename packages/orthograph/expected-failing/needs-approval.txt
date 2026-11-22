@@ -1,6 +1,0 @@
-src/modules/operations/needs-approval.test.ts > needsApproval on an operation > is kept on the operation when declared `true`
-src/modules/operations/needs-approval.test.ts > needsApproval's type > refuses declares-false: the type is `true`, and absence says no
-src/modules/operations/needs-approval.test.ts > needsApproval's type > refuses declares-null: the type is `true`, and absence says no
-src/modules/operations/needs-approval.test.ts > needsApproval's type > refuses declares-number: the type is `true`, and absence says no
-src/modules/operations/needs-approval.test.ts > needsApproval's type > refuses declares-text: the type is `true`, and absence says no
-src/modules/operations/needs-approval.test.ts > needsApproval's type > takes `true`, and an operation that leaves it out still compiles
