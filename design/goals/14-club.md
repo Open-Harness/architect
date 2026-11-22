@@ -122,7 +122,7 @@ run first. It resumes by the conductor's word.
 - **Open asks:** #495 to Goal 4 (a `ChainPort` for every chain family, and `Blueprint.store.chain.aztec()`), #496 to
   Goal 13 (the budgets feature with an Aztec choice, its journeys neutral on the store kind, both landed early). Slice 5
   is linked as blocked by both.
-- **Next, on resuming:** merge #504 if it hasn't merged; run the two missing cases (`club.ts verified ballots`, then
+- **Next, on resuming:** merge #504 if it hasn't merged; run the three missing cases, two commands (`club.ts verified ballots`, then
   `club.ts control tamper`) and add them to its README; write `design/decisions/ST4-aztec.md` (slice 2): versions,
   `chain.aztec` as a keyed store address, `language-noir`'s mapping from the spike's table, `chain-aztec`'s port steps
   (prove for sign, a sponsor for fees, sync before proving, one re-prove on `Block header not found`, every wait
