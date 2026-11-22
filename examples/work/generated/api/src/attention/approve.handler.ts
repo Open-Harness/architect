@@ -5,3 +5,4 @@ import type { Auth, Handler as Of, Records } from "@orthograph/language-effect";
 import type declaration from "../../../../blueprint/things/attention/verbs/approve.ts";
 
 export type Handler<R = Records | SqlClient.SqlClient | Auth> = Of<typeof declaration, R>;
+// probe
