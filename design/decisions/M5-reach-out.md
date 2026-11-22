@@ -92,7 +92,7 @@ The call:
    row in the same batch, so its `seq` is the journal's own `AUTOINCREMENT` `seq` in that store: journal order, per store.
    A thing lives in one store, so all of one subject's events are in one journal and one order.
 2. **Every event has an id.** `_journal` gains `"id" TEXT NOT NULL UNIQUE`, made at commit by the runtime's `Ids` (`evt_…`),
-   and `Entry` gains `id`. The id is what `on:` handlers and views dedupe by. SQLite cannot add a `NOT NULL UNIQUE` column
+   and `Entry` gains `id`. The id is what `on:` deliveries dedupe by (Q3.2); a view dedupes by its rows' positions (Q6.2). SQLite cannot add a `NOT NULL UNIQUE` column
    to a table with rows, and an applied migration is never edited, so the migration rebuilds `_journal` (default store
    in M5.03, the rest in M5.04). Each existing row gets `id = 'evt_m_' || <where> || '_' || seq`, where `<where>` is the
    store's binding (`DB`, or a declared store's) or the actor's name (`<table>:<id>`). `Ids` never makes this prefix;
