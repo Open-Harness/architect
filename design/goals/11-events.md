@@ -100,5 +100,5 @@ The rules every goal shares, so this brief stays short. Where they and this file
 Running since 22 November 2026, led in Claude Code on claude-opus-5-5. `goal/stage-1` merged in (#454). Slice 1 is
 decided: `decisions/M5-reach-out.md` settles the outbox (a table beside the journal, drained by a Durable Object per
 store), the door and the inbox, `on:` keyed by event id, the `system` and `service` principals, retries and redelivery,
-views and the event side of a workflow's wait. Slice 5 waits on Goal 8's M3.01 (Ask #462). Next: slice 2's journeys and
+views and the event side of a workflow's wait. Slice 5, `emits:` on an operation, waits on Goal 8's M3.01, which settles where `emits:` sits beside workflows (Ask #462); the decision's Q7 also hands M3.01 the event side of a workflow's wait. Next: slice 2's journeys and
 slice 3's checks, each by an author, then slice 3's build, landed early for Goal 12.
