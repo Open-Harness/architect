@@ -352,6 +352,7 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 
 ## Where it stands
 
-22 November 2026. The theme is built: one shared look on UI SDK, light and dark, taken from today's portal so nothing
-changes in feel, and its check passes in a real browser with no HeroUI key. Next it lands in stage 1 on its own, so
-the UI layer's screens can use it. The map's checks are being written now; the map itself comes after them.
+22 November 2026. The theme is built, one shared look on UI SDK taken from today's portal, and it is on its way
+into stage 1 on its own, for the UI layer. The map's checks are written and reviewed: a hundred portal checks and
+forty-four grid cells are owed by the new portal, all red so far, and the list can only shrink. The map language is
+built and waiting for review; the app projection and the shell come next.
