@@ -211,6 +211,15 @@ describe("staging up and destroy", () => {
     expect(text).not.toMatch(/ortho-|-stg-|-worker/);
   });
 
+  it("a Worker that never answers names the destroy for its own environment, test as well as staging", async () => {
+    for (const environment of ["staging", "test"]) {
+      const world = pretend([], [], () => ({ status: 0, output: "" }));
+      const said = await run(makeStaging({ ...world.tools, probe: () => Effect.succeed(503) }).up({ ...options("81"), environment }));
+      expect(said.exit).toBe(1);
+      expect(said.err).toContain(`ortho env destroy ${environment} --run 81`);
+    }
+  });
+
   it("a first deploy that fails with code 10007 is tried again after a pause, once", async () => {
     const world = pretend([], [], (verb, tries) => (verb === "deploy" && tries === 1 ? { status: 1, output: "This Worker does not exist on your account [code: 10007]" } : { status: 0, output: "" }));
     const said = await run(makeStaging(world.tools).up(options("78")));

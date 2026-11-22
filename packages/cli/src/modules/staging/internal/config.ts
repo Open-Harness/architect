@@ -38,7 +38,7 @@ export const stackInput = ({ server, plan, built }: Derive): Effect.Effect<strin
     // Only what the plan covers may be bound: a binding of another kind (R2, KV, queues, services...) would be made by `up` and not deleted by `destroy`.
     const odd = Object.keys(server).filter((k) => !COVERED.has(k));
     if (odd.length > 0) {
-      return yield* new StagingFailed({ message: `generated/server/wrangler.jsonc has ${odd.join(", ")}, which the staging plan does not cover: plan it (and its destroy) before it is deployed` });
+      return yield* new StagingFailed({ message: `generated/server/wrangler.jsonc has ${odd.join(", ")}, which the plan does not cover: plan it (and its destroy) before it is deployed` });
     }
     const planned = plan.resources.filter((r) => r.kind === "d1");
     const bound = (server.d1_databases ?? []).map((d) => String(d["binding"]));
