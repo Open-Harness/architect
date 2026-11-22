@@ -44,8 +44,8 @@ Branch `goal/agents`, cut from `goal/stage-1`. Written 21 November 2026 by the ð
 ## The goal, in plain words
 
 - **In one sentence:** Let an app run an AI agent that keeps going through crashes and restarts, uses the app's own actions as its tools, and is checked by the same rules as a person.
-- **Why:** The vault's agent spends under its own role, the portal needs a chat, and both need a run that never loses its place or repeats a paid model call.
-- **When it's done, you can:** start an agent on a task, stop the machine in the middle of its turn, and watch it resume with no second model call; and chat with an app in its portal.
+- **Why:** The vault's agent spends under its own role, the portal needs a chat, and both need a run that never loses its place or pays twice for a model answer it already has.
+- **When it's done, you can:** start an agent on a task, stop the machine in the middle of its turn, and watch it resume without asking the model again for any answer it already had; and chat with an app in its portal.
 - **It is:** the durable agent run, adapters for real models and a free local stand-in, tools made from the app's actions, and the portal's chat built on it.
 - **It isn't:** the builder's own agents or the bench (they come later), or any change to who may do what: an agent is a caller like any other.
 - **Done when:** the agents tests pass, a chat resumes after eviction, and an agent's retry moves when a test world's clock is moved.

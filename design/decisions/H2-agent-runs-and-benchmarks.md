@@ -11,7 +11,7 @@ that reason (`H1-agent-harness.md`, "Naming"). Two records called D3 would make 
 **H2**. Its calls are H2.1, H2.2 and so on.
 
 **Relation to H1.** H1 (on `main`, commit `2c0ff63`) already decides items 1 and 2 of the brief: the package
-`@architect/agent`, Pi Durable 1.5.0 behind an Effect seam, providers through `pi-ai`, Anthropic and Command Code, the copy
+`@architect/agent` (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.), Pi Durable 1.5.0 behind an Effect seam, providers through `pi-ai`, Anthropic and Command Code, the copy
 sandbox, the telemetry adapter, and a first sketch of the run record (H1 section 12). H2 does not reopen those without new
 evidence. It (a) adds new evidence on Command Code and the Agent SDK, (b) changes one thing in H1's order, floor first (H2.1),
 and (c) decides items 3 and 4, which H1 only sketched: where runs live, their shape, how they are compared, the task set, the
@@ -36,7 +36,7 @@ runner, the report and the baseline.
 **H2.1 Floor first: extract check 4 as the first runner, with the record and the scorer, before Pi.** H1 puts the run record and
 the benchmark at A5, behind the Pi seam (A1), models (A2), tools (A3) and telemetry (A4). None of the record, the task set or the
 scorer needs Pi: check 4 already runs a real agent, already scores with `check` and `prove`, and the SDK already reports turns,
-tokens, cost and a transcript (U1, U2). So a new step **A0** moves check 4's harness into `@architect/agent` behind a `Runner`
+tokens, cost and a transcript (U1, U2). So a new step **A0** moves check 4's harness into `@architect/agent` (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.) behind a `Runner`
 interface with four kinds, and benchmarks on Anthropic run from A0. Pi arrives as the second real runner at A1 and A2, for the open
 models, and plugs into the same record.
 
@@ -65,7 +65,7 @@ against Pi Durable (B) and the durable-agent idea in `later.md`; nothing found t
 
 ## 3. The package, as H1 sets it, with H2's modules
 
-`packages/agent`, `@architect/agent`, tags `scope:agent`, `env:build`, `layer:2`; depends on `blueprint`, `compiler`, `prove` and the
+`packages/agent`, `@architect/agent` (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.), tags `scope:agent`, `env:build`, `layer:2`; depends on `blueprint`, `compiler`, `prove` and the
 `target-effect` interfaces. Never in production. H1's modules, with the run and bench modules made concrete here (each in the six
 slots, no file over about 250 lines):
 
@@ -293,7 +293,7 @@ CI has no model key (D2 #41), so a baseline cannot come from CI today.
 
 | # | Call |
 |---|---|
-| H2.1 | A0 first: check 4 becomes the `sdk` runner in `@architect/agent`, with `oracle` and `null` runners, the record and the scorer. Pi follows as the `pi` runner. |
+| H2.1 | A0 first: check 4 becomes the `sdk` runner in `@architect/agent` (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.), with `oracle` and `null` runners, the record and the scorer. Pi follows as the `pi` runner. |
 | H2.2 | One folder per run: `record.json` (typed, hashes not text) beside transcript, spans, logs, output and score. |
 | H2.3 | Files are the store now; a SQLite index only if needed; R2 and D1 at A6 behind one `RunStore` service. No trace UI, no SaaS. |
 | H2.4 | Keys by name only (`ANTHROPIC_API_KEY`, `COMMANDCODE_API_KEY`), read only in `benchmarks/main.ts`, redacted by exact match. |
@@ -321,7 +321,7 @@ Rubric, for the calls that had real alternatives:
   (`build-plan.md`). No code lands on `layer/*` from this thread. Gate 1 is landing now; A0 starts once it is on `main`.
 - **`packages.md`**: the agent package's module list follows section 3; the `benchmarks/` project is added.
 - **`later.md`**: mutant repair tasks; benchmark regressions as a gate; the weekly scheduled baseline once CI has a key.
-- **D2 #76** stands: check 4 stays an e2e check of Gate 1. After A0 it calls `@architect/agent`'s `sdk` runner instead of inline code,
+- **D2 #76** stands: check 4 stays an e2e check of Gate 1. After A0 it calls `@architect/agent` (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.)'s `sdk` runner instead of inline code,
   with the same assertions.
 
 ## 12. Questions only Aaron can answer

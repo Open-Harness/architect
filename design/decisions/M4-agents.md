@@ -8,7 +8,7 @@ Every later slice of Goal 10 builds on these calls.
 ## The problem, in code
 
 H1 and H2 designed the harness for a package that never existed, `@architect/agent` (`decisions/H1-agent-harness.md:145`),
-running outside any world on a real clock (`H1-agent-harness.md:160-161`: "The agent runs *outside* any world … so its
+running outside any world on a real clock (`H1-agent-harness.md:159`: "The agent runs *outside* any world … so its
 `Timers` is a real-clock layer"). Since then the frame made an agent run a declared thing (`frame/examples/agents.md:36-64`),
 K23 put every wait on the world's clock (`decisions/K23-time.md:221`, "Agents | `Timers`, the world's"), K10 made the
 same layer serve the portal's chat and the building agents (`decisions/K10-factory.md:50-87`), and the spike measured
@@ -38,8 +38,9 @@ ends a phase, so the two never disagree for longer than one call (H1 section 11)
 
 ### 2. Where Pi runs: one SQLite Durable Object per run, one SQLite file per run on Node
 
-The loop is Pi Durable behind an Effect seam (H1.1, H1.2), with `@earendil-works/pi-durable`, `pi-ai` and `chord` pinned
-at **1.5.0** exactly, the version the spike measured (`spikes/durable-run/package.json:11-12`). The seam is the only code
+The loop is Pi Durable behind an Effect seam (H1.1, H1.2), with the six packages H1.1 names (`pi-durable`, `pi-ai`, `chord`, `pi-codemode`,
+`pi-schema`, `pi-telemetry`, under `@earendil-works/`) pinned at **1.5.0** exactly; the spike measured the first three at
+that version (`spikes/durable-run/package.json:11-12`). The seam is the only code
 that imports Pi; every Pi promise is wrapped once in `internal/` into a typed `AgentError`.
 
 | Host | Where a run lives | Who wakes it |
@@ -53,8 +54,8 @@ Both are the same seam with a different store layer, so a run's code never knows
 ### 3. What "no second model call" promises
 
 A model reply that Pi has committed is never requested again, and a tool call that committed is never committed twice.
-That is what the spike proved (`spikes/durable-run/README.md`, findings 1 and 3, the first and third rows of its table).
-A model request **still in flight** when the host dies is sent again on resume (finding 2): no provider can resume a
+That is what the spike proved (`spikes/durable-run/README.md`, findings 1 and 3; its table's second row, "Evict with tool reply held").
+A model request **still in flight** when the host dies is sent again on resume (finding 2, the table's third row): no provider can resume a
 cut stream, so this is the honest limit, and K10 section 1 already records it.
 
 So "evicting mid-turn resumes with no duplicate model call" (M4.09, M4.16 and Gate M4 item 2) is proved by evicting in
@@ -68,7 +69,7 @@ replayed only for an operation whose `idempotent: "request"` is proved; any othe
 ### 4. Time is the world's
 
 `now` is Effect's `Clock`, which a world provides (M8.06). Every wait is `Timers`: retry backoff and Pi's `sleepUntil`
-are `Timers.sleep`, a model call's deadline is `Timers.within`, and a turn runs inside `Busy.counted` so a world's
+are `Timers.sleep`, a model call's deadline is `Timers.within` (optional in today's interface, so Goal 10 needs it present in the world's `Timers`; asked in #464), and a turn runs inside `Busy.counted` so a world's
 `advance` waits for it. Provider retries are zero, so all retrying is Pi's stored sleep (H1.3). Our model adapters are
 written on Effect's HTTP client as `pi-ai` providers (`createProvider`), not over a vendor SDK, so the provider path holds
 no `setTimeout` (the spike found two, in the OpenAI SDK's `fetchWithTimeout`, finding 5). Pi AI's own `Date.now` reads
@@ -83,7 +84,7 @@ on the answer, never on a stand-in of its own.
 | Package | What it is | Where its key comes from |
 |---|---|---|
 | `@orthograph/anthropic` (`packages/anthropic`) | the Anthropic Messages adapter | the declared secret `ANTHROPIC_API_KEY` (`frame/secrets.md`), runtime or builder by who runs it |
-| `@orthograph/openai` (`packages/openai`) | the OpenAI-compatible Chat Completions adapter: any server that speaks it, Command Code's open models in staging and the local stand-in in a world | its mount's declared secret, `<MOUNT>_API_KEY`; the stand-in needs none |
+| `@orthograph/openai` (`packages/openai`) | the OpenAI-compatible Chat Completions adapter: any server that speaks it, Command Code's open models in staging and the local stand-in in a world | its mount's declared secret, named from the mount's file as `frame/examples/agents.md:208-209` says (`blueprint/adapters/commandcode.ts` gives `COMMANDCODE_API_KEY`); the stand-in needs none |
 | `@orthograph/stand-in-model` (`packages/stand-in-model`) | `Stand.process` for a model: the pinned local server and model below, fetched once into a cache by checksum, started by a world, owned by its PID and stopped at the end | none |
 
 **The stand-in** (S14, the frame's second rung, `frame/examples/agents.md:218-222`):
@@ -134,8 +135,20 @@ States, events, refusals, spans, usage and request counts at the stand-in; never
 
 ## Supersedes
 
-- `decisions/H1-agent-harness.md`: "a new package `@architect/agent`" → "`@orthograph/agents`, a feature plugin"
-  (dated record; note added beside it).
-- `decisions/H1-agent-harness.md`: "The agent runs *outside* any world (it is dev tooling), so its `Timers` is a
-  real-clock layer" → "an agent in a world waits on the world's clock" (dated record; note added beside it; K23 had
-  already moved the slice, as M4.26).
+Live docs, rewritten in this change:
+
+- `design/milestones.md`, Gate M4 item 2: "evicting a run's Durable Object mid-turn resumes it with no second model call" → "evicting a run's Durable Object mid-turn, after its model step committed, resumes it with no second model call, and evicting it with a model reply in flight repeats only that one request".
+- `design/milestones.md`, M4.09's done-when: "evicting mid-turn resumes with no duplicate model call" → "evicting mid-turn, after the model's step committed, resumes with no duplicate model call; evicting with a model reply in flight repeats only that request".
+- `design/milestones.md`, M4.16's done-when: "evicting a chat's run mid-turn resumes it with no second model call" → "evicting a chat's run mid-turn, after the model's step committed, resumes it with no second model call".
+- `design/milestones.md`, M4.05: "`@orthograph/anthropic` and an OpenAI-compatible adapter" → "`@orthograph/anthropic` and `@orthograph/openai`, the OpenAI-compatible adapter".
+- `design/milestones.md`, M4.06: "The local stand-in model, `Stand.process` (S14)" → "… (S14): `@orthograph/stand-in-model`, llama.cpp's server and Qwen3 0.6B, pinned by checksum".
+- `design/goals/10-agents.md`, the card's "Why": "never loses its place or repeats a paid model call" → "never loses its place or pays twice for a model answer it already has".
+- `design/goals/10-agents.md`, the card's "When it's done": "watch it resume with no second model call" → "watch it resume without asking the model again for any answer it already had".
+- `design/goals/map.md`, Goal 10's row: "ready | `@orthograph/agents`, `@orthograph/anthropic`, the stand-in model" → "running (Claude) | `@orthograph/agents`, `@orthograph/anthropic`, `@orthograph/openai`, the stand-in model".
+- `design/packages.md`: "`@orthograph/agents` (M4)," → "`@orthograph/agents` (M4), with its model adapters `@orthograph/anthropic` and `@orthograph/openai` and the local stand-in `@orthograph/stand-in-model` (M4.05, M4.06),".
+
+Dated records, a "Superseded by M4-agents, 22 November 2026" note added beside the words:
+
+- `decisions/H1-agent-harness.md` (H1.1, section 13 and the D2 #76 line), `decisions/H2-agent-runs-and-benchmarks.md` (every mention) and `design/decisions.md` (the H1 and H2 entries): "`@architect/agent`" → "`@orthograph/agents`".
+- `decisions/H1-agent-harness.md`, H1.3: "The agent runs *outside* any world (it is dev tooling), so its `Timers` is a real-clock layer" → "an agent in a world waits on the world's clock" (K23 had already moved the slice, as M4.26).
+- `decisions/H1-agent-harness.md`, H1.4: "a `commandcode` provider written with `createProvider`" → "`@orthograph/openai`, one OpenAI-compatible adapter for Command Code and the stand-in".
