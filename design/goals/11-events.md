@@ -5,7 +5,7 @@ milestone: "Goal 11: events in and out"
 release: "1.0"
 branch: goal/events
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude       # claude | codex | opencode | amp, set by the lead when it starts
   model: claude-opus-5-5 # the model id it runs on
@@ -97,8 +97,17 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Running since 22 November 2026, led in Claude Code on claude-opus-5-5. `goal/stage-1` merged in (#454). Slice 1 is
-decided: `decisions/M5-reach-out.md` settles the outbox (a table beside the journal, drained by a Durable Object per
-store), the door and the inbox, `on:` keyed by event id, the `system` and `service` principals, retries and redelivery,
-views and the event side of a workflow's wait. Slice 5, `emits:` on an operation, waits on Goal 8's M3.01, which settles where `emits:` sits beside workflows (Ask #462); the decision's Q7 also hands M3.01 the event side of a workflow's wait. Next: slice 2's journeys and
-slice 3's checks, each by an author, then slice 3's build, landed early for Goal 12.
+**Parked on 22 November 2026** by the conductor's word (Aaron: "Narrow to the path"): Goal 11 is off the Beta path and
+resumes when the conductor says so.
+
+- **Landed:** `goal/stage-1` merged in (#454). Slice 1 decided: `decisions/M5-reach-out.md` (#479) settles the outbox (a
+  table beside the journal, written in the call's own commit, ordered by the journal's `seq`, drained by a Durable Object
+  per store with claim tokens and leases; an actor's events copied home first), the door and the inbox, `on:` keyed by
+  event id, the `system` and `service` principals, retries and redelivery, views, the event side of a workflow's wait,
+  and which clock the checks run on until Goal 9's M8.07.
+- **Open:** slice 2's checks (M5.02) were started by an author on `goal-11/m5-02-check` and stopped before a pull
+  request; the branch is local only, in the author's worktree, at `78d197f8`. Asks to other goals stay open: Goal 3 for the
+  engine seams (#480), Goal 4 for the follower's events through `Inbox.accept` (#481), Goal 8 for M3.01 early (#462).
+- **Next, on resuming:** merge `goal/stage-1` in; finish and 🔍 slice 2's checks (`e2e/events/`, `M5-checks.md`, the
+  ratchet and `nx run e2e:events`); build slice 3 (events in) and land it early for Goal 12 (K38); then slice 4 (the
+  outbox), then slice 5 once M3.01 lands.
