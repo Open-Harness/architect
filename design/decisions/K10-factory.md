@@ -137,7 +137,8 @@ close.ts     // the sandbox and every world in it destroyed; idempotent
 
 **Where a run executes.** The run's loop is in its own Durable Object (`@orthograph/agents`). The workspace is in a
 sandbox the Durable Object drives, keeping only the sandbox's id (`spikes/e2b-sandbox`). Sandbox providers are
-adapters of `@orthograph/workspaces`, chosen at the mount:
+adapters of `@orthograph/workspaces`, chosen at the mount (_Superseded by K40, 22 November 2026: the sandbox is its own
+adapter, `packages/sandbox`, Pi's `ExecutionEnv` over pi-env, and workspaces use it_):
 
 | Choice | When | Status |
 |---|---|---|

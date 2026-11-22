@@ -212,9 +212,10 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23 · M0 · N1 �
 | K36 | a composite component declares its wiring; its behaviour stays yours | `main`, by the conductor, on Aaron's call |
 | K37 | the canon: one doc set replaces the old pages | reserved 21 November 2026 for the 📚 canon thread |
 | K38 | a slice another goal needs lands early | `main`, by the conductor (#440) |
-| K39 | the superagent, built as Orthograph plugins (Goal 17) | `claude/superagent-plan-6bbca1`, by the 📐 superagent designer thread |
+| K39 | the superagent, built as Orthograph plugins (Goal 17) | `main`, by the 📐 superagent designer thread |
+| K40 | what a superagent needs that Orthograph lacks: outside accounts as things, versions, agents as things, the sandbox over pi-env, catching up, lent tokens | `main`, by the 📐 superagent gaps thread |
 
-**Next free:** D5, E2, F10, G9, H3, K40, N2, O5, P2, R2, S2. Never fill a gap (F3, F4, G2): it may have been handed out
+**Next free:** D5, E2, F10, G9, H3, K41, N2, O5, P2, R2, S2. Never fill a gap (F3, F4, G2): it may have been handed out
 before this list existed. `CI-<slug>`, `M<n>-<slug>`, `ST<n>-<slug>` and `Gate<n>` are named by their slug or
 milestone, not numbered; a goal records its own in its brief, not here (K32), and `GOAL<n>-<slug>` names a call that
 belongs to one goal and no milestone.
