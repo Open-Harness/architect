@@ -65,7 +65,8 @@ const run = <A>(e: Effect.Effect<A>) => Effect.runPromise(e);
 
 describe("staging up and destroy", () => {
   it("the prefix and the address come from one place", () => {
-    expect(prefixOf("plugged-in", "7")).toBe("ortho-pluggedin-stg-7");
+    expect(prefixOf("plugged-in", "stg", "7")).toBe("ortho-pluggedin-stg-7");
+    expect(prefixOf("plugged-in", "test", "pr7r19000000001")).toBe("ortho-pluggedin-test-pr7r19000000001");
     expect(stagingUrl("ortho-pluggedin-stg-7", "acct")).toBe("https://ortho-pluggedin-stg-7-worker.acct.workers.dev");
   });
 

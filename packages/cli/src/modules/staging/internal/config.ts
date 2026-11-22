@@ -3,7 +3,6 @@
 import { Names } from "orthograph/server";
 import { Effect } from "effect";
 import { StagingFailed, type Plan } from "../types.ts";
-import { ENVIRONMENT } from "./plan.ts";
 
 interface Server {
   readonly d1_databases?: ReadonlyArray<Record<string, unknown>>;
@@ -54,7 +53,7 @@ export const stackInput = ({ server, plan, built }: Derive): Effect.Effect<strin
       vars: {
         ...server.vars,
         OTLP_URL: "",
-        [Names.variable("ENVIRONMENT")]: ENVIRONMENT,
+        [Names.variable("ENVIRONMENT")]: plan.environment,
         [Names.variable("REVISION")]: built.revision,
         [Names.variable("BUNDLE_SHA256")]: built.sha256,
       },
