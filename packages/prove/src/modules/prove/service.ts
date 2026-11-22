@@ -19,6 +19,7 @@ import { proveInTest } from "./internal/test-run.ts";
 import { emptyWorld } from "./internal/empty-world.ts";
 import { proveReport } from "./internal/structured.ts";
 import { detail, headline, narrowed } from "./internal/changed-run.ts";
+import { provedAt } from "./internal/staged.ts";
 
 const failed = (e: { readonly message: string }) => new ProveFailed({ message: e.message });
 
@@ -92,6 +93,8 @@ export const Prove: ProveApi = {
     }),
   test: (options) =>
     load(options.root).pipe(Effect.flatMap(({ model, project }) => proveInTest(model, project, options))),
+  staged: ({ root, url, label, only, d1 }) =>
+    load(root).pipe(Effect.flatMap(({ model, project }) => provedAt(model, project, url, label, only, d1 === undefined ? undefined : Journeys.d1Facts(d1)))),
   against: ({ root, url, telemetry, state, say }) =>
     Effect.gen(function* () {
       const { model, project } = yield* load(root);
