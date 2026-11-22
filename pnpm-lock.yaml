@@ -88,6 +88,9 @@ importers:
       '@orthograph/prove':
         specifier: workspace:*
         version: link:../packages/prove
+      orthograph:
+        specifier: workspace:*
+        version: link:../packages/orthograph
     devDependencies:
       '@anthropic-ai/claude-agent-sdk':
         specifier: 0.3.316
