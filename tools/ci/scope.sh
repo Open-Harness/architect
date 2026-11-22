@@ -19,3 +19,4 @@ if [ "$event" = pull_request ]; then
   esac
 fi
 echo "fast=$fast"
+# probe
