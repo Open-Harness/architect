@@ -5,7 +5,7 @@ import { TestClock } from "effect/testing";
 import { describe, expect, it } from "vitest";
 import { Busy } from "#modules/work/types.js";
 import { BusyLive } from "#modules/work/service.js";
-import { DurableTimers, Timers, type DurableTimer } from "./types.ts";
+import { DurableTimers, TimerWakes, Timers, type DurableTimer } from "./types.ts";
 import { TimersMemory, wakesByKind } from "./service.ts";
 
 const woken: Array<DurableTimer> = [];
@@ -89,6 +89,24 @@ describe("DurableTimers", () => {
       expect((yield* timers.pending).map((t) => t.name)).toEqual(["first", "second", "sleep"]);
       expect(woken).toEqual([]);
     })));
+
+  it("a wake that fails after its timer was set again leaves only the newer one pending", () => {
+    // While it runs, the wake sets its timer again for later; then it fails.
+    const handle: { durable?: typeof DurableTimers.Service } = {};
+    const again = Layer.succeed(TimerWakes, TimerWakes.of({
+      wake: (t) => Effect.suspend(() => Effect.andThen(handle.durable!.set(9000, t.owner, t.name, t.wake), Effect.die(new Error("wake failed")))),
+    }));
+    return Effect.runPromise(Effect.gen(function* () {
+      const durable = yield* DurableTimers;
+      const timers = yield* Timers;
+      handle.durable = durable;
+      yield* durable.set(5000, "x/1", "due", wake);
+      expect(yield* Effect.exit(timers.fire(5000))).toMatchObject({ _tag: "Failure" });
+      expect((yield* durable.pending).map((t) => t.at)).toEqual([9000]);
+      expect(yield* durable.clear("x/1", "due")).toBe(true);
+      expect(yield* durable.pending).toEqual([]);
+    }).pipe(Effect.provide(TimersMemory.pipe(Layer.provideMerge(again), Layer.provideMerge(BusyLive), Layer.provideMerge(TestClock.layer())))));
+  });
 
   it("a durable timer at an instant that is not a finite number is a defect", () =>
     run(Effect.gen(function* () {

@@ -53,8 +53,12 @@ export const TimersMemory: Layer.Layer<Timers | DurableTimers, never, Busy> = La
         if (pending !== undefined) return Effect.succeed(pending.id);
         const id = next++;
         const timer: DurableTimer = { id, at, owner, name, wake };
-        // A wake that fails puts its row back and fails the firing, so the driver sees it and nothing is lost.
-        const run = busy.counted(host.wake(timer)).pipe(Effect.onError(() => Effect.sync(() => void table.push(row))));
+        // A wake that fails puts its row back and fails the firing, so the driver sees it and nothing is lost; unless the
+        // same (owner, name) was set again while it ran, when the newer one stands and there is still only one.
+        const restore = Effect.sync(() => {
+          if (!table.some((t) => t.wake !== undefined && t.owner === owner && t.name === name)) table.push(row);
+        });
+        const run = busy.counted(host.wake(timer)).pipe(Effect.onError(() => restore));
         const row: Row = { ...timer, run };
         table.push(row);
         return Effect.succeed(id);
