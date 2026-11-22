@@ -79,7 +79,9 @@ Three causes, none of them runner capacity:
    background command that ends when the required checks end, so the session is woken:
    `gh pr checks <n> -R Open-Harness/orthograph --watch --required`, run in the background (Claude Code's
    `run_in_background`; Amp and Codex run it as a background job and read it on wake). `--required` leaves out
-   `codex-finished`, which can stay pending for good. On wake: if red, read the failed log and fix; if green, read every
+   `codex-finished`, which can stay pending for good. The watch can end early while jobs still wait for a runner or
+   before they register (Goal 4 saw this on 22 November): on wake, if `gh pr checks <n> --required` still shows a
+   pending check, start the watch again. Then: if red, read the failed log and fix; if green, read every
    review thread, answer each (fixed with a check, or replied to with the reason), resolve it, and merge.
 2. **Codex goes first, not last.** Comment `@codex review` when the pull request is marked ready, so its findings
    usually arrive while CI is still running (a full run is about 24 minutes). When CI is green, answer what Codex has
