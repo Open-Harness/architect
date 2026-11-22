@@ -1,3 +1,4 @@
 # Planted fixtures break the rules on purpose; they must not shape the project graph.
 **/test/fixtures/**
 **/test/tmp/**
+# probe
