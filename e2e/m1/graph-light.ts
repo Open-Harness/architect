@@ -24,6 +24,7 @@ export const traceOf = (m: GraphModel, thing: string, journey: string): Readonly
   const out: Record<string, { moved: Array<number>; refused: Array<string> }> = {};
   for (const key of Object.keys(m.things[thing]!.machine!.moves)) out[key] = { moved: [], refused: [] };
   m.journeys[journey]!.steps.forEach((step, i) => {
+    if (step.call === undefined) return;
     const op = m.operations[step.call.operation]!;
     if (op.thing !== thing || op.move === null) return;
     const entry = out[op.move.key]!;

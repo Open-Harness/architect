@@ -7,7 +7,7 @@ Written by the journey author, not the builder. The builder never edits these fi
 - `blueprint/starting-worlds/founded.ts`: ada (`owner`) runs `organization.create({ name: "Acme Demo", cap: 1000n })`; it gives `organization`.
 - `blueprint/starting-worlds/funded.ts`: from `founded`, ada runs `allowance.grant` to olga (`grantee`), limit 500; gives `organization` and `allowance`.
 - `blueprint/starting-worlds/invited.ts`: from `founded`, ada runs `invitation.send` to olga's email; gives `organization` and `invitation`. Copied from the starter unchanged.
-- `journeys/*.ts`: eleven journeys, acme's own six and the starter's five (below). A journey's name is its file name with spaces, except where noted.
+- `journeys/*.ts`: fifteen journeys, acme's own six, the starter's five and four principal journeys (M2.02, below). A journey's name is its file name with spaces, except where noted.
 - `test/fixtures/evals/<eval>/`: one planted break per eval, each with its own README (what it replaces, what it breaks, the failure shape).
 
 acme is the starter's things (system, person, session, organization, membership, invitation, api-key) plus the allowance. Its one change to the starter is that `organization` has a `cap` (an `Amount`) and `organization.create` takes `{ name, cap }`. The starter's journeys are copied here; the only edit is that `an owner makes an api key` passes `cap: 1000n` where Bob founds his own organisation. Everything else those journeys prove is as in `examples/starter/journeys/README.md`.
@@ -27,6 +27,10 @@ acme is the starter's things (system, person, session, organization, membership,
 | `invite-and-accept` | `founded` | ada owner, olga and bob signed in | starter: send, accept, revoke an invitation; `membership.get`; `NotAllowed` for outsiders |
 | `an-invitation-is-used-once` | `invited` | ada owner, olga signed in | starter: a second accept or a revoke after accept is refused `InvitationNotPending` |
 | `an-owner-makes-an-api-key` | `founded` | ada owner, bob signed in | starter: only an owner makes a key; bob founds his own organisation (`cap: 1000n`) and makes one there |
+| `a-key-and-a-session-are-the-same-person` | none | ada signed in | M2.02: `session.show` answers the same person and `via` as `session`, `key` and `agent` (a key and an agent key the world makes for ada) |
+| `an-agent-passes-the-owner-rule` | `founded` | ada owner | M2.02: ada's agent invites and reads; `api-key.create` (`.via(Via.session, Via.device)`) refuses her agent and her own key, and her session makes one |
+| `an-agent-cannot-consent-for-a-person` | `invited` | ada owner, olga signed in | M2.02: olga's agent is refused `invitation.accept` (`.notVia(Via.agent)`); an agent's tools lack it and `api-key.create` and hold `invitation.send`; olga accepts herself |
+| `the-system-is-nobody-signed-in` | `founded` | clock system, ada owner | M2.02: `Blueprint.system` is refused `session.show` and `organization.create`, with no operation span and `<operation>.refused` present; ada is let through |
 
 ### grant an allowance (`journeys/grant-an-allowance.ts`)
 
