@@ -24,7 +24,8 @@ export const panelPages = (b: BlueprintWire): ReadonlyArray<PanelPage> => [
   { panel: "reference", title: "Values", href: "/portal/reference/values" },
   { panel: "reference", title: "Machines", href: "/portal/reference/machines" },
   { panel: "plugins", title: "Plugins and stores", href: "/portal/plugins" },
-  { panel: "monitor", title: "Monitor", href: "/portal/monitor" },
+  { panel: "monitor", title: "Alerts", href: "/portal/monitor/alerts" },
+  { panel: "monitor", title: "Issues", href: "/portal/monitor/issues" },
 ];
 
 export const searchIndex = (b: BlueprintWire): ReadonlyArray<SearchEntry> => [
@@ -34,4 +35,6 @@ export const searchIndex = (b: BlueprintWire): ReadonlyArray<SearchEntry> => [
   ...Object.entries(refusalsOf(b)).map(([name, code]) => ({ kind: "refusal" as const, name, code, href: "/portal/reference/refusals" })),
   ...environmentsOf(b).map((e) => ({ kind: "environment" as const, name: e.name, href: `/portal/environments/${enc(e.name)}` })),
   { kind: "monitor", name: "Monitor", href: "/portal/monitor" },
+  { kind: "monitor", name: "Alerts", href: "/portal/monitor/alerts" },
+  { kind: "monitor", name: "Issues", href: "/portal/monitor/issues" },
 ];
