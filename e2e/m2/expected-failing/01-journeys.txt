@@ -1,0 +1,2 @@
+# Plugin starting worlds are not carried by the mount yet: a journey that starts from `founded` or `invited` stops before its first step. M2.22 clears it (M2-auth, "Plugin starting worlds").
+m2/01-journeys.test.ts > 01 empty handlers: every journey fails, naming its step or its world > the stand-ins as shipped (the app plants no world): each journey still fails on the empty handler, not for want of a world (M2.22)

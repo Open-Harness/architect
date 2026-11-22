@@ -491,6 +491,37 @@ jobs:
           # The totals are printed, never committed (G9): the job's summary carries them.
           node e2e/totals/totals.mjs >> "$GITHUB_STEP_SUMMARY"
 
+  # M2's checks run through the ratchet too (e2e/ratchet/README.md): the checks whose slice has not landed are on the per-check files of
+  # e2e/m2/expected-failing/ and may fail; any other failure fails the job. One runner, one job: M2 has a handful of checks so far.
+  # Skipped on a docs-only pull request, where a skip counts as passed (CI-docs-fast-path.md). Should `changes` itself fail, this runs.
+  # Not a required check yet: branch protection is the lead's call (CI-branch-protection.md).
+  e2e-m2:
+    needs: changes
+    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # No Docker (K10 section 8): every service is a process. The runner image carries Docker, so take it off the PATH and
+      # let a test that still reaches for it fail here.
+      - name: No Docker on the PATH
+        run: |
+          sudo rm -f "$(command -v docker)"
+          ! command -v docker
+      # The Collector is its pinned binary (prove's telemetry module checks its digest before it runs): cached by version, and
+      # fetched from the official release when the cache is empty.
+      - uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/orthograph/otelcol-contrib
+          key: otelcol-contrib-0.164.0-${{ runner.os }}-${{ runner.arch }}
+      - run: NX_DAEMON=false pnpm nx run e2e:m2-ratchet --outputStyle=static
+
   # Goal 3's climbability check (`e2e/climb/README.md`): `ortho prove` on planted wrong handlers must name the journey and
   # step, show expected and got, point to the handler file and declaration, finish fast and give the same result twice.
   # All five properties hold since #119, so the job is required.
