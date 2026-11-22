@@ -350,6 +350,7 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 
 ## Where it stands
 
-22 November 2026. The goal has started, led from Claude Code. `goal/portal` has caught up with stage 1 by a merge,
-and branch protection is on it. Nothing is built yet: the theme comes first, so Goal 5's screens can take it up,
-and the checks are written beside it.
+22 November 2026. The theme is built and its check passes; it goes to stage 1 on its own next, for the UI layer.
+The map's checks are written and reviewed: a hundred portal checks and forty-four grid cells are owed by the new
+portal, all red so far, and the list can only shrink. The map language is built and waiting for review; the app
+projection and the shell come next.
