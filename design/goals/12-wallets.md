@@ -13,6 +13,7 @@ lead:
 done_check: nx run e2e:stage2
 owns:
   - packages/adapters-abi/
+  - packages/erc20/
   - examples/plugged-in/src/wallet/
   - e2e/stage2/
   - design/goals/12-wallets.md
@@ -67,7 +68,8 @@ to Plugged In: its author asks Goal 3's lead first, by an Ask issue, since those
 
 ## What it owns, and the seams it touches
 
-It owns the paths in the front matter, and nothing else. The wallet feature is its own folder in Plugged In; the rest of the app is Goal 3's. `ortho new adapter --from-abi` goes in a new package plus one new scaffolder module in the CLI (an ask to Goal 3). `chain-evm` is Goal 4's: anything the adapters need from it is an ask. Goal 13's `safe` and `hats` adapters build on slice 1.
+It owns the paths in the front matter, and nothing else (`packages/erc20/`, the first ABI adapter, added by
+ST2-abi-adapters). The wallet feature is its own folder in Plugged In; the rest of the app is Goal 3's. `ortho new adapter --from-abi` goes in a new package plus one new scaffolder module in the CLI (an ask to Goal 3). `chain-evm` is Goal 4's: anything the adapters need from it is an ask. Goal 13's `safe` and `hats` adapters build on slice 1.
 
 **Done check:** `nx run e2e:stage2` passes on `goal/wallets` (the stage 2 gate, ST2.06). It lands in `main` by one pull request
 once `goal/stage-1` has, or into `goal/stage-1` by one pull request if Goal 3 is still open.
