@@ -76,8 +76,12 @@ no `setTimeout` (the spike found two, in the OpenAI SDK's `fetchWithTimeout`, fi
 (ids and timestamps) read the world's `Date` that the Worker's entry installs per request (M8.06, after the M8.05 spike), and on Node
 the process's real clock. H1.3's real-clock agent is superseded: an agent in a world waits on the world's clock.
 
-How a timer survives the Durable Object's eviction is Goal 9's call in M8.07; Goal 10 asked for it in #464 and builds
-on the answer, never on a stand-in of its own.
+How a timer survives the Durable Object's eviction is Goal 9's call in M8.07. Its answer to #464
+(`design/decisions/M8-timers-shape.md`, #483) is a second service beside `Timers`: `DurableTimers.set(at, owner, name,
+wake)`, once per `(owner, name)` while pending, and `clear(owner, name)`, with the host's `wakesByKind({ agent: … })`
+waking the run's object. So a run's owner is `agents/run/<run>`, each wait has its own name (`backoff-<attempt>`,
+`sleep-<pi task id>`), and a woken run is idempotent by `(owner, name, at)`. Goal 10 codes against that, on
+`TimersMemory` until M8.07 lands, never on a stand-in of its own.
 
 ### 5. Models: two adapters, and a real local model for every check
 
