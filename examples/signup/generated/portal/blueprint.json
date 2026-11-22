@@ -1099,7 +1099,439 @@
         "publish": {},
         "hash": "0f14705e03d3bc97"
       }
-    }
+    },
+    "alertRules": [
+      {
+        "id": "anomaly:AR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-001",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:SH-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/sheet/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:SH-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:SH-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "defect:sheet.close",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.close",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/close.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.get",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.join",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.join",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/join.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.open",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.open",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/open.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.close",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.close",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/close.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.get",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.join",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.join",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/join.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.open",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.open",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/open.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "verdict:a closed sheet takes no one:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "a closed sheet takes no one",
+          "severity": "page",
+          "owner": "journeys/a-closed-sheet-takes-no-one.ts"
+        }
+      },
+      {
+        "id": "verdict:fill a sheet:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "fill a sheet",
+          "severity": "page",
+          "owner": "journeys/fill-a-sheet.ts"
+        }
+      },
+      {
+        "id": "verdict:join twice with one request:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "join twice with one request",
+          "severity": "page",
+          "owner": "journeys/join-twice-with-one-request.ts"
+        }
+      },
+      {
+        "id": "verdict:put up a sheet:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "put up a sheet",
+          "severity": "page",
+          "owner": "journeys/put-up-a-sheet.ts"
+        }
+      }
+    ]
   },
   "dependsOnByOperation": {
     "sheet.close": {
@@ -1140,5 +1572,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "9ba194fa8a3e89d9925bb07225946b620c70f2757f7be47d1ede207d83e64b3f"
+  "digest": "b67b4bac51395fd2414ff0939bc9a0f30a68b2fd3db2ab4c89a0c26edee96aad"
 }

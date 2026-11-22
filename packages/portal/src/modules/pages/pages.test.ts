@@ -1,7 +1,7 @@
 // The route the client draws from the path, and the data it reads. The drawing itself is read in a browser (check 21, the grid).
 import { Effect } from "effect";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { load } from "./internal/load.ts";
+import { load, loadTrace } from "./internal/load.ts";
 import { routeOf } from "./internal/route.ts";
 import { rulesBroken } from "./internal/rules.ts";
 import type { BlueprintWire, OperationWire } from "#modules/wire/types.js";
@@ -31,6 +31,13 @@ describe("routeOf", () => {
     expect(routeOf("/portal/traces/xyz")).toEqual({ page: "missing" });
   });
 
+  it("the monitor's pages: Alerts and Issues under it, and nothing else under it", () => {
+    expect(routeOf("/portal/monitor")).toEqual({ page: "monitor" });
+    expect(routeOf("/portal/monitor/alerts")).toEqual({ page: "alerts" });
+    expect(routeOf("/portal/monitor/issues/")).toEqual({ page: "issues" });
+    expect(routeOf("/portal/monitor/other")).toEqual({ page: "missing" });
+  });
+
   it("anything else is not a page, and a name with a path in it is no name", () => {
     for (const path of ["/portal/nothing", "/portal/things", "/portal/things/a/b", "/portal/things/..%2Fsecret", "/portal/things/%E0%A4%A", "/portal/things/Handle", "/elsewhere"]) {
       expect(routeOf(path), path).toEqual({ page: "missing" });
@@ -43,15 +50,37 @@ describe("load", () => {
     const asked: Array<string> = [];
     vi.stubGlobal("fetch", (path: string) => {
       asked.push(path);
-      return Promise.resolve(Response.json(path.includes("blueprint") ? { digest: "abc" } : { consistency: "checked" }));
+      return Promise.resolve(Response.json(path.includes("blueprint") ? { digest: "abc" } : { consistency: "checked", telemetry: null }));
     });
-    expect(await Effect.runPromise(load())).toEqual({ blueprint: { digest: "abc" }, snapshot: { consistency: "checked" } });
-    expect(asked).toEqual(["/_portal/v1/blueprint", "/_portal/v1/snapshot?digest=abc"]);
+    expect(await Effect.runPromise(load())).toEqual({ blueprint: { digest: "abc" }, snapshot: { consistency: "checked", telemetry: null }, monitor: null });
+    expect(asked, "no live source, no monitor request").toEqual(["/_portal/v1/blueprint", "/_portal/v1/snapshot?digest=abc"]);
+  });
+
+  it("reads the monitor for the digest too, and a portal with none (404, or an answer that is not a monitor) draws no alert it did not evaluate", async () => {
+    const view = { environment: "local", now: 1, alerts: [], issues: [] };
+    const answering = (monitor: Response) => (path: string) => Promise.resolve(path.includes("monitor") ? monitor : Response.json(path.includes("blueprint") ? { digest: "abc" } : { consistency: "checked", telemetry: {} }));
+    vi.stubGlobal("fetch", answering(Response.json(view)));
+    expect((await Effect.runPromise(load())).monitor).toEqual(view);
+    vi.stubGlobal("fetch", answering(Response.json({ _tag: "NotFound" }, { status: 404 })));
+    expect((await Effect.runPromise(load())).monitor).toBeNull();
+    vi.stubGlobal("fetch", answering(Response.json({})));
+    expect((await Effect.runPromise(load())).monitor).toBeNull();
   });
 
   it("fails naming the request it could not read, and never invents a snapshot", async () => {
     vi.stubGlobal("fetch", (path: string) => Promise.resolve(path.includes("blueprint") ? Response.json({ digest: "abc" }) : Response.json({}, { status: 409 })));
     expect(await Effect.runPromise(Effect.flip(load()))).toEqual({ _tag: "DataFailed", request: "/_portal/v1/snapshot?digest=abc", reason: "it answered 409" });
+  });
+});
+
+describe("loadTrace", () => {
+  it("reads the body of an answer that is neither 200 nor 404 before it fails, so no response is left unread", async () => {
+    let read = false;
+    const answer = new Response("boom", { status: 500 });
+    Object.defineProperty(answer, "text", { value: () => { read = true; return Promise.resolve("boom"); } });
+    vi.stubGlobal("fetch", () => Promise.resolve(answer));
+    expect(await Effect.runPromise(Effect.flip(loadTrace("abcdef012345")))).toMatchObject({ _tag: "DataFailed", reason: "it answered 500" });
+    expect(read).toBe(true);
   });
 });
 

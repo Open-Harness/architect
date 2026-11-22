@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } fr
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { Effect } from "effect";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { makeStaging, prefixOf, stagingUrl } from "./service.ts";
+import { makeStaging, prefixOf, proveAddress, stagingUrl } from "./service.ts";
 import { StagingFailed, type Account, type Credentials, type Options, type Plan, type Tools } from "./types.ts";
 
 const example = resolve(import.meta.dirname, "../../../../../examples/plugged-in");
@@ -67,6 +67,16 @@ describe("staging up and destroy", () => {
   it("the prefix and the address come from one place", () => {
     expect(prefixOf("plugged-in", "7")).toBe("ortho-pluggedin-stg-7");
     expect(stagingUrl("ortho-pluggedin-stg-7", "acct")).toBe("https://ortho-pluggedin-stg-7-worker.acct.workers.dev");
+  });
+
+  it("the prove address: a run and a subdomain, or the loopback override, and a refusal otherwise", async () => {
+    const at = (run: string | undefined, subdomain: string | undefined, origin?: string) => Effect.runPromise(Effect.flip(proveAddress({ root: "/nowhere", run, subdomain, origin })).pipe(Effect.map((e) => e.message)));
+    expect(await at(undefined, "acme")).toMatch(/--run/);
+    expect(await at("R1", "acme")).toMatch(/--run/);
+    expect(await at("r1", undefined)).toMatch(/ORTHO_STAGING_SUBDOMAIN/);
+    expect(await at("r1", "a.b")).toMatch(/ORTHO_STAGING_SUBDOMAIN/);
+    expect(await at("r1", "acme", "http://example.com")).toMatch(/ORTHO_STAGING_ORIGIN/);
+    expect(await Effect.runPromise(proveAddress({ root, run: "r1", subdomain: undefined, origin: "http://127.0.0.1:8787/" }))).toMatchObject({ url: "http://127.0.0.1:8787", label: "run r1", prefix: "ortho-pluggedin-stg-r1" });
   });
 
   it("destroy deletes what the run's prefix owns, matched at a dash, and nothing else", async () => {

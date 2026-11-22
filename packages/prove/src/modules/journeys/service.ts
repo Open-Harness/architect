@@ -7,6 +7,7 @@ import { callDevice, onDevice } from "./internal/device.ts";
 import { loadProject } from "./internal/load.ts";
 import { callOperation, callTools, castPeople, doorFacts, makeKey, mayCall, mintCredential, signUpPeople, stateOf } from "./internal/world.ts";
 import { databaseFacts } from "./internal/database-facts.ts";
+import { d1Facts } from "./internal/d1-facts.ts";
 import { subjectId } from "./internal/subject.ts";
 import { runChecks, show } from "./internal/checks.ts";
 
@@ -133,4 +134,4 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     return done(undefined);
   });
 
-export const Journeys: JourneysApi = { load: loadProject, run, databaseFacts };
+export const Journeys: JourneysApi = { load: loadProject, run, databaseFacts, d1Facts };

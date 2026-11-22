@@ -1,10 +1,11 @@
 // The calls of a window, from its spans. Pure. A call is one operation's attempts, grouped by the `call.id` the runtime wrote on each (`group.ts`): a retry
 // is one call, and two calls to one operation under one trace (a client reusing its traceparent) are two. A journey's own
 // span, a step span and a commit span are not attempts. Nothing is read from a span but a whitelist of structural attributes.
-import type { CallerKind, CallsView, Outcome, TelemetryCall, WindowSpan, WindowTrace } from "../types.ts";
+import type { CallerKind, CallsView, MonitoredCall, Outcome, TelemetryCall, WindowSpan, WindowTrace } from "../types.ts";
 import { ROWS_MAX } from "../types.ts";
-import { groupCalls, numberOf, type CallGroup } from "./group.ts";
-import { isAttempt, spanKind, type OperationKinds } from "./spans.ts";
+import { failureOf } from "./failure.ts";
+import { CALL_ID, groupCalls, numberOf, type CallGroup } from "./group.ts";
+import { isAttempt, spanKind, type OperationKinds, type OperationSteps } from "./spans.ts";
 
 const text = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
 
@@ -31,20 +32,30 @@ const outcomeOf = (last: WindowSpan, spans: ReadonlyArray<WindowSpan>): { readon
   return { outcome: last.status === 2 || conflicted ? "defect" : "answered", refusal: null };
 };
 
-const callOf = (trace: string, operation: string, { spans: attempts, unresolved }: CallGroup, all: ReadonlyArray<WindowSpan>, journey: string | null, environment: string, budget: number | undefined): TelemetryCall => {
+/** The runtime's `call.id` when every attempt carries the same one; otherwise the trace and the attempts' own span ids. Never a time. */
+const identityOf = (trace: string, attempts: ReadonlyArray<WindowSpan>): string => {
+  const ids = new Set(attempts.map((s) => text(s.attrs[CALL_ID])));
+  const [only] = [...ids];
+  return ids.size === 1 && only !== undefined ? only : `${trace}/${attempts.map((s) => s.spanId).sort().join(",")}`;
+};
+
+const callOf = (trace: string, operation: string, { spans: attempts, unresolved }: CallGroup, all: ReadonlyArray<WindowSpan>, journey: string | null, environment: string, budget: number | undefined, steps: OperationSteps): MonitoredCall => {
   const ordered = [...attempts].sort((a, b) => numberOf(a) - numberOf(b) || a.start - b.start);
   const first = ordered.reduce((a, b) => (b.start < a.start ? b : a));
   const end = Math.max(...ordered.map((s) => s.start + s.ms));
   const durationMs = round(end - first.start);
-  return {
-    trace, operation, start: first.start, ...(unresolved ? { outcome: "unknown" as const, refusal: null } : outcomeOf(ordered[ordered.length - 1]!, all)),
+  const outcome = unresolved ? { outcome: "unknown" as const, refusal: null } : outcomeOf(ordered[ordered.length - 1]!, all);
+  const base = {
+    trace, operation, start: first.start, ...outcome,
     caller: ordered.map(callerOf).find((k) => k !== undefined) ?? "unknown",
     attempts: new Set(ordered.map(numberOf)).size,
     durationMs,
     environment: ordered.map((s) => text(s.attrs["environment"])).find((e) => e !== undefined) ?? environment,
     overBudget: budget !== undefined && durationMs > budget,
     journey, requestKey: ordered.map((s) => text(s.attrs["request.key"])).find((k) => k !== undefined) ?? null, roleHeld: null,
+    id: identityOf(trace, ordered),
   };
+  return outcome.outcome === "defect" ? { ...base, outcome: outcome.outcome, failure: failureOf(ordered, all, operation, steps) } : { ...base, outcome: outcome.outcome };
 };
 
 /**
@@ -56,11 +67,23 @@ const moved = (attempts: ReadonlyArray<WindowSpan>, all: ReadonlyArray<WindowSpa
   attempts.some((a) => typeof a.attrs["move.name"] === "string"
     && !all.some((s) => s.parentSpanId === a.spanId && s.attrs["step.kind"] === "commit" && s.attrs["commit.outcome"] === "conflict"));
 
+/** Per operation, the nearest-rank p95 of every call's duration in the window. */
+const p95Of = (all: ReadonlyArray<TelemetryCall>): Readonly<Record<string, number>> => {
+  const by = new Map<string, Array<number>>();
+  // Appended in place: copying the bucket per call made a busy window quadratic (40,000 calls took about a minute).
+  for (const c of all) {
+    const bucket = by.get(c.operation);
+    if (bucket === undefined) by.set(c.operation, [c.durationMs]);
+    else bucket.push(c.durationMs);
+  }
+  return Object.fromEntries([...by].map(([op, d]) => { const sorted = [...d].sort((a, b) => a - b); return [op, sorted[Math.ceil(0.95 * sorted.length) - 1]!]; }));
+};
+
 /** Calls with a span that were refused, per operation and refusal name, with the newest such trace. */
 export type SpanRefusals = ReadonlyMap<string, { readonly operation: string; readonly name: string; readonly count: number; readonly trace: string; readonly start: number }>;
 
-export const callsOf = (traces: ReadonlyMap<string, WindowTrace>, environment: string, budgets: Readonly<Record<string, number | undefined>>, kinds: OperationKinds, window: { readonly since: number; readonly now: number }): { readonly view: CallsView; readonly refusals: SpanRefusals } => {
-  const all: Array<TelemetryCall> = [];
+export const callsOf = (traces: ReadonlyMap<string, WindowTrace>, environment: string, budgets: Readonly<Record<string, number | undefined>>, kinds: OperationKinds, steps: OperationSteps, window: { readonly since: number; readonly now: number }): { readonly view: CallsView; readonly refusals: SpanRefusals; readonly all: ReadonlyArray<MonitoredCall> } => {
+  const all: Array<MonitoredCall> = [];
   const moves: Record<string, number> = {};
   const journeys: Record<string, Set<string>> = {};
   for (const [trace, { spans }] of traces) {
@@ -69,7 +92,7 @@ export const callsOf = (traces: ReadonlyMap<string, WindowTrace>, environment: s
     for (const span of spans.filter((span) => isAttempt(spanKind(span, kinds)))) byOperation.set(String(span.attrs["operation"]), [...(byOperation.get(String(span.attrs["operation"])) ?? []), span]);
     for (const [operation, every] of byOperation) {
       for (const group of groupCalls(every, spans)) {
-        const call = callOf(trace, operation, group, spans, journey, environment, budgets[operation]);
+        const call = callOf(trace, operation, group, spans, journey, environment, budgets[operation], steps);
         // The window is the call's: a source hands back whole traces, and a long trace holds calls from before it (and, at a fixed `now`, after it).
         if (call.start < window.since || call.start > window.now) continue;
         all.push(call);
@@ -89,9 +112,11 @@ export const callsOf = (traces: ReadonlyMap<string, WindowTrace>, environment: s
   }
   return {
     view: {
-      rows: all.slice(0, ROWS_MAX), truncated: Math.max(0, all.length - ROWS_MAX), moves,
+      p95: p95Of(all),
+      rows: all.slice(0, ROWS_MAX).map(({ id: _id, failure: _failure, ...row }) => row), truncated: Math.max(0, all.length - ROWS_MAX), moves,
       journeys: Object.fromEntries(Object.entries(journeys).map(([op, set]) => [op, [...set].sort()])),
     },
     refusals,
+    all,
   };
 };

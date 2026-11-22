@@ -18,6 +18,7 @@ import { prehandle, type Prehandled } from "./internal/prehandle.ts";
 import { recordingLogs } from "./internal/decided.ts";
 import { settleViolation } from "./internal/invariants.ts";
 import { signalled, spanned } from "./internal/span.ts";
+import { defectAttributes } from "./internal/defect.ts";
 export { Reads } from "./internal/read.ts";
 export { Environment } from "./internal/environment.ts";
 
@@ -146,7 +147,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         // Every refusal and every defect is written on the operation's span: what `prove` reads.
         // A refusal also carries the log that decided it, when the handler logged one before refusing.
         Effect.tapCause((cause) => {
-          if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan({ defect: Cause.pretty(cause).split("\n")[0] ?? "" });
+          if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
           const refusal = Cause.squash(cause);
           if (refusal instanceof Conflict) return Effect.void;
           const tag = tagOf(refusal);

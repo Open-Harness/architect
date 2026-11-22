@@ -29,6 +29,9 @@ export interface CallRecord {
   readonly tools?: true;
 }
 
+export type { D1Access } from "./internal/d1-facts.ts";
+import type { D1Access } from "./internal/d1-facts.ts";
+
 /** What `prove` reads back from the environment's database: a row by table and id (wire form), and a trace's journal entries. */
 export interface Facts {
   readonly record: (table: string, id: string) => Effect.Effect<Record<string, unknown> | null>;
@@ -93,6 +96,8 @@ export class ProjectFailed extends Data.TaggedError("ProjectFailed")<{ readonly 
 export interface JourneysApi {
   /** Facts read from an environment's database file, for one that has closed its front door (D3 #127). */
   readonly databaseFacts: (state: string) => Facts;
+  /** Facts read from a deployed environment's D1 databases through Cloudflare's API, with the operator's credential. */
+  readonly d1Facts: (access: D1Access) => Facts;
   readonly load: (root: string, model: Model) => Effect.Effect<Project, ProjectFailed>;
   /**
    * Run one journey against the world at `url`. Span checks wait for telemetry, so they are made later by `check`.
