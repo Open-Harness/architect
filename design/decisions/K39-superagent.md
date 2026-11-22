@@ -108,7 +108,7 @@ and the workspaces (M4.17, M4.18) as off the 1.0 path and not a goal yet.
 - `design/milestones.md`, M4.25's done-when: "a merge emits `pullRequest.merged` once" → "a merge emits `pullRequest` closed and merged once; a webhook with a bad signature is refused"
 - `design/milestones.md`, M4.25's needs: "| Gate M2 | build | the adapter's" → "| Gate M2; its events in: M5.03 (Goal 17 builds the calls in its slice 3, the events in its slice 10) | build | the adapter's"
 - `design/milestones.md`, M4.18: "`@orthograph/workspaces` with the `localCopy` choice (K10 section 3):" → "`@orthograph/workspaces` on `@orthograph/sandbox`'s `local` choice (K10 section 3; K39: the sandbox holds the machine, the workspace adds `ortho`):"
-- `design/milestones.md`, M4.18's needs: "M4.17, M4.25" → "M4.17, M4.25, Goal 17's slice 5 (the sandbox)"
+- `design/milestones.md`, M4.18's needs: "| M4.17, M4.25 | build |" → "| M4.17, M4.25, Goal 17's slice 5 (the sandbox) | build |"
 - `design/milestones.md`, M4.19: "The `e2b` choice: our template," → "The sandbox's `e2b` choice (`@orthograph/sandbox`, K39), for workspaces: our template,"
 - `design/later.md`: "for `@orthograph/workspaces`, beside `localCopy` and `e2b`" → "for `@orthograph/sandbox`, beside `local` and `e2b` (K39)"
 - `design/milestones.md`, beside the stages: "(M3.20, M4.17 to M4.25, K10)" → "(M3.20, M4.17 to M4.25, K10; M4.25 built by Goal 17, K39)"
