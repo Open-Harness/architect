@@ -9,7 +9,9 @@ K34 makes those needs, not milestone order, the rule for when a goal may build.
 ## How a goal stays independent
 
 1. **It owns paths, and only its own.** A goal's brief lists the packages and folders it owns. Anything outside them
-   is an Ask issue to the owner (K32; K33 in #301), except on an integration branch, Goal 17's `goal/superagent` (K39): it builds the framework fixes its app needs there, announces each by an Ask issue, and the conductor merges them back.
+   is an Ask issue to the owner (K32; K33 in #301), except on an integration branch, Goal 17's `goal/superagent`
+   (K39): it builds the framework fixes its app needs there, announces each by an Ask issue, and the conductor merges
+   them back.
 2. **New work is a new package or a new module.** A goal that adds to the core (`orthograph`, the compiler, a host)
    adds new modules only, and proves that a blueprint not using them generates byte for byte what it did before (the
    rule K31 set for the app map).
@@ -56,6 +58,7 @@ later goals read, apart from M1.24 and M1.49, and M7.01) counts as landed. A sli
 | 14 · The club: stage 4 | ST4.01 to ST4.08: Noir on Aztec, private budgets and ballots, `language-noir`, `chain-aztec` | 1.0 | ready | `language-noir`, `chain-aztec`, `@orthograph/ballots`, `spikes/aztec-club` | ST4.01 to ST4.04: none, ST4.01 reading the budgets declaration in `examples/budgets` (Goal 4); ST4.05, and so ST4.06 to ST4.08: the budgets journeys and feature, ST3.03 and ST3.05 (Goal 13, K35) |
 | 15 · Release and the cloud | M7.13 (the release pass), M7.02, M7.05 to M7.09, M7.12, M7.14: npm, Homebrew and GitHub releases, signed verdicts from CI, monitors to the sink, an own CI runner if Aaron says yes | 1.0 | ready | the release tooling, `tools/ci`'s release jobs | M7.14: M1.49 (Goal 3); M7.05, M7.07 to M7.09: M7.04 (Goal 3); M7.12: every M7 slice, Goal 16's included. Each credential needs Aaron's written yes |
 | 16 · Capxul on Orthograph | M7.10 and M7.11 and the Capxul calls of 20 November: which plugins exist, which are new, which are Capxul's own; then its first feature in its staging | 1.0 and after | ready | `decisions/M7-capxul.md`, Capxul's own repository | M7.11: M7.05 (Goal 15); its first feature, by the Capxul calls of 20 November rather than a needs cell: stage 3 (Goal 13) |
+| 17 · The superagent | the superagent pattern on Orthograph and Pi Durable (K39): an always-on agent, stored as data, that anyone or any agent makes for a job from the services it connects; its framework fixes (K40) and adapters generated from each service's spec (M5.07) first, then its blueprint, its two durable agents (a cheap main agent, an executor per ticket) and its connections; proved by a coding agent (GitHub, Slack) and a triage agent made at runtime (PostHog); its plugins written in `examples/superagent/plugins/` and moved to `packages/` once they work (`@orthograph/superagent`, `intake`, `tickets`, `prompts`, `sandbox`; `github`, M4.25, `slack`, `posthog`, `webhook`) | — (off the 1.0 path) | ready | `goal/superagent`, an integration branch; `examples/superagent`, `e2e/superagent`; the framework fixes K40 designs, built there and merged back by the conductor | nothing: what it needs from Goals 3, 6, 10 and 11 it takes from `goal/stage-1` if landed, and builds there to their design if not; K40 is decided (#529) |
 
 Off the 1.0 path, kept for later and not a goal yet: the factory and the work board (M3.04 to M3.15 and M3.17 to M3.26,
 M3.08 among them), the builder's tools and workspaces (M4.11 to M4.15, M4.17 to M4.24; M4.25 is Goal 17's, K39), Stripe, Resend and the other
@@ -64,7 +67,7 @@ adapters (M5.05 to M5.15), and the Foreman (`design/foreman/`), which these buil
 ## What can run at once
 
 - **Now, side by side:** Goals 3 and 4 (running); 5 and 6 once #285 lands; and every planned goal's first slices:
-  8's decision (M3.01), 9 (M8.02 to M8.10), 10 (M4.01 to M4.10), 11 (M5.01 to M5.04), 12's ABI adapters (ST2.02), 14's first four (ST4.01 to ST4.04), 15's release pass (M7.13: M7.01 is ✅ on `goal/stage-1`, so it waits only on Aaron's yeses) and 16's mapping (M7.10). 8, 9 and 10 agree
+  8's decision (M3.01), 9 (M8.02 to M8.10), 10 (M4.01 to M4.10), 11 (M5.01 to M5.04), 12's ABI adapters (ST2.02), 14's first four (ST4.01 to ST4.04), 15's release pass (M7.13: M7.01 is ✅ on `goal/stage-1`, so it waits only on Aaron's yeses), 16's mapping (M7.10) and 17's own designs and its adapter checks (its slices 2 and 3), then its three lanes of checks (slices 6, 8 and 10). 8, 9 and 10 agree
   `Timers`' shape first.
 - **As Goal 4 lands M6.01 to M6.15:** Goal 12's wallet slices and Goal 13's decision (with Goal 8's M3.01).
 - **As Goals 8, 10 and 12 land:** the rest of Goal 13's slices, and Goal 14's private budgets after Goal 13's ST3.05; its gate also waits for all of Goal 9 and Goal 4's
