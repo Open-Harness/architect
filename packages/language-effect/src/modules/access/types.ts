@@ -18,6 +18,8 @@ export interface AccessApi {
     readonly payload: object;
     readonly principal: Principal;
     readonly thing?: Thing;
+    /** Each adapter's mount by the name it is mounted under: what a `service` role is read against. */
+    readonly mounts?: ReadonlyMap<unknown, string>;
   }) => Effect.Effect<ReadonlyArray<Role>, never, Records>;
   /**
    * Allowed if any entry allows: anyone; anyone signed in; a bare role on the operation's own subject (`grantee`);
@@ -30,5 +32,6 @@ export interface AccessApi {
     readonly principal: Principal;
     /** The operation's own thing: its instance named in the payload is the subject. */
     readonly thing?: Thing;
+    readonly mounts?: ReadonlyMap<unknown, string>;
   }) => Effect.Effect<void, NotAllowed, Records>;
 }

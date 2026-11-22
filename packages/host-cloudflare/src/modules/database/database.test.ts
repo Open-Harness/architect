@@ -43,7 +43,7 @@ describe("D1 through SqlClient, in workerd", () => {
     const store = StoreD1.layer({ tables: [[Allowance, "allowance"]] }).pipe(Layer.provide(Database.d1(env.DB)));
     const most = "340282366920938463463374607431768211455";
     const program = Effect.gen(function* () {
-      const answer = yield* served.call({ member: "per_olga", limit: most }, { kind: "person", person: "per_ada" });
+      const answer = yield* served.call({ member: "per_olga", limit: most }, { kind: "person", person: "per_ada", via: "session" });
       return { answer, found: (yield* (yield* Store).find(Allowance, answer.allowance))?.instance };
     });
     const { answer, found } = await Effect.runPromise(program.pipe(Effect.provide(Layer.mergeAll(store, BusyLive, Layer.succeed(Tracer.Tracer, tracer)))));

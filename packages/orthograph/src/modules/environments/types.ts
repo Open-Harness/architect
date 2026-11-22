@@ -3,6 +3,7 @@ import type { Duration } from "effect";
 import type { CloudProvider, Database } from "#modules/cloud/types.js";
 import type { Deployment, Publication } from "#modules/deploy/types.js";
 import type { Identity } from "#modules/identity/types.js";
+import type { Via } from "#modules/plugins/types.js";
 import type { Secret } from "#modules/secrets/types.js";
 import type { Sink } from "#modules/telemetry/types.js";
 
@@ -11,7 +12,10 @@ export interface EnvironmentSpec {
   readonly runs: string;
   /** A test environment's worlds are created and destroyed as one unit, and expire after this. */
   readonly lifetime?: Duration.Input;
-  readonly identity: Identity;
+  /** @deprecated Replaced by `issues` (M2-auth, "Smaller calls" 4); kept until every app has moved. */
+  readonly identity?: Identity;
+  /** The ways in this environment issues credentials for. Absent: every way in, and a world mints each for a journey. */
+  readonly issues?: ReadonlyArray<Via>;
   /** Where its state lives when a cloud holds it. */
   readonly cloud?: CloudProvider;
   /** Where it lives locally. */

@@ -410,6 +410,7 @@
           "kind": "signed-in"
         }
       ],
+      "agentTool": true,
       "mints": "handle",
       "steps": {
         "record": {
@@ -426,7 +427,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "f3b0ba5eb265de74"
+      "hash": "61e97f85ea760d5b"
     },
     "handle.release": {
       "kind": "operation",
@@ -472,6 +473,7 @@
           "role": "handle.handleOwner"
         }
       ],
+      "agentTool": true,
       "refs": {
         "handle": "handle"
       },
@@ -487,7 +489,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "f875bc245f1b5a16"
+      "hash": "a25577a53e08dff2"
     },
     "handle.resolve": {
       "kind": "operation",
@@ -533,6 +535,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "steps": {
         "load": {
           "name": "handle.resolve.load",
@@ -545,7 +548,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "fbe1dbfa3de5ad1f"
+      "hash": "c7e3558f97930e9a"
     },
     "link.add": {
       "kind": "operation",
@@ -609,6 +612,7 @@
           "kind": "signed-in"
         }
       ],
+      "agentTool": true,
       "mints": "link",
       "steps": {
         "load": {
@@ -626,7 +630,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "68e3a0e037ae0530"
+      "hash": "d3ed67ad7a36cbca"
     },
     "link.order": {
       "kind": "operation",
@@ -673,6 +677,7 @@
           "role": "link.linkOwner"
         }
       ],
+      "agentTool": true,
       "refs": {
         "link": "link"
       },
@@ -692,7 +697,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "6955c4a359ef7c40"
+      "hash": "c2bb84f2918d1db3"
     },
     "link.remove": {
       "kind": "operation",
@@ -738,6 +743,7 @@
           "role": "link.linkOwner"
         }
       ],
+      "agentTool": true,
       "refs": {
         "link": "link"
       },
@@ -753,7 +759,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "c5986166d415489f"
+      "hash": "58309131d39628e5"
     },
     "profile.get": {
       "kind": "operation",
@@ -804,6 +810,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "steps": {
         "load": {
           "name": "profile.get.load",
@@ -817,7 +824,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "f7c27314764a8886"
+      "hash": "64401959da0ca2d4"
     }
   },
   "journeys": {

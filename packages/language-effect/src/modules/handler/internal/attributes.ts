@@ -1,5 +1,5 @@
 // What a span may say about a call, from the declaration's visibility and text opt-in (O2).
-import type { FieldsInput } from "orthograph";
+import type { FieldsInput, Principal } from "orthograph";
 import { Audience, Visibility } from "#modules/visibility/service.js";
 
 const text = (v: unknown): string =>
@@ -14,8 +14,16 @@ const tracedEntries = (values: object, fields: FieldsInput): Array<[string, unkn
 export const payloadAttributes = (payload: object, fields: FieldsInput): Record<string, string> =>
   Object.fromEntries(tracedEntries(payload, fields).map(([k, v]) => [`payload.${k}`, text(v)]));
 
-export const principalAttributes = (principal: { readonly kind: string; readonly person?: string }): Record<string, string> =>
-  principal.kind === "person" && principal.person ? { "principal.person": principal.person } : { "principal.kind": principal.kind };
+/**
+ * Who called, on every span of a call: the kind, the way in a person or agent used, and what names them (M2-auth, "Smaller calls" 2).
+ * A refused call names its kind and way in, never the person (G8); an accepted one of a person or an agent also names the person.
+ */
+export const principalAttributes = (principal: Principal, refused = false): Record<string, string> => ({
+  "principal.kind": principal.kind,
+  ...("via" in principal ? { "principal.via": principal.via } : {}),
+  ...(!refused && "person" in principal ? { "principal.person": principal.person } : {}),
+  ...(principal.kind === "service" ? { "principal.mount": principal.mount } : {}),
+});
 
 /** The request key a call was made with, as the caller sent it (never the store's `<op>|<who>|<key>`): an id, so traced. Only a key the operation honours (M1.12a). */
 export const requestAttributes = (request: string | undefined): Record<string, string> => (request === undefined ? {} : { "request.key": request });

@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import type { Allowed, Principal, Role, Thing } from "orthograph";
+import { acting, type Acting, type Allowed, type Principal, type Role, type ServiceRole, type Thing } from "orthograph";
 import { Records } from "#modules/records/types.js";
 import { NotAllowed, type AccessApi } from "./types.ts";
 import { referencedThing } from "./internal/path.ts";
@@ -7,7 +7,8 @@ import { referencedThing } from "./internal/path.ts";
 /** The thing whose id a field holds, followed back to the `id` it was taken from: what a payload field names. */
 export { referencedThing };
 
-type Person = Extract<Principal, { kind: "person" }>;
+type Mounts = ReadonlyMap<unknown, string>;
+const NO_MOUNTS: Mounts = new Map();
 type Fields = { readonly [key: string]: unknown };
 
 /** Where a walk starts: a payload field holding some thing's id. */
@@ -38,7 +39,7 @@ const walk = (from: { thing: Thing | undefined; id: unknown }, keys: ReadonlyArr
  * A role decided on an instance: `grantee` on the operation's own subject, `owner.of("organization")` on the thing a
  * payload field points at, or a path that starts from the subject when the payload has no such field (a read).
  */
-const roleOn = (role: Role, path: string | undefined, payloadFields: Fields, payload: object, person: Person, own: Thing | undefined) =>
+const roleOn = (role: Role, path: string | undefined, payloadFields: Fields, payload: object, person: Acting, own: Thing | undefined) =>
   Effect.gen(function* () {
     const records = yield* Records;
     const keys = path === undefined ? [] : path.split(".");
@@ -59,30 +60,44 @@ const roleOn = (role: Role, path: string | undefined, payloadFields: Fields, pay
     return instance !== undefined && role.rule(instance as never, person);
   });
 
-const allows = (a: Allowed, payloadFields: Fields, payload: object, principal: Principal, own: Thing | undefined): Effect.Effect<boolean, never, Records> => {
-  if (a.kind === "anyone") return Effect.succeed(true);
-  if (principal.kind !== "person") return Effect.succeed(false);
-  if (a.kind === "signed-in") return Effect.succeed(true);
-  if (a.kind === "role-of") return roleOn(a.role, a.path, payloadFields, payload, principal, own);
-  return roleOn(a, undefined, payloadFields, payload, principal, own);
+/** The role an `allowed` entry names, if it names one (a narrowed entry names the role it narrowed). */
+const roleOf = (a: Allowed): Role | ServiceRole | undefined => {
+  const entry = a.kind === "narrowed" ? a.entry : a;
+  return entry.kind === "role" ? entry : entry.kind === "role-of" ? entry.role : undefined;
 };
 
-/** The role an `allowed` entry names, if it names one. */
-const roleOf = (a: Allowed): Role | undefined => (a.kind === "role" ? a : a.kind === "role-of" ? a.role : undefined);
+/** What a service role is let through by: the mount it names is the mount the call came in by. */
+const serviceAdmits = (role: ServiceRole, principal: Principal, mounts: Mounts) =>
+  principal.kind === "service" && mounts.get(role.service) === principal.mount;
+
+const allows = (a: Allowed, payloadFields: Fields, payload: object, principal: Principal, own: Thing | undefined, mounts: Mounts): Effect.Effect<boolean, never, Records> => {
+  // A narrowed entry also needs the way the person or agent came in to be one it keeps (M2-auth, fork 2); a service or the system has no way in to narrow.
+  const entry = a.kind === "narrowed" ? a.entry : a;
+  const kept = a.kind === "narrowed" ? a.via : undefined;
+  if (entry.kind === "anyone") return Effect.succeed(true);
+  if (entry.kind === "system") return Effect.succeed(principal.kind === "system");
+  if (entry.kind === "role" && entry.service !== undefined) return Effect.succeed(serviceAdmits(entry, principal, mounts));
+  if (entry.kind === "role-of" && entry.role.service !== undefined) return Effect.succeed(serviceAdmits(entry.role, principal, mounts));
+  const who = acting(principal);
+  if (!who || (kept !== undefined && !kept.includes(who.via))) return Effect.succeed(false);
+  if (entry.kind === "signed-in") return Effect.succeed(true);
+  if (entry.kind === "role-of") return roleOn(entry.role as Role, entry.path, payloadFields, payload, who, own);
+  return roleOn(entry as Role, undefined, payloadFields, payload, who, own);
+};
 
 export const Access: AccessApi = {
-  holds: ({ allowed, payloadFields, payload, principal, thing }) =>
+  holds: ({ allowed, payloadFields, payload, principal, thing, mounts = NO_MOUNTS }) =>
     Effect.gen(function* () {
       const held: Array<Role> = [];
       for (const a of allowed) {
         const role = roleOf(a);
-        if (role && (yield* allows(a, payloadFields, payload, principal, thing))) held.push(role);
+        if (role && (yield* allows(a, payloadFields, payload, principal, thing, mounts))) held.push(role as Role);
       }
       return held;
     }),
-  check: ({ allowed, payloadFields, payload, principal, thing }) =>
+  check: ({ allowed, payloadFields, payload, principal, thing, mounts = NO_MOUNTS }) =>
     Effect.gen(function* () {
-      for (const a of allowed) if (yield* allows(a, payloadFields, payload, principal, thing)) return;
+      for (const a of allowed) if (yield* allows(a, payloadFields, payload, principal, thing, mounts)) return;
       return yield* new NotAllowed();
     }),
 };
