@@ -5,5 +5,5 @@
 decodes the contract's own errors. Failures are `ChainFault` values, never thrown. The viem ABI types come out of
 `@orthograph/chain-evm/device` (`AbiDocument`, `AbiFunction`, `AbiError`, ...), so a caller needs no viem import.
 
-Status: the functions are empty handlers that fail (`Effect.die`); `abi.test.ts` and `../tx/read.test.ts` are the checks, listed in
+Status: the functions are empty handlers that fail (`Effect.die`); `abi.test.ts`, `decode.test.ts`, `refusal.test.ts`, `generated.test.ts` and `../tx/read.test.ts` are the checks, listed in
 `expected-failing/` until the build lands.
