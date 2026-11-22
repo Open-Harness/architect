@@ -236,7 +236,7 @@ needs it, unless it also runs a factory.
 | new feature, adapter, projection package | a name | a plugin package with its example app | S | **missing** | [`writing-a-feature.md`](writing-a-feature.md) |
 | secrets list | mounts | `ortho secrets` output | G | **missing**; names by string | [`secrets.md`](secrets.md) |
 | migrations | the model diff | ordered per environment | G | **missing** (deferred) | [`deployment.md`](deployment.md) |
-| infrastructure | model, mounts, environments | an Alchemy stack | G | wrangler configs under `.ortho/environments/` (D3 #17) | the cloud pass |
+| infrastructure | model, mounts, environments | an Alchemy stack | G | `generated/infra/alchemy.run.ts` for staging (M7-03); wrangler configs under `.ortho/environments/` for the local environments (D3 #17) | the cloud pass, for the other environments |
 | contracts | things that live on a chain | Solidity sources, ABIs | G and S | `language-solidity` is a placeholder (`src/index.ts` only) | `language-solidity`, layer four |
 | Python SDK | model | a package | G | **missing** | later ([`projections.md`](projections.md) 3.12) |
 
@@ -273,7 +273,7 @@ kit under the mount's name. Unmounting removes them.
 @orthograph/wallets/agents/skills/choose-a-signer/SKILL.md → generated/agents/skills/wallets-choose-a-signer/
 @orthograph/language-solidity/agents/skills/fill-a-contract-blank/
 @orthograph/language-noir/agents/skills/fill-a-circuit-blank/
-@orthograph/react/agents/skills/build-a-screen/
+@orthograph/web/agents/skills/build-a-screen/
 ```
 
 They are filled from the mount, not the package. Stripe's `map-an-error` lists only the errors of the calls this
