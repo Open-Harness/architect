@@ -9,7 +9,7 @@ questions:
   - How does the loop close?
 status: specified
 milestone: M3
-slices: [M1.22, M1.23, ST1.25, M3.09, M4.16, M6.11, M7.04, M8.02]
+slices: [M1.22, ST1.25, ST3.07, M3.09, M6.11, M7.04, M7.13, M8.09]
 decisions: [K5, K2, K7, K9, K23, K29, K37]
 links: [blueprint, languages-and-hosts, plugins, data, doors, things, machines, invariants, operations, handlers, journeys, proof, traces, projections, ui, portal, environments, time, agents, chains-and-wallets, factory]
 ---
@@ -53,7 +53,7 @@ export default Blueprint.operation(Handle, {
 ```
 
 Its two refusals, a name someone else holds and a person who already has one, aren't written here. They come from
-the handle's rules ([invariants](invariants.mdx)), and the runtime refuses them before anything is saved.
+the handle's rules ([invariants](invariants.mdx)), and the runtime refuses them before anything is committed.
 
 Everything below is made from those ten lines. "Runs" means it is generated and running today; the rest is decided
 for 1.0, and names the slice that builds it.
@@ -66,16 +66,16 @@ for 1.0, and names the slice that builds it.
 | **CLI** | `plugged-in handle claim --name …`, built on the SDK | runs |
 | **MCP** | the tool `handle.claim`, described by the declaration, for any agent | runs |
 | **action** | one typed call for a screen or an agent in the browser, holding no authority of its own ([doors](doors.mdx)) | M1.22 |
-| **screen** | the claim form: its fields, help text and refusals in place, in React parts your page arranges ([ui](ui.mdx)) | M1.23, ST1.25 |
+| **screen** | the claim form: its fields, help text and refusals in place, in React parts your page arranges ([ui](ui.mdx)) | ST1.25 |
 | **components** | one of your own, such as the link list: its wiring generated, its markup yours ([ui](ui.mdx)) | K29 |
-| **agents** | the operation as a tool an agent in your app calls, under the roles of the person it acts for ([agents](agents.mdx)) | M4.16 |
+| **agents** | the operation as a tool an agent in your app calls, under the roles of the person it acts for, in stage 3 ([agents](agents.mdx)) | ST3.07 |
 | **docs** | its page: who may call, payload, answer, each refusal with its code, worked examples | runs |
 | **traces** | a span for the call, its step and its commit, under the model's names ([traces](traces.mdx)) | runs |
 | **evals** | every story through it run in a real world and judged by the nine evals, a verdict per operation ([proof](proof.mdx)) | runs |
-| **portal** | the operation beside its thing and machine, its live calls with their traces, and a way to try it ([portal](portal.mdx)) | runs; new screens in Goal 6 |
-| **infra** | the Worker, its database and Durable Objects on Cloudflare, made and destroyed by one command | runs |
+| **portal** | the operation beside its thing and machine, its live calls with their traces ([portal](portal.mdx)) | runs; trying a call is M1.22, new screens Goal 6 |
+| **infra** | the Worker, its database and Durable Objects on Cloudflare: `ortho env up` makes them, `ortho env destroy` leaves nothing | planned and checked; the live run is M7.04 |
 | **chain** | the same operation as one entry on a contract, once the thing lives on a chain, in stage 2 ([chains-and-wallets](chains-and-wallets.mdx)) | M6.11 |
-| **time** | a move made by time, such as a budget renewing each month, on one clock a world can move, in stage 3 ([time](time.mdx)) | M8.02 |
+| **time** | a move made by time, such as a budget renewing each month, on one clock a world can move, in stage 3 ([time](time.mdx)) | M8.09 |
 
 What runs is in `examples/plugged-in/generated/`, one folder per projection: `api`, `server`, `sdk`, `cli`, `mcp`,
 `docs`, `portal`, `infra` and `model`. The served operation is `examples/plugged-in/generated/server/main.ts:37`.
@@ -108,7 +108,7 @@ const claim: Handler = ({ name }, { principal, steps, move, id }) =>
   });
 ```
 
-It saves the handle and its page. It never checks who is calling, never parses a request, never names a route and
+It saves the handle and its page. It never decides who may call, never parses a request, never names a route and
 never refuses a taken name. The declaration already said all of that.
 
 And this is how anyone knows it works: a story, written by a different agent before the handler existed, run
@@ -131,7 +131,7 @@ A change moves through seven steps. Each has its own page.
 5. **Prove.** `ortho prove` runs the stories in a world with real stores, the evals judge what they left behind, and
    a verdict is recorded ([journeys](journeys.mdx), [proof](proof.mdx)). Built.
 6. **Ship.** `ortho promote` moves one exact build from environment to environment, and `ortho env destroy` leaves
-   nothing behind ([environments](environments.mdx)). Built on this machine and on staging; the release is M7.04.
+   nothing behind ([environments](environments.mdx)). Built on this machine; the first live staging run is M7.04, and the release M7.13.
 7. **Watch, and close the loop.** The portal shows the running system under the model's names, and the
    [factory](factory.mdx) turns missing parts, red verdicts and drift into tasks that only a fact can close. The
    factory comes after 1.0 (M3.09); until then you read what `ortho check` and `ortho prove` say, and act on it.
@@ -150,7 +150,7 @@ that handler.
 |---|---|---|
 | who may call | the operation's `allowed` | the enforcer refuses before the handler runs, whichever way the call came in |
 | a state it must be in | the machine's move | the refusal is generated |
-| something true across many records | a rule ([invariants](invariants.mdx)) | the runtime refuses a break before anything is saved |
+| something true across many records | a rule ([invariants](invariants.mdx)) | the runtime refuses a break before anything is committed |
 | a way it can fail | the operation's `errors` | it gets a code, an exit code, a typed error in the SDK and a line in the docs |
 | how it decides and what it writes | the handler | only behaviour is freehand |
 
@@ -181,7 +181,7 @@ blueprint changes, and each reaches the same enforcer. A client written by hand 
 | scaffolds, once | `packages/cli/src/modules/generate/README.md` | built |
 | prove: worlds, journeys, evals, verdicts | `packages/prove/src/modules/prove/service.ts:17` | built |
 | the app 1.0 is built as | `examples/plugged-in/README.md` | stage 1 built |
-| actions and the screen | `orthograph`'s actions, `@orthograph/web` | planned, M1.22, M1.23 and ST1.25 |
+| actions and the screen | `orthograph`'s actions, `@orthograph/web` | planned, M1.22 and ST1.25 |
 | the factory | `@orthograph/work` | after 1.0, M3.09 |
 
 ## Status
@@ -192,13 +192,13 @@ blueprint changes, and each reaches the same enforcer. A client written by hand 
 |---|---|---|---|
 | the blueprint compiles to a model | proved | | `packages/compiler/src/modules/model/model.test.ts:27`, "describes acme" |
 | `generated/` is exactly what the model renders | proved | | `packages/cli/src/modules/check/check.test.ts:57`, "passes clean acme" |
-| a handler is scaffolded once and never overwritten | proved | | `packages/cli/src/modules/generate/generate.test.ts:20` |
+| a handler is scaffolded once, from the declaration | proved | | `packages/cli/src/modules/generate/generate.test.ts:20` |
 | every operation of Plugged In reaches the SDK, the CLI, MCP and the portal | proved | | `e2e/m1/20-plugged-in-loop.test.ts:86` |
 | Plugged In proves: every story green in a real world | proved | | `e2e/stage1/01-plugged-in-journeys.test.ts:69`, "7 journeys, 56 steps" |
-| the infra plan is what the model asks for | proved | | `e2e/m1/37-m7-03-staging-plan.test.ts:144` |
+| the infra plan is what the model asks for | proved | | `e2e/m1/37-m7-03-staging-plan.test.ts:87` |
 | actions and the screen | specified | M1.22 | K29; the claim form in ST1.25 |
-| agents in the app | specified | M4.16 | an in-app agent's tools are the operations |
-| the chain, time and the release | specified | M6.11 | K7, K23 (M8.02), M7.04 |
+| agents in the app | specified | ST3.07 | an agent spends under its own hat |
+| the chain, time, staging and the release | specified | M6.11 | K7; K23 (M8.09); M7.04; M7.13 |
 | the factory closes the loop | specified | M3.09 | after 1.0 |
 
 The page is specified because 1.0 isn't finished. Every step a change passes through today is built, and Plugged
