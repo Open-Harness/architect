@@ -7,4 +7,4 @@ src/modules/model/needs-approval.test.ts > needsApproval: an operation says a pe
 src/modules/model/needs-approval.test.ts > needsApproval: an operation says a person must say yes before it runs (#466) > refuses null, naming the file and what is allowed
 src/modules/model/needs-approval.test.ts > needsApproval: an operation says a person must say yes before it runs (#466) > refuses the number 1, naming the file and what is allowed
 src/modules/model/needs-approval.test.ts > needsApproval: an operation says a person must say yes before it runs (#466) > refuses the text "yes", naming the file and what is allowed
-src/modules/model/needs-approval.test.ts > needsApproval: an operation says a person must say yes before it runs (#466) > reserves AR-007 for ApprovalDeclined beside the runtime's codes, and moves none: AR-001 NotAllowed, AR-002 IdempotencyConflict
+src/modules/model/needs-approval.test.ts > needsApproval: an operation says a person must say yes before it runs (#466) > reserves AR-007 for ApprovalDeclined beside the runtime's codes, once, and moves none of AR-001 NotAllowed, AR-002 IdempotencyConflict

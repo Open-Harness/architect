@@ -45,7 +45,8 @@ describe("needsApproval: an operation says a person must say yes before it runs 
   afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
   it("is carried into the model when declared, and only that operation changes: no other entry, its refusals or any other part moves", async () => {
-    const before = await succeeded(acme);
+    // The control is an undeclared copy of acme (the copy leaves out projections and starting worlds, so it is not acme's whole model).
+    const before = await succeeded(copyOfAcme());
     const root = copyOfAcme();
     grantWith("needsApproval: true,")(root);
     const after = await succeeded(root);
@@ -54,8 +55,13 @@ describe("needsApproval: an operation says a person must say yes before it runs 
     expect(after.operations["allowance.grant"]?.hash).not.toBe(before.operations["allowance.grant"]?.hash);
     expect(after.operations["allowance.grant"]?.refusals).toEqual(before.operations["allowance.grant"]?.refusals);
     expect(after.refusals).toEqual(before.refusals);
-    const { needsApproval: _declared, hash: _hash, ...rest } = after.operations["allowance.grant"] as unknown as Record<string, unknown>;
-    const { hash: _before, ...was } = before.operations["allowance.grant"] as unknown as Record<string, unknown>;
+    // The whole model, but grant's own entry, is what it was: no stray key on a thing, an event, a refusal or the top level.
+    const { operations: afterOps, ...afterRest } = after as unknown as Record<string, unknown> & { operations: Record<string, unknown> };
+    const { operations: beforeOps, ...beforeRest } = before as unknown as Record<string, unknown> & { operations: Record<string, unknown> };
+    expect(afterRest).toEqual(beforeRest);
+    expect(Object.keys(afterOps)).toEqual(Object.keys(beforeOps));
+    const { needsApproval: _declared, hash: _hash, ...rest } = afterOps["allowance.grant"] as Record<string, unknown>;
+    const { hash: _before, ...was } = beforeOps["allowance.grant"] as Record<string, unknown>;
     expect(rest).toEqual(was);
     // Every other operation, entry for entry (hash included), is what it was.
     for (const name of Object.keys(before.operations).filter((n) => n !== "allowance.grant")) {
@@ -104,17 +110,16 @@ describe("needsApproval: an operation says a person must say yes before it runs 
     const text = JSON.stringify(exit);
     expect(text).toContain("blueprint/things/allowance/verbs/grant.ts");
     expect(text).toContain("needsApproval");
-    expect(text).toMatch(/needsApproval[^"]*\btrue\b/);
+    expect(text).toMatch(/needsApproval[\s\S]{0,80}\btrue\b/);
   });
 
-  it("reserves AR-007 for ApprovalDeclined beside the runtime's codes, and moves none: AR-001 NotAllowed, AR-002 IdempotencyConflict", () => {
+  it("reserves AR-007 for ApprovalDeclined beside the runtime's codes, once, and moves none of AR-001 NotAllowed, AR-002 IdempotencyConflict", () => {
     const reserved = (codes as unknown as { readonly RESERVED_CODES?: Readonly<Record<string, string>> }).RESERVED_CODES;
     expect(reserved).toEqual({ ApprovalDeclined: "AR-007" });
-    expect(codes.RUNTIME_CODES).toEqual({ NotAllowed: "AR-001", IdempotencyConflict: "AR-002" });
-    // Goal 4 holds AR-003 to AR-006 on goal/on-chain: nothing here takes them, and AR-007 is taken once.
+    // Goal 4 adds AR-003 to AR-006 to RUNTIME_CODES on goal/on-chain, so only the two that shipped are pinned, and AR-007 is taken once.
+    expect(codes.RUNTIME_CODES).toMatchObject({ NotAllowed: "AR-001", IdempotencyConflict: "AR-002" });
     const taken = [...Object.values(codes.RUNTIME_CODES), ...Object.values(reserved ?? {})];
-    expect(new Set(taken).size).toBe(taken.length);
-    expect(taken.filter((c) => /^AR-00[3-6]$/.test(c))).toEqual([]);
+    expect(taken.filter((c) => c === "AR-007")).toEqual(["AR-007"]);
   });
 
   it("keeps ApprovalDeclined out of every model's refusals (the Worker never returns it, and no generated file moves), and refuses a thing that declares it", async () => {

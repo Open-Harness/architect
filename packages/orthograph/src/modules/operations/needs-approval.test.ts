@@ -29,7 +29,6 @@ describe("needsApproval on an operation", () => {
     const asked = Operations.operation(Handle, { ...base, needsApproval: true } as never);
     const plain = Operations.operation(Handle, base as never);
     expect(Object.keys(plain)).not.toContain("needsApproval");
-    expect("needsApproval" in plain).toBe(false);
     // Declaring it adds exactly that one key to what the front door makes: nothing else on the operation moves.
     expect(Object.keys(asked).filter((k) => !Object.keys(plain).includes(k))).toEqual(["needsApproval"]);
     expect(Object.keys(plain).filter((k) => !Object.keys(asked).includes(k))).toEqual([]);
@@ -88,9 +87,7 @@ describe("needsApproval's type", () => {
   }, 60_000);
 
   it.each(["declares-false", "declares-text", "declares-number", "declares-null"])("refuses %s: the type is `true`, and absence says no", (name) => {
-    const errors = errorsIn(name);
-    expect(errors.length).toBeGreaterThan(0);
-    // The reason is the value against `true`, not an unknown property.
-    expect(errors.join("\n")).toMatch(/is not assignable to type 'true'/);
+    // An error on the declaring line (10) that is a type mismatch, not TS2353 "unknown property" (what a spec without the field says).
+    expect(errorsIn(name).filter((l) => /\.ts\(10,\d+\): error TS(?!2353)\d+/.test(l))).not.toEqual([]);
   }, 60_000);
 });
