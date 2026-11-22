@@ -38,6 +38,8 @@
 //    the nav links and the palette rows as the `items` of the `navigation-menu` and `command` entries (each by its visible text), and a closed
 //    folded group's links only once it is open (`act` a `setOpen` on the group's `ref`, its title, opens it: its panel is not `keepMounted`, so a
 //    closed one has no links in the page or the bridge). A page that is no link on this route (its parameters are not in the route) is no item.
+//    Each navigation item's `value` is its page's name, taken from the map (never typed as a string), so an agent can address an item by name:
+//    UI SDK makes up an id when a `NavigationMenuItem` has no `value`.
 //    The bridge cannot follow a navigation-menu link (`navigation-menu` has only `setValue` and `close`), so a link is judged by what the bridge
 //    reads (an item of `Main`, by `query({ within: "Main" })`) and by being a real link to its route. An agent moves by the palette: `act` steps
 //    `setValue` of a row's name then `run`, both on `Search`, select the row (its `onSelect` navigates and closes the palette).
