@@ -128,7 +128,9 @@ describe("05: the release workflow (M7.02, M7.06), judged from its text", () => 
       ["no credentials step", () => plant((d, s) => { s("credentials")["id"] = "creds"; }), /no step `credentials`|deploy key is in/],
       ["a credentials step holding another secret as well", () => plant((d, s) => { s("credentials")["env"]["EXTRA"] = "${{ github.token }}"; }), /credentials' env|holds the job's token/],
       ["a credentials step that runs a program", () => plant((d, s) => { s("credentials")["run"] = "node -e 'process.exit(0)'"; }), /plain shell/],
-      ["a credentials step that prints the key", () => plant((d, s) => { s("credentials")["run"] += '\necho "$HOMEBREW_TAP_DEPLOY_KEY" | git hash-object --stdin'; }), /plain shell|forbidden|names/],
+      ["a command appended to the credentials script", () => plant((d, s) => { s("credentials")["run"] = String(s("credentials")["run"]).trimEnd() + "; npm publish --tag latest"; }), /credentials script is not exactly/],
+      ["a command added on its own line to the credentials script", () => plant((d, s) => { s("credentials")["run"] += "\ntrue"; }), /credentials script is not exactly/],
+      ["a credentials step that prints the key", () => plant((d, s) => { s("credentials")["run"] += '\necho "$HOMEBREW_TAP_DEPLOY_KEY" | git hash-object --stdin'; }), /credentials script is not exactly|plain shell/],
       // ---- npm: trusted publishing, no token ----
       ["no provenance", () => plant((d) => { const n = npm(d); delete n["steps"].find((x: Step) => x["run"] === "node tools/release/release.mjs publish")["env"]; }), /publish step's env/],
       ["provenance switched off", () => plant((d) => { npm(d)["steps"].find((x: Step) => x["run"] === "node tools/release/release.mjs publish")["env"]["NPM_CONFIG_PROVENANCE"] = "false"; }), /publish step's env|provenance/],

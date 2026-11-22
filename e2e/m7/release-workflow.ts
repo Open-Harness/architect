@@ -16,6 +16,12 @@ export const PUSH = [
   `export GIT_SSH_COMMAND="ssh -i $RUNNER_TEMP/tap-key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"`,
   "node packages/cli/src/main.ts publish --push-tap --root examples/acme",
 ].join("\n");
+export const CREDENTIALS = [
+  'if [ -z "${HOMEBREW_TAP_DEPLOY_KEY//[[:space:]]/}" ]; then',
+  '  echo "::error::HOMEBREW_TAP_DEPLOY_KEY is not set in the release environment"',
+  "  exit 1",
+  "fi",
+].join("\n");
 export const REMOVE = 'rm -f "$RUNNER_TEMP/tap-key"';
 const EXPRESSIONS = new Set(["secrets.HOMEBREW_TAP_DEPLOY_KEY", "github.token", "github.ref_name", "github.ref_type", "github.repository", "github.server_url", "github.api_url", "runner.os", "matrix.os", "matrix.target"]);
 const STEP_EXPRESSION = /^(steps\.[a-z-]+\.(outputs\.[a-z]+|outcome)|needs\.[a-z-]+\.(outputs\.[a-z]+|result))$/;
@@ -120,7 +126,7 @@ export const problems = (source: string): ReadonlyArray<string> => {
   if (cred === undefined) out.push("preflight has no step `credentials`");
   else {
     if (JSON.stringify(cred.env) !== JSON.stringify({ HOMEBREW_TAP_DEPLOY_KEY: TAP_KEY })) out.push("preflight: credentials' env is not exactly the tap's deploy key");
-    if (/\b(node|npx|pnpm|python3?|perl|ruby|nc|ssh|openssl|git)\b|\$\(|`|<\(/.test(cred.run ?? "") || !String(cred.run ?? "").trim()) out.push("preflight: the credentials script is plain shell: no interpreter, no substitution");
+    if (String(cred.run ?? "").trim() !== CREDENTIALS) out.push("preflight: the credentials script is not exactly the pinned one (plain shell, the key tested for blanks and never printed, nothing else: a command appended to it would run with the key in its env)");
   }
   if (agree === undefined || !runs(agree, "node tools/release/release.mjs check") || agree.env !== undefined) out.push("preflight has no step `agreement` that runs exactly `node tools/release/release.mjs check` with no env of its own");
   if (cred !== undefined && agree !== undefined && pres.indexOf(cred) > pres.indexOf(agree)) out.push("preflight checks the version before the credential");

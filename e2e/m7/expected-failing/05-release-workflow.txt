@@ -9,6 +9,8 @@ m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > a branch push beside the tag
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > a checkout of another ref
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > a checkout that leaves the token in .git/config
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > a command added on its own line to the credentials script
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > a command appended to the credentials script
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > a concurrency group that cancels the run in progress
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > a credentials step holding another secret as well
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > a credentials step that prints the key
