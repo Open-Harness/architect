@@ -135,6 +135,28 @@
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m8-checks" },
       "cache": false
+    },
+    "agents-checks": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.agents.config.ts agents" },
+      "cache": false
+    },
+    "agents-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/agents-report.json tmp/agents-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/agents-errors.json vitest run --root e2e --config vitest.agents-ratchet.config.ts agents --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/agents-report.json; node e2e/ratchet/check.ts tmp/agents-report.json e2e/agents/expected-failing tmp/agents-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "agents": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:agents-checks" },
+      "cache": false
     }
   }
 }
