@@ -14,6 +14,7 @@ done_check: nx run e2e:m7
 owns:
   - tools/release/
   - .github/workflows/release.yml
+  - .github/workflows/test-worlds.yml
   - e2e/m7/
   - design/decisions/M7-release.md
   - design/goals/15-release.md
@@ -113,8 +114,15 @@ Started 22 November 2026 (Claude Code, claude-opus-5-5). The lead rewrites this 
   (`design/decisions/M7-release.md`, #417). All $0 new; Cloudflare's $5 a month is already paid. Axiom's free plan
   holds only 3 monitors, so monitors to the sink (slice 8) needs one more answer from him when it is ready to run.
   He now makes each account and key himself, in the order the slices need them, straight into GitHub secrets.
-- **Slice 4, test worlds and signed verdicts (M7.05):** next. Its checks are written first; the build waits on
-  Goal 3's deploy and destroy (M7.04) and on credentials 3 and 4. Once its check is green it lands early into
-  `goal/stage-1` for Goal 16 (#444, K38).
-- **The rest:** checks first for each slice while the answers come; no build against a real service yet.
+- **Narrowed path (conductor, 22 November):** signed verdicts, npm and the install come first. The early landing of
+  M7.05 for Goal 16 (#444) waits until after them, since Goal 16 is parked.
+- **Slice 4, test worlds and signed verdicts (M7.05):** checks landed (#500, `e2e/m7/01` to `04`, red until built).
+  The job runs in its own workflow, `.github/workflows/test-worlds.yml`, now in this goal's paths. It uses the
+  repository's Cloudflare secret, names no environment, and stands up a logbook for each run that is destroyed
+  with the world. Its build waits on Goal 3: a test environment in the staging plan (#505), and the logbook refusing
+  a release from a pull request's token (#503).
+- **Slices 2 and 3, the npm release and the install (M7.02, M7.06):** checks in #527 (`e2e/m7/05` to `08`): a
+  tag-only `release.yml`, `tools/release/release.mjs`, `ortho publish --release` and `--push-tap` for acme, and
+  `ortho --version`. The publish code is Goal 3's until the preview; the hand-over is #542.
+- **The rest:** checks first for each slice; no build against a real service yet.
 - `goal/release` was brought up to `goal/stage-1` by #455.
