@@ -146,6 +146,8 @@ adapter, `packages/sandbox`, Pi's `ExecutionEnv` over pi-env, and workspaces use
 | `e2b` | real runs, from the portal, with the machine off and many at once (Aaron, Q4 = A) | spiked in workerd (`spikes/e2b-sandbox`); needs our template |
 | `cloudflare` | if E2B ever falls short | later; not spiked |
 
+Superseded by K39, 22 November 2026: `localCopy` and `e2b` are now the `local` and `e2b` choices of `@orthograph/sandbox`, the plain machine adapter; `@orthograph/workspaces` opens a sandbox and adds `ortho` on top.
+
 **How a sandbox gets the project.** The E2B template holds Node 24, pnpm and a warm clone of the project at its default
 branch, with its store already installed. `workspace.open` fetches the revision and checks out a new branch. The local
 copy does the same from the working tree, without `.git`, `node_modules` or `.ortho`. Long commands (`pnpm install`,
@@ -321,7 +323,7 @@ and the rest of M7 still wait on the stage 4 gate (_Superseded by K28, 21 Novemb
 **Floor, built soon and small, in this order:**
 
 1. The `review` verdict kind (M3.20) and the `github` adapter for pull requests (M4.25), each small.
-2. `@orthograph/workspaces` with `localCopy`, after Gate M2 (it needs plugins and the `agent` and person principals).
+2. `@orthograph/workspaces` with `localCopy` (superseded by K39, 22 November 2026: on `@orthograph/sandbox`'s `local` choice), after Gate M2 (it needs plugins and the `agent` and person principals).
    People and Claude Code sessions use it over MCP and the CLI before any Pi agent exists.
 3. The `e2b` choice, after its spike.
 4. `@orthograph/factory`'s floor: `Experiment`, `brief.of`, the roster as data. Experiments work for people and our own
@@ -342,7 +344,7 @@ are reused, not duplicated. M4.13 is K11's. Run's reference to any thing is M1.0
 3. "Any function" is `toolsOf(operations)` over the generated actions, called as `agent for <person>`, as M4.07 has it.
 4. `ortho`'s steps are operations of `Workspace`, so each is an action, a CLI command, an MCP tool and an agent tool.
 5. Building agents have no shell. They write only their allowed paths, and leave only through `workspace.push`.
-6. A workspace is a sandbox driven by the run's Durable Object, through adapters: `localCopy`, then `e2b`.
+6. A workspace is a sandbox driven by the run's Durable Object, through adapters: `localCopy`, then `e2b` (superseded by K39, 22 November 2026: the `local` and `e2b` choices of `@orthograph/sandbox`).
 7. `review` is a logbook verdict kind, built early (M3.20). Staging is automatic after prove and review; production is a person's yes.
 8. An experiment is a plugin in its own workspace. It is kept only as a package plus one mount file. Spikes are the
    other lane.

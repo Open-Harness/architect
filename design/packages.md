@@ -46,7 +46,7 @@ e2e/                 the gates: e2e:layer1, e2e:layer2, e2e:m0
 
 Plugins come later, one package each: `@orthograph/auth` and `@orthograph/organizations` (M2), `@orthograph/work` (M3),
 `@orthograph/agent-kit` (M3, the agents projection that writes `generated/agents/`), `@orthograph/agents` (M4),
-`@orthograph/stripe` and `@orthograph/resend` (M5), `@orthograph/wallets` (M6). Nothing is published to npm before M7; every milestone before it publishes to the local Verdaccio.
+`@orthograph/stripe` and `@orthograph/resend` (M5), `@orthograph/wallets` (M6). Goal 17 (K39) adds four features, `@orthograph/superagent`, `@orthograph/intake`, `@orthograph/tickets` and `@orthograph/prompts`, written first inside `examples/superagent/plugins/` and moved here once they work; the `@orthograph/sandbox` adapter (K40 fix 4); and the `@orthograph/github` (M4.25), `@orthograph/slack` and `@orthograph/posthog` adapters, generated from each service's spec (M5.07), with `@orthograph/webhook` for a service with none. Nothing is published to npm before M7; every milestone before it publishes to the local Verdaccio.
 
 ## Rules, held by Nx module boundaries
 
