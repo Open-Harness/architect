@@ -85,10 +85,12 @@ None of those ways in checks anything on its own. Each one reaches the served op
 This is the only part of claiming a name that someone wrote. Orthograph scaffolded it once, with a header saying
 everything the runtime already does, so the handler doesn't; from then on it is yours:
 
-```ts file=examples/plugged-in/src/handle/claim.ts name=claim lines=41-60
+```ts file=examples/plugged-in/src/handle/claim.ts name=claim lines=42-63
 const claim: Handler = ({ name }, { principal, steps, move, id }) =>
   Effect.gen(function* () {
-    if (principal.kind !== "person") return yield* Effect.die(new Error("reached without a signed-in person"));
+    // `signedIn` admits a person and an agent acting for one (M2-auth, fork 2): the page is the person's either way.
+    const who = acting(principal);
+    if (!who) return yield* Effect.die(new Error("reached without a signed-in person"));
     const records = yield* Records;
 
     // HandleTaken and HandleAlreadyOwned are the rules' (invariants.ts): the runtime refuses them after the move, before the commit.
@@ -96,7 +98,7 @@ const claim: Handler = ({ name }, { principal, steps, move, id }) =>
     const profile = yield* Ids.of(Profile.fields.id);
     yield* steps.record(
       Effect.gen(function* () {
-        yield* records.insert(Handle, { id, name, owner: principal.person as never });
+        yield* records.insert(Handle, { id, name, owner: who.person as never });
         yield* records.insert(Profile, { id: profile, handle: id, links: [] });
       }),
     );
