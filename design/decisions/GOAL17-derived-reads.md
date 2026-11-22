@@ -164,8 +164,8 @@ Two writers on one ticket race on the Ticket row's version. The loser's commit c
 (`host-cloudflare/src/modules/store/internal/commit.ts:39`), reads the new `seq` and takes the next, so no two records
 of one ticket share a `seq`, and a person's Input is later than a Report exactly when its `seq` is larger. The prototype
 also clears "Input undelivered" on a success, a new Assignment or the Ticket's end. `undelivered` looks for the newest
-Input in `failed`, which is enough: a success moves the Input to `delivered`, a new Assignment's `input.route` moves a
-failed Input back to `waiting` (the retry), and an ended ticket is the table's first row.
+Input in `failed`, which is enough: a success moves the Input to `delivered`, a retry moves a failed Input back to
+`waiting` by the declared move `input.requeue` (GOAL17-executor-slots), and an ended ticket is the table's first row.
 
 ```ts
 // plugins/superagent/blueprint/things/superagent/derive.ts + verbs/health.ts
@@ -188,13 +188,30 @@ export default Blueprint.problem(OutgoingMessage, { kind: "channel", of: Outgoin
 ```
 
 **Where each count lives.** A derive reads records, so every count is a field of a record. `Source.failures` counts polls
-failed in a row (the brief's Source row), written in the commit of the failed poll and zeroed by a success; `failAfter`
-is 3 by default. `OutgoingMessage.failures` is written in the commit of each failed `send` and zeroed by a sent one.
-The outbox already has `_outbox.attempts`, and the two are not the same fact written twice. `attempts` is the host's own
-retry count of one delivery (5 s doubling to 300 s, a dead end at 15: `M5-reach-out.md:221-226`). It lives in a host
-table, which a derive cannot read (`Store.list` lists things, not `_outbox`), and `ortho outbox redeliver` resets it.
-`failures` is the count a person reads, "this message failed three times in a row", and a record a
-derive can look at. Retry reads `attempts`; health reads `failures`; neither feeds the other.
+failed in a row (the brief's Source row), written in the commit of the failed poll, which returns success, and zeroed by
+a success; `failAfter` is 3 by default.
+
+**A failed send is the app's to retry, not the outbox's.** An outbox hop that fails writes nothing and is retried on
+`_outbox.attempts` (`M5-reach-out.md`: a refused, failed or conflicted call writes none), so the hop itself could not
+commit `failures`. So `send` catches the channel's error as a value and commits, in one commit:
+
+```ts
+// plugins/tickets/blueprint/things/outgoing-message/verbs/send.ts: a held hop of ReplyQueued; the outbox always sees a success
+// on a sent message:  state "sent", failures 0, and ReplyQueued for the next pending message of the conversation
+// on a `gone` error:  state "dropped" (the source's reply.gone list), and ReplyQueued for the next one
+// on any other error: failures + 1, notBefore = now + backoff(failures), and a Timers wait that runs `outgoing-message.retry`
+export const backoff = (failures: bigint): bigint => (5_000n << (failures - 1n)) > 300_000n ? 300_000n : 5_000n << (failures - 1n);   // 5 s, 10 s, … 300 s
+```
+
+`retry` (system, armed by `Timers.at(notBefore)`, one wait per failed message) emits `ReplyQueued` for the same message.
+**Order holds because only the head of a conversation has a row in the outbox.** `reply` makes the message `pending`
+and emits `ReplyQueued` only when no earlier pending message of that ticket and conversation exists; otherwise the
+message waits behind the head. The head's `send` emits the next one's `ReplyQueued` in its own commit when it is `sent`
+or `dropped`, so the next is not tried until then, and a failing head holds everything behind it, as the prototype does.
+`_outbox.attempts` and its 15-attempt limit play no part in replies: a message stays until it is sent or dropped, and
+health shows it from its third failure. A held `ReplyQueued` is held as before (GOAL17-pause), and a retry timer that
+fires during a pause only makes a row that waits. `OutgoingMessage.failures` is a field a derive can look at; `_outbox.attempts`
+is a host table it cannot, and it is the retry of every other hop, not of replies.
 
 **What health does not hold.** No count of held work, and no outbox row: a paused superagent shows from its own
 `state` and `pausedAt` (GOAL17-pause), and an operator reads held rows from `GET /_world/outbox`.
@@ -368,4 +385,6 @@ The lead applied these to the brief with this record.
 - `design/goals/17-superagent.md`: "| Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off` |" → "| Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off`; `failures` counts polls failed in a row and a success zeroes it, `failAfter` is 3 (GOAL17-derived-reads) |"
 - `design/goals/17-superagent.md`: "| Ticket | thing, tickets; `open → ended → open`, `stopped` |" → "| Ticket | thing, tickets; `open → ended → open`, `stopped`; `seq`, a count bumped in the commit of each Input and Report (GOAL17-derived-reads) |"
 - `design/goals/17-superagent.md`: "| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped |" → "| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped; each with `seq`, the ticket's count when it was made (GOAL17-derived-reads) |"
-- `design/goals/17-superagent.md`: "| Outgoing message | thing, tickets; `pending → sent`, `dropped` |" → "| Outgoing message | thing, tickets; `pending → sent`, `dropped`; `failures` counts sends failed in a row and a sent one zeroes it (GOAL17-derived-reads) |"
+- `design/goals/17-superagent.md`: "| Outgoing message | thing, tickets; `pending → sent`, `dropped` |" → "| Outgoing message | thing, tickets; `pending → sent`, `dropped`; `failures` counts sends failed in a row and a sent one zeroes it; `notBefore` is when a failed one may go again (GOAL17-derived-reads) |"
+- `design/goals/17-superagent.md`: "retried from 5 s doubling to 300 s, in order per ticket and conversation |" → "`send` (system, a held hop: a failed call is counted and the message queued again after 5 s doubling to 300 s through `Timers`, and the outbox sees a success); the head of a ticket's conversation holds the rest back, so order holds |"
+- `design/goals/17-superagent.md`: "conversation, retried from 5 s doubling to 300 s; the eval pass and a failed relay or delivery's retries (2 s," → "conversation, its failed sends queued again by the app from 5 s doubling to 300 s (GOAL17-derived-reads); the eval pass and a failed relay or delivery's retries (2 s,"

@@ -120,9 +120,11 @@ do not name them; the table below says what each does.
 event needs no `superagent` field. The compiler refuses the app when a delivery (event and `to`) whose event carries
 `superagent` is in neither list, or
 when one event has deliveries on both lists (the unheld work then needs its own event). A new kind of work cannot slip
-past the pause, and the lists cannot disagree about one event. Other deliveries of events that carry `superagent`
-(`TicketEnded`'s, say) are added to a list by the slice that declares them; this record lists every one the four seam
-records introduce. It also refuses a `held` row whose event is one of the hold thing's own moves (`SuperagentResumed`
+past the pause, and the lists cannot disagree about one event. **Slice 5 owns the rest of the list.** Every other delivery of an event that carries `superagent` must be added to
+`held` or `unheld` there, each with its reason, and the compiler rule makes a missing one fail `ortho check`. At least
+these (the reviewer's list): `TicketCreated`, `TicketResumed`, `TicketEnded`, `TriggerRequeued`, `DecisionRecorded`,
+`ThreadSubscribed`, `ThreadUnsubscribed` and `PolicyChanged`. This record lists every one the four seam records
+introduce. It also refuses a `held` row whose event is one of the hold thing's own moves (`SuperagentResumed`
 held would deadlock the resume), and a hold whose thing lives in another store than the producing thing. That is the
 same rule as "writes to two stores" (`operations/types.ts:15`). Every held kind above fans out from the default
 database (`M5-reach-out.md:117-121`: all fan-out runs from D1), where the Superagent lives, because it declares no
@@ -157,8 +159,10 @@ WHERE "event" = ?4 AND "to" = ?5 AND "state" = 'pending'
 The same `NOT EXISTS` goes in the query for due rows and in the drain's "next wake" (`Timers.at`,
 `M5-reach-out.md:124`), or a held row that is already due would wake the drain forever. Ordering needs nothing new.
 A row is not taken while an earlier row of the same `to` and `subject` is `pending` or `claimed`
-(`M5-reach-out.md:107`), and held rows stay `pending`, so per-ticket reply order and per-event `agent.tell` order
-survive a pause. Backoff (5 s doubling to 300 s) counts attempts, and a held row makes none. A row claimed before the
+(`M5-reach-out.md:107`), and held rows stay `pending`, so the order the outbox keeps survives a pause: per `(to, subject)`,
+which is a ticket's conversation for a reply and the Input or the Assignment for a tell (not the executor; GOAL17-executor-slots,
+section 5, says why that is enough). Outbox backoff counts attempts, and a held row makes none. A reply's own retry
+is the app's, not the outbox's (GOAL17-derived-reads). A row claimed before the
 pause commits finishes. That is "a running turn is not interrupted", and nothing in the hold can interrupt it.
 
 **Resume moves no rows.** It is one commit of the Superagent (state, `pausedFor`, `SuperagentResumed`). The view stops
