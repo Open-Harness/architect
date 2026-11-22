@@ -23,17 +23,18 @@ slices:
   - "0 · K27, the three plugin kinds"
   - "1 · the language and host seam, on Effect alone"
   - "1b · M6.01, the chain decision"
-  - "2 · M6.02, the budgets journeys and the e2e:on-chain done check"
-  - "3 · M6.10, the chain store, values and money"
-  - "4 · M6.11, the Solidity language renders the base contract and surface.json"
-  - "5 · M6.12, the scaffold and the Foundry tests"
-  - "6 · M6.13, the user fills the hook; the fuzz"
-  - "7 · Host.chain and the safe adapter"
-  - "8 · M6.14, the client from surface.json"
-  - "9 · M6.07, the relayer actor"
-  - "10 · M6.09, the follower actor"
-  - "11 · M6.15, the signing flow and the submission lifecycle"
-  - "12 · M6.16 to M6.18, worlds with a chain, redeploy on new bytecode, key hygiene"
+  - "2 · M6.02, the budgets journeys and the e2e:on-chain done check (after 1b)"
+  - "3 · M6.10, the chain store, values and money (after 2)"
+  - "3b · chain-evm's ABI codec and a read that returns data, for Goal 12 (after 3)"
+  - "9 · M6.07, the relayer actor (after 3)"
+  - "10 · M6.09, the follower actor, landed early for Goal 9 (after 9)"
+  - "4 · M6.11, the Solidity language renders the base contract and surface.json (after 3)"
+  - "5 · M6.12, the scaffold and the Foundry tests (after 4)"
+  - "6 · M6.13, the user fills the hook; the fuzz (after 5)"
+  - "7 · Host.chain and the safe adapter (after 6)"
+  - "8 · M6.14, the client from surface.json (after 7)"
+  - "11 · M6.15, the signing flow and the submission lifecycle (after 8, 10)"
+  - "12 · M6.16 to M6.18, worlds with a chain, redeploy on new bytecode, key hygiene (after 11)"
 ---
 
 # Goal 4: on chain, end to end
@@ -69,14 +70,19 @@ agents post on GitHub starts with `[goal-4 · <role> · claude · <model>]`.
 ## Where it stands
 
 Rewritten by the lead at every merge into `goal/on-chain` (K32); `.agents/skills/goal-4/STATE.md` has the detail.
-21 November 2026:
+22 November 2026:
 
-- **Landed:** slice 0 (K27); slice 1b, the chain decision ([#275](https://github.com/AaronAbuUsama/architect/pull/275)); slice 2, the budgets example, its
-  seven journeys and the `e2e:on-chain` done check ([#276](https://github.com/AaronAbuUsama/architect/pull/276), [#279](https://github.com/AaronAbuUsama/architect/pull/279)); the goal-4 skill ([#284](https://github.com/AaronAbuUsama/architect/pull/284)).
-- **Open:** money, M6-money ([#287](https://github.com/AaronAbuUsama/architect/pull/287)); slice 3's checks ([#283](https://github.com/AaronAbuUsama/architect/pull/283), 🔍 passed); slice 3's build
-  (`goal-4/m610-build`, a draft when it opens); this merge of `goal/stage-1`, which brings CI-drafts and Effect 4.1.4.
-- **Waits on:** slice 1 waits for Goal 3's sign-in extraction (M2.05) on `goal/stage-1` (K28). Snags S-01 to S-12 are
-  open, each naming its slice.
+- **Landed:** slice 0 (K27); slice 1b, the chain decision ([#275](https://github.com/Open-Harness/orthograph/pull/275)); slice 2, the budgets example, its
+  seven journeys and the `e2e:on-chain` done check ([#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279)); money, M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287));
+  slice 3's checks ([#283](https://github.com/Open-Harness/orthograph/pull/283)); `goal/stage-1` with CI-drafts and Effect 4.1.4 ([#303](https://github.com/Open-Harness/orthograph/pull/303)); two lock calls in M6-chain ([#332](https://github.com/Open-Harness/orthograph/pull/332)).
+- **Open:** slice 3's build ([#331](https://github.com/Open-Harness/orthograph/pull/331), three 🔍 rounds passed), taking `goal/stage-1` in again and fixing a
+  Codex finding; the checks for slice 3b, the ABI codec Goal 12 asked for (#471, straight into `goal/stage-1`); the
+  checks for slices 9 and 10, the relayer and the follower.
+- **Order changed (K38):** the relayer and the follower now come straight after slice 3, before slices 4 to 8, because
+  Goal 9 needs M6.09 early (#442) and they need only `chain-evm` and Anvil. M6.09 lands early into `goal/stage-1`.
+  The follower's events go to Goal 11's `Inbox.accept` (#481).
+- **Waits on:** slice 1 waits for Goal 3's sign-in extraction (M2.05) on `goal/stage-1` (K28), not done on
+  22 November. Snags S-01 to S-12 are open, each naming its slice.
 
 ## The paths Goal 4 owns
 
@@ -245,6 +251,7 @@ checks author rewrites each for the budgets module before its slice starts, keep
 | 1b | **M6.01, the chain decision**, by the lead, beside slice 1 and before slices 2 to 8. K7 and K25 settle most of it; what is left is `signedBy` as EIP-712 typed data, values across languages (the rest of D5), and the exact schemas of `surface.json` and `blueprint/refusals.lock`, which separate authors and builders produce and consume | `design/decisions/M6-chain.md` written, with the evidence, and a 🔍 has passed it |
 | 2 | **M6.02, the journeys** for `examples/budgets` (the journey author, beside slice 1, once 1b has passed). The checks author adds the `e2e:on-chain` target: every slice's check and the budgets journeys, red until each turns green | they fail on empty handlers; `nx run e2e:on-chain` runs and fails |
 | 3 | **M6.10, the chain store and values.** `Blueprint.store.chain.evm()`, `Blueprint.account()`, Solidity types worked out from values, money (`Blueprint.money`, `Blueprint.asset`, M6-money) and `blueprint/refusals.lock` | M6.10's check |
+| 3b | **`chain-evm`'s ABI codec and `ChainPort.read`**, for Goal 12 (#471): `Abi.encodeCall`, `decodeResult`, `encodeDeploy`, `refusal`, and a plain `eth_call` that returns its data. Cut from `goal/stage-1` and landed there directly (K38) | its tests in `chain-evm` pass, `read`'s on Anvil |
 | 4 | **M6.11, the Solidity language renders** the base contract (role, machine, hook, account, event), roles behind `IAccessControl`, and `surface.json` | M6.11's check; a fixture with a chain-stored thing that has an invariant fails to compile, naming the thing |
 | 5 | **M6.12, the scaffold and the Foundry tests** | M6.12's check: the scaffold's tests fail as not written |
 | 6 | **M6.13, the user fills the hook; the fuzz** | M6.13's check: every test passes, the fuzz finds no difference, the planted mutant diverges |
@@ -259,6 +266,9 @@ Slice 1 also carries what K27 left for it:
   pages can show them.
 
 ### Part 2: running for real
+
+Slices 9 and 10 run before slices 4 to 8 (K38, #442): they need only `chain-evm` and Anvil, and Goal 9 needs M6.09
+early. Slice 11 waits for both 8 and 10.
 
 | # | Slice | Done when |
 |---|---|---|
@@ -298,6 +308,18 @@ When the done check passes, open one pull request from `goal/on-chain`: into `ma
 green, `nx run e2e:on-chain` passes on it, and a 🔍 reviewer has passed the whole branch, reading this file, the snag
 log, each slice's check and the evidence below. Then tag `budgets/on-chain`.
 
+
+### Early landings (K38)
+
+A slice another goal needs lands early (`design/decisions/K38-early-landing.md`, AGENTS.md). Once its check is green on
+`goal/on-chain`, cut `goal/on-chain-early-<slice>` at the commit that ends it, merge `goal/stage-1` in by a merge, and
+open one pull request into `goal/stage-1`. Merge it by a merge commit once CI is green, threads are resolved and a 🔍
+has passed. It carries the slices before it, each already green. Never cherry-pick or rebase. Then merge
+`goal/stage-1` back into `goal/on-chain`.
+- **M6.09 (slice 10)** lands early for Goal 9's M8.17 (#442), with slices 1b, 2, 3, 9 and 10.
+- **Slice 3b** (the ABI codec, #471) needs none of Goal 4's slices, so it is cut from `goal/stage-1` and lands there
+  directly.
+- **M6.21** (time on chain) builds once Goal 9 lands M8.09 early (#444).
 ## Evidence for Aaron
 
 - **The DX trial:** what a person writes, in full (the blueprint and `src/Budgets.sol`), and a recorded terminal session
