@@ -98,7 +98,7 @@ export default {
   vendored from npm (`@fontsource`), so a render never reaches the network.
 - **Palette.** One meaning per colour, the same in both themes (`palettes` in `lib/stage.js`):
   accent blue is the call's own path; violet is a span or step; teal is the journal and events; green is ok;
-  **amber is a refusal** (an outcome: its span ends ok); **red is a defect** (the only error). Grey is structure not
+  **amber is a refusal** (an outcome: its span does not end as an error); **red is a defect** (the only error). Grey is structure not
   yet reached. Never use red for a refusal.
 - **Dark and light.** Render both, always. Dark background `#0f1117`, light `#fbfaf7`. Check contrast of muted text
   in light.
