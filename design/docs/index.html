@@ -813,26 +813,27 @@ $ ortho new adapter billing --from-model @acme-billing/sdk       # another Ortho
 
 <section class="s" id="guide-agents">
 <header><h3>Agents</h3><span class="chip planned">Planned · M4</span></header>
-<p><code>@orthograph/agents</code> is a feature. It adds a <code>Run</code> thing and a new kind of declaration,
-<code>Blueprint.agent</code>. It needs auth, so every run belongs to someone. Model providers are adapters.</p>
+<p><code>@orthograph/agents</code> is a feature. It adds an <code>Agent</code> thing and a new kind of declaration,
+<code>Blueprint.agent</code>, which says what an agent of that kind runs with. Model providers are adapters.</p>
 <pre><code class="sh">$ ortho add feature @orthograph/agents
 $ ortho add adapter @orthograph/anthropic
-adds  thing run (start, steer, cancel; finish and fail by system)   secrets ANTHROPIC_API_KEY (stored)
+adds  thing agent (made by any operation allowed to create one; told by system)   secrets ANTHROPIC_API_KEY (stored)
       stand-in: a small open model on a local OpenAI-compatible server</code></pre>
 <pre><code class="ts"><span class="file">blueprint/agents/support.ts · an agent's name comes from its path</span>export default Blueprint.agent({
   instructions: "./support.md",
-  operations: [allowance.get, allowance.spend],     // each one a tool, called through the SDK as agent-for-the-person
-  limits: { maxTurns: 20, maxUsd: 0.5, wall: "5 minutes" },
+  operations: [allowance.get, allowance.spend],     // each one a tool, called as the agent itself
+  limits: { maxTurns: 20, maxUsd: 0.5, wall: "5 minutes" },   // for each input it is told
 });</code></pre>
-<pre><code class="sh">$ acme run start --agent support --brief "spend 12 on train tickets from bob's allowance" --budget 50
-run run_4k1 working
-$ acme run watch run_4k1
-turn 1  allowance.get    <span class="ok">✔</span>
-turn 2  allowance.spend  <span class="ok">✔</span>  remaining 88          as agent for bob (the grantee rule passed)
-done    spent 3¢   trace 9c1e…</code></pre>
-<p>The run's record is a row, so runs can be listed. Its loop is Pi Durable in that run's own Durable Object, so a
-crash resumes it mid-turn. A builder agent is the same feature, given project tools instead of operations. By default
-only a person can start a run. A mount can allow agents to start runs, but you have to choose that.</p>
+<pre><code class="ts"><span class="file">blueprint/things/agent/verbs/tell.ts</span>export default Blueprint.operation(Agent, {
+  allowed: [Blueprint.system],
+  on: [Blueprint.on(Events.SpendAsked, (e) =&gt; ({ agent: e.agent, input: e.text }))],   // through the outbox
+});</code></pre>
+<p>An agent is its own thing, living in its own actor, which holds its Pi Durable conversation. The conversation lasts
+as long as the agent does, and Pi compacts it. Any operation allowed to create an agent makes one, under its own
+roles. Events reach the agent through the outbox, by <code>agent.tell</code>: the event's id is Pi's request id, so
+each input is taken once, a busy agent is steered and an idle one starts a turn. Its tools call as the agent itself,
+so a role decides what it may do. A run is one input and its answer inside the conversation, not a row. A builder
+agent is the same feature, given project tools instead of operations (K40).</p>
 </section>
 
 <section class="s" id="guide-factory">
