@@ -146,6 +146,7 @@ want this to be able to run in parallel to the other work that's actually runnin
   | `.oxlintrc.json` | the module-boundary tags `scope:theme`, `scope:shell` and `scope:portal-next`, for `packages/theme/`, `packages/shell/` and `packages/portal-next/` |
   | `e2e/served-portal/` | the checks author's `PORTAL_CLIENT=old|next` switch, the old client the default |
   | `e2e/project.json`, `e2e/package.json` | the `portal-next` target and the new packages as workspace dependencies |
+  | `e2e/tsconfig.json` | `portal-next/**` in its `include`, so this goal's checks are typechecked |
   | `.github/workflows/ci.yml` | one job that runs the portal checks against the new client, not yet blocking |
   | `pnpm-lock.yaml` | what `pnpm install` writes for the above |
   | `design/handoff.md`, `STATE.md`, the board, `design/milestones.md` | this goal's own lines |
@@ -315,6 +316,7 @@ started, since it crosses goals.
 | ID | File | Taken by |
 |---|---|---|
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
+| MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
 
 ## The done check
 
@@ -350,7 +352,7 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 
 ## Where it stands
 
-22 November 2026. The theme is built and its check passes; it goes to stage 1 on its own next, for the UI layer.
-The map's checks are written and reviewed: a hundred portal checks and forty-four grid cells are owed by the new
-portal, all red so far, and the list can only shrink. The map language is built and waiting for review; the app
-projection and the shell come next.
+22 November 2026. The theme is built, one shared look on UI SDK taken from today's portal, and it is on its way
+into stage 1 on its own, for the UI layer. The map's checks are written and reviewed: a hundred portal checks and
+forty-four grid cells are owed by the new portal, all red so far, and the list can only shrink. The map language is
+built and waiting for review; the app projection and the shell come next.
