@@ -34,7 +34,7 @@ Red today on one reason: `ortho env` has `up`, `down` and `status` for a long-li
 
 ## The CI-only half (touches the cloud, runs only by hand)
 
-[`.github/workflows/staging.yml`](../../.github/workflows/staging.yml): `workflow_dispatch` only, one job, `concurrency: staging` so two runs never overlap.
+[`.github/workflows/staging.yml`](../../.github/workflows/staging.yml): `workflow_dispatch` only, one job, `concurrency: staging` so two runs never overlap. It runs only from a goal branch (`if: startsWith(github.ref, 'refs/heads/goal/')`): the same file sits on `main`, which has no `ortho env`, so a first job `refuse` (the opposite condition, no credential, no environment) fails a dispatch anywhere else with an `::error::` naming the ref, instead of a silent skip.
 
 | Step | Credentials | What it judges |
 |---|---|---|
@@ -42,7 +42,8 @@ Red today on one reason: `ortho env` has `up`, `down` and `status` for a long-li
 | snapshot before | token, account | the account's whole listing before anything is made, kept in `tmp/staging/private/` and never uploaded |
 | up | token, account | `ortho env up staging --run <id>`; allowed to fail so that destroy runs, and still fails the job |
 | snapshot while up | token, account | what the account holds with the run up |
-| the story | none | `ortho prove --env staging --run <id> --only "the story"`; allowed to fail, still fails the job |
+| subdomain | token, account | `subdomain.mjs`: the account's workers.dev subdomain, written as `subdomain=<name>` to the step output and nothing else |
+| the story | none | `ortho prove --env staging --run <id> --only "a person claims a page and shares it"`, with `ORTHO_STAGING_SUBDOMAIN` from the step above; allowed to fail, still fails the job |
 | destroy | token, account | `ortho env destroy staging --run <id>`, **`if: always()`** |
 | snapshot after | token, account | the listing after destroy, **`if: always()`** |
 | judge | none | from the files alone, **`if: always()`**; see below |
@@ -65,8 +66,9 @@ first attempt's leftovers; the job names `environment: staging`, which GitHub ca
 `workflow.mjs` judges the workflow's own text (by hand only; destroy, the listing and the judge always; the two credentials only in the four steps that talk to Cloudflare, and only as `secrets.CLOUDFLARE_API_TOKEN` and
 `vars.CLOUDFLARE_ACCOUNT_ID`; nothing prints the environment; the evidence is those five named files, never wrangler's log or a whole-account listing). Both its tests and the lister's run in `nx run e2e:test`.
 
-**What is not checked here, and why.** The story step calls `ortho prove --env staging`, which does not exist (spike snags 14 to 17: prove speaks only `http:`, reads D1 facts through a world's `/_world` route and wants a
-collector's folder). Until the slice that lets prove reach a URL lands, the lead may swap that one step for the SDK story (it passed against the deployed Worker in the spike); the other steps do not depend on its verdict.
+**What is not checked here, and why.** The story step calls `ortho prove --env staging --run <id> --only "a person claims a page and shares it"` (the journey's own name; `"the story"` matched no journey). M7.04 owns that command
+(`design/decisions/M7-cloud.md`, addendum of 21 November 2026) and check 41 ([`e2e/m1/41-m7-04-prove-staging.test.ts`](../m1/41-m7-04-prove-staging.test.ts), 97 tests: 64 controls pass today, 33 are red in `e2e/m1/expected-failing/41-m7-04-prove-staging.txt`)
+pins it with no cloud: the address is the run's Worker (`<prefix>-worker`, check 37's name) on `ORTHO_STAGING_SUBDOMAIN`, the output of the `subdomain` step before the story (it holds the token and reads the account's subdomain with [`subdomain.mjs`](subdomain.mjs), writing only `subdomain=<name>`, never the response; the story step holds none); `ORTHO_STAGING_ORIGIN` points the same code at a world served on this machine. What it cannot judge is the cloud itself: https, and a Worker whose `/_world` is closed so D1's own API must be read for facts (spike snags 15 and 16). The first real run is that proof.
 
 ## The lister's own tests
 

@@ -1,6 +1,6 @@
 // M1.35 review, P1: an answer kept for a request key was filtered (by the server) under the roles of the call that made it.
 // The same key with a different payload is a different request: it is refused, never answered with the kept answer.
-import { Effect, Exit, Layer } from "effect";
+import { Effect, Exit, Layer, Tracer } from "effect";
 import { describe, expect, it } from "vitest";
 import { Blueprint } from "orthograph";
 import { Busy } from "#modules/work/types.js";
@@ -47,5 +47,22 @@ describe("a request key and the payload it was first used with", () => {
     await Effect.runPromise(Effect.provide(served.run({ organization: "org_a" } as never, ada, "key-2"), layer));
     const again = await Effect.runPromiseExit(Effect.provide(served.run({ organization: "org_a" } as never, ada, "key-2"), layer));
     expect(Exit.isSuccess(again)).toBe(true);
+  });
+});
+
+// M1.12a: the key a call was made with is an id, so it is on the operation span as the caller sent it, replays included.
+describe("request.key on the operation span", () => {
+  it("carries the caller's key on every attempt of a keyed call and on a replay, and nothing on a keyless call", async () => {
+    const spans: Array<Tracer.NativeSpan> = [];
+    const tracer = Tracer.make({ span: (options) => { const span = new Tracer.NativeSpan(options); spans.push(span); return span; } });
+    const layer = Layer.mergeAll(BusyLive, storeMemory().layer);
+    const served = Handlers.serve({ name: "locker.open", operation: open, handler });
+    const call = (request?: string) => Effect.runPromise(Effect.provide(served.run({ organization: "org_a" } as never, ada, request), layer).pipe(Effect.provideService(Tracer.Tracer, tracer)));
+    await call("key-3");
+    await call("key-3");
+    await call();
+    const operation = spans.filter((s) => s.name === "locker.open").map((s) => Object.fromEntries(s.attributes));
+    expect(operation.map((a) => a["request.key"]), "the key as sent, never the store's `locker.open|per_ada|key-3`").toEqual(["key-3", "key-3", undefined]);
+    expect(operation[1], "the replay says both").toMatchObject({ "request.key": "key-3", "request.replayed": true });
   });
 });

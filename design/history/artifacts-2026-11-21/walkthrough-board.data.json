@@ -1,0 +1,2569 @@
+{
+ "collections": {
+  "board": {
+   "meta": {
+    "title": "Orthograph walkthrough",
+    "v": 1
+   }
+  },
+  "elements": {
+   "e231": {
+    "color": "green",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`examples/plugged-in/journeys/claim-a-handle.ts`\n`      \"aaron claims the free name\",`\n`      s.aaron.run(claim, { name: \"firstpage\" }),`\n`      expect((a) => a.handle).toMatch(/^hdl_[0-9a-z]+$/),`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6190,
+    "y": 344
+   },
+   "e118": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Handler** · Built\nA handler is the one piece of code you write by hand: what an operation actually does, in a file Orthograph scaffolds for you.\n`const claim: Handler = ({ name }, { principal, steps, move, id }) =>`\n`Effect.gen(function* () {`\n`if (principal.kind !== \"person\") return yield* Effect.die(new Error…`\n*examples/plugged-in/src/handle/claim.ts:41*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2784,
+    "y": 1312
+   },
+   "e266": {
+    "color": "yellow",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`examples/plugged-in/generated/docs/handle/claim.md`\n`# handle.claim`\n`**Who may call:** anyone signed in.`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8510,
+    "y": 344
+   },
+   "e270": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Docs, SDK, CLI, MCP tools and portal data all come from the one declaration, with no hand configuration.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8510,
+    "y": 1290
+   },
+   "e620": {
+    "h": 1350,
+    "text": "6 · Hard questions",
+    "type": "container",
+    "w": 1208,
+    "x": 15154,
+    "y": 0
+   },
+   "e227": {
+    "color": "green",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5726,
+    "y": 1106
+   },
+   "e2": {
+    "size": "title",
+    "text": "Orthograph, walked through",
+    "type": "text",
+    "x": 0,
+    "y": -620
+   },
+   "e25": {
+    "from": [
+     440,
+     380
+    ],
+    "label": "generates",
+    "to": [
+     584,
+     380
+    ],
+    "type": "arrow"
+   },
+   "e437": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/acme/blueprint/things/allowance/{thing,machine}.ts and verbs/{grant,spend,revoke,get}.ts (active, exhausted, revoked; spend has two outcomes)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10530,
+    "y": 548
+   },
+   "e122": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Journey** · Built\nA journey is a story of calls and what must follow, such as a refusal, an event or a trace, written before the code it checks.\n`\"aaron claims the free name\",`\n`s.aaron.run(claim, { name: \"firstpage\" }),`\n`expect((a) => a.handle).toMatch(/^hdl_[0-9a-z]+$/),`\n*examples/plugged-in/journeys/claim-a-handle.ts:38*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 3364,
+    "y": 524
+   },
+   "e33": {
+    "color": "purple",
+    "h": 110,
+    "kind": "rounded",
+    "text": "**6 · Deploy**\npromote to staging and on",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 1164,
+    "y": 630
+   },
+   "e421": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`generated/docs/handle/claim.md`\nDocs, SDK, CLI, MCP tools and portal data all come from the one declaration, with no hand configuration.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12474,
+    "y": 200
+   },
+   "e134": {
+    "from": "e111",
+    "label": "refuses with",
+    "to": "e110",
+    "type": "arrow"
+   },
+   "e114": {
+    "size": "large",
+    "text": "**Let callers act**",
+    "type": "text",
+    "x": 2784,
+    "y": 70
+   },
+   "e401": {
+    "text": "Same steps as the tour, one row per app. Empty cells mean nothing exists yet.",
+    "type": "text",
+    "wrap": 2400,
+    "x": 9638,
+    "y": 20
+   },
+   "e13": {
+    "color": "green",
+    "h": 90,
+    "kind": "rounded",
+    "text": "**Handlers**\nthe behaviour of each operation: scaffolded, then filled",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 24,
+    "y": 460
+   },
+   "e143": {
+    "from": "e121",
+    "label": "starts",
+    "to": "e122",
+    "type": "arrow"
+   },
+   "e285": {
+    "from": "e257",
+    "fromSide": "right",
+    "to": "e264",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e440": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/acme/src/allowance/ holds the TypeScript handlers; no chain handler scaffold; spike has `_open/_vote/_close` to fill in evm/src/MiniDao.sol",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11502,
+    "y": 548
+   },
+   "e102": {
+    "href": "https://claude.ai/artifact/JnpCZ4C4af8pNYedTWGGJe",
+    "kind": "whiteboard",
+    "title": "Blueprint canvas: one app drawn in this language",
+    "type": "link",
+    "x": 4044,
+    "y": 8
+   },
+   "e417": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`generated/api/src/handle/claim.ts`\nOne command writes the server, SDK, CLI, MCP, docs, portal data and model; run again it says `nothing to chang",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11178,
+    "y": 200
+   },
+   "e250": {
+    "color": "green",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**7 · The filled handler**\nBuilt",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7582,
+    "y": 96
+   },
+   "e600": {
+    "h": 1200,
+    "text": "5 · UI: the screens, from the UI SDK",
+    "type": "container",
+    "w": 1600,
+    "x": 13338,
+    "y": 0
+   },
+   "e207": {
+    "text": "**What it proved**",
+    "type": "text",
+    "wrap": 150,
+    "x": 4624,
+    "y": 1298
+   },
+   "e29": {
+    "color": "green",
+    "h": 110,
+    "kind": "rounded",
+    "text": "**2 · Blueprint**\nthe agent writes typed files",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 252,
+    "y": 630
+   },
+   "e138": {
+    "from": "e116",
+    "label": "runs",
+    "to": "e117",
+    "type": "arrow"
+   },
+   "e211": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`npm create orthograph plugged-in  (designed; today: ORTHO_E2E_NAME=plugged-in tools/e2e/starter.sh, which publishes to a local Verdaccio and runs create-nx-workspace --preset=@orthograph/preset)`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 4798,
+    "y": 598
+   },
+   "e704": {
+    "size": "huge",
+    "text": "5 · UI",
+    "type": "text",
+    "x": 13338,
+    "y": -240
+   },
+   "e246": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`ortho generate  (writes src/handle/claim.ts once) then ortho prove --empty  (swaps every handler for its scaffold)`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7118,
+    "y": 598
+   },
+   "e247": {
+    "color": "green",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`$ ortho generate`\n`created src/handle/claim.ts (scaffold: yours from now on)`\n`$ ortho prove --empty`\n`journey claim a public page ✘ 0/5 steps`\n`  ✘ \"an unclaimed name does not resolve\": BlankReached: load: the work this step does; expected refused with HandleNotFound, failed with 500`\n*from the journey walkthrough, run 19 November on an earlier branch*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7118,
+    "y": 772
+   },
+   "e210": {
+    "color": "yellow",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`examples/plugged-in/package.json`\n`  \"name\": \"@plugged-in/source\",`\n`    \"plugged-in\": \"./generated/cli/src/main.ts\"`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 4798,
+    "y": 344
+   },
+   "e705": {
+    "size": "huge",
+    "text": "6 · Hard questions",
+    "type": "text",
+    "x": 15154,
+    "y": -240
+   },
+   "e139": {
+    "from": "e118",
+    "label": "calls",
+    "to": "e117",
+    "type": "arrow"
+   },
+   "e206": {
+    "text": "**What you see**",
+    "type": "text",
+    "wrap": 150,
+    "x": 4624,
+    "y": 1114
+   },
+   "e28": {
+    "color": "white",
+    "h": 110,
+    "kind": "rounded",
+    "text": "**1 · Talk**\nsay what you want; the agent asks and drafts",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 24,
+    "y": 630
+   },
+   "e251": {
+    "color": "green",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“Write handle.claim so journeys pass; never touch blueprint, journeys or generated.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7582,
+    "y": 200
+   },
+   "e103": {
+    "size": "large",
+    "text": "**Describe the data**",
+    "type": "text",
+    "x": 1624,
+    "y": 70
+   },
+   "e416": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`journeys/claim-a-handle.ts`\nBefore the handlers exist the journeys must fail: see step 6's `ortho prove --empty`. Seven journeys, 56 steps",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10854,
+    "y": 200
+   },
+   "e441": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/acme/src/allowance/spend.ts, filled (TypeScript); the budgets module in Solidity: spike only",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11826,
+    "y": 548
+   },
+   "e284": {
+    "from": "e250",
+    "fromSide": "right",
+    "to": "e257",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e142": {
+    "from": "e117",
+    "fromSide": "right",
+    "label": "traced for",
+    "to": "e123",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e12": {
+    "color": "green",
+    "h": 90,
+    "kind": "rounded",
+    "text": "**Journeys**\nthe stories the app must pass, in code",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 24,
+    "y": 346
+   },
+   "e115": {
+    "color": "yellow",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Role** · Partial\nA role is a named kind of caller, such as the person who owns a handle, and an operation lists which roles may call it.\n`export const handleOwner = Blueprint.role(Handle, { rule: (handle, call…`\n*examples/plugged-in/blueprint/things/handle/roles.ts:5*\n*rule roles work; kinds of caller beyond a person don't yet*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2784,
+    "y": 130
+   },
+   "e400": {
+    "h": 920,
+    "text": "4 · Swap the example: the same ten frames, other apps",
+    "type": "container",
+    "w": 3508,
+    "x": 9614,
+    "y": 0
+   },
+   "e420": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`e2e/stage1/01-plugged-in-journeys.test.ts`\nAll seven Plugged In journeys (56 steps) are green in local and in test, and the climb check shows prove fails",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12150,
+    "y": 200
+   },
+   "e135": {
+    "from": "e111",
+    "label": "holds while in",
+    "to": "e112",
+    "type": "arrow"
+   },
+   "e32": {
+    "color": "green",
+    "h": 110,
+    "kind": "rounded",
+    "text": "**5 · Prove**\n`ortho prove` judges the journeys",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 936,
+    "y": 630
+   },
+   "e436": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*nothing yet*\n*stage 3's budgets feature is designed in design/milestones.md ST3.02 and K25, nothing recorded as a talk*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10206,
+    "y": 548
+   },
+   "e123": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Prove** · Built\nProve runs the journeys against the real app and judges nine checks from the recorded evidence, so an agent can climb until it is green.\n`export interface Verdict {`\n`/** 'answer shape', 'declared errors', …: the eval's name as reports…`\n`readonly eval: string;`\n*packages/prove/src/modules/evals/types.ts:19*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 3364,
+    "y": 918
+   },
+   "e24": {
+    "color": "purple",
+    "h": 48,
+    "kind": "pill",
+    "text": "screens",
+    "type": "shape",
+    "w": 212,
+    "x": 836,
+    "y": 478
+   },
+   "e3": {
+    "size": "large",
+    "text": "Write what it is. Everything else falls out.",
+    "type": "text",
+    "x": 0,
+    "y": -540
+   },
+   "e226": {
+    "color": "green",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`$ ortho check`\n`blanks left 0`\n`types ✔`\n`rules ✔`\n`drift ✔`\n`ratchets 0`\n*from the journey walkthrough, run 19 November on an earlier branch*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5726,
+    "y": 772
+   },
+   "e271": {
+    "color": "purple",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**10 · Deploy to staging**\nSpiked",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8974,
+    "y": 96
+   },
+   "e621": {
+    "text": "What a sceptical engineer asks, answered honestly. The tint is how much of the answer is built today. Each card names the concept cards in zone 2 that answer it.",
+    "type": "text",
+    "wrap": 1120,
+    "x": 15178,
+    "y": 20
+   },
+   "e267": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`plugged-in handle claim --name aaron   (CLI);  ortho dev --port 8797 then open /portal`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8510,
+    "y": 598
+   },
+   "e119": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Read** · Built\nA read is an operation that only looks at a thing and changes nothing, so you declare which fields to return and by what key.\n`export default Blueprint.read(Organization, {`\n`by: \"id\",`\n`fields: [\"name\", \"owner\", \"state\"],`\n*examples/acme/blueprint/things/organization/verbs/get.ts:5*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2784,
+    "y": 1706
+   },
+   "e230": {
+    "color": "green",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“Have a different agent write the stories this app must pass, before any handler.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6190,
+    "y": 200
+   },
+   "e112": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Machine** · Built\nA machine is the life of a thing: the states it can be in and the moves that carry it from one to another.\n`moves: {`\n`claim: { from: [], to: \"claimed\", emits: HandleClaimed },`\n`release: { from: [\"claimed\"], to: \"released\", emits: HandleReleased…`\n*examples/plugged-in/blueprint/things/handle/machine.ts:7*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2204,
+    "y": 918
+   },
+   "e407": {
+    "size": "small",
+    "text": "**6 · The scaffolded handler**",
+    "type": "text",
+    "wrap": 300,
+    "x": 11502,
+    "y": 150
+   },
+   "e15": {
+    "color": "green",
+    "h": 48,
+    "kind": "pill",
+    "text": "a server",
+    "type": "shape",
+    "w": 212,
+    "x": 600,
+    "y": 206
+   },
+   "e145": {
+    "from": "e123",
+    "label": "in an",
+    "to": "e124",
+    "type": "arrow"
+   },
+   "e450": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/work/generated/{api,cli,docs,mcp,model,portal,sdk,server}",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11178,
+    "y": 722
+   },
+   "e283": {
+    "from": "e243",
+    "fromSide": "right",
+    "to": "e250",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e446": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/work/package.json, ortho.config.ts: hand-made folder",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 9882,
+    "y": 722
+   },
+   "e104": {
+    "color": "yellow",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Value** · Partial\nA value is a reusable kind of data with its own rules, such as a name of up to 32 lowercase letters and digits.\n`export const HandleName = Blueprint.described(`\n`Blueprint.value(Schema.String.check(Schema.isPattern(/^[a-z][a-z0-9]{…`\n`\"A name of up to 32 lowercase letters and digits, starting with a let…`\n*examples/plugged-in/blueprint/values/page.ts:3*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 1624,
+    "y": 130
+   },
+   "e411": {
+    "size": "small",
+    "text": "**10 · Deploy to staging**",
+    "type": "text",
+    "wrap": 300,
+    "x": 12798,
+    "y": 150
+   },
+   "e8": {
+    "size": "small",
+    "text": "Each card's tint is its status in [the scope record, pull request 262](https://github.com/AaronAbuUsama/architect/pull/262), 21 November. Read left to right: 1 the pitch · 2 the concepts · 3 the tour · 4 swap the example · 5 UI · 6 hard questions.",
+    "type": "text",
+    "wrap": 1300,
+    "x": 720,
+    "y": -446
+   },
+   "e256": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "The handler is only behaviour: refusals, the write and the answer; the runtime checks who may call, mints the id and writes the event.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7582,
+    "y": 1290
+   },
+   "e128": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Adapter** · Built\nAn adapter is how the app calls an outside service, with its calls and their failures declared so they are checked like any step.\n`export const pricing = Blueprint.adapter({`\n`description: \"Prices from the remote service.\",`\n`choices: {},`\n*e2e/fixtures/m1/descriptors/adapter-ok.ts:6*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 3944,
+    "y": 918
+   },
+   "e201": {
+    "text": "One column per step, left to right. Every file is real on the stage 1 branch; every output is real, with where it came from. The prompts are examples of what you'd say.",
+    "type": "text",
+    "wrap": 3000,
+    "x": 4624,
+    "y": 20
+   },
+   "e217": {
+    "color": "yellow",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*no file: the conversation itself leaves none*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5262,
+    "y": 344
+   },
+   "e702": {
+    "size": "huge",
+    "text": "3 · The tour",
+    "type": "text",
+    "x": 4600,
+    "y": -240
+   },
+   "e39": {
+    "bends": [
+     "v",
+     100
+    ],
+    "dash": true,
+    "from": "e33",
+    "label": "the next change",
+    "to": "e28",
+    "type": "arrow"
+   },
+   "e240": {
+    "color": "green",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`$ ortho generate`\n`created generated/portal/main.ts`\n`created generated/mcp/src/index.ts`\n`created generated/api/src/…            (54 files)`\n`created generated/docs/…               (28 files)`\n`created generated/sdk/src/…            (21 files)`\n*from the journey walkthrough, run 19 November on an earlier branch*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6654,
+    "y": 772
+   },
+   "e19": {
+    "color": "green",
+    "h": 48,
+    "kind": "pill",
+    "text": "telemetry",
+    "type": "shape",
+    "w": 212,
+    "x": 600,
+    "y": 342
+   },
+   "e237": {
+    "color": "green",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“Generate everything from the blueprint.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6654,
+    "y": 200
+   },
+   "e630": {
+    "color": "yellow",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**Does it do sign-in and organizations?**  (Partial)\nSign-in works through Better Auth on Cloudflare, but its things are copied into each app rather than mounted as a plugin. Roles beyond a signed-in person, such as agents and services, are not built.\n*Answered by, in zone 2:* Role · Plugin",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15178,
+    "y": 1090
+   },
+   "e260": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`ortho prove --env local  (CI runs pnpm nx run e2e:stage1 and e2e:climb)`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8046,
+    "y": 598
+   },
+   "e276": {
+    "color": "purple",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8974,
+    "y": 1106
+   },
+   "e626": {
+    "color": "green",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**What do I still write by hand?**  (Built)\nThe blueprint (what exists and who may do what) and one handler per operation, which holds only the behaviour. Journeys are written too, by whoever checks the builder.\n*Answered by, in zone 2:* Handler · Operation · Journey",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15178,
+    "y": 590
+   },
+   "e221": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Nothing is proved: this is the talk. The agent turns it into blueprint files with blanks (`Blueprint.todo`) that `ortho check` lists until filled.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5262,
+    "y": 1290
+   },
+   "e108": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Visibility** · Built\nVisibility says who may see a field: everyone by default, or marked secret or private so it never shows in answers or traces.\n`export const Password = Blueprint.visibility.secret(Blueprint.text({ ma…`\n*examples/acme/blueprint/values/identity.ts:4*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 1624,
+    "y": 1706
+   },
+   "e4": {
+    "color": "green",
+    "h": 44,
+    "kind": "pill",
+    "text": "Built",
+    "type": "shape",
+    "w": 150,
+    "x": 0,
+    "y": -450
+   },
+   "e23": {
+    "color": "purple",
+    "h": 48,
+    "kind": "pill",
+    "text": "deploys",
+    "type": "shape",
+    "w": 212,
+    "x": 600,
+    "y": 478
+   },
+   "e431": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "README gives `ortho prove --env local --port 8890`; no committed verdict and not in any CI job",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12150,
+    "y": 374
+   },
+   "e124": {
+    "color": "yellow",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Environment** · Partial\nAn environment says where and how the app runs, such as on this machine for local work, or always on in staging.\n`export default Blueprint.environment({`\n`runs: \"on this machine\",`\n`identity: Identity.testPrincipals, // fixed test people, no sign-in`\n*examples/plugged-in/blueprint/environments/local.ts:3*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 3364,
+    "y": 1312
+   },
+   "e35": {
+    "from": "e29",
+    "fromSide": "right",
+    "to": "e30",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e427": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/signup/journeys/: fill-a-sheet, a-closed-sheet-takes-no-one, join-twice-with-one-request, put-up-a-sheet",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10854,
+    "y": 374
+   },
+   "e132": {
+    "from": "e106",
+    "label": "lives in",
+    "to": "e107",
+    "type": "arrow"
+   },
+   "e426": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/signup/blueprint/things/sheet/{thing,machine}.ts and verbs/{open,join,close,get}.ts: states open, full, closed",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10530,
+    "y": 374
+   },
+   "e133": {
+    "from": "e106",
+    "fromSide": "right",
+    "label": "moves through",
+    "to": "e112",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e34": {
+    "from": "e28",
+    "fromSide": "right",
+    "to": "e29",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e430": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/signup/src/sheet/{open,join,close}.ts, filled",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11826,
+    "y": 374
+   },
+   "e125": {
+    "size": "large",
+    "text": "**Plug in and run**",
+    "type": "text",
+    "x": 3944,
+    "y": 70
+   },
+   "e22": {
+    "color": "yellow",
+    "h": 48,
+    "kind": "pill",
+    "text": "the portal",
+    "type": "shape",
+    "w": 212,
+    "x": 836,
+    "y": 410
+   },
+   "e109": {
+    "size": "large",
+    "text": "**Give it a life**",
+    "type": "text",
+    "x": 2204,
+    "y": 70
+   },
+   "e5": {
+    "color": "yellow",
+    "h": 44,
+    "kind": "pill",
+    "text": "Partial",
+    "type": "shape",
+    "w": 150,
+    "x": 174,
+    "y": -450
+   },
+   "e220": {
+    "color": "yellow",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5262,
+    "y": 1106
+   },
+   "e277": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "A deployed Plugged In ran the story, kept a unique name per D1, and destroy left nothing of the run in the account.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8974,
+    "y": 1290
+   },
+   "e627": {
+    "color": "white",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**Is it only Cloudflare?**  (not yet)\nYes, today. The server runs only as a Cloudflare Worker with D1 and Durable Objects, and no Node host has a slice. Language and host plugin kinds are design only.\n*Answered by, in zone 2:* Store · Environment",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15778,
+    "y": 590
+   },
+   "e148": {
+    "from": "e129",
+    "fromSide": "left",
+    "label": "runs in",
+    "to": "e124",
+    "toSide": "right",
+    "type": "arrow"
+   },
+   "e631": {
+    "color": "white",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**Is it production ready?**  (not yet)\nNo. Nothing is on npm yet, the portal's calls, metrics and machine graphs are unfinished, and deploying to a real Cloudflare account has only been spiked. The preview is the first release planned, then the beta, then 1.0.\n*Answered by, in zone 2:* Environment · Projection",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15778,
+    "y": 1090
+   },
+   "e261": {
+    "color": "green",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`local: 7/7 journeys, 56/56 steps, 11.4 s`\n`test: 7/7 journeys, 56/56 steps, 14.5 s`\n` ✓ climb/climb.test.ts (26 tests) 92346ms`\n`     ✓ passes every climb journey, so prove can go green here  14966ms`\n*from [CI on the stage 1 branch, 21 November](https://github.com/AaronAbuUsama/architect/actions/runs/44880192730)*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8046,
+    "y": 772
+   },
+   "e18": {
+    "color": "green",
+    "h": 48,
+    "kind": "pill",
+    "text": "the docs",
+    "type": "shape",
+    "w": 212,
+    "x": 836,
+    "y": 274
+   },
+   "e236": {
+    "color": "green",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**5 · Generate**\nBuilt",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6654,
+    "y": 96
+   },
+   "e241": {
+    "color": "green",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6654,
+    "y": 1106
+   },
+   "e216": {
+    "color": "yellow",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“A link-in-bio app: people claim a handle like @aaron and put links on a public page.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5262,
+    "y": 200
+   },
+   "e703": {
+    "size": "huge",
+    "text": "4 · Swap the example",
+    "type": "text",
+    "x": 9614,
+    "y": -240
+   },
+   "e38": {
+    "from": "e32",
+    "fromSide": "right",
+    "to": "e33",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e200": {
+    "h": 1488,
+    "text": "3 · The tour: Plugged In, step by step",
+    "type": "container",
+    "w": 4798,
+    "x": 4600,
+    "y": 0
+   },
+   "e129": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Projection** · Built\nA projection is one generated view of the blueprint, such as the SDK, CLI, MCP tools, docs or portal, never edited by hand.\n`// Generated from blueprint/projections/sdk.ts. Do not edit.`\n`export { PluggedIn, layer, Credential, InvalidPayload } from \"./client.…`\n*examples/plugged-in/generated/sdk/src/index.ts:1*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 3944,
+    "y": 1312
+   },
+   "e257": {
+    "color": "green",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**8 · Prove**\nBuilt",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8046,
+    "y": 96
+   },
+   "e105": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Field** · Built\nA field is one named piece of information on a thing, and it is declared with the type of value it holds.\n`fields: {`\n`id: Blueprint.described(Blueprint.id(\"hdl\"), \"The handle's own id.\"…`\n`name: HandleName,`\n*examples/plugged-in/blueprint/things/handle/thing.ts:8*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 1624,
+    "y": 524
+   },
+   "e410": {
+    "size": "small",
+    "text": "**9 · Docs, portal, CLI and MCP you get**",
+    "type": "text",
+    "wrap": 300,
+    "x": 12474,
+    "y": 150
+   },
+   "e9": {
+    "size": "large",
+    "text": "You describe your system once, in a typed blueprint. The server, SDK, CLI, agent tools, docs, portal, telemetry and the proof fall out of it. The only code you write by hand is behaviour.",
+    "type": "text",
+    "wrap": 1340,
+    "x": 24,
+    "y": 24
+   },
+   "e447": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*nothing yet*\n*described in examples/work/README.md and design/decisions/F5-work-blueprint.md, not as a talk*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10206,
+    "y": 722
+   },
+   "e282": {
+    "from": "e236",
+    "fromSide": "right",
+    "to": "e243",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e144": {
+    "from": "e122",
+    "label": "run by",
+    "to": "e123",
+    "type": "arrow"
+   },
+   "e451": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/work/src/**: 26 scaffolds with Handlers.blank, none written (e.g. src/mission/open.ts)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11502,
+    "y": 722
+   },
+   "e14": {
+    "text": "**What you get**",
+    "type": "text",
+    "x": 600,
+    "y": 170
+   },
+   "e113": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Event** · Built\nAn event is a record that something happened, such as a handle being claimed, written down when a move completes.\n`export const HandleClaimed = Blueprint.event({ handle: Handle.fields.id…`\n*examples/plugged-in/blueprint/things/handle/events.ts:4*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2204,
+    "y": 1312
+   },
+   "e406": {
+    "size": "small",
+    "text": "**5 · Generate**",
+    "type": "text",
+    "wrap": 300,
+    "x": 11178,
+    "y": 150
+   },
+   "e242": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "One command writes the server, SDK, CLI, MCP, docs, portal data and model; run again it says `nothing to change`.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6654,
+    "y": 1290
+   },
+   "e700": {
+    "size": "huge",
+    "text": "1 · The pitch",
+    "type": "text",
+    "x": 0,
+    "y": -240
+   },
+   "e215": {
+    "color": "yellow",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**2 · Describe it to the agent**\nPartial",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5262,
+    "y": 96
+   },
+   "e429": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*nothing yet*\n*no unfilled scaffold committed; handlers in src/sheet/ are filled*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11502,
+    "y": 374
+   },
+   "e203": {
+    "text": "**The file it writes**",
+    "type": "text",
+    "wrap": 150,
+    "x": 4624,
+    "y": 352
+   },
+   "e254": {
+    "color": "green",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`$ ortho brief handle.claim`\n`brief handle.claim`\n``\n`Write   src/handle/claim.ts, and nothing else.`\n``\n`Read`\n*from the journey walkthrough, run 19 November on an earlier branch*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7582,
+    "y": 772
+   },
+   "e413": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`package.json`\nA fresh folder gets the starter and `ortho check` is green; but it is the starter (people, organisations), not",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 9882,
+    "y": 200
+   },
+   "e106": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Thing** · Built\nA thing is one kind of record your app keeps, such as a handle, with a short description and a list of fields.\n`export const Handle = Blueprint.thing({`\n`description: \"A public name that belongs to one person until they rel…`\n`code: \"HN\",`\n*examples/plugged-in/blueprint/things/handle/thing.ts:4*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 1624,
+    "y": 918
+   },
+   "e628": {
+    "color": "green",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**How is it tested?**  (Built)\nPlugged In's seven journeys run against the real app and pass 56 of 56 steps, and a grid of 331 checks is green in CI. Nine evals judge every call from telemetry and the world's facts.\n*Answered by, in zone 2:* Prove · Journey · Starting world",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15178,
+    "y": 840
+   },
+   "e278": {
+    "from": "e208",
+    "fromSide": "right",
+    "to": "e215",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e444": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/acme/blueprint/environments/staging.ts is declared; no Safe, Hats or budgets module deployed (ST3.01 to ST3.08, M6.16)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12798,
+    "y": 548
+   },
+   "e40": {
+    "size": "small",
+    "text": "Talk is not a tool yet: an agent writes the blueprint by hand today, and nothing turns a conversation into a spec.",
+    "type": "text",
+    "wrap": 1300,
+    "x": 24,
+    "y": 830
+   },
+   "e281": {
+    "from": "e229",
+    "fromSide": "right",
+    "to": "e236",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e452": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "origin/spike/work-real: handlers for all 26 operations plus the board rule (src/board.ts); not on goal/stage-1",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11826,
+    "y": 722
+   },
+   "e147": {
+    "from": "e127",
+    "label": "brings in",
+    "to": "e128",
+    "type": "arrow"
+   },
+   "e239": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`ortho generate --root examples/plugged-in`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6654,
+    "y": 598
+   },
+   "e17": {
+    "color": "green",
+    "h": 48,
+    "kind": "pill",
+    "text": "a CLI",
+    "type": "shape",
+    "w": 212,
+    "x": 600,
+    "y": 274
+   },
+   "e405": {
+    "size": "small",
+    "text": "**4 · The journeys**",
+    "type": "text",
+    "wrap": 300,
+    "x": 10854,
+    "y": 150
+   },
+   "e110": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Error** · Built\nAn error is a named reason the app says no, with one code that the server, SDK, CLI and MCP tools all share.\n`export class HandleTaken extends Blueprint.error({}, { exit: 10 }) {}`\n*examples/plugged-in/blueprint/things/handle/errors.ts:3*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2204,
+    "y": 130
+   },
+   "e130": {
+    "from": "e104",
+    "label": "makes",
+    "to": "e105",
+    "type": "arrow"
+   },
+   "e425": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*nothing yet*\n*no recorded talk; the idea is written in examples/signup/README.md (Aaron's pick, 18 Nov 2026)*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10206,
+    "y": 374
+   },
+   "e37": {
+    "from": "e31",
+    "fromSide": "right",
+    "to": "e32",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e219": {
+    "color": "yellow",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`$ ortho add thing bookmark --dry-run`\n`--- blueprint/things/bookmark/thing.ts`\n`import { Blueprint } from \"orthograph\";`\n``\n`export const Bookmark = Blueprint.thing({`\n`  description: Blueprint.todo(\"what a bookmark is, in one sentence\"),`\n*shown with a made-up thing, bookmark; from the journey walkthrough, run 19 November on an earlier branch*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5262,
+    "y": 772
+   },
+   "e126": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Plugin** · Built\nA plugin is a packaged piece of Orthograph, such as the server or SDK maker, that you switch on with one line.\n`export default Blueprint.use(server);`\n*examples/plugged-in/blueprint/projections/server.ts:5*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 3944,
+    "y": 130
+   },
+   "e433": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*nothing yet*\n*nothing deployed; no staging.ts in its environments (local.ts only)*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12798,
+    "y": 374
+   },
+   "e21": {
+    "color": "yellow",
+    "h": 48,
+    "kind": "pill",
+    "text": "MCP tools",
+    "type": "shape",
+    "w": 212,
+    "x": 600,
+    "y": 410
+   },
+   "e258": {
+    "color": "green",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“Prove it.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8046,
+    "y": 200
+   },
+   "e6": {
+    "color": "purple",
+    "h": 44,
+    "kind": "pill",
+    "text": "Spiked",
+    "type": "shape",
+    "w": 150,
+    "x": 348,
+    "y": -450
+   },
+   "e223": {
+    "color": "green",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“A name belongs to one person until they release it; claiming needs sign-in.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5726,
+    "y": 200
+   },
+   "e448": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/work/blueprint/things/{mission,milestone,question,run,attention}: five things with machines; one blank (logbook dependency)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10530,
+    "y": 722
+   },
+   "e274": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`bash spikes/staging-pass/up.sh  (the spike's plain-wrangler path; the designed command is `ortho env up staging`, with destroy)`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8974,
+    "y": 598
+   },
+   "e624": {
+    "color": "yellow",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**Is there lock-in?**  (Partial)\nThe generated code is ordinary TypeScript on Effect that you can read, and the blueprint is plain files. There is no eject command, and the server runs only on Cloudflare today, so leaving means keeping the generated code and owning it.\n*Answered by, in zone 2:* Projection · Handler · Store",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15178,
+    "y": 340
+   },
+   "e262": {
+    "color": "green",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8046,
+    "y": 1106
+   },
+   "e409": {
+    "size": "small",
+    "text": "**8 · Prove**",
+    "type": "text",
+    "wrap": 300,
+    "x": 12150,
+    "y": 150
+   },
+   "e235": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "Before the handlers exist the journeys must fail: see step 6's `ortho prove --empty`. Seven journeys, 56 steps, are committed.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6190,
+    "y": 1290
+   },
+   "e234": {
+    "color": "green",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6190,
+    "y": 1106
+   },
+   "e408": {
+    "size": "small",
+    "text": "**7 · The filled handler**",
+    "type": "text",
+    "wrap": 300,
+    "x": 11826,
+    "y": 150
+   },
+   "e263": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "All seven Plugged In journeys (56 steps) are green in local and in test, and the climb check shows prove fails and names the journey and step when a handler is wrong.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8046,
+    "y": 1290
+   },
+   "e275": {
+    "color": "purple",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`PASS story 1: aaron claims @aaron (HTTP, SDK, deployed D1)`\n`PASS story: anyone sees the page, three links in the order added`\n`PASS refusal: bob claims @aaron -> HandleTaken (unique index on D1)`\n`workers: 18 in the account, 0 ours`\n`d1: 0 in the account, 0 ours`\n`CLEAN`\n*from [the staging spike's CI run, 20 November](https://github.com/AaronAbuUsama/architect/actions/runs/44742578303)*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8974,
+    "y": 772
+   },
+   "e625": {
+    "color": "green",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**How does an agent not break things?**  (Built)\nJourneys and checks are written by a different agent from the builder, who may not edit them, and the nine evals fail any call that breaks a rule, a role or a declared step. An agent can write a handler from a brief today.\n*Answered by, in zone 2:* Journey · Prove · Handler",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15778,
+    "y": 340
+   },
+   "e449": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*nothing yet*\n*examples/work/journeys does not exist; README says journeys come first from another agent*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10854,
+    "y": 722
+   },
+   "e222": {
+    "color": "green",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**3 · The blueprint: things, machine, operation**\nBuilt",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5726,
+    "y": 96
+   },
+   "e7": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "None yet",
+    "type": "shape",
+    "w": 150,
+    "x": 522,
+    "y": -450
+   },
+   "e259": {
+    "color": "green",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`e2e/stage1/01-plugged-in-journeys.test.ts`\n`// - exits 0 and says the run passed;`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8046,
+    "y": 344
+   },
+   "e20": {
+    "color": "green",
+    "h": 48,
+    "kind": "pill",
+    "text": "the proof",
+    "type": "shape",
+    "w": 212,
+    "x": 836,
+    "y": 342
+   },
+   "e127": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Mount** · Built\nA mount is where you plug a plugin into your app and choose which of its parts to use.\n`export const mount = Blueprint.use(pricing, (p) => [p.include(p.calls.q…`\n*e2e/fixtures/m1/descriptors/adapter-ok.ts:15*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 3944,
+    "y": 524
+   },
+   "e432": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/signup/generated/docs and portal data exist; no screenshot",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12474,
+    "y": 374
+   },
+   "e36": {
+    "from": "e30",
+    "fromSide": "right",
+    "to": "e31",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e218": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`ortho add thing handle   (what the agent runs; shown here with a made-up thing, --dry-run)`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5262,
+    "y": 598
+   },
+   "e131": {
+    "from": "e105",
+    "label": "make up",
+    "to": "e106",
+    "type": "arrow"
+   },
+   "e424": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/signup/package.json and project.json: a hand-made folder; no `ortho new signup`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 9882,
+    "y": 374
+   },
+   "e404": {
+    "size": "small",
+    "text": "**3 · The blueprint: things, machine, operation**",
+    "type": "text",
+    "wrap": 300,
+    "x": 10530,
+    "y": 150
+   },
+   "e111": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Invariant** · Built\nAn invariant is a rule that must always hold, such as one holder per name, and the runtime refuses any call that would break it.\n`export const oneHolderPerName = Blueprint.invariant.unique(Handle.field…`\n`while: [machine.states.claimed],`\n`refuse: HandleTaken,`\n*examples/plugged-in/blueprint/things/handle/invariants.ts:7*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2204,
+    "y": 524
+   },
+   "e238": {
+    "color": "green",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`examples/plugged-in/generated/api/src/handle/claim.ts`\n`// Generated from blueprint/things/handle/verbs/claim.ts. Do not edit.`\n`export { declaration };`\n`  payload: declaration.payloadSchema,`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6654,
+    "y": 344
+   },
+   "e16": {
+    "color": "green",
+    "h": 48,
+    "kind": "pill",
+    "text": "a typed SDK",
+    "type": "shape",
+    "w": 212,
+    "x": 836,
+    "y": 206
+   },
+   "e453": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "spikes/work-real: a mission driven through the REST API on acme's real facts, 19 tasks placed in five columns; no ortho prove",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12150,
+    "y": 722
+   },
+   "e146": {
+    "from": "e126",
+    "label": "used in",
+    "to": "e127",
+    "type": "arrow"
+   },
+   "e280": {
+    "from": "e222",
+    "fromSide": "right",
+    "to": "e229",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e445": {
+    "size": "small",
+    "text": "**The work board**\n`examples/work`: missions and milestones",
+    "type": "text",
+    "wrap": 220,
+    "x": 9638,
+    "y": 730
+   },
+   "e629": {
+    "color": "yellow",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**What about my existing code and escape hatches?**  (Partial)\nA handler is your own code, so anything Effect can do fits there, and an adapter lets you call an outside service as a checked step. You cannot yet adopt an existing thing, and no real adapters are shipped.\n*Answered by, in zone 2:* Handler · Adapter · Mount",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15778,
+    "y": 840
+   },
+   "e279": {
+    "from": "e215",
+    "fromSide": "right",
+    "to": "e222",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e412": {
+    "size": "small",
+    "text": "**Plugged In**\nlink-in-bio: claim a name, a page of links",
+    "type": "text",
+    "wrap": 220,
+    "x": 9638,
+    "y": 208
+   },
+   "e107": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Store** · Built\nA store is where a thing lives, such as a database table or one durable object per instance, and Orthograph owns its schema.\n`readonly database: () => Store<\"database\">;`\n`/** A Durable Object per instance, with its own SQLite. */`\n`readonly actor: () => Store<\"actor\">;`\n*packages/orthograph/src/modules/stores/types.ts:15*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 1624,
+    "y": 1312
+   },
+   "e255": {
+    "color": "green",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7582,
+    "y": 1106
+   },
+   "e202": {
+    "text": "**What you say**",
+    "type": "text",
+    "wrap": 150,
+    "x": 4624,
+    "y": 208
+   },
+   "e428": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/signup/generated/{api,cli,docs,mcp,model,portal,sdk,server}",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11178,
+    "y": 374
+   },
+   "e701": {
+    "size": "huge",
+    "text": "2 · The concepts",
+    "type": "text",
+    "x": 1600,
+    "y": -240
+   },
+   "e214": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "A fresh folder gets the starter and `ortho check` is green; but it is the starter (people, organisations), not Plugged In's handles.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 4798,
+    "y": 1290
+   },
+   "e243": {
+    "color": "green",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**6 · The scaffolded handler**\nBuilt",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7118,
+    "y": 96
+   },
+   "e248": {
+    "color": "green",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7118,
+    "y": 1106
+   },
+   "e136": {
+    "from": "e112",
+    "label": "emits",
+    "to": "e113",
+    "type": "arrow"
+   },
+   "e423": {
+    "size": "small",
+    "text": "**The sign-up sheet**\n`examples/signup`: open, join, close a sheet",
+    "type": "text",
+    "wrap": 220,
+    "x": 9638,
+    "y": 382
+   },
+   "e31": {
+    "color": "green",
+    "h": 110,
+    "kind": "rounded",
+    "text": "**4 · Fill**\nhandlers: the only hand-written code",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 708,
+    "y": 630
+   },
+   "e120": {
+    "size": "large",
+    "text": "**Prove it**",
+    "type": "text",
+    "x": 3364,
+    "y": 70
+   },
+   "e435": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*nothing yet*\n*no starter for a budgets app; acme is a hand-made folder (examples/acme)*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 9882,
+    "y": 548
+   },
+   "e27": {
+    "text": "**The loop**, one change at a time",
+    "type": "text",
+    "x": 24,
+    "y": 590
+   },
+   "e209": {
+    "color": "yellow",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“Start me a new app called plugged-in.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 4798,
+    "y": 200
+   },
+   "e419": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`src/handle/claim.ts`\nThe handler is only behaviour: refusals, the write and the answer; the runtime checks who may call, mints the ",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11826,
+    "y": 200
+   },
+   "e225": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`ortho model --root examples/plugged-in   (then ortho check)`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5726,
+    "y": 598
+   },
+   "e272": {
+    "color": "purple",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“Put it on staging, run the story, then tear it all down.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8974,
+    "y": 200
+   },
+   "e622": {
+    "color": "green",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**Why not just write the code?**  (Built)\nYou still write the behaviour by hand; what you stop writing is the server, SDK, CLI, MCP tools, docs and checks that must all agree with it. They come from one blueprint, so they cannot drift apart.\n*Answered by, in zone 2:* Projection · Handler · Operation",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15178,
+    "y": 90
+   },
+   "e264": {
+    "color": "yellow",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**9 · Docs, portal, CLI and MCP you get**\nPartial",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8510,
+    "y": 96
+   },
+   "e233": {
+    "color": "green",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*prints nothing: journeys are code; their verdicts show at steps 6 and 8*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6190,
+    "y": 772
+   },
+   "e244": {
+    "color": "green",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“Fill in the handlers; start with handle.claim.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7118,
+    "y": 200
+   },
+   "e213": {
+    "color": "yellow",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "—",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 4798,
+    "y": 1106
+   },
+   "e205": {
+    "text": "**What the terminal says**",
+    "type": "text",
+    "wrap": 150,
+    "x": 4624,
+    "y": 780
+   },
+   "e439": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/acme/generated/ (TypeScript); on-chain Solidity half: language-solidity is empty; the chain shape is only in origin/spike/chain-languages (mini DAO, not budgets)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11178,
+    "y": 548
+   },
+   "e252": {
+    "color": "green",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`examples/plugged-in/src/handle/claim.ts`\n`const claim: Handler = ({ name }, { principal, steps, move, id }) =>`\n`    const profile = yield* Ids.of(Profile.fields.id);`\n`    yield* move();`\n`    return { handle: id };`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7582,
+    "y": 344
+   },
+   "e229": {
+    "color": "green",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**4 · The journeys**\nBuilt",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6190,
+    "y": 96
+   },
+   "e415": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`blueprint/things/handle/verbs/claim.ts`\nThe compiler reads the declarations: types, rules and drift pass with no blanks left.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10530,
+    "y": 200
+   },
+   "e100": {
+    "h": 1966,
+    "text": "2 · The concepts",
+    "type": "container",
+    "w": 2788,
+    "x": 1600,
+    "y": 0
+   },
+   "e442": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "design/evidence/L2.L/01-prove-acme.txt shows acme's allowance journeys green; the fuzz against the TypeScript machine is origin/spike/chain-languages Q8",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12150,
+    "y": 548
+   },
+   "e268": {
+    "color": "yellow",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`$ plugged-in handle claim --name aaron`\n`hdl_aaron`\n`$ plugged-in link add --title GitHub --url https://github.com/aaron`\n`lnk_eopd5ztj6hp0ex28`\n`$ plugged-in link add --title Blog --url https://aaron.example`\n`lnk_f769a4hiatmyqg9i`\n*from the journey walkthrough, run 19 November on an earlier branch*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8510,
+    "y": 772
+   },
+   "e454": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "spikes/mission-board: the board (grid, board, climb, eval pages) as a published prototype, shots in spikes/mission-board/shots/",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12474,
+    "y": 722
+   },
+   "e141": {
+    "from": "e122",
+    "fromSide": "left",
+    "label": "calls",
+    "to": "e116",
+    "toSide": "right",
+    "type": "arrow"
+   },
+   "e11": {
+    "color": "green",
+    "h": 116,
+    "kind": "rounded",
+    "text": "**The blueprint**\nthings, fields, machines, operations, rules, roles, stores, environments: typed files",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 24,
+    "y": 206
+   },
+   "e403": {
+    "size": "small",
+    "text": "**2 · Describe it to the agent**",
+    "type": "text",
+    "wrap": 300,
+    "x": 10206,
+    "y": 150
+   },
+   "e116": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Operation** · Built\nAn operation is one thing a caller can ask the app to do, with what goes in, what comes back and who is allowed.\n`payload: { name: Handle.fields.name },`\n`answer: { handle: Handle.fields.id },`\n`move: machine.moves.claim,`\n*examples/plugged-in/blueprint/things/handle/verbs/claim.ts:8*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2784,
+    "y": 524
+   },
+   "e402": {
+    "size": "small",
+    "text": "**1 · Start the app**",
+    "type": "text",
+    "wrap": 300,
+    "x": 9882,
+    "y": 150
+   },
+   "e117": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Step** · Built\nA step is a named stage inside an operation, such as saving to the database, and each one is timed and traced on its own.\n`steps: { record: Blueprint.step.database() },`\n*examples/plugged-in/blueprint/things/handle/verbs/claim.ts:12*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 2784,
+    "y": 918
+   },
+   "e10": {
+    "text": "**What you write**",
+    "type": "text",
+    "x": 24,
+    "y": 170
+   },
+   "e455": {
+    "color": "white",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*nothing yet*\n*never deployed; local environments only (local.ts, test.ts)*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12798,
+    "y": 722
+   },
+   "e140": {
+    "from": "e116",
+    "fromSide": "left",
+    "label": "checked by",
+    "to": "e111",
+    "toSide": "right",
+    "type": "arrow"
+   },
+   "e269": {
+    "color": "yellow",
+    "h": 160,
+    "kind": "rounded",
+    "size": "small",
+    "text": "The generated docs page for handle.claim (who may call, payload, answer, refusals, worked examples), and the portal's things, lifecycle, rules, traces and journeys pages.\n*No Plugged In portal screenshot is committed yet.*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8510,
+    "y": 1106
+   },
+   "e286": {
+    "from": "e264",
+    "fromSide": "right",
+    "to": "e271",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e443": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/acme/generated/docs and portal; nothing on a chain or a Safe",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12474,
+    "y": 548
+   },
+   "e414": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "the talk\nNothing is proved: this is the talk. The agent turns it into blueprint files with blanks (`Blueprint.todo`) th",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10206,
+    "y": 200
+   },
+   "e101": {
+    "text": "One card per idea: a sentence, then three lines of real code from the stage 1 branch. Arrows say how they connect.",
+    "type": "text",
+    "wrap": 1700,
+    "x": 1624,
+    "y": 20
+   },
+   "e228": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "The compiler reads the declarations: types, rules and drift pass with no blanks left.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5726,
+    "y": 1290
+   },
+   "e253": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`ortho brief handle.claim   (the builder's brief the agent works from)`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7582,
+    "y": 598
+   },
+   "e438": {
+    "color": "yellow",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "examples/acme/journeys/: grant-an-allowance, spend-within-allowance, spend-twice-with-one-request, revoke-then-spend, outsider-cannot-revoke, read-an-allowance; stage 3's journeys (ST3.03) not written",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 10854,
+    "y": 548
+   },
+   "e204": {
+    "text": "**The command**",
+    "type": "text",
+    "wrap": 150,
+    "x": 4624,
+    "y": 606
+   },
+   "e212": {
+    "color": "yellow",
+    "h": 310,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`== create-nx-workspace plugged-in --preset=@orthograph/preset`\n`✔ Installing dependencies with pnpm`\n`✔ Successfully created the workspace: plugged-in`\n`== ortho check`\n`blanks left 0`\n`types ✔`\n*from the journey walkthrough, run 19 November on an earlier branch*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 4798,
+    "y": 772
+   },
+   "e245": {
+    "color": "green",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`examples/plugged-in/src/handle/claim.ts`\n` * Who may call, from blueprint/things/handle/verbs/claim.ts:`\n` *   anyone signed in`\n` * Payload, from blueprint/things/handle/verbs/claim.ts:`\n` *   name  handle.name`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7118,
+    "y": 344
+   },
+   "e232": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`ortho add journey \"<name>\"  (journeys are written by another agent; the builder never edits them)`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 6190,
+    "y": 598
+   },
+   "e265": {
+    "color": "yellow",
+    "h": 120,
+    "kind": "rounded",
+    "size": "small",
+    "text": "*“Show me what the app gave itself.”*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8510,
+    "y": 200
+   },
+   "e273": {
+    "color": "purple",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`spikes/staging-pass/up.sh`\n`cd \"$ROOT/examples/plugged-in/generated/server\"`\n`step d1-create \"$WR\" d1 create \"${PREFIX}db\" || exit 1`\n`  step \"deploy-$1\" \"$WR\" deploy --config \"$2\" && return 0`\n`deploy main \"$EV/wrangler.main.json\" \"${PREFIX}plugged-in\"`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 8974,
+    "y": 344
+   },
+   "e623": {
+    "color": "green",
+    "h": 210,
+    "kind": "rounded",
+    "text": "**What if the generator is wrong?**  (Built)\nGenerated files are plain code in the repo and every call is judged by prove against the journeys, from recorded evidence rather than from what the server says. A wrong generator shows up as a red journey, but a bug in the generator itself is fixed by us, not you.\n*Answered by, in zone 2:* Prove · Journey · Projection",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 560,
+    "x": 15778,
+    "y": 90
+   },
+   "e224": {
+    "color": "green",
+    "h": 230,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`examples/plugged-in/blueprint/things/handle/verbs/claim.ts`\n`  payload: { name: Handle.fields.name },`\n`  answer: { handle: Handle.fields.id },`\n`  move: machine.moves.claim,`\n`  allowed: [Blueprint.signedIn],`",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 5726,
+    "y": 344
+   },
+   "e1": {
+    "h": 900,
+    "text": "1 · The pitch",
+    "type": "container",
+    "w": 1400,
+    "x": 0,
+    "y": 0
+   },
+   "e418": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`src/handle/claim.ts`\nOn empty handlers the journeys go red and name the blank they hit, so a step that passes anyway is proved by t",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 11502,
+    "y": 200
+   },
+   "e26": {
+    "size": "small",
+    "text": "Partial: MCP calls carry no request key; the portal lacks calls and metrics. Spiked: staging deploys ran five times in a spike; generated screens are a spike on the UI SDK.",
+    "type": "text",
+    "wrap": 270,
+    "x": 1100,
+    "y": 206
+   },
+   "e208": {
+    "color": "yellow",
+    "h": 76,
+    "kind": "rounded",
+    "size": "body",
+    "text": "**1 · Start the app**\nPartial",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 4798,
+    "y": 96
+   },
+   "e121": {
+    "color": "green",
+    "h": 250,
+    "kind": "rounded",
+    "size": "small",
+    "text": "**Starting world** · Built\nA starting world is a ready-made situation for a journey to begin in, built by running real operations rather than by hand.\n`export default Blueprint.startingWorld(\"claimed\", {`\n`cast: { aaron: Blueprint.signedIn },`\n`makes: (s) => [s.aaron.run(claim, { name: \"claimedname\" }, { request:…`\n*examples/plugged-in/blueprint/starting-worlds/claimed.ts:7*",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 420,
+    "x": 3364,
+    "y": 130
+   },
+   "e434": {
+    "size": "small",
+    "text": "**Budgets on chain**\ntoday: acme's allowance, off chain; the Safe module is stage 3",
+    "type": "text",
+    "wrap": 220,
+    "x": 9638,
+    "y": 556
+   },
+   "e30": {
+    "color": "green",
+    "h": 110,
+    "kind": "rounded",
+    "text": "**3 · Generate**\n`ortho generate` writes every output",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 480,
+    "y": 630
+   },
+   "e137": {
+    "from": "e115",
+    "label": "may call",
+    "to": "e116",
+    "type": "arrow"
+   },
+   "e422": {
+    "color": "purple",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "`spikes/staging-pass/up.sh`\nA deployed Plugged In ran the story, kept a unique name per D1, and destroy left nothing of the run in the acc",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 12798,
+    "y": 200
+   },
+   "e249": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "size": "small",
+    "text": "On empty handlers the journeys go red and name the blank they hit, so a step that passes anyway is proved by the description alone.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 7118,
+    "y": 1290
+   }
+  }
+ }
+}

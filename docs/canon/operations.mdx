@@ -188,7 +188,7 @@ export const refusals = {
 } as const;
 ```
 
-A refusal is not a failure. The call worked, and the span ends OK (see `traces`, which owns the difference between a
+A refusal is not a failure. The call worked, and the span does not end as an error (see `traces`, which owns the difference between a
 refusal and a defect in a trace).
 
 ### Steps
@@ -208,7 +208,7 @@ Three rules decide what a step is (K5, seam 3):
 
 ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=165-173
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
-  attempt(payload, principal, key, number, callId).pipe(
+  attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
       !(e instanceof Conflict) ? Effect.fail(e)
       : number < ATTEMPTS ? loop(number + 1, callId)

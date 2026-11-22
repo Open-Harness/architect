@@ -1,5 +1,7 @@
 # K19: the portal ships prebuilt, so no project needs a HeroUI Pro licence
 
+> **Superseded by K24, 20 November 2026:** once the portal is on UI SDK (`K24-ui-sdk.md`) no licence is needed at all; shipping prebuilt stays until then.
+
 Decided 19 November 2026 by the conductor, after the M1 lead found that layer 2 can't build without the licence.
 
 ## The problem, in code

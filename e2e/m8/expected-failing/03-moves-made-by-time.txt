@@ -1,0 +1,16 @@
+# Written before M8 is built. Red until moves made by time (M8.09) and the keeper (M8.10) exist; due before M8's gate.
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > after: "a missed payment lapses fourteen days later" passes all 5 steps
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > after: each planted break fails exactly its own step
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > calendar: "pay day and month end in London, across the clocks going forward and back" passes all 8 steps
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > calendar: each planted break fails exactly its own step
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > cleared: "paying in time clears the lapse" passes all 6 steps
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > cleared: each planted break fails exactly its own step
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > every: "renewals keep the day they started" passes all 7 steps
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > every: each planted break fails exactly its own step
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > keeper: "the keeper calls nothing else" passes all 9 steps
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > keeper: each planted break fails exactly its own step
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > lazy: "a lazy refill is worked out at the next spend" passes all 8 steps
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > lazy: each planted break fails exactly its own step
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > once: "a renewal fired twice for one due instant renews once" passes all 3 steps
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > once: each planted break fails exactly its own step
+m8/03-moves-made-by-time.test.ts > 03 M8.04: moves made by time > the whole club proves, with nothing else failing and nothing left running

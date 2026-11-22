@@ -1,0 +1,5 @@
+# Written before M8 is built (the check comes first). Red until the clock (M8.06), moves made by time (M8.09)
+# and the keeper (M8.10) exist; due before M8's gate.
+m8/01-a-month-renews-once.test.ts > 01 M8.02: a month renews once > a change prove cannot place runs everything: after a prove, moving the clock's start makes every operation stale
+m8/01-a-month-renews-once.test.ts > 01 M8.02: a month renews once > prove judges every step: each planted wrong instant, count or event fails exactly its own step
+m8/01-a-month-renews-once.test.ts > 01 M8.02: a month renews once > the club proves: one renewal at 10 February nine after a month, none after fifteen days more, and nothing left running

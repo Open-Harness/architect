@@ -1,0 +1,1098 @@
+{
+ "collections": {
+  "board": {
+   "meta": {
+    "order": [
+     "e8",
+     "e20",
+     "e22",
+     "e43",
+     "e61",
+     "e68",
+     "e74",
+     "e1",
+     "e2",
+     "e3",
+     "e4",
+     "e5",
+     "e6",
+     "e7",
+     "e9",
+     "e10",
+     "e11",
+     "e12",
+     "e13",
+     "e14",
+     "e15",
+     "e16",
+     "e17",
+     "e18",
+     "e19",
+     "e21",
+     "e23",
+     "e24",
+     "e25",
+     "e26",
+     "e27",
+     "e28",
+     "e29",
+     "e30",
+     "e31",
+     "e32",
+     "e33",
+     "e34",
+     "e35",
+     "e36",
+     "e37",
+     "e38",
+     "e39",
+     "e40",
+     "e41",
+     "e42",
+     "e44",
+     "e45",
+     "e46",
+     "e47",
+     "e48",
+     "e49",
+     "e50",
+     "e51",
+     "e52",
+     "e53",
+     "e54",
+     "e55",
+     "e56",
+     "e57",
+     "e58",
+     "e59",
+     "e60",
+     "e62",
+     "e63",
+     "e64",
+     "e65",
+     "e66",
+     "e67",
+     "e69",
+     "e70",
+     "e71",
+     "e72",
+     "e73",
+     "e75",
+     "e76",
+     "e77",
+     "e78",
+     "e79",
+     "e80",
+     "e81",
+     "e82",
+     "e83"
+    ],
+    "title": "Orthograph Map",
+    "v": 1
+   }
+  },
+  "elements": {
+   "e48": {
+    "color": "white",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**The factory**\ngoals planned onto a board, people as workers",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 1184,
+    "y": 870
+   },
+   "e2": {
+    "size": "large",
+    "text": "The core works locally. The rest is planned.",
+    "type": "text",
+    "x": 0,
+    "y": -150
+   },
+   "e72": {
+    "color": "peach",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Staging traces**\nneed an Axiom token from you",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 440,
+    "x": 2172,
+    "y": 1464
+   },
+   "e25": {
+    "text": "**Projections and hosts**",
+    "type": "text",
+    "x": 1636,
+    "y": 324
+   },
+   "e33": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**EVM chain and Anvil**\na local chain inside each world",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1300,
+    "y": 548
+   },
+   "e64": {
+    "color": "blue",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Staging**\nfirst pass deployed and destroyed. Next: fixes, then a final pass with a recording.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 1080,
+    "y": 1344
+   },
+   "e13": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "text": "**Prove, evals and the grid**\njourneys climbed green; every switched-on grid cell passes.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 310,
+    "x": 1840,
+    "y": 44
+   },
+   "e44": {
+    "color": "green",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**Land and rename**\nthe Orthograph names everywhere. Gate passed.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 0,
+    "y": 870
+   },
+   "e52": {
+    "color": "white",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**The cloud, then Capxul**\nstaging decided and tried once",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 2368,
+    "y": 870
+   },
+   "e91": {
+    "from": "e85",
+    "fromSide": "right",
+    "to": "e86",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e29": {
+    "color": "white",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Auth and organisations**\nhand-written in the starter; plugins planned",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 964,
+    "y": 548
+   },
+   "e87": {
+    "color": "white",
+    "h": 130,
+    "kind": "rounded",
+    "text": "**Stage 4: the club**\nprivate members and private votes",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 1184,
+    "y": 1080
+   },
+   "e68": {
+    "color": "peach",
+    "h": 530,
+    "text": "Gaps: no plan yet",
+    "type": "container",
+    "w": 960,
+    "x": 1676,
+    "y": 1304
+   },
+   "e86": {
+    "color": "white",
+    "h": 130,
+    "kind": "rounded",
+    "text": "**Stage 3: the vault**\na shared Safe, with budgets and roles on chain",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 888,
+    "y": 1080
+   },
+   "e69": {
+    "color": "white",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Time: now milestone 8, planned**\nbuilt beside stage 2. Its checks can land now: a month passes, a renewal happens once.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 440,
+    "x": 1700,
+    "y": 1344
+   },
+   "e28": {
+    "color": "white",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Handles**\nlives inside Plugged In today; to become a plugin",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 964,
+    "y": 452
+   },
+   "e90": {
+    "from": "e46",
+    "fromSide": "bottom",
+    "to": "e85",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e53": {
+    "from": "e44",
+    "fromSide": "right",
+    "to": "e45",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e45": {
+    "color": "blue",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**Complete model and plugins**\nbuilt on the stage 1 branch, not on main yet; 5 checks wait on their builds",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 296,
+    "y": 870
+   },
+   "e12": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "text": "**Runtime on Cloudflare**\nlocal worlds work every day. Staging deployed once and destroyed.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 310,
+    "x": 1380,
+    "y": 44
+   },
+   "e65": {
+    "color": "green",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Language decisions: decided**\nroles across things, repeats that change nothing, renaming a plugin's things. Seven build slices added, no code yet. [Merged, 201](https://github.com/AaronAbuUsama/architect/pull/201)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 0,
+    "y": 1464
+   },
+   "e32": {
+    "color": "white",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Solidity**\nan empty package so far; design open in [218](https://github.com/AaronAbuUsama/architect/pull/218)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1300,
+    "y": 452
+   },
+   "e24": {
+    "text": "**Languages and chains**",
+    "type": "text",
+    "x": 1300,
+    "y": 324
+   },
+   "e73": {
+    "color": "peach",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Public install**\nnot on npm yet; a new app starts from a local registry",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 440,
+    "x": 1700,
+    "y": 1584
+   },
+   "e3": {
+    "size": "small",
+    "text": "Checked against the repo on Friday 20 November 2026, evening. Ticks in the plan lag the code; this map goes by the code.",
+    "type": "text",
+    "x": 0,
+    "y": -90
+   },
+   "e49": {
+    "color": "white",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**Agents**\nagents acting for people, proved with the factory",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 1480,
+    "y": 870
+   },
+   "e15": {
+    "from": "e9",
+    "fromSide": "right",
+    "to": "e10",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e42": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Lint and logbook**\nthe code's rules enforced; run history kept",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1972,
+    "y": 644
+   },
+   "e54": {
+    "from": "e45",
+    "fromSide": "right",
+    "to": "e46",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e8": {
+    "h": 220,
+    "text": "The core: blueprint to proved app",
+    "type": "container",
+    "w": 2660,
+    "x": -24,
+    "y": 0
+   },
+   "e78": {
+    "color": "peach",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Other accounting needs**\nricher lists, line items, each company's data kept apart, files, screens. Held for now.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 440,
+    "x": 2172,
+    "y": 1584
+   },
+   "e39": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**ortho prove**\nruns the journeys and judges them",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1972,
+    "y": 356
+   },
+   "e81": {
+    "color": "blue",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Time: checks and clock spike**\n36 checks written, red until the clock exists. Spike: each request gets its world's time, about 30 microseconds. [Checks, 213](https://github.com/AaronAbuUsama/architect/pull/213)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 1080,
+    "y": 1584
+   },
+   "e19": {
+    "from": "e13",
+    "fromSide": "right",
+    "to": "e14",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e58": {
+    "from": "e49",
+    "fromSide": "right",
+    "to": "e50",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e4": {
+    "color": "green",
+    "h": 44,
+    "kind": "pill",
+    "text": "Working",
+    "type": "shape",
+    "w": 220,
+    "x": 1640,
+    "y": -160
+   },
+   "e74": {
+    "h": 160,
+    "text": "Parked",
+    "type": "container",
+    "w": 1660,
+    "x": -24,
+    "y": 1784
+   },
+   "e23": {
+    "text": "**Features**",
+    "type": "text",
+    "x": 964,
+    "y": 324
+   },
+   "e35": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Cloudflare host**\nlocal runtime daily; staging once",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1636,
+    "y": 356
+   },
+   "e62": {
+    "color": "blue",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**The rules feature (invariants)**\nthe grid's rules row and the value-moving checks merged; three more in review: [196](https://github.com/AaronAbuUsama/architect/pull/196), [207](https://github.com/AaronAbuUsama/architect/pull/207), [208](https://github.com/AaronAbuUsama/architect/pull/208). The portal comes last.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 0,
+    "y": 1344
+   },
+   "e63": {
+    "color": "blue",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Prove only what changed, and a warm world**\nboth built and in review: [211](https://github.com/AaronAbuUsama/architect/pull/211), [214](https://github.com/AaronAbuUsama/architect/pull/214); the warm-world speed check, [223](https://github.com/AaronAbuUsama/architect/pull/223).",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 540,
+    "y": 1344
+   },
+   "e34": {
+    "color": "white",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Noir and Solana**\ndesigned and spiked; later",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1300,
+    "y": 644
+   },
+   "e22": {
+    "h": 460,
+    "text": "What plugs in",
+    "type": "container",
+    "w": 1696,
+    "x": 940,
+    "y": 300
+   },
+   "e75": {
+    "color": "white",
+    "h": 90,
+    "kind": "rounded",
+    "text": "**Foreman**\nuntil you raise it again. [Draft, 187](https://github.com/AaronAbuUsama/architect/pull/187)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 0,
+    "y": 1824
+   },
+   "e5": {
+    "color": "blue",
+    "h": 44,
+    "kind": "pill",
+    "text": "In progress",
+    "type": "shape",
+    "w": 220,
+    "x": 1880,
+    "y": -160
+   },
+   "e59": {
+    "from": "e50",
+    "fromSide": "right",
+    "to": "e51",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e18": {
+    "from": "e12",
+    "fromSide": "right",
+    "to": "e13",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e80": {
+    "color": "blue",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**On chain: how a blueprint lives there**\nthe design is open, [218](https://github.com/AaronAbuUsama/architect/pull/218), and you pulled the work forward, [219](https://github.com/AaronAbuUsama/architect/pull/219). Open point: one contract per organisation, or one shared.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 540,
+    "y": 1584
+   },
+   "e38": {
+    "color": "white",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Actions for agents**\nplanned, with the factory",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1636,
+    "y": 644
+   },
+   "e79": {
+    "color": "blue",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**UI SDK: going all in**\nyour go. First spike passed (one generated form an agent can fill); second spike on a real world started. HeroUI phases out. [Decision, 217](https://github.com/AaronAbuUsama/architect/pull/217)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 0,
+    "y": 1584
+   },
+   "e9": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "text": "**Blueprint**\nthings, operations, journeys, roles and mounts, written as TypeScript files. Built.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 310,
+    "x": 0,
+    "y": 44
+   },
+   "e55": {
+    "from": "e46",
+    "fromSide": "right",
+    "to": "e47",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e43": {
+    "h": 404,
+    "text": "Milestones, in order",
+    "type": "container",
+    "w": 2660,
+    "x": -24,
+    "y": 830
+   },
+   "e14": {
+    "color": "blue",
+    "h": 150,
+    "kind": "rounded",
+    "text": "**Portal**\nthe app's console. Partly built; the rules section is next.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 310,
+    "x": 2300,
+    "y": 44
+   },
+   "e83": {
+    "color": "peach",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Generated screens**\nno slice generates screens; stage 1 plans hooks only. The second UI SDK spike decides when.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 440,
+    "x": 2172,
+    "y": 1704
+   },
+   "e56": {
+    "from": "e47",
+    "fromSide": "right",
+    "to": "e48",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e40": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Faster prove**\nabout 30 seconds down to 10 on acme",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1972,
+    "y": 452
+   },
+   "e17": {
+    "from": "e11",
+    "fromSide": "right",
+    "to": "e12",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e60": {
+    "from": "e51",
+    "fromSide": "right",
+    "to": "e52",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e37": {
+    "color": "white",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**React hooks**\nplanned for stage 1",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1636,
+    "y": 548
+   },
+   "e21": {
+    "cols": {
+     "c1": {
+      "at": 1,
+      "w": 130
+     },
+     "c2": {
+      "at": 2,
+      "w": 80
+     },
+     "c3": {
+      "at": 3,
+      "w": 90
+     },
+     "c4": {
+      "at": 4,
+      "w": 100
+     },
+     "c5": {
+      "at": 5,
+      "w": 420
+     }
+    },
+    "heat": {
+     "cols": {
+      "c2": "green",
+      "c4": "peach"
+     }
+    },
+    "rows": {
+     "r1": {
+      "at": 1,
+      "c1": "Output",
+      "c2": "Built",
+      "c3": "Partly",
+      "c4": "Not yet",
+      "c5": "What it is"
+     },
+     "r10": {
+      "at": 10,
+      "c1": "Telemetry",
+      "c2": "4",
+      "c3": "7",
+      "c4": "3",
+      "c5": "traces and logs from every run"
+     },
+     "r2": {
+      "at": 2,
+      "c1": "Model",
+      "c2": "12",
+      "c3": "2",
+      "c4": "0",
+      "c5": "everything the blueprint declares, as data"
+     },
+     "r3": {
+      "at": 3,
+      "c1": "API",
+      "c2": "6",
+      "c3": "3",
+      "c4": "5",
+      "c5": "the HTTP contract for every operation"
+     },
+     "r4": {
+      "at": 4,
+      "c1": "Server",
+      "c2": "11",
+      "c3": "2",
+      "c4": "1",
+      "c5": "the generated worker that runs your handlers"
+     },
+     "r5": {
+      "at": 5,
+      "c1": "SDK",
+      "c2": "5",
+      "c3": "2",
+      "c4": "7",
+      "c5": "a typed client for callers"
+     },
+     "r6": {
+      "at": 6,
+      "c1": "CLI",
+      "c2": "4",
+      "c3": "5",
+      "c4": "5",
+      "c5": "one command per operation"
+     },
+     "r7": {
+      "at": 7,
+      "c1": "MCP",
+      "c2": "6",
+      "c3": "2",
+      "c4": "6",
+      "c5": "tools for agents"
+     },
+     "r8": {
+      "at": 8,
+      "c1": "Docs",
+      "c2": "4",
+      "c3": "6",
+      "c4": "4",
+      "c5": "generated reference pages"
+     },
+     "r9": {
+      "at": 9,
+      "c1": "Portal",
+      "c2": "0",
+      "c3": "8",
+      "c4": "6",
+      "c5": "the console: model, runs, what needs you"
+     }
+    },
+    "type": "table",
+    "x": 0,
+    "y": 324
+   },
+   "e76": {
+    "color": "white",
+    "h": 90,
+    "kind": "rounded",
+    "text": "**Vitest for app builders**\nwaits for the framework session",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 540,
+    "y": 1824
+   },
+   "e6": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "Planned, not built",
+    "type": "shape",
+    "w": 240,
+    "x": 2120,
+    "y": -160
+   },
+   "e7": {
+    "color": "peach",
+    "h": 44,
+    "kind": "pill",
+    "text": "Gap: no plan yet",
+    "type": "shape",
+    "w": 240,
+    "x": 2380,
+    "y": -160
+   },
+   "e77": {
+    "color": "white",
+    "h": 90,
+    "kind": "rounded",
+    "text": "**Speed extras**\nreusing verdicts, snapshots, parallel journeys, a faster CLI",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 1080,
+    "y": 1824
+   },
+   "e20": {
+    "h": 420,
+    "text": "The nine outputs: grid cells built, of 14 each",
+    "type": "container",
+    "w": 900,
+    "x": -24,
+    "y": 300
+   },
+   "e36": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Projection plugins**\nmodel, API, server, SDK, CLI, MCP",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1636,
+    "y": 452
+   },
+   "e61": {
+    "color": "blue",
+    "h": 410,
+    "text": "In flight now",
+    "type": "container",
+    "w": 1660,
+    "x": -24,
+    "y": 1304
+   },
+   "e16": {
+    "from": "e10",
+    "fromSide": "right",
+    "to": "e11",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e41": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**New app from the preset**\nworks from a local registry",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1972,
+    "y": 548
+   },
+   "e57": {
+    "from": "e48",
+    "fromSide": "right",
+    "to": "e49",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e82": {
+    "color": "peach",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Named value kinds**\na handle and a web address reach the model only as 'schema', so no output can pick the right input or check",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 440,
+    "x": 1700,
+    "y": 1704
+   },
+   "e66": {
+    "color": "green",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**One Cloudflare account, prefixed**\nyour rule, merged. [Pull request 200](https://github.com/AaronAbuUsama/architect/pull/200)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 540,
+    "y": 1464
+   },
+   "e89": {
+    "color": "blue",
+    "h": 130,
+    "kind": "rounded",
+    "text": "**Time (milestone 8)**\ndecided; checks in review. Build starts at stage 1's gate, and stage 3 waits on it. [Checks, 213](https://github.com/AaronAbuUsama/architect/pull/213)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1776,
+    "y": 1080
+   },
+   "e31": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**TypeScript with Effect**\nhandlers and all generated code",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 1300,
+    "y": 356
+   },
+   "e27": {
+    "color": "green",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Wallets**\nkeys, signing, sending. The one real feature plugin.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 964,
+    "y": 356
+   },
+   "e70": {
+    "color": "peach",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Money**\nno amount that knows its currency or token and decimals, can go negative, and means the same in Effect and Solidity. [Recorded, 203](https://github.com/AaronAbuUsama/architect/pull/203)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 440,
+    "x": 2172,
+    "y": 1344
+   },
+   "e85": {
+    "color": "white",
+    "h": 130,
+    "kind": "rounded",
+    "text": "**Stage 2: wallets**\npay @name in test tokens on a local chain",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 592,
+    "y": 1080
+   },
+   "e93": {
+    "from": "e87",
+    "fromSide": "right",
+    "to": "e88",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e50": {
+    "color": "white",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**Reach out**\npayments, webhooks and outside services",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 1776,
+    "y": 870
+   },
+   "e46": {
+    "color": "blue",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**Stage 1: Plugged In**\nname, profile, links built; rules and speed in review; hooks not started",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 592,
+    "y": 870
+   },
+   "e11": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "text": "**Generators**\nwrite the API, server, SDK, CLI and MCP code, and scaffold your handlers. Built, some outputs partial.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 310,
+    "x": 920,
+    "y": 44
+   },
+   "e10": {
+    "color": "green",
+    "h": 150,
+    "kind": "rounded",
+    "text": "**Compiler and model**\nnames from paths, plugins folded in, one model every output reads. Built.",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 310,
+    "x": 460,
+    "y": 44
+   },
+   "e47": {
+    "color": "white",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**Workable**\nauth, organisations, and ortho new for a fresh app",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 888,
+    "y": 870
+   },
+   "e51": {
+    "color": "blue",
+    "h": 140,
+    "kind": "rounded",
+    "text": "**On chain**\nyou pulled it forward; its first decision is open, [219](https://github.com/AaronAbuUsama/architect/pull/219)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 2072,
+    "y": 870
+   },
+   "e92": {
+    "from": "e86",
+    "fromSide": "right",
+    "to": "e87",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e84": {
+    "size": "small",
+    "text": "**After workable, the stages set the order.** Each stage's gate takes the slices it needs from the milestones above.",
+    "type": "text",
+    "wrap": 250,
+    "x": 0,
+    "y": 1080
+   },
+   "e1": {
+    "size": "title",
+    "text": "Orthograph map",
+    "type": "text",
+    "x": 0,
+    "y": -230
+   },
+   "e71": {
+    "color": "peach",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**What's in the framework**\nwhere the core ends, the repo split, when code becomes a plugin. [Map, 185](https://github.com/AaronAbuUsama/architect/pull/185)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 440,
+    "x": 1700,
+    "y": 1464
+   },
+   "e26": {
+    "text": "**Tooling**",
+    "type": "text",
+    "x": 1972,
+    "y": 324
+   },
+   "e30": {
+    "color": "white",
+    "h": 84,
+    "kind": "rounded",
+    "text": "**Safe, budgets, hats**\nplanned for stage 3: Safe and Hats are others' contracts behind adapters; budgets is ours",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 300,
+    "x": 964,
+    "y": 644
+   },
+   "e67": {
+    "color": "green",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**Time design: decided**\none clock per world; dev time flows, jumps and speeds up. [Merged, 202](https://github.com/AaronAbuUsama/architect/pull/202)",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 500,
+    "x": 1080,
+    "y": 1464
+   },
+   "e88": {
+    "color": "white",
+    "h": 130,
+    "kind": "rounded",
+    "text": "**Version 1.0**\nthe four stage gates, then the public release",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 230,
+    "x": 1480,
+    "y": 1080
+   }
+  }
+ }
+}

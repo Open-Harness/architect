@@ -1,0 +1,239 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Orthograph To-Dos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout: one readable column, like a briefing doc; sections stacked, each with its own Listen button. */
+:root {
+  --bg: #f6f7fa;
+  --surface: #ffffff;
+  --fg: #1b2130;
+  --muted: #5b6477;
+  --line: #dfe3ec;
+  --accent: #2346b8;
+  --accent-ink: #ffffff;
+  --needs: #b4570f; --needs-bg: #fdebd8;
+  --doing: #1f5bb5; --doing-bg: #e1ebfb;
+  --wait: #116b6b; --wait-bg: #d9f1f0;
+  --idle: #555d6e; --idle-bg: #eceef3;
+  --done: #237a3b; --done-bg: #ddf2e2;
+  --parked: #6b3fa0; --parked-bg: #ede4f8;
+  --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "Space Grotesk", "Atkinson Hyperlegible", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11151f; --surface: #181d2a; --fg: #e6e9f1; --muted: #a2aabd; --line: #2b3244;
+  --accent: #8aa6ff; --accent-ink: #0e1220;
+  --needs: #f3a868; --needs-bg: #3a2614; --doing: #8fb6f5; --doing-bg: #172744;
+  --wait: #74d1cf; --wait-bg: #112f2f; --idle: #b3b9c7; --idle-bg: #262c3a;
+  --done: #86d69a; --done-bg: #15301e; --parked: #c4a3ef; --parked-bg: #2a1d3d;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11151f; --surface: #181d2a; --fg: #e6e9f1; --muted: #a2aabd; --line: #2b3244;
+  --accent: #8aa6ff; --accent-ink: #0e1220;
+  --needs: #f3a868; --needs-bg: #3a2614; --doing: #8fb6f5; --doing-bg: #172744;
+  --wait: #74d1cf; --wait-bg: #112f2f; --idle: #b3b9c7; --idle-bg: #262c3a;
+  --done: #86d69a; --done-bg: #15301e; --parked: #c4a3ef; --parked-bg: #2a1d3d;
+  color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 18px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 42rem; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+header { display: flex; flex-direction: column; gap: 12px; }
+h1 { font-family: var(--font-head); font-weight: 600; font-size: 2rem; line-height: 1.15; margin: 0; text-wrap: balance; }
+.dateline { color: var(--muted); margin: 0; }
+.intro { margin: 0; }
+h2 { font-family: var(--font-head); font-weight: 600; font-size: 1.3rem; margin: 0; text-wrap: balance; }
+section { display: flex; flex-direction: column; gap: 16px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+ol, ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+li.item { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+li.item.speaking { outline: 3px solid var(--accent); outline-offset: 2px; }
+.item-title { font-weight: 700; margin: 0; }
+.item-body { margin: 0; color: var(--fg); }
+.item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--muted); }
+.item-meta a { color: var(--accent); }
+.pill { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em; border-radius: 999px; padding: 2px 10px; }
+.s-needs { color: var(--needs); background: var(--needs-bg); }
+.s-doing { color: var(--doing); background: var(--doing-bg); }
+.s-wait { color: var(--wait); background: var(--wait-bg); }
+.s-idle { color: var(--idle); background: var(--idle-bg); }
+.s-done { color: var(--done); background: var(--done-bg); }
+.s-parked { color: var(--parked); background: var(--parked-bg); }
+button.listen { font: inherit; font-size: 0.95rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--accent); padding: 6px 14px; cursor: pointer; }
+button.listen.primary { background: var(--accent); color: var(--accent-ink); font-size: 1rem; padding: 10px 18px; align-self: flex-start; }
+button.listen:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button.listen svg { width: 16px; height: 16px; flex: none; }
+.tts-note { color: var(--muted); font-size: 0.9rem; margin: 0; }
+@media (prefers-reduced-motion: no-preference) { li.item { transition: outline-color 0.2s; } }
+</style>
+
+<main>
+  <header>
+    <h1>Orthograph To-Dos</h1>
+    <p class="dateline">As of Friday 20 November 2026, evening</p>
+    <p class="intro">What needs you, what the threads are doing, and what's parked. Press Listen on any section to hear it, or listen to the whole page.</p>
+    <button class="listen primary" id="listen-all" type="button" hidden></button>
+    <p class="tts-note" id="tts-note" hidden>Listening isn't available in this view. It works in Chrome and the Claude desktop app.</p>
+  </header>
+  <div id="sections" style="display:flex;flex-direction:column;gap:40px"></div>
+</main>
+
+<script>
+const GH = "https://github.com/AaronAbuUsama/architect/pull/";
+const SECTIONS = [
+  { id: "needs-you", title: "Needs you", items: [
+    { s: "needs", t: "The Solidity grill",
+      b: "Three questions in your Solidity session: where a contract is declared, who a person is on chain, and what each value becomes in Solidity. It recommends A for all three." },
+    { s: "needs", t: "Decide what's in the framework",
+      b: "One question at a time, starting with where the core ends. This settles the plugin plan, whether to split repos, and Vitest for people building apps.",
+      link: [GH + "185", "Framework map, pull request 185"] },
+    { s: "needs", t: "Optional: Axiom for staging traces",
+      b: "Make an Axiom dataset and an ingest token, and save the token as a GitHub secret on the repo. Without it, staging still proves the story, just with no traces.",
+      where: "Repo settings, secrets" },
+    { s: "needs", t: "Optional: hide the Cloudflare account ID",
+      b: "It's a plain repo variable, so it shows in the public Actions logs. It isn't a credential. Moving it to a secret takes a minute.",
+      where: "Repo settings, variables" },
+    { s: "needs", t: "Archiving finished threads",
+      b: "CI speed, the live demo, the framework map and Foreman are done or idle. I'll archive them when you say yes." },
+    { s: "needs", t: "The spreadsheet version of this page",
+      b: "I made a spreadsheet first, before you asked for this page. Delete it, or keep it?" }
+  ]},
+  { id: "threads", title: "What the threads are doing", items: [
+    { s: "wait", t: "UI SDK: the decision",
+      b: "Your go is written up: spikes first, everything new on UI SDK, the portal moves over piece by piece with the grid and board last, then HeroUI comes out. It passed review and merges right after the first spike.",
+      link: [GH + "217", "Pull request 217"] },
+    { s: "wait", t: "UI SDK: the first spike",
+      b: "One blueprint verb became one generated UI SDK form, in React and as web components. An agent in the page could find it, fill it and send it, and a refusal reached the agent with its code. It used a stand-in server. It's being landed now.",
+      link: [GH + "215", "Pull request 215"] },
+    { s: "doing", t: "UI SDK: the second spike",
+      b: "The same form through Plugged In's real SDK into a local world, in a real browser. It also settles how secrets, hidden fields and approvals map onto UI SDK's agent marks, and whether screens get generated in stage one." },
+    { s: "doing", t: "Goal 3: the rules feature",
+      b: "Checks first, then the build. The first checks and the grid's rules block are open; the last eight portal tests wait on this chain.",
+      link: [GH + "196", "First check, pull request 196"] },
+    { s: "wait", t: "Goal 3: prove only what changed",
+      b: "Built. All 31 of its check rows behave, and a changed adapter or plugin reruns every journey that calls it. In independent review.",
+      link: [GH + "211", "Pull request 211"] },
+    { s: "doing", t: "Goal 3: a warm world",
+      b: "Being built, so prove starts from a ready world instead of a cold one.",
+      link: [GH + "214", "Pull request 214"] },
+    { s: "idle", t: "Goal 3: staging fixes, then the final pass",
+      b: "Retry Cloudflare's flaky first deploy, real deploy config, let prove target staging, and recheck the race that once answered not found. Then a final pass with a recording and screenshots, and destroy." },
+    { s: "wait", t: "Time: its checks and the clock spike",
+      b: "All 36 time checks are written and fail only because the clock isn't built. The spike showed each request can get its own world's time safely, for about 30 microseconds.",
+      link: [GH + "213", "Time checks, pull request 213"] },
+    { s: "wait", t: "Money as a known gap",
+      b: "Recorded, its conflict fixed, merging once CI is green.",
+      link: [GH + "203", "Pull request 203"] },
+    { s: "wait", t: "Solidity: blueprint to chain",
+      b: "Your own session. It mapped the whole journey on its whiteboard and is waiting for your grill answers." },
+    { s: "doing", t: "Me: keep you posted",
+      b: "I relay each thread's outcome, keep this page and the map current, and record two new gaps: generated screens, and named value kinds like a web address." }
+  ]},
+  { id: "done", title: "Done today", items: [
+    { s: "done", t: "UI SDK is a go",
+      b: "You said go. Vercel's UI SDK becomes the base for every interface, and HeroUI is phased out." },
+    { s: "done", t: "The language decisions",
+      b: "A role can cover more than one thing, a repeated call can change nothing, and an app can give a plugin's thing its own name. Merged.",
+      link: [GH + "201", "Pull request 201"] },
+    { s: "done", t: "Time is its own milestone",
+      b: "One clock per world, moved together everywhere, built beside stage two. Merged.",
+      link: [GH + "202", "Pull request 202"] },
+    { s: "done", t: "Which Cloudflare account",
+      b: "One account for every environment, every name prefixed, and destroy only touches its own prefix. Merged.",
+      link: [GH + "200", "Pull request 200"] },
+    { s: "done", t: "The first staging pass",
+      b: "Plugged In deployed to workers.dev, the story passed, and nothing was left behind over five runs.",
+      link: [GH + "198", "Pull request 198"] },
+    { s: "done", t: "Speed checks",
+      b: "The checks for proving only what changed, and for a warm world, merged failing first, as they should." }
+  ]},
+  { id: "parked", title: "Parked", items: [
+    { s: "parked", t: "Foreman", b: "Nothing happens until you raise it again.", link: [GH + "187", "Draft, pull request 187"] },
+    { s: "parked", t: "Vitest for people building apps", b: "Waits for the framework session." },
+    { s: "parked", t: "Speed extras", b: "Reusing verdicts, snapshot worlds, parallel journeys, a faster CLI start, and CI test tags. Later." },
+    { s: "parked", t: "Capxul's ERP gaps", b: "Decimals, richer lists, line items and migrations. Money is now recorded as a gap; the UI is now UI SDK." }
+  ]}
+];
+const LABEL = { needs: "Needs you", doing: "In progress", wait: "Waiting on CI", idle: "Not started", done: "Done", parked: "Parked" };
+
+const ICON_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4 2.5v11l9-5.5z"/></svg>';
+const ICON_STOP = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect fill="currentColor" x="3.5" y="3.5" width="9" height="9" rx="1"/></svg>';
+
+const root = document.getElementById("sections");
+const buttons = [];
+SECTIONS.forEach((sec, si) => {
+  const el = document.createElement("section");
+  el.id = sec.id;
+  const head = document.createElement("div");
+  head.className = "section-head";
+  const h = document.createElement("h2");
+  h.textContent = sec.title + " (" + sec.items.length + ")";
+  const btn = document.createElement("button");
+  btn.className = "listen"; btn.type = "button"; btn.hidden = true; btn.dataset.section = si;
+  head.append(h, btn);
+  buttons.push(btn);
+  const list = document.createElement("ul");
+  sec.items.forEach((it, ii) => {
+    const li = document.createElement("li");
+    li.className = "item"; li.id = "item-" + si + "-" + ii;
+    const t = document.createElement("p"); t.className = "item-title"; t.textContent = it.t;
+    const b = document.createElement("p"); b.className = "item-body"; b.textContent = it.b;
+    const meta = document.createElement("div"); meta.className = "item-meta";
+    const pill = document.createElement("span"); pill.className = "pill s-" + it.s; pill.textContent = LABEL[it.s];
+    meta.append(pill);
+    if (it.where) { const w = document.createElement("span"); w.textContent = it.where; meta.append(w); }
+    if (it.link) { const a = document.createElement("a"); a.href = it.link[0]; a.target = "_blank"; a.rel = "noopener"; a.textContent = it.link[1]; meta.append(a); }
+    li.append(t, b, meta);
+    list.append(li);
+  });
+  el.append(head, list);
+  root.append(el);
+});
+
+function linesFor(si) {
+  const sec = SECTIONS[si];
+  const out = [{ text: sec.title + ".", id: "h-" + si }];
+  sec.items.forEach((it, ii) => out.push({ text: it.t + ". " + it.b, id: "item-" + si + "-" + ii }));
+  return out;
+}
+function setIdle() {
+  document.getElementById("listen-all").innerHTML = ICON_PLAY + "Listen to everything";
+  buttons.forEach(b => b.innerHTML = ICON_PLAY + "Listen");
+  document.querySelectorAll("li.speaking").forEach(n => n.classList.remove("speaking"));
+}
+
+let tts = null, active = null;
+function play(key, lines, btn) {
+  if (!tts) return;
+  if (active === key) { tts.stop(); return; }
+  setIdle();
+  active = key;
+  btn.innerHTML = ICON_STOP + "Stop";
+  tts.speak(lines).catch(() => {}).finally(() => { if (active === key) { active = null; setIdle(); } });
+}
+
+(async () => {
+  try { tts = await claude.use("tts"); } catch (e) { tts = null; }
+  if (!tts) { document.getElementById("tts-note").hidden = false; return; }
+  setIdle();
+  const all = document.getElementById("listen-all");
+  all.hidden = false;
+  buttons.forEach(b => b.hidden = false);
+  all.addEventListener("click", () => {
+    const lines = [{ text: "Orthograph to-dos, as of Friday the twentieth of November." }];
+    SECTIONS.forEach((_, si) => lines.push(...linesFor(si)));
+    play("all", lines, all);
+  });
+  buttons.forEach(b => b.addEventListener("click", () => play("s" + b.dataset.section, linesFor(+b.dataset.section), b)));
+  tts.onLine(({ id }) => {
+    document.querySelectorAll("li.speaking").forEach(n => n.classList.remove("speaking"));
+    const n = id && document.getElementById(id);
+    if (n && n.tagName === "LI") { n.classList.add("speaking"); n.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
+  });
+  tts.onState(({ state }) => { if (state === "idle") { active = null; setIdle(); } });
+})();
+</script>
+
+</body></html>

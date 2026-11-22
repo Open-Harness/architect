@@ -1,0 +1,218 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Orthograph Scope</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout: a single reading column with a sticky section bar; status is carried by chips and a filter row. */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --fg: #1b1f27; --muted: #5b6372; --line: #dfe3ea; --accent: #2f5bd3;
+  --built-bg: #e3f4ea; --built-fg: #17683b;
+  --partial-bg: #fdf0d8; --partial-fg: #8a5500;
+  --spiked-bg: #e8ecfb; --spiked-fg: #3047a3;
+  --none-bg: #f1f2f4; --none-fg: #59606d;
+  --display: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12151b; --surface: #1a1e26; --fg: #e6e9ef; --muted: #9aa3b2; --line: #2b313c; --accent: #7d9cff;
+  --built-bg: #173525; --built-fg: #7fd9a3; --partial-bg: #3a2c10; --partial-fg: #f0bf6a;
+  --spiked-bg: #1f2848; --spiked-fg: #9db0ff; --none-bg: #262a33; --none-fg: #a6adba; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12151b; --surface: #1a1e26; --fg: #e6e9ef; --muted: #9aa3b2; --line: #2b313c; --accent: #7d9cff;
+  --built-bg: #173525; --built-fg: #7fd9a3; --partial-bg: #3a2c10; --partial-fg: #f0bf6a;
+  --spiked-bg: #1f2848; --spiked-fg: #9db0ff; --none-bg: #262a33; --none-fg: #a6adba; color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+header.top { display: grid; gap: 10px; margin-bottom: 18px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 34px/1.15 var(--display); margin: 0; text-wrap: balance; }
+h2 { font: 600 22px/1.25 var(--display); margin: 40px 0 10px; text-wrap: balance; scroll-margin-top: 70px; }
+h3 { font: 600 16px/1.3 var(--display); margin: 26px 0 8px; scroll-margin-top: 70px; }
+p, li { max-width: 72ch; }
+code { font: 13px var(--mono); background: var(--none-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.counts { display: flex; flex-wrap: wrap; gap: 8px; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 10px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.bar nav { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; }
+.bar nav a { color: var(--accent); text-decoration: none; }
+.bar nav a:hover, .bar nav a:focus-visible { text-decoration: underline; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.filters button { font: 500 12px var(--body); border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.filters button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip { display: inline-block; font: 500 12px/1.6 var(--mono); padding: 0 8px; border-radius: 999px; white-space: nowrap; }
+.chip.built { background: var(--built-bg); color: var(--built-fg); }
+.chip.partial { background: var(--partial-bg); color: var(--partial-fg); }
+.chip.spiked { background: var(--spiked-bg); color: var(--spiked-fg); }
+.chip.none { background: var(--none-bg); color: var(--none-fg); }
+.tw { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { text-align: left; font: 600 12px var(--body); letter-spacing: .03em; color: var(--muted); padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; min-width: 120px; }
+td.cap { font-weight: 500; min-width: 180px; }
+tr:last-child td { border-bottom: 0; }
+tr.hide { display: none; }
+ol { padding-left: 22px; display: grid; gap: 6px; }
+@media (max-width: 640px) { h1 { font-size: 27px; } .filters { margin-left: 0; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Read from the code · 21 November 2026</div>
+    <h1>Orthograph scope</h1>
+    <div class="counts">
+      <span class="chip built">Built 20</span>
+      <span class="chip partial">Partial 12</span>
+      <span class="chip spiked">Spiked 12</span>
+      <span class="chip none">None 21</span>
+    </div>
+  </header>
+  <div class="bar">
+    <nav aria-label="Sections"><a href="#1-what-orthograph-is">What Orthograph is</a><a href="#2-the-releases-k28">The releases (K28)</a><a href="#3-the-capability-map">The capability map</a><a href="#4-holes-no-slice-owns">Holes no slice owns</a><a href="#5-where-the-docs-disagree-to-fix-when-th">Where the docs disagree (to fix when the releases are agreed)</a></nav>
+    <div class="filters" role="group" aria-label="Show capabilities">
+      <button type="button" id="f-all" data-f="all" aria-pressed="true">All</button>
+      <button type="button" id="f-built" data-f="built" aria-pressed="false">Built</button>
+      <button type="button" id="f-partial" data-f="partial" aria-pressed="false">Partial</button>
+      <button type="button" id="f-spiked" data-f="spiked" aria-pressed="false">Spiked</button>
+      <button type="button" id="f-none" data-f="none" aria-pressed="false">None</button>
+    </div>
+  </div>
+  <main>
+<p>Read from the code on <code>goal/stage-1</code> (at <code>f7d28a42</code>) and <code>goal/on-chain</code>, 21 November 2026, by four read-only passes the conductor ran. Status is judged by the code and the tests, never by the ticks in <code>milestones.md</code>, which are behind. The release lines in section 2 are decided: K28, Aaron, 21 November 2026.</p>
+<p>Status words: <strong>Built</strong> (in <code>packages/</code>, with a test that passes), <strong>Partial</strong> (built, with a named piece missing), <strong>Spiked</strong> (only throwaway code in <code>spikes/</code> proves it), <strong>None</strong> (nothing yet).</p>
+<h2 id="1-what-orthograph-is">1. What Orthograph is</h2>
+<p>You describe a system once, in a typed blueprint, and everything else falls out of it: the server, the SDK, the CLI, MCP tools, the docs, the portal, telemetry and the proof. "The only code you write by hand is behaviour." Journeys say what the app must do, and <code>ortho prove</code> judges the app against them from real evidence, so a coding agent can climb them until they are green.</p>
+<p>What it is not: two products, a fork of agent-native, or (today) anything in the cloud or on public npm.</p>
+<h2 id="2-the-releases-k28">2. The releases (K28)</h2>
+<p>No document defined an alpha or a beta before this one. v1.0 was defined (<code>milestones.md</code>); K28 puts two releases before it:</p>
+<div class="tw"><table><thead><tr><th>Release</th><th>A person outside can…</th><th>Done when</th><th>Left to build</th></tr></thead><tbody>
+<tr><td class="cap"><strong>Preview</strong> (<code>next</code> on npm)</td><td>install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine</td><td>Gate M1 passes on <code>main</code>, and <code>@orthograph/*</code> is on npm under <code>next</code></td><td>milestone 1's last pieces: the chains-and-wallets docs page, derived alerts, machine graphs, the request key in traces, and MCP's output schema; the npm preview itself (added by K28; publish refuses npmjs today); Goal 3's branch landing on <code>main</code></td></tr>
+<tr><td class="cap"><strong>Beta</strong> (stage 1, "workable")</td><td>start an app with <code>npm create orthograph</code>, sign people in, claim <code>@name</code> on a real page, and deploy it to Cloudflare and tear it down</td><td>Gate M2 (M2.12) and Goal 3's done check (<code>e2e:stage1</code>, staging included)</td><td>all of milestone 2 (kinds of caller, auth and organizations as plugins, secrets, <code>ortho new</code>), the handles plugin, React hooks, the three screens, staging deploy and destroy</td></tr>
+<tr><td class="cap"><strong>1.0</strong> (stages 2 to 4)</td><td>wallets and pay by handle; a Safe with budgets, agents and time; a private club on Aztec</td><td>the stage 2, 3 and 4 gates on <code>main</code>, plus M7.01 to M7.04, M7.06 and M7.13</td><td>most of the on-chain milestone, webhooks, workflows, agents, time, all of stage 4, the real release</td></tr>
+</tbody></table></div>
+<p><strong>Where Goal 4 falls.</strong> Goal 4 (on chain, end to end) serves 1.0, not the preview or the beta: its slices 2 and 9 to 11 are stage 2 work, and slices 1, 3 to 8 and 12 are stage 3. Only slice 1 (the language and host seam) touches the core everything else uses.</p>
+<h2 id="3-the-capability-map">3. The capability map</h2>
+<h3 id="the-core-blueprint-compiler-outputs-proo">The core: blueprint, compiler, outputs, proof (preview)</h3>
+<div class="tw"><table><thead><tr><th>Capability</th><th>Status</th><th>Evidence, or what is missing</th><th>Slices</th></tr></thead><tbody>
+<tr data-status="built"><td class="cap">Things, fields, machines, operations, steps</td><td><span class="chip built">Built</span></td><td><code>packages/orthograph/src/modules/{things,machines,operations}</code></td><td>M1.03, M1.26</td></tr>
+<tr data-status="partial"><td class="cap">Values</td><td><span class="chip partial">Partial</span></td><td>a value's pattern never reaches the model (open problem S-28)</td><td>M1.42</td></tr>
+<tr data-status="built"><td class="cap">Errors with one refusals table</td><td><span class="chip built">Built</span></td><td><code>examples/plugged-in/generated/api/src/errors.ts</code></td><td>M1.47</td></tr>
+<tr data-status="built"><td class="cap">Events the compiler checks are fillable</td><td><span class="chip built">Built</span></td><td><code>packages/compiler/src/modules/model/internal/fillable.ts</code></td><td>M1.48</td></tr>
+<tr data-status="built"><td class="cap">Invariants (unique rules), enforced and explained</td><td><span class="chip built">Built</span></td><td>checks 31, 32, 34, 35; the portal's Rules section</td><td>ST1.09 to ST1.22</td></tr>
+<tr data-status="built"><td class="cap">Visibility: public, private, secret, issued</td><td><span class="chip built">Built</span></td><td><code>packages/language-effect/src/modules/visibility</code></td><td>M1.35</td></tr>
+<tr data-status="built"><td class="cap">Stores (database, actor)</td><td><span class="chip built">Built</span></td><td><code>packages/host-cloudflare/src/modules/{store,actors}</code></td><td>M1.17</td></tr>
+<tr data-status="built"><td class="cap">Generated server, SDK, CLI, docs</td><td><span class="chip built">Built</span></td><td>checks 14 and 20; <code>generators/.../docs.ts</code></td><td>M1.11 to M1.13</td></tr>
+<tr data-status="partial"><td class="cap">Generated MCP</td><td><span class="chip partial">Partial</span></td><td>tool calls carry no request key (open problem S-16)</td><td>M1.12, M1.37</td></tr>
+<tr data-status="none"><td class="cap">Request key in traces</td><td><span class="chip none">None</span></td><td>the portal's calls page says no span carries it</td><td>M1.12a</td></tr>
+<tr data-status="built"><td class="cap">Self-explaining scaffold and journey stubs</td><td><span class="chip built">Built</span></td><td><code>projections/.../handlers</code></td><td>M1.44, M1.45</td></tr>
+<tr data-status="built"><td class="cap">Plugins, mounts, adapters as steps, projections as plugins</td><td><span class="chip built">Built</span></td><td>checks 01 to 08</td><td>M1.05 to M1.14</td></tr>
+<tr data-status="built"><td class="cap"><code>ortho prove</code>: nine evals, <code>--changed</code>, warm world</td><td><span class="chip built">Built</span></td><td>checks 29, 30</td><td>M1.16, ST1.23, ST1.24</td></tr>
+<tr data-status="none"><td class="cap">Prove fails fast on a broken source</td><td><span class="chip none">None</span></td><td>checks 33 and 36 red; the fix for prove hanging is being built</td><td>S-29</td></tr>
+<tr data-status="built"><td class="cap">Climb check and the grid (331 of 331)</td><td><span class="chip built">Built</span></td><td>CI <code>e2e-climb</code>, <code>e2e-grid</code></td><td>Goal 3</td></tr>
+<tr data-status="built"><td class="cap">Logbook, promote, publish to the local registry, watch</td><td><span class="chip built">Built</span></td><td>layer 2 checks</td><td>L2</td></tr>
+<tr data-status="built"><td class="cap">Telemetry carrying the model</td><td><span class="chip built">Built</span></td><td>checks 13, 17</td><td>M1.18 to M1.21, M1.36</td></tr>
+<tr data-status="partial"><td class="cap">Portal viewer: things, operations, lifecycle, rules, traces, journeys</td><td><span class="chip partial">Partial</span></td><td>calls and metrics, the role a caller held, step verdicts</td><td>M1.13</td></tr>
+<tr data-status="none"><td class="cap">Portal monitor and machine graphs</td><td><span class="chip none">None</span></td><td><code>monitor.tsx</code> is a placeholder</td><td>M1.49, M1.50</td></tr>
+<tr data-status="none"><td class="cap">A Node host</td><td><span class="chip none">None</span></td><td>the server runs only as a Cloudflare Worker; no slice</td><td>none (Goal 4 slice 1 names <code>Host.node</code>)</td></tr>
+<tr data-status="none"><td class="cap">npm preview of the framework</td><td><span class="chip none">None</span></td><td>publish goes only to Verdaccio; no slice</td><td>none</td></tr>
+</tbody></table></div>
+<h3 id="stage-1-workable-beta">Stage 1: workable (beta)</h3>
+<div class="tw"><table><thead><tr><th>Capability</th><th>Status</th><th>Evidence, or what is missing</th><th>Slices</th></tr></thead><tbody>
+<tr data-status="built"><td class="cap">Plugged In's seven journeys</td><td><span class="chip built">Built</span></td><td>56 of 56 steps green, 21 November; a required CI check on stage 1</td><td>ST1.02</td></tr>
+<tr data-status="none"><td class="cap">Principals beyond a person (agent, service, system, <code>Via</code>)</td><td><span class="chip none">None</span></td><td><code>roles/types.ts</code> has <code>anonymous</code> and <code>person</code> only</td><td>M2.01, M2.03</td></tr>
+<tr data-status="none"><td class="cap">Roles declared with <code>who</code> and <code>holds</code></td><td><span class="chip none">None</span></td><td>only <code>rule</code></td><td>M2.17, M2.18</td></tr>
+<tr data-status="partial"><td class="cap">Auth as a plugin</td><td><span class="chip partial">Partial</span></td><td>Better Auth runs in <code>host-cloudflare</code>; its things are copied into each app</td><td>M2.05, M2.06</td></tr>
+<tr data-status="partial"><td class="cap">Organizations as a plugin</td><td><span class="chip partial">Partial</span></td><td>copied things in <code>examples/starter</code></td><td>M2.07, M2.11</td></tr>
+<tr data-status="partial"><td class="cap">Secrets by declaration</td><td><span class="chip partial">Partial</span></td><td>per environment only; no plugin secrets, no <code>ortho secrets set</code></td><td>M2.04</td></tr>
+<tr data-status="none"><td class="cap"><code>ortho new</code> and <code>ortho new feature</code></td><td><span class="chip none">None</span></td><td><code>packages/preset</code> is still the Nx preset</td><td>M2.09, M2.10</td></tr>
+<tr data-status="partial"><td class="cap"><code>ortho add</code> for events, errors, roles, moves</td><td><span class="chip partial">Partial</span></td><td>thing, operation, read, journey only</td><td>M2.14, M2.15</td></tr>
+<tr data-status="none"><td class="cap">Adopt a mounted thing</td><td><span class="chip none">None</span></td><td></td><td>M2.19, M2.20</td></tr>
+<tr data-status="none"><td class="cap">Journeys through the CLI, MCP and the page</td><td><span class="chip none">None</span></td><td>no <code>--through</code></td><td>M2.08, ST1.01</td></tr>
+<tr data-status="none"><td class="cap">The handles plugin</td><td><span class="chip none">None</span></td><td>the code runs inside Plugged In; not extracted</td><td>ST1.03</td></tr>
+<tr data-status="none"><td class="cap">React hooks</td><td><span class="chip none">None</span></td><td>no <code>@orthograph/react</code></td><td>ST1.01, ST1.06</td></tr>
+<tr data-status="none"><td class="cap">Plugged In's three screens</td><td><span class="chip none">None</span></td><td>no <code>src/web/</code></td><td>ST1.04</td></tr>
+<tr data-status="spiked"><td class="cap">Staging: deploy, run the story, destroy</td><td><span class="chip spiked">Spiked</span></td><td>five clean runs in <code>spikes/staging-pass</code>; no <code>ortho env up staging</code>, no infra projection</td><td>M7.01 (decided), M7.03, M7.04</td></tr>
+<tr data-status="none"><td class="cap">Prove against a deployed address</td><td><span class="chip none">None</span></td><td>no https client, no D1 facts reader; no slice</td><td>none</td></tr>
+</tbody></table></div>
+<h3 id="app-ui-beta-for-the-screens-then-1-0">App UI (beta for the screens, then 1.0)</h3>
+<div class="tw"><table><thead><tr><th>Capability</th><th>Status</th><th>Evidence, or what is missing</th><th>Slices</th></tr></thead><tbody>
+<tr data-status="built"><td class="cap">UI SDK as the interface base</td><td><span class="chip built">Decided</span></td><td>the UI SDK decision, K24, in review</td><td>K24</td></tr>
+<tr data-status="spiked"><td class="cap">A generated form per operation on UI SDK</td><td><span class="chip spiked">Spiked</span></td><td><code>spikes/ui-sdk-real-world</code>; no generator, no slice</td><td>none</td></tr>
+<tr data-status="spiked"><td class="cap">Agent marks from blueprint meaning</td><td><span class="chip spiked">Spiked</span></td><td>three of four map; approval and a hidden payload field can't be declared</td><td>none</td></tr>
+<tr data-status="spiked"><td class="cap">Actions: one per operation, for the page, MCP and the CLI</td><td><span class="chip spiked">Spiked</span></td><td><code>spikes/agent-native-compat</code>, <code>ui-sdk-real-world/src/action.ts</code></td><td>M1.22, M1.23 (moved to M3)</td></tr>
+<tr data-status="spiked"><td class="cap">Approvals asked once</td><td><span class="chip spiked">Spiked</span></td><td>agent-native checks 04 to 06</td><td>M1.23, M1.37</td></tr>
+<tr data-status="partial"><td class="cap">Portal chat and "Needs you"</td><td><span class="chip partial">Partial</span></td><td><code>portal-ui</code> has the chat parts; nothing uses them</td><td>M1.24</td></tr>
+<tr data-status="built"><td class="cap">HeroUI Pro behind one package</td><td><span class="chip built">Built</span></td><td><code>packages/portal-ui</code>, check 15</td><td>M1.34</td></tr>
+</tbody></table></div>
+<h3 id="on-chain-and-wallets-1-0-stages-2-and-3">On chain and wallets (1.0, stages 2 and 3)</h3>
+<div class="tw"><table><thead><tr><th>Capability</th><th>Status</th><th>Evidence, or what is missing</th><th>Slices</th></tr></thead><tbody>
+<tr data-status="built"><td class="cap">Wallet keys, signing, simulated sends, keystore</td><td><span class="chip built">Built</span></td><td><code>packages/wallets</code></td><td>M1.27 to M1.32</td></tr>
+<tr data-status="built"><td class="cap">EVM adapter and Anvil per world</td><td><span class="chip built">Built</span></td><td><code>packages/chain-evm</code></td><td>M1.30, M1.31</td></tr>
+<tr data-status="built"><td class="cap">Confirmation depth per environment</td><td><span class="chip built">Built</span></td><td>check 18</td><td>M1.38</td></tr>
+<tr data-status="partial"><td class="cap">Browser wallet signer</td><td><span class="chip partial">Partial</span></td><td>only against a stub; never in Chromium</td><td>M1.29, ST2.03</td></tr>
+<tr data-status="partial"><td class="cap">Relayer, follower</td><td><span class="chip partial">Partial</span></td><td>library pieces only; no actors</td><td>M6.07, M6.09</td></tr>
+<tr data-status="spiked"><td class="cap">Link a wallet with SIWE</td><td><span class="chip spiked">Spiked</span></td><td>26 checks in a spike; in no goal</td><td>M2.13</td></tr>
+<tr data-status="none"><td class="cap">Pay by handle</td><td><span class="chip none">None</span></td><td></td><td>ST2.04 to ST2.06</td></tr>
+<tr data-status="none"><td class="cap">Webhooks and <code>on:</code> events</td><td><span class="chip none">None</span></td><td>no decision, nothing scheduled</td><td>M5.01, M5.03</td></tr>
+<tr data-status="none"><td class="cap">Language and host plugin kinds</td><td><span class="chip none">None</span></td><td>design only</td><td>K27, Goal 4 slice 1</td></tr>
+<tr data-status="spiked"><td class="cap">Chain store, Solidity output, Foundry tests and fuzz</td><td><span class="chip spiked">Spiked</span></td><td><code>language-solidity</code> is empty; shape proved in <code>spikes/chain-languages</code></td><td>M6.10 to M6.13</td></tr>
+<tr data-status="spiked"><td class="cap">Contract client and signing</td><td><span class="chip spiked">Spiked</span></td><td></td><td>M6.01, M6.14, M6.15</td></tr>
+<tr data-status="none"><td class="cap">Safe, Hats and the budgets module</td><td><span class="chip none">None</span></td><td>no spike yet</td><td>ST3.01 to ST3.08, M6.16</td></tr>
+</tbody></table></div>
+<h3 id="workflows-agents-time-1-0-stage-3">Workflows, agents, time (1.0, stage 3)</h3>
+<div class="tw"><table><thead><tr><th>Capability</th><th>Status</th><th>Evidence, or what is missing</th><th>Slices</th></tr></thead><tbody>
+<tr data-status="none"><td class="cap">Declared workflows</td><td><span class="chip none">None</span></td><td>no decision, no spike</td><td>M3.01 to M3.03</td></tr>
+<tr data-status="spiked"><td class="cap">A durable agent run</td><td><span class="chip spiked">Spiked</span></td><td><code>spikes/durable-run</code></td><td>M4.01, M4.03, M4.04, M4.09</td></tr>
+<tr data-status="none"><td class="cap">Model adapters and a stand-in model</td><td><span class="chip none">None</span></td><td></td><td>M4.05, M4.06</td></tr>
+<tr data-status="none"><td class="cap">Tools from operations; the Run thing</td><td><span class="chip none">None</span></td><td></td><td>M4.07, M4.10</td></tr>
+<tr data-status="built"><td class="cap">An agent writes a handler from a brief</td><td><span class="chip built">Built</span></td><td><code>ortho brief</code>, layer 1 check 04</td><td>Gate 1</td></tr>
+<tr data-status="partial"><td class="cap">No wall clock; <code>Timers</code>; counted work</td><td><span class="chip partial">Partial</span></td><td>in-memory timers and the lint rule; no world timer table</td><td>M8.06, M8.07</td></tr>
+<tr data-status="spiked"><td class="cap">World clock, moves made by time, the keeper</td><td><span class="chip spiked">Spiked/None</span></td><td><code>design/spikes/world-clock.md</code></td><td>M8</td></tr>
+</tbody></table></div>
+<h3 id="stage-4-and-the-release-1-0">Stage 4 and the release (1.0)</h3>
+<div class="tw"><table><thead><tr><th>Capability</th><th>Status</th><th>Evidence, or what is missing</th><th>Slices</th></tr></thead><tbody>
+<tr data-status="spiked"><td class="cap">Private club on Aztec</td><td><span class="chip spiked">Spiked</span></td><td><code>spikes/noir-private-core</code>; <code>spikes/aztec-club</code> doesn't exist</td><td>ST4.01 to ST4.08</td></tr>
+<tr data-status="partial"><td class="cap">Real npm, Homebrew, GitHub releases</td><td><span class="chip partial">Partial</span></td><td>local tap and binary only</td><td>M7.02, M7.06, M7.13</td></tr>
+<tr data-status="spiked"><td class="cap">CI-signed verdicts</td><td><span class="chip spiked">Spiked</span></td><td><code>spikes/ci-oidc</code></td><td>M7.05</td></tr>
+</tbody></table></div>
+<h3 id="off-v1-0-s-path">Off v1.0's path</h3>
+<p>The factory and the work board (M3.04 to M3.21), the bench and the builder's tools (M4.11 to M4.14), workspaces and the building agents (M4.17 to M4.25), Stripe, Resend, adapters from OpenAPI, outbox and views (M5.04 to M5.13), and Capxul on Orthograph (M7.07 to M7.11). Most are None; the work board and E2B workspaces are Spiked.</p>
+<h2 id="4-holes-no-slice-owns">4. Holes no slice owns</h2>
+<ol>
+<li>The repository's <code>README.md</code> is empty, yet <code>AGENTS.md</code> serves "the goal in <code>README.md</code>".</li>
+<li>~~The npm preview has no slice~~: M1.51 now owns it (K28). The publish code still refuses npmjs.</li>
+<li>No Node host.</li>
+<li>Proving against a deployed address (staging) has no slice.</li>
+<li>Generated screens on UI SDK have no slice, and the blueprint can't declare an approval or a hidden payload field.</li>
+<li>Stage 2 needs webhooks (M5.01, M5.03) and SIWE linking (M2.13); neither is in any goal.</li>
+<li>Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike.</li>
+<li>The journey language's open problems: one world per journey, comparing one answer with the last, and sending malformed payloads.</li>
+<li>Stage 3's Safe and Hats spike and stage 4's Aztec club spike don't exist, though both stages start from them.</li>
+</ol>
+<h2 id="5-where-the-docs-disagree-to-fix-when-th">5. Where the docs disagree (to fix when the releases are agreed)</h2>
+<ol>
+<li>Noir is under "Later" and in K5 as later, but is v1.0's stage 4.</li>
+<li>The release list: K9 says M7.01 to M7.04 and M7.06; <code>milestones.md</code> adds M7.13.</li>
+<li>The npm preview is promised after Gate M1, but M7 says npm waits on stage 4.</li>
+<li>Capxul: "built on it" from M2 in one place, off v1.0's path in another.</li>
+<li>Staging: after Gate M2 in the milestones, inside stage 1 in Goal 3.</li>
+<li><code>milestones.md</code> still says "Everything runs locally: no cloud"; the ledger's summary counts are stale.</li>
+</ol>
+  </main>
+</div>
+<script>
+(function () {
+  var buttons = document.querySelectorAll('.filters button');
+  function apply(f) {
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.f === f)); });
+    document.querySelectorAll('tr[data-status]').forEach(function (r) {
+      r.classList.toggle('hide', f !== 'all' && r.dataset.status !== f);
+    });
+  }
+  buttons.forEach(function (b) { b.addEventListener('click', function () { apply(b.dataset.f); }); });
+})();
+</script>
+
+</body></html>

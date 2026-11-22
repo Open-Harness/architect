@@ -72,8 +72,8 @@ export interface TelemetryCall {
   readonly overBudget: boolean;
   /** The journey whose run made it, when the trace is a journey's. */
   readonly journey: string | null;
-  /** The call's idempotency key. No span carries it yet (portal.md hole 1): always null, and the page says `not yet`. */
-  readonly requestKey: null;
+  /** The idempotency key the call was made with: `request.key` on an attempt's span (M1.12a, portal.md hole 1), null when it was made with none. */
+  readonly requestKey: string | null;
   /** The role the caller held. Nothing carries it yet (portal.md hole 8): always null, and the page says `not yet`. */
   readonly roleHeld: null;
 }

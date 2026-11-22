@@ -2968,6 +2968,28 @@
       "publish": {},
       "hash": "0f14705e03d3bc97"
     },
+    "staging": {
+      "name": "staging",
+      "file": "blueprint/environments/staging.ts",
+      "runs": "always on",
+      "identity": "better-auth",
+      "lifetimeMs": null,
+      "cloud": {
+        "provider": "cloudflare",
+        "database": "d1"
+      },
+      "database": null,
+      "secrets": {},
+      "promotesFrom": null,
+      "deploy": {
+        "server": {
+          "how": "worker",
+          "domain": null
+        }
+      },
+      "publish": {},
+      "hash": "1f38e5ae45256ddc"
+    },
     "test": {
       "name": "test",
       "file": "blueprint/environments/test.ts",
@@ -2992,54 +3014,63 @@
       "file": "blueprint/projections/api.ts",
       "package": "@orthograph/projections",
       "version": "0.0.0",
-      "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+      "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
       "chosen": {},
-      "hash": "b12620c3b456db98"
+      "hash": "a8f9f814f58bfd10"
     },
     "cli": {
       "kind": "projection",
       "file": "blueprint/projections/cli.ts",
       "package": "@orthograph/projections",
       "version": "0.0.0",
-      "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+      "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
       "chosen": {},
-      "hash": "b12620c3b456db98"
+      "hash": "a8f9f814f58bfd10"
+    },
+    "infra": {
+      "kind": "projection",
+      "file": "blueprint/projections/infra.ts",
+      "package": "@orthograph/projections",
+      "version": "0.0.0",
+      "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+      "chosen": {},
+      "hash": "a8f9f814f58bfd10"
     },
     "mcp": {
       "kind": "projection",
       "file": "blueprint/projections/mcp.ts",
       "package": "@orthograph/projections",
       "version": "0.0.0",
-      "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+      "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
       "chosen": {},
-      "hash": "b12620c3b456db98"
+      "hash": "a8f9f814f58bfd10"
     },
     "model": {
       "kind": "projection",
       "file": "blueprint/projections/model.ts",
       "package": "@orthograph/projections",
       "version": "0.0.0",
-      "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+      "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
       "chosen": {},
-      "hash": "b12620c3b456db98"
+      "hash": "a8f9f814f58bfd10"
     },
     "sdk": {
       "kind": "projection",
       "file": "blueprint/projections/sdk.ts",
       "package": "@orthograph/projections",
       "version": "0.0.0",
-      "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+      "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
       "chosen": {},
-      "hash": "b12620c3b456db98"
+      "hash": "a8f9f814f58bfd10"
     },
     "server": {
       "kind": "projection",
       "file": "blueprint/projections/server.ts",
       "package": "@orthograph/projections",
       "version": "0.0.0",
-      "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+      "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
       "chosen": {},
-      "hash": "b12620c3b456db98"
+      "hash": "a8f9f814f58bfd10"
     }
   }
 }

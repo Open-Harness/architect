@@ -1,9 +1,9 @@
 // The files around the blueprint that make the workspace a project: its package.json, tsconfig and ignores.
 import { Names } from "orthograph/server";
 const EXACT = {
-  effect: "4.1.1",
-  "@effect/platform-node": "4.1.1",
-  "@effect/sql-d1": "4.1.1",
+  effect: "4.1.4",
+  "@effect/platform-node": "4.1.4",
+  "@effect/sql-d1": "4.1.4",
 };
 const DEV = {
   "@cloudflare/workers-types": "5.20261101.1",

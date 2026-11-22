@@ -14,6 +14,17 @@ describe("telemetry, in workerd", () => {
     expect(await response.text()).toBe(parent);
   });
 
+  it("with no collector and no sink, the call's own spans still carry the caller's trace", async () => {
+    const parent = "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01";
+    const handler = (_request: Request, context?: Context.Context<never>) =>
+      Effect.runPromise(Effect.provideContext(Effect.withSpan(Effect.currentSpan, "op.step"), context ?? (Effect.runSync(Effect.context<never>()) as Context.Context<never>))).then(
+        (span) => new Response(span.traceId),
+        () => new Response("no span"),
+      );
+    const response = await Telemetry.serve({ url: undefined, service: "test", handler, waitUntil: () => undefined }, new Request("http://w/", { headers: { traceparent: parent } }));
+    expect(await response.text()).toBe("0123456789abcdef0123456789abcdef");
+  });
+
   it("mints a trace when the caller has none, and the handler sees it", async () => {
     const response = await serve(new Request("http://w/"));
     const trace = response.headers.get("x-trace-id")!;

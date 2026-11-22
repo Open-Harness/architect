@@ -1,0 +1,1272 @@
+{
+ "collections": {
+  "board": {
+   "meta": {
+    "title": "Blueprint canvas",
+    "v": 1
+   }
+  },
+  "elements": {
+   "e118": {
+    "text": "**What Plugged In gets today**",
+    "type": "text",
+    "x": 0,
+    "y": 2440
+   },
+   "e48": {
+    "from": "e43",
+    "fromSide": "bottom",
+    "label": "keeps rows in",
+    "to": "e44",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e2": {
+    "size": "large",
+    "text": "Every app, drawn the same way, from its blueprint.",
+    "type": "text",
+    "x": 0,
+    "y": -250
+   },
+   "e72": {
+    "from": [
+     440,
+     1260
+    ],
+    "label": "claim",
+    "to": "e70",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e25": {
+    "color": "purple",
+    "h": 250,
+    "kind": "rounded",
+    "text": "**‹thing›.‹verb›**\n*one line on what it does*\n\n**Who may call:** anyone · signed in · ‹role›\n**Takes:** ‹payload fields›\n**Answers:** ‹answer fields›\n**Moves:** ‹from› → ‹to›\n**Steps:** load · record · call ‹adapter›\n**Budget:** 95% under ‹time›",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 72
+   },
+   "e122": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "a typed SDK ✓",
+    "type": "shape",
+    "w": 200,
+    "x": 672,
+    "y": 2476
+   },
+   "e33": {
+    "color": "ink",
+    "points": [
+     0,
+     0,
+     0,
+     560
+    ],
+    "type": "stroke",
+    "width": 2,
+    "x": 1945,
+    "y": 152
+   },
+   "e64": {
+    "text": "**Where it runs**",
+    "type": "text",
+    "x": 2320,
+    "y": 1124
+   },
+   "e114": {
+    "size": "small",
+    "text": "No secrets and no private fields yet: everything on a public page is public. Sign-in brings the first 🔑 secret, the session token, ⚡ issued once.",
+    "type": "text",
+    "wrap": 400,
+    "x": 2320,
+    "y": 1800
+   },
+   "e13": {
+    "text": "**Journeys** · the stories that prove it",
+    "type": "text",
+    "x": 1640,
+    "y": 24
+   },
+   "e44": {
+    "color": "white",
+    "h": 120,
+    "kind": "database",
+    "text": "**Store: ‹name›**\nD1 rows, or one actor per instance",
+    "type": "shape",
+    "w": 400,
+    "x": 2320,
+    "y": 484
+   },
+   "e52": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "the server",
+    "type": "shape",
+    "w": 200,
+    "x": 448,
+    "y": 916
+   },
+   "e102": {
+    "from": [
+     1860,
+     1480
+    ],
+    "label": "claim claimedname",
+    "to": [
+     2170,
+     1480
+    ],
+    "type": "arrow"
+   },
+   "e91": {
+    "color": "purple",
+    "h": 80,
+    "kind": "rounded",
+    "text": "**link.remove** · link owner\nlisted → removed",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 2320
+   },
+   "e29": {
+    "color": "white",
+    "h": 70,
+    "kind": "rounded",
+    "text": "**‹actor›**\nsigned in",
+    "type": "shape",
+    "w": 150,
+    "x": 1660,
+    "y": 82
+   },
+   "e87": {
+    "color": "peach",
+    "h": 110,
+    "kind": "rounded",
+    "text": "**Refusals**\nHandleTaken and HandleAlreadyOwned, from the rules · HandleNotFound · HandleNotClaimed · NotAllowed",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 1504
+   },
+   "e68": {
+    "from": "e66",
+    "fromSide": "top",
+    "label": "refers to",
+    "to": "e65",
+    "toSide": "bottom",
+    "type": "arrow"
+   },
+   "e86": {
+    "color": "purple",
+    "h": 80,
+    "kind": "rounded",
+    "text": "**handle.resolve** · anyone, a read\nname → the handle that holds it",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 1400
+   },
+   "e69": {
+    "from": "e67",
+    "fromSide": "top",
+    "label": "refers to",
+    "to": "e66",
+    "toSide": "bottom",
+    "type": "arrow"
+   },
+   "e28": {
+    "color": "purple",
+    "h": 90,
+    "kind": "rounded",
+    "text": "**‹other›.get** · anyone, a read\n‹key› → ‹its fields›",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 744
+   },
+   "e90": {
+    "color": "purple",
+    "h": 90,
+    "kind": "rounded",
+    "text": "**link.order** · link owner\nlink, position\nrefuses LinkAlreadyRemoved",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 2206
+   },
+   "e103": {
+    "color": "terracotta",
+    "dash": true,
+    "from": [
+     2170,
+     1540
+    ],
+    "label": "refused: HandleTaken",
+    "to": [
+     1860,
+     1540
+    ],
+    "type": "arrow"
+   },
+   "e53": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "a typed SDK",
+    "type": "shape",
+    "w": 200,
+    "x": 672,
+    "y": 916
+   },
+   "e45": {
+    "color": "white",
+    "h": 100,
+    "kind": "rounded",
+    "stroke": "purple",
+    "text": "**Mounted plugin: ‹@scope/name›**\nits things join yours, marked with where they came from",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 2320,
+    "y": 640
+   },
+   "e12": {
+    "text": "**Operations** · what callers can do",
+    "type": "text",
+    "x": 1200,
+    "y": 24
+   },
+   "e115": {
+    "from": "e109",
+    "fromSide": "bottom",
+    "to": "e111",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e65": {
+    "color": "blue",
+    "h": 400,
+    "kind": "rounded",
+    "text": "**Handle**   code HN\n*a public name one person holds until they release it*\n\n**Fields**\n- id\n- name : lowercase, up to 32\n- owner → a person\n\n**Rules**\n- one holder per name, while claimed\n- one name per person, while claimed\n\n**Roles**\n- handle owner: the person who claimed it",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 0,
+    "y": 1172
+   },
+   "e32": {
+    "color": "ink",
+    "points": [
+     0,
+     0,
+     0,
+     560
+    ],
+    "type": "stroke",
+    "width": 2,
+    "x": 1735,
+    "y": 152
+   },
+   "e123": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "a CLI ✓",
+    "type": "shape",
+    "w": 200,
+    "x": 896,
+    "y": 2476
+   },
+   "e24": {
+    "size": "small",
+    "text": "No machine: it has no states, only records.",
+    "type": "text",
+    "wrap": 600,
+    "x": 440,
+    "y": 790
+   },
+   "e73": {
+    "from": "e70",
+    "fromSide": "right",
+    "label": "release",
+    "to": "e71",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e3": {
+    "color": "blue",
+    "h": 44,
+    "kind": "pill",
+    "text": "Thing",
+    "type": "shape",
+    "w": 150,
+    "x": 0,
+    "y": -160
+   },
+   "e49": {
+    "text": "**From this one blueprint you get**",
+    "type": "text",
+    "x": 0,
+    "y": 880
+   },
+   "e119": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "the model ✓",
+    "type": "shape",
+    "w": 200,
+    "x": 0,
+    "y": 2476
+   },
+   "e112": {
+    "color": "white",
+    "h": 120,
+    "kind": "database",
+    "text": "**Store: the default D1**\nhandles, profiles and links as rows",
+    "type": "shape",
+    "w": 400,
+    "x": 2320,
+    "y": 1490
+   },
+   "e15": {
+    "color": "blue",
+    "h": 430,
+    "kind": "rounded",
+    "text": "**‹Thing›**   code ‹XX›\n*one line on what it is*\n\n**Fields**\n- id\n- ‹field› : ‹value›\n- ‹field› → ‹Other thing›\n- ‹field› 🔒 private to ‹role›\n- ‹field› 🔑 secret\n\n**Rules**\n- one ‹field› each, while ‹state›\n\n**Roles**\n- ‹role›: who that person is",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 0,
+    "y": 72
+   },
+   "e42": {
+    "color": "white",
+    "h": 70,
+    "kind": "rounded",
+    "text": "**‹staging› → ‹production›**\neach promoted from the one before",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 2320,
+    "y": 196
+   },
+   "e54": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "a CLI",
+    "type": "shape",
+    "w": 200,
+    "x": 896,
+    "y": 916
+   },
+   "e104": {
+    "from": [
+     2010,
+     1640
+    ],
+    "label": "resolve",
+    "to": [
+     2170,
+     1640
+    ],
+    "type": "arrow"
+   },
+   "e8": {
+    "h": 990,
+    "text": "The blank template: what every Orthograph app is made of",
+    "type": "container",
+    "w": 2780,
+    "x": -24,
+    "y": 0
+   },
+   "e97": {
+    "color": "ink",
+    "points": [
+     0,
+     0,
+     0,
+     700
+    ],
+    "type": "stroke",
+    "width": 2,
+    "x": 1860,
+    "y": 1242
+   },
+   "e78": {
+    "color": "green",
+    "h": 80,
+    "kind": "ellipse",
+    "text": "listed",
+    "type": "shape",
+    "w": 180,
+    "x": 600,
+    "y": 2130
+   },
+   "e128": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "screens: not yet",
+    "type": "shape",
+    "w": 240,
+    "x": 2016,
+    "y": 2476
+   },
+   "e39": {
+    "size": "small",
+    "text": "**Starts from** a starting world, ‹name›. **Each step checks** the answer, the events, the spans and the state it left. `ortho prove` runs every journey.",
+    "type": "text",
+    "wrap": 600,
+    "x": 1640,
+    "y": 750
+   },
+   "e81": {
+    "from": "e78",
+    "fromSide": "right",
+    "label": "remove",
+    "to": "e79",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e19": {
+    "color": "green",
+    "h": 80,
+    "kind": "ellipse",
+    "text": "‹next state›",
+    "type": "shape",
+    "w": 180,
+    "x": 924,
+    "y": 120
+   },
+   "e58": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "telemetry",
+    "type": "shape",
+    "w": 200,
+    "x": 1792,
+    "y": 916
+   },
+   "e108": {
+    "size": "small",
+    "text": "**Starts from** the world *claimed*: aaron already holds claimedname. **Six more journeys:** claim a handle, release one, add, order and remove a link, a stranger can't edit a page, anyone reads a page, and the whole story.",
+    "type": "text",
+    "wrap": 600,
+    "x": 1640,
+    "y": 1980
+   },
+   "e4": {
+    "color": "green",
+    "h": 44,
+    "kind": "pill",
+    "text": "State",
+    "type": "shape",
+    "w": 150,
+    "x": 174,
+    "y": -160
+   },
+   "e74": {
+    "color": "white",
+    "h": 80,
+    "kind": "parallelogram",
+    "text": "**HandleClaimed**\nhandle, name",
+    "type": "shape",
+    "w": 240,
+    "x": 580,
+    "y": 1350
+   },
+   "e23": {
+    "size": "small",
+    "text": "Every move is an operation. A move from the wrong state is refused for you, as ‹Thing›Not‹State›.",
+    "type": "text",
+    "wrap": 500,
+    "x": 600,
+    "y": 380
+   },
+   "e124": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "MCP tools ✓",
+    "type": "shape",
+    "w": 200,
+    "x": 1120,
+    "y": 2476
+   },
+   "e35": {
+    "from": [
+     1735,
+     240
+    ],
+    "label": "‹operation›(payload)",
+    "to": [
+     2155,
+     240
+    ],
+    "type": "arrow"
+   },
+   "e62": {
+    "text": "**Operations**",
+    "type": "text",
+    "x": 1200,
+    "y": 1124
+   },
+   "e63": {
+    "text": "**Journey:** a name is claimed once",
+    "type": "text",
+    "x": 1640,
+    "y": 1124
+   },
+   "e34": {
+    "color": "ink",
+    "points": [
+     0,
+     0,
+     0,
+     560
+    ],
+    "type": "stroke",
+    "width": 2,
+    "x": 2155,
+    "y": 152
+   },
+   "e125": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "the docs ✓",
+    "type": "shape",
+    "w": 200,
+    "x": 1344,
+    "y": 2476
+   },
+   "e22": {
+    "color": "white",
+    "h": 90,
+    "kind": "parallelogram",
+    "text": "**‹Event›**\nemitted by a move, with its fields",
+    "type": "shape",
+    "w": 280,
+    "x": 740,
+    "y": 250
+   },
+   "e75": {
+    "color": "white",
+    "h": 80,
+    "kind": "parallelogram",
+    "text": "**HandleReleased**\nhandle, name",
+    "type": "shape",
+    "w": 240,
+    "x": 884,
+    "y": 1350
+   },
+   "e109": {
+    "color": "white",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**local**\nthis machine, test people, local D1",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 2320,
+    "y": 1172
+   },
+   "e5": {
+    "color": "purple",
+    "h": 44,
+    "kind": "pill",
+    "text": "Operation",
+    "type": "shape",
+    "w": 150,
+    "x": 348,
+    "y": -160
+   },
+   "e59": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "screens, from the UI SDK",
+    "type": "shape",
+    "w": 240,
+    "x": 2016,
+    "y": 916
+   },
+   "e18": {
+    "color": "green",
+    "h": 80,
+    "kind": "ellipse",
+    "text": "‹first state›",
+    "type": "shape",
+    "w": 180,
+    "x": 600,
+    "y": 120
+   },
+   "e80": {
+    "from": [
+     440,
+     2170
+    ],
+    "label": "add",
+    "to": "e78",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e38": {
+    "color": "terracotta",
+    "dash": true,
+    "from": [
+     2155,
+     480
+    ],
+    "label": "refused: ‹Error›",
+    "to": [
+     1945,
+     480
+    ],
+    "type": "arrow"
+   },
+   "e96": {
+    "color": "ink",
+    "points": [
+     0,
+     0,
+     0,
+     700
+    ],
+    "type": "stroke",
+    "width": 2,
+    "x": 1710,
+    "y": 1242
+   },
+   "e79": {
+    "color": "green",
+    "h": 80,
+    "kind": "ellipse",
+    "text": "removed",
+    "type": "shape",
+    "w": 180,
+    "x": 924,
+    "y": 2130
+   },
+   "e105": {
+    "dash": true,
+    "from": [
+     2170,
+     1700
+    ],
+    "label": "aaron's",
+    "to": [
+     2010,
+     1700
+    ],
+    "type": "arrow"
+   },
+   "e9": {
+    "h": 1450,
+    "text": "Plugged In, drawn the same way (from the blueprint on the stage 1 branch)",
+    "type": "container",
+    "w": 2780,
+    "x": -24,
+    "y": 1100
+   },
+   "e55": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "MCP tools for agents",
+    "type": "shape",
+    "w": 200,
+    "x": 1120,
+    "y": 916
+   },
+   "e43": {
+    "color": "white",
+    "h": 90,
+    "kind": "rect",
+    "text": "**Host: Cloudflare**\na Worker runs the generated server and your handlers",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 2320,
+    "y": 330
+   },
+   "e14": {
+    "text": "**Where it runs**",
+    "type": "text",
+    "x": 2320,
+    "y": 24
+   },
+   "e113": {
+    "color": "white",
+    "h": 110,
+    "kind": "rounded",
+    "stroke": "purple",
+    "text": "**Mounted plugins: none yet**\nsign-in is copied from the starter; auth and handles become plugins next",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 2320,
+    "y": 1654
+   },
+   "e83": {
+    "color": "white",
+    "h": 70,
+    "kind": "parallelogram",
+    "text": "**LinkRemoved**\nlink",
+    "type": "shape",
+    "w": 240,
+    "x": 884,
+    "y": 2260
+   },
+   "e95": {
+    "color": "white",
+    "h": 70,
+    "kind": "rect",
+    "text": "**Plugged In**",
+    "type": "shape",
+    "w": 140,
+    "x": 2100,
+    "y": 1172
+   },
+   "e106": {
+    "from": [
+     1860,
+     1800
+    ],
+    "label": "claim bobspage",
+    "to": [
+     2170,
+     1800
+    ],
+    "type": "arrow"
+   },
+   "e56": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "the docs",
+    "type": "shape",
+    "w": 200,
+    "x": 1344,
+    "y": 916
+   },
+   "e40": {
+    "color": "white",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**‹local›**\nthis machine, test people",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 2320,
+    "y": 72
+   },
+   "e17": {
+    "from": "e16",
+    "fromSide": "top",
+    "label": "refers to",
+    "to": "e15",
+    "toSide": "bottom",
+    "type": "arrow"
+   },
+   "e110": {
+    "color": "white",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**test**\na fresh world per pull request, 2 hours",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 2540,
+    "y": 1172
+   },
+   "e60": {
+    "text": "**Things**",
+    "type": "text",
+    "x": 0,
+    "y": 1124
+   },
+   "e37": {
+    "from": [
+     1945,
+     420
+    ],
+    "label": "‹operation›",
+    "to": [
+     2155,
+     420
+    ],
+    "type": "arrow"
+   },
+   "e126": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "the portal, partly",
+    "type": "shape",
+    "w": 200,
+    "x": 1568,
+    "y": 2476
+   },
+   "e21": {
+    "from": "e18",
+    "fromSide": "right",
+    "label": "‹move›",
+    "to": "e19",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e76": {
+    "size": "small",
+    "text": "Releasing a name that isn't claimed is refused for you, as HandleNotClaimed.",
+    "type": "text",
+    "wrap": 500,
+    "x": 600,
+    "y": 1460
+   },
+   "e99": {
+    "color": "ink",
+    "points": [
+     0,
+     0,
+     0,
+     700
+    ],
+    "type": "stroke",
+    "width": 2,
+    "x": 2170,
+    "y": 1242
+   },
+   "e6": {
+    "color": "peach",
+    "h": 44,
+    "kind": "pill",
+    "text": "Refusal",
+    "type": "shape",
+    "w": 150,
+    "x": 522,
+    "y": -160
+   },
+   "e7": {
+    "size": "small",
+    "text": "Slanted box: an event · cylinder: a store · plain boxes: where it runs · on a field: 🔒 private to a role, 🔑 secret, ⚡ issued once, no mark means public · each row is one thing, read left to right",
+    "type": "text",
+    "wrap": 1400,
+    "x": 700,
+    "y": -150
+   },
+   "e77": {
+    "size": "small",
+    "text": "No lifecycle: claim makes one page per handle, once.",
+    "type": "text",
+    "wrap": 600,
+    "x": 440,
+    "y": 1790
+   },
+   "e98": {
+    "color": "ink",
+    "points": [
+     0,
+     0,
+     0,
+     700
+    ],
+    "type": "stroke",
+    "width": 2,
+    "x": 2010,
+    "y": 1242
+   },
+   "e20": {
+    "from": [
+     440,
+     160
+    ],
+    "label": "‹create›",
+    "to": "e18",
+    "toSide": "left",
+    "type": "arrow"
+   },
+   "e127": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "telemetry ✓",
+    "type": "shape",
+    "w": 200,
+    "x": 1792,
+    "y": 2476
+   },
+   "e36": {
+    "dash": true,
+    "from": [
+     2155,
+     300
+    ],
+    "label": "answer · ‹Event›",
+    "to": [
+     1735,
+     300
+    ],
+    "type": "arrow"
+   },
+   "e61": {
+    "text": "**Lifecycle**",
+    "type": "text",
+    "x": 440,
+    "y": 1124
+   },
+   "e111": {
+    "color": "white",
+    "h": 90,
+    "kind": "rect",
+    "text": "**Host: Cloudflare**\none Worker for the whole app; staging tried once",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 400,
+    "x": 2320,
+    "y": 1336
+   },
+   "e16": {
+    "color": "blue",
+    "h": 150,
+    "kind": "rounded",
+    "text": "**‹Other thing›**   code ‹YY›\n*a thing with no lifecycle*\n\n**Fields**\n- id\n- ‹field› → ‹Thing›",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 0,
+    "y": 744
+   },
+   "e41": {
+    "color": "white",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**‹test›**\na fresh world per pull request",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 180,
+    "x": 2540,
+    "y": 72
+   },
+   "e57": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "the portal",
+    "type": "shape",
+    "w": 200,
+    "x": 1568,
+    "y": 916
+   },
+   "e107": {
+    "dash": true,
+    "from": [
+     2170,
+     1860
+    ],
+    "label": "HandleClaimed",
+    "to": [
+     1860,
+     1860
+    ],
+    "type": "arrow"
+   },
+   "e94": {
+    "color": "white",
+    "h": 70,
+    "kind": "rounded",
+    "text": "**visitor**\nanyone",
+    "type": "shape",
+    "w": 120,
+    "x": 1950,
+    "y": 1172
+   },
+   "e82": {
+    "color": "white",
+    "h": 70,
+    "kind": "parallelogram",
+    "text": "**LinkAdded**\nlink",
+    "type": "shape",
+    "w": 240,
+    "x": 580,
+    "y": 2260
+   },
+   "e66": {
+    "color": "blue",
+    "h": 190,
+    "kind": "rounded",
+    "text": "**Profile**   code PR\n*a claimed name's public page*\n\n**Fields**\n- id\n- handle → Handle\n- links, in display order\n\n**Rules**\n- one page per handle",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 0,
+    "y": 1748
+   },
+   "e89": {
+    "color": "purple",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**link.add** · signed in\ntitle, url → link · moves to listed\nrefuses LinkNeedsHandle",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 2082
+   },
+   "e31": {
+    "color": "white",
+    "h": 70,
+    "kind": "rect",
+    "text": "**the app**",
+    "type": "shape",
+    "w": 150,
+    "x": 2080,
+    "y": 82
+   },
+   "e120": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "an HTTP API ✓",
+    "type": "shape",
+    "w": 200,
+    "x": 224,
+    "y": 2476
+   },
+   "e27": {
+    "color": "peach",
+    "h": 160,
+    "kind": "rounded",
+    "text": "**Refusals**\n- ‹DeclaredError› · its own exit code\n- ‹Thing›Not‹State› · from the machine\n- ‹Thing›NotFound · a missing id\n- NotAllowed · from the role check\n- a broken rule's own error",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 450
+   },
+   "e70": {
+    "color": "green",
+    "h": 80,
+    "kind": "ellipse",
+    "text": "claimed",
+    "type": "shape",
+    "w": 180,
+    "x": 600,
+    "y": 1220
+   },
+   "e85": {
+    "color": "purple",
+    "h": 80,
+    "kind": "rounded",
+    "text": "**handle.release** · handle owner\nclaimed → released",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 1296
+   },
+   "e93": {
+    "color": "white",
+    "h": 70,
+    "kind": "rounded",
+    "text": "**bob**\nsigned in",
+    "type": "shape",
+    "w": 120,
+    "x": 1800,
+    "y": 1172
+   },
+   "e100": {
+    "from": [
+     1710,
+     1320
+    ],
+    "label": "claim claimedname, the same request again",
+    "to": [
+     2170,
+     1320
+    ],
+    "type": "arrow"
+   },
+   "e50": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "the model",
+    "type": "shape",
+    "w": 200,
+    "x": 0,
+    "y": 916
+   },
+   "e46": {
+    "size": "small",
+    "text": "Secrets by name only, ‹NAME›, each generated or stored. Never a value.",
+    "type": "text",
+    "wrap": 400,
+    "x": 2320,
+    "y": 770
+   },
+   "e11": {
+    "text": "**Lifecycle** · the machine a thing moves through",
+    "type": "text",
+    "x": 440,
+    "y": 24
+   },
+   "e116": {
+    "from": "e110",
+    "fromSide": "bottom",
+    "to": "e111",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e117": {
+    "from": "e111",
+    "fromSide": "bottom",
+    "label": "keeps rows in",
+    "to": "e112",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e10": {
+    "text": "**Things** · what the app keeps",
+    "type": "text",
+    "x": 0,
+    "y": 24
+   },
+   "e47": {
+    "from": "e42",
+    "fromSide": "bottom",
+    "to": "e43",
+    "toSide": "top",
+    "type": "arrow"
+   },
+   "e51": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "an HTTP API",
+    "type": "shape",
+    "w": 200,
+    "x": 224,
+    "y": 916
+   },
+   "e101": {
+    "dash": true,
+    "from": [
+     2170,
+     1380
+    ],
+    "label": "same handle, nothing claimed",
+    "to": [
+     1710,
+     1380
+    ],
+    "type": "arrow"
+   },
+   "e92": {
+    "color": "white",
+    "h": 70,
+    "kind": "rounded",
+    "text": "**aaron**\nsigned in",
+    "type": "shape",
+    "w": 120,
+    "x": 1650,
+    "y": 1172
+   },
+   "e84": {
+    "color": "purple",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**handle.claim** · signed in\nname → handle · moves to claimed\nonce per request · 95% under 150 ms",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 1172
+   },
+   "e1": {
+    "size": "title",
+    "text": "Blueprint canvas",
+    "type": "text",
+    "x": 0,
+    "y": -330
+   },
+   "e71": {
+    "color": "green",
+    "h": 80,
+    "kind": "ellipse",
+    "text": "released",
+    "type": "shape",
+    "w": 180,
+    "x": 924,
+    "y": 1220
+   },
+   "e26": {
+    "color": "purple",
+    "h": 80,
+    "kind": "rounded",
+    "text": "**‹thing›.‹read›** · a read\nanswered from the records, no handler",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 346
+   },
+   "e121": {
+    "color": "white",
+    "h": 44,
+    "kind": "pill",
+    "text": "the server ✓",
+    "type": "shape",
+    "w": 200,
+    "x": 448,
+    "y": 2476
+   },
+   "e30": {
+    "color": "white",
+    "h": 70,
+    "kind": "rounded",
+    "text": "**‹other actor›**\nanyone",
+    "type": "shape",
+    "w": 150,
+    "x": 1870,
+    "y": 82
+   },
+   "e67": {
+    "color": "blue",
+    "h": 300,
+    "kind": "rounded",
+    "text": "**Link**   code LN\n*a title and web address on a page*\n\n**Fields**\n- id\n- profile → Profile\n- owner → a person\n- title, up to 120\n- url, http or https\n\n**Roles**\n- link owner: whose page it is on",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 0,
+    "y": 2082
+   },
+   "e88": {
+    "color": "purple",
+    "h": 100,
+    "kind": "rounded",
+    "text": "**profile.get** · anyone, a read\na name → its page and links, in order\nrefuses ProfileNotFound",
+    "textAlign": "left",
+    "type": "shape",
+    "w": 360,
+    "x": 1200,
+    "y": 1748
+   }
+  }
+ }
+}

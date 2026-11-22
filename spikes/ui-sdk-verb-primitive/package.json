@@ -1,0 +1,28 @@
+{
+  "name": "orthograph-spike-ui-sdk-verb-primitive",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/generate.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ui-sdk/core": "0.1.0-beta.7",
+    "@ui-sdk/react": "0.1.0-beta.7",
+    "@ui-sdk/web": "0.1.0-beta.7",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "jsdom": "31.0.1",
+    "tsx": "4.23.15",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "vitest": "4.1.12"
+  }
+}

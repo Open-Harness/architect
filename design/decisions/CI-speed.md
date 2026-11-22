@@ -21,7 +21,7 @@ copied into a re-run attempt (started before it was created) is left out.
 | into `main`, docs only | 21 | 52 | 11 | 14 min | 11.2 min | 1 min |
 
 A code pull request into `goal/stage-1` ran CI 4.4 times on average. Of the 155 runs of all 37 goal pull requests, 37
-were the first push, 83 a new commit, 32 a catch-up merge of the base branch and 3 another merge (`main` is strict, so every merge there puts the rest behind;
+were the first push, 83 a new commit, 32 a catch-up merge of the base branch and 3 another merge (`main` is strict (_Superseded by CI-drafts, 21 November 2026: not strict since 21 November_), so every merge there puts the rest behind;
 `goal/stage-1` is not strict, but builders merge it in to pick up totals and generated files). Each rerun costs one
 whole run, so the length of a clean run multiplies through everything else.
 
@@ -118,7 +118,7 @@ A green push run costs 21 runner-minutes on `main` and 55 on `goal/stage-1`. Run
 - **Nx's cache between runs, or `nx affected`:** both trust the project graph's inputs, and the slow tests read files
   the graph does not list as inputs (prove's tests start the worlds of `examples/acme` and the starter by path). A
   cache hit or an unaffected project would pass a test that never ran against the change. That weakens a check.
-- **Turning off strict on `main`:** two green pull requests could merge into a red `main`. Still no.
+- **Turning off strict on `main`:** two green pull requests could merge into a red `main`. Still no. (_Superseded by CI-drafts, 21 November 2026: turned off; `main`'s own push run checks every merge_)
 - **Sharding the layer gates:** each has one file of four to five minutes, so a shard cannot finish sooner than that;
   they already sit near the new longest path.
 - **More shards:** each shard is a runner slot and a minute of setup. Three and four bring each sharded job under the

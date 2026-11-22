@@ -116,6 +116,9 @@ const planted: Readonly<Record<string, Case>> = {
   "an unchecked string over a patterned one": { fields: { tag: "Blueprint.value(Schema.String.check(Schema.isPattern(/^[a-z]+$/)))" }, key: ["tag"], refusal: { tag: "Blueprint.value(Schema.String)" }, wrong: "tag" },
   "a struct that lacks a member of the key's struct": { fields: { tag: STRUCT }, key: ["tag"], refusal: { tag: "Blueprint.value(Schema.Struct({ kind: Schema.String }))" }, wrong: "tag" },
   "a struct whose member is another type": { fields: { tag: STRUCT }, key: ["tag"], refusal: { tag: "Blueprint.value(Schema.Struct({ kind: Schema.String, id: Schema.Number }))" }, wrong: "tag" },
+  // `Blueprint.email()` and `Blueprint.text({ max: 254 })` carry the same meta (`{ type: "text", max: 254 }`) but not the same schema: only email checks the pattern.
+  "an email over a text of 254 characters": { fields: { tag: "Blueprint.text({ max: 254 })" }, key: ["tag"], refusal: { tag: "Blueprint.email()" }, wrong: "tag" },
+  "a text of 254 characters over an email": { fields: { tag: "Blueprint.email()" }, key: ["tag"], refusal: { tag: "Blueprint.text({ max: 254 })" }, wrong: "tag" },
   "a composite key whose first field is right and second is wrong": {
     fields: { first: TEXT, second: "Blueprint.uint(32)" }, key: ["first", "second"], refusal: { first: TEXT, second: TEXT }, wrong: "second", right: "first",
   },
@@ -139,6 +142,7 @@ const controls: Readonly<Record<string, { readonly c: Case; readonly extra?: { r
   "a separately declared equal number": { c: { fields: { tag: "Blueprint.uint(32)" }, key: ["tag"], refusal: { tag: "Blueprint.uint(32)" } } },
   "a separately declared equal id": { c: { fields: { tag: 'Blueprint.id("per")' }, key: ["tag"], refusal: { tag: 'Blueprint.id("per")' } } },
   "the key field itself, of a struct": { c: { fields: { tag: STRUCT }, key: ["tag"], refusal: { tag: "Handle.fields.tag" } } },
+  "a separately declared equal email": { c: { fields: { tag: "Blueprint.email()" }, key: ["tag"], refusal: { tag: "Blueprint.email()" } } },
   "a composite key whose two fields both match": { c: { fields: { first: TEXT, second: "Blueprint.uint(32)" }, key: ["first", "second"], refusal: { first: "Handle.fields.first", second: "Blueprint.uint(32)" } } },
   "an error no rule refuses, whose field is another schema than a key of the same name": {
     c: { fields: { tag: TEXT }, key: ["tag"], refusal: { tag: "Handle.fields.tag" } }, extra: { busy: "{ tag: Blueprint.uint(32) }" },

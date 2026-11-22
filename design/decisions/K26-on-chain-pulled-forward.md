@@ -40,7 +40,7 @@ Aaron is bringing it forward, so it starts while stage 1 is still being climbed 
    - It lands in `main` once stage 1 has. If Goal 3 is still open when it finishes, it lands in `goal/stage-1`
      through one pull request.
    - It is local only: no cloud and no keys.
-5. **This is Aaron's exception, not a new rule.** Any other milestone still waits for its gate unless Aaron pulls it
+5. **This is Aaron's exception, not a new rule.** (_Superseded by K34, 21 November 2026: every goal now starts a slice once what it needs has landed, in any milestone order; see `design/decisions/K34-goals-by-needs.md` on `main`._) Any other milestone still waits for its gate unless Aaron pulls it
    forward in the same way, with his words recorded.
 
 ## What it touches

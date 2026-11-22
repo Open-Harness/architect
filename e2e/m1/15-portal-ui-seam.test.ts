@@ -1,4 +1,4 @@
-// Check 15 (M1.34): HeroUI Pro behind one package (F7). `@orthograph/portal-ui`, at `packages/portal-ui`, is the only importer
+// Check 15 (M1.34): one package behind the portal's components (F7, K24; today HeroUI Pro). `@orthograph/portal-ui`, at `packages/portal-ui`, is the only importer
 // of `@heroui-pro/react`, which it takes as a peer dependency and never bundles; a lint rule bans Pro everywhere else; CI
 // installs Pro from the `HEROUI_AUTH_TOKEN` secret, cached by lockfile, and never on a fork's pull request.
 //

@@ -3,7 +3,10 @@ name: ci
 on:
   push:
     branches: [main, "layer/**", "m[0-9]", "goal/**"]
+  # ready_for_review: a draft runs nothing (every job below starts with the draft guard), and marking it ready runs CI
+  # once (design/decisions/CI-drafts.md).
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -21,6 +24,7 @@ jobs:
   # as three jobs side by side (design/decisions/CI-speed.md): prove's tests alone took 13 of check's 16 minutes, so they
   # run in shards, and the rest runs beside them. The small `check` job at the end passes only when both did.
   check-static:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -66,7 +70,7 @@ jobs:
   # request, like the layer gates: no prove test reads design/ or a doc outside packages/ (CI-speed.md).
   prove-tests:
     needs: changes
-    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
     name: prove-tests (${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
@@ -111,7 +115,7 @@ jobs:
   # skipped by the docs fast path.
   check:
     needs: [changes, check-static, prove-tests]
-    if: ${{ !cancelled() }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled()) }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -128,7 +132,7 @@ jobs:
   # Builders' branches end in `-build`; on their pull requests this fails on any such file (tools/ci/builder-paths.sh).
   # Any other pull request or push skips it, and a skipped job counts as passed where it is required.
   builder-paths:
-    if: github.event_name == 'pull_request' && endsWith(github.head_ref, '-build')
+    if: github.event.pull_request.draft != true && (github.event_name == 'pull_request' && endsWith(github.head_ref, '-build'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -145,7 +149,7 @@ jobs:
   # never inside a script; the job never runs for a pull request from a fork, so the secret never reaches code we did not write.
   # Every other job installs the registry's empty shell of Pro and runs without it (portal-ui's typecheck says it was skipped).
   portal-ui:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: ${{ github.event.pull_request.draft != true && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -202,6 +206,7 @@ jobs:
   # design docs and run the supersedes guard.
   # Never workflow-level `paths-ignore`: a workflow that never starts leaves its required checks pending forever.
   changes:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -227,7 +232,7 @@ jobs:
   e2e-layer1:
     # Skipped on a docs-only pull request, where a skip counts as passed. Should `changes` itself fail, this runs.
     needs: changes
-    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -262,7 +267,7 @@ jobs:
     # Skipped on a docs-only pull request, where a skip counts as passed. Should `changes` itself fail, this runs.
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
     needs: [changes, portal-ui]
-    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -310,10 +315,28 @@ jobs:
           "$brew_bin/brew" --version
       - run: NX_DAEMON=false pnpm nx run e2e:layer2 --outputStyle=static
 
+  # M8's checks (e2e/m8/README.md), written before time is built: the ratchet passes while every failure is listed in
+  # e2e/m8/expected-failing/, and fails on any other. Skipped on a docs-only pull request, like the gates above.
+  e2e-m8:
+    needs: changes
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: NX_DAEMON=false pnpm nx run e2e:m8-ratchet --outputStyle=static
+
   # Gate M0 (M0.06): no old name outside the records, and the design docs build with every link resolving.
   # The canon's check (docs/canon/README.md) runs beside it: every quote, reference and component in the MDX pages.
   # Gates 1 and 2 above are the rest of `nx run e2e:m0`, run as their own jobs so they run side by side.
   e2e-m0:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -339,7 +362,7 @@ jobs:
   e2e-m1-shard:
     needs: [changes, portal-ui]
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
-    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
     name: e2e-m1-shard (${{ matrix.shard }}/4)
     strategy:
       fail-fast: false
@@ -415,7 +438,7 @@ jobs:
   # Gate M1 (M1.15) empties the list.
   e2e-m1:
     needs: [changes, e2e-m1-shard]
-    if: ${{ !cancelled() }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled()) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -454,7 +477,7 @@ jobs:
   # Skipped on a docs-only pull request (CI-speed.md), where a skip counts as passed. Should `changes` itself fail, this runs.
   e2e-climb:
     needs: changes
-    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -485,7 +508,7 @@ jobs:
   # signs its verdicts with the local OIDC issuer of e2e/layer2/services.ts. About 1 minute on a Mac, so one runner and one job (CI-speed.md).
   e2e-stage1:
     needs: changes
-    if: ${{ !cancelled() && ((github.event_name == 'pull_request' && github.base_ref == 'goal/stage-1') || github.ref == 'refs/heads/goal/stage-1') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && ((github.event_name == 'pull_request' && github.base_ref == 'goal/stage-1') || github.ref == 'refs/heads/goal/stage-1') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -516,7 +539,7 @@ jobs:
     needs: [changes, portal-ui]
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
     # Skipped on a docs-only pull request (CI-speed.md): the grid reads generated docs under examples/, never a docs-only path.
-    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

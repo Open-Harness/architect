@@ -45,7 +45,7 @@ Set with `gh api -X PUT repos/AaronAbuUsama/architect/branches/main/protection`:
 - **The checks** are every job `main`'s `ci.yml` runs (`check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, and
   `builder-paths`, which is skipped, and so passes, on anything but a `-build` branch), plus the `codex-finished` status
   (Superseded by CI-codex-advisory, 20 November 2026: no longer required).
-- **`strict`**: the branch must contain the current `main` before it merges, so the green run is of what will land (the
+- **`strict`** (_Superseded by CI-drafts, 21 November 2026: `false` on `main` now_): the branch must contain the current `main` before it merges, so the green run is of what will land (the
   conductor's landing rule 2, "a fresh CI run on a head that includes the current `main`").
 - **Conversation resolution**: every review thread, Codex's included, is resolved before the merge.
 - **No required approvals**: the agents merge their own pull requests (`AGENTS.md`); the 🔍 pass stays the conductor's

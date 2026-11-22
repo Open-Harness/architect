@@ -1,13 +1,13 @@
 name: staging
 
-# M7.04, the CI-only check of Goal 3 (design/goals/03-stage-1-hill-climbed.md, "Staging"; design/decisions/M7-cloud.md and its addenda). One job, started by hand, and
+# M7.04, the CI-only check of Goal 3 (design/goals/03-stage-1-hill-climbed.md, "Staging"; design/decisions/M7-cloud.md and its addenda). One job (plus `refuse`, which fails a dispatch off a goal branch out loud), started by hand, and
 # nothing else starts it: no push, no pull request, no schedule. It plans, deploys Plugged In to Cloudflare `workers.dev`, runs the story, destroys what it made, and lists the
 # account. The job is red when any of these holds: the plan is wrong; up fails; the story fails; a resource with this run's prefix is left; a resource without it changed.
 #
 # Written by the checks author (✍️); a builder never edits this file (tools/ci/builder-paths.sh). The builder makes `ortho env up staging` and `ortho env destroy staging` real
 # (check 37 pins their `--plan`); this workflow only calls them. e2e/staging/README.md says what each step judges. The lead decides when the first real run happens.
 #
-# The credentials are only `secrets.CLOUDFLARE_API_TOKEN` and `vars.CLOUDFLARE_ACCOUNT_ID`, and each is in the `env` of the steps that talk to Cloudflare (the two snapshots, up and
+# The credentials are only `secrets.CLOUDFLARE_API_TOKEN` and `vars.CLOUDFLARE_ACCOUNT_ID`, and each is in the `env` of the steps that talk to Cloudflare (the snapshots, the subdomain read, up, the story and
 # destroy) and nowhere else. Nothing here prints or writes either. The evidence uploaded is the plan, the story, the verdict and the listings cut to the run's prefix: never a credential, never wrangler's own log, and never a name that
 # is not the run's (the repository is public, and the account holds other apps' resources).
 on:
@@ -23,7 +23,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A dispatch on any ref that is not a goal branch is refused out loud: a skipped job would show nothing. `main` has no `ortho env` yet, and a run there would fail halfway with live
+  # credentials in play. This file is the same on `main` and on the goal branches, so the guard lives here. No credential, no checkout: it only says why.
+  refuse:
+    if: "!startsWith(github.ref, 'refs/heads/goal/')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: refuse
+        run: |
+          echo "::error::staging runs only from a goal branch (refs/heads/goal/...); this dispatch is on $REF"
+          exit 1
+        env:
+          REF: ${{ github.ref }}
+
   staging:
+    if: startsWith(github.ref, 'refs/heads/goal/')
     runs-on: ubuntu-latest
     # A protected environment: its branch rule (protected branches only) is set on GitHub by Aaron or the lead; this file only names it.
     environment: staging
@@ -75,13 +90,29 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
 
-      # The story, through the same `prove` the other environments use, against the deployed address. It holds no Cloudflare credential. Whether it passes never decides
+      # The account's workers.dev subdomain, read with the token and handed to the story as an output (a subdomain is not a secret). Only `subdomain=<name>` is written; the response is never printed.
+      - name: subdomain
+        id: subdomain
+        if: steps.up.outcome == 'success'
+        run: node e2e/staging/subdomain.mjs "$GITHUB_OUTPUT"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+
+      # The story, through the same `prove` the other environments use, against the deployed address. It holds the same two credentials as up, to read the run's own D1 databases. Whether it passes never decides
       # whether destroy runs.
       - name: the story
         id: story
         continue-on-error: true
         if: steps.up.outcome == 'success'
-        run: $ORTHO prove --env staging --run "$RUN" --root examples/plugged-in --only "the story" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"
+        # The account's workers.dev subdomain, from the step above (not a secret). The address is
+        # <prefix>-worker.<subdomain>.workers.dev, formed by prove from the same prefix `up` used (check 41). The story reads the run's own D1 databases with the operator's credential
+        # (M7-04-story-reads-d1): the token and the account are the same expressions `up` uses, and the databases are found by the run's prefix.
+        env:
+          ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: $ORTHO prove --env staging --run "$RUN" --root examples/plugged-in --only "a person claims a page and shares it" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"
 
       # Destroy always runs: after a failed up, a failed story, a failed before-snapshot, or a plan that never printed. It deletes by the run's prefix, so it needs nothing from `up`.
       - name: destroy
