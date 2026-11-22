@@ -1075,7 +1075,7 @@ Stand.process(…)  Stand.vendor(…)  Stand.none</code></pre>
 <tr><td>operation · read · step</td><td>a verb on a thing · an operation that changes nothing · a named span inside one</td></tr>
 <tr><td>role · principal · way in</td><td>who may call · who is calling · how they got in (<code>Via.*</code>)</td></tr>
 <tr><td>store · source · view · data map</td><td>a place Orthograph owns and commits to, of an open kind · a system someone else owns, reached through an adapter · a list kept from events · the generated map of all data</td></tr>
-<tr><td>span · refusal · defect</td><td>one timed piece of a call in a trace, made by the declaration · a declared outcome, ends OK · an undeclared failure, the only red</td></tr>
+<tr><td>span · refusal · defect</td><td>one timed piece of a call in a trace, made by the declaration · a declared outcome, never ends as an error · an undeclared failure, the only red</td></tr>
 <tr><td>blank · handler · scaffold · frame</td><td>what the description leaves open · the code that fills an operation · a file written once into <code>src/</code> · the generated type a handler must fit</td></tr>
 <tr><td>journey · story · starting world · cast</td><td>a story through real operations · its prose form · a setup made by operations · who plays it</td></tr>
 <tr><td>plugin · feature · adapter · projection</td><td>built once, mounted anywhere · adds to what the system is · brings the outside in · what it becomes</td></tr>
@@ -1113,8 +1113,8 @@ Stand.process(…)  Stand.vendor(…)  Stand.none</code></pre>
 
 <section class="s" id="roadmap">
 <header><h3>Milestones</h3><span class="chip part">Recut 17 Nov 2026 · <code>design/milestones.md</code></span></header>
-<p>Each milestone ends in one gate, <code>nx run e2e:m&lt;n&gt;</code>. Nothing in the next one starts until that gate
-passes on <code>main</code>. Orthograph is <b>workable at the end of M2</b>: from there, Capxul's plugins are built on it.</p>
+<p>Each milestone ends in one gate, <code>nx run e2e:m&lt;n&gt;</code>. A slice starts once what it needs has landed, in any milestone order, and a
+milestone is done when its gate passes on <code>main</code> (K34; the goals are in <code>design/goals/map.md</code>). Orthograph is <b>workable at the end of M2</b>: from there, Capxul's plugins are built on it.</p>
 <div class="table"><table>
 <tr><th>#</th><th>Milestone</th><th>Ships</th><th>Proved when</th></tr>
 <tr><td>M0</td><td>Land and rename</td><td>Orthograph, <code>@orthograph/*</code>, the <code>ortho</code> command, these docs</td><td>Gates 1 and 2 green under the new names; no old name left</td></tr>

@@ -7,7 +7,7 @@ import { parse } from "yaml";
 
 const TOKEN = "${{ secrets.CLOUDFLARE_API_TOKEN }}";
 const ACCOUNT = "${{ vars.CLOUDFLARE_ACCOUNT_ID }}";
-/** The account's workers.dev subdomain, for the story's address (check 41): an output of the `subdomain` step (which holds the token), since the story step holds none. */
+/** The account's workers.dev subdomain, for the story's address (check 41): an output of the `subdomain` step. The story step also holds the two credentials, exactly `up`'s expressions, to read the run's D1 databases (M7-04-story-reads-d1). */
 const GUARD = "startsWith(github.ref, 'refs/heads/goal/')";
 const REFUSED = "!startsWith(github.ref, 'refs/heads/goal/')";
 const REFUSE_RUN = 'echo "::error::staging runs only from a goal branch (refs/heads/goal/...); this dispatch is on $REF"\nexit 1';
@@ -34,7 +34,7 @@ const STEPS = [
   { id: "up", run: '$ORTHO env up staging --run "$RUN" --root examples/plugged-in', credentials: true, continues: true },
   { id: "during", run: SNAPSHOT("during"), credentials: true, if: UPSTREAM },
   { id: "subdomain", run: 'node e2e/staging/subdomain.mjs "$GITHUB_OUTPUT"', credentials: true, if: UPSTREAM },
-  { id: "story", run: /^\$ORTHO prove --env staging --run "\$RUN" --root examples\/plugged-in [^\n|;&]* 2>&1 \| tee "\$EVIDENCE\/story\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/, continues: true, if: UPSTREAM, env: { ORTHO_STAGING_SUBDOMAIN: SUBDOMAIN } },
+  { id: "story", run: /^\$ORTHO prove --env staging --run "\$RUN" --root examples\/plugged-in [^\n|;&]* 2>&1 \| tee "\$EVIDENCE\/story\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/, continues: true, if: UPSTREAM, env: { ORTHO_STAGING_SUBDOMAIN: SUBDOMAIN, ...CREDENTIALS } },
   { id: "destroy", run: '$ORTHO env destroy staging --run "$RUN" --root examples/plugged-in', credentials: true, if: "always()" },
   { id: "after", run: SNAPSHOT("after"), credentials: true, if: "always()" },
   { id: "judge", if: "always()", env: { PREFIX: "${{ steps.plan.outputs.prefix }}", UP: "${{ steps.up.outcome }}" },
@@ -89,7 +89,7 @@ export const problems = (source) => {
     const run = String(step.run ?? "").trim().replace(/\n\s*/g, "\n");
     if (!(typeof want.run === "string" ? run === want.run : want.run.test(run))) out.push(`${label}: its script is not the one this check pins (${typeof want.run === "string" ? want.run : String(want.run).slice(0, 60)}...)`);
     const wantEnv = want.credentials ? CREDENTIALS : (want.env ?? {});
-    if (JSON.stringify(Object.entries(step.env ?? {}).sort()) !== JSON.stringify(Object.entries(wantEnv).sort())) out.push(`${label}: its env is ${JSON.stringify(step.env ?? {})}; it must ${want.credentials ? "hold CLOUDFLARE_API_TOKEN from secrets and CLOUDFLARE_ACCOUNT_ID from vars, lacks neither" : want.env ? "be exactly " + JSON.stringify(want.env) : "hold no credential: the plan, the story and the judgement run without one"}`);
+    if (JSON.stringify(Object.entries(step.env ?? {}).sort()) !== JSON.stringify(Object.entries(wantEnv).sort())) out.push(`${label}: its env is ${JSON.stringify(step.env ?? {})}; it must ${want.credentials ? "hold CLOUDFLARE_API_TOKEN from secrets and CLOUDFLARE_ACCOUNT_ID from vars, lacks neither" : want.env ? "be exactly " + JSON.stringify(want.env) : "hold no credential: the plan and the judgement run without one"}`);
     for (const key of Object.keys(step)) if (!["id", "name", "if", "continue-on-error", "run", "env"].includes(key)) out.push(`${label} has ${key}`);
   }
 
