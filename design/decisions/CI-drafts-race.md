@@ -70,8 +70,8 @@ reads the draft state again, or any push.
 
 `goal/stage-1` took it on 22 November 2026 (Goal 3's merge of `main`): all ten of its required checks (`check`, `portal-ui`,
 `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `e2e-m1`, `e2e-climb`, `e2e-grid`, `e2e-stage1`, `builder-paths`) carry the name and the live
-guard, and its `required-jobs.sh` line lists them. `portal-ui`, `e2e-climb`, `e2e-grid` and `e2e-stage1` used to skip the job on a
-docs-only or fast pull request; they now run and pass without their steps.
+guard, and its `required-jobs.sh` line lists them. `portal-ui` used to skip the job on a fork or a fast pull request, and `e2e-climb`, `e2e-grid` and `e2e-stage1` on a
+docs-only or fast one (`e2e-stage1` also off its own branch); they now run and pass without their steps.
 
 ## Proof
 
