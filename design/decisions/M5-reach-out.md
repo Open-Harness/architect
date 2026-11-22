@@ -244,13 +244,25 @@ export default Blueprint.view(Allowance, {
    the store its declaration names. Never in an actor: a view exists to list across homes.
 2. **It is kept by the outbox.** A view subscribes to each `from` event. The source thing's id (the journal subject)
    identifies its row; `key` is a non-unique lookup index. The allowances view has one row per allowance and can list
-   multiple allowances with the same organization. The generated delivery applies the event to that subject's row
-   and commits with its request key. Events for the subject arrive in order (Q1.3). The view also keeps the subject's
-   last applied `seq` and the journal it came from; a delivery at or below that position changes nothing. A removal
-   hides only that subject's row and keeps its last position so an older event cannot bring it back.
-3. **It is rebuilt from the journals.** `ortho view rebuild <name>` empties the table and replays its `from` events from
-   every D1 journal, each in `seq` order. That is complete because every event, an actor's included, reaches a D1
-   journal (Q1.4). A new view is built the same way when it first deploys.
+   multiple allowances with the same organization. The generated delivery applies the event to that subject's row.
+   Events for the subject arrive in order (Q1.3). The view also keeps the subject's last applied `seq` and the journal it
+   came from; a delivery at or below that position changes nothing. That position is the view's only deduplication: a
+   view's delivery writes no request key. A removal hides only that subject's row and keeps its last position so an
+   older event cannot bring it back.
+   **What a row is made of.** A view row holds only fields its events carry: there is no snapshot of the thing and no
+   lookup into its store, because a rebuild has only the journal. So the compiler refuses a view whose `key` is not a
+   field of every `from` event that can make its row (an event of a move with `from: []`), and a view field no `from`
+   event carries. A later event updates only the fields it carries. An event's fields are filled from the instance as the
+   call left it (`handler/internal/move.ts:72-77`), so adding a field to an event is enough: acme's `AllowanceGranted`
+   gains `organization` (`examples/acme/blueprint/things/allowance/events.ts:5`) when M5.05 builds the view.
+3. **It is rebuilt from the journals.** `ortho view rebuild <name>` builds the view's next generation in a fresh table
+   (`view_<name>__g<n>`) by replaying its `from` events from every D1 journal, each in `seq` order, through the same
+   apply-and-position code but not through the outbox: positions start empty in the fresh table, and no request key is
+   read or written, so nothing a live delivery kept can make the replay skip an event. While it runs, live deliveries
+   keep writing the current generation; once the replay has reached each journal's last `seq` as of its start, the drain
+   holds this view's rows, the replay applies what came since, the read switches to the new table and the old one is
+   dropped. That is complete because every event, an actor's included, reaches a D1 journal (Q1.4). A new view is built
+   the same way when it first deploys.
 4. Its reads (`by: "key"`, a list) are generated in the SDK, CLI and MCP like a thing's reads, and the data map lists it
    (M5.05, M5.06). The M5.05 check lists two actor-homed allowances in one organization, revokes one, and redelivers
    its older grant. Live delivery and a rebuild must both leave exactly the other allowance in the list.
