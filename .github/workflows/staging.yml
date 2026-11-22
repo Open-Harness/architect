@@ -7,7 +7,7 @@ name: staging
 # Written by the checks author (✍️); a builder never edits this file (tools/ci/builder-paths.sh). The builder makes `ortho env up staging` and `ortho env destroy staging` real
 # (check 37 pins their `--plan`); this workflow only calls them. e2e/staging/README.md says what each step judges. The lead decides when the first real run happens.
 #
-# The credentials are only `secrets.CLOUDFLARE_API_TOKEN` and `vars.CLOUDFLARE_ACCOUNT_ID`, and each is in the `env` of the steps that talk to Cloudflare (the two snapshots, up and
+# The credentials are only `secrets.CLOUDFLARE_API_TOKEN` and `vars.CLOUDFLARE_ACCOUNT_ID`, and each is in the `env` of the steps that talk to Cloudflare (the snapshots, the subdomain read, up, the story and
 # destroy) and nowhere else. Nothing here prints or writes either. The evidence uploaded is the plan, the story, the verdict and the listings cut to the run's prefix: never a credential, never wrangler's own log, and never a name that
 # is not the run's (the repository is public, and the account holds other apps' resources).
 on:
@@ -99,16 +99,19 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
 
-      # The story, through the same `prove` the other environments use, against the deployed address. It holds no Cloudflare credential. Whether it passes never decides
+      # The story, through the same `prove` the other environments use, against the deployed address. It holds the same two credentials as up, to read the run's own D1 databases. Whether it passes never decides
       # whether destroy runs.
       - name: the story
         id: story
         continue-on-error: true
         if: steps.up.outcome == 'success'
-        # The account's workers.dev subdomain, from the step above (not a secret; the story itself holds no credential). The address is
-        # <prefix>-worker.<subdomain>.workers.dev, formed by prove from the same prefix `up` used (check 41).
+        # The account's workers.dev subdomain, from the step above (not a secret). The address is
+        # <prefix>-worker.<subdomain>.workers.dev, formed by prove from the same prefix `up` used (check 41). The story reads the run's own D1 databases with the operator's credential
+        # (M7-04-story-reads-d1): the token and the account are the same expressions `up` uses, and the databases are found by the run's prefix.
         env:
           ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: $ORTHO prove --env staging --run "$RUN" --root examples/plugged-in --only "a person claims a page and shares it" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"
 
       # Destroy always runs: after a failed up, a failed story, a failed before-snapshot, or a plan that never printed. It deletes by the run's prefix, so it needs nothing from `up`.

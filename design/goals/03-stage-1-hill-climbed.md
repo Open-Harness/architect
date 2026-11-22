@@ -1,7 +1,7 @@
 ---
 goal: 3
 title: stage 1 of Plugged In, hill-climbed through its journeys
-milestone: "Goal 3: stage 1, hill-climbed"
+milestone: "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys"
 release: beta
 branch: goal/stage-1
 base: main
@@ -157,8 +157,9 @@ skills or the process.
 - **One cloud piece: staging,** on `workers.dev`. See "Staging".
 - **At most three builders at once,** and every agent stops the processes it starts before it reports.
 
-**Aaron's override, recorded.** "Nothing in a milestone starts until the previous milestone's gate passes on `main`"
-(`AGENTS.md`) is replaced, for M1, M2 and stage 1 only, by one integration branch under the conductor's control. The
+**Aaron's override, recorded.** The rule then in `AGENTS.md`, that a milestone waited for the previous milestone's
+gate on `main`, is replaced, for M1, M2 and stage 1, by one integration branch under the conductor's control (K34
+since made needs, not milestone order, the rule for every goal). The
 gates still order the landing, not the work.
 
 ## The five roles

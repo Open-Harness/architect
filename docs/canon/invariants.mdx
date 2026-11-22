@@ -194,7 +194,7 @@ Three things in it are the point:
 
 - **The refusal is filled from the caller's own row.** Every field it carries must be in the rule's key, so the
   refusal never says who holds the name.
-- **It is a refusal, not a defect.** The span ends OK, and carries `refusal.invariant`, the rule's full name, beside the
+- **It is a refusal, not a defect.** The span does not end as an error, and carries `refusal.invariant`, the rule's full name, beside the
   `refusal` and `refusal.code` every refusal has. The runtime writes the log that decided it, so the trace can say why
   ([traces](traces.mdx)).
 - **A break nobody declared is a defect.** A rule with no refusal, a rule the compiler didn't list this operation as
