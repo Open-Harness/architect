@@ -31,3 +31,4 @@ look-alike folder (`expected-failing-x/`) is still protected. `tools/ci/ci.test.
 
 - `AGENTS.md`: "in `e2e/m1/expected-failing/` and a file per test file" → "in an e2e suite's `expected-failing/` (`e2e/m1/`, `e2e/ui-layer/` and the rest; CI-ratchet-suites) and a file per test file"
 - `tools/ci/builder-paths.sh`: "one file per check in e2e/m1/expected-failing/ (G9)" → "one file per check in an e2e suite's expected-failing/ (e2e/m1/ G9, and every other"
+- `e2e/m8/README.md`: "lets a builder shrink only M1's list today, so an M8 builder" → "lets a builder shrink every e2e suite's list, this one"
