@@ -146,6 +146,7 @@ want this to be able to run in parallel to the other work that's actually runnin
   | `.oxlintrc.json` | the module-boundary tags `scope:theme`, `scope:shell` and `scope:portal-next`, for `packages/theme/`, `packages/shell/` and `packages/portal-next/` |
   | `e2e/served-portal/` | the checks author's `PORTAL_CLIENT=old|next` switch, the old client the default |
   | `e2e/project.json`, `e2e/package.json` | the `portal-next` target and the new packages as workspace dependencies |
+  | `e2e/tsconfig.json` | `portal-next/**` in its `include`, so this goal's checks are typechecked |
   | `.github/workflows/ci.yml` | one job that runs the portal checks against the new client, not yet blocking |
   | `pnpm-lock.yaml` | what `pnpm install` writes for the above |
   | `design/handoff.md`, `STATE.md`, the board, `design/milestones.md` | this goal's own lines |
@@ -315,6 +316,7 @@ started, since it crosses goals.
 | ID | File | Taken by |
 |---|---|---|
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
+| MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
 
 ## The done check
 
@@ -350,6 +352,6 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 
 ## Where it stands
 
-22 November 2026. The goal has started, led from Claude Code. `goal/portal` has caught up with stage 1 by a merge,
-and branch protection is on it. Nothing is built yet: the theme comes first, so Goal 5's screens can take it up,
-and the checks are written beside it.
+22 November 2026. The theme is built: one shared look on UI SDK, light and dark, taken from today's portal so nothing
+changes in feel, and its check passes in a real browser with no HeroUI key. Next it lands in stage 1 on its own, so
+the UI layer's screens can use it. The map's checks are being written now; the map itself comes after them.
