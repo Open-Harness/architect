@@ -59,14 +59,14 @@ fi
 # The graph says too little for two projects, whose tests reach other projects by path and by process, not by import:
 #   e2e runs the whole product, through the CLI and the examples: any affected project but the doc-only ones (canon, docs,
 #       the root) affects it.
-#   prove's tests read examples/acme and examples/starter and run the CLI (grep of packages/prove, 22 November 2026): those
-#       three affect it too.
+#   prove's tests read examples/acme, examples/starter and packages/wallets, and run the CLI (grep of packages/prove on main and
+#       goal/stage-1, 22 November 2026): those four affect it too.
 # Add a line here when a test starts to reach a project that its imports do not show.
 for p in "${projects[@]}"; do
   hit=false
   case "$p" in
     e2e) [ -n "$(awk 'NF && $0 !~ /^(canon|docs|workspace)$/' <<< "$list")" ] && hit=true ;;
-    prove) grep -qxE -- 'prove|cli|acme|starter' <<< "$list" && hit=true ;;
+    prove) grep -qxE -- 'prove|cli|acme|starter|wallets' <<< "$list" && hit=true ;;
     *) grep -qx -- "$p" <<< "$list" && hit=true ;;
   esac
   echo "affected_${p//-/_}=$hit"

@@ -147,7 +147,8 @@ root config, `tools/ci/`, `design/` outside `design/docs`), a diff, graph or aff
 
 **The graph is not enough, so two projects carry extra rules in the script.** Nx builds its graph from imports. `e2e` runs the whole
 product through the CLI and the examples, none of which it imports, so any affected project but `canon`, `docs` and the root affects it.
-`prove`'s tests read `examples/acme` and `examples/starter` and run the CLI (grep of `packages/prove`), so those three affect it too.
+`prove`'s tests read `examples/acme`, `examples/starter` and `packages/wallets`, and run the CLI (grep of `packages/prove` on `main` and
+`goal/stage-1`), so those four affect it too.
 What this saves on `main`: `prove-tests` on a change to another package's own files (for example `language-solidity`, `host-cloudflare`,
 `preset`, `lint`, `signup`, `work`), and all the e2e jobs on a `canon` or `design/docs` change that is not docs-only. The e2e jobs are one
 Nx project, so no finer cut than the project is possible; a package change still runs all of them. A wrong cut is caught by the push run on
