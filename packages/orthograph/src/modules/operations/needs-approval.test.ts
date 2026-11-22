@@ -24,15 +24,6 @@ describe("needsApproval on an operation", () => {
     const asked = Operations.operation(Handle, { ...base, needsApproval: true } as never) as unknown as { readonly needsApproval?: unknown };
     expect(asked.needsApproval).toBe(true);
   });
-
-  it("is absent, not `false` or `undefined`, when not declared: the operation has no such key at all", () => {
-    const asked = Operations.operation(Handle, { ...base, needsApproval: true } as never);
-    const plain = Operations.operation(Handle, base as never);
-    expect(Object.keys(plain)).not.toContain("needsApproval");
-    // Declaring it adds exactly that one key to what the front door makes: nothing else on the operation moves.
-    expect(Object.keys(asked).filter((k) => !Object.keys(plain).includes(k))).toEqual(["needsApproval"]);
-    expect(Object.keys(plain).filter((k) => !Object.keys(asked).includes(k))).toEqual([]);
-  });
 });
 
 // The type: tsc over a scratch project that imports the front door. One run, shared by the cases.

@@ -11,7 +11,7 @@ Goal 5's issue proposes `needsApproval?: true` on `OperationSpec` and on the mod
 
 `RESERVED_CODES` keeps its name and file (the goal-3 lead's call). Goal 4 adds AR-003 to AR-006 to `RUNTIME_CODES` on `goal/on-chain`, so the checks pin only AR-001 and AR-002 there and that AR-007 is taken once across both maps.
 
-Absence of the key is judged on the model, not on the front door: `service.ts` already carries `idempotent` and `budget` as possibly-undefined keys.
+On the front door the checks keep only that a declared `true` is kept and that the type refuses the wrong values; absence of the key is judged on the model, not on the front door: `service.ts` already carries `idempotent` and `budget` as possibly-undefined keys.
 
 An operation that declares `needsApproval` gains no refusal in its `refusals` list: asking a person is the caller's door (`orthograph/actions`), not the Worker's.
 
