@@ -34,7 +34,7 @@ Branch `goal/capxul`, cut from `goal/stage-1`. Written 21 November 2026 by the �
 - **It is:** the map of Capxul's plugins, and its first feature built in Capxul's own repository.
 - **It isn't:** changes to Orthograph's core (each need becomes an ask to the goal that owns it), or the rest of Capxul.
 - **Done when:** that first feature's tests pass in Capxul's staging.
-- **Waits on:** nothing for the map. The feature needs the vault goal and the release goal's signed verdicts.
+- **Waits on:** nothing for the map. The feature needs pieces from six other goals: the release goal's signed verdicts, a token, a Safe, the chain's events coming in, and a staging to run in.
 - **Words used:** a plugin: a feature an app mounts, like sign-in or budgets. Capxul: the product being rebuilt on Orthograph.
 
 ## Read first
@@ -50,7 +50,7 @@ table. "After" names this goal's own earlier slices; "Waits on" names work anoth
 | # | Slice | Row | After | Waits on |
 |---|---|---|---|---|
 | 1 | Capxul's plugins mapped | M7.10 | — | — |
-| 2 | Capxul's first feature, in its staging | M7.11 | 1 | signed verdicts, M7.05 (Goal 15); stage 3, by the Capxul calls (Goal 13) |
+| 2 | Capxul's first feature, in its staging | M7.11 | 1 | M7.05 (Goal 15), ST2.02 (Goal 12), ST3.04 (Goal 13), M6.09 (Goal 4), M5.03 (Goal 11), M7.04 (Goal 3): `decisions/M7-capxul.md`, section 4 |
 
 Slice 1 is a decision on paper; it can start now. Slice 2 runs in Capxul's own repository, under its own rules.
 
@@ -89,6 +89,14 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Running since 22 November 2026, led in Claude Code on claude-opus-5-5. `goal/capxul` is caught up with `goal/stage-1`.
-Slice 1 (the map of Capxul's plugins) is under way; slice 2 waits on Goal 15's signed verdicts and Goal 13's stage 3.
+Running since 22 November 2026, led in Claude Code on claude-opus-5-5.
+
+- **Slice 1, the map, is done** (`decisions/M7-capxul.md`). Of Capxul's plugins, Orthograph already has or plans the
+  keys, sign-in, budgets, organisations, handles, agents and the chain adapters; Capxul keeps its accounts, parties,
+  invoices, payments, books, approvals, permissions and payroll as its own; and Orthograph must still grow money as a
+  value, a mail adapter, reports and a few smaller pieces, which nobody owns yet.
+- **Slice 2, the first feature, waits.** It is one person getting paid: an invoice with a pay link, paid from any
+  wallet, settled only by the chain, and booked. It needs six pieces from six other goals (the map's section 4),
+  asked for by issue. It is built in Capxul's own repository once Capxul's goal there starts.
+
 The lead rewrites this section at every slice merge.
