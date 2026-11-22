@@ -1,0 +1,30 @@
+# Written before M7.02 is built. Red until tools/release/release.mjs exists.
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > @orthograph/fx-cli alone at another version: exit 1, ::error:: naming it and both versions
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > @orthograph/fx-lib alone at another version: exit 1, ::error:: naming it and both versions
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a branch is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a double v is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a leading space is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a prerelease that is a path is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a private package at another version is no disagreement
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a tag that is a path is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a tag without the v is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a trailing dash is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > a trailing space is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > agree: exit 0, every public package named at the version, the private one not
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > four numbers is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > no packages: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > nothing is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > orthograph alone at another version: exit 1, ::error:: naming it and both versions
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > two numbers is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `check`: the tag and every package's version agree > words is not a release tag: exit 2
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish` refuses, before it sends anything, what it should not send > a name that is not a tag: nothing reaches the registry
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish` refuses, before it sends anything, what it should not send > a package that is not built: nothing reaches the registry
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish` refuses, before it sends anything, what it should not send > a tag that disagrees with one package: nothing reaches the registry
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish` refuses, before it sends anything, what it should not send > no registry, off GitHub Actions: nothing reaches the registry
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish` refuses, before it sends anything, what it should not send > npm's own registry spelled another way: nothing reaches the registry
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish` refuses, before it sends anything, what it should not send > npm's own registry, off GitHub Actions: nothing reaches the registry
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish`, a release > a prerelease after a release never takes `latest` from it
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish`, a release > installs in an empty folder, and the command it brings prints the tag's version
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish`, a release > puts every public package at the tag's version under `latest`, and the private one nowhere
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish`, a release > run again after it went through: exit 0, nothing changes (a run can be started again after half a release)
+m7/06-release-publish.test.ts > 06: the release's npm half (M7.02), against a real registry > `publish`, a release > run again after only some went out: the rest go, the ones there are left alone

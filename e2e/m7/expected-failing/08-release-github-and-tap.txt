@@ -1,0 +1,20 @@
+# Written before M7.06 is built. Red until `ortho publish --release` and `--push-tap` exist.
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > `--push-tap` > pushes the formula's commit to the remote it is given, after the other project's, and to no other
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > `--push-tap` with nothing released refuses and pushes nothing
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > `--release` at v1.1.0 > commits a formula that names the release's download address and the sha256 of the bytes the release holds, beside the other project's
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > `--release` at v1.1.0 > makes the GitHub release with the binary and its sha256, as the job, and sends the tap nothing
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > `--release` at v1.1.0 > run again for the same tag: exit 0, no second release, and the formula still pins the bytes the release holds
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > real Homebrew, from the tap the release pushed to > `brew install <tap>/acme` fetches the release's tarball and runs the CLI, which prints its version
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > real Homebrew, from the tap the release pushed to > a wrong sha256 fails the install: the tarball changed after the formula pinned it
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with a branch, not a tag: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with a repository that climbs: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with a repository that is not owner/repo: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with a server address that is another host: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with a tag that is not a version: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with a tap that is not there: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with an API address that is another https host: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with an API address that is http on another host: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with an empty token: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with no repository: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with no tap: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with no token: exit 2, nothing built, sent or pushed
