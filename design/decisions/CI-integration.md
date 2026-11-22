@@ -124,7 +124,7 @@ branch protection on `main` or `goal/stage-1`; each item reverts by one commit.
 
 ## Supersedes
 
-Nothing yet: Part A only adds rules. Part B, when built, changes live words, so its builder adds a Supersedes section
-to its own pull requests and rewrites them there, under the rule in `AGENTS.md`. Those words are the `threads` skill's
-"the target branch's own push run checks every merge" (B2 keeps that only for `main` and `goal/stage-1`), and
-CI-drafts' "Left for later: running only the e2e suites a change touches" (B3 builds it).
+Part A only added rules. Part B, built on 22 November 2026, changes these live words:
+
+- .agents/skills/threads/SKILL.md: "the target branch's own push run checks every merge" → "the push run checks every merge into `main` and `goal/stage-1`; a goal branch has no push run, so its merges are checked when the goal lands"
+- design/decisions/CI-drafts.md: "Left for later: running only the e2e suites a change touches (an `nx affected` gate in `changes`), and a runner of our" → "Left for later: running only the e2e suites a change touches (superseded by CI-integration B3), and a runner of our"
