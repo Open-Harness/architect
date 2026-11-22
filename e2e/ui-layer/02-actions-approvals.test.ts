@@ -25,11 +25,11 @@ describe("02 M1.23: approvals live in the wrapper", () => {
       expect(answer).toEqual({ ok: true, count: 1 });
     });
 
-    it("a no runs nothing: run is not called, nothing is written, and the call is refused as AR-003 with nothing written", async () => {
+    it("a no runs nothing: run is not called, nothing is written, and the call is refused as AR-007 with nothing written", async () => {
       const { actions, host, approver, asked, counted } = await rig(w.current, "editor", false);
       const { calls, options } = counted(noteRemove(host));
       const error = await rejection(actions.defineAction(options, approver).run(REMOVE));
-      await expectRefusal(error, "AR-003", {});
+      await expectRefusal(error, "AR-007", {});
       expect(asked).toHaveLength(1);
       expect(calls.n).toBe(0);
       expect(w.current.writes).toHaveLength(0);
@@ -75,7 +75,7 @@ describe("02 M1.23: approvals live in the wrapper", () => {
       const { actions, host, approver, asked, counted } = await rig(w.current, "editor", [false, true, true]);
       const { calls, options } = counted(noteRemove(host));
       const action = actions.defineAction(options, approver);
-      await expectRefusal(await rejection(action.run(REMOVE, { caller: "tool", toolCallId: "toolu_1" })), "AR-003", {});
+      await expectRefusal(await rejection(action.run(REMOVE, { caller: "tool", toolCallId: "toolu_1" })), "AR-007", {});
       await action.run(REMOVE, { caller: "tool", toolCallId: "toolu_1" });
       await action.run(REMOVE, { caller: "tool", toolCallId: "toolu_1" });
       expect(asked).toHaveLength(3);
