@@ -94,7 +94,7 @@ The call:
 2. **Every event has an id.** `_journal` gains `"id" TEXT NOT NULL UNIQUE`, made at commit by the runtime's `Ids` (`evt_…`),
    and `Entry` gains `id`. The id is what `on:` handlers and views dedupe by. SQLite cannot add a `NOT NULL UNIQUE` column
    to a table with rows, and an applied migration is never edited, so M5.04's migration rebuilds `_journal`, giving each
-   existing row `id = 'evt_' || seq`.
+   existing row `id = 'evt_m_' || seq` (a prefix `Ids` never makes).
 3. **Drained by a Durable Object per store**, `Outbox`, named after the store's binding (`DB`, or a declared store's).
    After a commit that wrote rows the Worker kicks it under `waitUntil`, as counted work. It takes the due rows in
    `(to, subject, seq)` order, claims each (`state = claimed`, a fresh `claim` token, `due = now + lease`), delivers it
