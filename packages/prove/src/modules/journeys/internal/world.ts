@@ -1,6 +1,7 @@
 // Talking to a local world over HTTP: cast people, call operations with a trace prefixed by the caller, read facts.
 import { randomBytes } from "node:crypto";
-import { request } from "node:http";
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
 import { Effect, Layer, Option, Schema } from "effect";
 import type { Operation, Read, Principal, Thing } from "orthograph";
 import { structOf } from "orthograph/server";
@@ -26,12 +27,12 @@ export const castPeople = (url: string, names: ReadonlyArray<string>, anonymous:
 
 /**
  * A POST from something that is not a browser. Node's `fetch` adds `Sec-Fetch-*` headers, which Better Auth reads as a
- * browser's first login and so demands an `Origin` for; `node:http` sends none, as `curl` doesn't.
+ * browser's first login and so demands an `Origin` for; `node:http` sends none, as `curl` doesn't. The transport is chosen by the address's protocol: a deployed Worker is `https`.
  */
 const postJson = (url: string, body: object) =>
   Effect.callback<{ readonly status: number; readonly body: unknown }>((resume) => {
     const text = JSON.stringify(body);
-    const req = request(url, { method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(text) } }, (res) => {
+    const req = (url.startsWith("https:") ? httpsRequest : httpRequest)(url, { method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(text) } }, (res) => {
       let received = "";
       res.on("data", (chunk: Buffer) => (received += chunk.toString()));
       res.on("end", () => resume(Effect.succeed({ status: res.statusCode ?? 0, body: Option.getOrElse(parse(received), () => received) as unknown })));
@@ -71,10 +72,19 @@ export const signUpPeople = (url: string, names: ReadonlyArray<string>, anonymou
 
 /** Encode the payload by its declaration, call the route, and record what came back. */
 /** The world's own front door, `/_world/facts/*`: only a world that hosts its tests has one (D3 #127). */
-export const doorFacts = (url: string): Facts => ({
-  record: (table, id) => fetchJson(`${url}/_world/facts/record?table=${table}&id=${encodeURIComponent(id)}`).pipe(Effect.map((r) => r.body as Record<string, unknown> | null)),
-  journal: (trace) => fetchJson(`${url}/_world/facts/journal?trace=${trace}`).pipe(Effect.map((r) => r.body as CallRecord["journal"])),
-});
+export const doorFacts = (url: string): Facts => {
+  const ask = (what: string, path: string) =>
+    fetchJson(`${url}${path}`).pipe(
+      Effect.flatMap((r) =>
+        r.status === 200 && typeof r.body === "object" && r.body !== undefined
+          ? Effect.succeed(r.body)
+          : Effect.die(new Error(`${url} answered ${r.status} for its ${what}: a deployed Worker closes /_world, so its database must be read with CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID`))),
+    );
+  return {
+    record: (table, id) => ask("facts", `/_world/facts/record?table=${table}&id=${encodeURIComponent(id)}`).pipe(Effect.map((b) => b as Record<string, unknown> | null)),
+    journal: (trace) => ask("facts", `/_world/facts/journal?trace=${trace}`).pipe(Effect.map((b) => (Array.isArray(b) ? b : []) as unknown as CallRecord["journal"])),
+  };
+};
 
 export const callOperation = (url: string, facts: Facts, name: string, op: Operation | Read, payload: Record<string, unknown>, token: string, request: string | undefined, startingWorld = false) =>
   Effect.gen(function* () {

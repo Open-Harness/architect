@@ -504,6 +504,12 @@ describe("21 F: the portal's pages are drawn from `@orthograph/portal-ui`", () =
 
 type Model = BlueprintWire["model"] & { readonly environments?: Record<string, { runs: string; promotesFrom: string | null; lifetimeMs: number | null; cloud?: { database: string } | null; database?: string | null }>; readonly mounts?: Record<string, { kind: string; package: string; version: string }>; readonly refusals?: Record<string, string>; readonly journeys?: Record<string, unknown> };
 const rawOf = (): Model => (pluggedInWire() as { model: Model }).model;
+/** The environments the blueprint declares, sorted: the one list every environment assertion below compares against. It must hold at least `local` and `test`, so it cannot pass on an empty set. */
+const declaredEnvironments = (): string[] => {
+  const names = Object.keys(rawOf().environments ?? {}).sort();
+  expect(names, "Plugged In declares at least local and test").toEqual(expect.arrayContaining(["local", "test"]));
+  return names;
+};
 
 /** The `test` environment's own window: its own sink holds one call (each environment's portal reads only its own sink). */
 const stageOther = (): Pick<Fixture, "traces" | "doorRefusals" | "claim"> => ({
@@ -521,8 +527,7 @@ const withoutFragment = (href: string) => href.split("#")[0]!;
 describe("21 G: one page per declared environment, and the environment is part of every page", () => {
   it("each declared environment has a page with its summary, its declared fields and a proof column for every environment, this one in focus", async () => {
     const wire = await decode(pluggedInWire());
-    const declared = Object.keys(rawOf().environments ?? {});
-    expect(declared.sort(), "Plugged In declares local and test").toEqual(["local", "test"]);
+    const declared = declaredEnvironments();
     const ctx = context(wire, stage(wire));
     for (const name of declared) {
       const { status, text } = await get(ctx, `/portal/environments/${name}`);
@@ -546,7 +551,7 @@ describe("21 G: one page per declared environment, and the environment is part o
     const test = context(wire, stageOther(), NOW, "test");
     const homeLocal = (await get(local, "/portal")).text;
     const options = parts(homeLocal, "env-option");
-    expect(options.map((o) => o["data-environment"]).sort(), "the picker").toEqual(["local", "test"]);
+    expect(options.map((o) => o["data-environment"]).sort(), "the picker").toEqual(declaredEnvironments());
     expect(options.find((o) => o["data-environment"] === "local")?.["data-current"], "local is where this portal runs").toBe("true");
     expect(options.find((o) => o["data-environment"] === "test")).toMatchObject({ "data-current": "false", "data-href": "/portal/environments/test" });
     const homeTest = (await get(test, "/portal")).text;
@@ -626,7 +631,7 @@ describe("21 I: the icon rail and the command palette", () => {
     expect(of("operation").map((e) => e.name).sort()).toEqual(Object.keys(raw.operations).sort());
     expect(of("journey").map((e) => e.name).sort(), "the model's journeys (none yet in Plugged In)").toEqual(Object.values(raw.journeys ?? {}).map((j) => (j as { name: string }).name).sort());
     expect(Object.fromEntries(of("refusal").map((e) => [e.name, e.code])), "refusal codes, from the model").toEqual(raw.refusals);
-    expect(of("environment").map((e) => e.name).sort()).toEqual(["local", "test"]);
+    expect(of("environment").map((e) => e.name).sort(), "the search index's environments").toEqual(declaredEnvironments());
     expect(of("monitor").length, "monitor pages are searchable").toBeGreaterThanOrEqual(1);
     for (const entry of (index ?? []).filter((e) => e.kind !== "monitor")) {
       expect(entry.href.startsWith("/portal/"), `${entry.kind} ${entry.name}`).toBe(true);
@@ -735,10 +740,10 @@ describe("21 L: what the portal cannot fill yet says `not yet`", () => {
   it("per-eval verdicts on the Proof tab: the aggregate verdict per environment, and `not yet` where the nine evals would be", async () => {
     const wire = await decode(pluggedInWire());
     const { text } = await get(context(wire, stage(wire)), "/portal/operations/handle.claim?tab=proof");
-    expect(parts(text, "proof-cell").map((c) => c["data-environment"]).sort(), "the aggregate, per environment").toEqual(["local", "test"]);
+    expect(parts(text, "proof-cell").map((c) => c["data-environment"]).sort(), "the aggregate, per environment").toEqual(declaredEnvironments());
     for (const cell of parts(text, "proof-cell")) expect(cell["data-state"], "no logbook is configured in this fixture: nothing is recorded").toBe("unavailable");
     const evals = parts(text, "eval-verdicts");
-    expect(evals.length, "a per-eval block for each environment").toBe(2);
+    expect(evals.length, "a per-eval block for each declared environment").toBe(declaredEnvironments().length);
     for (const e of evals) expect(e["data-state"]).toBe("not yet");
     expect(parts(text, "not-yet").map((n) => n["data-hole"])).toContain("per-eval");
   });
