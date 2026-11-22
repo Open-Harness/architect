@@ -1,0 +1,4 @@
+src/modules/events/events.test.ts > AbiEvents.source > a log of another event, or of another address, is a ChainFault of kind event
+src/modules/events/events.test.ts > AbiEvents.source > decodes a transfer's log with typed arguments: names, an Address, a bigint
+src/modules/events/events.test.ts > AbiEvents.source > is the event item at the address, from the block asked
+src/modules/events/events.test.ts > AbiEvents.source > the follower sees the event Confirmed through the source, with the typed arguments

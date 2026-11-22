@@ -1,0 +1,29 @@
+{
+  "name": "@orthograph/adapters-abi",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/main.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "dependencies": {
+    "@orthograph/chain-evm": "workspace:*",
+    "effect": "4.1.4",
+    "orthograph": "workspace:*"
+  },
+  "devDependencies": {
+    "@orthograph/language-effect": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/main.d.ts",
+        "default": "./dist/main.js"
+      }
+    }
+  }
+}

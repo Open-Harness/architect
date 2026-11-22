@@ -1,0 +1,12 @@
+# How stand-in/bytecode.json was made (see stand-in/README.md): `forge build --root packages/erc20 --out <dir>` then the
+# deployment bytecode of Token. Nothing here runs in a test or in CI.
+[profile.default]
+src = "stand-in"
+libs = []
+solc = "0.8.30"
+optimizer = true
+optimizer_runs = 200
+evm_version = "prague"
+bytecode_hash = "none"
+cbor_metadata = false
+remappings = ["@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/"]

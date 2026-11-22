@@ -1,0 +1,4 @@
+test/generated.test.ts > erc20's generated files > are the only files under generated/: nothing else lives there, nothing is left from an older plan
+test/generated.test.ts > erc20's generated files > are what plan writes from abi.json, byte for byte
+test/generated.test.ts > erc20's generated files > carry the stand-in's bytecode as bytecode.json holds it
+test/generated.test.ts > erc20's generated files > include the scaffolded adapter, which opens as a scaffold and is not compared (it is theirs now)

@@ -1,0 +1,18 @@
+src/modules/generate/generate.test.ts > parse > answers the items of an ABI's JSON, and refuses what is not one
+src/modules/generate/generate.test.ts > plan: calls, events and errors > makes a view or pure function a read and any other a write, each taking its arguments object (none for no inputs)
+src/modules/generate/generate.test.ts > plan: calls, events and errors > makes an event source per event and an error class per error, code `<adapter>.<Error>`, each exit code its own
+src/modules/generate/generate.test.ts > plan: calls, events and errors > makes the adapter a Blueprint.adapter with a call per function, the events, and a Stand.process stand-in
+src/modules/generate/generate.test.ts > plan: calls, events and errors > types a write as answering the Submission and a read as its answer
+src/modules/generate/generate.test.ts > plan: each ABI type maps as the decision's table says > makes no arguments interface for a function with no inputs
+src/modules/generate/generate.test.ts > plan: each ABI type maps as the decision's table says > maps a function's arguments, one member per parameter in ABI order, every uint and int a bigint
+src/modules/generate/generate.test.ts > plan: each ABI type maps as the decision's table says > maps a tuple to an interface of its named components, a nested tuple to another, a tuple array to an array of it
+src/modules/generate/generate.test.ts > plan: each ABI type maps as the decision's table says > maps an error's fields
+src/modules/generate/generate.test.ts > plan: each ABI type maps as the decision's table says > maps an event's arguments, and an indexed string, bytes, array or tuple to the Hex of its topic
+src/modules/generate/generate.test.ts > plan: each ABI type maps as the decision's table says > maps several named outputs to an interface, one output to its type, and none to void
+src/modules/generate/generate.test.ts > plan: overloads > names each overload `<name>_<n>` by its order in the ABI, from 1, and leaves a name with one member as it is
+src/modules/generate/generate.test.ts > plan: the files > gives the same files, byte for byte, for the same input, and a different ABI gives different ones
+src/modules/generate/generate.test.ts > plan: the files > imports only the types it uses: an ABI with no address and no bytes imports neither
+src/modules/generate/generate.test.ts > plan: the files > opens each file with its header: generated files `Generated from`, the adapter `Scaffolded from`
+src/modules/generate/generate.test.ts > plan: the files > puts the bytecode in generated/stand-in.ts exactly
+src/modules/generate/generate.test.ts > plan: the files > reads past a constructor, a fallback and a receive function
+src/modules/generate/generate.test.ts > plan: the files > writes the adapter, the four generated files and (with bytecode) the stand-in's, sorted by path

@@ -263,6 +263,22 @@ importers:
         specifier: 5.20261101.1
         version: 5.20261101.1
 
+  packages/adapters-abi:
+    dependencies:
+      '@orthograph/chain-evm':
+        specifier: workspace:*
+        version: link:../chain-evm
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
+    devDependencies:
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../language-effect
+
   packages/chain-evm:
     dependencies:
       '@orthograph/language-effect':
@@ -329,6 +345,28 @@ importers:
       orthograph:
         specifier: workspace:*
         version: link:../orthograph
+
+  packages/erc20:
+    dependencies:
+      '@orthograph/adapters-abi':
+        specifier: workspace:*
+        version: link:../adapters-abi
+      '@orthograph/chain-evm':
+        specifier: workspace:*
+        version: link:../chain-evm
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
+    devDependencies:
+      '@openzeppelin/contracts':
+        specifier: 5.6.1
+        version: 5.6.1
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../language-effect
 
   packages/generators:
     dependencies:
@@ -2640,6 +2678,9 @@ packages:
   '@opentelemetry/api@1.10.0':
     resolution: {integrity: sha512-lMkyes8iHrG+mk6WH7X70MdCLI2RS0FwNBY1PyQ8UemaijE2m5mv5A0Niy3HtbYTFrgkUEQjFMXmSAk2hQDuPQ==}
     engines: {node: '>=8.0.0'}
+
+  '@openzeppelin/contracts@5.6.1':
+    resolution: {integrity: sha512-Ly6SlsVJ3mj+b18W3R8gNufB7dTICT105fJhodGAGgyC2oqnBAhqSiNDJ8V8DLY05cCz81GLI0CU5vNYA1EC/w==}
 
   '@oxc-project/types@0.156.0':
     resolution: {integrity: sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw==}
@@ -9085,6 +9126,8 @@ snapshots:
       - '@swc/core'
 
   '@opentelemetry/api@1.10.0': {}
+
+  '@openzeppelin/contracts@5.6.1': {}
 
   '@oxc-project/types@0.156.0': {}
 

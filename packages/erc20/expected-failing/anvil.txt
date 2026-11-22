@@ -1,0 +1,8 @@
+test/anvil.test.ts > the erc20 adapter on Anvil > a revert with an unknown selector, and a revert with empty data, stay ChainFault
+test/anvil.test.ts > the erc20 adapter on Anvil > a transfer beyond the balance fails in simulation as ERC20InsufficientBalance with its fields, and nothing is sent
+test/anvil.test.ts > the erc20 adapter on Anvil > a typed transfer confirms, and its Transfer event decodes with typed args
+test/anvil.test.ts > the erc20 adapter on Anvil > an approval and a transferFrom make an Approval event and move the allowance
+test/anvil.test.ts > the erc20 adapter on Anvil > conformance names the disagreement against a token whose code lacks approve and decimals
+test/anvil.test.ts > the erc20 adapter on Anvil > conformance passes against the stand-in
+test/anvil.test.ts > the erc20 adapter on Anvil > the contract's other errors decode to their own classes: no allowance, a zero receiver, a zero spender
+test/anvil.test.ts > the erc20 adapter on Anvil > the stand-in deploys and answers an address; its reads are typed: name, supply, balance

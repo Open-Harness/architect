@@ -1,0 +1,3 @@
+src/modules/stand-in/stand-in.test.ts > StandInContract.deploy, on Anvil > a deployment that reverts fails, and no address is answered
+src/modules/stand-in/stand-in.test.ts > StandInContract.deploy, on Anvil > deploys the bytecode, answers the contract's address, and the contract answers there
+src/modules/stand-in/stand-in.test.ts > StandInContract.deploy, on Anvil > deploys twice to two different addresses

@@ -1,0 +1,11 @@
+src/modules/contract/contract.test.ts > Contract.read, on Anvil > a function the code does not have answers a ChainFault (revert, no data), not a value
+src/modules/contract/contract.test.ts > Contract.read, on Anvil > answers each output typed: a bigint, a string, and by the arguments' names
+src/modules/contract/contract.test.ts > Contract.read, on Anvil > sends nothing: the head and the nonce are where they were
+src/modules/contract/contract.test.ts > Contract.refusals > is the contract's errors as the refusal lock, each at the contract's address with its own code and selector
+src/modules/contract/contract.test.ts > Contract.write, on Anvil > a function the code does not have reverts without data: ChainFault, nothing sent
+src/modules/contract/contract.test.ts > Contract.write, on Anvil > a revert by a declared error fails as that error with its fields, and nothing is sent
+src/modules/contract/contract.test.ts > Contract.write, on Anvil > a revert by an error whose selector is not the contract's declared ones stays ChainFault, and nothing is sent
+src/modules/contract/contract.test.ts > Contract.write, on Anvil > a revert by another declared error decodes by its own selector: no allowance is ERC20InsufficientAllowance
+src/modules/contract/contract.test.ts > Contract.write, on Anvil > a transfer's effect is on chain once it is included: the recipient holds it
+src/modules/contract/contract.test.ts > Contract.write, on Anvil > simulates, signs and submits, and answers the Submission; the arguments are by name, in any order
+src/modules/contract/contract.test.ts > Contract.write, on Anvil > without a signer a write is a ChainFault of kind configuration, and nothing is sent

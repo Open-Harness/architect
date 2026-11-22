@@ -1,0 +1,7 @@
+src/modules/generate/refusals.test.ts > plan refuses, naming the item > a name it can't disambiguate: two overloads that name one function twice, a type another item already took
+src/modules/generate/refusals.test.ts > plan refuses, naming the item > a type with no mapping (a fixed-point number, a function pointer)
+src/modules/generate/refusals.test.ts > plan refuses, naming the item > an unnamed input of a function, an event and an error
+src/modules/generate/refusals.test.ts > plan refuses, naming the item > an unnamed tuple component
+src/modules/generate/refusals.test.ts > plan refuses, naming the item > and plans a clean ABI beside them (a refusal is the item's, not the whole ABI's)
+src/modules/generate/refusals.test.ts > plan refuses, naming the item > several outputs when one has no name
+src/modules/generate/refusals.test.ts > plan refuses, naming the item > two parameters of one name

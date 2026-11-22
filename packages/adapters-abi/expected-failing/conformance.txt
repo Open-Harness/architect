@@ -1,0 +1,5 @@
+src/modules/conformance/conformance.test.ts > Conformance.run, on Anvil > an ABI function the code lacks is named even when it is the only one: a one-function ABI
+src/modules/conformance/conformance.test.ts > Conformance.run, on Anvil > lists what agrees beside what does not: the other functions and the Transfer event
+src/modules/conformance/conformance.test.ts > Conformance.run, on Anvil > names each disagreement of a contract that lacks approve and decimals, whose transfer(1) reverts with an undeclared error, and that never emits Approval
+src/modules/conformance/conformance.test.ts > Conformance.run, on Anvil > passes against the stand-in: every function and event agrees, nothing disagrees
+src/modules/conformance/conformance.test.ts > Conformance.run, on Anvil > reports the same twice (it sends writes, and the second run still agrees)
