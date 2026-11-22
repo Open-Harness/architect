@@ -15,13 +15,18 @@
 //    property that `@ui-sdk/core/web.css` (workspace pin 0.1.0-beta.10) declares on `:root`, read from that file, never
 //    typed here. Properties that file sets only on one component's selector (`--ui-icon`, `--ui-icon-size`, `--ui-checker`,
 //    `--ui-grid-line`, `--ui-rating-*`, `--ui-tree-indent`) are that component's own and are not tokens.
-//  - A token's value is the string the browser computes for it on `:root`, trimmed. A token that is one string in both
-//    schemes (a radius) is that string in `tokens.light` and `tokens.dark`; one that differs is written per scheme (a
-//    custom property does not resolve `light-dark()`, so the stylesheet must not rely on it for these).
+//  - A token's value is the string the browser computes for it on `:root`, compared with runs of whitespace collapsed to one
+//    space and the space after a comma made one (`system-ui,sans-serif` is `system-ui, sans-serif`; a two-line shadow is one
+//    line). A token that is one string in both schemes (a radius) is that string in `tokens.light` and `tokens.dark`; one
+//    that differs is written per scheme.
+//  - `light-dark(` appears nowhere in `theme.css`: a custom property does not resolve it, so a token written with it holds
+//    the same string in both schemes and would not follow `data-theme`. And `:root` sets `color-scheme` to the scheme in
+//    force: the computed `color-scheme` is `light` under light (emulated or `data-theme="light"`) and `dark` under dark.
 //  - The theme contains no HeroUI, and `nx run theme:build` exits 0 with `HEROUI_AUTH_TOKEN` removed from its environment.
 //
 // The clauses (the names below are the test names): 1 the token list is read from web.css; 2 the theme alone, both
-// schemes, and `data-theme` winning both ways; 3 web.css first and the theme after, the theme's values win, and its stylesheet never imports UI SDK's (no `@ui-sdk` or `web.css` in it); 4 the two
+// schemes, and `data-theme` winning both ways; 3 web.css and the theme together, in both orders (web.css first, theme first), the theme's values win, and its
+// stylesheet never imports UI SDK's (no `@ui-sdk` or `web.css` in it) and never writes `light-dark(`; 4 the two
 // schemes differ at surface and text; 5 no HeroUI anywhere under the package, and the build with the token stripped.
 // The fixture page holds only link tags and the document element's attribute: no markup of the theme's own.
 import { spawnSync } from "node:child_process";
@@ -105,8 +110,9 @@ let dir: string;
 beforeAll(async () => { browser = await chromium.launch({ headless: true }); dir = mkdtempSync(join(tmpdir(), "theme-fixture-")); });
 afterAll(async () => { await browser.close(); rmSync(dir, { recursive: true, force: true }); });
 
-/** Opens the fixture page (only the named stylesheets, in order) under an emulated scheme, with `data-theme` set or not, and reads every token on `:root`. */
-const read = async (sheets: readonly string[], names: readonly string[], emulate: Scheme, attribute: Scheme | undefined): Promise<Record<string, string>> => {
+/** Opens the fixture page (only the named stylesheets, in order) under an emulated scheme, with `data-theme` set or not, and reads every token on `:root`, and its computed `color-scheme`. */
+type Read = { readonly values: Record<string, string>; readonly colorScheme: string };
+const read = async (sheets: readonly string[], names: readonly string[], emulate: Scheme, attribute: Scheme | undefined): Promise<Read> => {
   const file = join(dir, `page-${String(readdirSync(dir).length)}.html`);
   const links = sheets.map((sheet) => `<link rel="stylesheet" href="${pathToFileURL(sheet).href}">`).join("");
   writeFileSync(file, `<!doctype html><html${attribute === undefined ? "" : ` data-theme="${attribute}"`}><head>${links}</head><body>fixture</body></html>`);
@@ -114,14 +120,18 @@ const read = async (sheets: readonly string[], names: readonly string[], emulate
   try {
     await page.goto(pathToFileURL(file).href);
     await page.evaluate("document.fonts.ready.then(() => undefined)");
-    return (await page.evaluate(`(${JSON.stringify(names)}).reduce((all, n) => ({ ...all, [n]: getComputedStyle(document.documentElement).getPropertyValue(n).trim() }), {})`)) as Record<string, string>;
+    return (await page.evaluate(`({ values: (${JSON.stringify(names)}).reduce((all, n) => ({ ...all, [n]: getComputedStyle(document.documentElement).getPropertyValue(n).trim() }), {}), colorScheme: getComputedStyle(document.documentElement).colorScheme })`)) as Read;
   } finally {
     await page.context().close();
   }
 };
 
-const mismatches = (names: readonly string[], got: Record<string, string>, expected: Readonly<Record<string, string>>): string[] =>
-  names.filter((n) => { const want = expected[n]?.trim(); return want === undefined || want === "" || got[n] !== want; }).map((n) => `${n}: the page resolved ${show(got[n])}, the theme's tokens say ${show(expected[n])}`);
+const squash = (value: string): string => value.replace(/\s+/g, " ").replace(/\s*,\s*/g, ", ").trim();
+const mismatches = (names: readonly string[], got: Read, expected: Readonly<Record<string, string>>, scheme: Scheme): string[] => [
+  ...names.filter((n) => { const want = expected[n]; return want === undefined || squash(want) === "" || squash(got.values[n] ?? "") !== squash(want); })
+    .map((n) => `${n}: the page resolved ${show(got.values[n])}, the theme's tokens say ${show(expected[n])}`),
+  ...(got.colorScheme === scheme ? [] : [`color-scheme: the page computed ${show(got.colorScheme)}, the scheme in force is "${scheme}"`]),
+];
 
 const cases = SCHEMES.flatMap((emulate) => [
   { title: `${emulate} emulation, no data-theme`, emulate, attribute: undefined, scheme: emulate },
@@ -141,24 +151,29 @@ describe("@orthograph/theme (Goal 6, slice 1)", () => {
       it(`resolves every token to tokens.${c.scheme} under ${c.title}`, async () => {
         const { names } = tokenNames();
         const theme = await loadTheme();
-        expect(mismatches(names, await read([theme.css], names, c.emulate, c.attribute), theme.tokens[c.scheme])).toEqual([]);
+        expect(mismatches(names, await read([theme.css], names, c.emulate, c.attribute), theme.tokens[c.scheme], c.scheme)).toEqual([]);
       });
     }
   });
 
-  describe("clause 3: web.css first, then the theme", () => {
-    for (const c of cases) {
-      it(`the theme's values win under ${c.title}`, async () => {
-        const { names, webCss } = tokenNames();
-        const theme = await loadTheme();
-        expect(mismatches(names, await read([webCss, theme.css], names, c.emulate, c.attribute), theme.tokens[c.scheme])).toEqual([]);
-      });
+  describe("clause 3: web.css and the theme together, in either order", () => {
+    for (const order of ["web.css first, then the theme", "the theme first, then web.css"] as const) {
+      for (const c of cases) {
+        it(`${order}: the theme's values win under ${c.title}`, async () => {
+          const { names, webCss } = tokenNames();
+          const theme = await loadTheme();
+          const sheets = order.startsWith("web.css") ? [webCss, theme.css] : [theme.css, webCss];
+          expect(mismatches(names, await read(sheets, names, c.emulate, c.attribute), theme.tokens[c.scheme], c.scheme)).toEqual([]);
+        });
+      }
     }
   });
 
-  it("clause 3: the stylesheet does not import UI SDK's own", async () => {
+  it("clause 3: the stylesheet does not import UI SDK's own, and never writes light-dark(", async () => {
     const theme = await loadTheme();
-    expect(readFileSync(theme.css, "utf8")).not.toMatch(/@ui-sdk|web\.css/i);
+    const text = readFileSync(theme.css, "utf8");
+    expect(text).not.toMatch(/@ui-sdk|web\.css/i);
+    expect(text).not.toMatch(/light-dark\(/i);
   });
 
   it("clause 4: light and dark differ at the surface and the text", async () => {
