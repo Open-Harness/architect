@@ -297,7 +297,7 @@ Mark text traced only when it is a code you search by. If a person typed it, lea
 | The operation's span, opened after the role check | `packages/language-effect/src/modules/handler/service.ts:94` | built |
 | One span per step | `packages/language-effect/src/modules/handler/service.ts:40` | built |
 | Refusal and defect written on the span | `packages/language-effect/src/modules/handler/service.ts:87` | built |
-| Refusals end OK, defects in error | `packages/language-effect/src/modules/handler/internal/span.ts:10` | built |
+| Refusals never end as errors, defects do | `packages/language-effect/src/modules/handler/internal/span.ts:10` | built |
 | The attribute allowlist | `packages/language-effect/src/modules/handler/internal/attributes.ts:8` | built |
 | `spans({ present, absent })` in journeys | `packages/orthograph/src/modules/journeys/types.ts:119` | built |
 | Sinks | `packages/orthograph/src/modules/telemetry/types.ts:23` | built |
@@ -313,7 +313,7 @@ Mark text traced only when it is a code you search by. If a person typed it, lea
 | Part | Status | Slice | Proved by |
 |---|---|---|---|
 | Operation and step spans, made from the declaration | proved | layer 2 | the `spans(…)` assertions in acme's journeys |
-| Refusals end OK, defects in error | proved | layer 2 | `packages/language-effect/src/modules/handler/handler.test.ts:169` |
+| Refusals never end as errors, defects do | proved | layer 2 | `packages/language-effect/src/modules/handler/handler.test.ts:169` |
 | Public fields only | proved | layer 2 | `packages/language-effect/src/modules/handler/internal/attributes.test.ts` |
 | Local and Axiom sinks, `ortho telemetry trace` | proved | layer 2 | `packages/prove/src/modules/sinks/sinks.test.ts`, `packages/cli/src/modules/telemetry/telemetry.test.ts` |
 | The commit span and `attempt` | proved | M1.18 | a forced conflict shows both spans and both attributes |

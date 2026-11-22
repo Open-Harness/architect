@@ -45,12 +45,14 @@ export const Telemetry: TelemetryApi = {
       out.headers.set("x-trace-id", trace);
       return out;
     };
+    // The caller's span is the parent of every span of the call, exported or not: with no target the call's spans still
+    // carry the caller's trace, and so does every journal row they write (the staging story reads its facts by it).
+    const parent = Tracer.externalSpan({ traceId: trace, spanId, sampled: (parseInt(flags, 16) & 1) === 1 });
     const targets = [...(url ? [collectorOf(url)] : []), ...sinksOf(sinks)];
-    if (targets.length === 0) return handler(traced).then(answered);
+    if (targets.length === 0) return handler(traced, Context.make(Tracer.ParentSpan, parent) as unknown as Context.Context<never>).then(answered);
     // One runtime per request: its exporters are flushed when it is disposed, after the response, under waitUntil.
     const runtime = ManagedRuntime.make(exporters(targets, service, environment));
     // Disposed whether the handler answers or throws, so a failed request still exports what it recorded.
-    const parent = Tracer.externalSpan({ traceId: trace, spanId, sampled: (parseInt(flags, 16) & 1) === 1 });
     return runtime
       .context()
       .then((context) => handler(traced, Context.add(context, Tracer.ParentSpan, parent) as unknown as Context.Context<never>))

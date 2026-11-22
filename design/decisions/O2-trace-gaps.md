@@ -15,7 +15,7 @@ You never write span code. The declaration produces the spans:
 - **One span per declared step**, `<operation>.<step>`, tagged `step.kind`, at `service.ts:34`.
 - **Attributes come from the declaration.** Only public fields are written: `payload.*`, `answer.*` and
   `principal.person`. A field the declaration doesn't name is never written (`internal/attributes.ts`).
-- **Refusals end OK and defects end in error** (`internal/span.ts`). A refusal is tagged `refusal` and `refusal.log`.
+- **Refusals end OK and defects end in error** (Superseded by O4, 21 November 2026: a refusal's span exits successfully and is exported as OTLP UNSET, never ERROR; a defect is still ERROR) (`internal/span.ts`). A refusal is tagged `refusal` and `refusal.log`.
   Only a defect is red.
 
 ## Gap 1: the commit has no span

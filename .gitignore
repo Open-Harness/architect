@@ -17,3 +17,4 @@ packages/preset/files/
 docs/canon/.preview/
 # HeroUI Pro build kept for the CI cache between runs: never committed.
 .cache/
+.alchemy/
