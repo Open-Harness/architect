@@ -105,9 +105,16 @@ export const TimersMemory: Layer.Layer<Timers | DurableTimers, never, Busy> = La
       fire: (at) =>
         Effect.gen(function* () {
           const hit = table.filter((t) => t.at === at).sort((a, b) => a.id - b.id);
-          for (const t of hit) table.splice(table.indexOf(t), 1);
-          yield* Effect.forEach(hit, (t) => t.run, { discard: true });
-          return hit.map(timerOf);
+          const fired: Array<Timer> = [];
+          // Each row leaves the table only as its own firing begins, so a firing that fails leaves the rest pending.
+          for (const t of hit) {
+            const row = table.indexOf(t);
+            if (row === -1) continue;
+            table.splice(row, 1);
+            yield* t.run;
+            fired.push(timerOf(t));
+          }
+          return fired;
         }),
       pending: Effect.sync(() => table.map(timerOf).sort((a, b) => a.at - b.at || a.id - b.id)),
     });

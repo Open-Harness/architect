@@ -76,6 +76,20 @@ describe("DurableTimers", () => {
       expect((yield* durable.pending).map((t) => [t.owner, t.at])).toEqual([["x/1", 5000]]);
     })));
 
+  it("a wake that fails at an instant leaves every later timer at that instant pending, sleeps included", () =>
+    run(Effect.gen(function* () {
+      const durable = yield* DurableTimers;
+      const timers = yield* Timers;
+      const busy = yield* Busy;
+      yield* durable.set(5000, "x/1", "first", { kind: "nobody", payload: null });
+      yield* durable.set(5000, "x/2", "second", wake);
+      yield* busy.spawn(timers.sleep("x/3", "5 seconds"));
+      yield* busy.quiet;
+      expect(yield* Effect.exit(timers.fire(5000))).toMatchObject({ _tag: "Failure" });
+      expect((yield* timers.pending).map((t) => t.name)).toEqual(["first", "second", "sleep"]);
+      expect(woken).toEqual([]);
+    })));
+
   it("a durable timer at an instant that is not a finite number is a defect", () =>
     run(Effect.gen(function* () {
       const durable = yield* DurableTimers;
