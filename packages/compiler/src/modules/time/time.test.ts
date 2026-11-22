@@ -37,6 +37,19 @@ describe("time", () => {
     expect(checked(Blueprint.time.every("1 month", { on: { weekday: "friday" }, zone: "Europe/London" })).problems).toEqual([]);
   });
 
+  it("refuses the keeper on a read, and on an operation whose move is not made by time, naming each; and counts reads as using it", () => {
+    const keeper = [{ kind: "keeper" }];
+    expect(Times.keeper({ file: "f.ts", name: "purse.get", kind: "read", move: undefined, allowed: keeper })).toEqual([expect.stringMatching(/purse\.get allows the keeper, but it is a read/)]);
+    expect(Times.keeper({ file: "f.ts", name: "purse.open", kind: "operation", move: undefined, allowed: keeper })).toEqual([expect.stringMatching(/purse\.open.*makes no move/)]);
+    expect(Times.keeper({ file: "f.ts", name: "purse.get", kind: "read", move: undefined, allowed: [{ kind: "anyone" }] })).toEqual([]);
+    expect(Times.keeperUsed([[{ kind: "anyone" }], keeper])).toBe(true);
+    expect(Times.keeperUsed([[{ kind: "anyone" }], { what: "who may" }])).toBe(false);
+  });
+
+  it("says a span is a whole number of its unit", () => {
+    expect(checked(Blueprint.time.every("1.5 months" as never, { from: "startedAt" })).problems).toEqual([expect.stringMatching(/membership\.renew.*1\.5 months.*whole number/)]);
+  });
+
   it("normalises a clock's start to ISO 8601 with milliseconds", () => {
     expect(Times.clock({ file: "f", clock: Blueprint.clock.stepped({ starts: "2027-01-10T09:00:00Z" }) })).toEqual({ clock: { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" }, problems: [] });
     expect(Times.clock({ file: "f", clock: Blueprint.clock.real() })).toEqual({ clock: { kind: "real" }, problems: [] });

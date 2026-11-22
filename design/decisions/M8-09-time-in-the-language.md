@@ -41,6 +41,7 @@ The model's shapes, as the M8.09 row fixes them:
    it is read (M8-checks call 11). Before, it printed only that the blueprint did not compile.
 7. **A zone is a tz database name** (read through `Intl.supportedValuesOf("timeZone")`, plus `UTC`; no dependency) **or a
    text field of the thing.** A path through another thing (`"company.zone"`) is not read yet: it is refused naming the zone.
+7b. **The tz list is what `Intl.supportedValuesOf("timeZone")` gives, plus `UTC`.** That is the canonical names, so a link such as `US/Pacific` or `Etc/UTC` is refused (use `America/Los_Angeles`, `UTC`), and the list depends on the Node ICU build the compiler runs on. A zone the build does not list is a problem naming the move and the zone, never a silent guess.
 8. **A clock's `starts` is normalised** to ISO 8601 with milliseconds in the model, as every instant is on the wire.
 
 ## Supersedes

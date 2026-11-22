@@ -2,14 +2,14 @@ import { DateTime, Option } from "effect";
 import { Spans } from "orthograph/server";
 import type { ClockModel, MoveTimeModel, TimesApi } from "./types.ts";
 import { anchorProblems } from "./internal/anchor.ts";
+import { keeperProblems, keeperUsed } from "./internal/keeper.ts";
 
 const spanProblem = (where: string, what: string, span: string): ReadonlyArray<string> => {
   const read = Spans.read(span);
-  return read !== undefined && read.count >= 1 ? [] : [`${where} is made by time, but its ${what} "${span}" isn't a span like "1 month" or "14 days"`];
+  return read !== undefined && read.count >= 1 ? [] : [`${where} is made by time, but its ${what} "${span}" isn't a span: a whole number of seconds, minutes, hours, days, weeks, months or years, like "1 month" or "14 days"`];
 };
 
-export const Times: TimesApi = {
-  move: ({ name, thing, key, move }) => {
+const moveOf: TimesApi["move"] = ({ name, thing, key, move }) => {
     const where = `${name}.${key}`;
     const { by, late, lazy } = move;
     if (by === undefined) {
@@ -30,7 +30,17 @@ export const Times: TimesApi = {
       ...(lazy === true ? { lazy: true as const } : {}),
     };
     return { time, problems };
+};
+
+export const Times: TimesApi = {
+  move: moveOf,
+  timed: ({ file, problems, ...spec }) => {
+    const found = moveOf(spec);
+    problems.push(...found.problems.map((p) => `${file}: ${p}`));
+    return found.time;
   },
+  keeperUsed,
+  keeper: keeperProblems,
   clock: ({ file, clock }) => {
     if (clock.which === "real") return { clock: { kind: "real" } satisfies ClockModel, problems: [] };
     const starts = DateTime.make(clock.starts);

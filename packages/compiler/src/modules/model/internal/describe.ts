@@ -9,6 +9,7 @@ import { exitClashes, notFoundShapes, operationExitClashes } from "./exits.ts";
 import { unfillable } from "./fillable.ts";
 import { RUNS_NEEDS, deviceProblems } from "./device.ts";
 import { Times } from "#modules/time/service.js";
+import { allowedModelOf } from "./allowed.ts";
 import { environmentsOf } from "./environments.ts";
 import { storiesOf } from "./journeys.ts";
 import { hashOf } from "./hash.ts";
@@ -97,15 +98,10 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
     const machine = m
       ? {
           states,
-          moves: Object.fromEntries(Object.entries(m.moves).map(([k, mv]) => {
-            // A move made by time carries its `by`, `late` and `lazy`; every problem names the move and its file.
-            const timed = Times.move({ name, thing: t.thing!, key: k, move: mv });
-            problems.push(...timed.problems.map((p) => `${where}/machine.ts: ${p}`));
-            return [k, {
-              from: mv.from, to: mv.to, emits: eventNames.get(mv.emits) ?? problem(problems, `${where}/machine.ts move ${k}: emits an event not exported from events.ts`),
-              ...timed.time,
-            }];
-          })),
+          moves: Object.fromEntries(Object.entries(m.moves).map(([k, mv]) => [k, {
+            from: mv.from, to: mv.to, emits: eventNames.get(mv.emits) ?? problem(problems, `${where}/machine.ts move ${k}: emits an event not exported from events.ts`),
+            ...Times.timed({ name, thing: t.thing!, key: k, move: mv, file: `${where}/machine.ts`, problems }),
+          }])),
           notFrom: { error: `${pascal(name)}Not${pascal(states[0] ?? "")}`, exit: m.notFrom.exit, code: codeOf(prefix.get(name) ?? "??", MACHINE_NUMBER) },
         }
       : null;
@@ -122,21 +118,10 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
     };
     things[name] = { ...entry, hash: hashOf(entry) };
   }
-
-  const allowedModel = (a: Allowed, where: string): AllowedModel => {
-    if (a.kind === "anyone") return { kind: "anyone" };
-    if (a.kind === "signed-in") return { kind: "signed-in" };
-    if (a.kind === "keeper") return { kind: "keeper" };
-    const name = (r: unknown) => roleNames.get(r as never) ?? problem(problems, `${where}: uses a role not exported from a roles.ts`);
-    if (a.kind === "role") return { kind: "role", role: name(a) };
-    return { kind: "role-of", role: name(a.role), path: a.path };
-  };
-
-  // The keeper is refused NotAllowed by every operation that doesn't list it, even one open to anyone (M8-checks call 4):
-  // so once a blueprint has a keeper, no operation's refusals leave NotAllowed out. A blueprint with none is unchanged.
-  const keeperUsed = [...layout.things.values()].some((t) => [...t.verbs.values()].some((v) => Array.isArray(v.declaration.allowed) && v.declaration.allowed.some((a) => a.kind === "keeper")));
+  const allowedModel = allowedModelOf(roleNames, problems);
+  const keeperUsed = Times.keeperUsed([...layout.things.values()].flatMap((t) => [...t.verbs.values()].map((v) => v.declaration.allowed)));
+  // With a keeper in the blueprint, even an operation open to anyone refuses it NotAllowed (M8-checks call 4).
   const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
-
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
   for (const [thing, t] of [...layout.things].sort(([a], [b]) => a.localeCompare(b))) {
@@ -178,11 +163,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
       problems.push(`${file}: ${thing}.${verb}'s errors are a union with two classes tagged ${tag}, so the refusal is ambiguous on the wire: rename one`);
     }
     const allowed = op.allowed.map((a) => allowedModel(a, file));
-    // Only a move made by time is the keeper's, and a move made by time is no one else's (K23 section 3).
-    const madeByTime = op.move !== undefined && op.move.by !== undefined;
-    const listsKeeper = allowed.some((a) => a.kind === "keeper");
-    if (madeByTime && !listsKeeper) problems.push(`${file}: ${thing}.${op.move!.key} is made by time, so its operation must be allowed to the keeper (allowed: [Blueprint.keeper])`);
-    if (listsKeeper && !madeByTime) problems.push(`${file}: allows the keeper, but ${op.move ? `${thing}.${op.move.key}` : "it"} is not a move made by time: the keeper calls only those`);
+    problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "operation", move: op.move, allowed }));
     const found = foundModel(op, (x) => thingNames.get(x), (x) => things[x]?.notFound?.error);
     const steps = Object.fromEntries(Object.entries(op.steps).map(([k, s]) => [k,
       Blanks.isBlank(s) ? { name: `${thing}.${verb}.${k}`, type: "blank" } : stepModel(thing, verb, k, s, op.errors, file)]));
@@ -243,6 +224,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   /** A read: answered from the thing's records with no handler, so no move, no steps, no declared errors. */
   function readModel(thing: string, verb: string, file: string, from: OperationModel["from"], read: Read): OperationModel {
     const allowed = read.allowed.map((a) => allowedModel(a, file));
+    problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "read", move: undefined, allowed }));
     const list = read.by === "list";
     const t = layout.things.get(thing);
     if (list && t?.thing?.lives === "actor") problems.push(`${file}: a list read needs a thing that lives in the database, and ${thing} lives as actors`);

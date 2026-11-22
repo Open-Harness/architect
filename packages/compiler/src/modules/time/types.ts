@@ -40,6 +40,18 @@ export interface TimesApi {
     readonly time: MoveTimeModel | undefined;
     readonly problems: ReadonlyArray<string>;
   };
+  /** `move`, pushing its problems (each led by `file`) onto `problems` and handing back what the model adds to the move. */
+  readonly timed: (spec: { readonly name: string; readonly thing: Thing; readonly key: string; readonly move: Move; readonly file: string; readonly problems: Array<string> }) => MoveTimeModel | undefined;
+  /** Whether any operation or read lists the keeper, given each one's declared `allowed` (a blank's says nothing). */
+  readonly keeperUsed: (declared: ReadonlyArray<unknown>) => boolean;
+  /** What is wrong with who an operation or a read allows: the keeper only on a move made by time, and only there. */
+  readonly keeper: (spec: {
+    readonly file: string;
+    readonly name: string;
+    readonly kind: "operation" | "read";
+    readonly move: Move | undefined;
+    readonly allowed: ReadonlyArray<{ readonly kind: string }>;
+  }) => ReadonlyArray<string>;
   /** An environment's clock, or the problems with it. */
   readonly clock: (spec: { readonly file: string; readonly clock: Clock }) => {
     readonly clock: ClockModel | undefined;

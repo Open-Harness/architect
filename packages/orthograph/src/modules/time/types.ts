@@ -2,7 +2,7 @@
 export type Unit =
   | "second" | "seconds" | "minute" | "minutes" | "hour" | "hours" | "day" | "days" | "week" | "weeks" | "month" | "months" | "year" | "years";
 
-/** A span in words, calendar words included: `"1 month"`, `"14 days"`. Months and years are worked out on the calendar, in an anchor's zone. */
+/** A span in words, calendar words included: `"1 month"`, `"14 days"`: a whole number of a unit (the compiler refuses `"1.5 months"`). Months and years are worked out on the calendar, in an anchor's zone. */
 export type Span = `${number} ${Unit}`;
 
 export type Weekday = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
