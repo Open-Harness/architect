@@ -1,0 +1,10 @@
+# Written before M5.03 is built. Red until on:, Blueprint.system, Blueprint.service and the compiler refusals and projections of them exist (M5.03); due before Goal 11 lands.
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > ortho check passes the in club as declared
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > ortho check passes the out club as declared
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > ortho check refuses a mount named chain, which is the chain host's
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > ortho check refuses an on: of an event the mount does not include, naming the operation and the event
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > ortho check refuses an on: of our own event whose allowed does not admit the system, naming the operation and the event
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > ortho check refuses an on: of the bank's event whose allowed admits only the system, which is not who delivers it, naming the operation and the event
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > ortho check refuses an on: whose allowed does not admit the bank, naming the operation and the event
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > ortho check refuses two on: of one operation taking the same event, naming the operation and the event
+events/04-on-declarations.test.ts > 04 M5.03: what is declared about on: > what only the system or a service admits is left out of the SDK, the CLI and the MCP tools, and its docs say what calls it

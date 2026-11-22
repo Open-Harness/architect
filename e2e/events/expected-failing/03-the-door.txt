@@ -1,0 +1,9 @@
+# Written before M5.03 is built. Red until the adapter door, /_in/<mount>, the inbox and on: (M5.03) exist, and the outbox for the deliveries (M5.04); due before Goal 11 lands.
+events/03-the-door.test.ts > 03 M5.03: the door > a mount that is not there is 404 and a GET is 405, whoever signed it
+events/03-the-door.test.ts > 03 M5.03: the door > an accepted event writes one inbox row in its trace, then settles the payment once, called by the bank
+events/03-the-door.test.ts > 03 M5.03: the door > an event for a payment that does not exist is accepted, and its delivery is refused with PaymentNotFound and never retried
+events/03-the-door.test.ts > 03 M5.03: the door > an event seen before a kill is still seen after the restart: a webhook sent twice settles once
+events/03-the-door.test.ts > 03 M5.03: the door > an event the mount leaves out, a type nobody knows, and an included event that does not decode are answered 200 ignored and kept nowhere
+events/03-the-door.test.ts > 03 M5.03: the door > every way to a bad signature is refused 401 BadSignature and writes nothing, and the id is not used up
+events/03-the-door.test.ts > 03 M5.03: the door > five identical requests at once: one accepted, four seen, and one settlement
+events/03-the-door.test.ts > 03 M5.03: the door > the same event id again, even with other fields, is seen: nothing written, nothing delivered, the first fields stand

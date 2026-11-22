@@ -1,0 +1,3 @@
+# Written before M5.04 is built. Red until on:, Blueprint.system and calledBy (M5.03) and the outbox, settles and redeliver (M5.04) exist; due before Goal 11 lands.
+events/02-the-outbox.test.ts > 02 M5.04: the outbox > prove judges every step: each planted wrong delivery, subscriber, event, principal or list fails exactly its own step
+events/02-the-outbox.test.ts > 02 M5.04: the outbox > the club proves: every journey passes whole, and nothing is left running

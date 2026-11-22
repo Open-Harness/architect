@@ -1,0 +1,4 @@
+# Written before M5.04 is built. Red until the outbox, its retries, the failed row, /_world/outbox and the actor outbox exist (M5.04); due before Goal 11 lands.
+events/05-delivery.test.ts > 05 M5.04: delivery that survives > a delivery that dies is retried fifteen times with doubling backoff, then shows as failed, and redelivers with the command
+events/05-delivery.test.ts > 05 M5.04: delivery that survives > an actor's events, killed before they have all come home, are delivered once each after the restart
+events/05-delivery.test.ts > 05 M5.04: delivery that survives > killing the world in the middle of a delivery delivers once after the restart

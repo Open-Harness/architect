@@ -135,6 +135,28 @@
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m8-checks" },
       "cache": false
+    },
+    "events-checks": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.events.config.ts events" },
+      "cache": false
+    },
+    "events-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/events-report.json tmp/events-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/events-errors.json vitest run --root e2e --config vitest.events-ratchet.config.ts events --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/events-report.json; node e2e/ratchet/check.ts tmp/events-report.json e2e/events/expected-failing tmp/events-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "events": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:events-checks" },
+      "cache": false
     }
   }
 }
