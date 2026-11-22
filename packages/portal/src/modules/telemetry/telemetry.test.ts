@@ -26,9 +26,9 @@ const traces = (): Map<string, WindowTrace> => new Map([
   ["a", {
     spans: [
       span("j", "a", "journey.claim a name", at(5), { journey: "claim a name", operation: "handle.claim" }),
-      span("a1", "a", "handle.claim", at(5) + 1, { operation: "handle.claim", attempt: 1, "principal.person": PLANTED[1] }, { parentSpanId: "j" }),
+      span("a1", "a", "handle.claim", at(5) + 1, { operation: "handle.claim", attempt: 1, "principal.person": PLANTED[1], "request.key": "key-a" }, { parentSpanId: "j" }),
       span("c1", "a", "handle.claim.commit", at(5) + 2, { "step.kind": "commit", "commit.outcome": "conflict" }, { parentSpanId: "a1", ms: 3 }),
-      span("a2", "a", "handle.claim", at(5) + 3, { operation: "handle.claim", attempt: 2, "principal.person": PLANTED[1], "payload.token": PLANTED[2], "move.name": "claim" }, { parentSpanId: "j" }),
+      span("a2", "a", "handle.claim", at(5) + 3, { operation: "handle.claim", attempt: 2, "principal.person": PLANTED[1], "request.key": "key-a", "payload.token": PLANTED[2], "move.name": "claim" }, { parentSpanId: "j" }),
       span("l2", "a", "handle.claim.lookup", at(5) + 4, { "step.kind": "database", "db.statement": PLANTED[0] }, { parentSpanId: "a2", ms: 2 }),
     ],
     logs: [{ spanId: "a2", body: PLANTED[3], attrs: { note: PLANTED[3] } } as never],
@@ -58,6 +58,7 @@ describe("calls: one row per call, newest first", () => {
       ["a", "handle.claim", "answered", "person", 2, 11],
     ]);
     expect(rows[1]).toMatchObject({ refusal: "HandleTaken", start: at(4), environment: "staging", requestKey: null, roleHeld: null });
+    expect(rows.map((r) => r.requestKey), "the key a call was made with, once for its two attempts; none where none was sent").toEqual([null, null, "key-a"]);
     expect(moves).toEqual({ "handle.claim": 1 });
     expect(journeys).toEqual({ "handle.claim": ["claim a name"] });
   });

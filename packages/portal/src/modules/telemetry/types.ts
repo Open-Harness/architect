@@ -44,6 +44,8 @@ export interface PortalLive {
   /** The window's end, in ms since the epoch. A later `now` moves the window; nothing else does. */
   readonly now: number;
   readonly windowMs: number;
+  /** How far back the source can supply spans, in ms before `now`. Absent: as far as asked. A window longer than this holds only part of its history (a local world's feed holds one window), so it is not judged. */
+  readonly historyMs?: number;
 }
 
 // ---- what is put on the wire ----
@@ -72,14 +74,25 @@ export interface TelemetryCall {
   readonly overBudget: boolean;
   /** The journey whose run made it, when the trace is a journey's. */
   readonly journey: string | null;
-  /** The call's idempotency key. No span carries it yet (portal.md hole 1): always null, and the page says `not yet`. */
-  readonly requestKey: null;
+  /** The idempotency key the call was made with: `request.key` on an attempt's span (M1.12a, portal.md hole 1), null when it was made with none. */
+  readonly requestKey: string | null;
   /** The role the caller held. Nothing carries it yet (portal.md hole 8): always null, and the page says `not yet`. */
   readonly roleHeld: null;
 }
 
+/** Where a defect call died: the declared step (`-` when none explains it: the operation itself) and the error's tag. */
+export interface CallFailure { readonly step: string; readonly tag: string }
+
+/** A call with what the grouping gives it: its `id` (the runtime's `call.id`, else its attempt spans) and, on every defect, its `failure`. Never sent on the wire. */
+export type MonitoredCall = TelemetryCall & { readonly id: string } & (
+  | { readonly outcome: "defect"; readonly failure: CallFailure }
+  | { readonly outcome: Exclude<Outcome, "defect">; readonly failure?: undefined }
+);
+
 /** From the spans of the window. */
 export interface CallsView {
+  /** Per operation with a call in the window: the nearest-rank p95 of its calls' durations, over every call of the window (before `rows` is cut). */
+  readonly p95: Readonly<Record<string, number>>;
   /** Newest first, at most `ROWS_MAX`; a call that opened no span (a refusal at the door) is never a row. */
   readonly rows: ReadonlyArray<TelemetryCall>;
   /** How many calls the window held beyond `rows`. */
@@ -155,6 +168,10 @@ export interface TraceView { readonly trace: string; readonly spans: ReadonlyArr
 export interface TelemetryApi {
   /** Never fails: a source that cannot be read is a value inside the answer. */
   readonly read: (blueprint: BlueprintWire, live: PortalLive) => Effect.Effect<PortalTelemetry>;
+  /** Every call the traces hold that started in `[since, now]`, newest first, with no row limit: what the monitor counts (M1.49). */
+  readonly calls: (blueprint: BlueprintWire, traces: ReadonlyMap<string, WindowTrace>, environment: string, window: { readonly since: number; readonly now: number }) => ReadonlyArray<MonitoredCall>;
+  /** The one identity of a call (`MonitoredCall.id`), never a time: two calls that look alike in every value are two calls. */
+  readonly identity: (call: MonitoredCall) => string;
   /** One trace, scrubbed: `undefined` when the source has none of it. */
   readonly trace: (live: PortalLive, trace: string) => Effect.Effect<Availability<TraceView | undefined>>;
 }

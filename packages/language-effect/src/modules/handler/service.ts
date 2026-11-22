@@ -10,7 +10,7 @@ import { Busy } from "#modules/work/types.js";
 import { CALL_ID, newCallId } from "./internal/call-id.ts";
 import { BlankReached, IdempotencyConflict, InvalidPayload, type HandlerApi } from "./types.ts";
 import { canonical, sha256 } from "./internal/digest.ts";
-import { answerAttributes, payloadAttributes, principalAttributes } from "./internal/attributes.ts";
+import { answerAttributes, payloadAttributes, principalAttributes, requestAttributes } from "./internal/attributes.ts";
 import { measureCall } from "./internal/call-metrics.ts";
 import { Environment } from "./internal/environment.ts";
 import { applyMove, checkFrom, chooseOutcome } from "./internal/move.ts";
@@ -18,6 +18,7 @@ import { prehandle, type Prehandled } from "./internal/prehandle.ts";
 import { recordingLogs } from "./internal/decided.ts";
 import { settleViolation } from "./internal/invariants.ts";
 import { signalled, spanned } from "./internal/span.ts";
+import { defectAttributes } from "./internal/defect.ts";
 export { Reads } from "./internal/read.ts";
 export { Environment } from "./internal/environment.ts";
 
@@ -74,22 +75,22 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
   // One attempt: who may call, then the operation's own span (opened only once the caller may call, so a refused caller
   // leaves no handler span, only `<operation>.refused`, which carries the refusal), the machine's check, the handler,
   // its answer checked, its move, one commit.
-  const refused = (principal: Principal, number: number, callId: string) => (e: unknown) => {
+  const refused = (principal: Principal, number: number, callId: string, request: string | undefined) => (e: unknown) => {
     const tag = tagOf(e);
     const code = codes?.[tag];
     return Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }) }).pipe(
-      spanned(`${name}.refused`, { operation: name, attempt: number, [CALL_ID]: callId, "principal.kind": principal.kind }),
+      spanned(`${name}.refused`, { operation: name, attempt: number, [CALL_ID]: callId, "principal.kind": principal.kind, ...requestAttributes(request) }),
     );
   };
   const decodeAnswer = Schema.decodeUnknownEffect(op.answerSchema as unknown as AnyCodec);
-  const attempt = (payload: object, principal: Principal, key: string | undefined, number: number, callId: string) =>
+  const attempt = (payload: object, principal: Principal, key: string | undefined, request: string | undefined, number: number, callId: string) =>
     Effect.gen(function* () {
       const store = yield* Store;
       const unit = yield* Unit.make(store);
       const withRecords = Effect.provideService(Records, unit.records);
       // The check's own reads are not traced: a refusal is, in its own span.
       yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing }).pipe(
-        withRecords, Effect.withTracerEnabled(false), Effect.tapError(refused(principal, number, callId)),
+        withRecords, Effect.withTracerEnabled(false), Effect.tapError(refused(principal, number, callId, request)),
       );
       const logs = yield* recordingLogs(payload, op.payload);
       return yield* Effect.gen(function* () {
@@ -144,7 +145,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         // Every refusal and every defect is written on the operation's span: what `prove` reads.
         // A refusal also carries the log that decided it, when the handler logged one before refusing.
         Effect.tapCause((cause) => {
-          if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan({ defect: Cause.pretty(cause).split("\n")[0] ?? "" });
+          if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
           const refusal = Cause.squash(cause);
           if (refusal instanceof Conflict) return Effect.void;
           const tag = tagOf(refusal);
@@ -152,7 +153,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
           return logs.last.pipe(Effect.flatMap((log) =>
             Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }), ...(log === undefined ? {} : { "refusal.log": log }) })));
         }),
-        spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal) }),
+        spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
       );
     });
 
@@ -163,7 +164,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
     // The call is named once, before its first attempt, and every attempt's span carries the name: attempts of one call are sequential, but different
     // calls' attempts overlap, so nothing else in a trace says which attempts belong together (O3).
     const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
-      attempt(payload, principal, key, number, callId).pipe(
+      attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
         Effect.catch((e) =>
           !(e instanceof Conflict) ? Effect.fail(e)
           : number < ATTEMPTS ? loop(number + 1, callId)
