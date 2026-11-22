@@ -377,6 +377,25 @@ accepted as written. The slices that build each (S-01 to S-10 in `04-snags.md`) 
   store, since a minted id is the prefix, `_` and 16 characters (`language-effect/src/modules/ids/service.ts:8`) and must
   fit 32 bytes.
 
+### 12. The relayer and the follower (slices 9 and 10's checks, #513; 22 November 2026)
+
+The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m6-07-relayer.test.ts` and
+`11-m6-09-follower.test.ts`: two Durable Object classes, `Relayer` and `Follower`, exported from
+`@orthograph/host-cloudflare`. What follows settles what that seam left open.
+
+- **The relayer replaces a dropped transaction on its own.** Its alarm notices a submission the node no longer holds
+  and resends it at the same nonce with a higher fee. `reconcile` does the same work on call, but a relayer that only
+  replaces when `reconcile` is called is wrong.
+- **The relayer's answers carry at least the keys the checks name.** An answer may carry more, so the checks match the
+  keys they need, not the whole object. The relayer's key never appears in an answer, a log or storage.
+- **The follower hands on only what it confirmed.** The sink (`FOLLOWER_SINK`, `Inbox.accept`'s shape, Ask #481) gets
+  each `Confirmed` event, and a `Corrected { wasConfirmed: true }` when a confirmed event is taken back. When an event
+  is taken back before it was confirmed, the follower drops it: the sink never saw it, so there is nothing to correct.
+  K7 Q6 keeps `wasConfirmed` in the event for any later reader of unconfirmed events, such as the portal's live view.
+- **The checkpoint moves only after the sink has taken the change.** If the sink answers with an error, the follower
+  keeps its checkpoint and hands the same change on again at its next poll. A replay after a restart may call the sink
+  again with an id it has taken; `seen` is harmless, and what may never happen twice is `accepted` for one id.
+
 ## The budgets example, as the journey author will write it
 
 A sketch for slice 2, not its words: the journey author owns `examples/budgets/blueprint/`.
