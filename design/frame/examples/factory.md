@@ -175,7 +175,7 @@ target project with its journeys taken out.
 | Adapter | Calls out | Events in | Stand-in in a world |
 |---|---|---|---|
 | `logbook` | `facts.list` | `verdictRecorded`, `releaseRecorded` | a world of the logbook itself (first rung) |
-| `github` | push a branch, open a pull request | `pullRequest.merged` | Gitea or a bare local repository (second rung) |
+| `github` | push a branch, open a pull request | `pullRequest`, its merged close (K39) | Gitea or a bare local repository (second rung) |
 | a model provider, through the agents feature | `messages.create` | none | a local open model (second rung) |
 | a sandbox provider, later | start, exec, stop | none | a local Docker container (first rung) |
 

@@ -3161,10 +3161,10 @@
   "size": "M",
   "stage": "backlog",
   "thread": null,
-  "title": "@orthograph/workspaces with the localCopy choice",
+  "title": "@orthograph/workspaces on the sandbox's local choice",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "@orthograph/workspaces with the localCopy choice (K10 section 3): Workspace and its machine, ortho as its operations (brief, read, write, check, prove, add, generate, diff, push, close), writes fenced by realpath and case-insensitive paths, push through the github adapter (its stand-in a bare local repository), WorkspacePoolFull"
+  "what": "@orthograph/workspaces on @orthograph/sandbox's local choice (K10 section 3; K39: the sandbox holds the machine, the workspace adds ortho): Workspace and its machine, ortho as its operations (brief, read, write, check, prove, add, generate, diff, push, close), writes fenced by realpath and case-insensitive paths, push through the github adapter (its stand-in a bare local repository), WorkspacePoolFull"
  },
  "M4-19": {
   "doneWhen": "M4.18's journeys pass on E2B with Aaron's existing key; evicting the run's Durable Object mid-prove resumes and reads the result; 0 sandboxes are left after",
@@ -3307,7 +3307,7 @@
   "what": "Promotion by verdicts (K10 section 3): promote also requires the revision's review verdict; a revision on main with its prove and review verdicts goes to staging with nobody asked; production is an attention only a person approves"
  },
  "M4-25": {
-  "doneWhen": "the adapter's conformance passes against the stand-in; a pushed branch and its opened pull request read back; a merge emits pullRequest.merged once",
+  "doneWhen": "the adapter's conformance passes against the stand-in; a pushed branch and its opened pull request read back; a merge emits pullRequest closed and merged once; a webhook with a bad signature is refused",
   "history": [],
   "id": "M4-25",
   "kind": "build",
@@ -3321,10 +3321,10 @@
   "size": "M",
   "stage": "backlog",
   "thread": null,
-  "title": "The github adapter for pull requests",
+  "title": "The github adapter, built by Goal 17",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "The github adapter for pull requests (K10 section 3): branches.push, pullRequests.open, the pullRequest.merged event; secrets declared by the adapter; its stand-in a bare local repository with a small pull-request record (second rung: Gitea)"
+  "what": "The github adapter, @orthograph/github, built by Goal 17 (K39; K10 section 3): a GitHub App; calls generated from GitHub's OpenAPI document, branches.push, pulls.create, issues.comments.create, pulls.reviews.reply and reactions.create; signed webhook events issueComment, issues, pullRequest (its merged close among them), pullRequestReview, pullRequestReviewComment and checkRun; secrets declared by the adapter; its stand-in a bare local repository with a small pull-request record (second rung: Gitea)"
  },
  "M5-01": {
   "doneWhen": "decisions/M5-reach-out.md written",

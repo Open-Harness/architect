@@ -301,7 +301,7 @@ slice, a decision, or a line saying it is dropped. Grouped by canon page, in the
 |---|---|---|---|
 | `ADA-05` | Delivery receipts from Resend would be a later `on:` event; nothing parks it. | design/frame/examples/notifications.md:133 | open |
 | `ADA-11` | Tenderly as an opt-in simulation plugin is mentioned in the old decisions and no slice or later line owns it. | design/decisions.md:90 | open |
-| `ADA-13` | The factory feature's `github` adapter (push a branch, open a pull request, `pullRequest.merged` in, Gitea as stand-in) has no slice. | design/frame/examples/factory.md:171 | open |
+| `ADA-13` | The factory feature's `github` adapter (push a branch, open a pull request, `pullRequest` and its merged close in, Gitea as stand-in) has no slice. | design/frame/examples/factory.md:171 | superseded by K39: it is M4.25, built by Goal 17 |
 
 ### projections
 

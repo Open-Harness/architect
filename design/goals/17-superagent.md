@@ -30,11 +30,11 @@ slices:
   - "6 · Checks for intake and prompts (after 1)"
   - "7 · Intake and prompts: triggers, threads, the gate, versions (after 6)"
   - "8 · Checks for tickets (after 1)"
-  - "9 · Tickets: mandates, assignments, stages, replies (after 8)"
-  - "10 · Events in from GitHub (after 3, 7)"
-  - "11 · The executor: one run per assignment, in a sandbox (after 5, 9)"
+  - "9 · Tickets: mandates, assignments and stages (after 8)"
+  - "10 · Events in from GitHub and replies out (after 3, 7, 9)"
+  - "11 · The executor: its tools and one run per assignment, in a sandbox (after 3, 5, 9)"
   - "12 · Judging the maybe messages: observe, then auto (after 7, 11)"
-  - "13 · The example app, its pages and the goal check (after 10, 11)"
+  - "13 · The example app, its pages and the goal check (after 10, 11, 12)"
 ---
 # Goal 17: the superagent
 
@@ -58,15 +58,17 @@ the 1.0 path.
   only when it waits for you.
 - **It is:** five plugins (the GitHub connection, a sandbox to code in, the inbox of messages and the rules, the
   tickets of work and their agent runs, the team's prompts) and one example app that mounts them.
-- **It isn't:** Foreman (still parked), a hosted service, or anything on Cloudflare yet: it runs on your own machine
-  first.
+- **It isn't:** Aaron's always-on assistant idea (still parked), a hosted service, or anything in the cloud yet: it runs on
+  your own machine first.
 - **Done when:** its tests pass on a stand-in GitHub, from a mention to a merged pull request, with a repeated
   webhook making one ticket and a stranger's mention making none.
-- **Waits on:** nothing to start. Its later slices need events in, the outbox, durable agent runs, workflows and the
-  portal's page map from other goals.
+- **Waits on:** nothing to start writing its tests. Its builds need other goals' work: the sign-in and secrets of the
+  first release, taking events in and sending replies out reliably, agent runs that survive a crash, long-running jobs,
+  and declared portal pages.
 - **Words used:** a trigger: one event from GitHub. A thread: an issue or a pull request and its comments. A ticket:
   one piece of work the agent was allowed to do. A sandbox: a folder with a shell where the agent edits and tests.
-  The gate: fixed rules in code that decide who may ask.
+  The gate: fixed rules in code that decide who may ask. The portal: the web page every app gets for looking inside
+  it.
 
 ## Read first
 
@@ -78,22 +80,23 @@ the 1.0 path.
   engine, store and effects queue.
 - `design/frame/adapters.md`, `design/decisions/M4-agents.md` (PR #469), K31 and K36 (pages and components), and the
   briefs of Goals 8, 10 and 11 on their branches.
-- The framework gaps this goal exposes, designed in their own 📐 thread: `superagent-gaps.md` in the shared notes and
-  the Ask issues it files (section "The gaps it exposes").
+- The framework gaps this goal exposes (section "The gaps it exposes"). Their fixes are being designed in their own 📐
+  thread; its decision and Ask issues are not filed yet, and each lead reads them at slice start.
 
 ## The pieces
 
 | Piece | Package | Kind | What it brings |
 |---|---|---|---|
 | GitHub | `@orthograph/github` | adapter | a GitHub App: comments, reviews, pull requests and pushes out; signed webhooks in; its secrets; a stand-in GitHub for worlds. This is M4.25, built here |
-| Sandbox | `@orthograph/sandbox` | adapter | a folder and a shell per ticket: open, exec, read, write, bundle, close; a job-finished event; a local process as its stand-in, E2B later |
+| Sandbox | `@orthograph/sandbox` | adapter | a folder and a shell per ticket: open, exec, read, write, bundle, close; a job-finished event; two choices, `local` (a process on this machine) and `e2b` later. K10's `localCopy` and `e2b` move here; M4.18's workspace opens one and adds `ortho` on top (K39) |
 | Intake | `@orthograph/intake` | feature | triggers, threads, subscriptions, the gate, decisions, and the rules as runtime data with versions (`PolicyVersion`) |
 | Tickets | `@orthograph/tickets` | feature | tickets, mandates, assignments and their stages; the operations the agent uses as tools; replies through the outbox |
 | Prompts | `@orthograph/prompts` | feature | the team's prompt sections and overrides, saved as versions, each run recording the one it read |
 | The app | `examples/superagent` | example | mounts all five, plus `@orthograph/agents`, `@orthograph/workflows` and `@orthograph/openai` (for DeepSeek); declares the two agents and the pages |
 
-Each plugin knows nothing of the superagent: intake serves any source (Slack later, the factory's inbox in M3.19),
-the sandbox serves any agent, GitHub serves M5.14 and the factory. That is how the work flows back into Orthograph.
+Each plugin knows nothing of the superagent: intake can serve any source (Slack later, and the factory's inbox in
+M3.19 if K11 agrees), the sandbox serves any agent and is what M4.18's workspace opens, GitHub serves M5.14 and the
+factory. That is how the work flows back into Orthograph.
 
 ## The folder structure
 
@@ -166,7 +169,20 @@ slice that adds the package.
 
 ## The blueprint, as a developer writes it
 
-Proposed code, in today's API where it exists. Where an API is still being designed, the comment says whose it is.
+Proposed code. On `goal/stage-1` today only `Blueprint.thing`, `machine`, `operation`, `event`, `error`, `use`,
+`step.database`, `step.call`, `id`, `described` and a role's `{ rule }` exist. Everything else here is designed but
+not built, and is its owner's to shape; this goal codes against what they land, never a stand-in of its own:
+
+| Proposed | Owner, and where it is designed |
+|---|---|
+| `Blueprint.adapter`, `Door.*`, `Stand.process`, `ortho add adapter` | the adapter kind: `frame/adapters.md`; doors are Goal 11 (M5.03), the generator M5.07 |
+| `Blueprint.on`, `on:`, `idempotent: { by }` | Goal 11 (M5.03); `by` is M3.26 |
+| `Blueprint.role(T, { service })`, `Blueprint.system`, `Via.*`, `.via(...)` | Goal 3 (M2.03, `M2-auth.md`) |
+| `ortho secrets set` | Goal 3 (M2.04) |
+| `Blueprint.agent`, `limits`, `Blueprint.step.use(<agent>)`, an agent's `answer` | Goal 10 (M4.10; `answer` is a gap, below) |
+| `Blueprint.workflow`, its `key` and `activities` | Goal 8 (M3.01, M3.28) |
+| `Blueprint.page`, `shows`, `offers` | Goal 6, slice 3 (K31, K36) |
+| `Blueprint.feature`, `ortho add feature` | plugins, on `goal/stage-1`, as a mount exists today |
 
 ### Mounting (the app's whole wiring)
 
@@ -397,21 +413,22 @@ skill). "After" names this goal's own earlier slices; "Waits on" names another g
 |---|---|---|---|---|
 | 1 | The plan and its calls, decided | — | — | this brief and K39 on `main` |
 | 2 | Checks for the GitHub adapter: conformance of every included call against the stand-in; a signed webhook accepted, a bad signature refused | 1 | — | they fail on an empty adapter |
-| 3 | `@orthograph/github`: calls out as an App installation, its secrets, the stand-in (M4.25) | 2 | — | slice 2 passes |
+| 3 | `@orthograph/github`: calls out as an App installation, its secrets, the stand-in (M4.25) | 2 | Gate M2 (Goal 3), as M4.25's row says: declared secrets (M2.04) and the `service` caller (M2.03) | slice 2 passes |
 | 4 | Checks for the sandbox: open, exec, a long job's finished event, read and write fenced to the folder, bundle, close leaving nothing | 1 | — | they fail on an empty adapter |
-| 5 | `@orthograph/sandbox` with its local process, stopped by its process id | 4 | — | slice 4 passes; 0 folders and 0 processes left |
+| 5 | `@orthograph/sandbox` with its `local` choice, its process stopped by its id | 4 | — | slice 4 passes; 0 folders and 0 processes left |
 | 6 | Checks for intake and prompts: every gate cell of the prototype's `002`; a trigger twice stored once; a stale policy save refused; a prompt override that keeps its base | 1 | — | they fail on empty handlers |
-| 7 | `@orthograph/intake` and `@orthograph/prompts` | 6 | outside actor and versions: the gaps' Asks (Goal 3); until then, the gate reads the payload's actor | slice 6 passes |
-| 8 | Checks for tickets: the stage table, mandate revalidation, resume and stop, replies in order, a follow-up reaching a ticket with no gate | 1 | — | they fail on empty handlers |
-| 9 | `@orthograph/tickets`, without runs | 8 | the outbox for replies (Goal 11, slice 4) | slice 8 passes |
-| 10 | Events in: `on:` from GitHub into `trigger.receive` | 3, 7 | doors and `on:` (Goal 11, slice 3) | the same webhook twice makes one trigger |
-| 11 | The executor: one agent run per assignment, its tools the ticket's operations, in a sandbox | 5, 9 | agent runs (Goal 10, M4.10); a run for an operator (gaps' Ask, Goal 10) | evicting a run mid-turn resumes it; a write outside its sandbox is refused |
-| 12 | Judging the maybe messages: the assessor on a cheap model, `observe` then `auto` | 7, 11 | workflows (Goal 8, M3.28); a run with a fixed answer (gaps' Ask, Goal 10) | in `observe`, a matched dependabot pull request records "would accept" and starts nothing |
-| 13 | The example app, its pages and `e2e:superagent` | 10, 11 | the page map (Goal 6, slice 3) | the goal check below passes |
+| 7 | `@orthograph/intake` and `@orthograph/prompts` | 6 | the `service` and `system` callers (M2.03, Goal 3); the outside actor and declared versions are gap fixes (below), and until they land the gate reads the payload's actor | slice 6 passes |
+| 8 | Checks for tickets: the stage table, mandate revalidation, resume and stop, a follow-up reaching a ticket with no gate | 1 | — | they fail on empty handlers |
+| 9 | `@orthograph/tickets`: tickets, mandates, assignments and the stage read, without tools, runs or replies | 8 | the `system` caller (M2.03, Goal 3) | slice 8 passes |
+| 10 | Events in from GitHub and replies out: `on:` into `trigger.receive`, and the acknowledgement, answer and result through the outbox in order | 3, 7, 9 | doors and `on:` (Goal 11, slice 3, M5.03); the outbox (Goal 11, slice 4, M5.04) | the same webhook twice makes one trigger; a ticket's replies go out once and in order across a kill |
+| 11 | The executor: the ticket's tool operations and one agent run per assignment, in a sandbox | 3, 5, 9 | agent runs (Goal 10, M4.10); a run started for an operator (a gap fix, Goal 10) | evicting a run mid-turn resumes it; a write outside its sandbox is refused |
+| 12 | Judging the maybe messages: the assessor on a cheap model, `observe` then `auto` | 7, 11 | workflows (Goal 8, M3.28); a run with a fixed answer (a gap fix, Goal 10) | in `observe`, a matched dependabot pull request records "would accept" and starts nothing |
+| 13 | The example app, its pages and `e2e:superagent` | 10, 11, 12 | declared pages (Goal 6, slice 3) | the goal check below passes |
 
-**What runs at once.** After slice 1, four lanes run side by side, each in its own thread and package: GitHub (2, 3),
-the sandbox (4, 5), intake and prompts (6, 7), tickets (8, 9). Slices 10 to 13 join them as Goals 11, 10, 8 and 6
-land.
+**What runs at once.** After slice 1, the four lanes' checks start side by side, each in its own thread and package:
+GitHub (2), the sandbox (4), intake and prompts (6), tickets (8). The sandbox's build (5) follows at once; the builds of
+GitHub, intake and tickets (3, 7, 9) wait for Goal 3's callers and secrets. Slices 10 to 13 join as Goals 11, 10, 8 and
+6 land.
 
 **The goal check, `nx run e2e:superagent`,** on the stand-in GitHub and the stand-in model: an allowed person's
 mention gets one acknowledgement and a pull request; the same webhook twice makes one ticket; a stranger's mention
@@ -467,4 +484,4 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
 ## Where it stands
 
 Slice 1 lands with this brief and K39 (22 November 2026). The branch is cut from `goal/stage-1`. Nothing else has
-started; the four lanes after slice 1 can start at once.
+started; the four lanes' checks (slices 2, 4, 6 and 8) can start at once.

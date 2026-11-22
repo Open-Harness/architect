@@ -23,10 +23,13 @@ and the workspaces (M4.17, M4.18) as off the 1.0 path and not a goal yet.
    Foreman stays parked (20 November).
 2. **Where the coding runs (Q2 = A).** Locally first: the app in a workerd world on Aaron's Mac, and the agent's
    machine as an adapter, `@orthograph/sandbox`, whose stand-in is a local process (a git worktree per ticket); E2B
-   later as the same calls. A Durable Object can't run a shell, and no Node host exists for an app.
+   later as the same calls. A Durable Object can't run a shell, and there is no Node host for an app's server
+   (`Host.node` exists only for an agent run, `M4-agents.md:49`).
 3. **GitHub in and out (Q3 = A).** A GitHub App: signed webhooks into the adapter's door, its own `[bot]` identity,
    locally through `gh webhook forward`. "This should be its own build": `@orthograph/github` is a separate package
-   and lane, and it is M4.25.
+   and lane, and it is M4.25. This departs from the prototype on purpose: it uses a user account because it reads that
+   account's notifications (`006-deployment.md:33`); here signed webhooks replace reading notifications, so an App,
+   with its own identity and a webhook secret, is the better fit.
 4. **Who may ask, and where the rules live (Q4 = A).** Runtime data: `PolicyVersion` (allowed lists, bots,
    admission, rules, accept mode) and the prompt sets are things with versions, edited in the portal; each Mandate
    records the version it was accepted under. Aaron asked that the gap this exposes (a role can't see the outside
@@ -50,6 +53,12 @@ and the workspaces (M4.17, M4.18) as off the 1.0 path and not a goal yet.
   `write`, `push`, `openPull` and the prototype's six executor tools), so the server's roles decide each call. A new
   run re-reads the ticket's threads instead of carrying an old transcript, which is what the prototype's executor
   does on resume. Runs act for one operator person, and the Mandate narrows what they may do.
+- **The sandbox under the workspace.** `@orthograph/sandbox` is the plain machine: a folder and a shell, with the
+  `local` and `e2b` choices. K10's `localCopy` and `e2b` choices of `@orthograph/workspaces` move to it, so E2B has one
+  owner. M4.18's workspace, still unowned, opens a sandbox and adds `ortho` (`check`, `prove`, `generate`) on top.
+- **The GitHub adapter's shape.** M4.25 is widened to what the superagent uses, with names generated from GitHub's
+  OpenAPI document: `pulls.create` for `pullRequests.open`, and the `pullRequest` event, whose merged close replaces
+  `pullRequest.merged`. Goal 17 owns the row.
 - **Pushing.** `ticket.push` bundles the branch from the sandbox and pushes it through the GitHub adapter, so the
   key never enters the sandbox.
 - **Their effects queue and outbox** become Goal 11's outbox and Goal 8's workflows. Their retries and backoff go
@@ -57,8 +66,9 @@ and the workspaces (M4.17, M4.18) as off the 1.0 path and not a goal yet.
 - **Their panel** becomes portal pages on the app map (K31, K36), with "Needs you" first.
 - **The model.** The model is DeepSeek, through `@orthograph/openai` (M4-agents call 5), mounted as `deepseek` with
   its key declared. Every check runs on the stand-in model with no key.
-- **Status `ready`.** Four lanes can start now: GitHub, sandbox, intake and prompts, tickets. The rest wait on Goals
-  11, 10, 8 and 6, as the brief's slice table says.
+- **Status `ready`.** The four lanes' checks can start now: GitHub, sandbox, intake and prompts, tickets. The sandbox
+  builds at once; the GitHub, intake and tickets builds wait for Goal 3's callers and secrets (Gate M2, M2.03, M2.04),
+  and the rest wait on Goals 11, 10, 8 and 6, as the brief's slice table says.
 
 ## What it touches
 
@@ -68,7 +78,7 @@ and the workspaces (M4.17, M4.18) as off the 1.0 path and not a goal yet.
 | Goals 3, 10, 11 | Ask issues from the gaps thread, never edits to their paths |
 | M4.25 | built in Goal 17's slices 2 and 3, as `@orthograph/github` |
 | M4.17, M4.18 | stay unowned; the `ortho` workspace later sits on `@orthograph/sandbox` |
-| M5.14, M3.19 | will reuse `@orthograph/github` and `@orthograph/intake` |
+| M5.14, M3.19 | M5.14 reuses `@orthograph/github`; M3.19 may reuse `@orthograph/intake` if K11's inbox agrees |
 
 ## Evidence
 
@@ -94,3 +104,13 @@ and the workspaces (M4.17, M4.18) as off the 1.0 path and not a goal yet.
 ## Supersedes
 
 - `design/goals/map.md`: "the builder's tools and workspaces (M4.11 to M4.15, M4.17 to M4.25)" → "the builder's tools and workspaces (M4.11 to M4.15, M4.17 to M4.24; M4.25 is Goal 17's, K39)"
+- `design/milestones.md`, M4.25: "The `github` adapter for pull requests (K10 section 3): `branches.push`, `pullRequests.open`, the `pullRequest.merged` event;" → "The `github` adapter, `@orthograph/github`, built by Goal 17 (K39; K10 section 3): a GitHub App; calls generated from GitHub's OpenAPI document, `branches.push`, `pulls.create`, …; signed webhook events …, `pullRequest` (its merged close among them), …;"
+- `design/milestones.md`, M4.25's done-when: "a merge emits `pullRequest.merged` once" → "a merge emits `pullRequest` closed and merged once; a webhook with a bad signature is refused"
+- `design/milestones.md`, M4.18: "`@orthograph/workspaces` with the `localCopy` choice (K10 section 3):" → "`@orthograph/workspaces` on `@orthograph/sandbox`'s `local` choice (K10 section 3; K39: the sandbox holds the machine, the workspace adds `ortho`):"
+- `design/milestones.md`, M4.18's needs: "M4.17, M4.25" → "M4.17, M4.25, Goal 17's slice 5 (the sandbox)"
+- `design/milestones.md`, M4.19: "The `e2b` choice: our template," → "The sandbox's `e2b` choice (`@orthograph/sandbox`, K39), for workspaces: our template,"
+- `design/milestones.md`, beside the stages: "(M3.20, M4.17 to M4.25, K10)" → "(M3.20, M4.17 to M4.25, K10; M4.25 built by Goal 17, K39)"
+
+Dated records keep their words and gain a "Superseded by K39, 22 November 2026" note: `design/decisions/K10-factory.md`
+section 3's choices table and its floor items 2 and 6 (`localCopy`, `e2b`), and `design/scope.md`'s off-path list.
+`K10-factory.md`'s `pullRequests.open` and `pullRequest.merged` stay as the record of that day.
