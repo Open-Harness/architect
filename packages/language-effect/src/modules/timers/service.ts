@@ -45,12 +45,19 @@ export const TimersMemory: Layer.Layer<Timers | DurableTimers, never, Busy> = La
     };
     const durable = DurableTimers.of({
       set: (at, owner, name, wake) => Effect.suspend(() => {
-        const pending = table.find((t) => t.wake !== undefined && t.owner === owner && t.name === name);
-        if (pending !== undefined) return Effect.succeed(pending.id);
+        if (!Number.isFinite(at)) return Effect.die(new Error(`a durable timer for ${owner} ${name} needs a finite instant, not ${at}`));
         if (Option.isNone(wakes)) return Effect.die(new Error(`no TimerWakes to fire ${owner} ${name}: provide the host's`));
         const host = wakes.value;
-        return Effect.flatMap(Effect.sync(() => next), (id) =>
-          add(at, owner, name, busy.spawn(host.wake({ id, at, owner, name, wake })), wake));
+        // One synchronous step: the pending check, the id and the insert, so two setters of one (owner, name) make one row.
+        const pending = table.find((t) => t.wake !== undefined && t.owner === owner && t.name === name);
+        if (pending !== undefined) return Effect.succeed(pending.id);
+        const id = next++;
+        const timer: DurableTimer = { id, at, owner, name, wake };
+        // A wake that fails puts its row back and fails the firing, so the driver sees it and nothing is lost.
+        const run = busy.counted(host.wake(timer)).pipe(Effect.onError(() => Effect.sync(() => void table.push(row))));
+        const row: Row = { ...timer, run };
+        table.push(row);
+        return Effect.succeed(id);
       }),
       clear: (owner, name) => Effect.sync(() => {
         const pending = table.find((t) => t.wake !== undefined && t.owner === owner && t.name === name);

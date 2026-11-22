@@ -67,11 +67,13 @@ The rules every implementation keeps (in memory now, the world's table from M8.0
    `DurableTimers` share that order, because they share the table.
 3. **At least once, counted.** The world calls `TimerWakes.wake` at least once per firing, as counted work, and `wake`
    returns only after the work it woke holds its own `Busy` token, so the world is never quiet between them. Every
-   handler is idempotent by `(owner, name, at)`.
+   handler is idempotent by `(owner, name, at)`. A wake that fails puts its row back and fails the firing, so the
+   world's step fails, naming it, and the timer is not lost.
 4. **JSON only** in a wake's payload: it is stored in the world's table.
-5. **No wakes, no durable timers.** Setting one where no `TimerWakes` is provided is a defect, as `at` already is on a
+5. **A finite instant.** `set` refuses `NaN` or an infinite `at` as a defect.
+6. **No wakes, no durable timers.** Setting one where no `TimerWakes` is provided is a defect, as `at` already is on a
    device (`TimersLive`): nothing could fire it.
-6. **`due`, `fire` and the two `pending` reads are the world's driver's.** Goals 4, 8 and 10 never call `due` or
+7. **`due`, `fire` and the two `pending` reads are the world's driver's.** Goals 4, 8 and 10 never call `due` or
    `fire`; their shape may change in M8.07 without an Ask.
 
 ## Counted work across processes (M8.07)

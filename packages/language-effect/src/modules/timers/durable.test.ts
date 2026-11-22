@@ -66,6 +66,23 @@ describe("DurableTimers", () => {
       expect([order, woken.map((t) => t.name)]).toEqual([["at"], ["second"]]);
     })));
 
+  it("a wake of a kind with no handler fails the firing and leaves its timer pending", () =>
+    run(Effect.gen(function* () {
+      const durable = yield* DurableTimers;
+      const timers = yield* Timers;
+      yield* durable.set(5000, "x/1", "due", { kind: "nobody", payload: null });
+      const exit = yield* Effect.exit(timers.fire(5000));
+      expect(exit._tag).toBe("Failure");
+      expect((yield* durable.pending).map((t) => [t.owner, t.at])).toEqual([["x/1", 5000]]);
+    })));
+
+  it("a durable timer at an instant that is not a finite number is a defect", () =>
+    run(Effect.gen(function* () {
+      const durable = yield* DurableTimers;
+      const exit = yield* Effect.exit(durable.set(Number.NaN, "x/1", "due", wake));
+      expect([exit._tag, (yield* durable.pending).length]).toEqual(["Failure", 0]);
+    })));
+
   it("setting a durable timer with no TimerWakes provided is a defect: nothing could fire it", () =>
     Effect.runPromise(Effect.gen(function* () {
       const durable = yield* DurableTimers;
