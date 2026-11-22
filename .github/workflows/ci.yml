@@ -2,7 +2,8 @@ name: ci
 
 on:
   push:
-    branches: [main, "layer/**", "m[0-9]", "goal/**"]
+    # A goal branch other than goal/stage-1 has no push run: its landing pull request tests the result (CI-integration.md, B2).
+    branches: [main, "layer/**", "m[0-9]", goal/stage-1]
   # ready_for_review: a draft runs nothing (every job below starts with the draft guard), and marking it ready runs CI
   # once (design/decisions/CI-drafts.md).
   pull_request:
@@ -12,7 +13,7 @@ permissions:
   contents: read
 
 # A newer push to the same pull request cancels the run it supersedes, so the queue holds only live work.
-# Every push to main, a milestone branch or a goal branch gets its own group, so none is cancelled or dropped.
+# Every push to main, a milestone branch or goal/stage-1 gets its own group, so none is cancelled or dropped.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -154,49 +155,65 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7.0.1
+      # A pull request into a goal branch runs the fast gate only (CI-integration.md, B1): this job passes without its steps.
+      # It reads the flag itself rather than needing `changes`, so it also runs when `changes` fails.
+      - id: scope
+        run: tools/ci/scope.sh "$EVENT" "$BASE_REF" >> "$GITHUB_OUTPUT"
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
       - uses: pnpm/action-setup@v6.1.0
+        if: steps.scope.outputs.fast != 'true'
       - uses: actions/setup-node@v7.1.0
+        if: steps.scope.outputs.fast != 'true'
         with:
           node-version: 24
           cache: pnpm
       - uses: actions/cache@v6.1.0
+        if: steps.scope.outputs.fast != 'true'
         id: pro-cache
         with:
           path: .cache/heroui-pro
           key: heroui-pro-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm install --frozen-lockfile
+        if: steps.scope.outputs.fast != 'true'
       - name: Restore Pro from the cache
-        if: steps.pro-cache.outputs.cache-hit == 'true'
+        if: steps.pro-cache.outputs.cache-hit == 'true' && steps.scope.outputs.fast != 'true'
         run: node packages/portal-ui/tools/pro.mjs @heroui-pro/react restore .cache/heroui-pro
       - name: Install Pro with the licence token
-        if: steps.pro-cache.outputs.cache-hit != 'true'
+        if: steps.pro-cache.outputs.cache-hit != 'true' && steps.scope.outputs.fast != 'true'
         env:
           HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
         run: node packages/portal-ui/tools/pro.mjs @heroui-pro/react fetch
       - name: Keep Pro for the cache
-        if: steps.pro-cache.outputs.cache-hit != 'true'
+        if: steps.pro-cache.outputs.cache-hit != 'true' && steps.scope.outputs.fast != 'true'
         run: node packages/portal-ui/tools/pro.mjs @heroui-pro/react save .cache/heroui-pro
       - name: Lint, typecheck, test and build portal-ui against the real Pro
+        if: steps.scope.outputs.fast != 'true'
         run: pnpm nx run-many -t lint,typecheck,test,build -p portal-ui --outputStyle=static
         env:
           ORTHO_REQUIRE_PRO: "1"
       # K19: the portal's client (its pages, portal-ui and Pro, bundled by vite) is built here, once, where the licence is, and handed to the
       # jobs that read the portal as built files. Nothing else builds it, so nothing else needs the licence.
       - name: Build the portal's client against the real Pro
+        if: steps.scope.outputs.fast != 'true'
         run: pnpm nx run portal:client --outputStyle=static
         env:
           ORTHO_REQUIRE_PRO: "1"
       - uses: actions/upload-artifact@v7.0.2
+        if: steps.scope.outputs.fast != 'true'
         with:
           name: portal-client
           path: packages/portal/dist/client
           if-no-files-found: error
           retention-days: 7
       - name: List what npm would publish
+        if: steps.scope.outputs.fast != 'true'
         run: npm pack --dry-run --ignore-scripts
         working-directory: packages/portal-ui
       # Check 15 (the seam): the packed files hold nothing of Pro, and no import of Pro lives outside portal-ui.
       - run: pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/15
+        if: steps.scope.outputs.fast != 'true'
 
   # Is this pull request docs only? Then the layer gates, prove-tests, the M1 shards, e2e-climb and e2e-grid skip
   # (design/decisions/CI-docs-fast-path.md, CI-speed.md): main is strict, so every pull request reruns all of CI each time
@@ -211,9 +228,9 @@ jobs:
     timeout-minutes: 5
     outputs:
       docs_only: ${{ steps.diff.outputs.docs_only }}
+      fast: ${{ steps.diff.outputs.fast }}
     steps:
       - uses: actions/checkout@v7.0.1
-        if: github.event_name == 'pull_request'
         with:
           fetch-depth: 0
       - id: diff
@@ -223,6 +240,8 @@ jobs:
           else
             echo docs_only=false >> "$GITHUB_OUTPUT"
           fi
+          # A pull request into a goal branch other than goal/stage-1 runs the fast gate only (CI-integration.md, B1).
+          tools/ci/scope.sh "$EVENT" "$BASE_REF" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
         env:
           EVENT: ${{ github.event_name }}
@@ -232,7 +251,7 @@ jobs:
   e2e-layer1:
     # Skipped on a docs-only pull request, where a skip counts as passed. Should `changes` itself fail, this runs.
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -267,7 +286,7 @@ jobs:
     # Skipped on a docs-only pull request, where a skip counts as passed. Should `changes` itself fail, this runs.
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
     needs: [changes, portal-ui]
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -319,7 +338,7 @@ jobs:
   # e2e/m8/expected-failing/, and fails on any other. Skipped on a docs-only pull request, like the gates above.
   e2e-m8:
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -336,7 +355,8 @@ jobs:
   # The canon's check (docs/canon/README.md) runs beside it: every quote, reference and component in the MDX pages.
   # Gates 1 and 2 above are the rest of `nx run e2e:m0`, run as their own jobs so they run side by side.
   e2e-m0:
-    if: github.event.pull_request.draft != true
+    needs: changes
+    if: ${{ github.event.pull_request.draft != true && !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.fast == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -362,7 +382,7 @@ jobs:
   e2e-m1-shard:
     needs: [changes, portal-ui]
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
     name: e2e-m1-shard (${{ matrix.shard }}/4)
     strategy:
       fail-fast: false
@@ -445,7 +465,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - run: tools/ci/gate.sh "docs:e2e-m1-shard=$SHARDS"
         env:
-          DOCS_ONLY: ${{ needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true' }}
+          DOCS_ONLY: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true') }}
           SHARDS: ${{ needs.e2e-m1-shard.result }}
       - uses: pnpm/action-setup@v6.1.0
         if: needs.e2e-m1-shard.result == 'success'
@@ -471,13 +491,44 @@ jobs:
           # The totals are printed, never committed (G9): the job's summary carries them.
           node e2e/totals/totals.mjs >> "$GITHUB_STEP_SUMMARY"
 
+  # M2's checks run through the ratchet too (e2e/ratchet/README.md): the checks whose slice has not landed are on the per-check files of
+  # e2e/m2/expected-failing/ and may fail; any other failure fails the job. One runner, one job: M2 has a handful of checks so far.
+  # Skipped on a docs-only pull request, where a skip counts as passed (CI-docs-fast-path.md). Should `changes` itself fail, this runs.
+  # Not a required check yet: branch protection is the lead's call (CI-branch-protection.md).
+  e2e-m2:
+    needs: changes
+    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # No Docker (K10 section 8): every service is a process. The runner image carries Docker, so take it off the PATH and
+      # let a test that still reaches for it fail here.
+      - name: No Docker on the PATH
+        run: |
+          sudo rm -f "$(command -v docker)"
+          ! command -v docker
+      # The Collector is its pinned binary (prove's telemetry module checks its digest before it runs): cached by version, and
+      # fetched from the official release when the cache is empty.
+      - uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/orthograph/otelcol-contrib
+          key: otelcol-contrib-0.164.0-${{ runner.os }}-${{ runner.arch }}
+      - run: NX_DAEMON=false pnpm nx run e2e:m2-ratchet --outputStyle=static
+
   # Goal 3's climbability check (`e2e/climb/README.md`): `ortho prove` on planted wrong handlers must name the journey and
   # step, show expected and got, point to the handler file and declaration, finish fast and give the same result twice.
   # All five properties hold since #119, so the job is required.
   # Skipped on a docs-only pull request (CI-speed.md), where a skip counts as passed. Should `changes` itself fail, this runs.
   e2e-climb:
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -558,7 +609,7 @@ jobs:
     needs: [changes, portal-ui]
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
     # Skipped on a docs-only pull request (CI-speed.md): the grid reads generated docs under examples/, never a docs-only path.
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

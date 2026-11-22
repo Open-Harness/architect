@@ -25,11 +25,11 @@ const planOf = (options: Options): Effect.Effect<Plan, StagingRefused> =>
   });
 
 /** Both credentials, or what is missing, said by name. Nothing is read from the cloud before this. */
-const credentialsOf = ({ token, account }: Options["credentials"]): Effect.Effect<Credentials, StagingRefused> => {
+const credentialsOf = ({ token, account }: Options["credentials"], environment: string): Effect.Effect<Credentials, StagingRefused> => {
   const missing = [...(token ? [] : ["CLOUDFLARE_API_TOKEN"]), ...(account ? [] : ["CLOUDFLARE_ACCOUNT_ID"])];
   return token && account
     ? Effect.succeed({ token, account })
-    : Effect.fail(new StagingRefused({ message: `${missing.join(" and ")} ${missing.length > 1 ? "are" : "is"} not set: the staging deploy reads both from the environment, and no connection was made` }));
+    : Effect.fail(new StagingRefused({ message: `${missing.join(" and ")} ${missing.length > 1 ? "are" : "is"} not set: the ${environment} deploy reads both from the environment, and no connection was made` }));
 };
 
 const settle = (work: Effect.Effect<Said, StagingRefused | StagingFailed>): Effect.Effect<Said> =>
@@ -44,7 +44,7 @@ export const makeStaging = (tools: Tools): StagingApi => ({
     settle(Effect.gen(function* () {
       const options = absolute(given);
       const p = yield* planOf(options);
-      const credentials = yield* credentialsOf(options.credentials);
+      const credentials = yield* credentialsOf(options.credentials, p.environment);
       const url = yield* up(tools, credentials, options.root, p);
       return said(`${p.environment} up ${url}\n`);
     })),
@@ -52,7 +52,7 @@ export const makeStaging = (tools: Tools): StagingApi => ({
     settle(Effect.gen(function* () {
       const options = absolute(given);
       const p = yield* planOf(options);
-      const credentials = yield* credentialsOf(options.credentials);
+      const credentials = yield* credentialsOf(options.credentials, p.environment);
       const done = yield* destroy(tools, credentials, options.root, p);
       return said(`${p.environment} destroy ${p.prefix}: alchemy ${done.alchemy}; the sweep deleted ${done.workers} Workers and ${done.databases} databases\n`);
     })),

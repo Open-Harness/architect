@@ -28,6 +28,8 @@ repo() { # a fresh repository with a base commit; prints its path
   mkdir -p "$dir/e2e/ui-layer/expected-failing"
   printf 'ui-layer/01.test.ts > u1\nui-layer/01.test.ts > u2\n' > "$dir/e2e/ui-layer/expected-failing/01.txt"
   echo t > "$dir/e2e/ui-layer/01.test.ts"
+  mkdir -p "$dir/e2e/m2/expected-failing"
+  printf 'm2/a.test.ts > a\nm2/a.test.ts > a2\n' > "$dir/e2e/m2/expected-failing/a.txt"
   mkdir -p "$dir/packages/foo/expected-failing"
   printf 'src/a.test.ts > t1\nsrc/a.test.ts > t2\n' > "$dir/packages/foo/expected-failing/a.txt"
   printf '# m1\n\nprose\n' > "$dir/e2e/m1/README.md"
@@ -108,6 +110,14 @@ r=$(repo); mkdir -p "$r/e2e/stage1/expected-failing"; printf 'stage1/x.test.ts >
 expect "a ratchet file in a new suite fails" 1 guard "$r"
 r=$(repo); echo changed > "$r/e2e/ui-layer/01.test.ts"; commit "$r"
 expect "editing another suite's check still fails" 1 guard "$r"
+r=$(repo); printf 'm2/a.test.ts > a\n' > "$r/e2e/m2/expected-failing/a.txt"; commit "$r"
+expect "deleting a line from an m2 ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/m2/expected-failing/a.txt; commit "$r"
+expect "deleting an m2 ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'm2/a.test.ts > a\nm2/a.test.ts > a2\nm2/a.test.ts > a3\n' > "$r/e2e/m2/expected-failing/a.txt"; commit "$r"
+expect "adding a line to an m2 ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'm2/c.test.ts > c\n' > "$r/e2e/m2/expected-failing/c.txt"; commit "$r"
+expect "adding an m2 ratchet file fails" 1 guard "$r"
 r=$(repo); printf 'src/a.test.ts > t1\n' > "$r/packages/foo/expected-failing/a.txt"; commit "$r"
 expect "deleting a line from a package's ratchet file passes" 0 guard "$r"
 r=$(repo); git -C "$r" rm -q packages/foo/expected-failing/a.txt; commit "$r"
@@ -305,6 +315,20 @@ join "$d" > /dev/null
 expect "m1-reports: hook errors and unhandled errors carry over" 0 jq -e '(.suiteErrors | length == 1) and (.unhandled == ["boom"])' "$d/out/m1-errors.json"
 d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts; echo 'not json' > "$d/m1-report-1/m1-errors.json"
 expect "m1-reports: a broken hook-error file fails" 1 join "$d"
+
+# scope: the flag that makes a pull request into a goal branch run the fast gate only (CI-integration.md, B1)
+scope() { # <event> <base ref> <wanted flag>
+  local got; got=$("$here/scope.sh" "$1" "$2")
+  [ "$got" = "fast=$3" ] || { echo "got $got"; return 1; }
+}
+expect "scope: a pull request into a goal branch is fast" 0 scope pull_request goal/on-chain true
+expect "scope: a pull request into goal/stage-1 runs everything" 0 scope pull_request goal/stage-1 false
+expect "scope: a pull request into main runs everything" 0 scope pull_request main false
+expect "scope: a pull request into a layer or milestone branch runs everything" 0 scope pull_request m1 false
+expect "scope: a push to a goal branch is never fast" 0 scope push goal/on-chain false
+expect "scope: a bare goal/ base is not a goal branch" 0 scope pull_request goal/ false
+expect "scope: an empty base runs everything" 0 scope pull_request "" false
+expect "scope: no arguments is a usage error" 1 "$here/scope.sh"
 
 if [ "$failures" -gt 0 ]; then echo "$failures case(s) failed"; exit 1; fi
 echo "all tools/ci cases pass"

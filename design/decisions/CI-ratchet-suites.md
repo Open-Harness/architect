@@ -27,6 +27,9 @@ whole file passes; adding a line, adding a file, swapping a line or renaming one
 suite (its checks, fixtures and README) stays protected. The guard matches `^e2e/[^/]+/expected-failing/`, so a
 look-alike folder (`expected-failing-x/`) is still protected. `tools/ci/ci.test.sh` carries five new cases for it.
 
+Goal 3 widened the guard the same way for `e2e/m2/` alone (#267, a list of two folders) while this was in review. The
+pattern above covers `e2e/m2/` too, so the merge keeps the pattern and both sets of test cases.
+
 ## Supersedes
 
 - `AGENTS.md`: "in `e2e/m1/expected-failing/` and a file per test file" → "in an e2e suite's `expected-failing/` (`e2e/m1/`, `e2e/ui-layer/` and the rest; CI-ratchet-suites) and a file per test file"
