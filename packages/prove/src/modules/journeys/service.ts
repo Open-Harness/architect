@@ -4,6 +4,7 @@ import { Blueprint } from "orthograph";
 import { Scripting } from "orthograph/server";
 import type { CallRecord, JourneyRun, JourneysApi, Project, StepResult } from "./types.ts";
 import { callDevice, onDevice } from "./internal/device.ts";
+import { keepersIn } from "./internal/keepers.ts";
 import { loadProject } from "./internal/load.ts";
 import { callOperation, castPeople, doorFacts, mayCall, signUpPeople, stateOf } from "./internal/world.ts";
 import { databaseFacts } from "./internal/database-facts.ts";
@@ -34,7 +35,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     const names = [...new Set([...Object.keys(journey.cast), ...lineage.flatMap((w) => Object.keys(w.cast))])];
     // Cast as anyone: not signed up, so the script can sign them up itself; everyone else is, for real.
     // The keeper is no one to sign up: it is the system's own principal, and it is not built yet (M8.10).
-    const keepers = new Set(names.filter((n) => (journey.cast[n] as { readonly kind?: string } | undefined)?.kind === "keeper"));
+    const keepers = keepersIn(names, [journey.cast, ...lineage.map((w) => w.cast)]);
     const anyone = names.filter((n) => (journey.cast[n] as { readonly kind?: string } | undefined)?.kind === "anyone" && !lineage.some((w) => n in w.cast));
     const wanted = [names.filter((n) => !anyone.includes(n) && !keepers.has(n)).map((n) => `j${index}.${n}`), anyone.map((n) => `j${index}.${n}`)] as const;
     const casting = yield* how === "world"

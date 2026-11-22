@@ -10,6 +10,9 @@ const Membership = Blueprint.thing({
 const Started = Blueprint.event({ membership: Membership.fields.id });
 const machine = (moves: Record<string, never>) => Blueprint.machine(Membership, { states: ["active"], moves: moves as never, notFrom: { exit: 1 } });
 
+const checkedMove = (by: ReturnType<typeof Blueprint.time.every>) =>
+  machine({ renew: { from: ["active"], to: "active", emits: Started, by } } as never).moves["renew"] as never;
+
 const checked = (by: ReturnType<typeof Blueprint.time.every>, more: { readonly late?: "10 minutes"; readonly lazy?: boolean; readonly from?: ReadonlyArray<"active"> } = {}) => {
   const m = machine({ renew: { from: more.from ?? ["active"], to: "active", emits: Started, by, ...(more.late ? { late: more.late } : {}), ...(more.lazy ? { lazy: true } : {}) } } as never);
   return Times.move({ name: "membership", thing: Membership, key: "renew", move: m.moves["renew"] as never });
@@ -44,6 +47,14 @@ describe("time", () => {
     expect(Times.keeper({ file: "f.ts", name: "purse.get", kind: "read", move: undefined, allowed: [{ kind: "anyone" }] })).toEqual([]);
     expect(Times.keeperUsed([[{ kind: "anyone" }], keeper])).toBe(true);
     expect(Times.keeperUsed([[{ kind: "anyone" }], { what: "who may" }])).toBe(false);
+  });
+
+  it("allows a move made by time to the keeper alone, naming the move and the other entry", () => {
+    const timed = checkedMove(Blueprint.time.every("1 month", { from: "startedAt" }));
+    expect(Times.keeper({ file: "f.ts", name: "membership.renew", kind: "operation", move: timed, allowed: [{ kind: "keeper" }] })).toEqual([]);
+    for (const [other, allowed] of [["anyone", [{ kind: "keeper" }, { kind: "anyone" }]], ["signed-in", [{ kind: "signed-in" }, { kind: "keeper" }]]] as const) {
+      expect(Times.keeper({ file: "f.ts", name: "membership.renew", kind: "operation", move: timed, allowed }), other).toEqual([expect.stringMatching(new RegExp(`membership\\.renew.*renew.*keeper alone.*${other}`))]);
+    }
   });
 
   it("says a span is a whole number of its unit", () => {

@@ -17,6 +17,9 @@ export const keeperProblems = (spec: {
 }): ReadonlyArray<string> => {
   const madeByTime = spec.move?.by !== undefined;
   const keeper = lists(spec.allowed);
+  // Access accepts any entry that matches, so one more entry beside the keeper lets that caller run the move too.
+  const others = spec.allowed.filter((a) => a.kind !== "keeper");
+  if (madeByTime && keeper && others.length > 0) return [`${spec.file}: ${spec.name} makes the move ${spec.move!.key}, which is made by time, so it is allowed to the keeper alone, but it also allows ${others.map((a) => a.kind).join(", ")}`];
   if (madeByTime && !keeper) return [`${spec.file}: ${spec.name} makes the move ${spec.move!.key}, which is made by time, so it must be allowed to the keeper (allowed: [Blueprint.keeper])`];
   if (keeper && !madeByTime) {
     const why = spec.kind === "read" ? "is a read" : spec.move ? `makes the move ${spec.move.key}, which is not made by time` : "makes no move";
