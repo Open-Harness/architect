@@ -1,0 +1,3 @@
+{
+  "m1/27-k19-no-licence.test.ts": "Check 27 judges how `ortho build` packages the OLD client: it reads packages/portal/dist/client directly, byte for byte, into the revision's artefacts, and opens the result on workerd with HEROUI_AUTH_TOKEN unset. It never goes through the PORTAL_CLIENT switch, so run against the new client it would read the old one and say nothing about the new. At cutover (slice 12) `ortho build` takes portal-next's client and this check moves to it: it leaves this list in that pull request, and the parity run then owes it."
+}
