@@ -110,7 +110,7 @@ describe("02 M1.23: approvals live in the wrapper", () => {
       expect(w.current.writes).toHaveLength(1);
     });
 
-    it("a yes does not lift the role check: a viewer who is approved is still refused, and nothing is written", async () => {
+    it("a yes does not lift the role check: a viewer who is approved is still refused, and nothing is written (whether the person is asked first is not pinned)", async () => {
       const { actions, host, approver, asked } = await rig(w.current, "viewer");
       const error = await rejection(actions.defineAction(noteRemove(host), approver).run(REMOVE));
       await expectRefusal(error, "AR-001", {});
