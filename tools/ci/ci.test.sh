@@ -293,5 +293,19 @@ expect "m1-reports: hook errors and unhandled errors carry over" 0 jq -e '(.suit
 d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts; echo 'not json' > "$d/m1-report-1/m1-errors.json"
 expect "m1-reports: a broken hook-error file fails" 1 join "$d"
 
+# scope: the flag that makes a pull request into a goal branch run the fast gate only (CI-integration.md, B1)
+scope() { # <event> <base ref> <wanted flag>
+  local got; got=$("$here/scope.sh" "$1" "$2")
+  [ "$got" = "fast=$3" ] || { echo "got $got"; return 1; }
+}
+expect "scope: a pull request into a goal branch is fast" 0 scope pull_request goal/on-chain true
+expect "scope: a pull request into goal/stage-1 runs everything" 0 scope pull_request goal/stage-1 false
+expect "scope: a pull request into main runs everything" 0 scope pull_request main false
+expect "scope: a pull request into a layer or milestone branch runs everything" 0 scope pull_request m1 false
+expect "scope: a push to a goal branch is never fast" 0 scope push goal/on-chain false
+expect "scope: a bare goal/ base is not a goal branch" 0 scope pull_request goal/ false
+expect "scope: an empty base runs everything" 0 scope pull_request "" false
+expect "scope: no arguments is a usage error" 1 "$here/scope.sh"
+
 if [ "$failures" -gt 0 ]; then echo "$failures case(s) failed"; exit 1; fi
 echo "all tools/ci cases pass"
