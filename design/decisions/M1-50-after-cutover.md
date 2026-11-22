@@ -29,6 +29,10 @@ cutover for no reason of its own.
 3. **Gate M1 is M1.02 to M1.14, M1.16 to M1.21, M1.25 to M1.36 and M1.38 to M1.49.** The preview merge goes ahead once
    those are green on `goal/stage-1`. Check 40 stays on the ratchet list, so a regression in what it already passes
    still fails CI.
+4. **Gate M1's done check is the ratchet run.** `nx run e2e:m1` runs every check under `e2e/m1/`, check 40 included,
+   and reads no expected-failing list, so it cannot pass until M1.50 is built. The gate is `nx run e2e:m1-ratchet`
+   passing on `main`, with nothing left in `e2e/m1/expected-failing/` but check 40's file. When M1.50 lands, that file
+   goes and the two commands agree again. (Codex on #550.)
 
 ## Evidence
 
@@ -40,3 +44,4 @@ cutover for no reason of its own.
 ## Supersedes
 
 - design/milestones.md: "M1.25 to M1.36, M1.38 to M1.50 | e2e" → "M1.25 to M1.36, M1.38 to M1.49 (M1.50 after Goal 6's cutover, M1-50-after-cutover) | e2e"
+- design/milestones.md: "`nx run e2e:m1` passes on `main`, M1.41 included" → "`nx run e2e:m1-ratchet` passes on `main`, M1.41 included, with nothing left in `e2e/m1/expected-failing/` but check 40's entries"
