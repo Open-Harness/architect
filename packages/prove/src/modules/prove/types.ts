@@ -2,6 +2,7 @@
 // `ortho prove --env test`: the same, in a world of the long-lived test environment, with a signed verdict per operation.
 import { Data, type Effect, type Scope } from "effect";
 import type { Result, TokenSource } from "#modules/verdicts/types.js";
+import type { D1Access } from "#modules/journeys/types.js";
 import type { ProveReport } from "./internal/structured.ts";
 
 export type { ChangedDetail, FailureDetail, JourneyDetail, ProveReport, StepDetail } from "./internal/structured.ts";
@@ -71,6 +72,22 @@ export interface ProveApi {
     readonly token: TokenSource;
     readonly say: (line: string) => Effect.Effect<void>;
   }) => Effect.Effect<{ readonly passed: boolean }, ProveFailed>;
+
+  /**
+   * Prove the journeys against a deployed Worker at `url` (`ortho prove --env staging --run <id>`, M7.04), in no world of its
+   * own. The Worker's `/_world` is closed, so each journey's people sign up through Better Auth's routes. There is no
+   * collector, so the journeys are judged and the nine evals are not (`totals.evalsFailed` is 0). `url` that nothing answers,
+   * or that answers 404 to everything (a Worker never deployed), is a `ProveFailed` naming it, before any journey runs.
+   */
+  readonly staged: (options: {
+    readonly root: string;
+    readonly url: string;
+    /** What the address is called in a refusal, e.g. `run r4417`. */
+    readonly label: string;
+    readonly only?: string;
+    /** The deployed environment's database, read through Cloudflare's API with the operator's credential. Without it the journeys' facts come from the Worker's own `/_world`, which only a local world has. */
+    readonly d1?: D1Access;
+  }) => Effect.Effect<Report, ProveFailed>;
 
   /**
    * Prove the project against an environment that is already running (staging), and post nothing. A real environment has

@@ -15,9 +15,8 @@ thread types, their emojis, their finish lines and your agent's word for each ac
    file or a header the other reads. If one slice's output promises what another delivers (the scaffold that promised
    pre-handling another slice was to build), they are one branch, built in order. Check the thread list for one
    already doing the job; never start a second.
-   **Hand out decision IDs from one place.** You allocate them on `main`, from a "Decision IDs" list in
-   `design/handoff.md`; a goal's lead allocates them on the goal branch, from the same list in the goal file, and
-   every goal brief says so. Before handing one out, check that no file in `design/decisions/` starts with that ID
+   **Hand out lettered decision IDs from one place.** You allocate them on `main`, from a "Decision IDs" list in
+   `design/handoff.md`, for calls that cross goals; a goal names its own calls by milestone or area and a slug (K32). Before handing one out, check that no file in `design/decisions/` starts with that ID
    (`G3`, say, matches `G3.md` and `G3-anything.md`), on `main` and on every open branch
    (`git ls-tree -r --name-only origin/<branch> design/decisions/`). Then add the ID with a one-line title to the list
    at once and push it.
@@ -28,8 +27,9 @@ thread types, their emojis, their finish lines and your agent's word for each ac
    - **its scope,** and the threads it must not collide with;
    - **its branch;**
    - **its finish line:** the step's "done when" check, word for word;
-   - **how it reports:** a message to you where its agent can send one, and always a `TO THE CONDUCTOR` block or a
-     one-line status at the end of each turn.
+   - **how it reports:** for a goal, its brief's "Where it stands", its snag file, its `goal-<n>` label and issues
+     (K32); for a thread you started, also a message where its agent can send one and a one-line status at the end of
+     each turn.
 4. **Update Aaron's view** (below).
 
 ## Where you run
@@ -48,6 +48,13 @@ thread types, their emojis, their finish lines and your agent's word for each ac
   stands, so a fresh conductor can take over.
 - **Threads:** your agent's thread list, by title emoji; Claude Code cloud threads also by tag `ortho`.
 - **Aaron's view:** a short sitrep in the thread, after every change. A sitrep page is optional.
+
+## Goals in other harnesses (K32)
+
+A goal may run in Amp, Codex or another account, started by Aaron with its brief's one-line start. You don't relay for
+it: read its brief's "Where it stands", its snag file, the `goal-<n>` label and the release milestones on GitHub. Before
+it starts, cut and protect its branch. Answer cross-goal issues by deciding, as a decision, when two goals disagree.
+Keep `.agents/skills/kanban/STATE.md` as the index: each goal, its harness if known, its branch, brief and done check.
 
 ## While threads run
 

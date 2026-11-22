@@ -2972,6 +2972,28 @@
         "publish": {},
         "hash": "0f14705e03d3bc97"
       },
+      "staging": {
+        "name": "staging",
+        "file": "blueprint/environments/staging.ts",
+        "runs": "always on",
+        "identity": "better-auth",
+        "lifetimeMs": null,
+        "cloud": {
+          "provider": "cloudflare",
+          "database": "d1"
+        },
+        "database": null,
+        "secrets": {},
+        "promotesFrom": null,
+        "deploy": {
+          "server": {
+            "how": "worker",
+            "domain": null
+          }
+        },
+        "publish": {},
+        "hash": "1f38e5ae45256ddc"
+      },
       "test": {
         "name": "test",
         "file": "blueprint/environments/test.ts",
@@ -3003,6 +3025,15 @@
       "cli": {
         "kind": "projection",
         "file": "blueprint/projections/cli.ts",
+        "package": "@orthograph/projections",
+        "version": "0.0.0",
+        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "chosen": {},
+        "hash": "a8f9f814f58bfd10"
+      },
+      "infra": {
+        "kind": "projection",
+        "file": "blueprint/projections/infra.ts",
         "package": "@orthograph/projections",
         "version": "0.0.0",
         "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
@@ -3110,5 +3141,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "1e518de143e8cadc4a0103f0125c09d9cfd7b893e1cb63f6b4dd963addce53f2"
+  "digest": "1f76063b9ade63acc9441a55bc0e2776d8ca5aa2f41f116cbb5529a1638d5cbc"
 }

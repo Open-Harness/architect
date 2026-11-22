@@ -49,7 +49,7 @@ environment says where.
 | docs, portal | kept, and served by the server | the portal is a route of each environment's own Worker (F1 "built since") |
 | solidity | deployed | each contract on the environment's chain, verified; redeployed only when its bytecode hash changes (L4.08) |
 | keeper | deployed | inside the server Worker: a Durable Object alarm per time move (layer 5) |
-| infra | kept | an Alchemy stack per environment, generated from the model and the mounts; applied by `promote` in the cloud pass |
+| infra | kept | an Alchemy stack per environment, generated from the model and the mounts into `generated/infra`; staging runs it with `ortho env up\|destroy staging --run <id>` (M7.03, M7.04), the other environments by `promote` in the cloud pass |
 | builder | kept | never deployed ([`builder.md`](builder.md)) |
 
 One Worker per environment carries everything that runs on our side: the app's handlers, every feature's server
@@ -100,7 +100,7 @@ opens (from every mounted projection and adapter).
 - **Rollback** is `promote` of an earlier revision: its bundle is kept, its verdicts are still in the logbook, and the
   version goes back with it. A migration that can't run backwards blocks a rollback across it, named by `promote`.
 - **Destroy**: a world expires by its own alarm; `ortho env down <name>` stops a long-lived local environment; in
-  the cloud pass, `ortho env destroy <name>` removes its Alchemy stack. Nothing is left running (AGENTS.md).
+  the cloud, `ortho env destroy <name> --run <id>` has Alchemy destroy its stack and then deletes whatever the run's prefix still owns. Nothing is left running (AGENTS.md).
 
 ## The day, in commands
 
@@ -126,6 +126,6 @@ allowance.spend  p95 88ms / 150ms   refused 3% (AllowanceExceeded)   ✔
 |---|---|---|
 | Where outputs go | fixed keys: `deploy: { server, mcp, portal }`, `publish: { sdk, cli }` (`examples/acme/blueprint/environments/production.ts`) | `places`, each a mounted projection by import |
 | MCP | served at `/mcp` by the server (L2.08), yet production also declares `mcp: Deploy.worker({ domain: "mcp.acme.dev" })` | a door of the one Worker (question 2) |
-| Infrastructure | per-environment wrangler configs under `.ortho/environments/` (D3 #17); Alchemy deferred to the cloud pass (D3 #5) | an Alchemy stack generated from the model and mounts |
+| Infrastructure | per-environment wrangler configs under `.ortho/environments/` (D3 #17) for the local environments; the Alchemy stack in `generated/infra` for staging (D3 #5, M7-03) | an Alchemy stack generated from the model and mounts |
 | Adapter provisioning | none | a declared `provision` step, or a refused `promote` naming the manual line |
 | Cloud | none: every environment is a local process with its own state (G1) | the cloud pass: a config change per destination, with Aaron's yes on each credential |

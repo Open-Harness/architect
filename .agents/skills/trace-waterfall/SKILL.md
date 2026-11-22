@@ -62,7 +62,7 @@ export default waterfall({
   subtitle: "allowance.grant · recorded by prove, read back from Tempo",   // mono 13, muted
   unit: "ms",
   intro: "allowance.grant, one call, as prove recorded it",          // caption at 0 s
-  outro: "every span ends ok; the move and its event are written on the operation's span",
+  outro: "no span ends as an error; the move and its event are written on the operation's span",
   spans: [ { name, depth, start, end, color, say }, ... ],             // tree order; depth 0 is the root
   attrs: { on: "allowance.grant", items: [ { text: "move.to=active", color: "step" }, ... ] },
   footnote: "workerd's clock moves only on I/O: times come in whole ms", // only when it's true
