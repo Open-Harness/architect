@@ -315,15 +315,16 @@ React hooks are designed in `frame/projections.md:261-275`: `useSpend()`, `useAl
 pending states. They are a projection built on the SDK, replayed in a real browser and never in jsdom. No slice owned
 them. They come in three slices, each where a stage first needs it:
 
-1. **ST1.01.** The react projection over the SDK:
+1. **ST1.01.** The react projection over the SDK (superseded by K29, 21 November 2026: ST1.25, the web projection,
+   one UI SDK piece per operation):
    - one mutation hook per operation and one query hook per read;
    - declared refusals as classes in the hook's error;
    - `pending` while a call is in flight;
    - one `requestKey` per form open, kept across the hook's retries.
 
    It is replayed with `--through react` in headless Chromium.
-2. **ST1.06.** Hooks behind a signed-in session (`Via.session`). The links screens sign in and claim through them.
-3. **ST2.03.** Hooks for client operations and chain submissions: the submission lifecycle (`simulated`, `submitted`,
+2. **ST1.06.** (Superseded by K29, 21 November 2026: pieces, not hooks.) Hooks behind a signed-in session (`Via.session`). The links screens sign in and claim through them.
+3. **ST2.03.** (Superseded by K29, 21 November 2026: pieces, not hooks.) Hooks for client operations and chain submissions: the submission lifecycle (`simulated`, `submitted`,
    `included`, `confirmed`, `dropped`, `reverted`, `corrected`) as hook state, and the wallet's device half run in the
    browser.
 

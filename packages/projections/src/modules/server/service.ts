@@ -21,3 +21,4 @@ export const server = Blueprint.projection({
 
 /** A temporary Worker with the original handlers for setup and scaffolds for journey calls (`ortho prove`, never `generated/`). */
 export const emptyServer = (model: Model, name: string): ReadonlyArray<RenderedFile> => renderServer(serverModel(model), name, true);
+export { COMPATIBILITY_DATE } from "./internal/worker-config.ts";

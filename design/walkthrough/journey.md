@@ -1301,8 +1301,8 @@ The operation page, `/portal/operations/handle.claim`, shows the contract (who m
 refusals, steps), the hashes its proof rests on, and the docs page.
 
 🔵 **Designed only: the portal Aaron agreed.** Things and lifecycles first, the live rail, the trace drawer, the
-operations matrix, a proof tab, built on HeroUI Pro (`design/portal.md`, M1.25 agreed 19 November). That is M1.13,
-not started. The portal-ui package exists (M1.34, merged); no page uses it yet.
+operations matrix, a proof tab, built through `@orthograph/portal-ui` (`design/portal.md`, M1.25 agreed 19 November;
+on UI SDK once HeroUI leaves, K29). That is M1.13, not started. The portal-ui package exists (M1.34, merged); no page uses it yet.
 
 🔵 **Designed only: the proof without a logbook.** Locally, prove's verdicts are in `.ortho/evidence/proven.json`, and
 the portal doesn't read them. You only see proofs once a logbook runs (chapter 8).
@@ -1636,8 +1636,8 @@ in one call, as Codex's does today.
 
 ### The screens
 
-🔵 **Designed only** (ST1.01, ST1.04, ST1.06). The three pages (`/@aaron`, `/claim`, `/edit`) built on generated React
-hooks (`@orthograph/react`, one hook per operation), served by the Worker. There is no React projection on `m1`.
+🔵 **Designed only** (ST1.25, ST1.04, ST1.06). The three pages (`/@aaron`, `/claim`, `/edit`) built on generated UI SDK
+pieces (the web projection, one piece per operation, K29), served by the Worker. There is no web projection on `m1`.
 
 ### Your own feature
 
@@ -1775,7 +1775,7 @@ The Solidity language is M6 (M6.01 starts from K7). Stage 3 (the vault) needs th
 | 10 | `ortho add feature` | 🟢 |
 | 10 | auth and organisations as plugins | 🔵 M2.05 to M2.07, ST1.07 |
 | 10 | handles as a plugin; reactions with `on:` | 🔵 ST1.03, M3.08 |
-| 10 | the React hooks and three screens | 🔵 ST1.01, ST1.04, ST1.06 |
+| 10 | the web pieces and three screens | 🔵 ST1.25, ST1.04, ST1.06 |
 | 10 | `ortho new feature` | 🔵 M2.10 |
 | 10 | workflows | 🔵 M3.01 to M3.03 |
 | 11 | Solidity, a language on `Host.chain` | 🔵 K7, K17, K27, M6 |

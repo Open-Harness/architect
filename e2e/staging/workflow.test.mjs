@@ -20,7 +20,7 @@ const UPLOAD = "          path: |\n            tmp/staging/plan.json\n          
 const MKDIR = "mkdir -p \"$EVIDENCE/private\"\n";
 
 describe("the staging workflow", () => {
-  test("is what the check says: by hand only, destroy and the listing always, two credentials in four steps, nothing printed", () => {
+  test("is what the check says: by hand only, destroy and the listing always, two credentials only in the steps that talk to Cloudflare, nothing printed", () => {
     assert.deepEqual(problems(real), []);
   });
 });
@@ -97,8 +97,12 @@ describe("the judge fails each planted wrong workflow", () => {
     // ---- credentials, and nothing printed ----
     ["the token in the job's env", () => swap("      EVIDENCE: tmp/staging\n", `      EVIDENCE: tmp/staging\n      ${TOKEN}\n`), /job's env/],
     ["the token in the workflow's env", () => swap("permissions:\n", `env:\n  ${TOKEN}\npermissions:\n`), /top level/],
-    ["the token on the story, which needs none", () => swap("          ORTHO_STAGING_SUBDOMAIN:", `          ${TOKEN}\n          ORTHO_STAGING_SUBDOMAIN:`), /story: its env/],
-    ["the story with no subdomain (its address cannot be formed)", () => swap("        env:\n          ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}\n", ""), /story: its env/],
+    ["a second secret on the story", () => swap("          ORTHO_STAGING_SUBDOMAIN:", "          EXTRA: ${{ secrets.OTHER }}\n          ORTHO_STAGING_SUBDOMAIN:"), /story: its env|the expression/],
+    ["the story's token from a different secret name", () => { const t = real.replace(/(- name: the story[\s\S]*?CLOUDFLARE_API_TOKEN: )\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/, "$1${{ secrets.OTHER_TOKEN }}"); assert.notEqual(t, real); return t; }, /story: its env|the expression/],
+    ["the story's account from a secret rather than the variable up uses", () => { const t = real.replace(/(- name: the story[\s\S]*?CLOUDFLARE_ACCOUNT_ID: )\$\{\{ vars\.CLOUDFLARE_ACCOUNT_ID \}\}/, "$1${{ secrets.CLOUDFLARE_API_TOKEN }}"); assert.notEqual(t, real); return t; }, /story: its env/],
+    ["the story with the token but no account", () => { const t = real.replace(/(- name: the story[\s\S]*?)          CLOUDFLARE_ACCOUNT_ID: \$\{\{ vars\.CLOUDFLARE_ACCOUNT_ID \}\}\n/, "$1"); assert.notEqual(t, real); return t; }, /story: its env/],
+    ["the story with the account but no token", () => { const t = real.replace(/(- name: the story[\s\S]*?)          CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}\n/, "$1"); assert.notEqual(t, real); return t; }, /story: its env/],
+    ["the story with no subdomain (its address cannot be formed)", () => swap("          ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}\n", ""), /story: its env/],
     ["the story's subdomain taken from a secret", () => swap("ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}", "ORTHO_STAGING_SUBDOMAIN: ${{ secrets.CLOUDFLARE_WORKERS_SUBDOMAIN }}"), /story: its env|the expression/],
     ["the story's subdomain typed in", () => swap("ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}", "ORTHO_STAGING_SUBDOMAIN: acme"), /story: its env/],
     ["no subdomain step", () => swap("      - name: subdomain\n        id: subdomain\n", "      - name: other\n        id: other\n"), /no step with id subdomain/],
