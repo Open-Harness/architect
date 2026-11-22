@@ -17,6 +17,8 @@ owns:
   - packages/openai/
   - packages/stand-in-model/
   - e2e/agents/
+  - e2e/fixtures/agents/
+  - packages/prove/src/modules/agent-world/
   - design/decisions/M4-agents.md
   - design/goals/10-agents.md
 slices:
@@ -29,7 +31,7 @@ slices:
   - "7 · Tools made from an app's operations (after 4)"
   - "8 · Run telemetry (after 4)"
   - "9 · One host per run, resumed after eviction (after 4)"
-  - "10 · The agents feature (after 2, 9)"
+  - "10 · The agents feature (after 2, 8, 9)"
   - "11 · The portal's chat on a durable agent (after 10)"
   - "12 · Agent waits on the world's clock (after 9)"
 ---
@@ -73,7 +75,7 @@ table. "After" names this goal's own earlier slices; "Waits on" names work anoth
 | 7 | Tools made from an app's operations | M4.07 | 4 | — |
 | 8 | Run telemetry | M4.08 | 4 | — |
 | 9 | One host per run, resumed after eviction | M4.09 | 4 | — |
-| 10 | The agents feature | M4.10 | 2, 9 | — |
+| 10 | The agents feature | M4.10 | 2, 8, 9 | — |
 | 11 | The portal's chat on a durable agent | M4.16 | 10 | M1.24 (Goal 3); M1.34 is ✅ on `goal/stage-1`; mounting it in the portal client is an ask to Goal 6 |
 | 12 | Agent waits on the world's clock | M4.26 | 9 | `Timers` across processes, M8.07 (Goal 9) |
 

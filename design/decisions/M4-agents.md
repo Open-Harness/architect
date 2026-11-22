@@ -100,6 +100,9 @@ waking the run's object. So a run's owner is `agents/run/<run>`, each wait has i
   `23749fefcc72300e3a2ad315e1317431b06b590a`, 639,446,688 bytes, SHA-256
   `9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031`. A file whose checksum differs is refused.
 
+The stand-in's adapter prices every committed reply at a flat **2 cents**, declared beside the pin, so a journey can
+spend a budget exactly; a real provider's price comes from its own table.
+
 Pi's `faux` provider is our own fake, so it stays inside the seam's unit tests of crash mechanics (H1 section 9) and
 is never in a journey. Every check of Goal 10 runs on the stand-in; no key is needed and none is held (the brief's
 limits). If slice 6 measures that Qwen3 0.6B does not call a simple tool reliably at temperature 0, the next model up
@@ -116,7 +119,23 @@ the same family (Qwen3 1.7B) is the fallback, pinned the same way in that slice'
   check 4 (`e2e/layer1/04-agent-writes-a-handler.test.ts`) as the first runner. They live in `@orthograph/agents`'
   `runs` and `score` modules, on Node.
 
-### 7. What a journey asserts
+### 7. Who builds the journeys' world doors
+
+The agents journeys (slice 2, `e2e/agents/feature/README.md`) drive a world through doors that don't exist yet:
+`s.world.evict`, `holdModel`, `releaseModel`, `holdTool`, `requests`, `usage`, `transcript`, `tools`, `toolCalls`,
+`trace` and the rest that README lists, plus `s.started` and `Models.standIn`. Goal 10 builds them all:
+
+- `Models.standIn` and the model's request count, hold and release: `@orthograph/stand-in-model` (slice 6).
+- The run's doors (`evict`, `transcript`, `usage`, `tools`, `toolCalls`, `holdTool`): a new module of `prove`,
+  `packages/prove/src/modules/agent-world/`, which Goal 10 owns (map rule 2: a new module only, and a blueprint that
+  mounts no agents runs byte for byte as before), built with slice 9 for the Durable Object and slice 4 for Node.
+- The one hook into `Worlds.start` that acquires the stand-in model in the world's scope, as `chain` already is
+  (`packages/prove/src/modules/world/README.md`), and `s.started` in the journeys runner: Goal 3's code, so an Ask
+  to Goal 3 when slice 6 needs them, never an edit here.
+
+The span step in the tool-phase eviction journey needs run telemetry, so M4.10 needs M4.08 as well as M4.02 and M4.09.
+
+### 8. What a journey asserts
 
 States, events, refusals, spans, usage and request counts at the stand-in; never what the model said
 (`frame/examples/agents.md:152-156`). Whether a model is good at a brief is the bench's question (M4.14, off this goal).
@@ -152,6 +171,10 @@ Live docs, rewritten in this change (M4.16's `doneWhen` in `tasks.json` is the M
 - `design/packages.md`: "`@orthograph/agents` (M4), `@orthograph/stripe`" → "`@orthograph/agents` (M4), with its model adapters `@orthograph/anthropic` and `@orthograph/openai` and the local stand-in `@orthograph/stand-in-model` (M4.05, M4.06), `@orthograph/stripe`"
 - `.agents/skills/kanban/data/lanes.json`, M4's gate: "mid-turn resumes it with no second model call; (3)" → "mid-turn, after its model step committed, resumes it with no second model call, and evicting it with a model reply in flight repeats only that one request; (3)"
 - `.agents/skills/kanban/data/tasks.json`, M4.09's `doneWhen`: ""evicting mid-turn resumes with no duplicate model call"" → ""evicting mid-turn, after the model's step committed, resumes with no duplicate model call; …""
+
+- `design/milestones.md`, M4.10's needs: "| M4.02, M4.09 | build | the agents journeys pass" → "| M4.02, M4.08, M4.09 | build | the agents journeys pass"
+- `design/goals/10-agents.md`, slice 10: "10 · The agents feature (after 2, 9)" → "10 · The agents feature (after 2, 8, 9)"
+- `design/goals/10-agents.md`, slice table: "| 10 | The agents feature | M4.10 | 2, 9 | — |" → "| 10 | The agents feature | M4.10 | 2, 8, 9 | — |"
 
 ## Dated records
 

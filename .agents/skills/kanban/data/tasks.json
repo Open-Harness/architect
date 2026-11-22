@@ -2987,9 +2987,10 @@
   "lane": "M4",
   "needs": [
    "M4.02",
+   "M4.08",
    "M4.09"
   ],
-  "needsText": "M4.02, M4.09",
+  "needsText": "M4.02, M4.08, M4.09",
   "order": 94,
   "plain": "",
   "pr": null,
