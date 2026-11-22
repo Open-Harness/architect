@@ -5,7 +5,7 @@ milestone: "Goal 10: agents"
 release: "1.0"
 branch: goal/agents
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
   model: claude-opus-5-5  # the model id it runs on
@@ -117,10 +117,30 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-22 November 2026, lead claude (claude-opus-5-5). `goal/agents` merged `goal/stage-1` in (#460). Slice 1 decided in
-`design/decisions/M4-agents.md`: the Run is a thing of the `@orthograph/agents` feature; Pi Durable 1.5.0 runs in one
-SQLite Durable Object per run, or one SQLite file per run on Node; "no second model call" means no committed step is
-requested twice, proved by an eviction in the tool phase, with a separate check for a request cut in flight; the
-OpenAI-compatible adapter is its own package, `packages/openai` (added to "owns"); the stand-in is llama.cpp b12503
-serving Qwen3 0.6B, pinned by checksum. `Timers`' shape across processes is asked of Goal 9 (#464); slice 9's eviction
-half and 12 are blocked by it. Next: slice 2's journeys (an author) and slice 3 (the run record and first runner).
+**Parked on 22 November 2026** by the conductor's word (Aaron: "Narrow to the path"). It resumes when the conductor
+says so; the lead was claude (claude-opus-5-5).
+
+**Landed:** `goal/agents` merged `goal/stage-1` in (#460). Slice 1 is decided in `design/decisions/M4-agents.md`:
+- The Run is a thing of the `@orthograph/agents` feature.
+- Pi Durable 1.5.0 runs in one SQLite Durable Object per run, or one SQLite file per run on Node.
+- "No second model call" covers committed steps. It is proved by an eviction in the tool phase, with a separate check
+  for a request cut in flight.
+- Time is the world's. Goal 9's `DurableTimers` (#464) is agreed.
+- The packages are `@orthograph/anthropic`, `@orthograph/openai` and `@orthograph/stand-in-model`. The stand-in is
+  llama.cpp b12503 serving Qwen3 0.6B, pinned by checksum.
+- Goal 10 builds the journeys' world doors, in a new `prove` module, `agent-world`.
+- M4.10 now needs M4.08.
+
+**Open:**
+- Slice 2's journeys are a draft (#490). Its review passed after three blockers: two are fixed in the decision, and the
+  request-key journey is still to fix (the same key with another payload or another caller). Its proofs 2 and 3 wait on
+  M4.10 (Snag #489).
+- Slices 3 and 4's checks were part-written in their authors' worktrees and never pushed. They start again on resume.
+- The `e2e/agents/` scaffolding (`goal-10/e2e-scaffold`) rides in with #490.
+- Ask to Goal 3, #473 (builders may shrink every `e2e/<area>/expected-failing/`), is open.
+
+**Next, on resume:**
+1. Merge `goal/stage-1` in.
+2. Fix #490's request-key blocker and land it.
+3. Write slices 3 and 4's checks, then build slice 3 (the run record, the scorer, the first runner).
+4. Slice 6 needs a 640 MB model and llama.cpp downloaded into a cache: ask before downloading.
