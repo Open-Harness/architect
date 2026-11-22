@@ -417,7 +417,7 @@ skill). "After" names this goal's own earlier slices; "Waits on" names another g
 |---|---|---|---|---|
 | 1 | The plan and its calls, decided | — | — | this brief and K39 on `main` |
 | 2 | Checks for the GitHub adapter's calls out: every included call against the stand-in, in the package's own tests | 1 | — | they fail on an empty adapter |
-| 3 | `@orthograph/github`: calls out as an App installation, its secrets, the stand-in (M4.25) | 2 | Gate M2 (Goal 3), as M4.25's row says: declared secrets (M2.04) and the `service` caller (M2.03) | slice 2 passes |
+| 3 | `@orthograph/github`: calls out as an App installation, its secrets, the stand-in (M4.25's calls; its events finish it in slice 10) | 2 | Gate M2 (Goal 3), as M4.25's row says: declared secrets (M2.04) and the `service` caller (M2.03) | slice 2 passes |
 | 4 | Checks for the sandbox's calls: open, exec, a long job started in the background and its status read back, read and write fenced to the folder, bundle, close leaving nothing | 1 | — | they fail on an empty adapter |
 | 5 | `@orthograph/sandbox` with its `local` choice, its process stopped by its id | 4 | — | slice 4 passes; 0 folders and 0 processes left |
 | 6 | Checks for intake and prompts: every gate cell of the prototype's `002`; a trigger twice stored once; a stale policy save refused; a prompt override that keeps its base | 1 | — | they fail on empty handlers |
