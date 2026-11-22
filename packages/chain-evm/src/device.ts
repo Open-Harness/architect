@@ -7,7 +7,7 @@ export type {
 } from "./modules/tx/types.ts";
 export { Abi } from "./modules/abi/service.ts";
 export type {
-  AbiApi, AbiConstructor, AbiDocument, AbiError, AbiEvent, AbiFunction, AbiParameter, CallInput, DeployInput, ResultInput,
+  AbiApi, AbiConstructor, AbiDocument, AbiError, AbiEvent, AbiFunction, AbiParameter,
 } from "./modules/abi/types.ts";
 export { decodeRevert, mapRpcError } from "./modules/faults/service.ts";
 export { ChainFault, ChainRefusal, type ChainError, type FaultKind, type RefusalLockEntry } from "./modules/faults/types.ts";

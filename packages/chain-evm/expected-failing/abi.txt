@@ -1,10 +1,10 @@
 src/modules/abi/abi.test.ts > Abi.encodeCall > a dynamic argument is an offset, a length and the padded bytes
 src/modules/abi/abi.test.ts > Abi.encodeCall > a function with no arguments is its selector alone, with or without an empty args list
-src/modules/abi/abi.test.ts > Abi.encodeCall > an unknown function, the wrong number of arguments and an argument of the wrong type are each a ChainFault
 src/modules/abi/abi.test.ts > Abi.encodeCall > balanceOf(address) is selector 0x70a08231 and the address, lower-case and padded to a word
-src/modules/abi/abi.test.ts > Abi.encodeCall > overloads are told apart by their arguments: transfer(address) and transfer(address,uint256) each get their own selector
+src/modules/abi/abi.test.ts > Abi.encodeCall > overloads are told apart by the item passed: transfer(address) and transfer(address,uint256) each get their own selector
+src/modules/abi/abi.test.ts > Abi.encodeCall > the wrong number of arguments and an argument of the wrong type are each a ChainFault
 src/modules/abi/abi.test.ts > Abi.encodeCall > transfer(address,uint256) is its selector, the address word, the amount word
-src/modules/abi/abi.test.ts > Abi.encodeDeploy > a constructor with no arguments given, and arguments for an ABI with no constructor, are each a ChainFault
 src/modules/abi/abi.test.ts > Abi.encodeDeploy > a constructor's arguments follow the bytecode, encoded as words
-src/modules/abi/abi.test.ts > Abi.encodeDeploy > an ABI with no constructor deploys the bytecode as it is
+src/modules/abi/abi.test.ts > Abi.encodeDeploy > arguments that do not fit (none, too few, too many, or given with no constructor) are each a ChainFault
+src/modules/abi/abi.test.ts > Abi.encodeDeploy > no constructor, or one with no inputs, deploys the bytecode as it is
 src/modules/abi/abi.test.ts > the surface > Abi and the viem ABI types come out of the device entry, which a browser or a Worker can hold

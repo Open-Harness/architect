@@ -39,12 +39,12 @@ describe("Abi against generated values", () => {
     const gen = make(4711);
     for (let i = 0; i < 150; i++) {
       const [value, who, values, flag, small] = [gen.uint(), gen.address(), gen.list(), gen.bool(), gen.byte()];
-      expect(decode("totalSupply", hex(word(value)))).toBe(value);
-      expect(decode("owner", hex(addressWord(who)))).toBe(getAddress(who));
-      expect(decode("position", hex(word(value), addressWord(who)))).toEqual({ x: value, owner: getAddress(who) });
-      expect(decode("values", hex(word(0x20n), word(BigInt(values.length)), ...values.map(word)))).toEqual(values);
+      expect(decode("totalSupply", hex(word(value)))).toEqual([value]);
+      expect(decode("owner", hex(addressWord(who)))).toEqual([getAddress(who)]);
+      expect(decode("position", hex(word(value), addressWord(who)))).toEqual([{ x: value, owner: getAddress(who) }]);
+      expect(decode("values", hex(word(0x20n), word(BigInt(values.length)), ...values.map(word)))).toEqual([values]);
       expect(decode("pair", hex(word(value), word(flag ? 1n : 0n)))).toEqual([value, flag]);
-      expect(decode("small", hex(word(BigInt(small))))).toBe(small);
+      expect(decode("small", hex(word(BigInt(small))))).toEqual([small]);
     }
   });
 });

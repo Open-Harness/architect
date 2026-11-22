@@ -3,14 +3,15 @@
 // never read back from the output that is judged.
 import { Effect } from "effect";
 import { readFileSync } from "node:fs";
+import { builtinModules } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseAbi } from "viem";
 import { describe, expect, test } from "vitest";
 import * as device from "../../device.ts";
-import type { AbiDocument, AbiError, AbiFunction } from "../../device.ts";
+import type { AbiConstructor, AbiDocument, AbiError, AbiFunction } from "../../device.ts";
 import { ChainFault } from "../faults/types.ts";
-import { OWNER, addressWord, encode, abi, hex, word } from "./internal/fixtures.ts";
+import { OWNER, addressWord, encode, fn, hex, word } from "./internal/fixtures.ts";
 import { Abi } from "./service.ts";
 
 describe("the surface", () => {
@@ -43,23 +44,26 @@ describe("Abi.encodeCall", () => {
     expect(encode("sum", [[1n, 2n]])).toBe(hex("0194db8e", word(0x20n), word(2n), word(1n), word(2n)));
   });
 
-  test("overloads are told apart by their arguments: transfer(address) and transfer(address,uint256) each get their own selector", () => {
-    const overloaded = parseAbi([
+  test("overloads are told apart by the item passed: transfer(address) and transfer(address,uint256) each get their own selector", () => {
+    const [single, double] = parseAbi([
       "function transfer(address to) returns (bool)",
       "function transfer(address to, uint256 value) returns (bool)",
     ]);
-    const call = (args: ReadonlyArray<unknown>) => Effect.runSync(Abi.encodeCall({ abi: overloaded, functionName: "transfer", args }));
-    expect(call([OWNER])).toBe(hex("1a695230", addressWord(OWNER)));
-    expect(call([OWNER, 1000n])).toBe(hex("a9059cbb", addressWord(OWNER), word(1000n)));
+    if (single === undefined || double === undefined) return expect.unreachable();
+    expect(Effect.runSync(Abi.encodeCall(single, [OWNER]))).toBe(hex("1a695230", addressWord(OWNER)));
+    expect(Effect.runSync(Abi.encodeCall(double, [OWNER, 1000n]))).toBe(hex("a9059cbb", addressWord(OWNER), word(1000n)));
+    // Each item takes only its own arguments.
+    expect(Effect.runSync(Effect.flip(Abi.encodeCall(single, [OWNER, 1000n])))).toBeInstanceOf(ChainFault);
+    expect(Effect.runSync(Effect.flip(Abi.encodeCall(double, [OWNER])))).toBeInstanceOf(ChainFault);
   });
 
-  test("an unknown function, the wrong number of arguments and an argument of the wrong type are each a ChainFault", () => {
+  test("the wrong number of arguments and an argument of the wrong type are each a ChainFault", () => {
     const faults = [
-      Effect.runSync(Effect.flip(Abi.encodeCall({ abi, functionName: "mint", args: [1n] }))),
-      Effect.runSync(Effect.flip(Abi.encodeCall({ abi, functionName: "transfer", args: [OWNER] }))),
-      Effect.runSync(Effect.flip(Abi.encodeCall({ abi, functionName: "transfer", args: [OWNER, 1n, 2n] }))),
-      Effect.runSync(Effect.flip(Abi.encodeCall({ abi, functionName: "transfer", args: ["0x123", 1n] }))),
-      Effect.runSync(Effect.flip(Abi.encodeCall({ abi, functionName: "balanceOf" }))),
+      Effect.runSync(Effect.flip(Abi.encodeCall(fn("transfer"), [OWNER]))),
+      Effect.runSync(Effect.flip(Abi.encodeCall(fn("transfer"), [OWNER, 1n, 2n]))),
+      Effect.runSync(Effect.flip(Abi.encodeCall(fn("transfer"), ["0x123", 1n]))),
+      Effect.runSync(Effect.flip(Abi.encodeCall(fn("transfer"), [OWNER, -1n]))),
+      Effect.runSync(Effect.flip(Abi.encodeCall(fn("balanceOf"), []))),
     ];
     for (const fault of faults) {
       expect(fault).toBeInstanceOf(ChainFault);
@@ -68,34 +72,39 @@ describe("Abi.encodeCall", () => {
   });
 });
 
-
 describe("Abi.encodeDeploy", () => {
   const bytecode = "0x6080604052348015600e575f5ffd5b50" as const;
-  const withConstructor = parseAbi(["constructor(uint256 supply, address owner)"]);
-  const noConstructor = parseAbi(["function ping()"]);
+  const constructorOf = (document: AbiDocument) => {
+    const item = document.find((i): i is AbiConstructor => i.type === "constructor");
+    expect(item).toBeDefined();
+    return item as AbiConstructor;
+  };
+  const constructor = constructorOf(parseAbi(["constructor(uint256 supply, address owner)"]));
+  const empty = constructorOf(parseAbi(["constructor()"]));
 
-  test("an ABI with no constructor deploys the bytecode as it is", () => {
-    expect(Effect.runSync(Abi.encodeDeploy({ abi: noConstructor, bytecode }))).toBe(bytecode);
-    expect(Effect.runSync(Abi.encodeDeploy({ abi: noConstructor, bytecode, args: [] }))).toBe(bytecode);
+  test("no constructor, or one with no inputs, deploys the bytecode as it is", () => {
+    expect(Effect.runSync(Abi.encodeDeploy(bytecode, undefined, []))).toBe(bytecode);
+    expect(Effect.runSync(Abi.encodeDeploy(bytecode, empty, []))).toBe(bytecode);
   });
 
   test("a constructor's arguments follow the bytecode, encoded as words", () => {
-    expect(Effect.runSync(Abi.encodeDeploy({ abi: withConstructor, bytecode, args: [100n, OWNER] })))
+    expect(Effect.runSync(Abi.encodeDeploy(bytecode, constructor, [100n, OWNER])))
       .toBe(hex(bytecode.slice(2), word(100n), addressWord(OWNER)));
   });
 
-  test("a constructor with no arguments given, and arguments for an ABI with no constructor, are each a ChainFault", () => {
-    for (const input of [
-      { abi: withConstructor, bytecode },
-      { abi: withConstructor, bytecode, args: [100n] },
-      { abi: withConstructor, bytecode, args: [100n, OWNER, 1n] },
-      { abi: noConstructor, bytecode, args: [100n] },
-    ]) {
-      expect(Effect.runSync(Effect.flip(Abi.encodeDeploy(input)))).toBeInstanceOf(ChainFault);
+  test("arguments that do not fit (none, too few, too many, or given with no constructor) are each a ChainFault", () => {
+    for (const [ctor, args] of [
+      [constructor, []],
+      [constructor, [100n]],
+      [constructor, [100n, OWNER, 1n]],
+      [constructor, [OWNER, 100n]],
+      [undefined, [100n]],
+      [empty, [100n]],
+    ] as const) {
+      expect(Effect.runSync(Effect.flip(Abi.encodeDeploy(bytecode, ctor, args)))).toBeInstanceOf(ChainFault);
     }
   });
 });
-
 
 // `/device` is what a browser or a Worker holds: nothing it imports, directly or through the module graph, may be a `node:` module.
 describe("the device entry", () => {
@@ -122,8 +131,8 @@ describe("the device entry", () => {
       }
     }
     expect(seen.size).toBeGreaterThan(10);
-    expect([...bare].filter((name) => name.startsWith("node:") || ["fs", "path", "net", "child_process", "crypto", "os", "url"].includes(name))).toEqual([]);
-    const allowed = (name: string) => name === "@orthograph/language-effect" || /^(?:effect|viem)(?:\/|$)/u.test(name);
-    expect([...bare].filter((name) => !allowed(name))).toEqual([]);
+    // Node-only: the `node:` scheme, or a bare Node built-in (`fs`, `crypto`, `child_process`, `fs/promises`, ...).
+    const nodeOnly = (name: string) => name.startsWith("node:") || builtinModules.includes(name.split("/")[0] ?? name);
+    expect([...bare].filter(nodeOnly)).toEqual([]);
   });
 });

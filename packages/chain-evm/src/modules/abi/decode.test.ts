@@ -8,32 +8,32 @@ import { ChainFault } from "../faults/types.ts";
 import { OWNER, addressWord, decode, decodeFault, hex, word } from "./internal/fixtures.ts";
 
 describe("Abi.decodeResult", () => {
-  test("a uint256, from zero to the largest", () => {
-    expect(decode("totalSupply", hex(word(42n)))).toBe(42n);
-    expect(decode("totalSupply", hex(word(0n)))).toBe(0n);
-    expect(decode("totalSupply", hex("f".repeat(64)))).toBe(2n ** 256n - 1n);
+  test("the answer is always a list, one element per output: a single uint256 is [value], from zero to the largest", () => {
+    expect(decode("totalSupply", hex(word(42n)))).toEqual([42n]);
+    expect(decode("totalSupply", hex(word(0n)))).toEqual([0n]);
+    expect(decode("totalSupply", hex("f".repeat(64)))).toEqual([2n ** 256n - 1n]);
   });
 
   test("an address comes back checksummed", () => {
-    expect(decode("owner", hex(addressWord(OWNER)))).toBe(OWNER);
+    expect(decode("owner", hex(addressWord(OWNER)))).toEqual([OWNER]);
   });
 
   test("a tuple is an object by its component names", () => {
-    expect(decode("position", hex(word(7n), addressWord(OWNER)))).toEqual({ x: 7n, owner: OWNER });
+    expect(decode("position", hex(word(7n), addressWord(OWNER)))).toEqual([{ x: 7n, owner: OWNER }]);
   });
 
-  test("a dynamic array is an array, empty or not", () => {
-    expect(decode("values", hex(word(0x20n), word(3n), word(1n), word(2n), word(3n)))).toEqual([1n, 2n, 3n]);
-    expect(decode("values", hex(word(0x20n), word(0n)))).toEqual([]);
+  test("a dynamic array is one element, an array, empty or not", () => {
+    expect(decode("values", hex(word(0x20n), word(3n), word(1n), word(2n), word(3n)))).toEqual([[1n, 2n, 3n]]);
+    expect(decode("values", hex(word(0x20n), word(0n)))).toEqual([[]]);
   });
 
-  test("a string, and several outputs as an array in order", () => {
-    expect(decode("name", hex(word(0x20n), word(5n), `68656c6c6f${"0".repeat(54)}`))).toBe("hello");
+  test("a string, and several outputs as one element each, in order", () => {
+    expect(decode("name", hex(word(0x20n), word(5n), `68656c6c6f${"0".repeat(54)}`))).toEqual(["hello"]);
     expect(decode("pair", hex(word(5n), word(1n)))).toEqual([5n, true]);
   });
 
-  test("a function with no outputs answers undefined from empty data", () => {
-    expect(decode("ping", "0x")).toBeUndefined();
+  test("a function with no outputs answers an empty list from empty data", () => {
+    expect(decode("ping", "0x")).toEqual([]);
   });
 
   test("data that does not decode is a ChainFault, never a throw and never a value", () => {
@@ -57,6 +57,6 @@ describe("Abi.decodeResult", () => {
       expect(fault, `${functionName} ${data}`).toBeInstanceOf(ChainFault);
       expect(fault.message.length).toBeGreaterThan(0);
     }
-    expect(decodeFault("mint", hex(word(1n)))).toBeInstanceOf(ChainFault);
+    expect(decodeFault("ping", hex(word(1n)))).toBeInstanceOf(ChainFault);
   });
 });

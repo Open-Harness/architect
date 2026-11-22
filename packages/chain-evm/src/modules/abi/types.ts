@@ -10,37 +10,16 @@ export type AbiEvent = Extract<Abi[number], { type: "event" }>;
 export type AbiFunction = Extract<Abi[number], { type: "function" }>;
 export type { AbiParameter };
 
-/** `abi` is viem's `Abi`, so a parsed human-readable ABI and a compiler's JSON both fit. */
-export interface CallInput {
-  readonly abi: Abi;
-  readonly functionName: string;
-  readonly args?: ReadonlyArray<unknown>;
-}
-
-export interface ResultInput {
-  readonly abi: Abi;
-  readonly functionName: string;
-  /** What an `eth_call` of that function answered, as `ChainPort.read` returns it. */
-  readonly data: Hex;
-}
-
-export interface DeployInput {
-  readonly abi: Abi;
-  readonly bytecode: Hex;
-  /** The constructor's arguments, in order. */
-  readonly args?: ReadonlyArray<unknown>;
-}
-
 export interface AbiApi {
-  /** The calldata of one call: the 4-byte selector of the function's signature, then its arguments. An unknown function, or arguments of the wrong number or type, is a `ChainFault`. */
-  readonly encodeCall: (input: CallInput) => Effect.Effect<Hex, ChainFault>;
+  /** The calldata of one call: the 4-byte selector of the function's signature, then its arguments. `fn` is the one ABI item, so an overload is chosen by passing its item. Arguments of the wrong number or type are a `ChainFault`. */
+  readonly encodeCall: (fn: AbiFunction, args: ReadonlyArray<unknown>) => Effect.Effect<Hex, ChainFault>;
   /**
-   * The value a function's answer holds, as viem decodes it: no outputs is `undefined`, one output is its value (a tuple is an object
-   * by its component names, a dynamic array an array), several outputs are an array in order. Data that does not decode is a `ChainFault`.
+   * What a function's answer holds, one element per output in order (no outputs is `[]`; a tuple is an object by its component names, a
+   * dynamic array an array). Data that does not decode is a `ChainFault`, and so is a non-canonical encoding of it: trailing bytes, dirty padding, an out-of-range integer.
    */
-  readonly decodeResult: (input: ResultInput) => Effect.Effect<unknown, ChainFault>;
-  /** The deployment's data: the bytecode, then the ABI-encoded constructor arguments (none, when the ABI has no constructor). Arguments that do not fit the constructor (missing, too few, or given to an ABI with none) are a `ChainFault`. */
-  readonly encodeDeploy: (input: DeployInput) => Effect.Effect<Hex, ChainFault>;
+  readonly decodeResult: (fn: AbiFunction, data: Hex) => Effect.Effect<ReadonlyArray<unknown>, ChainFault>;
+  /** The deployment's data: the bytecode, then the ABI-encoded constructor arguments (none, with no constructor). Arguments that do not fit the constructor (missing, too few, too many, or given with no constructor) are a `ChainFault`. */
+  readonly encodeDeploy: (bytecode: Hex, constructor: AbiConstructor | undefined, args: ReadonlyArray<unknown>) => Effect.Effect<Hex, ChainFault>;
   /**
    * An `error` item of an ABI as a refusal lock entry: its `selector` is the first 4 bytes of the keccak-256 of its `signature`
    * (`Name(type,...)`, tuples written out), its `name` is the item's name, so `decodeRevert` decodes the contract's own errors.
