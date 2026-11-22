@@ -125,7 +125,7 @@ describe("a declared map, mounted", () => {
     const links = (expression: string) => evaluate(p, "generated/app/links.ts", expression);
     expect(links(`[m.links.home(), m.links.account(), m.links.profile({ handle: "aaron" })]`)).toEqual(["/", "/account", "/@aaron"]);
     expect(links(`[m.links.edit({ handle: "a b" }), m.links.thing({ name: "x/y" })]`)).toEqual(["/@a%20b/edit", "/things/x%2Fy"]);
-    expect(Object.keys(links("m.links") as object).sort()).toEqual(["account", "edit", "home", "profile", "thing"]);
+    expect(links("Object.keys(m.links).sort()")).toEqual(["account", "edit", "home", "profile", "thing"]);
   }, 900_000);
 });
 
@@ -161,8 +161,8 @@ describe("the derived default, with no blueprint/app/", () => {
     expect(map.groups).toEqual([{ title: "Things", folded: false, pages: [{ page: "handle", path: "/things/handle" }, { page: "link", path: "/things/link" }, { page: "profile", path: "/things/profile" }] }]);
   }, 900_000);
 
-  it("its palette lists the pages, and an anonymous caller only the operation anyone may call", () => {
-    expect(visible(derived(), "anonymous")).toEqual(["handle", "home", "link", "profile", "handle/handle.resolve"]);
+  it("its palette lists the pages, and an anonymous caller only the operations anyone may call", () => {
+    expect(visible(derived(), "anonymous")).toEqual(["handle", "home", "link", "profile", "handle/handle.resolve", "profile/profile.get"]);
     expect(visible(derived(), "person")).toHaveLength(4 + 7);
   }, 900_000);
 
