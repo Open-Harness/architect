@@ -99,8 +99,8 @@ The rules every goal shares, so this brief stays short. Where they and this file
 Parked on 22 November 2026, by the conductor's word: Aaron narrowed the work to the Beta path (Goals 3, 5, 6 and 15)
 and the two long poles (Goals 4 and 9). It resumes by the conductor's word. Lead on Claude (claude-opus-5-5).
 
-- **Landed:** slice 1 (M3.01), the shape of a workflow: `design/decisions/M3-workflows.md`, merged into
-  `goal/workflows`. A workflow is a declaration in `blueprint/workflows/` and a handler in `src/workflows/`, with three
+- **Landed:** slice 1 (M3.01), the shape of a workflow: `design/decisions/M3-workflows.md`, landed in
+  `goal/workflows` by the pull request that carries this line (#472). A workflow is a declaration in `blueprint/workflows/` and a handler in `src/workflows/`, with three
   kinds of activity (`call`, `await`, `after`/`at`) on Effect's engine; every `call` carries its request key; every
   wait goes through Goal 9's `DurableTimers`.
 - **Open:** Ask #462 (Goal 11) wants M3.01 landed early into `goal/stage-1` (K38). Not started: on resume, cut

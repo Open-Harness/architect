@@ -119,8 +119,8 @@ slice 3; until it lands, journey 1's replay catches a body that isn't the same t
   `within` timer already won, wakes nothing (finding 3). So `deliver` may be called at least once, never needs a
   lock, and `within` is a timer that completes the same deferred with `None`: the first exit wins. The timer is set
   with the run's path as `owner` (`workflows/<workflow>/<execution>`) and the activity's key (with `/for`) as `name`;
-  when the event wins, the wake clears it with `DurableTimers.clear(owner, name)`, so a stepped world's `due` never stops at a dead timer. When the timer wins, its
-  wait row is deleted the same way.
+  when the event wins, the wake clears it with `DurableTimers.clear(owner, name)`, so a stepped world's `due` never
+  stops at a dead timer. When the timer wins, its wait row is deleted the same way.
 - **Who calls `deliver`.** The outbox (Goal 11's M5.04) for the app's own events, and the follower for chain events
   (`on:`, M5.03). Until the outbox lands, the host delivers right after a call's commit, which can lose a wake if the
   process dies between the commit and the delivery; that gap is the outbox's to close, and an open risk below. The
