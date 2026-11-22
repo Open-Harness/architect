@@ -38,6 +38,8 @@ const STEPS: ReadonlyArray<Want> = [
   { id: "cap", name: "cap", env: { GH_TOKEN: "${{ github.token }}", WORKFLOW_FILE: "test-worlds.yml" }, run: "node tools/release/world-cap.mjs" },
   { id: "plan", env: {}, run: /^mkdir -p "\$EVIDENCE\/private"\n\$ORTHO env up test --plan --run "\$RUN" --root examples\/plugged-in > "\$EVIDENCE\/plan\.json"\necho "prefix=\$\(jq -r \.prefix "\$EVIDENCE\/plan\.json"\)" >> "\$GITHUB_OUTPUT"$/ },
   { id: "up", env: CREDENTIALS, continues: true, run: '$ORTHO env up test --run "$RUN" --root examples/plugged-in' },
+  // The listing taken while the world is up, before the logbook: what `judge` compares with the plan (up made what the plan said). Scoped to the run by the judge, like the others.
+  { id: "during", env: CREDENTIALS, if: "steps.up.outcome == 'success'", run: SNAPSHOT("during") },
   // The logbook is stood up for this run and destroyed with its world (decided by the Goal 15 lead): a step of the run's own, under the run's prefix, after the world is up and before prove. Nothing long-lived.
   { id: "logbook", env: CREDENTIALS, continues: true, if: "steps.up.outcome == 'success'", run: /^\$ORTHO env up logbook --run "\$RUN" --root examples\/plugged-in( >> "\$GITHUB_OUTPUT")?$/ },
   { id: "prove", env: "prove", continues: true, if: "steps.up.outcome == 'success'", run: /^\$ORTHO prove --env test --root examples\/plugged-in( --only "[A-Za-z0-9 ]+")? 2>&1 \| tee "\$EVIDENCE\/prove\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/ },
