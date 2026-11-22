@@ -114,6 +114,6 @@ belongs to, and why it waits.
 
 ## From the factory (K10)
 
-- **A `cloudflare` sandbox choice** for `@orthograph/sandbox`, beside `local`, `ssh` and `e2b` (K39), if E2B falls short. Not spiked.
+- **A `cloudflare` sandbox choice** for `@orthograph/sandbox`, beside `local` and `e2b` (K39, K40), if E2B falls short. Not spiked.
 - **A person's feedback on a run** (HeroUI Pro's Rating and Emoji Reaction Button on a run's answer) as input to the bench (H2). Waits until the bench reports exist (M4.14).
 - **Experiments shared between projects**: a kept experiment's plugin published for another app to mount. Waits on plugins published from their own CI (M2.10).

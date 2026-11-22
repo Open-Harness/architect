@@ -57,7 +57,9 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
 11. **A general pattern.** A superagent is made for any job, by a person or by another agent, from any streams of
     events, for a short, medium or long goal. Aaron: "you or another agent can then create one of these for any sort
     of thing … a triage agent or a PR agent … It's a generalized pattern." His example, a triage agent: PostHog
-    issues come in, it works out whether each can be fixed, researches it, and opens a pull request.
+    issues come in, it works out whether each can be fixed, researches it, and opens a pull request. Narrowed by the
+    building agent on 22 November 2026: an agent proposes a new superagent and a person approves it (the proposals
+    call below).
 12. **Slack, not Feishu.** Aaron: "we're not going to use Faishu … but we are going to use Slack." The prototype's
     Feishu source becomes Slack.
 13. **Connections, not sources and outputs.** A superagent is an actor, and what it can do is tools. Aaron, on the
@@ -93,8 +95,11 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
 - **M5.07 is built first, here.** The generator and its conformance harness are built on `goal/superagent` (call 6),
   to `design/frame/adapters.md`'s design, and merged back with the rest.
 - **The spec, as things.** In `@orthograph/intake`: Source, Account (K40 fix 1), Trigger, Thread, Correlation, Eval,
-  Decision, PolicyVersion, the gate and the Source contract. In `@orthograph/tickets`: Mandate, Ticket, Subscription,
+  Decision, Policy (a thing with versions, one per superagent; a Mandate pins its revision), the gate and the Source
+  contract. K40 fix 2's example keys Policy by repository; here it is keyed by superagent, since one superagent can
+  watch several repositories and channels. In `@orthograph/tickets`: Mandate, Ticket, Subscription,
   Assignment, Input, Report, Attention and Outgoing message, and the ticket stage as a derived read. In
+  `@orthograph/superagent`, beside the Superagent: Proposal. In
   `@orthograph/prompts`: PromptSet. In `@orthograph/superagent`: the Superagent and its two kinds of agent. In the app:
   Settings and the pages. Each spec command is an operation on its thing; each spec event is a declared event.
 - **The gate is code, and the main agent judges what it lets through.** The gate reads the sender's account, the
@@ -110,9 +115,18 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
   steered when busy. The executor runs in the ticket's sandbox (K40 fix 4) with Pi's coding tools, the ticket's own
   operations, the connections' tools and the playbook's extra tools; `git push` and `gh` use a token the GitHub
   adapter lends for an hour (K40 fix 6).
+- **A main agent proposes; a person applies.** A main agent reads outside text (an error's body, an issue a listed
+  bot quoted), so a prompt injection reaches it. It routes, judges, replies and manages tickets itself, but a change
+  to configuration it calls (`superagent.create` and `update`, `policy.save` and `sync`, `account.list`,
+  `settings.save`, `prompts.save`) records a Proposal, shown on Overview as an Attention waiting for a person, and only a signed-in person
+  applies it in the portal (`proposal.approve`, a person's operation only). This narrows Aaron's call 11, that an agent
+  can create a superagent: it still can, through one click. It is reversible: letting a main agent apply a kind of
+  change itself is one role line per operation, if that ever proves safe. The Superagent's `main` field names its main
+  agent, and `Blueprint.role(Superagent, { agent: Superagent.fields.main })` admits it (K40 fix 3's `agent:` form).
 - **No effects queue of our own.** The prototype's effects become Orthograph's own stored work: a launch is a
   workflow, a delivery or a relay is `agent.tell` through the outbox, a reply goes through the outbox in order per
-  ticket and conversation, the eval pass and retries are `Timers` waits (Goal 9's). Every outward operation is
+  ticket and conversation (from 5 s, doubling to 300 s), the eval pass and retries (2 s, doubling to a minute) are
+  `Timers` waits (Goal 9's). Every outward operation is
   declared `replay: "safe"` with a natural key, so a call a kill cut off runs again as the same call and lands once.
 - **When a ticket ends is the playbook's.** `endsWhen` is `reported` (the executor reports it ready), `threadsClosed`
   (every thread it owns closed, the default) or `never` (a standing goal, such as a weekly sweep). A person's message on
@@ -181,7 +195,7 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
 - `design/milestones.md`, M4.18: "`@orthograph/workspaces` with the `localCopy` choice (K10 section 3):" → "`@orthograph/workspaces` on `@orthograph/sandbox`'s `local` provider (K10 section 3; K39: the sandbox holds the machine, the workspace adds `ortho`):"
 - `design/milestones.md`, M4.18's needs: "| M4.17, M4.25 | build |" → "| M4.17, M4.25, the sandbox (Goal 17) | build |"
 - `design/milestones.md`, M4.19: "The `e2b` choice: our template," → "The sandbox's `e2b` provider (`@orthograph/sandbox`, K39), for workspaces: our template,"
-- `design/later.md`: "for `@orthograph/workspaces`, beside `localCopy` and `e2b`" → "for `@orthograph/sandbox`, beside `local`, `ssh` and `e2b` (K39)"
+- `design/later.md`: "for `@orthograph/workspaces`, beside `localCopy` and `e2b`" → "for `@orthograph/sandbox`, beside `local` and `e2b` (K39, K40)"
 - `design/milestones.md`, beside the stages: "(M3.20, M4.17 to M4.25, K10)" → "(M3.20, M4.17 to M4.25, K10; M4.25 built by Goal 17, K39)"
 
 Dated records keep their words and gain a "Superseded by K39, 22 November 2026" note: `design/decisions/K10-factory.md`
