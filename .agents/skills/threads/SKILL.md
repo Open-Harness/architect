@@ -35,6 +35,11 @@ its agent can, but anything a message settles is written into a file or an issue
 - **Land without a catch-up run.** Merge a pull request when it has no conflicts and CI is green on the head that will
   merge; the target branch's own push run checks every merge, and a red one is fixed first (`design/decisions/CI-drafts.md`).
   Bring a branch up to date only for a real conflict or a change it needs.
+- **Never end a turn waiting without a watcher** (`design/decisions/CI-integration.md`, part A). Nothing wakes a
+  thread when CI finishes. After every push to a ready pull request, start one background command that ends with the
+  required checks, `gh pr checks <n> -R Open-Harness/orthograph --watch --required`, so you are woken; then fix what is
+  red, or answer and resolve every review thread and merge. Comment `@codex review` when you mark it ready, so Codex's
+  findings arrive while CI runs. A check you may not edit that fails twice goes to its owner as an Ask the same hour.
 - **Every build pull request needs a 🔍 pass,** as well as CI: a builder's pull request into a goal or milestone branch
   as much as a layer into `main`. The build pull requests are where runtime defects merge. The 🔍 pass is the gate;
   Codex is advisory (`AGENTS.md`): ask it with `@codex review` when it is available, answer what it posts before the

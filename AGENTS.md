@@ -56,7 +56,7 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 - **Merge your own pull requests when CI is green,** every review thread is resolved and a 🔍 reviewer that wrote none
   of it has passed it. The 🔍 pass is the gate. Codex is advisory (`design/decisions/CI-codex-advisory.md`): comment
   "@codex review" when it is available, and answer any finding it posts before the merge, but nobody waits on it; if
-  Codex is down or slow, the pull request merges without it. Push on until actually blocked. GitHub enforces CI and
+  Codex is down or slow, the pull request merges without it. Push on until actually blocked, and never end a turn waiting on CI without a background watcher that wakes you (`design/decisions/CI-integration.md`). GitHub enforces CI and
   threads, admins included (`design/decisions/CI-branch-protection.md`): `main`, `m1` and `goal/stage-1` require their
   CI jobs and every conversation resolved. `main` and `goal/stage-1` also require `builder-paths`: a `-build` pull
   request may not touch journeys, evals or checks. On a docs-only pull request `e2e-layer1` and `e2e-layer2`
