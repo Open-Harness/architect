@@ -13,6 +13,8 @@ export interface Write {
 export interface Worker {
   readonly url: string;
   readonly writes: Write[];
+  /** Resolves after one more round trip, so a request sent before the call is handled before it returns. */
+  readonly settle: () => Promise<void>;
   readonly close: () => Promise<void>;
 }
 
@@ -52,6 +54,9 @@ export const startWorker = async (): Promise<Worker> => {
   return {
     url: `http://127.0.0.1:${port}`,
     writes,
+    settle: async () => {
+      await fetch(`http://127.0.0.1:${port}/notes/list`, { method: "POST", body: "{}" }).then((r) => r.text());
+    },
     close: () =>
       new Promise<void>((resolve) => {
         server.close(() => resolve());

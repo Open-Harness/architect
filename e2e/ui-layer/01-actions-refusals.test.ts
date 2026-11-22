@@ -118,7 +118,8 @@ describe("01 M1.23: refusals and defects", () => {
       const { runForAction } = await loadActions();
       const controller = new AbortController();
       const running = rejection(runForAction(Effect.never, { signal: controller.signal }));
-      setTimeout(() => controller.abort(), 20);
+      await Promise.resolve();
+      controller.abort();
       const error = await running;
       expect(error).toBeInstanceOf(Error);
       expect((error as Partial<ActionRefusalShape>).actionContractError).not.toBe(true);
@@ -134,7 +135,7 @@ describe("01 M1.23: refusals and defects", () => {
       const stopped = await rejection(action.run(ADD, { caller: "tool", toolCallId: "toolu_10", signal: controller.signal }));
       expect(stopped).toBeInstanceOf(Error);
       // A request an interrupted call had already begun may still reach the Worker: let it land before the next check starts.
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await w.current.settle();
     });
   });
 
