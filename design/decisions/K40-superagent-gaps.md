@@ -63,9 +63,13 @@ events: { issueComment: Blueprint.event(IssueComment, {
 { kind: "service", mount: "github", actor: { id: "583231", name: "octocat", bot: false } }
 
 // the app: an outside account is a thing, and listing it is a move made in the portal
-export const Account = Blueprint.thing({ fields: { id: Blueprint.text(), login: Blueprint.text(), bot: Blueprint.bool() }, machine });
+export const Account = Blueprint.thing({
+  fields: { source: Source.fields.id, id: Blueprint.text(), login: Blueprint.text(), bot: Blueprint.bool() }, machine,
+});  // source: the connection it came through (its mount)
 // machine: seen → listed → unlisted
-export const listed = Blueprint.role(Account, { actor: Account.fields.id, while: [machine.states.listed] });
+export const listed = Blueprint.role(Account, {
+  actor: { mount: Account.fields.source, id: Account.fields.id }, while: [machine.states.listed],
+});
 // blueprint/things/ticket/verbs/accept.ts
 allowed: [listed.of("account")],
 ```
@@ -73,7 +77,9 @@ allowed: [listed.of("account")],
 - `actor` is optional on the `service` caller. It holds the sender's **stable id**, never a login, which can change,
   plus a name for people and `bot`.
 - `actor:` is a fourth declared role form beside `rule`, `who` and `holds` (K20). It admits a `service` caller whose
-  account is the instance's field, in the states `while` names. It never admits a person, an agent or the system.
+  mount and account id both match the instance's fields, in the states `while` names. Two connections can share an
+  outside id, so the id alone never matches. Because each superagent has its own sources, its listed accounts are its
+  own. It never admits a person, an agent or the system.
 - The span records `principal.actor` as the id only. The portal says "a GitHub account in the state listed".
 - An outside account is never linked to a person. The prototype refuses that mapping too (001, "Rejected concepts").
 
@@ -129,7 +135,7 @@ old context copied in. Pi Durable's unit is a conversation that can last indefin
 ```ts
 // @orthograph/agents: an agent is a thing; each one lives in its own actor, whose SQLite also holds its Pi harness
 export const Agent = Blueprint.thing({
-  fields: { id: Blueprint.id("agt"), kind: AgentName, about: Blueprint.text() },  // about: "ticket/T-42", or "gate"
+  fields: { id: Blueprint.id("agt"), kind: AgentName, about: Blueprint.text() },  // about: "ticket/T-42", or "superagent/sag_…" (its main agent)
   machine,                                    // idle ⇄ working, and stopped
   lives: "actor",
 });
@@ -155,8 +161,9 @@ export const itsAgent = Blueprint.role(Ticket, { agent: Ticket.fields.agent });
 - **Input arrives through the outbox** (M5-reach-out Q1, Q3): delivered at least once, and once only by the event's
   id, which is also Pi's `requestId`. An agent mid-task is steered (`whenBusy: "steer"`); an idle one starts a turn.
 - **The agent acts as itself.** The `agent` caller gains a form with no person, `{ kind: "agent", agent }`. A role
-  admits it through a new role form, `agent:`, which matches the caller's agent id to a field, as fix 1's `actor:`
-  matches an account. The role checks the id itself, as a service role checks its mount, so `Acting` and every rule
+  admits it through a new role form, `agent:`, which matches the caller's agent id to an agent-id field on any thing,
+  as fix 1's `actor:` matches an account. A thing may have several such fields (a Ticket's own agent, and a `main`
+  field for its superagent's main agent), and each makes a role the same way as `itsAgent`. The role checks the id itself, as a service role checks its mount, so `Acting` and every rule
   given it stay person-only: `acting(principal)` returns nothing for the new form, and `who` never matches an agent
   id. A handler that needs a person still refuses an agent acting as itself. The portal's chat keeps the form "an
   agent for a person" (M2-auth fork 2). `Via.agent` names both forms: the one with no person has `via: "agent"` too,
