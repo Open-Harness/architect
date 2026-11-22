@@ -136,6 +136,23 @@ Goal branches take the workflow when they next merge `goal/stage-1` in; until th
 cancel the one in flight, on every title or description edit, so it was not chosen. The rule instead: after changing a pull request's
 base, push a new commit (an empty one will do) before marking it ready. It is in the `threads` skill's rules.
 
+## Built, 22 November 2026 (B3)
+
+`tools/ci/affected.sh` runs in the `changes` job of a pull request that runs real suites (not docs-only, not fast), and the
+`affected_e2e` and `affected_prove` outputs gate the e2e jobs and `prove-tests`. A push always runs everything (B4). A gated job
+passes without its steps, as the docs fast path does; `check` accepts the skipped prove shards on the flag.
+
+It says "run everything" when it cannot tell: a changed path owned by no project or only by the root project (workflows, the lockfile,
+root config, `tools/ci/`, `design/` outside `design/docs`), a diff, graph or affected list it cannot read, or a failed `changes` job.
+
+**The graph is not enough, so two projects carry extra rules in the script.** Nx builds its graph from imports. `e2e` runs the whole
+product through the CLI and the examples, none of which it imports, so any affected project but `canon`, `docs` and the root affects it.
+`prove`'s tests read `examples/acme` and `examples/starter` and run the CLI (grep of `packages/prove`), so those three affect it too.
+What this saves on `main`: `prove-tests` on a change to another package's own files (for example `language-solidity`, `host-cloudflare`,
+`preset`, `lint`, `signup`, `work`), and all the e2e jobs on a `canon` or `design/docs` change that is not docs-only. The e2e jobs are one
+Nx project, so no finer cut than the project is possible; a package change still runs all of them. A wrong cut is caught by the push run on
+`main` and `goal/stage-1` (B4).
+
 ## Supersedes
 
 Part A only added rules. Part B, built on 22 November 2026, changes these live words:

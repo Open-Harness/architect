@@ -97,7 +97,7 @@ jobs:
   # request, as no branch requires it: no prove test reads design/ or a doc outside packages/ (CI-speed.md).
   prove-tests:
     needs: [ready, changes]
-    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_prove == 'false')) }}
     name: prove-tests (${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
@@ -132,7 +132,8 @@ jobs:
           sparse-checkout: tools/ci
       - run: tools/ci/gate.sh "check-static=$STATIC" "docs:prove-tests=$PROVE"
         env:
-          DOCS_ONLY: ${{ needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true' }}
+          # gate.sh's flag for "the skipped shards are expected": a docs-only pull request, or one prove's tests do not reach.
+          DOCS_ONLY: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_prove == 'false') }}
           STATIC: ${{ needs.check-static.result }}
           PROVE: ${{ needs.prove-tests.result }}
 
@@ -172,6 +173,9 @@ jobs:
     outputs:
       docs_only: ${{ steps.diff.outputs.docs_only }}
       fast: ${{ steps.diff.outputs.fast }}
+      # Which suites the change touches (tools/ci/affected.sh, CI-integration.md B3). True unless the step below ran and said false.
+      affected_e2e: ${{ steps.aff.outputs.affected_e2e || 'true' }}
+      affected_prove: ${{ steps.aff.outputs.affected_prove || 'true' }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -188,6 +192,23 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
+      # Only a pull request that runs real suites asks which ones. A push, a docs-only or a fast pull request needs no answer.
+      # Should any step here fail, `changes` fails and every job runs.
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        uses: pnpm/action-setup@v6.1.0
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        run: pnpm install --frozen-lockfile
+      - id: aff
+        if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        run: |
+          tools/ci/affected.sh "origin/$BASE_REF" HEAD e2e prove | tee -a "$GITHUB_OUTPUT"
+        env:
+          BASE_REF: ${{ github.base_ref }}
 
   # Gate 1 (L1.60): the seven checks of layer one, run as a user runs Orthograph (D2 #74).
   e2e-layer1:
@@ -199,10 +220,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      SKIP: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true') }}
+      SKIP: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false') }}
     steps:
       - if: env.SKIP == 'true'
-        run: echo "A docs-only pull request or a pull request into a goal branch, where this gate waits for the landing (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
+        run: echo "A docs-only pull request, one into a goal branch (this gate waits for the landing) or one no e2e project is affected by (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
       - if: env.SKIP != 'true'
         uses: actions/checkout@v7.0.1
       - if: env.SKIP != 'true'
@@ -232,10 +253,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      SKIP: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true') }}
+      SKIP: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false') }}
     steps:
       - if: env.SKIP == 'true'
-        run: echo "A docs-only pull request or a pull request into a goal branch, where this gate waits for the landing (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
+        run: echo "A docs-only pull request, one into a goal branch (this gate waits for the landing) or one no e2e project is affected by (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
       - if: env.SKIP != 'true'
         uses: actions/checkout@v7.0.1
         with:
@@ -267,7 +288,7 @@ jobs:
   # e2e/m8/expected-failing/, and fails on any other. Skipped on a docs-only pull request; no branch requires it.
   e2e-m8:
     needs: [ready, changes]
-    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true')) }}
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
