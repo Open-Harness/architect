@@ -8,8 +8,9 @@ for r in csv.reader(open(D+'/ci.tsv'),delimiter='\t'):
 jobs=[]
 for j in csv.reader(open(D+'/jobs.tsv'),delimiter='\t'):
     j+=['']*(8-len(j))
-    jobs.append(dict(run=j[0],name=j[1],concl=j[3],created=p(j[4]),start=p(j[5]),done=p(j[6])))
-def mins(j): return (j['done']-j['start']).total_seconds()/60 if j['start'] and j['done'] and j['done']>j['start'] else 0
+    jobs.append(dict(run=j[0],name=j[1],concl=j[3],created=p(j[4]),start=p(j[5]),done=p(j[6]),runner=j[7]))
+# Runner time only: a job that never got a runner used no capacity.
+def mins(j): return (j['done']-j['start']).total_seconds()/60 if j['runner'] and j['start'] and j['done'] and j['done']>j['start'] else 0
 tot=sum(mins(j) for j in jobs)
 print(f"jobs {len(jobs)}  job-minutes {tot:.0f}  ({tot/48:.0f}/hour avg over 48h)")
 by=C.defaultdict(float);cnt=C.Counter()
