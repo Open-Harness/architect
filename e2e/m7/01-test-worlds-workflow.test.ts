@@ -221,7 +221,7 @@ describe("01: the test-worlds workflow (M7.05), judged from its text", () => {
       ["no job guard at all", () => plant((d) => { delete job(d)["if"]; }), /`if` is undefined/],
       ["another workflow name", () => plant((d) => { d["name"] = "test-worlds"; }), /name is "test-worlds"/],
       ["another job name", () => plant((d) => { job(d)["name"] = "prove"; }), /job's name/],
-      ["a second job", () => plant((d) => { d.jobs["extra"] = { "runs-on": "ubuntu-latest", steps: [{ run: "echo hi" }] }; }), /the jobs/],
+      ["a second job", () => plant((d) => { (d.jobs as Record<string, unknown>)["extra"] = { "runs-on": "ubuntu-latest", steps: [{ run: "echo hi" }] }; }), /the jobs/],
       ["runs of one pull request that cancel each other midway", () => plant((d) => { d["concurrency"]["cancel-in-progress"] = true; }), /serialised/],
       ["one group for every pull request", () => plant((d) => { d["concurrency"].group = "test-worlds"; }), /serialised/],
       // ---- the id token and the credentials ----
