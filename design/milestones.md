@@ -424,9 +424,9 @@ actors; `ortho prove` names each adapter's stand-in.
 
 | id | what | needs | kind | done when | size |
 |---|---|---|---|---|---|
-| M5.01 | Views (where a view lives, how it is rebuilt), the general outbox (S22, S24), `step.await` on adapter events | none (K34) | decision | `decisions/M5-reach-out.md` written | S |
+| M5.01 ✅ | Views (where a view lives, how it is rebuilt), the general outbox (S22, S24), `step.await` on adapter events | none (K34) | decision | [`decisions/M5-reach-out.md`](decisions/M5-reach-out.md) written | S |
 | M5.02 | Journeys for payments and notifications | M5.01 | checks | they fail on empty handlers | M |
-| M5.03 | Events in, general: doors that verify signatures, `on:` for adapter events and our own as `system`, idempotency by event id | M5.01 | build | a webhook sent twice settles once | M |
+| M5.03 | Events in: signed doors, `on:` declarations, and delivery of inbound events through the default-store outbox, keyed by event id. Move-event delivery as `system` follows in M5.04 | M5.01; M2.03 for the build only | build | a webhook sent twice settles once | M |
 | M5.04 | The outbox for every move: events written with the state, delivered at least once; an undeliverable one is a defect with a redelivery command | M5.03 | build | killing a delivery mid-way delivers once after restart | M |
 | M5.05 | Views at runtime: `Blueprint.view`, kept from events, reads generated in the SDK, CLI and MCP | M5.04 | build | the allowances view lists actor-homed allowances | L |
 | M5.06 ∥ | The data map and the portal's data page | M5.05 | build | `generated/data/map.md` and the page list every store (kind, binding, migrations), every source (adapter, calls, stand-in) and every view | S |

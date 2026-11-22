@@ -5,11 +5,11 @@ milestone: "Goal 11: events in and out"
 release: "1.0"
 branch: goal/events
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: amp          # claude | codex | opencode | amp, set by the lead when it starts
+  model: gpt-6.2-sol     # the model id it runs on
+  since: 2026-11-22     # the date it started
 done_check: nx run e2e:events
 owns:
   - packages/orthograph/src/modules/events/
@@ -41,7 +41,7 @@ Branch `goal/events`, cut from `goal/stage-1`. Written 21 November 2026 by the �
 - **It is:** a way to declare what the app does when an event arrives, doors that check an event really came from its sender, and an outbox that keeps every event the app sends.
 - **It isn't:** Stripe, email or any real vendor (those adapters come later), or the views that rebuild data from events.
 - **Done when:** its tests pass: duplicates settle once, deliveries survive a crash, and events go out only when a call succeeds.
-- **Waits on:** nothing to start. Its last slice follows the workflows goal's first decision.
+- **Waits on:** nothing to start the checks. The signed-door build waits for Goal 3's service principal.
 - **Words used:** an outbox: a list of events kept with the data they describe, so they go out at least once. A door: the address an outside system calls.
 
 ## Read first
@@ -57,13 +57,15 @@ table. "After" names this goal's own earlier slices; "Waits on" names work anoth
 | # | Slice | Row | After | Waits on |
 |---|---|---|---|---|
 | 1 | Views, the outbox and waiting on outside events, decided | M5.01 | — | — |
-| 2 | Journeys for payments and notifications | M5.02 | 1 | — |
-| 3 | Events in: signed doors and `on:` | M5.03 | 1 | — |
+| 3 | Events in: signed doors and `on:` | M5.03 | 1 | Goal 3's service principal, M2.03 (#297), for the build |
 | 4 | The outbox for every move | M5.04 | 3 | — |
-| 5 | `emits:` on an operation | M3.16 | 1 | the shape of a workflow, M3.01 (Goal 8) |
+| 2 | Journeys for payments and notifications (later, Aaron 22 November) | M5.02 | 1 | after the beta |
+| 5 | `emits:` on an operation (later, Aaron 22 November) | M3.16 | 1 | after the beta; the shape of a workflow, M3.01 (Goal 8) |
 
-The wallets goal (stage 2) reads slice 3 for the follower's chain events, so land it before slice 4 if the two compete.
-Slice 2's payment journeys run against a stand-in adapter; the real Stripe adapter is off the 1.0 path.
+**Aaron's call, 22 November 2026:** un-park Goal 11 and run slices 1, 3, then 4. Slices 2 and 5 wait until after
+the beta. Land slice 3 early for the wallets goal (K38, #477) before starting slice 4. The signed-door checks include
+a GitHub-style webhook: HMAC-SHA256 over the raw body and an event id for idempotency. Aaron writes his own adapter;
+Goal 11 ships no GitHub adapter. Slice 2's later payment journeys use a stand-in adapter, not the real Stripe adapter.
 
 ## What it owns, and the seams it touches
 
@@ -97,4 +99,12 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+Running again on 22 November 2026. This replaces the earlier parking call from the same day.
+
+- **First:** land the decision on doors, the inbox, `on:`, the outbox, views and workflow events (#479).
+- **Next:** write slice 3's signed-door and `on:` checks, including the GitHub-style webhook. The door calls as
+  `service(<mount>)`; the build waits for Goal 3's M2.03 (#297) on `goal/stage-1`, with no stand-in. The host asks
+  are open with Goal 3 for the engine seams (#480) and Goal 4 for the follower's `Inbox.accept` seam (#481).
+- **Then:** land slice 3 early for Goal 12 (#477) and take slice 4, the outbox for every move.
+- **Later, Aaron 22 November:** slices 2 and 5 wait until after the beta. Slice 2's draft checks remain on
+  `goal-11/m5-02-check`; slice 5 still needs Goal 8's workflow decision (#462).
