@@ -24,7 +24,7 @@ const props: ShellProps = {
       { title: "Settings", folded: true, pages: [{ page: "account", path: "/account" }] },
     ],
   },
-  map: { layout: "sidebar", home: "home" },
+  map: { home: "home" },
   palette: [],
   caller: "person",
   pages: {},

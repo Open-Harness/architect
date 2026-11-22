@@ -26,10 +26,11 @@ Decided 22 November 2026, Goal 6 slice 5 (framework builder). Builds K31 section
    navigates. An operation row hands its entry to the app's `onOperation` and closes: the shell calls no operation itself, since calling
    is the generated actions' job (K29) and the shell takes no wire. A page row the current route has no parameters for is listed (the
    check lists every page the caller may open) and disabled, so it cannot be chosen into nothing.
-5. **What the caller sees is the rule the generated `palette.ts` carries**, written once more in `modules/palette` because the shell is
-   handed data and never imports a project's `generated/` (an anonymous caller passes only `anyone`; a person passes any non-empty
-   `allowed`; an operation also needs its page open, and is listed only on its own page). `e2e/portal-next/shell` and the projection's
-   check hold the two to one list.
+5. **What the caller sees is the rule the generated `palette.ts` carries**, written once more in `modules/palette`. Why not read the generated one: `palette.ts` is project code the shell never imports, and its
+   `visibleTo(caller)` does not narrow operations to the page shown, which the palette must (K31 section 4), so the shell would filter again anyway.
+   Handing the function in would add a prop for no saving. The copy is eight lines; `e2e/portal-next/shell` checks its lists against the projection's, and
+   `map/projection` checks the generated rule, so drift fails a check. The rule: an anonymous caller passes only `anyone`; a person passes any non-empty
+   `allowed`; an operation also needs its page open, and is listed only on its own page.
 6. **The layouts draw the same parts in their own places.** `sidebar`: the sidebar holds `header`, `switcher`, `nav`, `footer`; the main column
    has a bar with the breadcrumb, the palette's button and `actions`. `topNav`: the top bar holds `header`, `switcher`, `nav`, the button and
    `actions`; `footer` sits under the page. `none`: only the page, with no region, slot or breadcrumb, and no palette button; the keyboard

@@ -14,9 +14,8 @@ export type SlotName = "header" | "switcher" | "footer" | "actions";
 
 export type Slots = { readonly [name in SlotName]?: SlotFn };
 
-/** The parts of `generated/app/map.json` the shell reads. */
+/** The part of `generated/app/map.json` the shell reads: the home every breadcrumb starts from (the layout is `navigation.json`'s). */
 export interface MapData {
-  readonly layout: string;
   readonly home: string;
 }
 
