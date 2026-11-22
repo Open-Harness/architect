@@ -114,7 +114,8 @@ describe("07: the repository's own packages, released to a registry and installe
       writeFileSync(join(fresh, "empty-npmrc"), "");
       const installed = spawnSync("npm", ["install", `@orthograph/cli@${VERSION}`, `orthograph@${VERSION}`, "--registry", registry, "--ignore-scripts", "--no-audit", "--no-fund", "--cache", join(parent, "npm-cache"), "--userconfig", join(fresh, "empty-npmrc")], { cwd: fresh, encoding: "utf8", timeout: 800_000 });
       expect(installed.status, installed.stdout + installed.stderr).toBe(0);
-      const version = spawnSync(join(fresh, "node_modules/.bin/ortho"), ["--version"], { encoding: "utf8", cwd: fresh, timeout: 120_000 });
+      // Without colour: CI sets FORCE_COLOR, which wraps the words in ANSI codes; a script reading the version gets plain text.
+      const version = spawnSync(join(fresh, "node_modules/.bin/ortho"), ["--version"], { encoding: "utf8", cwd: fresh, timeout: 120_000, env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
       expect(version.stdout.trim(), version.stderr).toMatch(/^ortho v?9\.8\.7$/);
       // Every package of the release that the CLI needs resolved at that version, not at one of npmjs.org's.
       const tree = JSON.parse(spawnSync("npm", ["ls", "--all", "--json", "--userconfig", join(fresh, "empty-npmrc")], { cwd: fresh, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).stdout) as { dependencies?: Record<string, { version: string }> };
