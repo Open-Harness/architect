@@ -135,25 +135,28 @@ States, events, refusals, spans, usage and request counts at the stand-in; never
 
 ## Supersedes
 
-Live docs, rewritten in this change:
+Live docs, rewritten in this change (M4.16's `doneWhen` in `tasks.json` is the M4.16 line above, same words):
 
-- `design/milestones.md`, Gate M4 item 2: "evicting a run's Durable Object mid-turn resumes it with no second model call" → "evicting a run's Durable Object mid-turn, after its model step committed, resumes it with no second model call, and evicting it with a model reply in flight repeats only that one request".
-- `design/milestones.md`, M4.09's done-when: "evicting mid-turn resumes with no duplicate model call" → "evicting mid-turn, after the model's step committed, resumes with no duplicate model call; evicting with a model reply in flight repeats only that request".
-- `design/milestones.md`, M4.16's done-when: "evicting a chat's run mid-turn resumes it with no second model call" → "evicting a chat's run mid-turn, after the model's step committed, resumes it with no second model call".
-- `design/milestones.md`, M4.05: "`@orthograph/anthropic` and an OpenAI-compatible adapter" → "`@orthograph/anthropic` and `@orthograph/openai`, the OpenAI-compatible adapter".
-- `design/milestones.md`, M4.06: "The local stand-in model, `Stand.process` (S14)" → "… (S14): `@orthograph/stand-in-model`, llama.cpp's server and Qwen3 0.6B, pinned by checksum".
-- `design/goals/10-agents.md`, the card's "Why": "never loses its place or repeats a paid model call" → "never loses its place or pays twice for a model answer it already has".
-- `design/goals/10-agents.md`, the card's "When it's done": "watch it resume with no second model call" → "watch it resume without asking the model again for any answer it already had".
-- `design/goals/map.md`, Goal 10's row: "ready | `@orthograph/agents`, `@orthograph/anthropic`, the stand-in model" → "running (Claude) | `@orthograph/agents`, `@orthograph/anthropic`, `@orthograph/openai`, the stand-in model".
-- `design/packages.md`: "`@orthograph/agents` (M4)," → "`@orthograph/agents` (M4), with its model adapters `@orthograph/anthropic` and `@orthograph/openai` and the local stand-in `@orthograph/stand-in-model` (M4.05, M4.06),".
+- `design/milestones.md`, Gate M4 item 2: "evicting a run's Durable Object mid-turn resumes it with no second model" → "evicting a run's Durable Object mid-turn, after its model step committed, resumes it with no second model call, and evicting it with a model reply in flight repeats only that one request"
+- `design/milestones.md`, M4.09's done-when: "evicting mid-turn resumes with no duplicate model call" → "evicting mid-turn, after the model's step committed, resumes with no duplicate model call; evicting with a model reply in flight repeats only that request"
+- `design/milestones.md`, M4.16's done-when: "evicting a chat's run mid-turn resumes it with no second model call" → "evicting a chat's run mid-turn, after the model's step committed, resumes it with no second model call"
+- `design/milestones.md`, M4.05: "`@orthograph/anthropic` and an OpenAI-compatible adapter" → "`@orthograph/anthropic` and `@orthograph/openai`, the OpenAI-compatible adapter"
+- `design/milestones.md`, M4.06: "The local stand-in model, `Stand.process` (S14) |" → "The local stand-in model, `Stand.process` (S14): `@orthograph/stand-in-model`, llama.cpp's server and Qwen3 0.6B, pinned by checksum |"
+- `design/goals/10-agents.md`, the card's "Why": "never loses its place or repeats a paid model call" → "never loses its place or pays twice for a model answer it already has"
+- `design/goals/10-agents.md`, the card's "When it's done": "watch it resume with no second model call" → "watch it resume without asking the model again for any answer it already had"
+- `design/goals/map.md`, Goal 10's row: "| 1.0 | ready | `@orthograph/agents`, `@orthograph/anthropic`, the stand-in model |" → "| 1.0 | running (Claude) | `@orthograph/agents`, `@orthograph/anthropic`, `@orthograph/openai`, the stand-in model |"
+- `design/packages.md`: "`@orthograph/agents` (M4), `@orthograph/stripe`" → "`@orthograph/agents` (M4), with its model adapters `@orthograph/anthropic` and `@orthograph/openai` and the local stand-in `@orthograph/stand-in-model` (M4.05, M4.06), `@orthograph/stripe`"
+- `.agents/skills/kanban/data/lanes.json`, M4's gate: "mid-turn resumes it with no second model call; (3)" → "mid-turn, after its model step committed, resumes it with no second model call, and evicting it with a model reply in flight repeats only that one request; (3)"
+- `.agents/skills/kanban/data/tasks.json`, M4.09's `doneWhen`: ""evicting mid-turn resumes with no duplicate model call"" → ""evicting mid-turn, after the model's step committed, resumes with no duplicate model call; …""
 
-- `.agents/skills/kanban/data/lanes.json` (M4's gate) and `.agents/skills/kanban/data/tasks.json` (M4.09's and M4.16's `doneWhen`): the same three rewrites as `design/milestones.md` above.
+## Dated records
 
-Dated records, a "Superseded by M4-agents, 22 November 2026" note added beside the words:
+A "Superseded by M4-agents, 22 November 2026" note is added beside these words, which stay as written:
 
-- `decisions/H1-agent-harness.md` (H1.1, section 13 and the D2 #76 line), `decisions/H2-agent-runs-and-benchmarks.md` (every mention) and `design/decisions.md` (the H1 and H2 entries): "`@architect/agent`" → "`@orthograph/agents`".
-- `decisions/H1-agent-harness.md`, H1.3: "The agent runs *outside* any world (it is dev tooling), so its `Timers` is a real-clock layer" → "an agent in a world waits on the world's clock" (K23 had already moved the slice, as M4.26).
-- `decisions/H1-agent-harness.md`, H1.4: "a `commandcode` provider written with `createProvider`" → "`@orthograph/openai`, one OpenAI-compatible adapter for Command Code and the stand-in".
-
-Left as written: the older briefs and plan (`design/briefs/F4-portal-plan-and-state.md`, `design/briefs/codex-handoff.md`,
-`design/build-plan.md`) name `@architect/agent` as records of their day; this goal's own records carry the note above.
+`@architect/agent` (now `@orthograph/agents`) in `decisions/H1-agent-harness.md` (H1.1, section 13 and the D2 #76 line),
+`decisions/H2-agent-runs-and-benchmarks.md` (every mention) and `design/decisions.md` (the H1 and H2 entries); H1.3's
+"The agent runs *outside* any world … real-clock layer" (now: an agent in a world waits on the world's clock; K23 had
+already moved the slice, as M4.26); and H1.4's `commandcode` provider (now `@orthograph/openai`, one OpenAI-compatible
+adapter for Command Code and the stand-in). The older briefs and plan (`design/briefs/F4-portal-plan-and-state.md`,
+`design/briefs/codex-handoff.md`, `design/build-plan.md`) name `@architect/agent` as records of their day and are left
+as written.
