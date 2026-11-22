@@ -11,7 +11,11 @@ const rejectionOf = (cause: Cause.Cause<unknown>): Error => {
 
 /** Runs the Effect; a failure rejects as an `ActionRefusal` or a redacted plain error, an aborted signal interrupts it. */
 export const settle = <A, E>(effect: Effect.Effect<A, E>, ctx?: { readonly signal?: AbortSignal }): Promise<A> =>
-  Effect.runPromiseExit(effect, ctx?.signal === undefined ? undefined : { signal: ctx.signal }).then((exit) =>
+  Effect.runPromiseExit(
+    // A signal already aborted runs nothing: the effect is never entered.
+    Effect.suspend(() => (ctx?.signal?.aborted === true ? Effect.interrupt : effect)),
+    ctx?.signal === undefined ? undefined : { signal: ctx.signal },
+  ).then((exit) =>
     Exit.isSuccess(exit) ? exit.value : Promise.reject(rejectionOf(exit.cause)),
   );
 

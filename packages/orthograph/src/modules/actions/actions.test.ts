@@ -41,6 +41,23 @@ describe("actions", () => {
     expect(ran).toBe(2);
   });
 
+  it("a signal aborted before the call runs nothing, asks nobody and rejects as a plain error", async () => {
+    let ran = 0;
+    let asked = 0;
+    const controller = new AbortController();
+    controller.abort();
+    const approver = { ask: () => (asked++, Promise.resolve(true)) };
+    const action = Actions.defineAction(options(() => (ran++, Promise.resolve(1)), true), approver);
+    const error = await rejected(action.run({ n: 1 }, { caller: "x", signal: controller.signal }));
+    expect(error).toBeInstanceOf(Error);
+    expect(error).not.toBeInstanceOf(ActionRefusal);
+    expect(ran).toBe(0);
+    expect(asked).toBe(0);
+    let effectRan = 0;
+    await rejected(Actions.runForAction(Effect.sync(() => effectRan++), { signal: controller.signal }));
+    expect(effectRan).toBe(0);
+  });
+
   it("the registry lists each action with a JSON schema and refuses duplicates", () => {
     const action = Actions.defineAction(options(() => Promise.resolve(1)), { ask: () => Promise.resolve(true) });
     const registry = Actions.registry([action]);
