@@ -3313,7 +3313,7 @@
   "kind": "build",
   "lane": "M4",
   "needs": [],
-  "needsText": "Gate M2",
+  "needsText": "Gate M2, M5.03 and M5.07, or Goal 17's own build of them on its integration branch (K39)",
   "order": 108,
   "plain": "",
   "pr": null,
@@ -3324,7 +3324,7 @@
   "title": "The github adapter, built by Goal 17",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "The github adapter, @orthograph/github, built by Goal 17 (K39; K10 section 3): a GitHub App; calls typed from GitHub's OpenAPI document, branches.push, pulls.create, issues.comments.create, pulls.reviews.reply and reactions.create; signed webhook events issueComment, issues, pullRequest (its merged close among them), pullRequestReview, pullRequestReviewComment and checkRun; secrets declared by the adapter; its stand-in a bare local repository with a small pull-request record (second rung: Gitea)"
+  "what": "The github adapter, @orthograph/github, built by Goal 17 (K39; K10 section 3): a GitHub App, generated from GitHub's published API description (M5.07); the mount includes pulls.create, issues.createComment, issues.listComments, pulls.createReplyForReviewComment and reactions.createForIssueComment, and lend, a short-lived token for git push (K40 fix 6); signed webhook events issueComment, issues, pullRequest (its merged close among them), pullRequestReview, pullRequestReviewComment and checkRun, each keyed by its object (K40 fix 5); secrets declared by the adapter; its stand-in a bare local repository with a small pull-request record (second rung: Gitea)"
  },
  "M5-01": {
   "doneWhen": "decisions/M5-reach-out.md written",
@@ -3505,7 +3505,7 @@
   "title": "ortho new adapter --from-openapi and the conformance harness",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "ortho new adapter --from-openapi and the conformance harness"
+  "what": "ortho new adapter --from-openapi and the conformance harness, built first by Goal 17 on its integration branch (K39)"
  },
  "M5-08": {
   "doneWhen": "the payments journeys pass",
