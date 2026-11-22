@@ -3,7 +3,7 @@
 **Decided 22 November 2026 by Goal 8's lead**, under AGENTS.md, "Who decides". It is slice 1 of
 `design/goals/08-workflows.md` and row M3.01 of `design/milestones.md`. It starts from K5 seam 6 and K23, and rests
 on the spike `spikes/effect-workflow-workerd/README.md` (M3.03, #289), whose findings are cited as "finding n".
-Goals 11 (`emits:`, M3.16) and 13 (owners' signatures, ST3.06) build on it, so it lands early (K38).
+Goals 11 (`emits:`, M3.16) and 13 (owners' signatures, ST3.06) build on it, so it lands early (K38, on `main`).
 
 ## The problem, in plain words
 
@@ -44,6 +44,7 @@ export default Blueprint.workflow({
     seen:     Blueprint.activity.await(ProposalOpened, { within: "7 days" }),
     cooldown: Blueprint.activity.after("30 days"),
     link:     Blueprint.activity.call(revision.link),
+    withdraw: Blueprint.activity.call(revision.withdraw), // no proposal was opened in time: the revision goes back
   },
 });
 ```
@@ -55,7 +56,7 @@ const publish: WorkflowHandler<typeof Publish> = ({ revision }, { activities }) 
     const frozen = yield* activities.freeze({ revision });
     const opened = yield* activities.propose({ revision, digest: frozen.digest });
     const seen = yield* activities.seen({ match: { proposal: opened.proposal, digest: frozen.digest } });
-    if (Option.isNone(seen)) return yield* activities.link({ revision, proposal: undefined });
+    if (Option.isNone(seen)) return yield* activities.withdraw({ revision });
     yield* activities.cooldown;
     return yield* activities.link({ revision, proposal: opened.proposal });
   });
@@ -82,7 +83,8 @@ passes, never a string path.
 **The handler's body is replayed**, so it must be the same on every replay: it reads no `Clock`, no randomness and no
 store outside an activity. Anything that needs the time or a read does it inside an activity, whose result is stored.
 The spike's `settle` is the pattern (finding 4). The lint rule that bans raw sleeps gains `DurableClock.sleep` and
-`Clock` reads in `src/workflows/` (finding 5).
+`Clock` reads in `src/workflows/` (finding 5). `packages/lint` is Goal 3's, so that is an Ask to Goal 3, filed with
+slice 3; until it lands, journey 1's replay catches a body that isn't the same twice.
 
 ### 2. Replay and the request key
 
@@ -104,13 +106,21 @@ The spike's `settle` is the pattern (finding 4). The lint rule that bans raw sle
 
 - An `await` is a `DurableDeferred` named after the activity's key (with `/for` when it has one). Before parking, an
   activity registers a **wait**: the event's name, a digest of the canonical `match` fields, and the deferred's token.
+- **Where waits live.** Not in the run's own object, which nothing outside can search. The host module keeps one
+  Durable Object per event name, `WorkflowWaits`, whose table is keyed by the match digest and holds each waiting
+  run's workflow, execution id, activity key and token. `deliver` goes to the event's object and wakes every row with
+  that digest; a row is deleted once its deferred is completed. One object per event name is enough for 1.0; sharding
+  it by digest is a later change behind the same seam.
 - **One seam delivers events to waits**: `WorkflowEvents.deliver(entry)`, where `entry` is a journal entry (event
   name, fields, its request key). It completes the deferred of every wait whose match agrees.
 - **Catch-up.** Registering a wait also reads the journal for a matching entry written since the run started, so an
   event that landed before the run reached its `await` still wakes it. Either path completes the same deferred.
 - **Deduplication is the engine's.** A deferred keeps its first exit; a second delivery, or an event after the
   `within` timer already won, wakes nothing (finding 3). So `deliver` may be called at least once, never needs a
-  lock, and `within` is a timer that completes the same deferred with `None`: the first exit wins.
+  lock, and `within` is a timer that completes the same deferred with `None`: the first exit wins. The timer is set
+  with the run's id as `owner` and the activity's key (with `/for`) as `name`; when the event wins, the wake clears it
+  with `Timers.clear(owner, name)`, so a stepped world's `due` never stops at a dead timer. When the timer wins, its
+  wait row is deleted the same way.
 - **Who calls `deliver`.** The outbox (Goal 11's M5.04) for the app's own events, and the follower for chain events
   (`on:`, M5.03). Until the outbox lands, the host delivers right after a call's commit, which can lose a wake if the
   process dies between the commit and the delivery; that gap is the outbox's to close, and an open risk below. The
@@ -200,6 +210,8 @@ The journeys `e2e/workflows` lists, each red on empty handlers:
 - **The guard alarm is 60 real seconds**, so a stepped world's quiet-wait must poke parked runs.
 - **`@effect/platform-cloudflare` is experimental.** Pinned exactly; its table names are not a contract, so nothing
   of ours reads them except the journeys' probes.
+- **Measured on 4.1.3, decided on 4.1.4.** The spike ran on 4.1.3; M3.02's gates cover the bump, not the engine's
+  behaviour. Slice 2's journeys are the first run on 4.1.4.
 - **Untried:** child workflows, `Activity.race`, compensation, and a real Cloudflare deploy.
 
 ## Supersedes
@@ -208,5 +220,6 @@ The journeys `e2e/workflows` lists, each red on empty handlers:
   person's part is an operation they call; the workflow `await`s its event (M3-workflows section 1)"
 - design/decisions/K5-the-whole-shape.md: "{ match: { proposal: \"propose.proposal\", digest: \"freeze.digest\" } }"
   → "the handler passes `match` as values"
+- design/walkthrough/journey.md: the same two phrases, quoted from K5 → the same new words
 - spikes/effect-workflow-workerd/README.md: "The Effect and platform-cloudflare pins are 4.1.3, as M3.02 bumps them."
   → "4.1.4, as `effect` is on `goal/stage-1`"
