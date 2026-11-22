@@ -1,8 +1,11 @@
-import { Clock, Deferred, Duration, Effect, Layer, Option } from "effect";
+import { Clock, Context, Deferred, Duration, Effect, Layer, Option } from "effect";
 import { Busy } from "#modules/work/types.js";
-import { Timers, type Timer } from "./types.ts";
+import { DurableTimers, TimerWakes, Timers, type DurableTimer, type Timer, type Wake } from "./types.ts";
 
 const timerOf = (t: Timer): Timer => ({ id: t.id, at: t.at, owner: t.owner, name: t.name });
+const durableOf = (t: DurableTimer): DurableTimer => ({ ...timerOf(t), wake: t.wake });
+
+type Row = Timer & { readonly run: Effect.Effect<void>; readonly wake?: Wake };
 
 /**
  * Timers for code that runs on a device or in a plain process, with no world to drive its clock: `sleep` waits on the
@@ -17,17 +20,21 @@ export const TimersLive = Layer.succeed(Timers, Timers.of({
   pending: Effect.succeed([]),
 }));
 
-/** Timers kept in memory, fired by whoever drives the world's clock. A world's Durable Object keeps them in its table. */
-export const TimersMemory = Layer.effect(
-  Timers,
+/**
+ * Timers kept in memory, fired by whoever drives the world's clock: `Timers` and `DurableTimers` over one table, so a
+ * sleep and a durable timer due at one instant fire in the order they were set. A durable timer fires through the
+ * host's `TimerWakes`; with none provided, setting one is a defect. A world's Durable Object keeps the table (M8.07).
+ */
+export const TimersMemory: Layer.Layer<Timers | DurableTimers, never, Busy> = Layer.effectContext(
   Effect.gen(function* () {
     const busy = yield* Busy;
-    const table: Array<Timer & { readonly run: Effect.Effect<void> }> = [];
+    const wakes = yield* Effect.serviceOption(TimerWakes);
+    const table: Array<Row> = [];
     let next = 1;
-    const add = (at: number, owner: string, name: string, run: Effect.Effect<void>) =>
+    const add = (at: number, owner: string, name: string, run: Effect.Effect<void>, wake?: Wake) =>
       Effect.sync(() => {
         const id = next++;
-        table.push({ id, at, owner, name, run });
+        table.push(wake === undefined ? { id, at, owner, name, run } : { id, at, owner, name, run, wake });
         return id;
       });
     const remove = (id: number) => {
@@ -36,7 +43,23 @@ export const TimersMemory = Layer.effect(
       table.splice(pending, 1);
       return true;
     };
-    return Timers.of({
+    const durable = DurableTimers.of({
+      set: (at, owner, name, wake) => Effect.suspend(() => {
+        const pending = table.find((t) => t.wake !== undefined && t.owner === owner && t.name === name);
+        if (pending !== undefined) return Effect.succeed(pending.id);
+        if (Option.isNone(wakes)) return Effect.die(new Error(`no TimerWakes to fire ${owner} ${name}: provide the host's`));
+        const host = wakes.value;
+        return Effect.flatMap(Effect.sync(() => next), (id) =>
+          add(at, owner, name, busy.spawn(host.wake({ id, at, owner, name, wake })), wake));
+      }),
+      clear: (owner, name) => Effect.sync(() => {
+        const pending = table.find((t) => t.wake !== undefined && t.owner === owner && t.name === name);
+        return pending === undefined ? false : remove(pending.id);
+      }),
+      pending: Effect.sync(() =>
+        table.flatMap((t) => (t.wake === undefined ? [] : [durableOf({ ...t, wake: t.wake })])).sort((a, b) => a.at - b.at || a.id - b.id)),
+    });
+    const timers = Timers.of({
       at: (at, owner, name, work) => add(at, owner, name, busy.spawn(Effect.ignore(work))),
       sleep: (owner, span) =>
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
@@ -79,7 +102,17 @@ export const TimersMemory = Layer.effect(
           yield* Effect.forEach(hit, (t) => t.run, { discard: true });
           return hit.map(timerOf);
         }),
-      pending: Effect.sync(() => table.map(timerOf).sort((a, b) => a.at - b.at)),
+      pending: Effect.sync(() => table.map(timerOf).sort((a, b) => a.at - b.at || a.id - b.id)),
     });
+    return Context.make(Timers, timers).pipe(Context.add(DurableTimers, durable));
   }),
 );
+
+/** The host's `TimerWakes`, one handler per wake kind. A kind with no handler is a defect: nothing set it legally. */
+export const wakesByKind = (handlers: Readonly<Record<string, (timer: DurableTimer) => Effect.Effect<void>>>) =>
+  Layer.succeed(TimerWakes, TimerWakes.of({
+    wake: (timer) => {
+      const handler = Object.hasOwn(handlers, timer.wake.kind) ? handlers[timer.wake.kind] : undefined;
+      return handler === undefined ? Effect.die(new Error(`no wake handler for kind ${timer.wake.kind}`)) : handler(timer);
+    },
+  }));
