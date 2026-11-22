@@ -3,7 +3,7 @@
 
 Create an API key in an organisation. The key itself is shown once.
 
-**Who may call:** the owner of its organization.
+**Who may call:** the owner of its organization by device or session.
 
 **Budget:** p95 250ms.
 
@@ -30,7 +30,7 @@ Create an API key in an organisation. The key itself is shown once.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization; the handler never runs |
+| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization by device or session; the handler never runs |
 
 ## Worked examples
 

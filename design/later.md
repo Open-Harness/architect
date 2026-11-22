@@ -194,7 +194,7 @@ Each is a parked snag in `design/goals/03-snags.md`, with its trigger.
 Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three; the fixed shapes are in the addendum of `design/decisions/K18-monitoring-falls-out.md`.
 
 - **An anomaly and a verdict actually firing**: the rules are derived and listed, but check 39 judges only the burn alerts' firing. A check that makes a refusal-code spike fire its anomaly, and a failed journey fire its verdict.
-- **Nested step spans, the deepest wins**: an issue's step is the deepest failing step span; check 39 plants one level (`link.add.record`). A defect two steps down, and a call with no step span at all, are not judged.
+- **Nested declared steps, the deepest wins**: an issue's step is the deepest declared step span that errored with the failed attempt's own `error.tag` (an adapter's span is never chosen; a step that errored and was recovered is passed over when it carries a different tag; no such step is `-`, the operation itself; a call that ran out of tries is `commit`); check 39 plants one level (`link.add.record`). A defect two declared steps down, and the `-` and out-of-tries cases, are not judged.
 - **The constructor-name fallback for `error.tag`**: a thrown error with no `_tag` takes its constructor's name; check 39 plants only a tagged error whose class name differs from its tag.
 
 ## From M2-auth (Goal 3 lead, 21 November 2026)

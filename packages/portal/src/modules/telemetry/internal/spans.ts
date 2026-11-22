@@ -41,3 +41,23 @@ export const isAttempt = (kind: SpanKind) => kind === "attempt" || kind === "rea
  * own refusal table lists some of them, not all, so a name is allowed when the model declares it or it is one of these.
  */
 export const RUNTIME_REFUSALS: ReadonlyArray<string> = ["NotAllowed", "InvalidPayload", "IdempotencyConflict"];
+
+/** Per operation, its declared steps: the span's name to the step's key (`model.operations[op].steps`), read from the wire the way `kindsOf` is. */
+export type OperationSteps = Readonly<Record<string, Readonly<Record<string, string>>>>;
+
+export const stepsOf = (blueprint: BlueprintWire): OperationSteps =>
+  Object.fromEntries(Object.entries(blueprint.model.operations).map(([op, o]) => [op, Object.fromEntries(Object.entries(o.steps ?? {}).map(([key, step]) => [step.name, key]))]));
+
+/** The runtime's own span of the commit: kind `commit`, named `<operation>.commit` (handler `service.ts`). It is the step `commit`, though no blueprint declares it. */
+export const COMMIT = "commit";
+
+/**
+ * The declared step this span is of `operation`, or `undefined`: a span is a step when it carries a string `step.kind` and its name is one the operation's
+ * steps declare (or it is the runtime's commit). An adapter's own span (`sql.execute`) carries neither, so it is never a step, whatever it ended as.
+ */
+export const stepOf = (span: WindowSpan, operation: string, steps: OperationSteps): string | undefined => {
+  const kind = span.attrs["step.kind"];
+  if (typeof kind !== "string") return undefined;
+  if (kind === COMMIT && span.name === `${operation}.${COMMIT}`) return COMMIT;
+  return steps[operation]?.[span.name];
+};
