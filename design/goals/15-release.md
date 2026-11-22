@@ -109,9 +109,10 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 Started 22 November 2026 (Claude Code, claude-opus-5-5). The lead rewrites this section at every slice merge.
 
-- **Slice 1, the release pass (M7.13):** asked. `design/decisions/M7-release.md` lists eight credentials, each with
-  its scope, where it lives and its cost (all $0 new; Cloudflare's $5 a month is already paid). The batched ask went
-  to Aaron and the conductor on 22 November. Nothing that needs a credential runs until his yes for that one.
+- **Slice 1, the release pass (M7.13):** granted. Aaron said yes to all eight credentials on 22 November
+  (`design/decisions/M7-release.md`, #417). All $0 new; Cloudflare's $5 a month is already paid. Axiom's free plan
+  holds only 3 monitors, so monitors to the sink (slice 8) needs one more answer from him when it is ready to run.
+  He now makes each account and key himself, in the order the slices need them, straight into GitHub secrets.
 - **Slice 4, test worlds and signed verdicts (M7.05):** next. Its checks are written first; the build waits on
   Goal 3's deploy and destroy (M7.04) and on credentials 3 and 4. Once its check is green it lands early into
   `goal/stage-1` for Goal 16 (#444, K38).
