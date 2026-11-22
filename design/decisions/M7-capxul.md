@@ -168,8 +168,8 @@ changes two things. Aaron hears both in this goal's next report.
   Splitting lets the first feature land on four other goals' early slices, not on stage 3.
 - **"Adopted" is read as a Safe at its future address.** Board step 1 says the account is "adopted" from the key. That
   was written beside the ERC-7702 design, where the key's own address is the account; Aaron's later call the same day
-  is "ordinary deployed Safes for now". A Safe's address is known before it is deployed (the board, "Safe and
-  ERC-7702, side by side", element `e208`), so money can arrive there first, and the Safe is deployed on its first
+  is that personal accounts are ordinary deployed Safes (`design/foreman/test-drive-capxul.md:437`). A Safe's address is known before it is deployed (the board, "Safe and
+  ERC-7702, side by side", element `e208`, says so of a company's Safe; a one-owner Safe is made by the same factory), so money can arrive there first, and the Safe is deployed on its first
   pay-out, in the second feature. Using the key's own address instead was not chosen: the money would have to move
   once the Safe exists, and Aaron's call would be broken for the first feature.
 
