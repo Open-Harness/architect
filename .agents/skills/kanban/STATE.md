@@ -26,7 +26,7 @@ move with the account. The repository does, so everything needed is here or link
 
 Aaron's aim (21 November): in about 72 hours, be ready to rebuild Capxul from the ground up on Orthograph, in
 composable pieces (plugins) that another app (Plugged In, the link-in-bio app) also uses. So: parallelise wherever the
-code allows.
+code allows. Narrowed on 22 November: see "The lanes".
 
 ## The lanes
 
@@ -37,14 +37,14 @@ GitHub milestone (K32, K33); read those before this table, which is only the ind
 
 | Goal | Branch | Role now | Note |
 |---|---|---|---|
-| 🎯 3: stage 1 of Plugged In | `goal/stage-1` | **Beta path, the spine** | Staging fully green on 21 November (run 3: the story passed against the deployed Worker, then destroyed clean). Monitor (M1.49) merged; principals and agent keys (#297) next |
-| 🎯 5: the UI layer | `goal/ui-layer` | **Beta path** | Started 22 November; takes up Goal 6's theme |
+| 🎯 3: stage 1 of Plugged In | `goal/stage-1` | **Beta path, the spine** | Staging fully green on 21 November (run 3, https://github.com/Open-Harness/orthograph/actions/runs/44940466011: the story passed against the deployed Worker, then destroyed clean). Monitor (M1.49) merged; principals and agent keys (#297) next |
+| 🎯 5: the UI layer | `goal/ui-layer` | **Beta path** | Started 22 November; uses UI SDK's default tokens until Goal 6's theme lands (K38) |
 | 🎯 6: the new portal | `goal/portal` | **Beta path** | Started 22 November; lands the theme early (K38), then the map language (with K36's components), the shell, and the cutover off HeroUI |
 | 🎯 15: release and the cloud | `goal/release` | **Beta path** | Aaron granted all eight credentials of the release pass (M7.13) on 22 November; the goal asks him directly for each step he must do himself |
 | 🎯 4: on chain | `goal/on-chain` | **Long pole** | Stalled about a day; told to resume on 22 November. Lands M6.09 early for Goal 9 (#442) |
 | 🎯 9: time | `goal/time` | **Long pole** | Lands M8.09 early for Goal 4 (#443) |
-| 🎯 7: Safe, Hats and budgets | `goal/safe-hats` | Open | #294 has been red since 21 November; its done check passed earlier. Needs a lead to land it |
-| 🎯 8 workflows, 10 agents, 11 events, 12 wallets, 14 club, 16 Capxul | their `goal/<name>` branches | **Parked** after their current slice | Started 22 November; each brief's "Where it stands" says where it stopped |
+| 🎯 7: Safe, Hats and budgets | `goal/safe-hats` | Open | #294 is blocked, not merged, since 21 November; its done check passed earlier. Needs a lead to land it |
+| 🎯 8 workflows, 10 agents, 11 events, 12 wallets, 14 club, 16 Capxul | their `goal/<name>` branches | **Parking** after their current slice | Started 22 November; each will set `status: parked` and say in "Where it stands" where it stopped |
 | 🎯 13: the vault | `goal/vault` | Not started | Waits on Goal 4's M6.01, Goal 7's ST3.01 and Goal 8's M3.01 |
 
 Decisions of 21 to 22 November that every lead reads on `main`: K36 (composite components declare their wiring),
@@ -61,7 +61,7 @@ its retire, merge or keep list.
 - 🗺 The walkthrough board (Aaron's "1 board, 6 zones"): the pitch, the concept map, the tour, swap the example, UI,
   hard questions; each card tinted by `design/scope.md`. Built; zone 5 (UI) is being filled by the UI thread. Snapshot in
   `design/history/artifacts-2026-11-21/walkthrough-board.data.json` (open with `design/history/artifacts-2026-11-21/_whiteboard-shell.html`).
-- 📐 The UI thread: K29 (#272), K31 and Goal 6's brief (#285). Hands both goals to the conductor to start.
+- 📐 The UI thread: K29 (#272), K31 and Goal 6's brief (#285). Both goals started on 22 November.
 - 🧭 "What Orthograph is": done, on `main` (#185, K30, and the goal in `README.md`).
 - ✍ Time checks: done (#213 and its follow-up #274 merged).
 - Done and merged on 21 November: the scope map and K28 (#262), Foreman v0 (#187), the first spike (#215), time checks
@@ -105,8 +105,8 @@ thread's worktree stay until that thread's worktree is cleaned.
 
 ## Decision IDs
 
-Next free in `design/handoff.md`; reserved and in flight: K28 (releases, merged), K29 (UI layer, #272), K30 (the model and
-the map, merged), K31 (the app map, #285). K32 (goals coordinate themselves) and K34 (goals by needs, the goal map) are merged, and K33 (GitHub-native work, #301) is reserved; K35 (Goals 8 to 16 briefed) is on `main`; K36 (composite components declare their wiring) is on `main`; K37 is reserved for the canon thread, K38 (early landing) is on `main`; the next free K is K39. Slice IDs given out on 21 November: M1.51 (the npm preview, in `milestones.md`);
+Next free in `design/handoff.md`. On `main`: K28 (releases), K29 (UI layer), K30 (the model and
+the map), K31 (the app map), K32 (goals coordinate themselves), K33 (GitHub-native work) and K34 (goals by needs, the goal map); K35 (Goals 8 to 16 briefed) is on `main`; K36 (composite components declare their wiring) is on `main`; K37 is reserved for the canon thread, K38 (early landing) is on `main`; the next free K is K39. Slice IDs given out on 21 November: M1.51 (the npm preview, in `milestones.md`);
 ST1.25 (the web projection), ST1.26 (its checks), ST1.27 (retire the old portal client at cutover) and ST1.28 (check 15
 rewritten), held only in this file until #272 writes them into `milestones.md`.
 
