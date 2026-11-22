@@ -1,0 +1,227 @@
+{
+  "source": "origin/goal/stage-1 examples/plugged-in/generated/model/model.json",
+  "operations": {
+    "handle.claim": {
+      "kind": "operation",
+      "name": "handle.claim",
+      "thing": "handle",
+      "verb": "claim",
+      "identifier": "claim",
+      "file": "blueprint/things/handle/verbs/claim.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Claim a free name and make it the address of your public page, with its profile.",
+      "payload": {
+        "name": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "HandleName",
+          "ref": "handle.name",
+          "description": "A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page."
+        }
+      },
+      "answer": {
+        "handle": {
+          "value": {
+            "type": "id",
+            "prefix": "hdl"
+          },
+          "ref": "handle.id",
+          "description": "The handle's own id."
+        }
+      },
+      "move": {
+        "key": "claim",
+        "from": [],
+        "to": [
+          "claimed"
+        ],
+        "emits": "HandleClaimed"
+      },
+      "errors": [
+        "HandleTaken",
+        "HandleAlreadyOwned"
+      ],
+      "refusals": [
+        "HandleTaken",
+        "HandleAlreadyOwned",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "signed-in"
+        }
+      ],
+      "mints": "handle",
+      "steps": {
+        "load": {
+          "name": "handle.claim.load",
+          "type": "database"
+        },
+        "record": {
+          "name": "handle.claim.record",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "2c184f936278b420"
+    }
+  },
+  "refusals": {
+    "HandleTaken": "HN-001",
+    "HandleAlreadyOwned": "HN-002",
+    "NotAllowed": "AR-001",
+    "IdempotencyConflict": "AR-002"
+  },
+  "values": {
+    "HandleName": {
+      "type": "schema"
+    }
+  },
+  "things": {
+    "handle": {
+      "name": "handle",
+      "identifier": "Handle",
+      "code": "HN",
+      "description": "A public name that belongs to one person until they release it, and is the address of a public page.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "hdl"
+          },
+          "description": "The handle's own id."
+        },
+        "name": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "HandleName",
+          "description": "A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page."
+        },
+        "owner": {
+          "value": {
+            "type": "id",
+            "prefix": "per"
+          },
+          "description": "The person who holds the name."
+        }
+      },
+      "lives": "database",
+      "unique": {
+        "name": {
+          "while": [
+            "claimed"
+          ]
+        },
+        "owner": {
+          "while": [
+            "claimed"
+          ]
+        }
+      },
+      "machine": {
+        "states": [
+          "claimed",
+          "released"
+        ],
+        "moves": {
+          "claim": {
+            "from": [],
+            "to": [
+              "claimed"
+            ],
+            "emits": "HandleClaimed"
+          },
+          "release": {
+            "from": [
+              "claimed"
+            ],
+            "to": [
+              "released"
+            ],
+            "emits": "HandleReleased"
+          }
+        },
+        "notFrom": {
+          "error": "HandleNotClaimed",
+          "exit": 11,
+          "code": "HN-900"
+        }
+      },
+      "events": {
+        "HandleClaimed": {
+          "handle": {
+            "value": {
+              "type": "id",
+              "prefix": "hdl"
+            },
+            "ref": "handle.id",
+            "description": "The handle's own id."
+          },
+          "name": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "HandleName",
+            "ref": "handle.name",
+            "description": "A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page."
+          }
+        },
+        "HandleReleased": {
+          "handle": {
+            "value": {
+              "type": "id",
+              "prefix": "hdl"
+            },
+            "ref": "handle.id",
+            "description": "The handle's own id."
+          },
+          "name": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "HandleName",
+            "ref": "handle.name",
+            "description": "A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page."
+          }
+        }
+      },
+      "errors": {
+        "HandleTaken": {
+          "fields": {},
+          "exit": 10,
+          "code": "HN-001"
+        },
+        "HandleAlreadyOwned": {
+          "fields": {},
+          "exit": 12,
+          "code": "HN-002"
+        },
+        "HandleNotFound": {
+          "fields": {},
+          "exit": 13,
+          "code": "HN-003"
+        }
+      },
+      "roles": [
+        "handleOwner"
+      ],
+      "roleRules": {
+        "handleOwner": "(handle, caller) => handle.owner === caller.person"
+      },
+      "from": {
+        "kind": "app"
+      },
+      "hash": "946e824182d49eb9"
+    }
+  }
+}

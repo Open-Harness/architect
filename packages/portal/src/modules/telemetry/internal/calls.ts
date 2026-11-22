@@ -40,7 +40,7 @@ const callOf = (trace: string, operation: string, { spans: attempts, unresolved 
     durationMs,
     environment: ordered.map((s) => text(s.attrs["environment"])).find((e) => e !== undefined) ?? environment,
     overBudget: budget !== undefined && durationMs > budget,
-    journey, requestKey: null, roleHeld: null,
+    journey, requestKey: ordered.map((s) => text(s.attrs["request.key"])).find((k) => k !== undefined) ?? null, roleHeld: null,
   };
 };
 

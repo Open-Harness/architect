@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@orthograph/chain-evm": "workspace:*",
-    "effect": "4.1.1"
+    "effect": "4.1.4"
   },
   "peerDependencies": {
     "orthograph": "0.0.0",

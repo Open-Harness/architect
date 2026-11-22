@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "effect": "4.1.1",
+    "effect": "4.1.4",
     "jose": "6.2.15",
     "verdaccio": "6.11.1"
   },

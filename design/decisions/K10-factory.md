@@ -304,7 +304,7 @@ token lives in his keychain, read by name and never printed.
 **Slices.** M1.33 ∥ replaces each container with its process, and M1.31's "a container in CI" becomes a process
 everywhere. `spikes/workspace-e2b` now also checks that the process forms run in our template. Staging comes first
 in M7: `spikes/staging-pass` any time, then M7.01, M7.03 and M7.04 for staging alone after Gate M2. npm, Homebrew
-and the rest of M7 still wait on the stage 4 gate.
+and the rest of M7 still wait on the stage 4 gate (_Superseded by K28, 21 November 2026: npm's `latest` tag, Homebrew and the rest of M7 wait on the stage 4 gate; the preview under `next` is M1.51_).
 
 **Built (M1.33, 19 November):** the Collector, Verdaccio and the OIDC issuer are processes, owned by PID and swept by PID, and
 the Grafana viewer is gone; the calls and their evidence are in [`M1-processes.md`](M1-processes.md). Where the table above says a

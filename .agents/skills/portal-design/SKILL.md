@@ -1,6 +1,6 @@
 ---
 name: portal-design
-description: How to design Orthograph's portal and operator console as mockups built from real HeroUI Pro components, and the style Aaron accepts. Use it before drawing or changing any portal or console screen, when an agent sends requirements to turn into a user experience, when picking HeroUI Pro parts for a page, or when taking over the console-mock canvas from another session.
+description: How to design Orthograph's portal and operator console as mockups built from real components (today HeroUI Pro behind `portal-ui`; new screens build on UI SDK, K24), and the style Aaron accepts. Use it before drawing or changing any portal or console screen, when an agent sends requirements to turn into a user experience, when picking components for a page, or when taking over the console-mock canvas from another session.
 ---
 
 # Portal design
@@ -27,7 +27,8 @@ slop on 19 November 2026.
 2. **Look at real products.** Use the Mobbin tools (`search_screens`, `search_flows`) for the pattern you need. Linear
    is the reference for work: project page, issue page, inbox, board, settings. Note what each screen puts where, and
    why.
-3. **Audit the components.** Use what HeroUI (`@heroui/react`) and HeroUI Pro (`@heroui-pro/react/<part>`) already
+3. **Audit the components.** Today the portal uses HeroUI Pro behind `portal-ui`; new screens build on UI SDK and HeroUI
+   is phased out (K24). Use what `portal-ui` (HeroUI Pro under it for now) and UI SDK already
    have before drawing anything by hand. Open the part's types under `internal/portal-pro/node_modules` to see its
    real slots and props. The list under "Components" below is what has been checked so far.
 4. **Grill Aaron before drawing.** Information architecture and UX choices are his. Ask in the grill format in
@@ -54,7 +55,7 @@ slop on 19 November 2026.
 
 ### Framing
 
-- **Every block sits in a Widget** (`@heroui-pro/react/widget`): `Widget.Header` with a title and a one-line
+- **Every block sits in a Widget** (`portal-ui`'s `Widget`, HeroUI Pro's today, UI SDK's after K24): `Widget.Header` with a title and a one-line
   description, then `Widget.Content`. Never a hand-made card.
 - **KPIs go inside a Widget.** `KPIGroup` is itself a surface card, so it goes straight into the Widget with the
   `widget-kpis` class, not inside `Widget.Content`.
@@ -98,7 +99,7 @@ slop on 19 November 2026.
 
 Checked and in use: `Widget`, `KPI`, `KPIGroup`, `DataGrid`, `ItemCard`, `ItemCardGroup`, `ChatTool`, `ProgressCircle`,
 `Timeline`, `Segment`, `PromptInput`, `AppLayout`, `Sidebar`, `Navbar` from Pro; `Tabs`, `Chip`, `Button`, `Alert`,
-`Avatar`, `Switch`, `Label` from HeroUI.
+`Avatar`, `Switch`, `Label` from HeroUI today (phased out, K24).
 
 Checked, not yet used, and likely to earn a place: `Kanban` (the work board), `ChatListView`, `Resizable` (list beside
 detail), `EmptyState`, `ActionBar`, `Markdown`, `TextShimmer`, `ChainOfThought`, `CellSelect`, `CellSwitch`,

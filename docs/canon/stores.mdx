@@ -168,7 +168,7 @@ times:
 
 ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=165-172
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
-  attempt(payload, principal, key, number, callId).pipe(
+  attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
       !(e instanceof Conflict) ? Effect.fail(e)
       : number < ATTEMPTS ? loop(number + 1, callId)

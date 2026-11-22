@@ -1,0 +1,140 @@
+## 1 snapshot
+[
+ {
+  "ref": "c1",
+  "component": "handle-claim",
+  "actions": [
+   "setName",
+   "submit"
+  ],
+  "label": "Claim your name",
+  "name": ""
+ }
+]
+
+## 2 act, name is free
+{
+ "ok": true,
+ "steps": [
+  {
+   "step": 0,
+   "ref": "c1",
+   "changes": [
+    {
+     "component": "handle-claim",
+     "label": "Claim your name",
+     "key": "name",
+     "value": "firstpage"
+    }
+   ]
+  },
+  {
+   "step": 1,
+   "ref": "c1",
+   "result": "pending"
+  }
+ ],
+ "appeared": [],
+ "values": {}
+}
+
+## 2 call the world received
+[
+ {
+  "verb": "handle.claim",
+  "payload": {
+   "name": "firstpage"
+  },
+  "via": "agent"
+ }
+]
+
+## 3 call the world received from a person
+[
+ {
+  "verb": "handle.claim",
+  "payload": {
+   "name": "aaron"
+  },
+  "via": "mouse"
+ }
+]
+
+## 4 act, name is taken
+{
+ "ok": false,
+ "error": {
+  "step": 1,
+  "message": "submit on Claim your name (c1) failed: HandleTaken (HN-001)"
+ },
+ "steps": [
+  {
+   "step": 0,
+   "ref": "c1",
+   "changes": [
+    {
+     "component": "handle-claim",
+     "label": "Claim your name",
+     "key": "name",
+     "value": "taken"
+    }
+   ]
+  }
+ ],
+ "appeared": [],
+ "values": {}
+}
+
+## 4 snapshot after the refusal
+[
+ {
+  "ref": "c1",
+  "component": "handle-claim",
+  "actions": [
+   "setName",
+   "submit"
+  ],
+  "label": "Claim your name",
+  "name": "taken",
+  "error": "HandleTaken (HN-001)"
+ }
+]
+
+## 5 two with one name
+{
+ "step": 0,
+ "message": "\"Claim your name\" names 2 components: c1 Claim your name, c6 Claim your name. Use a ref."
+}
+
+## 6 unlisted action
+{
+ "step": 0,
+ "message": "handle-claim c1 takes no destroy now. It takes: setName, submit."
+}
+
+## 7 needs a person
+{
+ "step": 0,
+ "message": "Needs a person: \"Claims the name firstpage for you\". Ask them to make this change themselves."
+}
+
+## 9 the send rejects
+{
+ "step": 1,
+ "message": "submit on Claim your name (c1) failed: The call failed before it was answered."
+}
+
+## 9 the retry
+{
+ "ok": true,
+ "steps": [
+  {
+   "step": 0,
+   "ref": "c1",
+   "result": "pending"
+  }
+ ],
+ "appeared": [],
+ "values": {}
+}
+

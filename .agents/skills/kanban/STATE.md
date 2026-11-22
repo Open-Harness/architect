@@ -1,109 +1,121 @@
 # Where Orthograph stands
 
-Snapshot of 19 November 2026, 09:51 UTC, written by the conductor before a pause in Claude usage (back about 11:40
-UTC). The board's data in `data/` is from the same minute. If the live board (<https://claude.ai/artifact/4UH7mYegtpWM9rq4f1ZAJw>)
-is newer, it wins.
+The conductor's state, written so that a fresh session (on this account or another one) can pick up the work without
+the old conversations. Snapshot of 21 November 2026, 11:00 UTC, by the 🎛 conductor (first written 09:35). Written because the week's Claude
+usage was 71% spent and the work may move to another account. Sessions, Remote Control and claude.ai artifacts do not
+move with the account. The repository does, so everything needed is here or linked from here.
 
-## Read these first
+## Pick up from here
 
-- `AGENTS.md`: who decides, how work flows, the code's rules, Aaron's standing rules.
-- `design/handoff.md`: the conductor's handoff, with every line of work and its done-when.
-- `design/milestones.md`: M0 to M7, every slice. `design/decisions/K13-lock-down-first.md`: today's re-cut.
-- `design/ledger.md`: every known issue with its owning slice (summary at the end of this file).
+1. Open a session in a fresh worktree of `AaronAbuUsama/architect` from `main`. Read `AGENTS.md`, this file,
+   `design/scope.md` (what is built and what is left), `design/decisions/K28-releases.md` (the three releases), and
+   `design/handoff.md`.
+2. You are the 🎛 conductor (`.agents/skills/conductor/`, `.agents/skills/threads/`). List the open pull requests
+   (`gh pr list`) and compare them with "The lanes" below. A lane whose lead is gone is restarted from its brief, as
+   that lane's row says. Each lead keeps its own state in its goal's files on its branch, so read that first.
+3. Snapshots of the claude.ai pages (the walkthrough board, the scope page, the to-do page, the grills, and the big map of every goal and branch, `big-map.html`) are in
+   `design/history/artifacts-2026-11-21/`. Republish any you need on the new account. The repository's design files stay the source of
+   truth; the snapshots are pictures of them.
 
-## The direction (Aaron, 19 November, K13)
+## The releases (K28, Aaron, 21 November)
 
-Lock down what exists before anything new. Run the generator, build a blueprint, see it in the portal, and check that
-every output (SDK, CLI, MCP, portal, telemetry) carries things, fields, events, errors and steps properly. One example
-all the way through: a links app (a link-in-bio page), dogfooded. Approvals, actions, the agent's chat and what an
-agent may do are **off the critical path** (moved to M3, ids kept).
+- **Preview:** Gate M1 on `main`, and `@orthograph/*`, `orthograph` and the preset on npm under `next` (M1.51; Aaron
+  runs `npm publish`). Goal 3's branch lands on `main` mid-goal once Gate M1's slices are green.
+- **Beta** (stage 1, "workable"): Gate M2 and Goal 3's done check, staging included.
+- **1.0:** the beta, then stages 2 to 4 and the release slices.
 
-## The critical path to Gate M1, then M2 (workable)
+Aaron's aim (21 November): in about 72 hours, be ready to rebuild Capxul from the ground up on Orthograph, in
+composable pieces (plugins) that another app (Plugged In, the link-in-bio app) also uses. So: parallelise wherever the
+code allows.
 
-1. **In flight:**
-   - M1.35: one rule for what each caller sees, plus issued secrets. Critical.
-   - M1.36: telemetry carries the model.
-   - M1.38: the confirmation depth per chain.
-   - M1.33 and M1.34: merged on `m1`, CI pending.
-   - The canon's minimal pass (X-canon).
-2. **M1.40**: `examples/links`, declarations and empty handlers. It waits on the canon thread's links blueprint.
-3. **M1.41**: the loop through the real `ortho` binary, every output read for the basics. Checks first, written by a different agent.
-4. **M1.44** (the scaffold explains itself), **M1.45** (journey stubs per path, role and error) and **M1.46** (the runtime hands in what it read, and refuses what is missing), from K16, checks written first, with **M1.47** (one refusals table) and **M1.48** (the compiler refuses an event it can't fill) beside them; then **M1.43** (links' handlers) and **M1.42** (the basics in every output). M1.12, the SDK contract, merges after M1.35.
-5. **M1.13**: the portal as a viewer. M1.39 is the canon's chain page.
-6. **Gate M1 (M1.15)**, then the npm preview (X-npm).
-7. **M2**: principals and roles, every kind of caller, the identity plugin, organisations, `ortho new`, and **Gate M2: workable**.
+## The lanes
 
-`meta.json` (`critical.steps`) holds the same path with every task id.
+Every lane runs as a goal: one lead, one branch, one done check, merged by pull requests that pass CI, have every
+thread resolved and a 🔍 reviewer that wrote none of it. Leads merge `goal/stage-1` in at every slice start, never
+rebase, and never push to another lane's branch.
 
-## Threads now
+| Lane | Branch | Brief (read it word for word) | Done check | Where it stood |
+|---|---|---|---|---|
+| 🎯 Goal 3: stage 1 of Plugged In (the beta, critical path) | `goal/stage-1` | `design/goals/03-stage-1-hill-climbed.md` | `nx run e2e:stage1`, staging included | 7 of 7 journeys green and a required check. Merged today: M2.01 (people, roles, auth and organisations), S-27, the chains page (M1.39), the checks for S-33 and S-34 (#278). In flight: main merged in with the draft guards on its branch-only jobs (#277); the compiler fixes for S-33 and S-34, ready (#288); six reviewed drafts waiting for CI (#267, #280, #281, #290, #291, #292); staging up and destroy reworked on **Alchemy** (#282, `alchemy` 2.0.0-beta.87 pinned), whose first live staging run has the conductor's go after its 🔍; an Effect bump to 4.1.4 that Alchemy needs, landing on `main` first on its own (#295, `chore/effect-4.1.4`) |
+| 🎯 Goal 4: on chain, end to end (1.0) | `goal/on-chain` | `design/goals/04-on-chain.md` on its branch, and the lead's own skill and state (#284) | `nx run e2e:on-chain` in CI | Start-up, the chain decision, budgets journeys and the red done check merged. Open: the money decision (#287), the lead's state (#284), slice 3's checks (#283, failed review: no throwaway build has shown they can pass). Its seam slice waits for Goal 3's M2.05. It has read Goal 7's spike: nothing in its plan changes; the hat-wearer spender is a stage 3 call |
+| 🎯 Goal 5: the UI layer (generated pieces on UI SDK) | `goal/ui-layer`, from `goal/stage-1` | `design/goals/05-ui-layer.md` (in #272) | in the brief | Not started. K24 is on `main`; K29 (#272) is in CI. Start its lead when #272 is on `main` |
+| 🎯 Goal 7: Safe, Hats and a budgets module (stage 3, the base for Capxul) | `goal/safe-hats`, from `main` | `design/goals/07-safe-hats.md` | a 🔍 reviewer runs `spikes/safe-hats-module/run-all.sh` from a clean checkout, all green | **Done check passed** in the Foreman thread's 🔍 run (all eight steps, from a clean clone); #294's own verdict comment and the goal file's "Where it stands" still to follow. Run on Codex headless, steered by the Foreman thread; Codex is stopped. Lands by #294. Holds the hat budgets module, its fuzz, an Anvil run and a draft decision, `ST3-budgets.md` |
+| 🎯 Goal 6: the new portal (our components, the app map) | `goal/portal`, from `goal/stage-1` | `design/goals/06-portal.md` (in #285) | `nx run e2e:portal-next` | Not started. K31 (#285) goes ready after #272. Start its lead when #285 is on `main` |
 
-| Thread | Session | Branch / PR | State |
-|---|---|---|---|
-| 🎛 Conductor | `local_b6ebc731…` | `conductor/k13-lock-down` (#69), `conductor/board-skill` | Merging #69 once CI is green (🔍 review passed); this skill's PR next |
-| 🧭 M1 lead | `local_90551e2a-cfc9-414b-b00b-7934d33b56fd` | `m1` at `6419d4b7`; PR #64 | Builders on M1.35, M1.36, M1.38; M1.12 built on `m1-12-clients` (`cddd3e15`), merges after M1.35; the M1.38 builder waits on its evidence captures |
-| 📖 Canon, minimal pass | `local_bb023976-b3f5-4d53-8bfb-9ef8d4b6883d` | `canon-minimal` | Rewriting the canon around the links app for a package user; owes the M1 lead the links blueprint for M1.40 |
-| 📒 Ledger | `local_52beae9e…` | `claude/ledger-k7-k9`, #58 | Idle; #58 in review |
-| 🤖 Codex links (run by Aaron) | none | `links/stage-1`, #56 | Idle; `codex/links-staging` deploys to real staging with **no teardown step** |
-| 📐 Portal designer | `local_24ad5b8b…` | #66 merged | Done |
+How Goals 5 and 6 meet the others (agreed 21 November):
+- Goal 6 owns the Orthograph theme package (its first slice) and the app-map language. Goal 5 owns actions and
+  `@orthograph/web`, and uses UI SDK's default tokens until the theme lands. Neither edits the other's packages.
+- The app-map language is additive: new modules only in `orthograph` and the compiler, with byte-identical output for
+  any blueprint that declares no app or pages, and a check that proves it.
+- The new portal is a new package, `packages/portal-next`, reading the same data API. Every portal check runs against
+  both clients, and the new client's failures sit in `e2e/portal-next/expected-failing.txt`, a list that may only
+  shrink. When it is empty, the conductor and Goal 3's lead agree a freeze, and one cutover pull request into
+  `goal/stage-1` swaps the assets, deletes the old client and HeroUI, and needs Goal 3's lead's yes.
+- Goal 5's screens are part of Goal 3's done check. Its sign-in piece waits for the auth plugin (M2.05).
+
+## Other threads
+
+- 🧪 Durable workflows on Cloudflare (M3.03): **done, on `main`** (#289). Effect's workflows replay without redoing
+  finished steps, wait on events, ignore duplicate wake-ups, and a 30-day wait follows a test world's clock through the
+  world's timers. It answers stage 3's signature collection and the keeper.
+
+- 🗺 The walkthrough board (Aaron's "1 board, 6 zones"): the pitch, the concept map, the tour, swap the example, UI,
+  hard questions; each card tinted by `design/scope.md`. Built; zone 5 (UI) is being filled by the UI thread. Snapshot in
+  `design/history/artifacts-2026-11-21/walkthrough-board.data.json` (open with `design/history/artifacts-2026-11-21/_whiteboard-shell.html`).
+- 📐 The UI thread: K29 (#272), K31 and Goal 6's brief (#285). Hands both goals to the conductor to start.
+- 🧭 "What Orthograph is": done, on `main` (#185, K30, and the goal in `README.md`).
+- ✍ Time checks: done (#213 and its follow-up #274 merged).
+- Done and merged on 21 November: the scope map and K28 (#262), Foreman v0 (#187), the first spike (#215), time checks
+  (#213), K24 UI SDK (#217), this file (#286), CI-drafts (#293), the model guide (#185), the workflows spike (#289).
 
 ## Waiting on Aaron
 
-- Rotate the HeroUI token (X-heroui).
-- Entity or actor: did "clusters" mean Effect Cluster's entity in place of the actor? (question on X-canon)
-- The licence for every published package (portal-ui's builder chose MIT; the repo has none), and the npm publish after Gate M1 (X-npm).
-- Release credentials, each in writing (M7-13), and the staging token's scope (M7-01).
+- **CI capacity:** strict is off on `main` and drafts run no CI (CI-drafts, #293). Still his call: GitHub Pro (about $4 a
+  month), and an AWS spot runner built with Alchemy (about $2 to $3 a day; needs his written yes for a credential). The
+  conductor advised a day of batching first.
+- **24 unfinished branches** (never merged, 16 to 20 November) are listed in `design/history/artifacts-2026-11-21/big-map.html`;
+  they go only on his yes.
+- **Money in the blueprint** (Goal 4's grill, ledger THI-07): answered by the conductor under his authority, all A
+  (every amount names its asset, assets are tokens or ISO currencies, base units everywhere and formatted only at the
+  faces, unsigned unless a field opts in, built now in Goal 4's slice 3). If Aaron answers the grill himself before slice
+  3's builder starts, his answer wins.
 
-## Good work off the critical path (for a parallel agent)
+## CI capacity (21 November)
 
-None of this touches `m1` or `canon-minimal`. Each item ends in its own branch and PR from `main`.
+The repository is public, so GitHub's runners are free with unlimited minutes; the limit is 20 jobs at once on a free
+account, and each pull request runs about ten. Measured: about 800 job-minutes an hour across the lanes, and in one hour
+33 of 54 pull request runs were cancelled because a newer commit or a base merge replaced them.
 
-- **#56's teardown.** Write the step that destroys what `codex/links-staging` deploys, so nothing is left running (X-pr56). Stay under the $10 a day cap.
-- **The ledger's stale names.** Rows still use the names retired by K6 (FOR-01, FOR-02, CMD-01, KIT-01 and others). `design/naming.md` maps every name.
-- **X-jou13 and X-unowned.** Pick an owning slice for each, and record the call in `design/decisions/`.
-- **The M2 to M7 decision questions** on `M2-01`, `M3-01`, `M4-01`, `M5-01`, `M6-01` and `M7-01`. Draft their answers as decision records, grounded in the code. Don't build them.
-- **Rules for any of it:** follow `AGENTS.md`. No Docker. Pin versions exactly, at least three days old. Never print or commit a key. A builder never edits journeys or evals. Update the board as the skill says.
+- **Blacksmith does not fit.** It works only on GitHub organisations, not personal repositories, and its free 3,000
+  minutes a month would last about four hours at our rate; paid, it would be about $50 a day, over the $10 cap. Moving the
+  repository to the Open-Harness organisation (free plan) gains nothing on GitHub's own runners either: an organisation
+  on the free plan also gets 20 jobs at once.
+- **Done, for free (21 November):** `main` no longer requires up to date, and a draft runs no CI: a pull request is
+  tested locally, passes its 🔍 as a draft, then is marked ready and runs CI once, at most two ready per lane
+  (`design/decisions/CI-drafts.md`). Measured before: 37% of job-minutes went to cancelled runs.
+- **What helps, for a little money:** GitHub Pro on Aaron's account (about $4 a month) doubles it to 40 jobs at once.
+  An own runner on AWS spot, declared with Alchemy, would be about $2 to $3 a day.
 
-## The open issues ledger
-325 of 724 ledger items are open; 37 are marked high. The high ones, each with its owning slice:
+## Branches (cleaned 21 November)
 
-| Item | Owner | The issue (first sentence) |
-|---|---|---|
-| `FOR-01` | M1.14 | "Behaviour is the only freehand code" has an exception: an adapter's mapping blank is also hand-written, and M1.14 doesn't say whether it is a handler. |
-| `FOR-02` | M1.11, M2.05 | The project config file (`ortho.config.ts` after K6) still holds the project's name and sign-in choice and the compiler does not read it; both are meant to move into mounts, and the package map still says it also holds telemetry, which no longer lives there. |
-| `BLU-02` | M1.03 | Journeys live in two places: prove reads both `blueprint/journeys/` and the root `journeys/`, acme keeps its journeys at the root, while `ortho add journey` and the canon use `blueprint/journeys/`. |
-| `BLU-04` | M1.03 | The model leaves out journeys, starting worlds and role rules, so agents and projections cannot see them; the frame's "where today falls short" list repeats this with several other gaps that have their own slices. |
-| `LAH-01` | later | Noir on Aztec is parked in milestones' `Later` with no slice, while N1, `later.md` and the private-membership example still say it comes "after Gate 5", which no longer exists; its private-core spike is merged but framework work is "later". |
-| `LAH-03` | later | The addendum still says "Revoke is instant and private" and "nobody outside can see anything"; spike 3 refutes both as stated, and generated docs and client guarantees must not promise them. |
-| `LAH-45` | M6.01, after K7 | For our own contracts, how a declared operation maps to what runs on chain, and which contract functions clients may reach, is undecided. |
-| `PLU-01` | M1.06, M1.14, M5.03 | Plugins and mounts, adapters and calls out as steps, `Blueprint.kit`-style provenance, namespaces, collision checks, impact edges and wrappers are not built anywhere, and nothing calls out to another system or receives a webhook. |
-| `PLU-02` | M1.01 | The plugin descriptor decisions are still open: choices against settings, `Blueprint.need(x, { when })`, runtime entries per host, and how aliases, error-class names and schema-affecting choices behave. |
-| `PRJ-44` | M1.12, M6.01, M6.15 | The SDK has no contract for its caller, retries or refusals: a method takes only a payload. |
-| `ROL-02` | M2.07 | Two role models disagreed (`holds` and the code's rule); decided by K20: a role is a `rule`, or declared with `who` or `holds` in `orthograph` itself; the organizations plugin's owner and member are `holds` roles. |
-| `HAN-01` | M1.17 | Every handler is offered a raw `SqlClient`, so a handler can write to the database outside the commit that guards a store. |
-| `JOU-01` | M1.03 | Journeys are not in the model yet, so the generated app cannot show proof status live, its `<Scenario>` block was not built, and the spike server reads journey files as a stopgap. |
-| `JOU-02` | M2.08 | Journeys call the server over raw HTTP, so the SDK, CLI and MCP are never proved by a journey; the replay rule (the same evidence through each projection) is designed but not built. |
-| `PRF-01` | M1.04 | A verdict is keyed only by the blueprint's hash, not by the handler code or journeys it judged, and the logbook keeps one pass or fail per run rather than one per operation per journey, so an unchanged contract does not prove the same implementation ran. |
-| `PRF-05` | later (design/milestones.md:298) | Time (one clock per world, moves made by time, the keeper, the on-time eval, agent waits on the world clock) is parked in the milestones' Later list, so the keeper has no owner and journeys cannot step a month until it lands. |
-| `PRF-61` | M1.26 | Eval 6 requires every declared step on an answered call, in declared order, so a handler that takes a branch skipping a step on success fails it. |
-| `TRA-01` | later (design/later.md:10-11) | Deployed workers exporting straight to Axiom per environment, and Axiom datasets, monitors and dashboards made from declarations, are filed as the cloud pass, though the Axiom sink and `AxiomSource` already work and were checked live; no M7 slice names the deployed part. |
-| `STA-01` | M6.06 | The chain example says Anvil runs as a child process locally and in a container in CI, but the spike proved the container path locally on Docker; a child-process Anvil is a separate adapter nobody has decided to build. |
-| `STO-03` | M1.17 | Stores are specified but not built: a thing's home is still the closed `database` or `actor`, an environment binds one database, and there is no `blueprint/stores/`, no declared stores, no typed `stores:` bindings and no stores owned by a plugin. |
-| `STO-04` | M1.17 | What does a field's visibility mean in each store kind? Today it is only a comment, so a private field on a thing that lives on a chain is either refused by the compiler or silently public, and nothing decides which. |
-| `STO-05` | M1.17 | Where does a store kind's schema come from? The store port only reads and commits; the generator hard-codes the schema for D1 alone (every field `TEXT NOT NULL`), and an actor keeps the whole instance as one JSON value, so an open kind has to say how fields become storage and how that storage migrates. |
-| `VIE-01` | M5.05 | A list over things that live as actors is refused today; views kept from events (M5.05) are the way to list them, and may change F5's reason for keeping missions and runs as database rows. |
-| `SEC-02` | M2.04 | Today environment files name secrets by string and no handler can read one; secrets are meant to be declared by the plugin that needs them and read only as `Redacted` through its layer. |
-| `WOR-01` | M3.03 | Effect's Cloudflare Workflow engine is experimental and its replay after eviction (do finished activities get skipped?) is unproved; it is adopted behind a seam, with a hand-written Durable Object workflow as the fallback. |
-| `WOR-02` | M3.01 | M3.01 must decide the workflow shape (steps, `step.await` on an event, durable clocks), where it lives, and the Effect and platform-cloudflare pins. |
-| `WOR-03` | M5.10 | One owner per call: cross-actor and cross-store work is to run as a workflow rather than one call, and apps cannot declare workflows until M5.10. |
-| `ENV-01` | M7.01, M7.04 | Everything runs locally and no cloud destination is built; the real Cloudflare, npm, Homebrew, Axiom and real staging sign-in are the cloud pass (M7). |
-| `ENV-02` | M7.03 | The Alchemy stack (the infra projection) is not built: `generated/infra` holds only wrangler configs, Alchemy 2 `deploy` and `destroy` always need a Cloudflare account, and the `cloudflare` destination says it is not built. |
-| `AUT-01` | M2.03 | Principals in code are only `anonymous` or `person`; the `agent`, `service` and `system` principals are not built, so nothing can say an agent is spending for a person (the work app uses `owner.of("mission")` as a stand-in). |
-| `AUT-02` | M2.06 | The page behind `/device` (where a person approves a device code) and the OAuth consent page are unbuilt; D3 gave them to the portal, which F6 replaces with the generated app, and no slice names them, though K1 lists them as the auth plugin's own pages. |
-| `AGE-01` | M4.01 | The H1 second pass (the Durable Object host is Cloudflare's `PiHarness` from `agents` 0.33.0, skill tools named `activate_skill` and `read_skill_resource`, GenAI span names, sharper facts) sits only on the unmerged branch `claude/design-agent-harness-e6e8ff`; PR #9 was closed unmerged and no record says whether its edits to build-plan A3 to A6 were taken. |
-| `AGE-02` | M4.01 | Where a run lives is contradictory: H1 makes the Run thing `lives: actor`, F5 says runs and missions are database rows because lists need a database while each run's loop is its own Durable Object; M4.01 must settle it. |
-| `FAC-01` | M3.09 | M3.09 names four task kinds (`write:journey`, `build`, `fix`, `improve`), but the factory's own example lists more (specify, machine, validate, prove, promote) and F4 had its own seven; the canon must say which kinds exist. |
-| `FAC-02` | M3.14 (parked) | The portal's Work side (board, progress, burn-down, KPIs, the manager's conversation) is still a mock in `spikes/portal-fumadocs`; M3.14 still says "portal" although F6 replaces the portal with one generated app. |
-| `KIT-01` | M3.12 (parked) | The agent kit's package is `@orthograph/agent-kit` (M0-build, packages.md), but `generators.md` still mounts the kit from `@orthograph/agents`; PR #37 corrects it and is unmerged. |
-| `CMD-01` | M1.16 | The design says `ortho prove --unbuilt` but the slice builds `ortho prove --empty`; the two names disagree. |
+Every branch already inside `main` or a goal branch was deleted: 257 on GitHub (301 → 44, then two new branches since) and 321 on the Mac (481 → 160);
+their names and tips are recorded in the conductor's scratchpad only, and any can be restored from its merged pull
+request. What is left: the integration branches (`main`, `goal/stage-1`, `goal/on-chain`, `goal/safe-hats`, `m1`), the
+heads of open pull requests, and 24 never-merged branches kept for Aaron's yes. Local branches still checked out in a
+thread's worktree stay until that thread's worktree is cleaned.
 
-The full list, with evidence and status, is `design/ledger.md`; the rest are unmarked or lower severity.
+## Decision IDs
+
+Next free in `design/handoff.md`; reserved and in flight: K28 (releases, merged), K29 (UI layer, #272), K30 (the model and
+the map, merged), K31 (the app map, #285). K32 (goals coordinate themselves) and K34 (goals by needs, the goal map) are merged, and K33 (GitHub-native work, #301) is reserved; K35 (Goals 8 to 16 briefed) is on `main`; the next free K is K36. Slice IDs given out on 21 November: M1.51 (the npm preview, in `milestones.md`);
+ST1.25 (the web projection), ST1.26 (its checks), ST1.27 (retire the old portal client at cutover) and ST1.28 (check 15
+rewritten), held only in this file until #272 writes them into `milestones.md`.
+
+## Standing rules that bite
+
+All of `AGENTS.md`, and especially: Aaron listens rather than reads (plain words, no bare IDs, pull request links);
+never print, copy or write a key; never create a cloud credential without his written yes; at most $10 a day on cloud;
+destroy every world, stage and site you make, touching only Orthograph-prefixed resources; no local Docker; stop only
+your own processes, by PID; no attribution lines in commits, pull requests or comments; pins exact and at least three
+days old. Aaron's standing authority (21 November): "anything that's waiting on me, just go with the recommendations.
+You have authority." That covers design calls, not money, credentials, production or anything outward-facing.
