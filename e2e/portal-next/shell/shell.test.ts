@@ -27,10 +27,18 @@
 //    [data-shell=palette] > [data-shell=palette-item][data-kind=page|operation][data-name][data-page]   open on Meta+K or Control+K, closed on Escape
 //  A nav item is a link (an `a` with `href`) when its route's parameters are all in the current route's, resolved with them, else not a link and
 //    `aria-disabled=true`. The item's visible text and agent label is the page's name; a group's is its title; the current page's item has
-//    `aria-current=page`. A folded group starts closed (its items hidden) and opens on its trigger.
-//  The palette lists the pages the caller may open, and the operations it may call on the page it is on (K31 section 4), each by its name.
-//  On UI SDK: the navigation is a `navigation-menu`, inside a `scroll-area`; each group is a `collapsible` (trigger and panel); the palette is a
-//    `command` whose rows are `command-item`s. (`data-slot` values of those parts.)
+//    `aria-current=page`. A folded group starts closed (its items hidden) and opens on its trigger, even when the current page is one of its
+//    pages; a group that is not folded starts open.
+//  The palette lists the pages the caller may open, and the operations it may call on the page it is on (K31 section 4), each by its name, in
+//    `palette.json`'s order (the pages by name, then the operations by page, then name). It opens on Meta+K and on Control+K.
+//  On UI SDK, and as the bridge reads it (the shell's `agent` is the `createAgent` of `@ui-sdk/react/agent`, made once, over these components):
+//    the navigation is a `navigation-menu` labelled `Main`, inside a `scroll-area` labelled `Navigation` (give it an `aria-label`: an unnamed
+//    entry fails the every-entry-is-named rule of UI SDK's agent-ready checklist); each group is a `collapsible` labelled with its title (trigger
+//    and panel); the palette is a `command` labelled `Search` whose rows are `command-item`s, present only while it is open. The bridge lists
+//    the nav links and the palette rows as the `items` of the `navigation-menu` and `command` entries (each by its visible text), and a closed
+//    folded group's links only once it is open (`act` a `setOpen` on the group's `ref`, its title, opens it). Selecting through the bridge
+//    navigates: `act` a `press` on a link's ref, and `setValue` (or a `press`) of a row's name on `Search`, move the page as a click would.
+//    `query({ within })` lists what a component holds.
 import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -200,23 +208,67 @@ describe("the palette", () => {
 });
 
 describe("on UI SDK, and readable by an agent", () => {
-  it("draws the navigation and the palette with UI SDK's parts", async () => {
+  type Entry = { component: string; ref: string; label?: string; offPage?: boolean; items?: Array<{ value?: string; label?: string }> };
+  const snapshot = async (page: Page): Promise<Entry[]> => (await page.evaluate("globalThis.__shell.agent.snapshot().filter((e) => !e.offPage)")) as Entry[];
+  /** Every name the bridge gives: an entry's label, and the labels of its items (a link of the navigation, a row of the palette). */
+  const named = (entries: ReadonlyArray<Entry>): string[] => entries.flatMap((e) => [e.label ?? "", ...(e.items ?? []).map((i) => i.label ?? "")]);
+  const labelsIn = (value: unknown): string[] => (Array.isArray(value) ? value.flatMap(labelsIn) : typeof value === "object" && value !== null ? Object.entries(value).flatMap(([k, v]) => (k === "label" && typeof v === "string" ? [v] : labelsIn(v))) : []);
+  const act = async (page: Page, ...variants: ReadonlyArray<ReadonlyArray<object>>) => {
+    for (const steps of variants) {
+      const result = (await page.evaluate(`globalThis.__shell.agent.act({ steps: ${JSON.stringify(steps)} })`)) as { ok: boolean };
+      if (result.ok) return result;
+    }
+    throw new Error(`the bridge refused every form of the step: ${JSON.stringify(variants)}`);
+  };
+
+  it("draws the navigation and the palette with UI SDK's own components: the bridge lists them by their component names", async () => {
     const page = await fx.open("/@aaron");
-    expect(await page.locator('[data-shell="nav"][data-slot="navigation-menu"], [data-shell="nav"] [data-slot="navigation-menu"], [data-slot="navigation-menu"] [data-shell="nav"]').count()).toBeGreaterThan(0);
-    expect(await page.locator('[data-slot="scroll-area"] [data-shell="nav"], [data-shell="nav"] [data-slot="scroll-area"], [data-shell="nav"][data-slot="scroll-area"]').count()).toBeGreaterThan(0);
-    expect(await page.locator('[data-shell="nav-group"] [data-slot="collapsible-trigger"]').count()).toBe(3);
-    await page.keyboard.press("Control+K");
+    const entries = await snapshot(page);
+    expect(entries.filter((e) => e.component === "navigation-menu").map((e) => e.label)).toEqual(["Main"]);
+    expect(entries.filter((e) => e.component === "collapsible").map((e) => e.label)).toEqual(["Your page", "Settings", "Things"]);
+    expect(entries.filter((e) => e.component === "scroll-area").map((e) => e.label)).toEqual(["Navigation"]);
+    expect(entries.filter((e) => e.component === "command")).toEqual([]);
+    await page.keyboard.press("Meta+K");
     await page.waitForSelector('[data-shell="palette"]');
+    expect((await snapshot(page)).filter((e) => e.component === "command").map((e) => e.label)).toEqual(["Search"]);
     expect(await page.locator('[data-slot="command"] [data-slot="command-item"]').count()).toBe(await page.locator('[data-shell="palette-item"]').count());
   }, 300_000);
-  it("an agent's snapshot() lists the navigation and the palette by name, every entry named", async () => {
+
+  it("an agent finds the navigation by name: the groups, and the links of the open ones through the bridge's query", async () => {
     const page = await fx.open("/@aaron");
-    const labels = async () => (await page.evaluate("globalThis.__shell.agent.snapshot().filter((e) => !e.offPage).map((e) => e.label)")) as string[];
-    for (const name of ["Your page", "Settings", "Things", "profile", "edit", "account", "thing"]) expect(await labels(), name).toContain(name);
+    const before = named(await snapshot(page));
+    for (const name of ["Main", "Your page", "Settings", "Things", "profile", "edit", "thing"]) expect(before, name).toContain(name);
+    expect(before, "a closed folded group lists its links only once it is open").not.toContain("account");
+    expect(labelsIn(await page.evaluate('globalThis.__shell.agent.query({ within: "Main" })'))).toEqual(expect.arrayContaining(["profile", "edit", "thing"]));
+    await act(page, [{ ref: "Settings", action: "setOpen", args: [true] }]);
+    expect(await page.locator('[data-shell="nav-item"][data-page="account"]').first().isVisible()).toBe(true);
+    expect(named(await snapshot(page))).toContain("account");
+    expect(labelsIn(await page.evaluate('globalThis.__shell.agent.query({ within: "Main" })'))).toContain("account");
+  }, 300_000);
+
+  it("an agent moves through the navigation and the palette, and the page follows", async () => {
+    const page = await fx.open("/@aaron");
+    await act(page, [{ ref: "Settings", action: "setOpen", args: [true] }]);
+    await act(page, [{ ref: "account", action: "press" }]);
+    await page.waitForSelector('[data-fixture-page="account"]');
+    expect(path(page)).toBe("/account");
     await page.keyboard.press("Control+K");
     await page.waitForSelector('[data-shell="palette"]');
-    for (const name of ["handle.release", "link.add", "home"]) expect(await labels(), name).toContain(name);
-    const entries = (await page.evaluate("globalThis.__shell.agent.snapshot().filter((e) => !e.offPage && e.component !== 'more')")) as Array<{ component: string; ref: string; label?: string }>;
-    for (const e of entries) expect(e.label, `${e.component} ${e.ref} has no name`).toBeTruthy();
+    expect(named(await snapshot(page))).toEqual(expect.arrayContaining(["Search", "home", "profile"]));
+    await act(page, [{ ref: "Search", action: "setValue", args: ["home"] }], [{ ref: "Search", action: "press", args: ["home"] }]);
+    await page.waitForSelector('[data-fixture-page="home"]');
+    expect(path(page)).toBe("/");
+  }, 300_000);
+
+  it("lists the palette's operations by name on the page they belong to, and every entry and item has a name", async () => {
+    const page = await fx.open("/@aaron");
+    await page.keyboard.press("Control+K");
+    await page.waitForSelector('[data-shell="palette"]');
+    const entries = await snapshot(page);
+    for (const name of ["handle.release", "link.add", "home", "account"]) expect(named(entries), name).toContain(name);
+    for (const e of entries.filter((x) => x.component !== "more")) {
+      expect(e.label, `${e.component} ${e.ref} has no name`).toBeTruthy();
+      for (const item of e.items ?? []) expect(item.label, `an item of ${e.component} ${e.label ?? ""} has no name`).toBeTruthy();
+    }
   }, 300_000);
 });
