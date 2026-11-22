@@ -474,3 +474,5 @@ account until then.
 - design/decisions/K7-chain-languages.md (Q3, decided): "For a vote the intent is `(proposal, voter)`." → "The intent of a chain call is `(contract, by, nonce)` (M6-chain item 3)."
 - design/milestones.md (M2.17): "a `who` field that holds no person's id or email" → "a `who` field that holds no person's id, email or, on a chain store, account (M6-chain item 5)"
 - design/decisions/K7-chain-languages.md (Q5, decided item 1): "A rename of a published code is refused." → "A renamed error takes a new code and the old one is retired (M6-chain item 4)."
+- .agents/skills/goal-4/STATE.md (decisions in force): "The follower calls Goal 11's `Inbox.accept` per `Confirmed` and `Corrected`" → "The follower calls Goal 11's `Inbox.accept` per `Confirmed` and per `Corrected` with `wasConfirmed: true`, never for an unconfirmed take-back (M6-chain item 12)"
+- design/goals/04-on-chain.md (Part 2): "The follower's events go to Goal 11's `Inbox.accept`" → "The follower hands Goal 11's `Inbox.accept` only what it confirmed: `Confirmed`, and `Corrected` with `wasConfirmed: true` (M6-chain item 12)"

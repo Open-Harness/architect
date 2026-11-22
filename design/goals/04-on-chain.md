@@ -80,7 +80,8 @@ Rewritten by the lead at every merge into `goal/on-chain` (K32); `.agents/skills
   checks for slices 9 and 10, the relayer and the follower.
 - **Order changed (K38):** the relayer and the follower now come straight after slice 3, before slices 4 to 8, because
   Goal 9 needs M6.09 early (#442) and they need only `chain-evm` and Anvil. M6.09 lands early into `goal/stage-1`.
-  The follower's events go to Goal 11's `Inbox.accept` (#481).
+  The follower hands Goal 11's `Inbox.accept` only what it confirmed: `Confirmed`, and `Corrected` with
+  `wasConfirmed: true` (#481, M6-chain item 12).
 - **Waits on:** slice 1 waits for Goal 3's sign-in extraction (M2.05) on `goal/stage-1` (K28), not done on
   22 November. Snags S-01 to S-12 are open, each naming its slice.
 
