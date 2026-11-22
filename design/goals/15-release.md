@@ -5,11 +5,11 @@ milestone: "Goal 15: release and the cloud"
 release: "1.0"
 branch: goal/release
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-22    # the date it started
 done_check: nx run e2e:m7
 owns:
   - tools/release/
@@ -33,7 +33,7 @@ slices:
 Branch `goal/release`, cut from `goal/stage-1`. Written 21 November 2026 by the 🎼 conductor, from the goal map
 (`design/goals/map.md`, K34) and K35. Milestone `Goal 15: release and the cloud`, label `release:1.0` (K33).
 
-**To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 15. Read `AGENTS.md` and
+**To start it, in any harness** (Claude Code, Codex, OpenCode, Amp): "You lead Goal 15. Read `AGENTS.md` and
 `design/goals/15-release.md`, and run it." Nothing else is needed.
 
 ## The goal, in plain words
@@ -94,6 +94,9 @@ The rules every goal shares, so this brief stays short. Where they and this file
   requests in CI at once.
 - **Its needs.** A slice builds once what it needs has landed (K34, `design/goals/map.md`). A slice that needs another
   goal's work writes its checks first and waits for the build; it never builds a stand-in for the other goal.
+  A slice another goal needs lands early, once its check is green: a branch `goal/<name>-early-<slice>` cut at the
+  commit that ends it, merged into `goal/stage-1` by a merge commit, never squashed (K38). Ask for one by an Ask
+  issue in the owning goal's milestone.
 - **Asks.** Anything outside "What it owns" is an Ask issue in the owning goal's milestone, naming this goal and what
   done looks like (K32, K33). Read this goal's own open issues at every slice start.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 15: release and the cloud` and the label `release:1.0`;
@@ -104,4 +107,13 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+Started 22 November 2026 (Claude Code, claude-opus-5-5). The lead rewrites this section at every slice merge.
+
+- **Slice 1, the release pass (M7.13):** asked. `design/decisions/M7-release.md` lists eight credentials, each with
+  its scope, where it lives and its cost (all $0 new; Cloudflare's $5 a month is already paid). The batched ask went
+  to Aaron and the conductor on 22 November. Nothing that needs a credential runs until his yes for that one.
+- **Slice 4, test worlds and signed verdicts (M7.05):** next. Its checks are written first; the build waits on
+  Goal 3's deploy and destroy (M7.04) and on credentials 3 and 4. Once its check is green it lands early into
+  `goal/stage-1` for Goal 16 (#444, K38).
+- **The rest:** checks first for each slice while the answers come; no build against a real service yet.
+- `goal/release` was brought up to `goal/stage-1` by #455.
