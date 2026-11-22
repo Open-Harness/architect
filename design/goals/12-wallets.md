@@ -5,11 +5,11 @@ milestone: "Goal 12: wallets"
 release: "1.0"
 branch: goal/wallets
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-22    # the date it started
 done_check: nx run e2e:stage2
 owns:
   - packages/adapters-abi/
@@ -97,4 +97,6 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+Started 22 November 2026: `goal/stage-1` merged in. Slice 1 (adapters from an ABI, ST2.02) is next, and lands early
+into `goal/stage-1` for Goal 13 (K38). Slices 2 to 6 write their checks first and wait on Goals 4, 5 and 11. The lead
+rewrites this section at every slice merge.
