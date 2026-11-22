@@ -549,6 +549,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Chromium plus the system libraries it needs on this image, as `e2e-grid` has it (K19).
+      - run: pnpm --filter @orthograph/e2e exec playwright install --with-deps chromium
       - run: pnpm nx run e2e:portal-next --outputStyle=static
 
   # Goal 3's grid runner (`e2e/grid/README.md`): its unit tests, then `ortho prove` and every switched-on cell, with the ratchet of
