@@ -84,6 +84,8 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
             trace: listed.trace, parent: listed.parent, mayCall: true, journal: [], tools: true,
           };
           calls.push(record);
+          // The answer later steps read as `s.last`, as an operation's is: `{ tools }`, not the step before's.
+          if (listed.status === 200) env["last"] = listed.body;
           return { record, missing: [] as ReadonlyArray<string> };
         }
         const operation = nameOfOperation(project, call.operation) ?? "an undeclared operation";

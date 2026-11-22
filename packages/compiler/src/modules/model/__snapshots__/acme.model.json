@@ -6007,6 +6007,126 @@
       ]
     },
     {
+      "id": "verdict:a key and a session are the same person:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "a key and a session are the same person",
+        "severity": "page",
+        "owner": "journeys/a-key-and-a-session-are-the-same-person.ts"
+      }
+    },
+    {
+      "id": "verdict:a key and a session are the same person:production",
+      "kind": "verdict",
+      "labels": {
+        "environment": "production",
+        "journey": "a key and a session are the same person",
+        "severity": "page",
+        "owner": "journeys/a-key-and-a-session-are-the-same-person.ts"
+      }
+    },
+    {
+      "id": "verdict:a key and a session are the same person:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "a key and a session are the same person",
+        "severity": "page",
+        "owner": "journeys/a-key-and-a-session-are-the-same-person.ts"
+      }
+    },
+    {
+      "id": "verdict:a key and a session are the same person:test",
+      "kind": "verdict",
+      "labels": {
+        "environment": "test",
+        "journey": "a key and a session are the same person",
+        "severity": "page",
+        "owner": "journeys/a-key-and-a-session-are-the-same-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent cannot consent for a person:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "an agent cannot consent for a person",
+        "severity": "page",
+        "owner": "journeys/an-agent-cannot-consent-for-a-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent cannot consent for a person:production",
+      "kind": "verdict",
+      "labels": {
+        "environment": "production",
+        "journey": "an agent cannot consent for a person",
+        "severity": "page",
+        "owner": "journeys/an-agent-cannot-consent-for-a-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent cannot consent for a person:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "an agent cannot consent for a person",
+        "severity": "page",
+        "owner": "journeys/an-agent-cannot-consent-for-a-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent cannot consent for a person:test",
+      "kind": "verdict",
+      "labels": {
+        "environment": "test",
+        "journey": "an agent cannot consent for a person",
+        "severity": "page",
+        "owner": "journeys/an-agent-cannot-consent-for-a-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent passes the owner rule:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "an agent passes the owner rule",
+        "severity": "page",
+        "owner": "journeys/an-agent-passes-the-owner-rule.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent passes the owner rule:production",
+      "kind": "verdict",
+      "labels": {
+        "environment": "production",
+        "journey": "an agent passes the owner rule",
+        "severity": "page",
+        "owner": "journeys/an-agent-passes-the-owner-rule.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent passes the owner rule:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "an agent passes the owner rule",
+        "severity": "page",
+        "owner": "journeys/an-agent-passes-the-owner-rule.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent passes the owner rule:test",
+      "kind": "verdict",
+      "labels": {
+        "environment": "test",
+        "journey": "an agent passes the owner rule",
+        "severity": "page",
+        "owner": "journeys/an-agent-passes-the-owner-rule.ts"
+      }
+    },
+    {
       "id": "verdict:an invitation is used once:local",
       "kind": "verdict",
       "labels": {
@@ -6444,6 +6564,46 @@
         "journey": "spend within an allowance",
         "severity": "page",
         "owner": "journeys/spend-within-allowance.ts"
+      }
+    },
+    {
+      "id": "verdict:the system is nobody signed in:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "the system is nobody signed in",
+        "severity": "page",
+        "owner": "journeys/the-system-is-nobody-signed-in.ts"
+      }
+    },
+    {
+      "id": "verdict:the system is nobody signed in:production",
+      "kind": "verdict",
+      "labels": {
+        "environment": "production",
+        "journey": "the system is nobody signed in",
+        "severity": "page",
+        "owner": "journeys/the-system-is-nobody-signed-in.ts"
+      }
+    },
+    {
+      "id": "verdict:the system is nobody signed in:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "the system is nobody signed in",
+        "severity": "page",
+        "owner": "journeys/the-system-is-nobody-signed-in.ts"
+      }
+    },
+    {
+      "id": "verdict:the system is nobody signed in:test",
+      "kind": "verdict",
+      "labels": {
+        "environment": "test",
+        "journey": "the system is nobody signed in",
+        "severity": "page",
+        "owner": "journeys/the-system-is-nobody-signed-in.ts"
       }
     }
   ],
