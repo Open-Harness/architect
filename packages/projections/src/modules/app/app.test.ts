@@ -77,4 +77,29 @@ describe("app", () => {
     expect(palette.visibleTo("anonymous").map((e) => e.name)).toEqual(["home"]);
     expect(palette.visibleTo("person").map((e) => e.name)).toEqual(["home", "thing", "allowance.grant"]);
   });
+
+  it("given the roles a caller holds, palette.ts lists a role-only entry only when they hold that role", async () => {
+    const roleOnly = { ...declared, operations: { ...declared.operations, "allowance.grant": { ...declared.operations["allowance.grant"]!, allowed: [{ kind: "role", role: "allowance.owner" }] } } } as unknown as Model;
+    const dir = mkdtempSync(join(tmpdir(), "app-palette-"));
+    const file = join(dir, "palette.ts");
+    writeFileSync(file, paletteModule(paletteOf(viewOf(roleOnly, "acme"), roleOnly)));
+    const palette = (await import(pathToFileURL(file).href)) as { readonly visibleTo: (caller: "anonymous" | "person", roles?: ReadonlyArray<string>) => ReadonlyArray<{ readonly name: string }> };
+    rmSync(dir, { recursive: true, force: true });
+    const names = (roles?: ReadonlyArray<string>) => palette.visibleTo("person", roles).map((e) => e.name);
+    expect(names()).toContain("allowance.grant");
+    expect(names([])).not.toContain("allowance.grant");
+    expect(names(["allowance.owner"])).toContain("allowance.grant");
+  });
+
+  it("a thing named home does not make two home pages: the derived home steps aside, and every page name and link key is unique", () => {
+    const withHome = { ...model, things: { home: model.things[Object.keys(model.things)[0]!]!, a: model.things[Object.keys(model.things)[0]!]! }, operations: {} } as unknown as Model;
+    const view = viewOf(withHome, "x");
+    const names = view.pages.map((p) => p.name);
+    expect(new Set(names).size).toBe(names.length);
+    expect(view.home).toBe("home-page");
+    expect(view.pages.find((p) => p.name === "home")).toMatchObject({ path: "/things/home", parent: "home-page" });
+    expect(view.pages.find((p) => p.name === "home-page")).toMatchObject({ path: "/" });
+    const keys = linksModule(view).split("\n").filter((l) => l.startsWith("  ")).map((l) => l.trim().split(":")[0]);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
 });

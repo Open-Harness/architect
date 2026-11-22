@@ -25,7 +25,13 @@ the slice 2 checks chose (`e2e/portal-next/map/projection.test.ts`). `packages/p
    own `allowed`. `palette.ts` holds the same entries as data and `visibleTo(caller)`, which runs wherever the shell or an agent
    needs it: an anonymous caller passes only `anyone`; a person passes `anyone`, `signed-in` or any role (a role is decided on an
    instance, so it is not ruled out); an operation is visible when its page is and its own `allowed` passes. A page that allows
-   nobody (`allowed: []`) is visible to nobody.
+   nobody (`allowed: []`) is visible to nobody. **The rule, so the shell's own copy (`MAP-shell` item 5) agrees:** an entry passes
+   when any of its `allowed` passes; `anyone` passes for every caller; `signed-in` passes for a person; a `role` or `role-of`
+   (by its role's name, `link.linkOwner`) is decided on an instance, so `visibleTo("person")` with no roles does not rule it
+   out (the slice 2 check requires it), and `visibleTo("person", roles)` passes it only when `roles` holds that name. A caller
+   that knows its roles passes them, and then the palette lists only what they may open.
+9. **The derived names never collide.** The derived home is `home` unless a thing has that name; then `home-page`, then
+   `home-page-page`, and so on, so no two pages share a name, no page is its own parent and `links.ts` has one key per page.
 6. **`links.ts`** is `export const links = { <page>: (params) => "/" + encodeURIComponent(params.x) ... } as const`, a parameter
    always `string`, a page's key its name (quoted when it is not an identifier). A page not declared, a wrong parameter name and a
    missing one fail `tsc`, so `ortho check`, in the file that wrote the call. Fixed parts are written as JSON strings, so no
