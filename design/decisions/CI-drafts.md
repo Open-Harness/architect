@@ -32,8 +32,8 @@ up to date, so every merge to `main` made every open pull request into `main` ru
 Goal branches carry their own `ci.yml`. Each lead adds the same guard to its branch's extra jobs when it next merges
 `main` in.
 
-Left for later: running only the e2e suites a change touches (an `nx affected` gate in `changes`), and a runner of our
-own. GitHub's merge queue would batch merges, but it needs the repository in an organisation.
+Left for later: running only the e2e suites a change touches (an `nx affected` gate in `changes`; superseded by
+CI-integration B3, 22 November 2026), and a runner of our own. GitHub's merge queue would batch merges, but it needs the repository in an organisation.
 
 ## Supersedes
 

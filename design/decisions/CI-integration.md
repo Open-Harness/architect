@@ -122,9 +122,23 @@ B1 and B2 together take about 27% off with no new tooling. The cost: until a goa
 Part A is wording in `AGENTS.md` and the `threads` skill. Part B is workflow conditions and, for B1, no change to
 branch protection on `main` or `goal/stage-1`; each item reverts by one commit.
 
+## Built, 22 November 2026 (B1 and B2)
+
+Two pull requests, one per workflow: `main`'s `ci.yml` and `goal/stage-1`'s. `tools/ci/scope.sh` says whether a pull request is fast
+(its base is a goal branch other than `goal/stage-1`); `changes` outputs it. On `main` a fast pull request passes `e2e-layer1`,
+`e2e-layer2` and `e2e-m0` with their steps skipped; on `goal/stage-1` the jobs skip at job level, as its docs fast path already does,
+and a skipped required job counts as passed. `portal-ui` there reads the flag in its own step rather than needing `changes`: the M1
+seam check (`e2e/m1/15`) cannot read `cancelled()`, and a failed `changes` must still run it. A failed `changes` skips nothing.
+Goal branches take the workflow when they next merge `goal/stage-1` in; until then their own copy of `ci.yml` rules.
+
+**A retargeted pull request keeps the fast run's results.** `edited` is not a trigger, so moving a pull request from a goal branch to
+`goal/stage-1` or `main` leaves the old head's green checks in place, with the heavy jobs skipped. Adding `edited` would start a run, and
+cancel the one in flight, on every title or description edit, so it was not chosen. The rule instead: after changing a pull request's
+base, push a new commit (an empty one will do) before marking it ready. It is in the `threads` skill's rules.
+
 ## Supersedes
 
-Nothing yet: Part A only adds rules. Part B, when built, changes live words, so its builder adds a Supersedes section
-to its own pull requests and rewrites them there, under the rule in `AGENTS.md`. Those words are the `threads` skill's
-"the target branch's own push run checks every merge" (B2 keeps that only for `main` and `goal/stage-1`), and
-CI-drafts' "Left for later: running only the e2e suites a change touches" (B3 builds it).
+Part A only added rules. Part B, built on 22 November 2026, changes these live words:
+
+- .agents/skills/threads/SKILL.md: "the target branch's own push run checks every merge" → "the push run checks every merge into `main` and `goal/stage-1`; a goal branch has no push run, so its merges are checked when the goal lands"
+- design/decisions/CI-drafts.md: "Left for later: running only the e2e suites a change touches (an `nx affected` gate in `changes`), and a runner of our" → "Left for later: running only the e2e suites a change touches (superseded by CI-integration B3), and a runner of our"

@@ -256,5 +256,19 @@ expect "required-jobs: a job not in the workflow fails" 1 req "$(wf "$dname
 $dlive")" nope
 expect "required-jobs: no job ids is a usage error" 2 req "$(wf "$dname")"
 
+# scope: the flag that makes a pull request into a goal branch run the fast gate only (CI-integration.md, B1)
+scope() { # <event> <base ref> <wanted flag>
+  local got; got=$("$here/scope.sh" "$1" "$2")
+  [ "$got" = "fast=$3" ] || { echo "got $got"; return 1; }
+}
+expect "scope: a pull request into a goal branch is fast" 0 scope pull_request goal/on-chain true
+expect "scope: a pull request into goal/stage-1 runs everything" 0 scope pull_request goal/stage-1 false
+expect "scope: a pull request into main runs everything" 0 scope pull_request main false
+expect "scope: a pull request into a layer or milestone branch runs everything" 0 scope pull_request m1 false
+expect "scope: a push to a goal branch is never fast" 0 scope push goal/on-chain false
+expect "scope: a bare goal/ base is not a goal branch" 0 scope pull_request goal/ false
+expect "scope: an empty base runs everything" 0 scope pull_request "" false
+expect "scope: no arguments is a usage error" 1 "$here/scope.sh"
+
 if [ "$failures" -gt 0 ]; then echo "$failures case(s) failed"; exit 1; fi
 echo "all tools/ci cases pass"
