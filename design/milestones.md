@@ -497,8 +497,8 @@ Capxul's first feature runs in its staging.
 | M7.07 ∥ | Adapters against the real vendors: Stripe test mode, `provision`, conformance | M7.04, M7.13 | build | the conformance test passes against Stripe's test mode | M |
 | M7.08 ∥ | The builder's read-only staging telemetry token (with Aaron's yes) | M7.04 | build | an unattended builder reads staging traces, redacted | S |
 | M7.09 ∥ | Contracts on a testnet (L4.08, cloud part) | M7.04, M7.13 | build | a changed vault is redeployed and verified | M |
-| M7.10 ✅ | Capxul's plugins mapped: which exist, which are new, which are Capxul's own | none (K34) | decision | `decisions/M7-capxul.md` written | S |
-| M7.11 | Capxul's first feature on Orthograph, in its staging: one person gets paid ([`decisions/M7-capxul.md`](decisions/M7-capxul.md), section 4) | M7.10, M7.05, ST2.02, ST3.04, M6.09, M5.03, M7.04 | build | its journeys are green in Capxul's staging | M |
+| M7.10 ✅ | Capxul's plugins mapped: which exist, which are new, which are Capxul's own | none (K34) | decision | `decisions/M7-capxul.md` written. **Proof:** the decision, landed by #487 | S |
+| M7.11 | Capxul's first feature on Orthograph, in its staging: one person gets paid ([`decisions/M7-capxul.md`](decisions/M7-capxul.md), section 4) | M7.10, M7.05, ST2.02, M6.09, M5.03, M7.04 | build | its journeys are green in Capxul's staging | M |
 | M7.13 | The release pass: the credentials the release needs (npm, Homebrew tap, GitHub, Stripe test mode, a testnet), each with Aaron's written yes, and the cost under the cap | M7.01 (K34) | decision | `decisions/M7-release.md` written, with Aaron's yes per credential | S |
 | M7.14 | Monitors to the sink ([`decisions/K18-monitoring-falls-out.md`](decisions/K18-monitoring-falls-out.md)): the same rule list written to each declared sink (Axiom monitors with the burn rate in APL; Grafana alert rules and dashboards through its Foundation SDK); `alerts` routes on the environment file, which can only lower a severity | M1.49, M7.01 | build | in the staging pass the generated monitors exist with their labels; 20 slowed calls fire the builder route; a route that raises a severity fails `ortho check`; every monitor is destroyed afterwards; production routes compile, and nothing pages without Aaron's written yes | M |
 | M7.12 | **Gate M7** | all of M7 | e2e | `nx run e2e:m7` passes, and the gate's resources are destroyed | S |
@@ -629,7 +629,7 @@ M1.34 (portal-ui) ────────────────────�
 The M1 and M2 gates need every slice, so the side slices must land before them.
 
 **After workable (K9):** stage 2 (wallets) next, then stage 3 (the vault), stage 4 (the club) and the release. Capxul's
-first plugin, the wallet, is stage 2.
+first feature, one person getting paid, reads stage 2's token adapter and the chain's events (`decisions/M7-capxul.md`).
 Time (M8, K23) is built beside stage 2, from the same gate; stage 3's gate waits on Gate M8. Its decision and checks
 (M8.01 to M8.04) may land before then.
 
