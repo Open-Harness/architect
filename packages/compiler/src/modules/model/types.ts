@@ -78,11 +78,16 @@ export interface ThingModel {
   readonly hash: string;
 }
 
+/**
+ * One `allowed` entry. `via` is the ways in it keeps, sorted, when `.via` or `.notVia` narrowed it (M2-auth, fork 2): absent, every way in.
+ * `system` admits the runtime's own work only; a role with a `service` admits the service of that mount only.
+ */
 export type AllowedModel =
   | { readonly kind: "anyone" }
-  | { readonly kind: "signed-in" }
-  | { readonly kind: "role"; readonly role: string }
-  | { readonly kind: "role-of"; readonly role: string; readonly path: string };
+  | { readonly kind: "signed-in"; readonly via?: ReadonlyArray<string> }
+  | { readonly kind: "system" }
+  | { readonly kind: "role"; readonly role: string; readonly via?: ReadonlyArray<string>; readonly service?: string }
+  | { readonly kind: "role-of"; readonly role: string; readonly path: string; readonly via?: ReadonlyArray<string>; readonly service?: string };
 
 /** A step of an operation: its span's name and kind, and, for a call out, the adapter's call it makes. */
 export interface StepModel {
@@ -121,6 +126,11 @@ export interface OperationModel {
   /** A creating move's field (the answer's, else the payload's) that carries the id the runtime mints and hands in as `id`. */
   readonly mints?: string;
   readonly allowed: ReadonlyArray<AllowedModel>;
+  /**
+   * Whether the MCP door lists it as a tool: some `allowed` entry admits an agent, the mount's narrowing (`via`) keeps `agent`, and it does
+   * not run on the caller's device (M2-auth, fork 2). Said on every operation and read, so a projection never works it out again.
+   */
+  readonly agentTool: boolean;
   readonly steps: Readonly<Record<string, StepModel>>;
   readonly idempotent: "request" | null;
   /** Where it runs: `server`, or `client` (on the caller's device) for a plugin's operation that has a code entry per host. */
@@ -151,7 +161,10 @@ export interface EnvironmentModel {
   readonly name: string;
   readonly file: string;
   readonly runs: string;
-  readonly identity: "test-principals" | "better-auth";
+  /** Superseded by `issues` (M2-auth, "Smaller calls" 4); present only when the environment still says it. */
+  readonly identity?: "test-principals" | "better-auth";
+  /** The ways in it issues credentials for, sorted; present only when it names them (absent: every way in). */
+  readonly issues?: ReadonlyArray<string>;
   /** How long a world of this environment lives, when it has a lifetime. */
   readonly lifetimeMs: number | null;
   readonly cloud: { readonly provider: "cloudflare"; readonly database: "d1" | "d1-local" } | null;
@@ -173,6 +186,8 @@ export interface JourneyCallModel {
   readonly operation: string;
   readonly payload: Readonly<Record<string, unknown>>;
   readonly request?: string;
+  /** The way in the cast member's credential is made for, when the call says one (`s.ada.via(Via.key)`). */
+  readonly via?: string;
 }
 
 export interface JourneyModel {

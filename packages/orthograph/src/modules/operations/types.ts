@@ -3,7 +3,7 @@ import type { Duration, Schema } from "effect";
 import type { AnyErrorClass } from "#modules/errors/types.js";
 import type { Move } from "#modules/machines/types.js";
 import type { Call } from "#modules/plugins/types.js";
-import type { Allowed, Builtin, Role, RoleOf } from "#modules/roles/types.js";
+import type { Allowed, Builtin, Narrowed, Role, RoleOf, ServiceRole, SignedIn, System } from "#modules/roles/types.js";
 import type { FieldsInput, Thing, ValueOf } from "#modules/things/types.js";
 import type { TypeOf } from "#modules/values/types.js";
 
@@ -43,7 +43,10 @@ type StructOf<F extends FieldsInput> = Schema.Struct<{ readonly [K in keyof F]: 
 
 /** A role may point at the thing a payload field names: `owner.of("organization")`, or deeper, `"allowance.organization"`. */
 // `any`: a role's rule takes its own thing's instance, so roles of different things are only comparable as `any`.
-type AllowedFor<P> = Role<any> | Builtin | RoleOf<any, (keyof P & string) | `${keyof P & string}.${string}`>;
+type AllowedFor<P> =
+  | Role<any> | ServiceRole<any> | Builtin | System
+  | RoleOf<any, (keyof P & string) | `${keyof P & string}.${string}`>
+  | Narrowed<Role<any> | SignedIn | RoleOf<any, (keyof P & string) | `${keyof P & string}.${string}`>>;
 
 export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E extends ReadonlyArray<AnyErrorClass>, St extends Steps, M extends Move | undefined = Move | undefined> {
   readonly description: string;

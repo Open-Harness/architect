@@ -507,7 +507,7 @@ Each projection's replay also adds checks of its own:
 
 ### Cost, and when it runs
 
-Replay multiplies prove time by the number of projections that take a step. Today acme has 11 journeys through one
+Replay multiplies prove time by the number of projections that take a step. Today acme has 15 journeys through one
 door. With the server API, SDK, CLI, MCP and React, most steps run four or five times.
 
 - **In CI:** every journey through every projection, every time. Verdicts are only written there.

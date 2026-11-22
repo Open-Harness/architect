@@ -14,7 +14,7 @@ const op = Blueprint.operation(Thing, {
   description: "Do it.", payload: {}, answer: { thing: Thing.fields.id }, allowed: [Blueprint.signedIn], steps: { record: Blueprint.step.database() },
 });
 class Fault extends Error { readonly _tag = "LedgerUnreachable"; }
-const ada = { kind: "person", person: "per_ada" } as const;
+const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 
 const run = async (handler: Handler<typeof op>, commitDies = false) => {
   const spans: Array<Tracer.NativeSpan> = [];

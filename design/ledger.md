@@ -301,7 +301,7 @@ slice, a decision, or a line saying it is dropped. Grouped by canon page, in the
 |---|---|---|---|
 | `ADA-05` | Delivery receipts from Resend would be a later `on:` event; nothing parks it. | design/frame/examples/notifications.md:133 | open |
 | `ADA-11` | Tenderly as an opt-in simulation plugin is mentioned in the old decisions and no slice or later line owns it. | design/decisions.md:90 | open |
-| `ADA-13` | The factory feature's `github` adapter (push a branch, open a pull request, `pullRequest.merged` in, Gitea as stand-in) has no slice. | design/frame/examples/factory.md:171 | open |
+| `ADA-13` | The factory feature's `github` adapter (push a branch, open a pull request, `pullRequest` and its merged close in, Gitea as stand-in) has no slice. | design/frame/examples/factory.md:171 | superseded by K39: it is M4.25, built by Goal 17 |
 
 ### projections
 
@@ -1224,7 +1224,7 @@ they are closed. The unowned items for each page are in section 1, not repeated 
 | `AGE-29` | The bench's spend ledger with reservations ($5 a day bench cap, never above $10), suites, report and committed baselines are designed but not built. | design/decisions/H2-agent-runs-and-benchmarks.md:233<br>design/milestones.md:309 | open | M4.14 |
 | `AGE-31` | The triggers for switching from Pi Durable to Effect Workflow (the seam cannot keep Pi's promise API out, its API breaks twice in a quarter, it fails to bundle, or an agent run becomes a declared workflow) are written but nothing watches for them. | design/decisions/H1-agent-harness.md:236<br>design/frame/questions.md:166 | open | M3.03, M4.09 |
 | `AGE-32` | Whether `pi-ai` and `chord` bundle for workerd, and small enough, is unrun; the fallback is running agent runs on the Node host. | design/decisions/H1-agent-harness.md:36<br>design/frame/delta.md:82<br>design/milestones.md:476 | open | M4.09 |
-| `AGE-33` | Who may start an agent run: only a person, unless the app's mount allows agents (S15). | design/frame/questions.md:397 | open | M4.10 |
+| `AGE-33` | Who may make an agent: any operation allowed to create one, under its roles; an agent is its own thing (K40, replacing S15). | design/frame/questions.md:397<br>design/decisions/K40-superagent-gaps.md | open | M4.10 |
 
 <details><summary>Closed: 5 fixed or superseded</summary>
 

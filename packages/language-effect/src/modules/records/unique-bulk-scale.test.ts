@@ -11,12 +11,16 @@
 //   linear index took 25 to 46 ms, under a hundredth of TIME_MS (4,000 ms), so a linear build has two orders of room on a slow runner.
 //   The seam is a contract: keys are computed through `ruleKey`/`holds` imported from `internal/unique.ts`, at least once per row; the count check depends on
 //   it. The mock replaces those two only for importers of that file, so a build whose keys come from another helper counts nothing; the ratio test then fails
-//   with "0 looks: keys are not computed through internal/unique.ts" (never NaN), and the 40,000-row time test is the backstop for such a build.
+//   with "0 looks: keys are not computed through internal/unique.ts" (never NaN), and the 40,000-row ratio test is the backstop for such a build.
 // Backstop: a build that compares every pair but on keys it worked out once calls neither `holds` nor `ruleKey` and does only cheap string compares: at 3,000
-//   rows that is about 137 ms (linear: about 24 ms), well under TIME_MS, so the 3,000-row test cannot tell it from linear. At BIG_N = 40,000 distinct rows
-//   it takes 8 to 11 s (linear: about 300 ms), so BIG_MS (2,000 ms) tells them apart. That test runs only once the 3,000-row time test has passed (a flag set at
-//   its end; the tests of a file run in the order written), so a quadratic build that dodges the counter cannot hang a CI job for hours; before that it
-//   fails at once, saying so. Still not caught: a quadratic build with a constant so small it fits 40,000 rows in BIG_MS (not a thing a pairwise scan does).
+//   rows that is about 137 ms (linear: about 24 ms), well under TIME_MS, so the 3,000-row test cannot tell it from linear. So the backstop times BIG_N = 40,000
+//   distinct rows against SMALL_N = 4,000 on the same runner, in the same process, and bounds the ratio by RATIO (30). Measured on 22 November 2026 (a loaded
+//   laptop): linear 11.5x to 13.6x (28 ms, then 320 to 373 ms), the planted pairwise scan 88x (131 ms, then 11.5 s). A ratio, not a clock: a 2,000 ms bound on
+//   the 40,000 rows failed five times on 22 November 2026 (2,054 to 2,278 ms on loaded runners, snag #452) with linear code, while runner speed scales both sides
+//   of a ratio alike. Each size is timed more than once and the fastest run kept, so one garbage-collection pause cannot decide it. That test runs only once the
+//   3,000-row time test has passed (a flag set at its end; the tests of a file run in the order written), so a quadratic build that dodges the counter cannot
+//   hang a CI job for hours; before that it fails at once, saying so. Still not caught: a build whose cost grows by less than RATIO for ten times the rows (n log
+//   n passes, as it should).
 //   The run is stopped by the same seam: a `holds` or `ruleKey` call past the limit or the deadline throws, so a quadratic build fails in seconds, where it
 //   would otherwise run for minutes (its work is synchronous, so a test timeout cannot stop it).
 // Controls pass today: a real duplicate inside the bulk write, a duplicate of a stored row, a rule's scope (states), `findBy` over the call's written rows,
@@ -67,8 +71,10 @@ const N = 3_000;
 /** The work the check may do: 6 looks a row. A linear index does 4. */
 const BUDGET = (n: number) => 6 * n;
 const TIME_MS = 4_000;
+const SMALL_N = 4_000;
 const BIG_N = 40_000;
-const BIG_MS = 2_000;
+/** Linear work costs 11 to 14x for 10x the rows (a bigger heap and map); a pairwise scan 88x. 30 sits between, with about 2x room each side. */
+const RATIO = 30;
 /** Set when the 3,000-row time test has passed: the 40,000-row test runs only after it. */
 let timeTestPassed = false;
 const NO_LOOKS = "0 looks: keys are not computed through internal/unique.ts";
@@ -144,12 +150,23 @@ describe("S-35: the unique check of a bulk write costs work in proportion to the
     timeTestPassed = true;
   }, 60_000);
 
-  it(`${BIG_N} distinct rows in one call finish within ${BIG_MS} ms (runs once the ${N}-row time test has passed)`, async () => {
+  it(`${BIG_N} distinct rows cost under ${RATIO} times ${SMALL_N} on the same runner (runs once the ${N}-row time test has passed)`, async () => {
     expect(timeTestPassed, `not run: the ${N}-row time test has not passed, and a quadratic build would hold this one for minutes`).toBe(true);
-    const r = await run(everyState, [], distinct(BIG_N), { ms: 20_000 });
-    expect(r.failed, `the check was stopped: ${r.failed}`).toBeUndefined();
-    expect(r.ms, `${BIG_N} rows took ${Math.round(r.ms)} ms; linear takes about 300 ms, a pairwise scan 8 to 11 s`).toBeLessThan(BIG_MS);
-    expect(r.verdict).toBeUndefined();
+    /** The fastest of `times` runs of `n` distinct rows, so one pause on a busy runner does not count. */
+    const fastest = async (n: number, times: number) => {
+      let best = Number.POSITIVE_INFINITY;
+      for (let t = 0; t < times; t++) {
+        const r = await run(everyState, [], distinct(n), { ms: 30_000 });
+        expect(r.failed, `${n} rows: the check was stopped: ${r.failed}`).toBeUndefined();
+        expect(r.verdict).toBeUndefined();
+        best = Math.min(best, r.ms);
+      }
+      return best;
+    };
+    const small = await fastest(SMALL_N, 5);
+    const big = await fastest(BIG_N, 2);
+    const said = `${SMALL_N} rows took ${Math.round(small)} ms, ${BIG_N} rows ${Math.round(big)} ms: ${(big / small).toFixed(1)}x for 10x the rows`;
+    expect(big / small, `${said}; linear is 11 to 14x, a pairwise scan about 88x`).toBeLessThan(RATIO);
   }, 120_000);
 });
 

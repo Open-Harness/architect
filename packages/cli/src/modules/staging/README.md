@@ -1,13 +1,15 @@
 # staging
 
-`ortho env up staging --plan --run <id> [--root <dir>]`, `ortho env destroy staging --plan --run <id>`, and the real
+`ortho env up staging --plan --run <id> [--root <dir>]` (`test` takes the same verbs), `ortho env destroy staging --plan --run <id>`, and the real
 `ortho env up staging --run <id>` and `ortho env destroy staging --run <id>` (M7.03, M7.04).
 
 **The plan** is one function (`internal/plan.ts`), made from the model (its stores, and where each thing lives), the app's
 name (`ortho.config.ts`, loaded), the environment and the run. `--plan`
 prints it as one JSON document, and the real `up` and `destroy` run the same function and act on what it says. The prefix,
-`ortho-<app, letters and digits>-stg-<run>`, is formed there and nowhere else; every name is the prefix or continues it past a
-dash, so run `1` does not own run `12`'s resources. A run id is 1 to 20 of `a-z0-9`; a name that would be over 63 characters is
+`ortho-<app, letters and digits>-<short>-<run>`, is formed there and nowhere else (`stg` for staging, `test` for a pull
+request's test world, M7.05; one map in `plan.ts`); every name is the prefix or continues it past a
+dash, so run `1` does not own run `12`'s resources. A run id is 1 to 20 of `a-z0-9`, so a pull request's is `pr<number>r<github run id>`
+(no dash); a name that would be over 63 characters is
 refused (exit 2, no plan).
 
 **`up`** builds the bundle once, writes the run's input (`.ortho/staging/<prefix>/stack-input.json`: the plan, the bundle's path, the

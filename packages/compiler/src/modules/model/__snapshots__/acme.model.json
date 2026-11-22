@@ -34,6 +34,9 @@
     "Secret": {
       "type": "text",
       "max": 512
+    },
+    "Way": {
+      "type": "schema"
     }
   },
   "things": {
@@ -710,6 +713,7 @@
           "path": "organization"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -717,7 +721,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "dda468294d6b9bd5"
+      "hash": "646e4f80a9b3d182"
     },
     "allowance.grant": {
       "kind": "operation",
@@ -788,6 +792,7 @@
           "path": "organization"
         }
       ],
+      "agentTool": true,
       "refs": {
         "organization": "organization",
         "member": "person"
@@ -808,7 +813,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "1d27a95e77670a13"
+      "hash": "18060dafa8d2a21a"
     },
     "allowance.revoke": {
       "kind": "operation",
@@ -855,6 +860,7 @@
           "path": "allowance.organization"
         }
       ],
+      "agentTool": true,
       "refs": {
         "allowance": "allowance"
       },
@@ -870,7 +876,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "d59fb51da22f3f00"
+      "hash": "553ff9b2a8c55227"
     },
     "allowance.spend": {
       "kind": "operation",
@@ -942,6 +948,7 @@
           "role": "allowance.grantee"
         }
       ],
+      "agentTool": true,
       "refs": {
         "allowance": "allowance"
       },
@@ -961,7 +968,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "c5394cd5a630e83a"
+      "hash": "3e16004f59621f0b"
     },
     "api-key.create": {
       "kind": "operation",
@@ -1018,9 +1025,14 @@
         {
           "kind": "role-of",
           "role": "organization.owner",
-          "path": "organization"
+          "path": "organization",
+          "via": [
+            "device",
+            "session"
+          ]
         }
       ],
+      "agentTool": false,
       "refs": {
         "organization": "organization"
       },
@@ -1040,7 +1052,7 @@
       "budget": {
         "p95Ms": 250
       },
-      "hash": "14deeff32922c212"
+      "hash": "13b1d071bf6d24ea"
     },
     "invitation.accept": {
       "kind": "operation",
@@ -1097,9 +1109,15 @@
       "allowed": [
         {
           "kind": "role",
-          "role": "invitation.invitee"
+          "role": "invitation.invitee",
+          "via": [
+            "device",
+            "key",
+            "session"
+          ]
         }
       ],
+      "agentTool": false,
       "refs": {
         "invitation": "invitation"
       },
@@ -1115,7 +1133,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "40cceacba00c0163"
+      "hash": "70314ea959c43146"
     },
     "invitation.revoke": {
       "kind": "operation",
@@ -1161,6 +1179,7 @@
           "path": "invitation.organization"
         }
       ],
+      "agentTool": true,
       "refs": {
         "invitation": "invitation"
       },
@@ -1176,7 +1195,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "95edc097961ff88f"
+      "hash": "2e88e5bd83d2eed9"
     },
     "invitation.send": {
       "kind": "operation",
@@ -1234,6 +1253,7 @@
           "path": "organization"
         }
       ],
+      "agentTool": true,
       "refs": {
         "organization": "organization"
       },
@@ -1250,7 +1270,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "77c8ef0b1791ffb1"
+      "hash": "fb40c7cb89f22921"
     },
     "membership.get": {
       "kind": "read",
@@ -1312,6 +1332,7 @@
           "path": "membership.organization"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -1319,7 +1340,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "d8557c04ed7f857c"
+      "hash": "e734960d35d8a981"
     },
     "organization.create": {
       "kind": "operation",
@@ -1377,6 +1398,7 @@
           "kind": "signed-in"
         }
       ],
+      "agentTool": true,
       "mints": "organization",
       "steps": {
         "insert": {
@@ -1394,7 +1416,7 @@
       "budget": {
         "p95Ms": 250
       },
-      "hash": "9e58654e475e986e"
+      "hash": "78a74f3e3d852ca3"
     },
     "organization.get": {
       "kind": "read",
@@ -1450,6 +1472,7 @@
           "role": "organization.owner"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -1457,7 +1480,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "8481a45e201eda3e"
+      "hash": "684ffa1f086e7c63"
     },
     "person.sign-up": {
       "kind": "operation",
@@ -1516,6 +1539,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "steps": {
         "create": {
           "name": "person.sign-up.create",
@@ -1528,7 +1552,7 @@
       "budget": {
         "p95Ms": 400
       },
-      "hash": "79f794725e7f08d3"
+      "hash": "e7172748550f49b1"
     },
     "session.show": {
       "kind": "operation",
@@ -1556,6 +1580,12 @@
             "max": 254
           },
           "ref": "person.email"
+        },
+        "via": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Way"
         }
       },
       "move": null,
@@ -1569,6 +1599,7 @@
           "kind": "signed-in"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -1576,7 +1607,7 @@
       "budget": {
         "p95Ms": 100
       },
-      "hash": "fd19967b0d38e8da"
+      "hash": "f6abef87ce0c498a"
     },
     "session.sign-in": {
       "kind": "operation",
@@ -1639,6 +1670,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "steps": {
         "verify": {
           "name": "session.sign-in.verify",
@@ -1651,7 +1683,7 @@
       "budget": {
         "p95Ms": 400
       },
-      "hash": "e0820fd8a10524cf"
+      "hash": "13e27d0e3a08e66b"
     },
     "system.health": {
       "kind": "operation",
@@ -1682,6 +1714,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -1689,10 +1722,586 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "ac3f84873bd5c233"
+      "hash": "d97534a72031965e"
     }
   },
   "journeys": {
+    "journeys/a-key-and-a-session-are-the-same-person.ts": {
+      "name": "a key and a session are the same person",
+      "file": "journeys/a-key-and-a-session-are-the-same-person.ts",
+      "cast": {
+        "ada": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": null,
+      "steps": [
+        {
+          "title": "ada's session says who she is and how she got in",
+          "call": {
+            "actor": "ada",
+            "operation": "session.show",
+            "payload": {}
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "person"
+                ]
+              }
+            },
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "email"
+                ]
+              }
+            },
+            {
+              "kind": "expect-equal",
+              "value": "session"
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "session.show"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "ada's key says the same person, and that it is a key",
+          "call": {
+            "actor": "ada",
+            "operation": "session.show",
+            "payload": {},
+            "via": "key"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "person"
+                ]
+              }
+            },
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "email"
+                ]
+              }
+            },
+            {
+              "kind": "expect-equal",
+              "value": "key"
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "session.show"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "an agent key made for ada says the same person, and that it is an agent",
+          "call": {
+            "actor": "ada",
+            "operation": "session.show",
+            "payload": {},
+            "via": "agent"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "person"
+                ]
+              }
+            },
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "email"
+                ]
+              }
+            },
+            {
+              "kind": "expect-equal",
+              "value": "agent"
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "session.show"
+              ],
+              "absent": []
+            }
+          ]
+        }
+      ],
+      "sourceHash": "fe9537639ea452b593b5025d285aa1a9fadae0740f62938efbb2f5cf80507a2a"
+    },
+    "journeys/an-agent-cannot-consent-for-a-person.ts": {
+      "name": "an agent cannot consent for a person",
+      "file": "journeys/an-agent-cannot-consent-for-a-person.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "organization.owner"
+        },
+        "olga": {
+          "kind": "signed-in"
+        },
+        "bob": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "invited",
+      "steps": [
+        {
+          "title": "olga's agent can't accept the invitation for her",
+          "call": {
+            "actor": "olga",
+            "operation": "invitation.accept",
+            "payload": {
+              "invitation": {
+                "ref": [
+                  "world",
+                  "invitation"
+                ]
+              }
+            },
+            "via": "agent"
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "invitation",
+              "id": {
+                "ref": [
+                  "world",
+                  "invitation"
+                ]
+              },
+              "state": "pending"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "invitation.accept.refused"
+              ],
+              "absent": [
+                "invitation.accept",
+                "invitation.accept.join"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "an agent's tools hold no way to consent and no way to make a key, and still hold the rest",
+          "skipped": "the tools list is not an operation"
+        },
+        {
+          "title": "ada invites bob, so a second person can consent",
+          "call": {
+            "actor": "ada",
+            "operation": "invitation.send",
+            "payload": {
+              "organization": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              },
+              "email": {
+                "ref": [
+                  "cast",
+                  "bob",
+                  "email"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^inv_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "is-in",
+              "thing": "invitation",
+              "id": {
+                "ref": [
+                  "last",
+                  "invitation"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "bob accepts in his own session",
+          "call": {
+            "actor": "bob",
+            "operation": "invitation.accept",
+            "payload": {
+              "invitation": {
+                "ref": [
+                  "last",
+                  "invitation"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^mem_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "InvitationAccepted",
+              "fields": {
+                "membership": {
+                  "ref": [
+                    "last",
+                    "membership"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "invitation.accept",
+                "invitation.accept.join"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "olga accepts with her own key: a key is a person, not an agent",
+          "call": {
+            "actor": "olga",
+            "operation": "invitation.accept",
+            "payload": {
+              "invitation": {
+                "ref": [
+                  "world",
+                  "invitation"
+                ]
+              }
+            },
+            "via": "key"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              }
+            },
+            {
+              "kind": "expect",
+              "match": "^mem_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "InvitationAccepted",
+              "fields": {
+                "invitation": {
+                  "ref": [
+                    "world",
+                    "invitation"
+                  ]
+                },
+                "membership": {
+                  "ref": [
+                    "last",
+                    "membership"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "invitation",
+              "id": {
+                "ref": [
+                  "world",
+                  "invitation"
+                ]
+              },
+              "state": "accepted"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "invitation.accept",
+                "invitation.accept.join"
+              ],
+              "absent": []
+            }
+          ]
+        }
+      ],
+      "sourceHash": "c0800fd5b986ea23cf1398678f078475695a43c4907acb15985fb9ceb58ba57d"
+    },
+    "journeys/an-agent-passes-the-owner-rule.ts": {
+      "name": "an agent passes the owner rule",
+      "file": "journeys/an-agent-passes-the-owner-rule.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "organization.owner"
+        }
+      },
+      "starts": "founded",
+      "steps": [
+        {
+          "title": "ada's agent invites someone: an agent holds ada's role",
+          "call": {
+            "actor": "ada",
+            "operation": "invitation.send",
+            "payload": {
+              "organization": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              },
+              "email": "guest@acme.test"
+            },
+            "via": "agent"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^inv_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "InvitationSent",
+              "fields": {
+                "invitation": {
+                  "ref": [
+                    "last",
+                    "invitation"
+                  ]
+                },
+                "email": "guest@acme.test"
+              }
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "invitation.send",
+                "invitation.send.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "ada's agent reads her organisation",
+          "call": {
+            "actor": "ada",
+            "operation": "organization.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              }
+            },
+            "via": "agent"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "Acme Demo"
+            },
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "person"
+                ]
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "ada's agent can't make a key: that entry is for a person in person",
+          "call": {
+            "actor": "ada",
+            "operation": "api-key.create",
+            "payload": {
+              "organization": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              },
+              "name": "agent's key"
+            },
+            "via": "agent"
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "api-key.create.refused"
+              ],
+              "absent": [
+                "api-key.create",
+                "api-key.create.issue",
+                "api-key.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "ada, in her own session, makes one",
+          "call": {
+            "actor": "ada",
+            "operation": "api-key.create",
+            "payload": {
+              "organization": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              },
+              "name": "ci"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^key_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^.+$",
+              "flags": ""
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "api-key.create",
+                "api-key.create.issue",
+                "api-key.create.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "ada's own key can't make another: a key never makes a key",
+          "call": {
+            "actor": "ada",
+            "operation": "api-key.create",
+            "payload": {
+              "organization": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              },
+              "name": "the key's key"
+            },
+            "via": "key"
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "api-key.create.refused"
+              ],
+              "absent": [
+                "api-key.create",
+                "api-key.create.issue",
+                "api-key.create.insert"
+              ]
+            }
+          ]
+        }
+      ],
+      "sourceHash": "ef1475f6dab174c0b46f3171ae732cdf3c78f21e4e19945ce2b0b1ab8f724b17"
+    },
     "journeys/an-invitation-is-used-once.ts": {
       "name": "an invitation is used once",
       "file": "journeys/an-invitation-is-used-once.ts",
@@ -3601,6 +4210,148 @@
         }
       ],
       "sourceHash": "b8f1e4a789475e702fc6b803e1e0554274c4fe1bc83fe46f369e4706ddceee10"
+    },
+    "journeys/the-system-is-nobody-signed-in.ts": {
+      "name": "the system is nobody signed in",
+      "file": "journeys/the-system-is-nobody-signed-in.ts",
+      "cast": {
+        "clock": {
+          "kind": "system"
+        },
+        "ada": {
+          "kind": "role",
+          "role": "organization.owner"
+        }
+      },
+      "starts": "founded",
+      "steps": [
+        {
+          "title": "the system can't ask who is signed in: nobody is",
+          "call": {
+            "actor": "clock",
+            "operation": "session.show",
+            "payload": {}
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "session.show.refused"
+              ],
+              "absent": [
+                "session.show"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the system can't found an organisation: that is for a person",
+          "call": {
+            "actor": "clock",
+            "operation": "organization.create",
+            "payload": {
+              "name": "System Co",
+              "cap": "1000"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "organization.create.refused"
+              ],
+              "absent": [
+                "organization.create",
+                "organization.create.insert",
+                "organization.create.owner"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the system is no owner either: a rule role refuses it",
+          "call": {
+            "actor": "clock",
+            "operation": "invitation.send",
+            "payload": {
+              "organization": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              },
+              "email": "guest@acme.test"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "invitation.send.refused"
+              ],
+              "absent": [
+                "invitation.send",
+                "invitation.send.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "ada, a person, is let through where the system was refused",
+          "call": {
+            "actor": "ada",
+            "operation": "session.show",
+            "payload": {}
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "person"
+                ]
+              }
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "session.show"
+              ],
+              "absent": []
+            }
+          ]
+        }
+      ],
+      "sourceHash": "1c7d68fb20da6da8dc11f6bebf674978c95630fc215678bb3464cefa07f150a9"
     }
   },
   "startingWorlds": {
@@ -5256,6 +6007,126 @@
       ]
     },
     {
+      "id": "verdict:a key and a session are the same person:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "a key and a session are the same person",
+        "severity": "page",
+        "owner": "journeys/a-key-and-a-session-are-the-same-person.ts"
+      }
+    },
+    {
+      "id": "verdict:a key and a session are the same person:production",
+      "kind": "verdict",
+      "labels": {
+        "environment": "production",
+        "journey": "a key and a session are the same person",
+        "severity": "page",
+        "owner": "journeys/a-key-and-a-session-are-the-same-person.ts"
+      }
+    },
+    {
+      "id": "verdict:a key and a session are the same person:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "a key and a session are the same person",
+        "severity": "page",
+        "owner": "journeys/a-key-and-a-session-are-the-same-person.ts"
+      }
+    },
+    {
+      "id": "verdict:a key and a session are the same person:test",
+      "kind": "verdict",
+      "labels": {
+        "environment": "test",
+        "journey": "a key and a session are the same person",
+        "severity": "page",
+        "owner": "journeys/a-key-and-a-session-are-the-same-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent cannot consent for a person:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "an agent cannot consent for a person",
+        "severity": "page",
+        "owner": "journeys/an-agent-cannot-consent-for-a-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent cannot consent for a person:production",
+      "kind": "verdict",
+      "labels": {
+        "environment": "production",
+        "journey": "an agent cannot consent for a person",
+        "severity": "page",
+        "owner": "journeys/an-agent-cannot-consent-for-a-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent cannot consent for a person:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "an agent cannot consent for a person",
+        "severity": "page",
+        "owner": "journeys/an-agent-cannot-consent-for-a-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent cannot consent for a person:test",
+      "kind": "verdict",
+      "labels": {
+        "environment": "test",
+        "journey": "an agent cannot consent for a person",
+        "severity": "page",
+        "owner": "journeys/an-agent-cannot-consent-for-a-person.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent passes the owner rule:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "an agent passes the owner rule",
+        "severity": "page",
+        "owner": "journeys/an-agent-passes-the-owner-rule.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent passes the owner rule:production",
+      "kind": "verdict",
+      "labels": {
+        "environment": "production",
+        "journey": "an agent passes the owner rule",
+        "severity": "page",
+        "owner": "journeys/an-agent-passes-the-owner-rule.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent passes the owner rule:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "an agent passes the owner rule",
+        "severity": "page",
+        "owner": "journeys/an-agent-passes-the-owner-rule.ts"
+      }
+    },
+    {
+      "id": "verdict:an agent passes the owner rule:test",
+      "kind": "verdict",
+      "labels": {
+        "environment": "test",
+        "journey": "an agent passes the owner rule",
+        "severity": "page",
+        "owner": "journeys/an-agent-passes-the-owner-rule.ts"
+      }
+    },
+    {
       "id": "verdict:an invitation is used once:local",
       "kind": "verdict",
       "labels": {
@@ -5693,6 +6564,46 @@
         "journey": "spend within an allowance",
         "severity": "page",
         "owner": "journeys/spend-within-allowance.ts"
+      }
+    },
+    {
+      "id": "verdict:the system is nobody signed in:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "the system is nobody signed in",
+        "severity": "page",
+        "owner": "journeys/the-system-is-nobody-signed-in.ts"
+      }
+    },
+    {
+      "id": "verdict:the system is nobody signed in:production",
+      "kind": "verdict",
+      "labels": {
+        "environment": "production",
+        "journey": "the system is nobody signed in",
+        "severity": "page",
+        "owner": "journeys/the-system-is-nobody-signed-in.ts"
+      }
+    },
+    {
+      "id": "verdict:the system is nobody signed in:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "the system is nobody signed in",
+        "severity": "page",
+        "owner": "journeys/the-system-is-nobody-signed-in.ts"
+      }
+    },
+    {
+      "id": "verdict:the system is nobody signed in:test",
+      "kind": "verdict",
+      "labels": {
+        "environment": "test",
+        "journey": "the system is nobody signed in",
+        "severity": "page",
+        "owner": "journeys/the-system-is-nobody-signed-in.ts"
       }
     }
   ],
