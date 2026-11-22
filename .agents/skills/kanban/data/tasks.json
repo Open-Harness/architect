@@ -2958,7 +2958,7 @@
   "what": "Run telemetry through the Collector (A4)"
  },
  "M4-09": {
-  "doneWhen": "evicting mid-turn resumes with no duplicate model call",
+  "doneWhen": "evicting mid-turn, after the model's step committed, resumes with no duplicate model call; evicting with a model reply in flight repeats only that request (decisions/M4-agents.md, call 3)",
   "history": [],
   "id": "M4-09",
   "kind": "build",
@@ -3117,7 +3117,7 @@
   "what": "Gate M4"
  },
  "M4-16": {
-  "doneWhen": "evicting a chat's run mid-turn resumes it with no second model call; a refused action shows its typed refusal in the thread",
+  "doneWhen": "evicting a chat's run mid-turn, after the model's step committed, resumes it with no second model call; a refused action shows its typed refusal in the thread",
   "history": [],
   "id": "M4-16",
   "kind": "build",

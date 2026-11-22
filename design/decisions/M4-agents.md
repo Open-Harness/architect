@@ -147,8 +147,13 @@ Live docs, rewritten in this change:
 - `design/goals/map.md`, Goal 10's row: "ready | `@orthograph/agents`, `@orthograph/anthropic`, the stand-in model" → "running (Claude) | `@orthograph/agents`, `@orthograph/anthropic`, `@orthograph/openai`, the stand-in model".
 - `design/packages.md`: "`@orthograph/agents` (M4)," → "`@orthograph/agents` (M4), with its model adapters `@orthograph/anthropic` and `@orthograph/openai` and the local stand-in `@orthograph/stand-in-model` (M4.05, M4.06),".
 
+- `.agents/skills/kanban/data/lanes.json` (M4's gate) and `.agents/skills/kanban/data/tasks.json` (M4.09's and M4.16's `doneWhen`): the same three rewrites as `design/milestones.md` above.
+
 Dated records, a "Superseded by M4-agents, 22 November 2026" note added beside the words:
 
 - `decisions/H1-agent-harness.md` (H1.1, section 13 and the D2 #76 line), `decisions/H2-agent-runs-and-benchmarks.md` (every mention) and `design/decisions.md` (the H1 and H2 entries): "`@architect/agent`" → "`@orthograph/agents`".
 - `decisions/H1-agent-harness.md`, H1.3: "The agent runs *outside* any world (it is dev tooling), so its `Timers` is a real-clock layer" → "an agent in a world waits on the world's clock" (K23 had already moved the slice, as M4.26).
 - `decisions/H1-agent-harness.md`, H1.4: "a `commandcode` provider written with `createProvider`" → "`@orthograph/openai`, one OpenAI-compatible adapter for Command Code and the stand-in".
+
+Left as written: the older briefs and plan (`design/briefs/F4-portal-plan-and-state.md`, `design/briefs/codex-handoff.md`,
+`design/build-plan.md`) name `@architect/agent` as records of their day; this goal's own records carry the note above.
