@@ -135,7 +135,8 @@ says so; the lead was claude (claude-opus-5-5).
 - Slice 2's journeys are a draft (#490). Its review passed after three blockers: two are fixed in the decision, and the
   request-key journey is still to fix (the same key with another payload or another caller). Its proofs 2 and 3 wait on
   M4.10 (Snag #489).
-- Slices 3 and 4's checks were part-written in their authors' worktrees and never pushed. They start again on resume.
+- Slices 3 and 4's checks are part-written and unreviewed, saved as WIP on `goal-10/s3-runner-check` and
+  `goal-10/s4-durable-check` (no pull requests). On resume, their authors pick them up from there.
 - The `e2e/agents/` scaffolding (`goal-10/e2e-scaffold`) rides in with #490.
 - Ask to Goal 3, #473 (builders may shrink every `e2e/<area>/expected-failing/`), is open.
 
