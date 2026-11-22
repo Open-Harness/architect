@@ -1,0 +1,163 @@
+# Spike: aztec-club
+
+ST4.01 (`design/milestones.md`), Goal 14's first slice. Throwaway code: nothing here is imported by a package. Every run
+was on this Mac, against an Aztec network inside one Node process; no cloud, no testnet, no key written anywhere.
+
+**Parked, 22 November 2026** (the conductor, on Aaron's "narrow to the path"). Two runs finished; a third, which repeated
+only the ballots and ran the unverified control, was lost when the session restarted. What it would have shown is marked
+**not tested** below, with the command that runs it.
+
+**Question.** Can the budgets declaration (`examples/budgets` on `goal/on-chain`: the allowance thing, its machine,
+roles, refusals and its four operations) be written in Noir on Aztec as private notes, with a private budget spent down
+and a private ballot with a public tally, in an in-process network that verifies every client proof (K7 Q7)?
+
+**Answer.** **Yes, with three limits a generator must carry.** Every part of the declaration maps one to one onto a Noir
+contract, and every refusal arrives with its declared code and fields. In a world with verification on, a spend proof
+with one field changed, and an empty proof, are both refused at admission with `Invalid tx: Invalid proof`, and the
+public total does not move. Joins, spends and ballots put no member's address anywhere in the bytes the network sees,
+once a shared sponsor pays the fees. The limits: every holder of the club's key can read every allowance; each spend's
+amount is public in the call that adds it to the total; and a proof made against a block the local sequencer later
+re-builds is refused, so a client must sync and prove again.
+
+## What was tried
+
+- `contracts/club_contract/` (one contract, about 190 lines of Noir), written by hand as `language-noir` would generate
+  it from the budgets declaration, plus a ballot. It grew from the two earlier Aztec spikes:
+  `spikes/chain-languages/aztec` (K7's governance contract: a member note, a one-use claim per voter, an enqueued
+  public tally) and `spikes/noir-private-core` (allowances as notes owned by a keyed contract address, so the admin can
+  replace them on revoke).
+- The declaration, element by element:
+
+  | In `examples/budgets` | In Noir (`contracts/club_contract/src`) |
+  |---|---|
+  | `stores/budgets.ts`, a chain store | the contract; its name comes from the store file. Deployed with public keys from a store secret, so it can own notes |
+  | `Allowance` with `id`, `safe`, `member`, `token`, `limit`, `spent` | `AllowanceNote { member, limit, spent, state }` in `allowances: Map<Field, Owned<PrivateMutable<…>>>`, keyed by `id`, owned by the contract's own address. `safe` is the contract itself; `token` is left out (open risks) |
+  | `Blueprint.money.of(token)` | `u128` |
+  | `Blueprint.account()` | `AztecAddress` |
+  | machine states `active`, `exhausted`, `revoked` | `u8` globals 1, 2, 3; 0 is a row that is not there, as on EVM (M6-chain item 2) |
+  | move `grant: from [] to active` | `grant`, private: `initialize` on the id's slot; a second grant of one id fails on the slot's initialization nullifier |
+  | move `spend: from [active] to [active, exhausted]` | `spend`, private: `replace` on the slot, checking `state == ACTIVE`, then `EXHAUSTED` when `spent == limit` |
+  | move `revoke: from [active, exhausted] to revoked` | `revoke`, private: `replace`, by the treasurer |
+  | `notFrom: { exit: 40 }`, the generated `AllowanceNotActive` | `assert(state == ACTIVE, f"[40] AllowanceNotActive {{ state: {state} }}")` |
+  | `AllowanceExceeded { remaining }`, exit 41 | `assert(amount <= remaining, f"[41] AllowanceExceeded {{ remaining: {remaining} }}")` |
+  | role `treasury`, `who: safe` | `treasurer: PublicImmutable<AztecAddress>`, read in private, compared with `msg_sender` |
+  | role `grantee`, `who: member` | `a.member == msg_sender` inside the `replace` |
+  | `answer: { remaining }` | `spend` returns `limit - spent` |
+  | `get` | a `#[external("utility")]` function: a read on the device of anyone holding the store's key |
+  | the events | none per row in public. The public footprint is `Footprint { members, spent, spends }`, written by `only_self` public functions that the private calls enqueue, and a `Spent { total, spends }` log |
+  | a ballot (K9 stage 4, not in the declaration) | `propose`, private `cast` (the member's note, a `SingleUseClaim` per proposal and member, an enqueued `_tally`), `close` |
+
+- Pinned stack, the same as both earlier spikes (`versions.json`): Aztec 5.3.0 (still npm's `latest` on 22 November
+  2026; published 26 October), aztec-nr v5.3.0, nargo 1.0.0-beta.25, Node 24.12.0, Foundry 1.4.1. `scripts/install.sh`
+  puts them in the git-ignored `tools/`; `scripts/codegen.sh` compiles the contract and writes its TypeScript binding,
+  `client/src/generated/Club.ts`.
+- One wallet and one PXE per person (treasurer, ana, ben, cy, an outsider, a shop), ephemeral. The world is
+  `setupLocalNetwork` from `@aztec/aztec/testing` with `realProofs: true`: its own Anvil on a port the system picks, and
+  the node in process. The treasurer is funded at genesis to deploy; every other fee is paid by the SponsoredFPC,
+  funded at genesis.
+- `client/src/bin/club.ts` runs it, in phases:
+  `node --import tsx src/bin/club.ts [verified|control] [budgets,ballots,tamper]`. A transaction is proved on the
+  person's device, then its bytes are sent to the node and its receipt awaited.
+- Run 1: everything, with every person paying their own fee. Run 2: everything, with the sponsor paying
+  (`evidence/run-2-verified.json`; run 1's lines are in `evidence/run-1-verified.txt`, copied from the console, since
+  run 2 wrote over its file).
+
+## What was found
+
+Each finding is marked **validated**, **refuted** or **not tested**.
+
+### The declaration on Aztec
+
+1. **Validated: the budgets declaration maps one to one, and every refusal carries its declared code and fields.** Run 2
+   (verified), the same in run 1:
+
+   | Step | What came back |
+   |---|---|
+   | ana spends 20 of 100 | success; `get` on ana's device reads `[1, 100, 20]` (active, limit, spent) |
+   | ana spends 200 | `[41] AllowanceExceeded { remaining: 80 }` |
+   | ben spends from ana's allowance | `[AR-001] NotAllowed` |
+   | ana grants herself an allowance | `[AR-001] NotAllowed` |
+   | the treasurer revokes ben's, then ben spends | `[40] AllowanceNotActive { state: 3 }` |
+   | cy spends all 100, then 1 more | success, then `[40] AllowanceNotActive { state: 2 }` (exhausted) |
+   | an outsider (no store key) spends from ana's | `Assertion failed: Failed to get a note`: aztec-nr's own message, **no code of ours** |
+
+   Every refusal surfaces at simulation, on the device, before anything is sent. The outsider's is the one a generator
+   must map: a missing row read by a role is `NotAllowed` (M6-chain item 6), so `language-noir` must read the note in its
+   `Option` form and assert with the code itself, rather than let aztec-nr assert.
+2. **Validated: a member's spend is private, and the footprint shows the total.** In run 2, after ana's 20 the public
+   footprint read `{ members: 2, spent: 20, spends: 1 }` (2, not 3: finding 7), and after cy's 100
+   `{ spent: 120, spends: 2 }`. Once fees were sponsored, no join, spend or ballot held a member's address anywhere in
+   its bytes (a hex scan of each transaction for the three addresses: `named: []`, fee payer "the sponsor").
+3. **Refuted in run 1: a member who pays their own fee stays unnamed.** In run 1 every person was funded at genesis and
+   paid for themselves. Ana's spend then held her address: she is its fee payer. A club's members must pay through a
+   sponsor or a relayer (K7's `AZ-19`, noir-private-core finding 9).
+4. **Validated, and a limit: each spend's amount is public.** The total is kept by an enqueued public call,
+   `_add_spent(amount)`, so the amount sits in that call's public calldata, as K7's ballot's `choice` did. An observer
+   sees "someone spent 20", never who. Hiding the amount too needs the total kept privately and published in batches;
+   not tried.
+5. **A limit: every holder of the store's key can read every allowance.** Allowances are notes of the contract's own
+   keyed address, so the treasurer can replace them on revoke (noir-private-core finding 3, which also showed a revoke
+   invalidates a spend already proved). Members hold that key to spend, so ben's device can read ana's limit and
+   spending. Notes owned by each member would hide them from one another, but then only a public revoke flag keyed by
+   the allowance id could stop a spend, and that links every spend of one allowance. Not tested.
+
+### Proofs, in a verified world
+
+6. **Validated: a tampered proof is refused.** Run 2, verification on (the node reported `realProofs: true`), on ana's
+   spend of 5: one field of an honest proof changed by one was refused with `Invalid tx: Invalid proof`, and so was an
+   empty proof; the footprint stayed `spent: 120, spends: 2` after each. Rollup and epoch proofs stay synthetic in the
+   local network (K7 Q7). **Not tested here:** the same submissions with verification off, which K7's spike showed
+   accepted (`aztec#22` to `#25`); `club.ts control tamper` runs it.
+7. **Refuted once: a proof made against a block is good until it lands.** In run 2 the local sequencer's first L1
+   publish failed (`All available publishers exhausted`), block 1 was checkpointed again, and ana's join, proved against
+   the first block 1, was refused with `Invalid tx: Block header not found`. Ben's and cy's joins, proved after, landed.
+   `chain-aztec` must treat that refusal as "sync, prove again", once, and the journeys must not assume a join lands at
+   the first try; `club.ts` now does that. Run 1 had a sibling: the treasurer's joins, proved before its device had
+   synced the deploy's block, were refused on the device with `Trying to read from uninitialized PublicImmutable`. A
+   client syncs before it proves.
+8. **Validated: a ballot is private and its tally public.** Run 2: ben's and cy's ballots landed with no member named
+   and the sponsor as fee payer; an outsider's ballot (no member note) was refused on the device with
+   `[AR-001] NotAllowed`; after the close the proposal read `{ state: 3, amount: 500, yes: 1, no: 1 }`, failed, because
+   ana's join was lost (finding 7). **Not tested:** the 500 passing with all three members, and a second ballot by one
+   member refused by its claim (K7's spike showed that refusal, `Existing nullifier`, `aztec#13`); `club.ts verified
+   ballots` runs both.
+9. **Validated: the world ends with its node and its Anvil.** `stop()` stops the node, then Anvil: after it the world's
+   L1 endpoint answered nothing (`l1Gone: true`, run 2), and no process from the runs was left.
+
+## Measurements
+
+The Mac is shared. During run 1 its load was low; during run 2 its load average was 60 to 70 on 10 cores (ten goals at
+once), so run 2 is a worst case.
+
+| | Run 1 (quiet) | Run 2 (load about 62) |
+|---|---|---|
+| World start, verified, in process | 5.5 s | 6.1 s |
+| Club deploy (class, instance, public constructor) | 23.7 s | 48.3 s |
+| Proving one call on the device (grant, spend, revoke, cast, propose) | 5.6 to 13.7 s | 42 to 218 s |
+| Sent to included | 2.6 to 3.6 s | 5.5 to 24.8 s |
+| Compile, verification keys and TypeScript binding (cold) | 2 min 2 s | |
+| The whole run | 3.8 min | 42 min |
+
+The declaration's `budget: { p95: "5 seconds" }` is "judged on the time to included" (its own comment); that held on a
+quiet machine. Proving alone can't meet 5 seconds on this Mac.
+
+## The decision it supports
+
+ST4.02 (`design/decisions/ST4-aztec.md`, not yet written: the goal is parked): `language-noir` generates the contract
+from the declaration by the table above; the `aztec` store kind is a keyed contract address whose key the members'
+devices hold; `chain-aztec` on the `ChainPort` proves where EVM signs, pays through a sponsor, syncs before it proves
+and proves again once on `Block header not found`; worlds run `proofs: "verified"` with `setupLocalNetwork`, and a world
+ends with its node and its Anvil.
+
+## Open risks
+
+- **Not tested: a token.** The declaration's spend pays a token from the Safe; this spike moves none. noir-private-core
+  did, with the stock Token's `transfer_in_private` from the keyed address, on an unverified network.
+- **Not tested: privacy between members** (finding 5) and **of amounts** (finding 4).
+- **The treasurer's address is public** (a public immutable). A private treasurer needs a config note on the keyed
+  address and a private constructor, as noir-private-core did.
+- **The local sequencer's L1 publish failed once** under load (finding 7). Not reproduced; cause unknown.
+- **Proving under load** passed three minutes per transaction. A journey's waits and CI's time limits must allow for
+  it, or the stage 4 gate runs on a quiet runner.
+- **The SDK waits on its own timers** (`waitForTx` polls with `setTimeout`). `chain-aztec` must poll receipts through
+  `Timers` instead.
