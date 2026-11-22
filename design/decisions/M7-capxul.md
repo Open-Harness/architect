@@ -127,7 +127,7 @@ Each gap, and who acts. The first feature (section 4) needs none of the unowned 
 | Gap | Capxul needs it for | Owner | Action |
 |---|---|---|---|
 | Money as a value: signed or fixed-point, knowing its token and decimals, the same in Effect and Solidity (THI-07) | Invoice, Payment, Ledger entry, Budget | nobody: `main:design/later.md:46-48`, "waits for a design pass" | for the conductor. Capxul's floor until then: its own `Amount`, a raw schema value as Next has it, and a ledger line with a debit and a credit, both never negative |
-| SIWE for a Safe (ERC-1271) | signing in with a Safe account | Goal 3, M2.13 | Ask to Goal 3 |
+| SIWE for a Safe (ERC-1271) | signing in with a Safe account | Goal 3, M2.13 | asked by #486 |
 | A mail adapter with a local sink | sign-in codes, invitations | nobody (M5.09 is Resend, off the 1.0 path) | for the conductor |
 | Views, richer lists (ranges, sort by field, totals) and reports | trial balance, aged invoices, activity | nobody (M5.05 off the 1.0 path; reports not planned) | for the conductor; Frappe's desk carries them meanwhile |
 | A repeat that changes nothing, and idempotency by intent (K21) | founding sent twice is resumed; one send per approval | nobody (M3.24 to M3.26 off the 1.0 path) | for the conductor; Capxul's handlers refuse a second send meanwhile |
@@ -162,10 +162,10 @@ read an invoice by its link but not the person's other invoices; the ledger bala
 |---|---|---|---|
 | M7.10 | this map | Goal 16 | this pull request |
 | M7.05 | signed verdicts from CI, so the staging run is a verdict | Goal 15 | asked by #444; taken |
-| ST2.02 | the `erc20` adapter: typed `transfer` and `Transfer` | Goal 12 | ready |
-| ST3.04 | the `safe` adapter, reading a Safe's owners; Capxul also needs it to give a one-owner Safe's address before it is deployed, and to deploy it | Goal 13 | ready; asked now |
-| M6.09 | the chain follower | Goal 4 | asked early by Goal 12 (#475) |
-| M5.03 | events in: `on:` for an adapter's events, idempotent by event id | Goal 11 | asked early by Goal 12 (#477) |
+| ST2.02 | the `erc20` adapter: typed `transfer` and `Transfer` | Goal 12 | ready; asked early by #485 |
+| ST3.04 | the `safe` adapter, reading a Safe's owners; Capxul also needs it to give a one-owner Safe's address before it is deployed, and to deploy it | Goal 13 | ready; asked by #484 |
+| M6.09 | the chain follower | Goal 4 | asked early by Goal 12 (#475); Goal 16 added to it |
+| M5.03 | events in: `on:` for an adapter's events, idempotent by event id | Goal 11 | asked early by Goal 12 (#477); Goal 16 added to it |
 | M1.51, M7.03, M7.04 | Orthograph from npm, and an environment brought up and destroyed, so Capxul's own repository can stand up its staging | Goal 3 | on Goal 3's path |
 
 It does not wait on budgets, hats, owners' signatures, organisations, roles across things, workflows or money as a
