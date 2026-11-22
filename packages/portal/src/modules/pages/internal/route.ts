@@ -24,6 +24,7 @@ export const routeOf = (pathname: string, search = ""): Route => {
   if (parts.length === 1) return { page: "home" };
   if (parts.length === 2) return ALONE[parts[1]!] ?? { page: "missing" };
   if (parts.length !== 3) return { page: "missing" };
+  if (parts[1] === "monitor") return parts[2] === "alerts" ? { page: "alerts" } : parts[2] === "issues" ? { page: "issues" } : { page: "missing" };
   const name = nameIn(parts[2]!);
   if (parts[1] === "traces") { const id = nameIn(parts[2]!, TRACE); return id === undefined ? { page: "missing" } : { page: "trace", id }; }
   if (name === undefined) return { page: "missing" };
