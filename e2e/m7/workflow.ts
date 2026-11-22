@@ -19,7 +19,7 @@ const GATE = "steps.credentials.outcome == 'success' && steps.cap.outcome == 'su
 const ALWAYS = `always() && ${GATE}`;
 const EXPRESSIONS = new Set([
   "github.event.pull_request.number", "github.run_id", "github.run_attempt", "github.token", "github.repository", "github.event.pull_request.head.repo.full_name",
-  "secrets.CLOUDFLARE_API_TOKEN", "vars.CLOUDFLARE_ACCOUNT_ID", "vars.ORTHO_LOGBOOK_URL",
+  "secrets.CLOUDFLARE_API_TOKEN", "vars.CLOUDFLARE_ACCOUNT_ID",
 ]);
 const STEP_EXPRESSION = /^steps\.[a-z]+\.(outputs\.[a-z]+|outcome)$/;
 const USES = /^(actions\/checkout|pnpm\/action-setup|actions\/setup-node|actions\/upload-artifact)@v\d+\.\d+\.\d+$/;
@@ -38,6 +38,8 @@ const STEPS: ReadonlyArray<Want> = [
   { id: "plan", env: {}, run: /^mkdir -p "\$EVIDENCE\/private"\n\$ORTHO env up test --plan --run "\$RUN" --root examples\/plugged-in > "\$EVIDENCE\/plan\.json"\necho "prefix=\$\(jq -r \.prefix "\$EVIDENCE\/plan\.json"\)" >> "\$GITHUB_OUTPUT"$/ },
   { id: "before", env: CREDENTIALS, run: SNAPSHOT("before") },
   { id: "up", env: CREDENTIALS, continues: true, run: '$ORTHO env up test --run "$RUN" --root examples/plugged-in' },
+  // The logbook is stood up for this run and destroyed with its world (decided by the Goal 15 lead): a step of the run's own, under the run's prefix, after the world is up and before prove. Nothing long-lived.
+  { id: "logbook", env: CREDENTIALS, continues: true, if: "steps.up.outcome == 'success'", run: /^\$ORTHO env up logbook --run "\$RUN" --root examples\/plugged-in( >> "\$GITHUB_OUTPUT")?$/ },
   { id: "prove", env: "prove", continues: true, if: "steps.up.outcome == 'success'", run: /^\$ORTHO prove --env test --root examples\/plugged-in( --only "[A-Za-z0-9 ]+")? 2>&1 \| tee "\$EVIDENCE\/prove\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/ },
   { id: "destroy", env: CREDENTIALS, if: ALWAYS, run: '$ORTHO env destroy test --run "$RUN" --root examples/plugged-in' },
   { id: "after", env: CREDENTIALS, if: ALWAYS, run: SNAPSHOT("after") },
@@ -69,7 +71,7 @@ export const problems = (source: string): ReadonlyArray<string> => {
   if (typeof job.if !== "string" || job.if.replace(/^\s*\$\{\{\s*|\s*\}\}\s*$/g, "").trim() !== GUARD) out.push(`the job's \`if\` is ${JSON.stringify(job.if)}, and must be ${JSON.stringify(GUARD)} (a fork or a draft makes nothing)`);
   if (JSON.stringify(Object.entries(job.permissions ?? {}).sort()) !== JSON.stringify(Object.entries({ contents: "read", "id-token": "write", actions: "read", checks: "write" }).sort())) out.push("the job's permissions are not exactly contents: read, id-token: write (the verdicts' signature), actions: read (the day's count), checks: write (the verdict shows on the pull request as its own check run)");
   if (job["runs-on"] !== "ubuntu-latest") out.push("the job does not run on ubuntu-latest");
-  if (job.environment !== "staging") out.push(`the job's environment is ${JSON.stringify(job.environment)}, and must be "staging": the Cloudflare credentials live there (design/decisions/M7-release.md, credential 4)`);
+  if (job.environment !== undefined) out.push(`the job names the environment ${JSON.stringify(job.environment)}, and must name none: the credentials are the repository's secret and variable, and an environment admits only main and goal/* (design/decisions/M7-release.md, rule 2), so a pull request's run could never enter it`);
   if (!Number.isInteger(job["timeout-minutes"]) || job["timeout-minutes"] < 1 || job["timeout-minutes"] > 60) out.push("the job has no timeout of 1 to 60 whole minutes (a world's lifetime is 2 hours: the job always ends first)");
   const stray = Object.keys(job).filter((k) => !["name", "if", "permissions", "runs-on", "environment", "timeout-minutes", "env", "steps"].includes(k));
   if (stray.length > 0) out.push(`the job has ${stray.join(", ")}: no matrix, strategy, defaults, container or services`);
@@ -102,7 +104,7 @@ export const problems = (source: string): ReadonlyArray<string> => {
       // The logbook's address is data (a variable or an earlier step's output), never typed; nothing here can stand in for the job's own token.
       // Its env is the two credentials and ORTHO_LOGBOOK_URL, and nothing else. The address comes from a variable or from a step that stands the logbook (its id starts with `logbook`; where the logbook lives is
       // an open decision, so any such step may), never from `credentials`, `cap` or a step that holds a secret, so nothing can be smuggled in as an output.
-      const FROM = /^\$\{\{ (vars\.ORTHO_LOGBOOK_URL|steps\.logbook[a-z]*\.outputs\.[a-z]+) \}\}$/;
+      const FROM = /^\$\{\{ (steps\.logbook[a-z]*\.outputs\.[a-z]+) \}\}$/;
       const bad = Object.entries(env).filter(([k, v]) => !(k in CREDENTIALS && v === CREDENTIALS[k as keyof typeof CREDENTIALS]) && !(k === "ORTHO_LOGBOOK_URL" && FROM.test(String(v))));
       if (bad.length > 0) out.push(`prove: its env ${bad.map(([k]) => k).join(", ")} is not a credential or ORTHO_LOGBOOK_URL holding the variable or a logbook step's output`);
       if (!FROM.test(String(env["ORTHO_LOGBOOK_URL"] ?? ""))) out.push("prove: ORTHO_LOGBOOK_URL is not set from the variable or a logbook step's output (verdicts go to a logbook, and its address is never typed here)");
@@ -151,7 +153,7 @@ export const problems = (source: string): ReadonlyArray<string> => {
     if (/\b(wrangler|alchemy|curl|wget|gh)\b|\bsecrets\b|\bvars\b|\bset -[a-z]*x|\bset [-+]o\b|\bset \+e|\bprintenv\b|(^|[\s;|&])env\s*($|[|;&>])|\bexport\b|\bcompgen\b|\bdeclare\b|process\.env|\/proc\/|\bbash -|\bsh -|\|\| *(true|:)|\bexit 0\b|\btoJSON\b/m.test(s.run ?? "")) out.push(`${label}'s script reaches the account or a secret by itself, can print the environment or hides a failure`);
     // The credentials step and the final step are plain shell: no interpreter that could send a value anywhere. No step but the plan writes to the files that carry values between steps, and none steers the next ones.
     if ((s.id === "credentials" || s.id === undefined) && /\b(node|npx|pnpm|python3?|perl|ruby|fetch|nc|ssh|openssl)\b|\$\(|`|<\(|>\s*\/dev\/tcp/.test(s.run ?? "") && !/pnpm install --frozen-lockfile/.test(s.run ?? "")) out.push(`${label}'s script is plain shell: no interpreter, no substitution`);
-    if (/GITHUB_(ENV|PATH|STATE|OUTPUT|STEP_SUMMARY)/.test(s.run ?? "") && s.id !== "plan") out.push(`${label} writes to a file that carries values to later steps, which only plan may (its prefix)`);
+    if (/GITHUB_(ENV|PATH|STATE|OUTPUT|STEP_SUMMARY)/.test(s.run ?? "") && s.id !== "plan" && s.id !== "logbook") out.push(`${label} writes to a file that carries values to later steps, which only plan may (its prefix)`);
   });
   return out;
 };

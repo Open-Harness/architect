@@ -119,8 +119,9 @@ describe("03: a pull request's verdicts are signed with GitHub's token (M7.05), 
     const proved = await spawned([cli, "prove", "--env", "test", "--root", root], env);
     expect(proved.status, proved.out).toBe(0);
     expect(proved.out).not.toContain(REQUEST_BEARER);
-    // The runner was asked once, with its own bearer, for the logbook's audience.
-    expect(asked.slice(before).map((a) => a.audience)).toEqual([AUDIENCE]);
+    // The runner was asked (once per token the run needs), with its own bearer, and only ever for the logbook's audience.
+    expect(asked.length).toBeGreaterThan(before);
+    expect(new Set(asked.slice(before).map((a) => a.audience))).toEqual(new Set([AUDIENCE]));
     expect(asked.slice(before).every((a) => a.authorization?.toLowerCase() === `bearer ${REQUEST_BEARER}`)).toBe(true);
     // One verdict per operation of the model, all passing, each carrying the verified token's claims and the revision that was proved.
     const operations = Object.keys(JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8")).operations).sort();
