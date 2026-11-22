@@ -1,0 +1,22 @@
+src/modules/abi/abi.test.ts > Abi.decodeResult > a dynamic array is an array, empty or not
+src/modules/abi/abi.test.ts > Abi.decodeResult > a function with no outputs answers undefined from empty data
+src/modules/abi/abi.test.ts > Abi.decodeResult > a string, and several outputs as an array in order
+src/modules/abi/abi.test.ts > Abi.decodeResult > a tuple is an object by its component names
+src/modules/abi/abi.test.ts > Abi.decodeResult > a uint256, from zero to the largest
+src/modules/abi/abi.test.ts > Abi.decodeResult > an address comes back checksummed
+src/modules/abi/abi.test.ts > Abi.decodeResult > data that does not decode is a ChainFault, never a throw and never a value
+src/modules/abi/abi.test.ts > Abi.encodeCall > a dynamic argument is an offset, a length and the padded bytes
+src/modules/abi/abi.test.ts > Abi.encodeCall > a function with no arguments is its selector alone, with or without an empty args list
+src/modules/abi/abi.test.ts > Abi.encodeCall > an unknown function, the wrong number of arguments and an argument of the wrong type are each a ChainFault
+src/modules/abi/abi.test.ts > Abi.encodeCall > balanceOf(address) is selector 0x70a08231 and the address, lower-case and padded to a word
+src/modules/abi/abi.test.ts > Abi.encodeCall > transfer(address,uint256) is its selector, the address word, the amount word
+src/modules/abi/abi.test.ts > Abi.encodeDeploy > a constructor with no arguments given, and arguments for an ABI with no constructor, are each a ChainFault
+src/modules/abi/abi.test.ts > Abi.encodeDeploy > a constructor's arguments follow the bytecode, encoded as words
+src/modules/abi/abi.test.ts > Abi.encodeDeploy > an ABI with no constructor deploys the bytecode as it is
+src/modules/abi/abi.test.ts > Abi.refusal > a tuple error and a no-argument error decode by their entries, and a revert of another error stays a ChainFault
+src/modules/abi/abi.test.ts > Abi.refusal > an entry made for one program does not decode a revert of another
+src/modules/abi/abi.test.ts > Abi.refusal > decodeRevert decodes a real revert of the contract's own error by the entry
+src/modules/abi/abi.test.ts > Abi.refusal > the entry holds the code, the item's name and the item, and a program only when one is given
+src/modules/abi/abi.test.ts > Abi.refusal > the entry passes the refusal lock's own check, for every kind of item
+src/modules/abi/abi.test.ts > Abi.refusal > the selector is the first 4 bytes of the keccak-256 of the signature, which has its tuples written out
+src/modules/abi/abi.test.ts > the surface > Abi and the viem ABI types come out of the device entry, which a browser or a Worker can hold

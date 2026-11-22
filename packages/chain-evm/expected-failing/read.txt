@@ -1,0 +1,5 @@
+src/modules/tx/read.test.ts > a reverting read is mapped exactly as simulate maps it: a locked error is its typed refusal, with the program
+src/modules/tx/read.test.ts > an empty revert, and a revert with no lock entry, are a ChainFault of kind revert, as simulate's are
+src/modules/tx/read.test.ts > read returns a view function's data, and 0x from an account with no code
+src/modules/tx/read.test.ts > read runs as the call's sender: the same transfer reverts with a different balance for another account
+src/modules/tx/read.test.ts > read sends nothing and reserves no nonce: the head, the sender's nonce and the state are as they were
