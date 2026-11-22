@@ -24,10 +24,10 @@ are in `design/history/ci-2026-11-22/`; the numbers below are what they printed.
 
 | By job | Job-minutes | Share |
 |---|---|---|
-| `e2e-m1-shard` (four shards) | 11,528 | 43% |
-| `prove-tests` (three shards) | 8,065 | 30% |
-| `e2e-layer2` | 2,702 | 10% |
-| everything else (`check-static`, `e2e-layer1`, `e2e-grid`, `e2e-climb`, `e2e-m0`, `portal-ui`, …) | 4,412 | 17% |
+| `e2e-m1-shard` (four shards) | 11,006 | 41% |
+| `prove-tests` (three shards) | 7,511 | 28% |
+| `e2e-layer2` | 2,497 | 9% |
+| everything else (`check-static`, `e2e-layer1`, `e2e-grid`, `e2e-climb`, `e2e-m0`, `portal-ui`, …) | 5,693 | 21% |
 
 | By where the run came from | Job-minutes | Share |
 |---|---|---|
@@ -37,8 +37,9 @@ are in `design/history/ci-2026-11-22/`; the numbers below are what they printed.
 | pushes to another goal branch | 3,553 | 13% |
 | pull requests into `main` | 823 | 3% |
 
-Runs later cancelled, because a newer commit or a base merge replaced them, took 5,211 job-minutes (19.5%); before
-CI-drafts it was 37%. Of the 343 runs on the 126 pull requests merged in the window, 158 were cancelled and 16 failed.
+Runs later cancelled, because a newer commit or a base merge replaced them, took 2,360 job-minutes of runner time
+(8.8%). CI-drafts measured 37% before it, but that count included time spent waiting for a runner, so the two are not
+like for like. Of the 343 runs on the 126 pull requests merged in the window, 158 were cancelled and 16 failed.
 
 ### Waiting
 
@@ -102,7 +103,7 @@ when it next merges its base in), with a 🔍 pass and Goal 3's lead's yes for t
 |---|---|---|
 | B1 | **A pull request into a goal branch other than `goal/stage-1` runs the fast gate only:** `check` (with `check-static` and `prove-tests`), `builder-paths` and the goal's own `e2e-<goal>` suite. Every other job that branch protection requires (`portal-ui`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `e2e-m1`, `e2e-climb`, `e2e-grid`) still starts and reports success without running its steps, as the docs fast path does (CI-docs-fast-path). The `changes` job marks such a pull request "fast", and never lets `check` skip or go missing. The lead runs the rest locally (`nx affected -t test e2e`) before marking ready, and posts the commands and the head commit in the pull request. The full suite runs when the goal lands in `goal/stage-1` (an early landing, K38, or the last one). | about 3,800 job-minutes, 14% |
 | B2 | **No CI on a push to a goal branch other than `goal/stage-1`.** Its landing pull request tests the result. | about 3,550, 13% |
-| B3 | **Only the suites a change touches,** on pull requests into `goal/stage-1` and `main`: the `changes` job runs `nx affected` and each e2e and prove job runs its steps only when its project is affected; a required job that is not affected passes without steps, as the docs fast path already does. | not yet measured; most of the 83% that `e2e-m1-shard`, `prove-tests` and `e2e-layer2` take on changes that touch one package |
+| B3 | **Only the suites a change touches,** on pull requests into `goal/stage-1` and `main`: the `changes` job runs `nx affected` and each e2e and prove job runs its steps only when its project is affected; a required job that is not affected passes without steps, as the docs fast path already does. | not yet measured; most of the 79% that `e2e-m1-shard`, `prove-tests` and `e2e-layer2` take on changes that touch one package |
 | B4 | **The push run on `goal/stage-1` and `main` stays,** in full: it is the integration check, the only run that sees two green pull requests together. | none; kept on purpose |
 
 B1 and B2 together take about 27% off with no new tooling. The cost: until a goal lands in `goal/stage-1`, its only evidence for the suites it skipped is the lead's local-proof comment on each pull request, and a break shows up at the landing pull request, not the one that caused it. B3 is the large one and needs the most care: a wrong
