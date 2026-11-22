@@ -51,13 +51,34 @@
       "options": { "command": "vitest run --root {projectRoot} --config vitest.m1.config.ts m1" },
       "cache": false
     },
-    "portal-next": {
+    "portal-next-checks": {
       "metadata": {
-        "description": "Goal 6's done check, begun: the theme's check (slice 1). Slice 2 adds the rest of the portal checks to it."
+        "description": "Goal 6's own checks: the theme (slice 1), the map's compiler and projection, the two-client runner and the parity ratchet's controls (slice 2), and, as they land, the shell's."
       },
       "dependsOn": ["browser"],
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot}/portal-next --config vitest.config.ts" },
+      "cache": false
+    },
+    "portal-next-parity": {
+      "metadata": {
+        "description": "Every portal check that reads a served client, run against the new one (PORTAL_CLIENT=next), through the parity ratchet: it fails on a red check that is not on e2e/portal-next/expected-failing.txt and on a listed check that passes."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mkdir -p tmp && rm -f tmp/parity-report.json tmp/parity-errors.json; PORTAL_CLIENT=next RATCHET_ERRORS_FILE=tmp/parity-errors.json vitest run --root e2e --config portal-next/vitest.parity.config.ts --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/parity-report.json; node e2e/portal-next/parity/main.ts tmp/parity-report.json e2e/portal-next/expected-failing.txt tmp/parity-errors.json"
+      },
+      "cache": false
+    },
+    "portal-next": {
+      "metadata": {
+        "description": "The done check of Goal 6, begun: its own checks and the parity ratchet. Both run, and it fails if either fails."
+      },
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run e2e:portal-next-checks; checks=$?; nx run e2e:portal-next-parity; parity=$?; [ $checks -eq 0 ] && [ $parity -eq 0 ]"
+      },
       "cache": false
     },
     "climb": {
