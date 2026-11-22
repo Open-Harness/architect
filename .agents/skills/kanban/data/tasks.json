@@ -3161,10 +3161,10 @@
   "size": "M",
   "stage": "backlog",
   "thread": null,
-  "title": "@orthograph/workspaces on the sandbox's local choice",
+  "title": "@orthograph/workspaces on the sandbox's local provider",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "@orthograph/workspaces on @orthograph/sandbox's local choice (K10 section 3; K39: the sandbox holds the machine, the workspace adds ortho): Workspace and its machine, ortho as its operations (brief, read, write, check, prove, add, generate, diff, push, close), writes fenced by realpath and case-insensitive paths, push through the github adapter (its stand-in a bare local repository), WorkspacePoolFull"
+  "what": "@orthograph/workspaces on @orthograph/sandbox's local provider (K10 section 3; K39: the sandbox holds the machine, the workspace adds ortho): Workspace and its machine, ortho as its operations (brief, read, write, check, prove, add, generate, diff, push, close), writes fenced by realpath and case-insensitive paths, push through the github adapter (its stand-in a bare local repository), WorkspacePoolFull"
  },
  "M4-19": {
   "doneWhen": "M4.18's journeys pass on E2B with Aaron's existing key; evicting the run's Durable Object mid-prove resumes and reads the result; 0 sandboxes are left after",
@@ -3186,7 +3186,7 @@
   "title": "The e2b choice",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "The e2b choice: our template, long commands in the background checked on an alarm, a sweep by tag, sandbox spend under its share ($5 a day by default)"
+  "what": "The sandbox's e2b provider (@orthograph/sandbox, K39), for workspaces: our template, long commands in the background checked on an alarm, a sweep by tag, sandbox spend under its share ($5 a day by default)"
  },
  "M4-20": {
   "doneWhen": "build",
@@ -3324,7 +3324,7 @@
   "title": "The github adapter, built by Goal 17",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "The github adapter, @orthograph/github, built by Goal 17 (K39; K10 section 3): a GitHub App; calls generated from GitHub's OpenAPI document, branches.push, pulls.create, issues.comments.create, pulls.reviews.reply and reactions.create; signed webhook events issueComment, issues, pullRequest (its merged close among them), pullRequestReview, pullRequestReviewComment and checkRun; secrets declared by the adapter; its stand-in a bare local repository with a small pull-request record (second rung: Gitea)"
+  "what": "The github adapter, @orthograph/github, built by Goal 17 (K39; K10 section 3): a GitHub App; calls typed from GitHub's OpenAPI document, branches.push, pulls.create, issues.comments.create, pulls.reviews.reply and reactions.create; signed webhook events issueComment, issues, pullRequest (its merged close among them), pullRequestReview, pullRequestReviewComment and checkRun; secrets declared by the adapter; its stand-in a bare local repository with a small pull-request record (second rung: Gitea)"
  },
  "M5-01": {
   "doneWhen": "decisions/M5-reach-out.md written",
