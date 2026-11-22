@@ -1,0 +1,268 @@
+{
+  "pairs": [
+    {
+      "cell": "error.portal",
+      "subject": "HandleTaken",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "error.portal",
+      "subject": "LinkNeedsHandle",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "error.portal",
+      "subject": "NotAllowed",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "error.portal",
+      "subject": "LinkAlreadyRemoved",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "error.portal",
+      "subject": "LinkNotListed",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "error.portal",
+      "subject": "HandleNotFound",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "error.portal",
+      "subject": "ProfileNotFound",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "error.portal",
+      "subject": "HandleAlreadyOwned",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "error.portal",
+      "subject": "HandleNotClaimed",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "event.portal",
+      "subject": "HandleClaimed",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "event.portal",
+      "subject": "HandleReleased",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "event.portal",
+      "subject": "LinkAdded",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "event.portal",
+      "subject": "LinkRemoved",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "journey.portal",
+      "subject": "a name is claimed once",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "journey.portal",
+      "subject": "a stranger cannot edit a page",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "journey.portal",
+      "subject": "add, order and remove a link",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "journey.portal",
+      "subject": "anyone reads a public page",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "journey.portal",
+      "subject": "claim a handle",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "journey.portal",
+      "subject": "release a handle",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "journey.portal",
+      "subject": "a person claims a page and shares it",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "machine.portal",
+      "subject": "handle",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "machine.portal",
+      "subject": "link",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "operation.portal",
+      "subject": "handle.claim",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "operation.portal",
+      "subject": "handle.resolve",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "operation.portal",
+      "subject": "handle.release",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "operation.portal",
+      "subject": "link.add",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "operation.portal",
+      "subject": "link.order",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "operation.portal",
+      "subject": "link.remove",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "operation.portal",
+      "subject": "profile.get",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "handle.claim.record",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "handle.resolve.load",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "handle.release.record",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "link.add.load",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "link.add.record",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "link.order.load",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "link.order.record",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "link.remove.record",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "step.portal",
+      "subject": "profile.get.load",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "thing.portal",
+      "subject": "handle",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "thing.portal",
+      "subject": "link",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "thing.portal",
+      "subject": "profile",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "invariant.portal",
+      "subject": "handle.oneHolderPerName",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "invariant.portal",
+      "subject": "handle.oneNamePerPerson",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    },
+    {
+      "cell": "invariant.portal",
+      "subject": "profile.onePagePerHandle",
+      "reason": "the new portal's client is not built (packages/portal-next/dist/client), so no page is drawn for this eval to read",
+      "waitsOn": "Goal 6 slices 7 to 11 (the new client's pages); cutover (slice 12) when the old client goes"
+    }
+  ]
+}

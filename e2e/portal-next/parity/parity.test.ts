@@ -47,6 +47,6 @@ describe("the parity ratchet", () => {
     expect(lines.length).toBeGreaterThan(0);
     expect(new Set(lines).size).toBe(lines.length);
     expect(lines).toEqual([...lines].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)));
-    for (const line of lines) expect(line).toMatch(/^m1\/(21|28|38|39|40)-[a-z0-9-]+\.test\.ts( > .+)?$/);
+    for (const line of lines) expect(line).toMatch(/^[a-z0-9-]+\/[a-z0-9-]+\.test\.ts( > .+)?$/);
   });
 });
