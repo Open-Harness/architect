@@ -135,10 +135,10 @@ beforeAll(async () => {
 }, 600_000);
 
 describe("29 controls: the instruments, and what today's prove already does", () => {
-  it("the full prove passes on acme's 11 journeys and leaves the record every row starts from", () => {
+  it("the full prove passes on acme's 15 journeys and leaves the record every row starts from", () => {
     expect(first.status, first.out.slice(-800)).toBe(0);
     expect(first.report?.journeys.map((j) => j.name).sort()).toEqual([...all]);
-    expect(all).toHaveLength(11);
+    expect(all).toHaveLength(15);
     expect(JSON.parse(record).proven["allowance.spend"]).toBeDefined();
     nothingRunning(baseline.root);
   });
@@ -163,7 +163,7 @@ describe("29 controls: the instruments, and what today's prove already does", ()
     expect(calling(map, "allowance.grant")).toEqual([...GRANT_JOURNEYS].sort());
     expect(calling(map, "allowance.get")).toEqual(["read an allowance", "spend twice with one request"]);
     expect(calling(map, "allowance.revoke")).toEqual(["an outsider cannot revoke", "revoke then spend"]);
-    expect(all.filter((name) => !SPEND_JOURNEYS.includes(name))).toHaveLength(8);
+    expect(all.filter((name) => !SPEND_JOURNEYS.includes(name))).toHaveLength(12);
   });
 
   it("a break planted in spend.ts fails exactly 2 of the 3 journeys that call spend, on a full prove: the planted failure is real", async () => {
@@ -265,19 +265,19 @@ describe("29 controls: the instruments, and what today's prove already does", ()
 });
 
 describe("29 ST1.23: ortho prove --changed proves what a change touches, names what it skipped, and falls back to everything when it cannot tell", () => {
-  it("with no record of an earlier proof it proves all 11 journeys and says there is no record", async () => {
+  it("with no record of an earlier proof it proves all 15 journeys and says there is no record", async () => {
     const root = seeded(false);
     const proved = await prove(root, "--changed");
     judged(proved, expecting(all, { fellBackOn: [], reason: /no record of an earlier prove/ }));
     nothingRunning(root);
   });
 
-  it("a change to spend.ts proves the 3 journeys that call spend and names the 8 it skipped", async () => {
+  it("a change to spend.ts proves the 3 journeys that call spend and names the 12 it skipped", async () => {
     const root = seeded();
     plantHandler(root);
     const proved = await prove(root, "--changed");
     judged(proved, expecting(SPEND_JOURNEYS, { judges: ["allowance.spend"] }));
-    expect(proved.report?.changed?.skipped).toHaveLength(8);
+    expect(proved.report?.changed?.skipped).toHaveLength(12);
     nothingRunning(root);
   });
 
@@ -314,7 +314,7 @@ describe("29 ST1.23: ortho prove --changed proves what a change touches, names w
     nothingRunning(root);
   });
 
-  it("a changed config (a file the map cannot place) proves all 11 and names ortho.config.ts", async () => {
+  it("a changed config (a file the map cannot place) proves all 15 and names ortho.config.ts", async () => {
     const root = seeded();
     append(root, CONFIG, "\n// planted: nothing in the model says which journeys this file touches\n");
     const proved = await prove(root, "--changed");
@@ -322,7 +322,7 @@ describe("29 ST1.23: ortho prove --changed proves what a change touches, names w
     nothingRunning(root);
   });
 
-  it("a new helper file under src/ (a file the map cannot place) proves all 11 and names it", async () => {
+  it("a new helper file under src/ (a file the map cannot place) proves all 15 and names it", async () => {
     const root = seeded();
     writeFileSync(join(root, HELPER), "export const format = (n: bigint) => `${n}`;\n");
     const proved = await prove(root, "--changed");
@@ -347,30 +347,30 @@ describe("29 ST1.23: ortho prove --changed proves what a change touches, names w
     nothingRunning(root);
   });
 
-  it("a changed starting world one other is made from (`founded`) proves every journey that stands on it, through `funded` and `invited`: 9", async () => {
+  it("a changed starting world one other is made from (`founded`) proves every journey that stands on it, through `funded` and `invited`: 12", async () => {
     const root = seeded();
     append(root, `${WORLD}/founded.ts`, note());
     const proved = await prove(root, "--changed");
     judged(proved, expecting(standingOn(map, "founded")));
-    expect(proved.report?.changed?.rerun).toHaveLength(9);
+    expect(proved.report?.changed?.rerun).toHaveLength(12);
     nothingRunning(root);
   });
 
-  it("an edit to a helper no handler imports (in the record, so it is a change, not a new file) proves all 11 and names it", async () => {
+  it("an edit to a helper no handler imports (in the record, so it is a change, not a new file) proves all 15 and names it", async () => {
     const root = seeded();
     append(root, MONEY, note());
     judged(await prove(root, "--changed"), expecting(all, { fellBackOn: [MONEY] }));
     nothingRunning(root);
   });
 
-  it("a deleted helper (in the record) proves all 11 and names it", async () => {
+  it("a deleted helper (in the record) proves all 15 and names it", async () => {
     const root = seeded();
     rmSync(join(root, MONEY));
     judged(await prove(root, "--changed"), expecting(all, { fellBackOn: [MONEY] }));
     nothingRunning(root);
   });
 
-  it("a changed package.json (a file the map cannot place) proves all 11 and names it", async () => {
+  it("a changed package.json (a file the map cannot place) proves all 15 and names it", async () => {
     const root = seeded();
     append(root, PACKAGE, "\n");
     judged(await prove(root, "--changed"), expecting(all, { fellBackOn: [PACKAGE] }));
@@ -386,7 +386,7 @@ describe("29 ST1.23: ortho prove --changed proves what a change touches, names w
   });
 
   for (const [file, kind] of [[LOCK, "the lockfile"], [TSCONFIG, "tsconfig.json"], [ENV, "an env file"]] as const) {
-    it(`a changed ${kind} (${file}), a file the map cannot place, proves all 11 and names it`, async () => {
+    it(`a changed ${kind} (${file}), a file the map cannot place, proves all 15 and names it`, async () => {
       const root = seeded();
       append(root, file, "\n");
       judged(await prove(root, "--changed"), expecting(all, { fellBackOn: [file] }));
@@ -413,13 +413,13 @@ describe("29 ST1.23: ortho prove --changed proves what a change touches, names w
     nothingRunning(root);
   });
 
-  it("the record moves on: a second --changed straight after a rerun runs none of the 11 and exits 0", async () => {
+  it("the record moves on: a second --changed straight after a rerun runs none of the 15 and exits 0", async () => {
     const root = seeded();
     plantHandler(root);
     judged(await prove(root, "--changed"), expecting(SPEND_JOURNEYS));
     const again = await prove(root, "--changed");
     judged(again, expecting([]));
-    expect(again.report?.changed?.skipped).toHaveLength(11);
+    expect(again.report?.changed?.skipped).toHaveLength(15);
     nothingRunning(root);
   });
 
@@ -508,8 +508,8 @@ describe("29 ST1.23, two more false greens Codex found in the build: a mounted d
   }, 900_000);
   afterAll(() => { echoBase?.remove(); twinBase?.remove(); });
 
-  it("controls: the plugin's journey is the only one that calls its operations (1 of 12), and an edit to a file of the package is seen by `ortho impact` as stale on that mount's operations", () => {
-    expect(echoAll).toHaveLength(12);
+  it("controls: the plugin's journey is the only one that calls its operations (1 of 16), and an edit to a file of the package is seen by `ortho impact` as stale on that mount's operations", () => {
+    expect(echoAll).toHaveLength(16);
     expect(calling(echoMap, "echo.repeat", "echo.shout")).toEqual([echoJourneyTitle]);
     const root = echoSeeded();
     expect(run(root, "impact").out, "before any change").toMatch(/^stale none$/m);
@@ -519,8 +519,8 @@ describe("29 ST1.23, two more false greens Codex found in the build: a mounted d
     expect(impact.out.match(/^stale (.*)$/m)?.[1], "today's impact sees the package's bytes: it is the operations of the mount").toBe("echo.repeat, echo.shout");
   });
 
-  it("controls: two journey files of one name are accepted, the full prove runs both (12 journeys, the name twice), and the judge tells the twin from the original by its steps", () => {
-    expect(twinAll).toHaveLength(12);
+  it("controls: two journey files of one name are accepted, the full prove runs both (16 journeys, the name twice), and the judge tells the twin from the original by its steps", () => {
+    expect(twinAll).toHaveLength(16);
     expect(twinAll.filter((name) => name === SAME)).toHaveLength(2);
     const right = perfect(withTwin(TWIN_STEP));
     expect(problems(right, withTwin(TWIN_STEP))).toEqual([]);
@@ -530,7 +530,7 @@ describe("29 ST1.23, two more false greens Codex found in the build: a mounted d
     expect(problems(both, withTwin(TWIN_STEP)), "both reran").not.toEqual([]);
   });
 
-  it("a change to a file of a mounted plugin that its handlers import proves the 1 journey that calls the plugin's operations and names the other 11 skipped", async () => {
+  it("a change to a file of a mounted plugin that its handlers import proves the 1 journey that calls the plugin's operations and names the other 15 skipped", async () => {
     const root = echoSeeded();
     append(root, DEPENDENCY, note());
     const proved = await prove(root, "--changed");
@@ -611,11 +611,11 @@ describe("29 ST1.23, two more false greens the review found: a generated file, a
     expect(problems(perfect(wantImporter({ ran: calling(importMap, "allowance.grant") })), want)).not.toEqual([]);
   });
 
-  it("a change to a generated file (the server's main.ts, which a full prove can no longer run) proves all 11 and names the file; it is never a green with 0 journeys", async () => {
+  it("a change to a generated file (the server's main.ts, which a full prove can no longer run) proves all 15 and names the file; it is never a green with 0 journeys", async () => {
     const root = seeded();
     breakGenerated(root);
     const proved = await prove(root, "--changed");
-    expect(proved.out, "it must say it cannot place the generated file and proves everything").toMatch(new RegExp(`^prove --changed: proving all 11 journeys: .*cannot place.*${GENERATED.replace(/[./]/g, "\\$&")}`, "m"));
+    expect(proved.out, "it must say it cannot place the generated file and proves everything").toMatch(new RegExp(`^prove --changed: proving all 15 journeys: .*cannot place.*${GENERATED.replace(/[./]/g, "\\$&")}`, "m"));
     expect(proved.out).not.toMatch(/proving 0 of/);
     expect(proved.status, proved.out.slice(-300)).not.toBe(0);
     expect(proved.report?.passed).not.toBe(true);

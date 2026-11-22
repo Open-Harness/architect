@@ -1,5 +1,6 @@
 // Scaffolded from blueprint/things/handle/verbs/claim.ts. Yours from now on.
 import { Effect } from "effect";
+import { acting } from "orthograph";
 import { Ids, Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/handle/claim.handler.ts";
 import { Handle } from "../../blueprint/things/handle/thing.ts";
@@ -40,7 +41,9 @@ import { Profile } from "../../blueprint/things/profile/thing.ts";
  */
 const claim: Handler = ({ name }, { principal, steps, move, id }) =>
   Effect.gen(function* () {
-    if (principal.kind !== "person") return yield* Effect.die(new Error("reached without a signed-in person"));
+    // `signedIn` admits a person and an agent acting for one (M2-auth, fork 2): the page is the person's either way.
+    const who = acting(principal);
+    if (!who) return yield* Effect.die(new Error("reached without a signed-in person"));
     const records = yield* Records;
 
     // HandleTaken and HandleAlreadyOwned are the rules' (invariants.ts): the runtime refuses them after the move, before the commit.
@@ -48,7 +51,7 @@ const claim: Handler = ({ name }, { principal, steps, move, id }) =>
     const profile = yield* Ids.of(Profile.fields.id);
     yield* steps.record(
       Effect.gen(function* () {
-        yield* records.insert(Handle, { id, name, owner: principal.person as never });
+        yield* records.insert(Handle, { id, name, owner: who.person as never });
         yield* records.insert(Profile, { id: profile, handle: id, links: [] });
       }),
     );

@@ -212,6 +212,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "refs": {
           "sheet": "sheet"
         },
@@ -230,7 +231,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "5ff2de75e7294f8e"
+        "hash": "cfb0e68868397eb4"
       },
       "sheet.get": {
         "kind": "read",
@@ -293,6 +294,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -300,7 +302,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "647f208a50cda6f5"
+        "hash": "09767e4f4ef5a8c9"
       },
       "sheet.join": {
         "kind": "operation",
@@ -364,6 +366,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "refs": {
           "sheet": "sheet"
         },
@@ -386,7 +389,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "0654da6d079c113d"
+        "hash": "aab95ecb61d4f88d"
       },
       "sheet.open": {
         "kind": "operation",
@@ -444,6 +447,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "mints": "sheet",
         "steps": {
           "insert": {
@@ -457,7 +461,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "8c2cdb4e47331efb"
+        "hash": "389a59321bbe525d"
       }
     },
     "journeys": {
@@ -1531,19 +1535,19 @@
   },
   "dependsOnByOperation": {
     "sheet.close": {
-      "operation:sheet.close": "5ff2de75e7294f8e",
+      "operation:sheet.close": "cfb0e68868397eb4",
       "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.get": {
-      "operation:sheet.get": "647f208a50cda6f5",
+      "operation:sheet.get": "09767e4f4ef5a8c9",
       "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.join": {
-      "operation:sheet.join": "0654da6d079c113d",
+      "operation:sheet.join": "aab95ecb61d4f88d",
       "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.open": {
-      "operation:sheet.open": "8c2cdb4e47331efb",
+      "operation:sheet.open": "389a59321bbe525d",
       "thing:sheet": "320a7ee2e246a009"
     }
   },
@@ -1568,5 +1572,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "569f52ef448bc782fc64eafe7b842a886b9075ce78cd3c78e310b11176bac752"
+  "digest": "b67b4bac51395fd2414ff0939bc9a0f30a68b2fd3db2ab4c89a0c26edee96aad"
 }

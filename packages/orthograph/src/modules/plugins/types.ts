@@ -104,6 +104,8 @@ export interface ProjectedOperation {
   readonly runs: string;
   readonly allowed: ReadonlyArray<unknown>;
   readonly via?: ReadonlyArray<Via>;
+  /** Whether the MCP door lists it: some `allowed` entry admits an agent, and a mount's narrowing keeps `agent`. */
+  readonly agentTool?: boolean;
 }
 
 /**

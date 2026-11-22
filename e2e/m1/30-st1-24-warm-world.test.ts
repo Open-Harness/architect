@@ -25,8 +25,10 @@
 //   2. HARD, isolation: a fixture journey (`a run leaves a record`: a person signs up with one fixed email, which a world refuses a second
 //      time) is run three times in a row against one warm world; each run must pass and each must reuse the world. A world that kept the
 //      last run's person would refuse the second.
-//   3. RATIO, speed: the warm run is timed after a warm-up, three times, and the fastest is at most 70% of the cold run of the same project
-//      measured on the same machine at the start of this file (a cold run twice as slow on a loaded runner has a warm run twice as slow).
+//   3. RATIO, speed: the warm run of one fixed journey, `health is up` (`--only`), is timed after a warm-up, three times, and the fastest is at most 70% of
+//      the cold run of that same journey measured on the same machine in the same test (a cold run twice as slow on a loaded runner has a warm run twice as
+//      slow). One journey, because the saving is a fixed start-up of about 5 s: on the whole project the ratio would move with acme's journey count
+//      (`design/decisions/ST1-24-timing.md`, addendum of 21 November 2026). Rows 1 and 2 keep the whole project's verdict and spans covered.
 //      Row 1 says the speed-up is real; this row says it is enough. It prints every time it measured, and whether the fastest warm run was
 //      under 6 s, which is the target on a developer's machine and information only here (design/decisions/ST1-24-timing.md). It runs
 //      only if the warm-up reused dev's world.
@@ -119,9 +121,9 @@ beforeAll(async () => {
 afterAll(() => reference?.remove());
 
 describe("30 controls: the reference, and the instruments", () => {
-  it("a cold prove of the project, with the fixture, passes all 12 journeys and starts a world of its own (the poll sees it), saying nothing of reusing one", () => {
+  it("a cold prove of the project, with the fixture, passes all 16 journeys and starts a world of its own (the poll sees it), saying nothing of reusing one", () => {
     expect(cold.status, why(cold)).toBe(0);
-    expect(cold.report?.journeys).toHaveLength(12);
+    expect(cold.report?.journeys).toHaveLength(16);
     expect(cold.worlds.size, "the poll never saw the cold prove's wrangler or workerd").toBeGreaterThan(0);
     expect(cold.out).not.toMatch(REUSING);
     console.log(`30: a cold prove took ${cold.seconds.toFixed(1)} s`);
@@ -209,17 +211,25 @@ describe("30 ST1.24: a warm world", () => {
     }
   });
 
-  it("the fastest of three timed warm prove runs, after a warm-up, is at most 70% of the cold run measured on this machine", async () => {
-    const warmUp = await proveWarm(warm.root);
+  // What a warm world saves is the world's start, so the timed runs prove one journey, cold and warm: the saving is then the whole run and does not shrink as acme gains
+  // journeys (M2.02 added four, each taking seconds of its own in a world, which pushed the full-run ratio over 70% with nothing wrong in the warm path). `--only` also judges
+  // the evals, which one journey cannot satisfy, so the run exits 1 and each timed run is judged by its journey's verdict.
+  it("the fastest of three timed warm prove runs of one journey, after a warm-up, is at most 70% of the cold run of that journey measured on this machine", async () => {
+    const only = ["--only", "health is up"] as const;
+    const passed = (proved: { readonly report: { readonly journeys: ReadonlyArray<{ readonly name: string; readonly verdict: string }> } | undefined }) =>
+      JSON.stringify(proved.report?.journeys.map((j) => [j.name, j.verdict])) === JSON.stringify([["health is up", "pass"]]);
+    const coldOne = await prove(fresh().root, ...only);
+    expect(passed(coldOne), why(coldOne)).toBe(true);
+    const warmUp = await proveWarm(warm.root, ...only);
     expect(reused(warmUp, warm.url), `nothing is warm, so there is nothing to time\n${why(warmUp)}`).toBe(true);
     const times: Array<number> = [];
     for (let i = 0; i < 3; i++) {
-      const timed = await proveWarm(warm.root);
-      expect(timed.status, why(timed)).toBe(0);
+      const timed = await proveWarm(warm.root, ...only);
+      expect(passed(timed), why(timed)).toBe(true);
       times.push(timed.seconds);
     }
-    console.log(`30: warm prove wall-clock, seconds: ${times.map((t) => t.toFixed(2)).join(", ")}; the cold reference took ${cold.seconds.toFixed(1)}; the faster warm run is ${(100 * Math.min(...times) / cold.seconds).toFixed(0)}% of it, and ${Math.min(...times) < 6 ? "under" : "not under"} 6 s (information only)`);
-    expect(fastEnough(times, cold.seconds), `warm runs took ${times.map((t) => t.toFixed(1)).join(" s, ")} s against a cold ${cold.seconds.toFixed(1)} s`).toBe(true);
+    console.log(`30: warm prove wall-clock of one journey, seconds: ${times.map((x) => x.toFixed(2)).join(", ")}; the cold reference took ${coldOne.seconds.toFixed(1)}; the faster warm run is ${(100 * Math.min(...times) / coldOne.seconds).toFixed(0)}% of it`);
+    expect(fastEnough(times, coldOne.seconds), `warm runs took ${times.map((x) => x.toFixed(1)).join(" s, ")} s against a cold ${coldOne.seconds.toFixed(1)} s`).toBe(true);
   });
 });
 
