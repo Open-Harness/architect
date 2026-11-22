@@ -149,7 +149,7 @@ root config, `tools/ci/`, `design/` outside `design/docs`), a path Nx cannot see
 product through the CLI and the examples, none of which it imports, and reads `docs/canon` on `goal/stage-1`, so any affected project but `docs` and the root affects it.
 `prove`'s tests read `examples/acme`, `examples/starter` and `packages/wallets`, and run the CLI (grep of `packages/prove` on `main` and
 `goal/stage-1`), so those four affect it too.
-What this saves: `prove-tests` on a change that stays in a package or example prove's tests do not reach (for example `examples/work`, `examples/signup`, `canon`), and the e2e jobs only on a `design/docs` project change that is not docs-only, which the docs fast path mostly covers already. So B3's real saving is `prove-tests`. The e2e jobs are one
+What this saves: `prove-tests` on a change that stays in a package or example prove's tests do not reach (for example `examples/work`, `examples/signup`, `canon`), and nothing yet from the e2e flag: the only project that does not affect e2e is `design/docs`, and a change there is docs-only, which the docs fast path takes first. The flag is kept so a finer e2e split later needs no workflow change. So B3's real saving today is `prove-tests`; the case for splitting `e2e` into projects per suite is recorded here for Aaron. The e2e jobs are one
 Nx project, so no finer cut than the project is possible; a package change still runs all of them. A wrong cut is caught by the push run on
 `main` and `goal/stage-1` (B4).
 
