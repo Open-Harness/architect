@@ -277,6 +277,7 @@ allocator is needed: check the name is free, then list it here in the pull reque
 
 | ID | File | Taken by |
 |---|---|---|
+| WEB-approval-declined | [`../decisions/WEB-approval-declined.md`](../decisions/WEB-approval-declined.md) | slice 1: a person's no is `ApprovalDeclined`, `AR-003` |
 
 ## The done check
 
