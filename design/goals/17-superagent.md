@@ -334,7 +334,7 @@ declared event. The operations are named here; their payloads follow the prototy
 | Outgoing message | thing, tickets; `pending → sent`, `dropped` | `reply` (main, executor, by purpose); `withdraw` (system); retried from 5 s doubling to 300 s, in order per ticket and conversation |
 | PromptSet | thing with versions, prompts | `save` (person; main proposes); `preview`, `history` (person); `compose(role)` (system, every model request) |
 | Settings | thing with versions, the app; execution variables, blocked commands | `save` (person; main proposes); `pause` (person: an eval's deadline moves later by the pause's length) |
-| Proposal | thing, superagent; `waiting → approved`, `rejected` | made when a main agent calls a configuration change; `approve`, `reject` (person) |
+| Proposal | thing, superagent; `waiting → approved`, `rejected` | made when a main agent calls a configuration change; `approve`, `reject` (person); `proposals` (person: those waiting) |
 | Health | derived read, superagent | `superagent.health`: each source's, each kind of stored work's and each channel's problems, shown once one has failed three times in a row |
 | Ticket stage | derived read, tickets | `ticket.waiting` lists every ticket whose stage is person |
 
