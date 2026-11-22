@@ -35,15 +35,20 @@
 //      (digestC) gives the correction of the second and then the third. The sink takes longer over a correction, so a follower that hands two changes on at once is seen to.
 //   3. A follower started late reads a long history (more than two windows of blocks) and hands every confirmed event on once, in the chain's order, among them two in one block (log
 //      indexes 0 and 1) from two senders, one with a uint beyond 2^53 (its decimal string).
-//   4. A restart (wrangler stopped and started again over the same storage) does not double count: the checkpoint is what was stored; with the chain unmoved, nothing at all
-//      is handed on again; after a new event, exactly that one is handed on, and across the whole run no id was "accepted" twice. Twice over: a second restart does the same.
+//   4. A restart (wrangler stopped and started again over the same storage) does not double count: the checkpoint is what was stored; with the chain unmoved, whatever is handed
+//      on again is `seen` (M6-chain item 12: a replay is harmless); after a new event, exactly that one is newly accepted, and across the whole run no id was "accepted" twice.
+//      Twice over: a second restart does the same.
+//   5. A sink that answers an error once (the check's sink has `failNext`): the follower keeps its checkpoint where it was, so the next poll hands the same change on again and the
+//      sink takes it. The checkpoint moves only after the sink has taken the change (item 12). A poll that meets the error may reject or return; the check allows either.
+//   6. An event taken back before it was confirmed (`anvil_reorg` of one block, inside the depth-2 window) is not handed on: no correction, because the sink never saw it (item 12:
+//      "the follower drops it"). Anvil can make this one, so it is checked.
 //      (`configure` again, with the same arguments, is allowed to follow a restart, and never rewinds the checkpoint.)
 //
 // THE CONTROLS (true today, with no follower): the checkpoint judge against planted wrong checkpoints (no `through`, `through` short of the head, a stale hash, a window that does not end
 // at `through`, an empty window, numbers out of order, a window longer than the chain), and the entry normaliser against a different case of address and a different id.
 import { afterAll, describe, expect, it } from "vitest";
 import {
-  ECHOED_ABI, accounts, blockAt, deployEcho, digestOf, echoCall, head, mine, rpc, send, startAnvil, startWorker, until, type Anvil, type Hex, type Worker,
+  ECHOED_ABI, accounts, blockAt, deployEcho, digestOf, echoCall, head, mine, rpc, send, startAnvil, startWorker, type Anvil, type Hex, type Worker,
 } from "./actor-fixture.ts";
 
 interface Block { number: string; hash: Hex }
@@ -73,6 +78,19 @@ const checkpointProblems = (cp: Checkpoint, chain: { head: Block; hashes: Readon
   });
   return problems;
 };
+
+/** What is wrong with the calls a sink has had: an id accepted twice, or "seen" for an id it never accepted. A replay after a restart may be "seen" again and again (M6-chain item 12); it may never be "accepted" twice. */
+const sinkProblems = (calls: ReadonlyArray<{ id: string; result: string }>): string[] => {
+  const accepted = new Set<string>();
+  const problems: string[] = [];
+  for (const c of calls) {
+    if (c.result === "accepted") { if (accepted.has(c.id)) problems.push(`${c.id} was accepted twice`); accepted.add(c.id); }
+    else if (c.result === "seen") { if (!accepted.has(c.id)) problems.push(`${c.id} was "seen" before it was accepted`); }
+    else problems.push(`${c.id} got the answer ${JSON.stringify(c.result)}`);
+  }
+  return problems;
+};
+const acceptedOf = <C extends { result: string }>(calls: ReadonlyArray<C>) => calls.filter((c) => c.result === "accepted");
 
 const dev = async (url: string) => (await accounts(url))[0]!;
 let started: Promise<{ anvil: Anvil; worker: Worker; sender: Hex }> | undefined;
@@ -127,7 +145,8 @@ describe("the follower actor: a Durable Object that follows one contract's event
     await w.worker.call("FOLLOWER", name, "configure", config);
     expect(await checkpointOf(w, name), "configure again does not rewind the checkpoint").toEqual(stored);
     await pollUp(w, name);
-    expect((await received(w, name)).length, "and nothing is handed on again").toBe(1);
+    const again = await received(w, name);
+    expect([sinkProblems(again), acceptedOf(again).length], "and nothing new is accepted").toEqual([[], 1]);
   });
 
   it("a take-back is handed on as a correction, then the replaying event; the checkpoint follows the chain onto its new blocks", async () => {
@@ -197,7 +216,7 @@ describe("the follower actor: a Durable Object that follows one contract's event
     expect(checkpointProblems(await checkpointOf(w, name), await chainView(w)), "the stored checkpoint against the chain after the long read").toEqual([]);
   });
 
-  it("a restart does not double count: the checkpoint is what was stored, nothing is handed on again, and a new event is handed on once", async () => {
+  it("a restart does not double count: the checkpoint is what was stored, a replay is at most `seen`, nothing is accepted twice, and a new event is handed on once", async () => {
     const w = await world();
     const url = w.anvil.rpcUrl;
     const { echo, name, config } = await fresh(w);
@@ -218,16 +237,16 @@ describe("the follower actor: a Durable Object that follows one contract's event
     await w.worker.call("FOLLOWER", name, "configure", config);
     expect(await checkpointOf(w, name), "the checkpoint after a restart is the one that was stored").toEqual(stored);
     await pollUp(w, name);
-    expect(await received(w, name), "the chain has not moved: nothing is handed on again, accepted or seen").toEqual(before);
+    const replayed = await received(w, name);
+    expect(sinkProblems(replayed), "the chain has not moved: whatever is handed on again is `seen`").toEqual([]);
+    expect(acceptedOf(replayed), "and nothing new is accepted").toEqual(before);
 
     const third = await send(url, w.sender, echo.address, echoCall(2n, digestC));
     await mine(url, 1);
     await pollUp(w, name);
     const after = await received(w, name);
-    expect(after.slice(0, 3), "what was handed on before is as it was").toEqual(before);
-    expect(after.slice(3), "after the restart exactly the new event is handed on").toEqual([confirmed(w.anvil.chainId, third.blockHash, 0, 2n, w.sender, digestC)]);
-    const accepted = after.filter((c) => c.result === "accepted").map((c) => c.id);
-    expect(new Set(accepted).size, "no id was accepted twice").toBe(accepted.length);
+    expect(sinkProblems(after), "after the restart and a new event, nothing is accepted twice").toEqual([]);
+    expect(acceptedOf(after), "exactly the new event is newly accepted").toEqual([...before, confirmed(w.anvil.chainId, third.blockHash, 0, 2n, w.sender, digestC)]);
     expect(checkpointProblems(await checkpointOf(w, name), await chainView(w)), "the stored checkpoint against the chain after one restart").toEqual([]);
 
     // A second restart, with another event after it: the same again.
@@ -236,16 +255,52 @@ describe("the follower actor: a Durable Object that follows one contract's event
     await w.worker.call("FOLLOWER", name, "configure", config);
     expect(await checkpointOf(w, name), "the checkpoint after a second restart is the one that was stored").toEqual(stored2);
     await pollUp(w, name);
-    expect(await received(w, name), "the chain has not moved: nothing is handed on again").toEqual(after);
+    const replayed2 = await received(w, name);
+    expect([sinkProblems(replayed2), acceptedOf(replayed2)], "after a second restart: a replay is `seen`, nothing new is accepted").toEqual([[], acceptedOf(after)]);
     const fourth = await send(url, w.sender, echo.address, echoCall(3n, digestOf("D")));
     await mine(url, 1);
     await pollUp(w, name);
     const last = await received(w, name);
-    expect(last.slice(0, after.length), "what was handed on before is as it was").toEqual(after);
-    expect(last.slice(after.length), "after the second restart exactly the new event is handed on").toEqual([confirmed(w.anvil.chainId, fourth.blockHash, 0, 3n, w.sender, digestOf("D"))]);
-    const ids = last.filter((c) => c.result === "accepted").map((c) => c.id);
-    expect(new Set(ids).size, "across both restarts no id was accepted twice").toBe(ids.length);
+    expect(sinkProblems(last), "across both restarts no id was accepted twice").toEqual([]);
+    expect(acceptedOf(last), "exactly the new event is newly accepted").toEqual([...acceptedOf(after), confirmed(w.anvil.chainId, fourth.blockHash, 0, 3n, w.sender, digestOf("D"))]);
     expect(checkpointProblems(await checkpointOf(w, name), await chainView(w)), "the stored checkpoint against the chain at the end").toEqual([]);
+  });
+
+  it("a sink that answers an error once: the change is handed on again at the next poll, and the checkpoint does not pass it before the sink has taken it", async () => {
+    const w = await world();
+    const { echo, name } = await fresh(w);
+    const digest = digestOf("A");
+    const tx = await send(w.anvil.rpcUrl, w.sender, echo.address, echoCall(1n, digest));
+    await pollUp(w, name);
+    const stored = await checkpointOf(w, name);
+    expect(await received(w, name), "observed, not confirmed: nothing is handed on").toEqual([]);
+    await mine(w.anvil.rpcUrl, 1);
+    await w.worker.call("FOLLOWER_SINK", name, "failNext", 1);
+    await w.worker.call("FOLLOWER", name, "poll").catch(() => undefined);
+    expect(await received(w, name), "the sink took nothing: it answered an error").toEqual([]);
+    expect(await checkpointOf(w, name), "the checkpoint stays where it was: it has not passed a change the sink refused").toEqual(stored);
+    await pollUp(w, name);
+    expect(await received(w, name), "at the next poll the same change is handed on, and taken").toEqual([confirmed(w.anvil.chainId, tx.blockHash, 0, 1n, w.sender, digest)]);
+    expect(checkpointProblems(await checkpointOf(w, name), await chainView(w)), "now the checkpoint is the chain's").toEqual([]);
+  });
+
+  it("an event taken back before it was confirmed is not handed on at all: the sink never saw it, so there is nothing to correct", async () => {
+    const w = await world();
+    const url = w.anvil.rpcUrl;
+    const { echo, name } = await fresh(w);
+    const [digestA, digestB] = [digestOf("A"), digestOf("B")];
+    const first = await send(url, w.sender, echo.address, echoCall(1n, digestA));
+    await pollUp(w, name);
+    expect(await received(w, name), "observed only: depth 2 and its block is the head").toEqual([]);
+    // A reorg of one block, inside the confirmation window: the first event is gone before anything confirmed it.
+    await rpc(url, "anvil_reorg", [1, [[{ from: w.sender, to: echo.address, gas: "0x100000", data: echoCall(1n, digestB) }, 0]]]);
+    const now = await blockAt(url, first.block);
+    expect(now.hash, "the reorg gave the block's number a new hash").not.toBe(first.blockHash);
+    await pollUp(w, name);
+    expect(await received(w, name), "it was taken back unconfirmed: no correction, and the new event is still only observed").toEqual([]);
+    await mine(url, 1);
+    await pollUp(w, name);
+    expect(await received(w, name), "once the new event is confirmed it is handed on, and nothing else was").toEqual([confirmed(w.anvil.chainId, now.hash, 0, 1n, w.sender, digestB)]);
   });
 });
 
@@ -269,6 +324,15 @@ describe("the judges of this file, on wrong inputs (true today)", () => {
     expect(checkpointProblems({ ...right, window: [right.window[2]!] }, chain)).toEqual([]);
     expect(checkpointProblems({ ...right, window: [{ number: 0 as unknown as string, hash: A }, right.window[1]!, right.window[2]!] }, chain).join("; ")).toMatch(/block number 0 is not a decimal string/);
     expect(checkpointProblems({ ...right, through: { number: 2n as unknown as string, hash: C } }, chain).join("; ")).toMatch(/through is 2 0xcccc|block number 2 is not a decimal string/);
+  });
+
+  it("the sink judge takes `seen` replays, and refuses an id accepted twice, a `seen` that was never accepted, and another answer", () => {
+    const c = (id: string, result: string) => ({ id, result });
+    expect(sinkProblems([c("a", "accepted"), c("b", "accepted"), c("a", "seen"), c("a", "seen")])).toEqual([]);
+    expect(sinkProblems([c("a", "accepted"), c("a", "accepted")])).toEqual(["a was accepted twice"]);
+    expect(sinkProblems([c("a", "seen")])).toEqual([`a was "seen" before it was accepted`]);
+    expect(sinkProblems([c("a", "maybe")])).toEqual([`a got the answer "maybe"`]);
+    expect(acceptedOf([c("a", "accepted"), c("a", "seen")])).toEqual([c("a", "accepted")]);
   });
 
   it("the entry normaliser sees an address in either case as one, and an id or a field that differs as different", () => {

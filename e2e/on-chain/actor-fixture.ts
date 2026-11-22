@@ -143,6 +143,8 @@ export { ${spec.classes.join(", ")} } from "@orthograph/host-cloudflare";
 export class Sink extends DurableObject {
   async accept(entry) {
     // A correction takes longer to record, so a follower that hands two changes on at once, and not one after the other, is seen to.
+    const fail = (await this.ctx.storage.get("fail")) ?? 0;
+    if (fail > 0) { await this.ctx.storage.put("fail", fail - 1); throw new Error("the sink is unavailable"); }
     if (entry.event.endsWith("Corrected")) await new Promise((done) => setTimeout(done, 150));
     const calls = (await this.ctx.storage.get("calls")) ?? [];
     const result = calls.some((c) => c.entry.id === entry.id) ? "seen" : "accepted";
@@ -150,6 +152,8 @@ export class Sink extends DurableObject {
     await this.ctx.storage.put("calls", calls);
     return result;
   }
+  // The check's way to make the sink answer an error: the next n accepts fail, and record nothing.
+  async failNext(n) { await this.ctx.storage.put("fail", n); }
   async received() { return (await this.ctx.storage.get("calls")) ?? []; }
 }
 
@@ -208,7 +212,7 @@ export const startWorker = async (spec: WorkerSpec): Promise<Worker> => {
       (s) => s !== "waiting", 120_000,
     );
     if (answered !== "up") {
-      const said = log().slice(from).replace(/\u001b\[[0-9;]*m/g, "").split("\n").filter((l) => l.includes("ERROR") || l.includes("no such Durable Object class") || /^\s+\S+:\d+:\d+:/.test(l)).slice(0, 6).join("\n");
+      const said = log().slice(from).replace(new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g"), "").split("\n").filter((l) => l.includes("ERROR") || l.includes("no such Durable Object class") || /^\s+\S+:\d+:\d+:/.test(l)).slice(0, 6).join("\n");
       await kill(proc);
       rmSync(dir, { recursive: true, force: true });
       throw new Error(`the Worker holding ${spec.classes.join(" and ")} did not start (${answered}): @orthograph/host-cloudflare must export ${spec.classes.join(" and ")} from its front door, and they must load in workerd.\n${said}`);

@@ -17,17 +17,19 @@
 //                                                                           "reverted" (mined, failed) or "dropped" (no receipt, the node no longer holds it, nonce unused).
 //                                                                           `hash` is the current transaction; `replaces` the hashes it replaced, oldest first.
 //       reconcile(): { replaced: [{ id, nonce, oldHash, newHash }] }        every dropped submission is sent again, the same call at the same nonce, with a higher fee.
-//     A submission the node still holds, or has mined, is left alone. (The follower of the next check has `alarm`; here it is a call, so the check needs no clock.)
+//     A submission the node still holds, or has mined, is left alone. A relayer that only replaces when `reconcile` is called is wrong (M6-chain item 12): its alarm, which fires every
+//     `pollIntervalMs`, does the same work by itself. Answers carry at least the keys named here; the checks match those keys and no others.
 //
 // WHAT IT REQUIRES, on a real Anvil, with the Durable Object running in workerd under `wrangler dev` (`actor-fixture.ts`):
 //   1. `configure` answers the address of the key in `RELAYER_KEY` (derived here with node's secp256k1), twice the same.
 //   2. 100 `relay` calls made at once, for 100 different `Echo.echo(i, digest_i)` calls, get nonces 0 to 99, each once; every one is from the relayer's address and a
 //      different hash; every one ends "included"; on the chain the relayer's nonce is 100, each transaction sits at the nonce it was told, with the call it was
 //      given, and the contract's logs hold exactly 100 `Echoed`, ids 0 to 99, each once, `by` the relayer, with its own digest.
-//   3. With mining paused, three calls take the next three nonces. The node drops the middle one (`anvil_dropTransaction`). `status` says "dropped" for it and
-//      "submitted" for the other two. `reconcile` replaces exactly that one: the same nonce, its old hash, a new hash; the node holds a transaction with that hash, from the
-//      relayer, at that nonce, with the same call and a higher fee. After mining, all three are "included", the replaced one under its new hash with the old hash in
-//      `replaces`; the old hash has no receipt; the relayer's nonce moved by exactly three; and each of the three calls' events is on the chain once.
+//   3a. With mining paused, a call is dropped by the node and nobody calls anything: within 30 s the relayer has replaced it by itself (same call, same nonce, higher fee), and it lands.
+//   3b. With mining paused, three calls take the next three nonces. The node drops the middle one (`anvil_dropTransaction`; Anvil takes the one behind it out with it, and the check asks the
+//      node which it let go). `reconcile` replaces what it is asked to replace and nothing the node still holds (an alarm that got there first leaves it less to do, and that is fine); in the
+//      end each dropped one is replaced exactly once: a new hash the node holds, from the relayer, at that nonce, with the same call and a higher fee, the old hash in `replaces`, never mined.
+//      After mining, all three are "included", the relayer's nonce moved by exactly three, and each of the three calls' events is on the chain once.
 //   4. A call that is mined and fails (`Echo.guarded`, mined past its deadline) is "reverted", and its nonce is used. After a restart (wrangler stopped and started over the same storage) what
 //      it sent is still known, as it was, and the next nonce is the chain's next.
 //   5. After all that, the key is in no answer the Worker gave, not in wrangler's log, and in no file of the Durable Objects' storage.
@@ -49,6 +51,8 @@ interface Status { id: string; nonce: number; hash: Hex; state: "submitted" | "i
 interface Replaced { id: string; nonce: number; oldHash: Hex; newHash: Hex }
 
 const key = makeKey();
+/** `pollIntervalMs` is the period of the relayer's alarm. configure is idempotent only for the same arguments, so every call here gives the same. */
+const config = (anvil: Anvil) => ({ rpcUrl: anvil.rpcUrl, chainId: anvil.chainId, pollIntervalMs: 250 });
 let earlier: Relayed | undefined;
 let started: Promise<{ anvil: Anvil; worker: Worker; echo: Hex; name: string; relayer: Hex }> | undefined;
 // Set up once, and rethrown by every test that needs it, so each fails by name when the seam is missing.
@@ -57,7 +61,7 @@ const world = () => started ??= (async () => {
   const echo = (await deployEcho(anvil.rpcUrl)).address;
   const worker = await startWorker({ classes: ["Relayer"], secrets: { RELAYER_KEY: `0x${key.secret}` } });
   const name = `eip155:${anvil.chainId}`;
-  const configured = (await worker.call("RELAYER", name, "configure", { rpcUrl: anvil.rpcUrl, chainId: anvil.chainId })) as { address: Hex };
+  const configured = (await worker.call("RELAYER", name, "configure", config(anvil))) as { address: Hex };
   await rpc(anvil.rpcUrl, "anvil_setBalance", [configured.address, "0x3635c9adc5dea00000"]);
   return { anvil, worker, echo, name, relayer: configured.address.toLowerCase() as Hex };
 })();
@@ -67,15 +71,14 @@ const relay = (w: { worker: Worker; name: string }, to: Hex, data: Hex) => w.wor
 const status = (w: { worker: Worker; name: string }, id: string) => w.worker.call("RELAYER", w.name, "status", id) as Promise<Status>;
 const count = async (url: string, address: Hex, tag: "latest" | "pending") => Number(BigInt(await rpc<Hex>(url, "eth_getTransactionCount", [address, tag])));
 const txOf = (url: string, hash: Hex) => rpc<{ from: Hex; to: Hex; nonce: Hex; input: Hex; maxFeePerGas?: Hex; gasPrice?: Hex } | null>(url, "eth_getTransactionByHash", [hash]);
-/** The keys of an answer, sorted: an answer has exactly the keys its seam names and no others. */
-const keysOf = (answer: object) => Object.keys(answer).sort();
-const RELAYED = ["from", "hash", "id", "nonce"], STATUS = ["hash", "id", "nonce", "replaces", "state"], REPLACED = ["id", "newHash", "nonce", "oldHash"];
+/** What the checks read of an answer: the keys the seam names. An answer may carry more (M6-chain item 12). */
+const named = <A extends object>(answer: A, keys: ReadonlyArray<keyof A>) => Object.fromEntries(keys.map((k) => [k, answer[k]]));
 const fee = (tx: { maxFeePerGas?: Hex; gasPrice?: Hex }) => BigInt(tx.maxFeePerGas ?? tx.gasPrice ?? "0x0");
 
 describe("the relayer actor: a Durable Object that holds one key and sends every call from it, in order", () => {
   it("configure answers the address of the key in its environment, and answers it again the same", async () => {
     const w = await world();
-    const again = (await w.worker.call("RELAYER", w.name, "configure", { rpcUrl: w.anvil.rpcUrl, chainId: w.anvil.chainId })) as { address: Hex };
+    const again = (await w.worker.call("RELAYER", w.name, "configure", config(w.anvil))) as { address: Hex };
     expect(w.relayer, "the address configure gave is not the address of the secret key bound as RELAYER_KEY").toBe(key.address);
     expect(again.address.toLowerCase(), "a second configure with the same arguments gave another address").toBe(key.address);
   });
@@ -86,7 +89,7 @@ describe("the relayer actor: a Durable Object that holds one key and sends every
     const sent = await Promise.all(calls.map((c) => relay(w, w.echo, echoCall(c.id, c.digest))));
     earlier = sent[0];
     expect(nonceProblems(sent.map((s) => s.nonce), 0, 100), "the nonces the relayer handed out").toEqual([]);
-    expect([...new Set(sent.map((s) => keysOf(s).join()))], "relay answers { id, hash, nonce, from } and nothing else").toEqual([RELAYED.join()]);
+    expect(sent.map((s) => [typeof s.id, typeof s.hash, typeof s.nonce, typeof s.from]), "relay answers { id, hash, nonce, from }").toEqual(sent.map(() => ["string", "string", "number", "string"]));
     expect(sent.map((s) => s.from.toLowerCase()), "every submission is from the relayer's own address").toEqual(sent.map(() => w.relayer));
     expect(new Set(sent.map((s) => s.hash)).size, "100 different transactions").toBe(100);
     expect(new Set(sent.map((s) => s.id)).size, "100 different ids").toBe(100);
@@ -94,7 +97,6 @@ describe("the relayer actor: a Durable Object that holds one key and sends every
     const settled = await until(() => Promise.all(sent.map((s) => status(w, s.id))), (all) => all.every((s) => s.state === "included"), 60_000);
     expect(settled.map((s) => s.state).filter((s) => s !== "included"), "every submission ends included").toEqual([]);
     expect(settled.map((s) => [s.nonce, s.hash]), "status agrees with what relay answered").toEqual(sent.map((s) => [s.nonce, s.hash]));
-    expect([...new Set(settled.map((s) => keysOf(s).join()))], "status answers { id, nonce, hash, state, replaces } and nothing else").toEqual([STATUS.join()]);
     expect(settled.map((s) => s.replaces), "nothing was replaced").toEqual(sent.map(() => []));
     expect(await count(w.anvil.rpcUrl, w.relayer, "latest"), "the relayer's nonce on the chain").toBe(100);
 
@@ -109,54 +111,79 @@ describe("the relayer actor: a Durable Object that holds one key and sends every
       .toEqual(calls.map((c) => [c.id, w.relayer, c.digest]));
   });
 
-  it("a dropped submission is seen as dropped and replaced at its own nonce with a higher fee, and what was behind it still lands", async () => {
+  it("replaces a dropped transaction on its own, through its alarm, with no reconcile call", async () => {
     const w = await world();
     const url = w.anvil.rpcUrl;
     const first = await count(url, w.relayer, "pending");
-    const again = (await w.worker.call("RELAYER", w.name, "configure", { rpcUrl: url, chainId: w.anvil.chainId })) as { address: Hex };
+    const again = (await w.worker.call("RELAYER", w.name, "configure", config(w.anvil))) as { address: Hex };
     expect(again.address.toLowerCase(), "configure after it has sent 100 calls answers the same address").toBe(w.relayer);
     if (earlier) expect(await status(w, earlier.id), "configure again forgets nothing it sent").toMatchObject({ id: earlier.id, nonce: earlier.nonce, hash: earlier.hash, state: "included" });
     await rpc(url, "evm_setAutomine", [false]);
+    const sent = await relay(w, w.echo, echoCall(3000n, digestOf("alarm")));
+    expect(sent.nonce, "the next nonce").toBe(first);
+    const before = await txOf(url, sent.hash);
+    expect(await rpc(url, "anvil_dropTransaction", [sent.hash]), "the node dropped it").not.toBeNull();
+    // No reconcile, no call at all: the relayer's own alarm notices and resends, within a bound.
+    const seen = await until(() => status(w, sent.id), (s) => s.replaces.length > 0, 30_000);
+    expect(seen, "the relayer replaced it by itself within 30 s").toMatchObject({ id: sent.id, nonce: first, state: "submitted", replaces: [sent.hash] });
+    expect(seen.hash, "under a new hash").not.toBe(sent.hash);
+    const replacement = await txOf(url, seen.hash);
+    expect(replacement, "the node holds the replacement").not.toBeNull();
+    expect({ from: replacement!.from.toLowerCase(), to: replacement!.to.toLowerCase(), nonce: Number(BigInt(replacement!.nonce)), input: replacement!.input }, "the same call at the same nonce")
+      .toEqual({ from: w.relayer, to: w.echo, nonce: first, input: before!.input });
+    expect(fee(replacement!) > fee(before!), "paying more").toBe(true);
+    await rpc(url, "evm_setAutomine", [true]);
+    await mine(url, 1);
+    expect((await until(() => status(w, sent.id), (s) => s.state === "included", 30_000)).state).toBe("included");
+    expect((await echoed(url, w.echo)).filter((l) => l.id === 3000n), "the call happened once").toHaveLength(1);
+  });
+
+  it("reconcile, called, replaces what the node dropped, at its nonce with a higher fee, and what was behind it lands (an alarm that gets there first does the same work)", async () => {
+    const w = await world();
+    const url = w.anvil.rpcUrl;
+    const first = await count(url, w.relayer, "pending");
+    await rpc(url, "evm_setAutomine", [false]);
     const subs = [await relay(w, w.echo, echoCall(1000n, digestOf("a"))), await relay(w, w.echo, echoCall(1001n, digestOf("b"))), await relay(w, w.echo, echoCall(1002n, digestOf("c")))];
-    const [a, b] = subs as [Relayed, Relayed, Relayed];
+    const [, b] = subs as [Relayed, Relayed, Relayed];
     expect(subs.map((s) => s.nonce), "the next three nonces, in order, continuing from the chain's own count").toEqual([first, first + 1, first + 2]);
     expect((await Promise.all(subs.map((s) => status(w, s.id)))).map((s) => s.state), "with mining paused all three are held by the node").toEqual(["submitted", "submitted", "submitted"]);
     const before = await Promise.all(subs.map((s) => txOf(url, s.hash)));
     expect(await rpc(url, "anvil_dropTransaction", [b.hash]), "the node dropped the middle transaction").not.toBeNull();
 
-    // The node says what it still holds (Anvil takes a transaction's dependents out of its pool with it); the relayer must say the same, and replace each one the node let go.
+    // Anvil takes a transaction's dependents out of its pool with it: the node says what it let go.
     const held = await Promise.all(subs.map(async (s) => (await txOf(url, s.hash)) !== null));
-    expect(held.slice(0, 2), "the node still holds the first and no longer holds the dropped one").toEqual([true, false]);
     const gone = subs.filter((_, i) => !held[i]);
-    expect((await Promise.all(subs.map((s) => status(w, s.id)))).map(({ id, nonce, hash, state, replaces }) => ({ id, nonce, hash, state, replaces })), "status says what the node holds: the dropped are dropped, the rest submitted")
-      .toEqual(subs.map((s, i) => ({ id: s.id, nonce: s.nonce, hash: s.hash, state: held[i] ? "submitted" : "dropped", replaces: [] })));
-
     const done = (await w.worker.call("RELAYER", w.name, "reconcile")) as { replaced: Replaced[] };
-    expect(done.replaced.map(({ id, nonce, oldHash }) => ({ id, nonce, oldHash })), "reconcile replaces exactly what the node dropped, each at its own nonce, lowest nonce first")
-      .toEqual(gone.map((s) => ({ id: s.id, nonce: s.nonce, oldHash: s.hash })));
-    for (const r of done.replaced) {
-      expect(keysOf(r), "reconcile's entries are { id, nonce, oldHash, newHash } and nothing else").toEqual(REPLACED);
-      const index = subs.findIndex((s) => s.id === r.id);
-      expect(r.newHash, `the replacement of ${r.id} is a different transaction`).not.toBe(r.oldHash);
-      const replacement = await txOf(url, r.newHash);
-      expect(replacement, `the node holds the replacement of ${r.id}`).not.toBeNull();
-      expect({ from: replacement!.from.toLowerCase(), to: replacement!.to.toLowerCase(), nonce: Number(BigInt(replacement!.nonce)), input: replacement!.input }, `the replacement of ${r.id} is the same call at the same nonce`)
-        .toEqual({ from: w.relayer, to: w.echo, nonce: subs[index]!.nonce, input: before[index]!.input });
-      expect(fee(replacement!) > fee(before[index]!), `the replacement of ${r.id} pays more (${fee(replacement!)} against ${fee(before[index]!)})`).toBe(true);
+    // The alarm may have replaced some before this call, and then reconcile has less to do: what it reports is a subset of what the node dropped, lowest nonce first.
+    const reported = done.replaced.map((r) => named(r, ["id", "nonce", "oldHash"]));
+    expect(reported.every((r) => gone.some((g) => g.id === r.id && g.nonce === r.nonce && g.hash === r.oldHash)), "reconcile replaces only what the node dropped, at the same nonce").toBe(true);
+    expect(reported.map((r) => r.nonce), "lowest nonce first").toEqual(reported.map((r) => r.nonce as number).sort((x, y) => x - y));
+    expect(held.slice(0, 2), "the node let go of the middle one at least, and kept the first").toEqual([true, false]);
+
+    // Whoever did it, every dropped one is now replaced: a new hash the node holds, the same call at the same nonce, a higher fee, the old hash listed.
+    const now = await until(() => Promise.all(subs.map((s) => status(w, s.id))), (all) => gone.every((g) => all.find((x) => x.id === g.id)!.replaces.length === 1), 30_000);
+    for (const g of gone) {
+      const index = subs.findIndex((s) => s.id === g.id);
+      const st = now[index]!;
+      expect(st, `${g.id} is replaced, once`).toMatchObject({ id: g.id, nonce: g.nonce, replaces: [g.hash] });
+      expect(st.hash, `the replacement of ${g.id} is a different transaction`).not.toBe(g.hash);
+      const replacement = await txOf(url, st.hash);
+      expect(replacement, `the node holds the replacement of ${g.id}`).not.toBeNull();
+      expect({ from: replacement!.from.toLowerCase(), to: replacement!.to.toLowerCase(), nonce: Number(BigInt(replacement!.nonce)), input: replacement!.input }, `the replacement of ${g.id} is the same call at the same nonce`)
+        .toEqual({ from: w.relayer, to: w.echo, nonce: g.nonce, input: before[index]!.input });
+      expect(fee(replacement!) > fee(before[index]!), `the replacement of ${g.id} pays more`).toBe(true);
     }
+    for (const r of done.replaced) expect(now.find((x) => x.id === r.id)!.hash, "what reconcile says it sent is what status says is current").toBe(r.newHash);
     expect((await w.worker.call("RELAYER", w.name, "reconcile") as { replaced: Replaced[] }).replaced, "nothing is dropped now, so a second reconcile replaces nothing").toEqual([]);
 
     await rpc(url, "evm_setAutomine", [true]);
     await mine(url, 1);
     const settled = await until(() => Promise.all(subs.map((s) => status(w, s.id))), (all) => all.every((s) => s.state === "included"), 30_000);
-    expect(settled.map(({ id, nonce, hash, state, replaces }) => ({ id, nonce, hash, state, replaces })), "all three end included, each replaced one under its new hash with the old one listed")
-      .toEqual(subs.map((s) => {
-        const r = done.replaced.find((x) => x.id === s.id);
-        return { id: s.id, nonce: s.nonce, hash: r?.newHash ?? s.hash, state: "included", replaces: r ? [s.hash] : [] };
-      }));
-    for (const s of gone) expect(await rpc(url, "eth_getTransactionReceipt", [s.hash]), `the dropped transaction ${s.hash} was never mined`).toBeNull();
+    expect(settled.map((s) => named(s, ["id", "nonce", "state"])), "all three end included").toEqual(subs.map((s) => ({ id: s.id, nonce: s.nonce, state: "included" })));
+    expect(settled.map((s) => s.replaces.length), "each dropped one was replaced once, the rest never").toEqual(subs.map((s) => (gone.some((g) => g.id === s.id) ? 1 : 0)));
+    for (const g of gone) expect(await rpc(url, "eth_getTransactionReceipt", [g.hash]), `the dropped transaction ${g.hash} was never mined`).toBeNull();
     expect(await count(url, w.relayer, "latest"), "the relayer's nonce moved by exactly three").toBe(first + 3);
-    const logs = (await echoed(url, w.echo)).filter((l) => l.id >= 1000n);
+    const logs = (await echoed(url, w.echo)).filter((l) => l.id >= 1000n && l.id < 1003n);
     expect(logs.map((l) => [l.id, l.by, l.digest]).sort((x, y) => Number((x[0] as bigint) - (y[0] as bigint))), "each of the three calls happened once")
       .toEqual([[1000n, w.relayer, digestOf("a")], [1001n, w.relayer, digestOf("b")], [1002n, w.relayer, digestOf("c")]]);
   });
@@ -186,13 +213,13 @@ describe("the relayer actor: a Durable Object that holds one key and sends every
     const before = await until(() => status(w, sent.id), (s) => s.state === "included", 30_000);
     expect(before.state).toBe("included");
     await w.worker.restart();
-    const configured = (await w.worker.call("RELAYER", w.name, "configure", { rpcUrl: url, chainId: w.anvil.chainId })) as { address: Hex };
+    const configured = (await w.worker.call("RELAYER", w.name, "configure", config(w.anvil))) as { address: Hex };
     expect(configured.address.toLowerCase(), "the same key after a restart").toBe(w.relayer);
     expect(await status(w, sent.id), "what it sent before the restart is still known, as it was").toEqual(before);
     const next = await relay(w, w.echo, echoCall(2001n, digestOf("after the restart")));
     expect(next.nonce, "the next nonce continues from the chain's count").toBe(sent.nonce + 1);
     expect((await until(() => status(w, next.id), (s) => s.state === "included", 30_000)).state).toBe("included");
-    const logs = (await echoed(url, w.echo)).filter((l) => l.id >= 2000n);
+    const logs = (await echoed(url, w.echo)).filter((l) => l.id >= 2000n && l.id < 3000n);
     expect(logs.map((l) => l.id).sort(), "each call happened once").toEqual([2000n, 2001n]);
   });
 
