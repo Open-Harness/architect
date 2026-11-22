@@ -10,7 +10,7 @@ changes the workflows and branch protection, and is built once Aaron says yes to
 Every `ci` run from 20 November 18:00 to 22 November 18:00 UTC: 671 runs, of which 533 ran (138 were skipped drafts),
 8,679 jobs, read with the runs API (`actions/workflows/420305663/runs`) and the jobs API (`actions/runs/<id>/jobs?filter=all`).
 A job's minutes are its `completed_at` minus `started_at`, counted only when a runner took it. The scripts and raw tables
-are in the conductor's scratchpad for that day; the numbers below are what they printed.
+are in `design/history/ci-2026-11-22/`; the numbers below are what they printed.
 
 ### Volume
 
@@ -37,7 +37,7 @@ are in the conductor's scratchpad for that day; the numbers below are what they 
 | pushes to another goal branch | 3,553 | 13% |
 | pull requests into `main` | 823 | 3% |
 
-Runs later cancelled, because a newer commit or a base merge replaced them, took 5,211 job-minutes (18%); before
+Runs later cancelled, because a newer commit or a base merge replaced them, took 5,211 job-minutes (19.5%); before
 CI-drafts it was 37%. Of the 343 runs on the 126 pull requests merged in the window, 158 were cancelled and 16 failed.
 
 ### Waiting
@@ -82,7 +82,8 @@ Three causes, none of them runner capacity:
    `codex-finished`, which can stay pending for good. The watch can end early while jobs still wait for a runner or
    before they register (Goal 4 saw this on 22 November): on wake, if `gh pr checks <n> --required` still shows a
    pending check, start the watch again. Then: if red, read the failed log and fix; if green, read every
-   review thread, answer each (fixed with a check, or replied to with the reason), resolve it, and merge.
+   review thread, answer each (fixed with a check, or replied to with the reason), resolve it, and merge once the 🔍
+   pass is in.
 2. **Codex goes first, not last.** Comment `@codex review` when the pull request is marked ready, so its findings
    usually arrive while CI is still running (a full run is about 24 minutes). When CI is green, answer what Codex has
    posted. If `codex-finished` is still pending, merge anyway, as CI-codex-advisory already says; a finding posted after
@@ -98,12 +99,12 @@ when it next merges its base in), with a 🔍 pass and Goal 3's lead's yes for t
 
 | # | Change | Saves (of the 48 hours measured) |
 |---|---|---|
-| B1 | **A pull request into a goal branch other than `goal/stage-1` runs the fast gate only:** `check-static`, `builder-paths` and the goal's own `e2e-<goal>` suite. The lead runs the rest locally (`nx affected -t test e2e`) before marking ready, and posts the commands and the head commit in the pull request. The full suite runs when the goal lands in `goal/stage-1` (an early landing, K38, or the last one). | about 3,800 job-minutes, 14% |
+| B1 | **A pull request into a goal branch other than `goal/stage-1` runs the fast gate only:** `check` (with `check-static` and `prove-tests`), `builder-paths` and the goal's own `e2e-<goal>` suite. Every other job that branch protection requires (`portal-ui`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `e2e-m1`, `e2e-climb`, `e2e-grid`) still starts and reports success without running its steps, as the docs fast path does (CI-docs-fast-path). The `changes` job marks such a pull request "fast", and never lets `check` skip or go missing. The lead runs the rest locally (`nx affected -t test e2e`) before marking ready, and posts the commands and the head commit in the pull request. The full suite runs when the goal lands in `goal/stage-1` (an early landing, K38, or the last one). | about 3,800 job-minutes, 14% |
 | B2 | **No CI on a push to a goal branch other than `goal/stage-1`.** Its landing pull request tests the result. | about 3,550, 13% |
-| B3 | **Only the suites a change touches,** on pull requests into `goal/stage-1` and `main`: the `changes` job runs `nx affected` and each e2e and prove job runs its steps only when its project is affected; a required job that is not affected passes without steps, as the docs fast path already does. | not yet measured; most of the 81% that `e2e-m1-shard`, `prove-tests` and `e2e-layer2` take on changes that touch one package |
+| B3 | **Only the suites a change touches,** on pull requests into `goal/stage-1` and `main`: the `changes` job runs `nx affected` and each e2e and prove job runs its steps only when its project is affected; a required job that is not affected passes without steps, as the docs fast path already does. | not yet measured; most of the 83% that `e2e-m1-shard`, `prove-tests` and `e2e-layer2` take on changes that touch one package |
 | B4 | **The push run on `goal/stage-1` and `main` stays,** in full: it is the integration check, the only run that sees two green pull requests together. | none; kept on purpose |
 
-B1 and B2 together take about 27% off with no new tooling. B3 is the large one and needs the most care: a wrong
+B1 and B2 together take about 27% off with no new tooling. The cost: until a goal lands in `goal/stage-1`, its only evidence for the suites it skipped is the lead's local-proof comment on each pull request, and a break shows up at the landing pull request, not the one that caused it. B3 is the large one and needs the most care: a wrong
 "affected" graph lets a break through, which the B4 push run then catches on the integration branch.
 
 ## What was not chosen
@@ -121,4 +122,8 @@ branch protection on `main` or `goal/stage-1`; each item reverts by one commit.
 
 ## Supersedes
 
-Nothing is superseded. CI-drafts' "left for later: running only the e2e suites a change touches" is B3, now planned.
+Part A supersedes nothing. Part B, when built, changes these words; the CI builder makes the edits in the same pull
+requests, under the rule in `AGENTS.md`:
+
+- `.agents/skills/threads/SKILL.md`: "the target branch's own push run checks every merge" → "`main`'s and `goal/stage-1`'s own push run checks every merge; a goal branch's merges are checked when it lands (CI-integration B2)"
+- `design/decisions/CI-drafts.md` (dated, noted in place): "Left for later: running only the e2e suites a change touches" → planned as CI-integration B3
