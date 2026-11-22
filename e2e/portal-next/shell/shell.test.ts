@@ -36,9 +36,11 @@
 //    entry fails the every-entry-is-named rule of UI SDK's agent-ready checklist); each group is a `collapsible` labelled with its title (trigger
 //    and panel); the palette is a `command` labelled `Search` whose rows are `command-item`s, present only while it is open. The bridge lists
 //    the nav links and the palette rows as the `items` of the `navigation-menu` and `command` entries (each by its visible text), and a closed
-//    folded group's links only once it is open (`act` a `setOpen` on the group's `ref`, its title, opens it). Selecting through the bridge
-//    navigates: `act` a `press` on a link's ref, and `setValue` (or a `press`) of a row's name on `Search`, move the page as a click would.
-//    `query({ within })` lists what a component holds.
+//    folded group's links only once it is open (`act` a `setOpen` on the group's `ref`, its title, opens it: its panel is not `keepMounted`, so a
+//    closed one has no links in the page or the bridge). A page that is no link on this route (its parameters are not in the route) is no item.
+//    The bridge cannot follow a navigation-menu link (`navigation-menu` has only `setValue` and `close`), so a link is judged by what the bridge
+//    reads (an item of `Main`, by `query({ within: "Main" })`) and by being a real link to its route. An agent moves by the palette: `act` steps
+//    `setValue` of a row's name then `run`, both on `Search`, select the row (its `onSelect` navigates and closes the palette).
 import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -144,8 +146,9 @@ describe("the navigation", () => {
     const page = await fx.open("/account");
     expect(await attrs(page, '[data-shell="nav-group"]', "data-title")).toEqual(["Your page", "Settings", "Things"]);
     expect(await attrs(page, '[data-shell="nav-group"]', "data-folded")).toEqual(["false", "true", "false"]);
-    expect(await attrs(page, '[data-shell="nav-item"]', "data-page")).toEqual(["profile", "edit", "account", "thing"]);
-    expect(await text(page, '[data-shell="nav-item"]')).toEqual(["profile", "edit", "account", "thing"].map((n) => expect.stringContaining(n)));
+    // A closed folded group's panel is not mounted (no `keepMounted`), so its items are in the page only once it is open; where a build keeps them, they are hidden.
+    expect((await attrs(page, '[data-shell="nav-item"]', "data-page")).filter((n) => n !== "account")).toEqual(["profile", "edit", "thing"]);
+    expect(await text(page, '[data-shell="nav-item"]:not([data-page="account"])')).toEqual(["profile", "edit", "thing"].map((n) => expect.stringContaining(n)));
     expect(await page.locator('[data-shell="nav-item"][data-page="account"]').first().isVisible()).toBe(false);
     expect(await page.locator('[data-shell="nav-item"][data-page="profile"]').first().isVisible()).toBe(true);
     await page.locator('[data-shell="nav-group"][data-title="Settings"] [data-slot="collapsible-trigger"]').click();
@@ -161,7 +164,8 @@ describe("the navigation", () => {
     expect(await attrs(profile, '[data-shell="nav-item"][data-page="edit"] a, a[data-shell="nav-item"][data-page="edit"]', "href")).toEqual(["/@aaron/edit"]);
     expect(await item(profile, "profile").getAttribute("aria-current")).toBe("page");
     expect(await item(profile, "edit").getAttribute("aria-current")).toBeNull();
-    expect(await attrs(profile, '[data-shell="nav-item"]', "data-current")).toEqual(["true", "false", "false", "false"]);
+    const current = await profile.locator('[data-shell="nav-item"]').evaluateAll((els) => els.map((e) => [e.getAttribute("data-page"), e.getAttribute("data-current")]));
+    expect(current).toEqual([["profile", "true"], ["edit", "false"], ["thing", "false"]]);
   }, 300_000);
 });
 
@@ -213,12 +217,11 @@ describe("on UI SDK, and readable by an agent", () => {
   /** Every name the bridge gives: an entry's label, and the labels of its items (a link of the navigation, a row of the palette). */
   const named = (entries: ReadonlyArray<Entry>): string[] => entries.flatMap((e) => [e.label ?? "", ...(e.items ?? []).map((i) => i.label ?? "")]);
   const labelsIn = (value: unknown): string[] => (Array.isArray(value) ? value.flatMap(labelsIn) : typeof value === "object" && value !== null ? Object.entries(value).flatMap(([k, v]) => (k === "label" && typeof v === "string" ? [v] : labelsIn(v))) : []);
-  const act = async (page: Page, ...variants: ReadonlyArray<ReadonlyArray<object>>) => {
-    for (const steps of variants) {
-      const result = (await page.evaluate(`globalThis.__shell.agent.act({ steps: ${JSON.stringify(steps)} })`)) as { ok: boolean };
-      if (result.ok) return result;
-    }
-    throw new Error(`the bridge refused every form of the step: ${JSON.stringify(variants)}`);
+  /** One `act` of steps, in the one form the bridge takes: `ok` is not the effect (UI SDK's own checklist says so), so the tests read the page after. */
+  const act = async (page: Page, steps: ReadonlyArray<object>) => {
+    const result = (await page.evaluate(`globalThis.__shell.agent.act({ steps: ${JSON.stringify(steps)} })`)) as { ok: boolean; error?: { message?: string } };
+    expect(result.ok, result.error?.message ?? JSON.stringify(steps)).toBe(true);
+    return result;
   };
 
   it("draws the navigation and the palette with UI SDK's own components: the bridge lists them by their component names", async () => {
@@ -237,25 +240,36 @@ describe("on UI SDK, and readable by an agent", () => {
   it("an agent finds the navigation by name: the groups, and the links of the open ones through the bridge's query", async () => {
     const page = await fx.open("/@aaron");
     const before = named(await snapshot(page));
-    for (const name of ["Main", "Your page", "Settings", "Things", "profile", "edit", "thing"]) expect(before, name).toContain(name);
+    // The bridge lists a link, not a page that is no link here: `thing` needs a `name` this route does not have, so it is not an item.
+    for (const name of ["Main", "Your page", "Settings", "Things", "profile", "edit"]) expect(before, name).toContain(name);
     expect(before, "a closed folded group lists its links only once it is open").not.toContain("account");
-    expect(labelsIn(await page.evaluate('globalThis.__shell.agent.query({ within: "Main" })'))).toEqual(expect.arrayContaining(["profile", "edit", "thing"]));
+    expect(before, "a page that is no link here is no item of the navigation").not.toContain("thing");
+    expect(labelsIn(await page.evaluate('globalThis.__shell.agent.query({ within: "Main" })'))).toEqual(expect.arrayContaining(["profile", "edit"]));
     await act(page, [{ ref: "Settings", action: "setOpen", args: [true] }]);
     expect(await page.locator('[data-shell="nav-item"][data-page="account"]').first().isVisible()).toBe(true);
     expect(named(await snapshot(page))).toContain("account");
     expect(labelsIn(await page.evaluate('globalThis.__shell.agent.query({ within: "Main" })'))).toContain("account");
   }, 300_000);
 
-  it("an agent moves through the navigation and the palette, and the page follows", async () => {
+  it("an agent follows the navigation's links to where they go, and moves with the palette's `run`, and the page follows", async () => {
     const page = await fx.open("/@aaron");
+    // The bridge has no action that follows a navigation-menu link (`navigation-menu` offers `setValue` and `close`; a link is not pressable), so a
+    // link is judged by what the bridge reads of it and where it goes: an item of "Main", and a real link to its route.
     await act(page, [{ ref: "Settings", action: "setOpen", args: [true] }]);
-    await act(page, [{ ref: "account", action: "press" }]);
-    await page.waitForSelector('[data-fixture-page="account"]');
-    expect(path(page)).toBe("/account");
+    const items = (await page.evaluate('globalThis.__shell.agent.query({ within: "Main" })')) as Array<{ items?: Array<{ value?: string; label?: string }> }>;
+    expect(items.flatMap((e) => e.items ?? []).map((i) => i.value)).toEqual(expect.arrayContaining(["profile", "edit", "account"]));
+    expect(await attrs(page, 'a[data-shell="nav-item"][data-page="account"], [data-shell="nav-item"][data-page="account"] a', "href")).toEqual(["/account"]);
+    // The move by agent is the palette's: `setValue` highlights a row, `run` selects it (the row's `onSelect` is the navigation).
     await page.keyboard.press("Control+K");
     await page.waitForSelector('[data-shell="palette"]');
-    expect(named(await snapshot(page))).toEqual(expect.arrayContaining(["Search", "home", "profile"]));
-    await act(page, [{ ref: "Search", action: "setValue", args: ["home"] }], [{ ref: "Search", action: "press", args: ["home"] }]);
+    expect(named(await snapshot(page))).toEqual(expect.arrayContaining(["Search", "home", "account"]));
+    await act(page, [{ ref: "Search", action: "setValue", args: ["account"] }, { ref: "Search", action: "run" }]);
+    await page.waitForSelector('[data-fixture-page="account"]');
+    expect(path(page)).toBe("/account");
+    expect(await page.locator('[data-shell="palette"]').count(), "a run closes the palette").toBe(0);
+    await page.keyboard.press("Control+K");
+    await page.waitForSelector('[data-shell="palette"]');
+    await act(page, [{ ref: "Search", action: "setValue", args: ["home"] }, { ref: "Search", action: "run" }]);
     await page.waitForSelector('[data-fixture-page="home"]');
     expect(path(page)).toBe("/");
   }, 300_000);
