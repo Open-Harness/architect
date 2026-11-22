@@ -36,6 +36,7 @@ export const startStandin = async (port: number, repository: string): Promise<St
       if (req.method === "GET" && tagged) return releases.has(tagged[1]!) ? json(res, 200, releases.get(tagged[1]!)) : json(res, 404, { message: "Not Found" });
       if (req.method === "POST" && path === `/repos/${repository}/releases`) {
         const made = JSON.parse(Buffer.concat(chunks).toString("utf8")) as { tag_name: string };
+        if (releases.has(made.tag_name)) return json(res, 422, { message: "Validation Failed", errors: [{ resource: "Release", code: "already_exists", field: "tag_name" }] });
         const release = { id: 7, tag_name: made.tag_name, upload_url: `${base}/uploads/repos/${repository}/releases/7/assets{?name,label}`, html_url: `${base}/${repository}/releases/tag/${made.tag_name}` };
         releases.set(made.tag_name, release);
         return json(res, 201, release);
@@ -44,7 +45,7 @@ export const startStandin = async (port: number, repository: string): Promise<St
         const name = url.searchParams.get("name") ?? "";
         if (assets.has(name)) return json(res, 422, { message: "Validation Failed", errors: [{ code: "already_exists" }] });
         assets.set(name, Buffer.concat(chunks));
-        return json(res, 201, { id: assets.size, name, browser_download_url: `${base}${download}v${name}` });
+        return json(res, 201, { id: assets.size, name, browser_download_url: `${base}${download}${[...releases.keys()].at(-1)}/${name}` });
       }
       return json(res, 404, { message: "Not Found" });
     });

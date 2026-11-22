@@ -181,9 +181,20 @@ describe("08: the GitHub release and the Homebrew tap (M7.06), on this machine",
       const r = await publish("--release");
       expect(r.status, r.said).toBe(0);
       expect([...github.releases.keys()]).toEqual(["v1.1.0"]);
+      expect(github.heard.filter((h) => h.method === "POST" && h.path === `/repos/${REPOSITORY}/releases`), "one release-creation request in all, none from the rerun").toHaveLength(1);
       expect(github.assets.get(tarball)!.equals(held), "an uploaded asset is never replaced").toBe(true);
       expect(formulaIn(join(root, ".ortho/tap"))).toContain(`sha256 "${sha(held)}"`);
     });
+  });
+
+  it("the stand-in itself answers as GitHub does: a second release for a tag is 422, and an upload's download address is the one that serves it", async () => {
+    const again = await fetch(`${github.base}/repos/${REPOSITORY}/releases`, { method: "POST", headers: { authorization: `Bearer ${TOKEN}` }, body: JSON.stringify({ tag_name: "v1.1.0" }) });
+    expect(again.status).toBe(422);
+    const up = await fetch(`${github.base}/uploads/repos/${REPOSITORY}/releases/7/assets?name=probe.txt`, { method: "POST", headers: { authorization: `Bearer ${TOKEN}` }, body: "probe" });
+    const { browser_download_url: where } = (await up.json()) as { browser_download_url: string };
+    expect(where).toBe(`${github.base}/${REPOSITORY}/releases/download/v1.1.0/probe.txt`);
+    expect(await (await fetch(where)).text()).toBe("probe");
+    github.assets.delete("probe.txt");
   });
 
   describe("`--push-tap`", () => {

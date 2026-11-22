@@ -19,3 +19,4 @@ m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew t
 m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with no repository: exit 2, nothing built, sent or pushed
 m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with no tap: exit 2, nothing built, sent or pushed
 m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > refuses with no token: exit 2, nothing built, sent or pushed
+m7/08-release-github-and-tap.test.ts > 08: the GitHub release and the Homebrew tap (M7.06), on this machine > the stand-in itself answers as GitHub does: a second release for a tag is 422, and an upload's download address is the one that serves it
