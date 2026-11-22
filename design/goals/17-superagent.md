@@ -31,7 +31,7 @@ slices:
   - "7 · Intake and prompts: triggers, threads, the gate, versions (after 6)"
   - "8 · Checks for tickets (after 1)"
   - "9 · Tickets: mandates, assignments and stages (after 8)"
-  - "10 · Events in from GitHub and replies out (after 3, 7, 9)"
+  - "10 · Events in and replies out (after 3, 5, 7, 9)"
   - "11 · The executor: its tools and one run per assignment, in a sandbox (after 3, 5, 9)"
   - "12 · Judging the maybe messages: observe, then auto (after 7, 11)"
   - "13 · The example app, its pages and the goal check (after 10, 11, 12)"
@@ -88,7 +88,7 @@ the 1.0 path.
 | Piece | Package | Kind | What it brings |
 |---|---|---|---|
 | GitHub | `@orthograph/github` | adapter | a GitHub App: comments, reviews, pull requests and pushes out; signed webhooks in; its secrets; a stand-in GitHub for worlds. This is M4.25, built here |
-| Sandbox | `@orthograph/sandbox` | adapter | a folder and a shell per ticket: open, exec, read, write, bundle, close; a job-finished event; two choices, `local` (a process on this machine) and `e2b` later. K10's `localCopy` and `e2b` move here; M4.18's workspace opens one and adds `ortho` on top (K39) |
+| Sandbox | `@orthograph/sandbox` | adapter | a folder and a shell per ticket: open, exec, read, write, bundle, close; a long job's status read back (its finished event comes with doors, slice 10); two choices, `local` (a process on this machine) and `e2b` later. K10's `localCopy` and `e2b` move here; M4.18's workspace opens one and adds `ortho` on top (K39) |
 | Intake | `@orthograph/intake` | feature | triggers, threads, subscriptions, the gate, decisions, and the rules as runtime data with versions (`PolicyVersion`) |
 | Tickets | `@orthograph/tickets` | feature | tickets, mandates, assignments and their stages; the operations the agent uses as tools; replies through the outbox |
 | Prompts | `@orthograph/prompts` | feature | the team's prompt sections and overrides, saved as versions, each run recording the one it read |
@@ -112,7 +112,7 @@ packages/
       calls/      {README.md, types.ts, service.ts, internal/, calls.test.ts}       REST calls, as an App installation
       door/       {…}                                                               webhook signature (X-Hub-Signature-256), decode
       stand-in/   {…}                                                               Stand.process: a bare repo + a small GitHub-shaped server that signs its webhooks
-      conformance/{…}                                                               the calls against the stand-in, and against real GitHub in the cloud pass
+      conformance/{…}                                                               the calls against the stand-in, and against real GitHub in the cloud pass; the package's own tests, as chain-evm's are, until M5.07's harness exists
   sandbox/                                 new · @orthograph/sandbox (adapter)
     blueprint/adapter.ts
     src/main.ts
@@ -170,12 +170,16 @@ slice that adds the package.
 ## The blueprint, as a developer writes it
 
 Proposed code. On `goal/stage-1` today only `Blueprint.thing`, `machine`, `operation`, `event`, `error`, `use`,
-`step.database`, `step.call`, `id`, `described` and a role's `{ rule }` exist. Everything else here is designed but
+`step.database`, `step.call`, `id`, `described`, a role's `{ rule }`, and an adapter with calls out,
+`Blueprint.adapter({ calls, standIn: Stand.process(…) })` with `Blueprint.call` (`packages/compiler/src/modules/mounts/mounts.test.ts:93-95`, and
+`@orthograph/chain-evm`), exist. Everything else here is designed but
 not built, and is its owner's to shape; this goal codes against what they land, never a stand-in of its own:
 
 | Proposed | Owner, and where it is designed |
 |---|---|
-| `Blueprint.adapter`, `Door.*`, `Stand.process`, `ortho add adapter` | the adapter kind: `frame/adapters.md`; doors are Goal 11 (M5.03), the generator M5.07 |
+| an adapter's `events`, `door`, `Door.*` and `secrets` | Goal 11 (M5.03) for events and doors; Goal 3 (M2.04) for secrets |
+| `shape:` from an OpenAPI document, `ortho new adapter --from-openapi`, the conformance harness | M5.07, owned by no goal: until it is, slice 3 types GitHub's calls by hand from GitHub's published OpenAPI document and tests them in its own package |
+| `ortho add adapter` | the mount command, `frame/adapters.md`; until it exists the mount file is written by hand |
 | `Blueprint.on`, `on:`, `idempotent: { by }` | Goal 11 (M5.03); `by` is M3.26 |
 | `Blueprint.role(T, { service })`, `Blueprint.system`, `Via.*`, `.via(...)` | Goal 3 (M2.03, `M2-auth.md`) |
 | `ortho secrets set` | Goal 3 (M2.04) |
@@ -215,7 +219,7 @@ export default Blueprint.use(github, (g) => [
 // packages/github/blueprint/adapter.ts
 export default Blueprint.adapter({
   host: [Host.worker],
-  shape: GitHubRest.contract,                        // generated from GitHub's published OpenAPI document
+  shape: GitHubRest.contract,                        // proposed (M5.07); by hand from GitHub's OpenAPI document until then
   calls: { issues, pulls, reactions, branches },
   events: { issueComment, issues, pullRequest, pullRequestReview, pullRequestReviewComment, checkRun },
   door: Door.hmacSha256({ header: "x-hub-signature-256", secret: secrets.webhookSecret, id: "x-github-delivery" }),
@@ -412,15 +416,15 @@ skill). "After" names this goal's own earlier slices; "Waits on" names another g
 | # | Slice | After | Waits on | Done when |
 |---|---|---|---|---|
 | 1 | The plan and its calls, decided | — | — | this brief and K39 on `main` |
-| 2 | Checks for the GitHub adapter: conformance of every included call against the stand-in; a signed webhook accepted, a bad signature refused | 1 | — | they fail on an empty adapter |
+| 2 | Checks for the GitHub adapter's calls out: every included call against the stand-in, in the package's own tests | 1 | — | they fail on an empty adapter |
 | 3 | `@orthograph/github`: calls out as an App installation, its secrets, the stand-in (M4.25) | 2 | Gate M2 (Goal 3), as M4.25's row says: declared secrets (M2.04) and the `service` caller (M2.03) | slice 2 passes |
-| 4 | Checks for the sandbox: open, exec, a long job's finished event, read and write fenced to the folder, bundle, close leaving nothing | 1 | — | they fail on an empty adapter |
+| 4 | Checks for the sandbox's calls: open, exec, a long job started in the background and its status read back, read and write fenced to the folder, bundle, close leaving nothing | 1 | — | they fail on an empty adapter |
 | 5 | `@orthograph/sandbox` with its `local` choice, its process stopped by its id | 4 | — | slice 4 passes; 0 folders and 0 processes left |
 | 6 | Checks for intake and prompts: every gate cell of the prototype's `002`; a trigger twice stored once; a stale policy save refused; a prompt override that keeps its base | 1 | — | they fail on empty handlers |
 | 7 | `@orthograph/intake` and `@orthograph/prompts` | 6 | the `service` and `system` callers (M2.03, Goal 3); the outside actor and declared versions are gap fixes (below), and until they land the gate reads the payload's actor | slice 6 passes |
 | 8 | Checks for tickets: the stage table, mandate revalidation, resume and stop, a follow-up reaching a ticket with no gate | 1 | — | they fail on empty handlers |
 | 9 | `@orthograph/tickets`: tickets, mandates, assignments and the stage read, without tools, runs or replies | 8 | the `system` caller (M2.03, Goal 3) | slice 8 passes |
-| 10 | Events in from GitHub and replies out: `on:` into `trigger.receive`, and the acknowledgement, answer and result through the outbox in order | 3, 7, 9 | doors and `on:` (Goal 11, slice 3, M5.03); the outbox (Goal 11, slice 4, M5.04) | the same webhook twice makes one trigger; a ticket's replies go out once and in order across a kill |
+| 10 | Events in and replies out: GitHub's webhook events through its door (a signed one accepted, a bad signature refused), the sandbox's job-finished event, `on:` into `trigger.receive`, and the acknowledgement, answer and result through the outbox in order | 3, 5, 7, 9 | doors and `on:` (Goal 11, slice 3, M5.03); the outbox (Goal 11, slice 4, M5.04) | the same webhook twice makes one trigger; a ticket's replies go out once and in order across a kill |
 | 11 | The executor: the ticket's tool operations and one agent run per assignment, in a sandbox | 3, 5, 9 | agent runs (Goal 10, M4.10); a run started for an operator (a gap fix, Goal 10) | evicting a run mid-turn resumes it; a write outside its sandbox is refused |
 | 12 | Judging the maybe messages: the assessor on a cheap model, `observe` then `auto` | 7, 11 | workflows (Goal 8, M3.28); a run with a fixed answer (a gap fix, Goal 10) | in `observe`, a matched dependabot pull request records "would accept" and starts nothing |
 | 13 | The example app, its pages and `e2e:superagent` | 10, 11, 12 | declared pages (Goal 6, slice 3) | the goal check below passes |
