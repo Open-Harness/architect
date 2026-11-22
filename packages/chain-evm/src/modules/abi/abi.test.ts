@@ -42,7 +42,7 @@ describe("the surface", () => {
     const error: AbiError = { type: "error", name: "Empty", inputs: [] };
     const document: AbiDocument = [item, error];
     expect(document).toHaveLength(2);
-    expect(device.Abi.refusal("E-1", error).signature).toBe("Empty()");
+    expect(device.Abi.refusal(error, "E-1").signature).toBe("Empty()");
   });
 });
 
@@ -178,7 +178,7 @@ describe("Abi.refusal", () => {
       [empty, "Empty()", "0x3db2a12a"],
     ];
     for (const [item, signature, selector] of cases) {
-      const entry = Abi.refusal("TOKEN-001", item);
+      const entry = Abi.refusal(item, "TOKEN-001");
       expect(entry.signature).toBe(signature);
       expect(entry.selector).toBe(selector);
       expect(entry.selector).toBe(selectorOf(signature));
@@ -186,20 +186,20 @@ describe("Abi.refusal", () => {
   });
 
   test("the entry holds the code, the item's name and the item, and a program only when one is given", () => {
-    const entry = Abi.refusal("TOKEN-001", insufficient);
+    const entry = Abi.refusal(insufficient, "TOKEN-001");
     expect(entry).toMatchObject({ code: "TOKEN-001", name: "InsufficientBalance", abi: insufficient });
     expect("program" in entry).toBe(false);
-    expect(Abi.refusal("TOKEN-001", insufficient, PROGRAM).program).toBe(PROGRAM);
+    expect(Abi.refusal(insufficient, "TOKEN-001", PROGRAM).program).toBe(PROGRAM);
   });
 
   test("the entry passes the refusal lock's own check, for every kind of item", () => {
     for (const item of [insufficient, bad, empty]) {
-      Effect.runSync(validateRefusalLock([Abi.refusal("TOKEN-001", item)]));
+      Effect.runSync(validateRefusalLock([Abi.refusal(item, "TOKEN-001")]));
     }
   });
 
   test("decodeRevert decodes a real revert of the contract's own error by the entry", () => {
-    const entry = Abi.refusal("TOKEN-001", insufficient, PROGRAM);
+    const entry = Abi.refusal(insufficient, "TOKEN-001", PROGRAM);
     const data = encodeErrorResult({ abi: [insufficient], errorName: "InsufficientBalance", args: [93n, 94n] });
     expect(Effect.runSync(Effect.flip(decodeRevert(data, PROGRAM, [entry])))).toMatchObject({
       _tag: "ChainRefusal", code: "TOKEN-001", name: "InsufficientBalance", selector: "0xcf479181", program: PROGRAM,
@@ -208,7 +208,7 @@ describe("Abi.refusal", () => {
   });
 
   test("a tuple error and a no-argument error decode by their entries, and a revert of another error stays a ChainFault", () => {
-    const lock: ReadonlyArray<RefusalLockEntry> = [Abi.refusal("TOKEN-002", bad), Abi.refusal("TOKEN-003", empty)];
+    const lock: ReadonlyArray<RefusalLockEntry> = [Abi.refusal(bad, "TOKEN-002"), Abi.refusal(empty, "TOKEN-003")];
     const tupleData = encodeErrorResult({ abi: [bad], errorName: "Bad", args: [{ x: 5n, who: OWNER }, [1, 2]] });
     expect(Effect.runSync(Effect.flip(decodeRevert(tupleData, undefined, lock)))).toMatchObject({
       _tag: "ChainRefusal", code: "TOKEN-002", name: "Bad", args: { p: { x: 5n, who: OWNER }, xs: [1, 2] },
@@ -222,7 +222,7 @@ describe("Abi.refusal", () => {
   });
 
   test("an entry made for one program does not decode a revert of another", () => {
-    const entry = Abi.refusal("TOKEN-001", insufficient, PROGRAM);
+    const entry = Abi.refusal(insufficient, "TOKEN-001", PROGRAM);
     const data = encodeErrorResult({ abi: [insufficient], errorName: "InsufficientBalance", args: [1n, 2n] });
     expect(Effect.runSync(Effect.flip(decodeRevert(data, PROGRAM, [entry])))).toMatchObject({ _tag: "ChainRefusal", code: "TOKEN-001" });
     expect(Effect.runSync(Effect.flip(decodeRevert(data, "0x0000000000000000000000000000000000000002", [entry]))))

@@ -6,7 +6,7 @@ export const Abi: AbiApi = {
   encodeCall: () => Effect.die("Ask #471: Abi.encodeCall is not built"),
   decodeResult: () => Effect.die("Ask #471: Abi.decodeResult is not built"),
   encodeDeploy: () => Effect.die("Ask #471: Abi.encodeDeploy is not built"),
-  refusal: (code, item, program) => ({
+  refusal: (item, code, program) => ({
     code, name: "", selector: "0x00000000", signature: "", abi: item, ...(program === undefined ? {} : { program }),
   }),
 };

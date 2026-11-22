@@ -45,5 +45,5 @@ export interface AbiApi {
    * An `error` item of an ABI as a refusal lock entry: its `selector` is the first 4 bytes of the keccak-256 of its `signature`
    * (`Name(type,...)`, tuples written out), its `name` is the item's name, so `decodeRevert` decodes the contract's own errors.
    */
-  readonly refusal: (code: string, item: AbiError, program?: Address) => RefusalLockEntry;
+  readonly refusal: (item: AbiError, code: string, program?: Address) => RefusalLockEntry;
 }
