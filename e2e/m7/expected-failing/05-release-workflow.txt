@@ -46,7 +46,11 @@ m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > an agreement step that checks something else
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > an agreement step that runs with a token
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > an expression that reaches another secret
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > an extra npm publish before the pinned one
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > an extra step in preflight
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > an npm token in the publish step
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > gh release create --prerelease
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > git push --force
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > no agreement step
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > no concurrency group
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > no credentials step
@@ -54,29 +58,41 @@ m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > no provenance
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > npm login in a step
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > one job that both publishes and releases
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > pnpm publish -r in the GitHub job
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > provenance switched off
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > secrets: inherit
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > setup-node on an older node (npm without trusted publishing)
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > setup-node writing an .npmrc token line
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the build changed to another target
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the github job needing a job that is not preflight
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the github job read-only
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the github job with the id token
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the install with a flag added
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the key in a job's env
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the key in a third step
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the key written into the workspace
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the key's file never removed
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the key's removal before the push
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the key's removal that removes something else
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the key's removal that runs only on success
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the npm job not needing preflight
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the npm job with another permission
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the npm job with contents: write
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the npm job without the id token
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the pinned publish with a flag added
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the preflight job with the id token
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the publish before the build
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the publish before the install
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the push before the release
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the push step not the last
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the push step on the starter
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the push step pushing to another tap
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the push step that echoes the key
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the push step that writes the key with the world able to read it
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the push step with the job's token as well
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the push step without the key
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the release step on Orthograph itself (--root .)
+m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the release step on the starter
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > the version checked before the credential
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > two jobs that publish to npm
 m7/05-release-workflow.test.ts > 05: the release workflow (M7.02, M7.06), judged from its text > the judge fails each planted wrong workflow > write on the whole workflow

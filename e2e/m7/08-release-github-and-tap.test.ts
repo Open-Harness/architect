@@ -7,11 +7,14 @@
 // a GitHub release for the tag (looked up first, so a run can be started again); the tarball uploaded as an asset and `<tarball>.sha256` beside it (`<hex>  <tarball>`, as `sha256sum` writes it); the tap cloned from `ORTHO_TAP_REMOTE`
 // into `.ortho/tap` and `Formula/<name>.rb` (`ORTHO_FORMULA`, else the project's) committed there, naming the release's download address `<GITHUB_SERVER_URL>/<repo>/releases/download/<tag>/<tarball>` and the sha256 of the bytes the
 // release holds; nothing pushed. `ortho publish --push-tap` pushes that commit to `ORTHO_TAP_REMOTE` (as it is then: the workflow clones over https and pushes over ssh with the deploy key, set up by that step alone) and nothing else.
-// A prerelease tag is no release: nothing is sent and the tap is untouched. NOT JUDGED HERE: the real api.github.com and the real tap (the first release is the proof), the deploy key over ssh (the workflow's text is check 05).
+// A prerelease tag is refused (exit 2, a line naming `prerelease`): nothing is built or sent and the tap is untouched. NO NETWORK: `publish --release` and `--push-tap` run under `e2e/m1/deny-network.mjs` (a connection to any host that is not
+// loopback ends the process), so a build that ignores `GITHUB_API_URL` or `ORTHO_TAP_REMOTE` shows up as NETWORK-DENIED. The Node binary the single executable is made from is the RUNNER'S OWN: this check puts a copy of the Node running it in
+// `ORTHO_CACHE` where `internal/sea.ts` keeps the downloaded one (`<cache>/node-v<NODE_VERSION>-<target>/node`), so the build finds it and downloads nothing; a build that downloads Node instead fails here (curl is not covered by the guard, so a cold-cache
+// download is also refused by the cache being the only one the run is given and by the missing `download-*` folder checked below). Homebrew must be installed: a machine without it FAILS this check (L2.05), it never skips. NOT JUDGED HERE: the real api.github.com and the real tap (the first release is the proof), the deploy key over ssh (the workflow's text is check 05).
 // Red today on one reason: `--release` does not exist.
 import { type SpawnOptions, spawn, spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -29,6 +32,11 @@ const parent = mkdtempSync(join(realpathSync(tmpdir()), "ortho-m7-08-"));
 const root = join(parent, "acme");
 const tapA = join(parent, "tap-a.git"), tapB = join(parent, "tap-b.git");
 const brewHere = spawnSync("brew", ["--version"], { encoding: "utf8" }).status === 0;
+const cache = join(parent, "ortho-cache");
+const guard = `--import=${join(repo, "e2e/m1/deny-network.mjs")}`;
+/** The version of Node the single executable is made from, as `internal/sea.ts` names it, and the platform this machine builds for. */
+const nodeVersion = /NODE_VERSION = "([^"]+)"/.exec(readFileSync(join(repo, "packages/prove/src/modules/publish/internal/sea.ts"), "utf8"))![1]!;
+const target = process.platform === "darwin" ? "darwin-arm64" : "linux-x64";
 let github: Standin;
 
 const git = (cwd: string, ...args: ReadonlyArray<string>) => {
@@ -49,12 +57,13 @@ const BREW = { ...(process.env as Record<string, string>), HOMEBREW_NO_AUTO_UPDA
 const brew = (...args: ReadonlyArray<string>) => exec("brew", args, { env: BREW });
 const env = (extra: Record<string, string | undefined> = {}): Record<string, string | undefined> => ({
   PATH: process.env["PATH"] ?? "", HOME: process.env["HOME"], GITHUB_REF_TYPE: "tag", GITHUB_REF_NAME: "v1.1.0", GITHUB_REPOSITORY: REPOSITORY, GITHUB_API_URL: github.base, GITHUB_SERVER_URL: github.base,
-  GH_TOKEN: TOKEN, ORTHO_TAP_REMOTE: tapA, ORTHO_FORMULA: formula, ...extra,
+  GH_TOKEN: TOKEN, ORTHO_TAP_REMOTE: tapA, ORTHO_FORMULA: formula, ORTHO_CACHE: cache, NODE_OPTIONS: guard, ...extra,
 });
 /** `ortho publish <flag>` on the copy of acme; the token is never in what it prints. */
 const publish = async (flag: "--release" | "--push-tap", extra: Record<string, string | undefined> = {}) => {
   const r = await exec(process.execPath, [cli, "publish", flag, "--root", root], { cwd: root, env: env(extra) });
   expect(r.said, "the token must never be printed").not.toContain(TOKEN);
+  expect(r.said, "nothing may leave this machine").not.toContain("NETWORK-DENIED");
   return r;
 };
 const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
@@ -64,6 +73,8 @@ const formulaIn = (clone: string) => readFileSync(join(clone, "Formula", `${form
 
 beforeAll(async () => {
   github = await startStandin(PORTS.github, REPOSITORY);
+  mkdirSync(join(cache, `node-v${nodeVersion}-${target}`), { recursive: true });
+  copyFileSync(process.execPath, join(cache, `node-v${nodeVersion}-${target}`, "node"));
   // A copy of acme under git, outside the repository (its revision is a commit of its own), named `acme` as the project is (as publish.test.ts makes it).
   const acme = join(repo, "examples/acme");
   for (const part of ["blueprint", "generated", "journeys", "src", "package.json"]) cpSync(join(acme, part), join(root, part), { recursive: true, filter: (from) => !basename(from).startsWith(".") });
@@ -119,10 +130,13 @@ describe("08: the GitHub release and the Homebrew tap (M7.06), on this machine",
     expect(existsSync(join(root, ".ortho/publish")), "nothing built").toBe(false);
   });
 
-  it("a prerelease tag is no release: nothing sent, the tap untouched", async () => {
+  it("a prerelease tag is refused: exit 2 naming it, nothing built or sent, the tap untouched", async () => {
     const b = before();
-    await publish("--release", { GITHUB_REF_NAME: "v1.2.0-next.1" });
+    const r = await publish("--release", { GITHUB_REF_NAME: "v1.2.0-next.1" });
+    expect(r.status, r.said).toBe(2);
+    expect(r.said).toMatch(/prerelease/i);
     expect(github.heard.length).toBe(b.heard);
+    expect(existsSync(join(root, ".ortho/publish")), "nothing built").toBe(false);
     expect([tapHead(tapA), tapHead(tapB)]).toEqual([b.a, b.b]);
   });
 
@@ -137,6 +151,7 @@ describe("08: the GitHub release and the Homebrew tap (M7.06), on this machine",
       const b = before();
       const r = await publish("--release");
       expect(r.status, r.said).toBe(0);
+      expect(readdirSync(cache).filter((n) => n.startsWith("download-")), "no download of Node was attempted").toEqual([]);
       expect([...github.releases.keys()]).toEqual(["v1.1.0"]);
       const mine = github.heard.slice(b.heard);
       expect(mine.length).toBeGreaterThan(0);
@@ -184,13 +199,23 @@ describe("08: the GitHub release and the Homebrew tap (M7.06), on this machine",
     });
   });
 
-  describe.skipIf(!brewHere)("real Homebrew, from the tap the release pushed to", () => {
+  describe("real Homebrew, from the tap the release pushed to", () => {
+    it("Homebrew is installed (a machine without it fails this check, never skips it)", () => {
+      expect(brewHere, "`brew` is not installed: M7.06's done-when is `brew install` from the tap, so this check cannot pass without Homebrew (GitHub's ubuntu runners have it)").toBe(true);
+    });
+
     it("`brew install <tap>/acme` fetches the release's tarball and runs the CLI, which prints its version", { timeout: 900_000 }, async () => {
       expect((await brew("tap", tap, tapB)).status).toBe(0);
       const installed = await brew("install", full);
       expect(installed.status, installed.said).toBe(0);
       const bin = join((await brew("--prefix", full)).said.trim(), "bin/acme");
       expect(spawnSync(bin, ["--version"], { encoding: "utf8" }).stdout.trim()).toBe("acme 1.1.0");
+      // A real command of the real CLI, not a stub that prints its version: its help lists every group of operations the model declares.
+      const model = JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8")) as { operations: Record<string, unknown> };
+      const groups = [...new Set(Object.keys(model.operations).map((n) => n.split(".")[0]!))];
+      expect(groups.length).toBeGreaterThan(1);
+      const help = spawnSync(bin, ["--help"], { encoding: "utf8", timeout: 60_000 });
+      for (const g of groups) expect(help.stdout + help.stderr, `acme --help lists ${g}`).toContain(g);
       expect((await brew("test", full)).status, "brew test").toBe(0);
       expect(github.heard.some((h) => h.method === "GET" && h.path.endsWith(`/releases/download/v1.1.0/${tarballName()}`)), "brew fetched it from the release address").toBe(true);
     });

@@ -6,8 +6,10 @@
 // packages (`node tools/release/release.mjs publish`, last step, after the install and the build) with `id-token: write` and `NPM_CONFIG_PROVENANCE`: npm's trusted publishing, so no token is stored and none is named, nor any
 // `.npmrc` token line. One job makes the GitHub release with the binaries and their sha256 (`ortho publish --release`, check 08) holding `contents: write` and the job's own token, and pushes the formula to the tap in a last
 // step `push-tap` (`ortho publish --push-tap`): the deploy key is in the env of that step and of `credentials` and of no other. No job holds both `id-token: write` and `contents: write`. Nothing is skipped, ignored or hidden.
-// NOT PINNED (open decisions in the pull request): whether Orthograph's own CLI also gets a formula (which project the release step runs on: the check pins `--root <folder>` only), the platforms the binaries are built on, and how
-// M1.51's `next` publish hands over (the workflow starts on `v*`; a prerelease tag is refused or goes to `next`, judged by check 06, never `latest`).
+// ALLOWLIST. Every `run:` of every job is one of: the install (`pnpm install --frozen-lockfile`) or the build (`pnpm nx run-many -t build`), exactly; or a named step with its exact command: `agreement`, the npm publish, `release`
+// (`node packages/cli/src/main.ts publish --release --root examples/acme`: acme's CLI only, M7.06's formula), `push-tap` (its whole script: the key written once with printf to a file under `$RUNNER_TEMP`, ssh by that file), and
+// `remove-key` (`rm -f "$RUNNER_TEMP/tap-key"`, `if: always()`, right after the push and last). So `pnpm publish -r`, a second `npm publish`, `gh release create` and `git push --force` each fail.
+// NOT PINNED (left to the builder, decided by the lead): the platforms the binaries are built on (runs-on and actions follow staging.yml's pins). A prerelease tag is refused (checks 06 and 08); Orthograph's own formula comes later.
 // Red today on one reason: the file does not exist. Controls, true today: the judge fails each planted wrong workflow below (a plant is one edit of the parsed file, so none depends on the file's layout).
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -149,15 +151,32 @@ describe("05: the release workflow (M7.02, M7.06), judged from its text", () => 
       ["the push step pushing to another tap", () => plant((d, s) => { s("push-tap")["env"]["ORTHO_TAP_REMOTE"] = "git@github.com:someone/homebrew-tap.git"; }), /push step's env/],
       ["the push step without the key", () => plant((d, s) => { delete s("push-tap")["env"]["HOMEBREW_TAP_DEPLOY_KEY"]; }), /push step's env|deploy key is in/],
       ["the push step with the job's token as well", () => plant((d, s) => { s("push-tap")["env"]["GH_TOKEN"] = "${{ github.token }}"; }), /push step's env|holds the job's token/],
-      ["the push step that echoes the key", () => plant((d, s) => { s("push-tap")["run"] = `echo "$HOMEBREW_TAP_DEPLOY_KEY" > "$RUNNER_TEMP/k"\n${s("push-tap")["run"]}`; }), /deploy key more than once|echoes|uses the deploy key/],
+      ["the push step that echoes the key", () => plant((d, s) => { s("push-tap")["run"] = `echo "$HOMEBREW_TAP_DEPLOY_KEY" > "$RUNNER_TEMP/k"\n${s("push-tap")["run"]}`; }), /push step's script/],
       ["the push step that writes the key with the world able to read it", () => plant((d, s) => { s("push-tap")["run"] = String(s("push-tap")["run"]).replace("umask 077\n", ""); }), /umask 077/],
-      ["the push step not the last", () => plant((d) => { github(d)["steps"].push({ run: "echo done" }); }), /not the last step|push-tap is not the last/],
+      ["the push step not the last", () => plant((d) => { github(d)["steps"].push({ run: "echo done" }); }), /remove-key/],
       ["the push before the release", () => plant((d) => { const st = github(d)["steps"]; const a = st.findIndex((x: Step) => x["id"] === "release"), b = st.findIndex((x: Step) => x["id"] === "push-tap"); [st[a], st[b]] = [st[b], st[a]]; }), /does not come before/],
       ["the key in a third step", () => plant((d) => { github(d)["steps"].splice(0, 0, { id: "third", env: { HOMEBREW_TAP_DEPLOY_KEY: TAP_KEY }, run: "true" }); }), /only the step that checks it|deploy key is in/],
       ["the key in a job's env", () => plant((d, s, j) => { j("npm")["env"] = { K: TAP_KEY }; }), /has env/],
       ["a job skipped by an `if`", () => plant((d) => { npm(d)["if"] = "false"; }), /has if/],
       ["a self-hosted runner", () => plant((d) => { npm(d)["runs-on"] = "self-hosted"; }), /runs-on/],
       ["a second job that pushes", () => plant((d) => { d.jobs["again"] = { ...structuredClone(github(d)), needs: ["preflight"] }; }), /exactly one job must make/],
+      // ---- the allowlist of run commands, the project, the key's file ----
+      ["pnpm publish -r in the GitHub job", () => plant((d) => { github(d)["steps"].splice(1, 0, { run: "pnpm publish -r --no-git-checks --access public" }); }), /allowlist/],
+      ["an extra npm publish before the pinned one", () => plant((d) => { npm(d)["steps"].splice(-1, 0, { run: "npm publish --workspaces --provenance" }); }), /allowlist/],
+      ["gh release create --prerelease", () => plant((d) => { github(d)["steps"].splice(1, 0, { run: "gh release create $GITHUB_REF_NAME --prerelease" }); }), /allowlist/],
+      ["git push --force", () => plant((d) => { github(d)["steps"].splice(1, 0, { run: "git push --force origin HEAD:main" }); }), /allowlist/],
+      ["an extra step in preflight", () => plant((d, s, j) => { j("preflight")["steps"].push({ run: "node tools/release/release.mjs publish" }); }), /jobs publish to npm|permissions are|allowlist/],
+      ["the pinned publish with a flag added", () => plant((d) => { npm(d)["steps"].find((x: Step) => x["run"] === "node tools/release/release.mjs publish")["run"] += " -r"; }), /allowlist|no step|publish/],
+      ["the install with a flag added", () => plant((d) => { const st = npm(d)["steps"].find((x: Step) => x["run"] === "pnpm install --frozen-lockfile"); st["run"] += " --force"; }), /allowlist/],
+      ["the build changed to another target", () => plant((d) => { const st = npm(d)["steps"].find((x: Step) => /nx run-many/.test(x["run"] ?? "")); st["run"] = "pnpm nx run-many -t deploy"; }), /allowlist/],
+      ["the release step on Orthograph itself (--root .)", () => plant((d, s) => { s("release")["run"] = "node packages/cli/src/main.ts publish --release --root ."; }), /release step is not exactly/],
+      ["the release step on the starter", () => plant((d, s) => { s("release")["run"] = "node packages/cli/src/main.ts publish --release --root examples/starter"; }), /release step is not exactly/],
+      ["the push step on the starter", () => plant((d, s) => { s("push-tap")["run"] = String(s("push-tap")["run"]).replace("examples/acme", "examples/starter"); }), /push step's script/],
+      ["the key written into the workspace", () => plant((d, s) => { s("push-tap")["run"] = String(s("push-tap")["run"]).replace("$RUNNER_TEMP/tap-key", "tap-key"); }), /push step's script/],
+      ["the key's file never removed", () => plant((d) => { const st = github(d)["steps"]; st.splice(st.findIndex((x: Step) => x["id"] === "remove-key"), 1); }), /remove-key/],
+      ["the key's removal that runs only on success", () => plant((d, s) => { delete s("remove-key")["if"]; }), /remove-key/],
+      ["the key's removal that removes something else", () => plant((d, s) => { s("remove-key")["run"] = "rm -f tap-key"; }), /allowlist|remove-key/],
+      ["the key's removal before the push", () => plant((d) => { const st = github(d)["steps"]; const a = st.findIndex((x: Step) => x["id"] === "push-tap"), b = st.findIndex((x: Step) => x["id"] === "remove-key"); [st[a], st[b]] = [st[b], st[a]]; }), /remove-key|does not come before/],
       // ---- actions, shells, and anything that hides a failure ----
       ["an action by a moving tag", () => plant((d) => { npm(d)["steps"][0]["uses"] = "actions/checkout@v4"; }), /pinned version/],
       ["an action from elsewhere", () => plant((d) => { npm(d)["steps"].splice(1, 0, { uses: "someone/publish@v1.0.0" }); }), /pinned version/],

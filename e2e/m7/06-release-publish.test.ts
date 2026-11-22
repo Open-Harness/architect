@@ -5,8 +5,9 @@
 // THE SURFACE. `check`: exit 0 when every public package's version is the tag's, one line each (`<name>@<version>`) and no private package named; exit 1 when one differs, a line starting `::error::` naming that package and both
 // versions; exit 2 when the tag is not `v<major>.<minor>.<patch>[-<prerelease>]` or is not a tag at all, or there are no packages. `publish`: `check` first, then each public package, from its folder, with `pnpm publish` (which
 // writes `workspace:` ranges as the version), `--tag latest` for a release; a package whose built folder is missing (its `publishConfig` names `dist/...`, and there is none) refuses the whole run before the first send (exit 2).
-// A version a registry already has is left alone and the run goes on (a run can be started again after half a release); a prerelease never takes `latest`: it is refused (exit 1 or 2) or goes out under `next`, the builder's
-// call (an open decision in the pull request). Off GitHub Actions (`GITHUB_ACTIONS` is not `true`) it publishes only to a registry it was given, never to npmjs.org: with none given, or with npm's own, it exits 2 before sending.
+// A version a registry already has is left alone and the run goes on (a run can be started again after half a release). A prerelease tag (`v1.1.0-rc.1`, `v2.4.0-next.1`) is refused by `check` and by `publish` (exit 1 or 2, an `::error::` line naming
+// the rule, nothing sent): prereleases are M1.51's `next` publish, never this workflow's (the lead's call 2). "Not built" means the package's `dist/` folder may exist but lacks the file its `publishConfig` names (`main`, or a `bin`), so a tool that
+// only tests for the folder misses it. Off GitHub Actions (`GITHUB_ACTIONS` is not `true`) it publishes only to a registry it was given, never to npmjs.org: with none given, or with npm's own, it exits 2 before sending.
 // HOW IT IS JUDGED. A workspace of four packages (`orthograph`, a library, a CLI, a private one) written fresh for each case, a Verdaccio started here, the real tool, the real `pnpm` and `npm` it runs, an install from the registry
 // in an empty folder. The refusals run first, each against an empty registry, and show nothing reached it. NOT JUDGED HERE: provenance and trusted publishing (npm's own, first real run is the proof; the workflow's text is check 05),
 // and the real set of packages and their build (check 07). Red today on one reason: the script does not exist.
@@ -16,18 +17,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect, Exit, Scope } from "effect";
 import { Registry } from "@orthograph/services";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 import { freePorts, repo } from "./support.ts";
 
 const script = join(repo, "tools/release/release.mjs");
-const PORTS = freePorts("registry");
-const registry = `http://127.0.0.1:${PORTS.registry}/`;
+let registry = "";
 const parent = mkdtempSync(join(realpathSync(tmpdir()), "ortho-m7-06-"));
-const services = Effect.runSync(Scope.make());
+let services: Scope.Closeable = Effect.runSync(Scope.make());
 const PUBLIC = ["orthograph", "@orthograph/fx-lib", "@orthograph/fx-cli"] as const;
 const PRIVATE = "@orthograph/fx-private";
 let npmrc = "";
 let token = "";
+let nth = 0;
 
 const folderOf = (name: string) => name.replace(/^@orthograph\//, "");
 /** A workspace of the four packages at `version`, built (each has the `dist` its `publishConfig` names). `skew` puts one public package at another version; `unbuilt` leaves one without its `dist`. */
@@ -72,15 +73,21 @@ const packument = async (name: string) => {
 };
 const onRegistry = async () => (await Promise.all([...PUBLIC, PRIVATE].map(async (n) => [n, await packument(n)] as const))).filter(([, p]) => p !== undefined).map(([n]) => n);
 
-beforeAll(async () => {
-  const dir = join(parent, "services");
+// Every test has a registry of its own (its own storage and port), so none depends on what another left there.
+beforeEach(async () => {
+  services = Effect.runSync(Scope.make());
+  const port = freePorts("registry").registry;
+  const dir = join(parent, `services-${++nth}`);
   mkdirSync(dir);
-  const started = await Effect.runPromise(Registry.start({ dir, port: PORTS.registry }).pipe(Scope.provide(services)));
+  const started = await Effect.runPromise(Registry.start({ dir, port }).pipe(Scope.provide(services)));
+  registry = started.url;
   npmrc = started.npmrc;
   token = /_authToken=(\S+)/.exec(readFileSync(npmrc, "utf8"))![1]!;
 }, 120_000);
-afterAll(async () => {
+afterEach(async () => {
   await Effect.runPromise(Scope.close(services, Exit.void));
+});
+afterAll(() => {
   rmSync(parent, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
 });
 
@@ -111,6 +118,11 @@ describe("06: the release's npm half (M7.02), against a real registry", () => {
       expect(r.status, r.said).toBe(2);
       expect(r.said).toMatch(/::error::/);
     });
+    it.each(["v2.3.4-rc.1", "v2.3.4-next.1", "v2.3.4-0"])("a valid prerelease tag %s, every package at it: refused, naming the rule (prereleases are M1.51's)", (name) => {
+      const r = tool("check", workspace(name.slice(1)), { GITHUB_REF_NAME: name });
+      expect([1, 2], r.said).toContain(r.status);
+      expect(r.said).toMatch(/^::error::.*prerelease/im);
+    });
     it("no packages: exit 2", () => {
       const root = mkdtempSync(join(parent, "empty-"));
       writeFileSync(join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
@@ -122,6 +134,7 @@ describe("06: the release's npm half (M7.02), against a real registry", () => {
     it.each([
       ["a tag that disagrees with one package", () => workspace("2.3.4", { skew: ["@orthograph/fx-cli", "2.3.5"] }), {}, [1]],
       ["a package that is not built", () => workspace("2.3.4", { unbuilt: "@orthograph/fx-lib" }), {}, [2]],
+      ["a prerelease tag with every package at it", () => workspace("2.4.0-rc.1"), { GITHUB_REF_NAME: "v2.4.0-rc.1" }, [1, 2]],
       ["a name that is not a tag", () => workspace("2.3.4"), { GITHUB_REF_TYPE: "branch", GITHUB_REF_NAME: "main" }, [2]],
       ["no registry, off GitHub Actions", () => workspace("2.3.4"), { NPM_CONFIG_REGISTRY: undefined, npm_config_registry: undefined }, [2]],
       ["npm's own registry, off GitHub Actions", () => workspace("2.3.4"), { NPM_CONFIG_REGISTRY: "https://registry.npmjs.org/", npm_config_registry: "https://registry.npmjs.org/" }, [2]],
@@ -149,6 +162,8 @@ describe("06: the release's npm half (M7.02), against a real registry", () => {
     });
 
     it("installs in an empty folder, and the command it brings prints the tag's version", () => {
+      const released = tool("publish", workspace("2.3.4"));
+      expect(released.status, released.said).toBe(0);
       const fresh = mkdtempSync(join(parent, "fresh-"));
       writeFileSync(join(fresh, "package.json"), JSON.stringify({ name: "fresh", private: true, type: "module" }));
       writeFileSync(join(fresh, "empty-npmrc"), "");
@@ -159,6 +174,7 @@ describe("06: the release's npm half (M7.02), against a real registry", () => {
     });
 
     it("run again after it went through: exit 0, nothing changes (a run can be started again after half a release)", async () => {
+      expect(tool("publish", workspace("2.3.4")).status).toBe(0);
       const r = tool("publish", workspace("2.3.4"));
       expect(r.status, r.said).toBe(0);
       for (const name of PUBLIC) expect(Object.keys((await packument(name))!.versions), name).toEqual(["2.3.4"]);
@@ -176,15 +192,14 @@ describe("06: the release's npm half (M7.02), against a real registry", () => {
       for (const name of PUBLIC) expect(Object.keys((await packument(name))!.versions), name).toContain("2.3.5");
     });
 
-    it("a prerelease after a release never takes `latest` from it", async () => {
-      const root = workspace("2.4.0-next.1");
-      const r = tool("publish", root, { GITHUB_REF_NAME: "v2.4.0-next.1" });
-      for (const name of PUBLIC) expect((await packument(name))!["dist-tags"]["latest"], `${name} after ${r.said}`).toBe("2.3.5");
-      if (r.status === 0) for (const name of PUBLIC) expect((await packument(name))!["dist-tags"]["next"], name).toBe("2.4.0-next.1");
-      else {
-        expect([1, 2]).toContain(r.status);
-        expect(r.said).toMatch(/::error::/);
-        expect(Object.keys((await packument("orthograph"))!.versions)).not.toContain("2.4.0-next.1");
+    it("a prerelease tag after a release is refused: nothing new on the registry, `latest` where it was", async () => {
+      expect(tool("publish", workspace("2.3.5"), { GITHUB_REF_NAME: "v2.3.5" }).status).toBe(0);
+      const r = tool("publish", workspace("2.4.0-next.1"), { GITHUB_REF_NAME: "v2.4.0-next.1" });
+      expect([1, 2], r.said).toContain(r.status);
+      expect(r.said).toMatch(/::error::.*prerelease/i);
+      for (const name of PUBLIC) {
+        const p = (await packument(name))!;
+        expect([name, Object.keys(p.versions), p["dist-tags"]]).toEqual([name, ["2.3.5"], { latest: "2.3.5" }]);
       }
     });
   });

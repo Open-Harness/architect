@@ -7,6 +7,16 @@ export const PATH = ".github/workflows/release.yml";
 export const TAP_KEY = "${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}";
 export const TAP_CLONE = "https://github.com/Open-Harness/homebrew-tap.git";
 export const TAP_PUSH = "git@github.com:Open-Harness/homebrew-tap.git";
+/** The only run commands a release may have: these two anywhere, and the named steps below, each exactly. Anything else (`pnpm publish -r`, another `npm publish`, `gh release create`, `git push --force`) is refused. */
+const GENERIC = new Set(["pnpm install --frozen-lockfile", "pnpm nx run-many -t build"]);
+export const RELEASE = "node packages/cli/src/main.ts publish --release --root examples/acme";
+export const PUSH = [
+  "umask 077",
+  `printf '%s\\n' "$HOMEBREW_TAP_DEPLOY_KEY" > "$RUNNER_TEMP/tap-key"`,
+  `export GIT_SSH_COMMAND="ssh -i $RUNNER_TEMP/tap-key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"`,
+  "node packages/cli/src/main.ts publish --push-tap --root examples/acme",
+].join("\n");
+export const REMOVE = 'rm -f "$RUNNER_TEMP/tap-key"';
 const EXPRESSIONS = new Set(["secrets.HOMEBREW_TAP_DEPLOY_KEY", "github.token", "github.ref_name", "github.ref_type", "github.repository", "github.server_url", "github.api_url", "runner.os", "matrix.os", "matrix.target"]);
 const STEP_EXPRESSION = /^(steps\.[a-z-]+\.(outputs\.[a-z]+|outcome)|needs\.[a-z-]+\.(outputs\.[a-z]+|result))$/;
 const USES = /^(actions\/checkout|pnpm\/action-setup|actions\/setup-node|actions\/upload-artifact|actions\/download-artifact)@v\d+\.\d+\.\d+$/;
@@ -71,7 +81,13 @@ export const problems = (source: string): ReadonlyArray<string> => {
         if (s.env !== undefined || s.run !== undefined) out.push(`${label}: ${name} is an action that carries a script or env`);
       }
       if (s.shell !== undefined || s["working-directory"] !== undefined) out.push(`${label}: ${name} sets a shell or a directory`);
-      if (s.if !== undefined) out.push(`${label}: ${name} has an \`if\`: nothing in a release is skipped`);
+      if (s.if !== undefined && !(s.id === "remove-key" && s.if === "always()")) out.push(`${label}: ${name} has an \`if\`: nothing in a release is skipped (but the key's removal, which always runs)`);
+      if (s.run !== undefined) {
+        const text = String(s.run).trim();
+        const named: Record<string, string> = { agreement: "node tools/release/release.mjs check", release: RELEASE, "push-tap": PUSH, "remove-key": REMOVE };
+        const ok = (s.id !== undefined && s.id in named && text === named[s.id]) || (s.id === "credentials" && id === "preflight") || (GENERIC.has(text) && s.id === undefined) || text === "node tools/release/release.mjs publish";
+        if (!ok) out.push(`${label}: ${name} runs a command that is not on the allowlist (the install, the build, and the named steps, each exactly): ${text.split("\n")[0]!.slice(0, 60)}`);
+      }
       const secretIn = Object.values(s.env ?? {}).some((v) => String(v).includes("secrets.HOMEBREW_TAP_DEPLOY_KEY"));
       if (secretIn) { keyed++; if (s.id !== "credentials" && s.id !== "push-tap") out.push(`${label}: ${name} holds the tap's deploy key, and only the step that checks it is there and the step that pushes may`); }
       if (Object.values(s.env ?? {}).some((v) => /github\.token/.test(String(v))) && !(s.id === "release" && (s.env ?? {})["GH_TOKEN"] === "${{ github.token }}")) out.push(`${label}: ${name} holds the job's token; only the release step does, as GH_TOKEN`);
@@ -87,14 +103,13 @@ export const problems = (source: string): ReadonlyArray<string> => {
       releaseJobs++;
       const r = steps[release], p = steps[push];
       if (r === undefined || p === undefined) { out.push(`${label}: it has ${r === undefined ? "no step `release`" : "no step `push-tap`"}: the release and the tap's push are two steps of one job, in that order`); continue; }
-      if (release > push || push !== steps.length - 1) out.push(`${label}: \`release\` does not come before \`push-tap\`, or push-tap is not the last step`);
-      if (!runs(r, /^node packages\/cli\/src\/main\.ts publish --release --root [\w./-]+$/m)) out.push(`${label}: the release step is not \`node packages/cli/src/main.ts publish --release --root <folder>\``);
+      if (release > push || steps[push + 1]?.id !== "remove-key" || push + 1 !== steps.length - 1) out.push(`${label}: \`release\` does not come before \`push-tap\`, or the step \`remove-key\` (if: always()) is not right after it and last: the key's file is removed whatever happened`);
+      const rm = steps[push + 1];
+      if (rm !== undefined && (rm.env !== undefined || rm.if !== "always()")) out.push(`${label}: remove-key has env, or does not run \`if: always()\``);
+      if (!runs(r, RELEASE)) out.push(`${label}: the release step is not exactly \`${RELEASE}\` (acme's CLI only: M7.06's formula)`);
       if (JSON.stringify(Object.entries(r.env ?? {}).sort()) !== JSON.stringify(Object.entries({ GH_TOKEN: "${{ github.token }}", ORTHO_TAP_REMOTE: TAP_CLONE }).sort())) out.push(`${label}: the release step's env is not exactly GH_TOKEN (the job's token) and ORTHO_TAP_REMOTE (${TAP_CLONE}): no key, no npm credential`);
-      if (!runs(p, /^node packages\/cli\/src\/main\.ts publish --push-tap --root [\w./-]+$/m)) out.push(`${label}: the push step is not \`node packages/cli/src/main.ts publish --push-tap --root <folder>\``);
+      if (!runs(p, PUSH)) out.push(`${label}: the push step's script is not exactly the pinned one (umask 077; the deploy key written once, by printf, to a file under $RUNNER_TEMP; ssh by that file; publish --push-tap --root examples/acme)`);
       if (envOf(p) !== JSON.stringify(Object.entries({ HOMEBREW_TAP_DEPLOY_KEY: TAP_KEY, ORTHO_TAP_REMOTE: TAP_PUSH }).sort())) out.push(`${label}: the push step's env is not exactly the deploy key (a secret) and ORTHO_TAP_REMOTE (${TAP_PUSH})`);
-      const script = String(p.run ?? "");
-      if ((script.match(/HOMEBREW_TAP_DEPLOY_KEY/g) ?? []).length !== 1 || !/^.*HOMEBREW_TAP_DEPLOY_KEY.*>\s*"?\$?\{?[\w/.-]+\}?"?\s*$/m.test(script) || /\b(echo|cat|tee)\b[^\n]*HOMEBREW_TAP_DEPLOY_KEY/.test(script)) out.push(`${label}: the push step uses the deploy key more than once, or other than by writing it to a file with printf`);
-      if (!/^umask 077$/m.test(script)) out.push(`${label}: the push step writes the key without \`umask 077\``);
       pushSteps++;
     }
   }
