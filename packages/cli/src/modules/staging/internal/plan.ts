@@ -3,16 +3,16 @@ import { Effect } from "effect";
 import type { Model } from "@orthograph/compiler";
 import { StagingRefused, type Plan, type Resource } from "../types.ts";
 
-/** The only environment planned, and the short form every resource name carries for it (`design/decisions/M7-cloud.md`, addendum). */
-export const ENVIRONMENT = "staging";
-export const SHORT = "stg";
+/** The environments planned and deployed to the cloud, each with the short form every resource name carries for it (`design/decisions/M7-cloud.md`, addendum; `test` is a pull request's world, M7.05). The one place that maps them. */
+export const CLOUD = { staging: "stg", test: "test" } as const;
+export const shortOf = (environment: string): string | undefined => (Object.hasOwn(CLOUD, environment) ? CLOUD[environment as keyof typeof CLOUD] : undefined);
 /** A name Cloudflare would refuse: a Worker's is 63 characters or fewer on `workers.dev`; none is stated for D1, so 63 is held there too (M7-cloud, addendum of 21 November 2026). */
 export const MAX_NAME = 63;
-const RUN = /^[a-z0-9]{1,20}$/;
+export const RUN = /^[a-z0-9]{1,20}$/;
 
 /** `plugged-in` is `pluggedin`: an app's letters and digits only. */
 const slug = (app: string) => app.toLowerCase().replace(/[^a-z0-9]/g, "");
-export const prefixOf = (app: string, run: string) => `ortho-${slug(app)}-${SHORT}-${run}`;
+export const prefixOf = (app: string, short: string, run: string) => `ortho-${slug(app)}-${short}-${run}`;
 /** A name belongs to a run when it is the prefix or continues it past a dash: run `1` does not own run `12`'s resources. */
 export const owns = (prefix: string, name: string) => name === prefix || name.startsWith(`${prefix}-`);
 /** The `workers.dev` address of a run's Worker: `https://<prefix>-worker.<the account's subdomain>.workers.dev`. */
@@ -48,13 +48,14 @@ export const plan = ({ model, app, environment, run }: Inputs): Effect.Effect<Pl
     if (model.environments?.[environment] === undefined) {
       return yield* new StagingRefused({ message: `no environment "${environment}" in blueprint/environments/` });
     }
-    if (environment !== ENVIRONMENT) {
-      return yield* new StagingRefused({ message: `${environment}: only ${ENVIRONMENT} is planned and deployed to the cloud so far` });
+    const short = shortOf(environment);
+    if (short === undefined) {
+      return yield* new StagingRefused({ message: `${environment}: only ${Object.keys(CLOUD).join(" and ")} are planned and deployed to the cloud so far` });
     }
     if (model.environments[environment]?.cloud?.provider !== "cloudflare") {
       return yield* new StagingRefused({ message: `the ${environment} environment does not declare Cloud.cloudflare(...), so there is nothing to deploy` });
     }
-    const prefix = prefixOf(app, run);
+    const prefix = prefixOf(app, short, run);
     const planned = resources(model, prefix);
     const tooLong = planned.map((r) => r.name ?? r.script ?? "").filter((n) => n.length > MAX_NAME);
     if (tooLong.length > 0) {

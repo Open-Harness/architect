@@ -1,13 +1,15 @@
 # staging
 
-`ortho env up staging --plan --run <id> [--root <dir>]`, `ortho env destroy staging --plan --run <id>`, and the real
+`ortho env up staging --plan --run <id> [--root <dir>]` (`test` takes the same verbs), `ortho env destroy staging --plan --run <id>`, and the real
 `ortho env up staging --run <id>` and `ortho env destroy staging --run <id>` (M7.03, M7.04).
 
 **The plan** is one function (`internal/plan.ts`), made from the model (its stores, and where each thing lives), the app's
 name (`ortho.config.ts`, loaded), the environment and the run. `--plan`
 prints it as one JSON document, and the real `up` and `destroy` run the same function and act on what it says. The prefix,
-`ortho-<app, letters and digits>-stg-<run>`, is formed there and nowhere else; every name is the prefix or continues it past a
-dash, so run `1` does not own run `12`'s resources. A run id is 1 to 20 of `a-z0-9`; a name that would be over 63 characters is
+`ortho-<app, letters and digits>-<short>-<run>`, is formed there and nowhere else (`stg` for staging, `test` for a pull
+request's test world, M7.05; one map in `plan.ts`); every name is the prefix or continues it past a
+dash, so run `1` does not own run `12`'s resources. A run id is 1 to 20 of `a-z0-9`, so a pull request's is `pr<number>r<github run id>`
+(no dash); a name that would be over 63 characters is
 refused (exit 2, no plan).
 
 **`up`** builds the bundle once, writes the run's input (`.ortho/staging/<prefix>/stack-input.json`: the plan, the bundle's path, the
@@ -28,3 +30,9 @@ namespaces go with it.
 
 The module returns what to say (`Said`); only `main.ts` prints and exits. Alchemy's async work is inside its own process, started in
 `internal/live.ts`. Decision: `design/decisions/M7-03-infra-projection.md`. Test: `staging.test.ts`.
+
+**`proveAddress`** (`internal/address.ts`) is where `ortho prove --env staging --run <id>` goes: `Staging.url(prefix, subdomain)` from the
+project's name and the run, with the subdomain from `ORTHO_STAGING_SUBDOMAIN` (one DNS label), never typed in a project. A bad run, or a
+missing or bad subdomain, is a refusal (exit 2) naming it. `ORTHO_STAGING_ORIGIN` (an `http` address on this machine only) is the address as
+it is, and then no subdomain is needed. Nothing is contacted. Check 41.
+`proveAddress` also returns the prefix and `owns`, so `prove` finds the run's D1 databases by name.

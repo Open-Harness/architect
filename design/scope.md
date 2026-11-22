@@ -24,7 +24,7 @@ before it:
 | Release | A person outside can… | Done when | Left to build |
 |---|---|---|---|
 | **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last pieces: the chains-and-wallets docs page, derived alerts, machine graphs, the request key in traces; the npm preview itself (added by K28; publish refuses npmjs today); Goal 3's branch landing on `main` |
-| **Beta** (stage 1, "workable") | start an app with `npm create orthograph`, sign people in, claim `@name` on a real page, and deploy it to Cloudflare and tear it down | Gate M2 (M2.12) and Goal 3's done check (`e2e:stage1`, staging included) | all of milestone 2 (kinds of caller, auth and organizations as plugins, secrets, `ortho new`), the handles plugin, React hooks, the three screens, staging deploy and destroy |
+| **Beta** (stage 1, "workable") | start an app with `npm create orthograph`, sign people in, claim `@name` on a real page, and deploy it to Cloudflare and tear it down | Gate M2 (M2.12) and Goal 3's done check (`e2e:stage1`, staging included) | all of milestone 2 (kinds of caller, auth and organizations as plugins, secrets, `ortho new`), the handles plugin, actions and the web pieces on UI SDK, the three screens, staging deploy and destroy |
 | **1.0** (stages 2 to 4) | wallets and pay by handle; a Safe with budgets, agents and time; a private club on Aztec | the stage 2, 3 and 4 gates on `main`, plus M7.01 to M7.04, M7.06 and M7.13 | most of the on-chain milestone, webhooks, workflows, agents, time, all of stage 4, the real release |
 
 **Where Goal 4 falls.** Goal 4 (on chain, end to end) serves 1.0, not the preview or the beta: its slices 2 and 9 to
@@ -72,9 +72,9 @@ core everything else uses.
 | `ortho new` and `ortho new feature` | None | `packages/preset` is still the Nx preset | M2.09, M2.10 |
 | `ortho add` for events, errors, roles, moves | Partial | thing, operation, read, journey only | M2.14, M2.15 |
 | Adopt a mounted thing | None | | M2.19, M2.20 |
-| Journeys through the CLI, MCP and the page | None | no `--through` | M2.08, ST1.01 |
+| Journeys through the CLI, MCP and the page | None | no `--through` | M2.08, ST1.25 |
 | The handles plugin | None | the code runs inside Plugged In; not extracted | ST1.03 |
-| React hooks | None | no `@orthograph/react` | ST1.01, ST1.06 |
+| The web pieces on UI SDK (K29) | None | no `@orthograph/web`, no `generated/web/` | ST1.25, ST1.06 |
 | Plugged In's three screens | None | no `src/web/` | ST1.04 |
 | Staging: deploy, run the story, destroy | Spiked | five clean runs in `spikes/staging-pass`; no `ortho env up staging`, no infra projection | M7.01 (decided), M7.03, M7.04 |
 | Prove against a deployed address | None | no https client, no D1 facts reader; no slice | none |
@@ -84,12 +84,13 @@ core everything else uses.
 | Capability | Status | Evidence, or what is missing | Slices |
 |---|---|---|---|
 | UI SDK as the interface base | Decided | the UI SDK decision, K24 | K24 |
-| A generated form per operation on UI SDK | Spiked | `spikes/ui-sdk-real-world`; no generator, no slice | none |
+| A generated piece per operation on UI SDK | Spiked | `spikes/ui-sdk-real-world`; no generator yet | ST1.25 (K29) |
 | Agent marks from blueprint meaning | Spiked | three of four map; approval and a hidden payload field can't be declared | none |
-| Actions: one per operation, for the page, MCP and the CLI | Spiked | `spikes/agent-native-compat`, `ui-sdk-real-world/src/action.ts` | M1.22, M1.23 (moved to M3) |
+| Actions: one per operation, for the page, MCP and the CLI | Spiked | `spikes/agent-native-compat`, `ui-sdk-real-world/src/action.ts` | M1.22, M1.23 (moved into stage 1 by K29) |
 | Approvals asked once | Spiked | agent-native checks 04 to 06 | M1.23, M1.37 |
 | Portal chat and "Needs you" | Partial | `portal-ui` has the chat parts; nothing uses them | M1.24 |
 | One package behind the portal's components (HeroUI Pro today, phased out by K24) | Built | `packages/portal-ui`, check 15 | M1.34 |
+| The portal off HeroUI, on UI SDK | None | `packages/portal-ui` wraps HeroUI Pro today (M1.34, check 15) | Goal 6's new client, then ST1.28 and ST1.27 at cutover (K29, K31) |
 
 ### On chain and wallets (1.0, stages 2 and 3)
 

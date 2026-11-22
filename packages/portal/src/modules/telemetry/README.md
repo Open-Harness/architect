@@ -16,3 +16,9 @@ reader of `ortho.calls` (`prove`'s `FileMetrics`), `now` the only clock. Both ar
   reader groups by it, so several calls under one distributed trace are several rows. For spans without it, an attempt joins a call only when exactly one could take it;
   otherwise those attempts are one call whose outcome is `unknown`, with no move. The window is each call's (its first attempt's start), whatever whole traces the source
   hands back. A move counts only for an attempt that did not lose its commit race.
+- **The monitor's calls (M1.49).** `Telemetry.calls` gives every call of a window with no row limit, each with its `id` (the runtime's `call.id` when every attempt
+  carries the same one, else the trace and its attempt spans; `Telemetry.identity`) and, on a defect, its `failure`: the deepest declared step span under the failing
+  attempt that ended as an error, and the attempt's `error.tag`. A span is a declared step when it has a string `step.kind` and its name is one of
+  `model.operations[op].steps`, read from the wire (`internal/spans.ts`), or the runtime's `<op>.commit` (the step `commit`). An adapter's span is walked through, never
+  chosen. `-` is the operation itself: a defect no declared step explains (a read's, or a die outside every step). The view's `p95` is taken over the whole window
+  before the rows are cut.

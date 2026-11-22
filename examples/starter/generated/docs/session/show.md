@@ -17,6 +17,7 @@ Who is signed in.
 |---|---|
 | person | person.id |
 | email | person.email |
+| via | Way |
 
 ## Refusals
 

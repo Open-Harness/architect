@@ -257,26 +257,30 @@ export const sdk = Blueprint.projection({
   or `/node` entry, not an HTTP call. `wallet.link` is local code that makes two calls.
 - **Replay:** imports the built SDK in a node process, signs in as the cast member and calls the function.
 
-### 3.4 React
+### 3.4 The web
 
-React gives a web app hooks over the SDK: `useSpend()`, `useAllowance(id)`, with typed refusals and pending states.
+The web projection gives a web app one generated piece per operation, on UI SDK: a framework-free primitive bound to
+the operation's generated action, with its React parts beside it (React only in the beta). A read loads, a move or a
+write is a form or a button, and a refusal, a pending call and an agent's limits come with it
+([`../decisions/K29-ui-layer.md`](../decisions/K29-ui-layer.md)).
 
 ```ts
-export const react = Blueprint.projection({
+export const web = Blueprint.projection({
   host: [Host.browser],
-  builtOn: sdk,
+  builtOn: actions,
   via: [Via.session],
-  render: ({ model }) => Effect.succeed([...hooks(model), provider(model)]),
-  replay: (step, world) => runInBrowser(hookHarness(step), world),  // a real browser (Playwright), never jsdom
+  render: ({ model, choices }) => Effect.succeed([...pieces(model, choices.frameworks), host(choices.frameworks)]),
+  replay: (step, world) => runInBrowser(pieceHarness(step), world),  // a real browser (Playwright), never jsdom
   ships: [Release.npm],
 });
 ```
 
-- **Today:** nothing. F1 says customer UIs are consumers of the SDK. Built in ST1.01, ST1.06 and ST2.03
-  ([`../decisions/K9-growing-example.md`](../decisions/K9-growing-example.md)).
-- **Scope:** it renders hooks, not screens. Screens are the app's own code in `src/`, scaffolded once if asked.
-- **Replay:** a headless browser runs a tiny harness page that calls the hook. The browser signer of wallets is proved
-  here, which is how risk 3 in `spikes/kits-dx/README.md` is closed.
+- **Today:** nothing. `spikes/ui-sdk-real-world` generated the claim form and replayed a real journey through it.
+  Built in ST1.25, ST1.06 and ST2.03.
+- **Scope:** it renders pieces, not screens. Pages are the app's own code in `src/web/`, composed from the pieces and
+  UI SDK's components, scaffolded once if asked.
+- **Replay:** a headless browser fills and presses the step's piece, as a person or as an agent through UI SDK's
+  bridge. The browser signer of wallets is proved here, which is how risk 3 in `spikes/kits-dx/README.md` is closed.
 
 ### 3.5 The CLI
 
@@ -489,7 +493,7 @@ Each projection's replay also adds checks of its own:
 
 - the CLI's exit code must match the error's declared code;
 - MCP's refusal must carry the refusal code;
-- React's hook must reach the error state with the typed class.
+- The web piece must reach its refusal state with the declared code.
 
 ### Which steps go through which projection
 
@@ -503,7 +507,7 @@ Each projection's replay also adds checks of its own:
 
 ### Cost, and when it runs
 
-Replay multiplies prove time by the number of projections that take a step. Today acme has 11 journeys through one
+Replay multiplies prove time by the number of projections that take a step. Today acme has 15 journeys through one
 door. With the server API, SDK, CLI, MCP and React, most steps run four or five times.
 
 - **In CI:** every journey through every projection, every time. Verdicts are only written there.
@@ -532,7 +536,7 @@ A projection builds on another for three reasons.
 2. **Client operations come for free.** `wallet.link`'s local code lives in the SDK. The CLI and React get it by
    building on the SDK.
 3. **Staleness is exact.** `builtOn` is in the model, so `ortho impact` knows that a change to the SDK
-   projection's version re-renders the CLI, the MCP server and the React hooks, and re-runs their replays.
+   projection's version re-renders the CLI, the MCP server and the web pieces, and re-runs their replays.
 
 A projection may only build on a projection that is mounted. `ortho add projection react` mounts the SDK too if it
 is missing, the same way a feature's needs are met ([`mounting.md`](mounting.md)).

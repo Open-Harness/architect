@@ -273,7 +273,7 @@ kit under the mount's name. Unmounting removes them.
 @orthograph/wallets/agents/skills/choose-a-signer/SKILL.md → generated/agents/skills/wallets-choose-a-signer/
 @orthograph/language-solidity/agents/skills/fill-a-contract-blank/
 @orthograph/language-noir/agents/skills/fill-a-circuit-blank/
-@orthograph/react/agents/skills/build-a-screen/
+@orthograph/web/agents/skills/build-a-screen/
 ```
 
 They are filled from the mount, not the package. Stripe's `map-an-error` lists only the errors of the calls this

@@ -25,7 +25,12 @@ export interface CallRecord {
   readonly journal: ReadonlyArray<{ readonly event: string; readonly move: string; readonly subject: string; readonly fields: Readonly<Record<string, unknown>> }>;
   /** For an answered call whose operation moves: the stored state of what it moved, read right after the call. */
   readonly stored?: string | undefined;
+  /** The call listed the MCP door's tools (`.tools()`): it ran no operation, so no span of its own comes, and `body` is `{ tools }`. */
+  readonly tools?: true;
 }
+
+export type { D1Access } from "./internal/d1-facts.ts";
+import type { D1Access } from "./internal/d1-facts.ts";
 
 /** What `prove` reads back from the environment's database: a row by table and id (wire form), and a trace's journal entries. */
 export interface Facts {
@@ -80,6 +85,8 @@ export interface Project {
   readonly startingWorlds: ReadonlyMap<string, StartingWorld>;
   /** Each operation a mount omits, by its declaration: a journey's step that runs one is skipped. */
   readonly omitted?: ReadonlyMap<unknown, { readonly operation: string; readonly file: string }>;
+  /** Each adapter's mount by the name it is mounted under: what a `service` role in a declaration is read against, and what a journey's service cast member is called by. */
+  readonly mounts?: ReadonlyMap<unknown, string>;
   /** The journeys skipped because they still hold blanks (stubs from `ortho add journeys`), by file (K16 e). */
   readonly unfinished?: ReadonlyArray<string>;
 }
@@ -89,6 +96,8 @@ export class ProjectFailed extends Data.TaggedError("ProjectFailed")<{ readonly 
 export interface JourneysApi {
   /** Facts read from an environment's database file, for one that has closed its front door (D3 #127). */
   readonly databaseFacts: (state: string) => Facts;
+  /** Facts read from a deployed environment's D1 databases through Cloudflare's API, with the operator's credential. */
+  readonly d1Facts: (access: D1Access) => Facts;
   readonly load: (root: string, model: Model) => Effect.Effect<Project, ProjectFailed>;
   /**
    * Run one journey against the world at `url`. Span checks wait for telemetry, so they are made later by `check`.

@@ -75,8 +75,8 @@ Capxul's plugins on it. Everything below is judged by whether it gets us there s
    a meta-milestone; all four together are v1.0. Each stage is built from reusable pieces (plugins), and the starter
    and every example change to follow it. The 📐 growing-example thread designed it as K9 ([`decisions/K9-growing-example.md`](decisions/K9-growing-example.md), merged in #55), including what the app
    looks like at each stage, the React hooks slice (designed in `frame/projections.md:261`, owned by no slice), and
-   whether generated actions really make us compatible with agent-native apps. Until K9 lands, the sign-up sheet
-   (`examples/signup`) stays the canon's first example and acme the tests' fixture. The earlier mini DAO example
+   whether generated actions really make us compatible with agent-native apps. Plugged In is the canon's one example
+   and acme the tests' fixture (K37). The earlier mini DAO example
    (governance, private membership) is folded into stages 3 and 4 or retired by K9.
 8. **Operations DX (K5):** an operation-level `emits:` lands in the same commit as its writes, only on success, and a
    call that writes nothing emits nothing (Q5 = B; built in M3.16). Steps may be declared optional, and eval 6 still
@@ -158,9 +158,9 @@ runs stage 2 and 3 work, and Goal 5 builds the UI layer from K29.
 
 ### Decision IDs
 
-The one allocator for `design/decisions/` off a goal branch (the `conductor` and `threads` skills); a goal's lead keeps
-the same list in its goal file. Taken from every file in `design/decisions/` on `main`, `goal/stage-1`, `goal/on-chain` and every
-open remote branch, 21 November 2026. An ID is the part before the first `-` (`K16a` in `K16a-scaffold-build.md`).
+The list of lettered IDs for `design/decisions/`, kept by the conductor (the `conductor` and `threads` skills); a goal
+names its own calls by slug instead (K32). Taken from every file in `design/decisions/` on `main`, `m1`, `goal/stage-1` and every
+open remote branch, 20 November 2026. An ID is the part before the first `-` (`K16a` in `K16a-scaffold-build.md`).
 
 **On `main`:** CI-branch-protection, CI-codex-advisory, CI-docs-fast-path, CI-model-integration-deadlines, CI-speed · D1, D2, D3 · E1 · F1, F2,
 F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 · N1 · O1, O2 · P1 · R1 · S1.
@@ -183,7 +183,7 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 | M7 | the cloud pass for staging (`M7-cloud`, M7.01) | `goal/stage-1`, `goal/on-chain` |
 | M8 | time's calls, one file each (`M8-checks`: what time's checks assume) | `main` |
 | O3 | every call names its shape | `fix/operation-span-first` (#48, closed) |
-| O4 | a refusal's span is not an error: Effect 4.1.4 exports a successful span as UNSET, not OK | `goal-3/m1-49-check` (#290) |
+| O4 | a successful span exports as UNSET under effect 4.1.4 (check 39's control: "not an error") | `goal/stage-1`, by Goal 3's lead (#290) |
 | S31 | an operation's model carries `breaks`, every rule it can break (`S31-breaks`) | `goal/stage-1` (#269, merged) |
 | ST1 | stage one's calls (`ST1-02-plugged-in-ownership`) | `goal/stage-1` |
 | W1 | a count with no metrics source is `not yet` (`W1-no-source-count`) | `goal/stage-1`, `goal/on-chain` |
@@ -193,17 +193,23 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 | K27 | the three plugin kinds: language, host, projection; no target (replaces K17's TargetSpec) | reserved 20 November 2026 for the 📐 Solidity session, Goal 4 |
 | K28 | releases (scope map) | open PR #262, reserved 21 November 2026 |
 | K29 | the UI layer: generated pieces on UI SDK | reserved 21 November 2026 for the UI-layer thread |
+| K31 | the app's map in the blueprint, and Goal 6 | reserved 21 November 2026 for the UI-layer thread (#285) |
+| K32 | goals coordinate themselves, through git and GitHub | `main`, by the conductor |
+| K33 | the work lives on GitHub natively: a milestone per goal, issue kinds, templates, the sync | #301, by the 📐 designer thread |
+| K34 | goals start by what they need, not by milestone order; the goal map | `main`, by the conductor |
+| K35 | Goals 8 to 16 briefed, short, with their branches | `main`, by the conductor |
 
 **Also taken, off `main`:** K24 (UI SDK is the base, #217), K25 (the blueprint on chain), K26 (on-chain pulled forward), K27 (three plugin kinds), K29
 (the UI layer, #272), K30 (where the core ends, the repositories, declaring what you know, #185), G12 (a slice that changes acme's wire lands as a pair, #263),
 G9 to G11 (`goal/stage-1`), `M2-auth` (#263, #267), `M6-chain` (#275, #276, #279), `M7-03-infra-projection` (#282). `ST1-25-flakes` is a
 decision file; K29's ST1.25 is a slice id, and the two are unrelated.
 
-**Next free:** D5, E2, F10, G13, H3, K31, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
+**Next free:** D5, E2, F10, G13, H3, K39, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
 before this list existed. `CI-<slug>`, `M<n>-<slug>`, `ST<n>-<slug>` and `Gate<n>` are named by their slug or
-milestone, not numbered, and still go on this list.
+milestone, not numbered; a goal records its own in its brief, not here (K32), and `GOAL<n>-<slug>` names a call that
+belongs to one goal and no milestone.
 
-**To claim one,** ask the conductor (on a goal, its lead); never mint one yourself. The conductor checks that no file
+**To claim a lettered one,** ask the conductor; a goal names its own calls by milestone or area and a slug (K32). The conductor checks that no file
 starts with it anywhere, adds it here with a one-line title in the same push, and only then hands it out:
 
 ```bash

@@ -18,7 +18,7 @@ import { Ship } from "#modules/ship/service.js";
 import { Brief } from "#modules/brief/service.js";
 import { TelemetryCommand } from "#modules/telemetry/service.js";
 import { WatchCommand } from "#modules/watch/service.js";
-import { stagingLive } from "#modules/staging/service.js";
+import { proveAddress, stagingLive } from "#modules/staging/service.js";
 import { Compiler, nodeSource } from "@orthograph/compiler";
 
 const model = Command.make(
@@ -66,7 +66,7 @@ const attestation = (root: string) =>
 const prove = Command.make(
   "prove",
   {
-    env: Flag.Literals("env", ["local", "test"]).pipe(Flag.withDefault("local")),
+    env: Flag.Literals("env", ["local", "test", "staging"]).pipe(Flag.withDefault("local")),
     root: Flag.String("root").pipe(Flag.withDefault(process.cwd())),
     port: Flag.Int("port").pipe(Flag.withDefault(0)),
     empty: Flag.Boolean("empty").pipe(Flag.withDefault(false)),
@@ -76,13 +76,27 @@ const prove = Command.make(
     // The run as data (per journey, per step: verdict, expected, got, handler and declaration files; totals; timings).
     json: Flag.Boolean("json").pipe(Flag.withDefault(false)),
     report: Flag.String("report").pipe(Flag.optional),
+    // The run whose deployed Worker is judged (`--env staging` only): the address is formed from it and the account's subdomain.
+    run: Flag.String("run").pipe(Flag.optional),
   },
-  ({ env, root, port, empty, only, changed, json, report }) => {
+  ({ env, root, port, empty, only, changed, json, report, run }) => {
+    if (env !== "staging" && Option.isSome(run)) return fail("--run requires --env staging", 2);
+    if (env === "staging" && (empty || changed)) return fail(`${empty ? "--empty" : "--changed"} can't be used with --env staging: it judges the deployed Worker, not a world of its own`, 2);
     if (env === "test" && (empty || Option.isSome(only))) return fail("--empty and --only require --env local", 2);
     if (env === "test" && changed) return fail("--changed requires --env local", 2);
     if (changed && (empty || Option.isSome(only))) return fail("--changed can't be combined with --empty or --only", 2);
     if (env === "test" && (json || Option.isSome(report))) return fail("--json and --report require --env local", 2);
-    const proved = env === "test"
+    const proved = env === "staging"
+      ? proveAddress({ root, run: Option.getOrUndefined(run), subdomain: process.env[Names.variable("STAGING_SUBDOMAIN")], origin: process.env[Names.variable("STAGING_ORIGIN")] }).pipe(
+          Effect.mapError((e) => e.message),
+          Effect.flatMap(({ url, label, owns }) => Prove.staged({ root, url, label, ...(process.env["CLOUDFLARE_API_TOKEN"] && process.env["CLOUDFLARE_ACCOUNT_ID"] ? { d1: { token: process.env["CLOUDFLARE_API_TOKEN"], account: process.env["CLOUDFLARE_ACCOUNT_ID"], owns } } : {}), ...(Option.isSome(only) ? { only: only.value } : {}) })),
+          Effect.tap((proved) => Effect.sync(() => {
+            if (Option.isSome(report)) writeFileSync(report.value, JSON.stringify(proved.structured, null, 2) + "\n");
+            process.stdout.write(json ? JSON.stringify(proved.structured, null, 2) + "\n" : proved.lines.join("\n") + "\n");
+            process.exitCode = proved.passed ? 0 : 1;
+          })),
+        )
+      : env === "test"
       ? attestation(root).pipe(
           Effect.flatMap(({ token, logbook }) => {
             const lifetime = process.env[Names.variable("LIFETIME")];

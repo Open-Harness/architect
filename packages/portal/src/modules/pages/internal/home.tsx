@@ -6,6 +6,7 @@ import type { PortalData } from "../types.ts";
 import { Lifecycle } from "./lifecycle.tsx";
 import { tallyOf } from "./live.ts";
 import { Banner, Cell, Page, Table, noteOf } from "./parts.tsx";
+import { WorstFirst } from "./worst-first.tsx";
 
 const ThingCard = ({ data, thing }: { readonly data: PortalData; readonly thing: ThingWire }) => {
   const ops = Object.values(data.blueprint.model.operations).filter((o) => o.thing === thing.name).map((o) => o.name);
@@ -43,6 +44,7 @@ export const Home = ({ data }: { readonly data: PortalData }) => {
       <h1>{blueprint.project}</h1>
       <p className="meta">{`Bundle ${s.bundleRevision ?? "unknown"}. Judged against ${s.candidate.revision ?? "unknown"} (${s.candidate.source === "logbook" ? "newest revision proved in test" : "this bundle's own model"}). ${release} Ledger read: ${s.consistency}.`}</p>
       <Banner snapshot={s} />
+      <WorstFirst data={data} />
       <h2>Operations</h2>
       <Table head={["Operation", ...s.environments, "Calls", "Refused", "Defects", "p95", "Notes"]} rows={rows} />
       <h2>Things</h2>

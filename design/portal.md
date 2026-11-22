@@ -22,8 +22,9 @@ and time, and never counts or browses the app's stored data.
 - **Q8, HeroUI Pro: neither A nor B.** "We're using it privately anyway, so it's no problem for now. If it ever does
   become a problem, we'll just clean-room the components that we need." So the portal is HeroUI Pro only, with no free
   face. **Fallback, recorded:** if Pro's licence ever blocks distribution, we clean-room the components the portal uses
-  into our own package; the page contract stays as it is, so only the face changes. "One package behind the portal's components (F7, K24)"
-  below settles how. Superseded by K24, 20 November 2026: UI SDK is the base and HeroUI is phased out; today the portal still uses HeroUI Pro behind `portal-ui`.
+  into our own package; the page contract stays as it is, so only the face changes. "The portal's components behind one package (F7,
+  K29, K31)" below settles how. Superseded by K24, 20 November 2026: UI SDK is the base and HeroUI is phased out; and by
+  K29 and K31, 21 November 2026: a new client on UI SDK replaces the old one at cutover.
 
 ### Round 2 (19 November 2026, in the chat: "Agreed to all questions")
 
@@ -103,7 +104,7 @@ anchored rows, and each carries live telemetry:
 **Made consistent with K10 and K11 (merged after round 1).** K10 decision 9 and M4.16 say the chat is rendered with
 HeroUI Pro's AI components over a Pi Durable run; round 1's wording said "Pi's surface". They agree once read
 together: Pi Durable is the agent and the source of truth for the transcript (K10, H1.9), and what draws it is Pro's
-`ChatConversation`, `ChatMessage` and `ChatTool`. Q7's "threads kept under their thing" becomes "Runs kept under the
+`ChatConversation`, `ChatMessage` and `ChatTool`. (Superseded by K29, 21 November 2026: the chat is drawn by `portal-ui`'s `Chat` parts on UI SDK.) Q7's "threads kept under their thing" becomes "Runs kept under the
 thing they touch": a chat conversation is one `@orthograph/agents` Run (K10 section 1), so the portal feature owns no
 thread thing of its own (K5:475 and M1.24's "threads as things in the portal's store" are superseded by this).
 
@@ -162,8 +163,9 @@ the drawing needs that the model or telemetry doesn't give yet", below.
   ⌘K (Pro's `Command`) is the first way to any declaration, so no panel lists every refusal, value or journey.
 - **The top bar.** The environment and window control (Q12), search over the model (`⌘K`), the "Needs you" count
   (K11's attention, from any mounted feature) and the chat.
-- **Built on HeroUI Pro's app shell** (Aaron, Q8), always through `@orthograph/portal-ui` (F7): its sidebar, navbar,
-  drawer, KPI and chat components. No free kit.
+- **Built through `@orthograph/portal-ui`** (F7) until cutover; then by the new client on UI SDK and
+  `@orthograph/shell`, its map declared in the blueprint (K29 section 7, K31, ST1.27; Aaron's Q8 chose HeroUI Pro's app
+  shell, superseded by K29, 21 November 2026).
 
 **Where each piece comes from.** Every table below marks its pieces:
 
@@ -1013,7 +1015,7 @@ Drawn and fine: no state distributions, no row counts (`reference.tsx` Machines 
 
 1. **People's names as "who" everywhere** (fixed in round 4: the drawing shows caller kind only; journey cast names and note authors stay, as fixtures and as the portal's own data): `live.ts:44-53` (`aaron`, `bob`, `stranger`), `trace.ts:32,38`, `ref-live.tsx:37-56` (`carol`, `dana`, `erin`), rail "last calls" (`rail.tsx:40`), Spans header chip `{t.who}` (`op-tabs.tsx:51`), Spans "Recent calls" (`op-tabs.tsx:67`), the three "Recent ..." reference tables (`ref-live.tsx:25-35`). In product the only per-call identity on a span is `principal.person` (`AT:17-18`), which is exactly what M1.13's no-leak check plants and requires not to render (`MS:205`), and the Collector already deletes `user.*` and `organization.id` (`packages/prove/src/modules/telemetry/README.md`, L2.O paragraph). Locally the journey's cast name might label a caller (`PM:273`); the mechanism that would carry a cast name onto a span is **unverified**. Show caller kind only.
 2. **Events "from the journal"** (fixed in round 4) (`reference.tsx` Events description): the journal is rows in the app's own store (`LV:27-31`); `LiveEvent.subject` is a record id (`LV:53-57`). A windowed count must come from `event.name` on spans (M1.36), not a journal scan.
-3. **Issues "first seen / last seen"** (`monitor.tsx`): needs state that outlives the window (`K18:41`); K18 names no store. Either issue records are stored (the app's or the portal's own) or the sink's retention is queried. Not a population of app data, but unspecified state.
+3. **Issues "first seen / last seen"** (`monitor.tsx`): needs state that outlives the window (`K18:41`); K18 names no store. Either issue records are stored (the app's or the portal's own) or the sink's retention is queried. Not a population of app data, but unspecified state. **Built, memory-only until the binding lands (M1.49, 21 November 2026; the binding is snag #438): the portal's own issue book, in the ledger the Worker hands it (`PortalContext.ledger`; a key-value binding `PORTAL_LEDGER`, else the isolate's memory); see the addendum of `decisions/K18-monitoring-falls-out.md`, "Where M1.49 keeps issues".**
 4. **Notes `by` and `when`** (`overlay.ts:46-49`): author names stored in the portal's own `note` thing (`PM:211`, M3.21). Not the app's data; people appear by design there.
 5. **Access page "link.owner != caller"** (removed in round 4) (`ref-live.tsx:46,48`): reveals whose record failed; no span exists for a role refusal (`HS:60`), so this text cannot be sourced and should not be.
 6. (removed in round 4) **Values page "Recent payloads refused ... longer than 30"** with the value in view (`ref-live.tsx:57-59`): a rejected payload is non-public input; no telemetry carries it and `payload.*` attributes exist only for public fields on spans that opened (`AT:14-15`, `HS:64`).
@@ -1103,22 +1105,22 @@ a workflow node's preview from [n8n](https://mobbin.com/screens/63c3ba24-0ea8-41
 scopes per variable from [v0](https://mobbin.com/screens/ae42d62f-1de7-442a-8b4c-e678c1acf67f). The rail and the
 command palette keep round 3's references (Railway, StackAI, Plain; fal, Grok).
 
-## One package behind the portal's components (F7, K24)
+## The portal's components behind one package (F7, K29, K31)
 
-Aaron, 19 November 2026: "Yes, add the seam" ([`decisions/F7-portal-ui-seam.md`](decisions/F7-portal-ui-seam.md)). On
-20 November 2026 he decided UI SDK is the interface base and HeroUI is phased out
-([`decisions/K24-ui-sdk.md`](decisions/K24-ui-sdk.md)). Today the portal uses HeroUI Pro behind `portal-ui`; new
-screens build on UI SDK, and HeroUI goes when nothing imports it. In short:
+Aaron, 19 November 2026: "Yes, add the seam". Recorded in [`decisions/F7-portal-ui-seam.md`](decisions/F7-portal-ui-seam.md).
+K29 (21 November 2026) moved what is behind the seam from HeroUI Pro to UI SDK; K31, the same day, changed how: a new
+client, `packages/portal-next`, is built beside the old one on UI SDK, `@orthograph/theme`, `@orthograph/shell` and a
+map declared in its own `blueprint/app/`, and the old client is deleted at cutover (Goal 6, [`goals/06-portal.md`](goals/06-portal.md)).
+This file's pages, routes and information architecture stay as agreed; only how they are built changes. In short:
 
-- **`@orthograph/portal-ui`** (`packages/portal-ui`) is the only package the portal imports components from. Today it
-  wraps `@heroui-pro/react`, taken as a peer dependency and never bundled, so each user brings their own Pro licence.
-  Its insides move to UI SDK one export at a time (K24). It exports our own names, shaped by these pages: `Shell` (tree, top bar, rail, drawer), `Board`,
-  `Grid`, `Chart`, `Stat`, `Card`, `Widget`, `Timeline`, `Command`, `Code`, `Markdown`, `Editor` and the `Chat` parts. Every page in this
-  file, M1.24's shell and chat parts, and every extension face import from it, never from a library.
-- **A lint rule** bans `@heroui-pro/*` everywhere else, generated code included, until HeroUI is removed (K24). Spikes are exempt.
-- **Until then Pro installs at build time** from the `HEROUI_AUTH_TOKEN` CI secret, never committed, never run on
-  pull requests from forks. Locally it installs from `heroui-pro login`, as the mock does. Both go when HeroUI does.
-- **The data grid and the board go last**, because UI SDK has neither; they are built on its behaviours.
+- **Until cutover**, the old client builds on `@orthograph/portal-ui` (`packages/portal-ui`), which wraps HeroUI Pro, a
+  peer dependency never bundled, installed in CI from the `HEROUI_AUTH_TOKEN` secret and never on pull requests from
+  forks. A lint rule bans `@heroui-pro/*` everywhere else.
+- **The new client** keeps F7's names for its components (`Shell`, `Board`, `Grid`, `Chart`, `Stat`, `Card`, `Widget`,
+  `Timeline`, `Command`, `Code`, `Markdown`, `Editor`, the `Chat` parts), each built on UI SDK when a page first needs
+  it, and every `data-portal` hook the checks read.
+- **At cutover** the new client is served at `/portal`, the old client, `portal-ui`'s HeroUI and the licence machinery
+  are deleted, check 15 (rewritten first) passes, and the portal builds with `HEROUI_AUTH_TOKEN` unset.
 
 
 ## What this changes elsewhere
@@ -1126,8 +1128,8 @@ screens build on UI SDK, and HeroUI goes when nothing imports it. In short:
 - **K13** (19 November) splits this further: M1.13 builds the shell's frame (tree, top bar, live rail, drawer) and the
   pages as a viewer; M1.24 keeps the chat, "Needs you" and screen context, in M3; the face contract, its lint rule,
   notes and sandboxed faces are M3.21. The bullets below are the F8 split, kept for the record.
-- **M1.24** keeps the shell, screen context and the approval cards' contract, all through `portal-ui`. The chat's surface is M4.16 on Pro's AI
-  components over a Pi Durable run, and conversations are Runs, not things in the portal's store. Its row is reworded
+- **M1.24** keeps the shell, screen context and the approval cards' contract, all through `portal-ui`. The chat's surface is M4.16 on `portal-ui`'s
+  `Chat` parts, built on UI SDK (K29), over a Pi Durable run, and conversations are Runs, not things in the portal's store. Its row is reworded
   in `milestones.md` in the same change as this file.
 - **M1.50** (19 November 2026, from `spikes/react-flow-graphs`) replaces M1.13's lifecycle strip with one `Graph`
   over React Flow and elk: each machine, the blueprint map and the worlds chain. The journey sequence stays its own view.

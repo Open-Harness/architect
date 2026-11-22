@@ -2,14 +2,11 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { Effect } from "effect";
 import { Build } from "@orthograph/prove";
 import { StagingFailed, type Tools } from "../types.ts";
+import { alchemyBin } from "./alchemy-bin.ts";
 import { account } from "./cloudflare.ts";
-
-const alchemyBin = join(dirname(fileURLToPath(import.meta.resolve("alchemy/package.json"))), "bin/cli.js");
 
 export const live = (pause: Tools["pause"], env: Readonly<Record<string, string | undefined>>): Tools => ({
   account,

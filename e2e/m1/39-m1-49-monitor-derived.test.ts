@@ -98,7 +98,8 @@ describe("39 control: the inputs the rules are derived from, and the instruments
     expect(Object.values(a.model.operations).filter((o) => o.budget != null).length, "operations with a budget").toBeGreaterThan(3);
     expect(Object.keys(a.model.refusals).length).toBeGreaterThan(5);
     expect(Object.keys(a.model.journeys).length).toBeGreaterThan(3);
-    expect(Object.keys(a.model.environments ?? {}).sort()).toEqual(["local", "test"]);
+    // Every declared environment counts (staging joined with M7.03); local and test must be among them, so an empty set cannot pass.
+    expect(Object.keys(a.model.environments ?? {}), "Plugged In declares at least local and test").toEqual(expect.arrayContaining(["local", "test"]));
     const hashes = (c: Compiled) => Object.fromEntries(Object.entries(c.model.operations).map(([n, o]) => [n, o.hash]));
     const changed = (x: Compiled, y: Compiled) => Object.keys(hashes(x)).filter((n) => hashes(x)[n] !== hashes(y)[n]).sort();
     expect(changed(a, l), "raising link.add's budget and removing link.order's changes those two hashes and no other").toEqual(["link.add", "link.order"]);

@@ -1,12 +1,13 @@
-import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
 import { Effect } from "effect";
 import { Compiler, nodeSource } from "@orthograph/compiler";
 import { StagingFailed, StagingRefused, type Credentials, type Options, type Plan, type Said, type StagingApi, type Tools } from "./types.ts";
 import { up } from "./internal/deploy.ts";
 import { destroy } from "./internal/destroy.ts";
 import { live } from "./internal/live.ts";
+import { appOf } from "./internal/app.ts";
 import { plan, prefixOf, render, stagingUrl } from "./internal/plan.ts";
+export { proveAddress } from "./internal/address.ts";
 
 const said = (out: string): Said => ({ out, err: "", exit: 0 });
 const refusal = (message: string, exit: number): Said => ({ out: "", err: `${message.trimEnd()}\n`, exit });
@@ -19,21 +20,16 @@ const planOf = (options: Options): Effect.Effect<Plan, StagingRefused> =>
       Effect.provide(nodeSource(root)),
       Effect.mapError((e) => new StagingRefused({ message: e._tag === "BlueprintInvalid" ? `the blueprint is invalid:\n  - ${e.problems.join("\n  - ")}` : e.message })),
     );
-    const config = yield* Effect.tryPromise({
-      try: () => import(pathToFileURL(join(root, "ortho.config.ts")).href) as Promise<{ readonly default?: { readonly kind?: string; readonly name?: unknown } }>,
-      catch: () => new StagingRefused({ message: "ortho.config.ts is missing or does not load: the project's name is read from it" }),
-    });
-    const app = config.default?.name;
-    if (config.default?.kind !== "config" || typeof app !== "string") return yield* new StagingRefused({ message: "ortho.config.ts does not export Blueprint.config({ name })" });
+    const app = yield* appOf(root);
     return yield* plan({ model, app, environment, run });
   });
 
 /** Both credentials, or what is missing, said by name. Nothing is read from the cloud before this. */
-const credentialsOf = ({ token, account }: Options["credentials"]): Effect.Effect<Credentials, StagingRefused> => {
+const credentialsOf = ({ token, account }: Options["credentials"], environment: string): Effect.Effect<Credentials, StagingRefused> => {
   const missing = [...(token ? [] : ["CLOUDFLARE_API_TOKEN"]), ...(account ? [] : ["CLOUDFLARE_ACCOUNT_ID"])];
   return token && account
     ? Effect.succeed({ token, account })
-    : Effect.fail(new StagingRefused({ message: `${missing.join(" and ")} ${missing.length > 1 ? "are" : "is"} not set: the staging deploy reads both from the environment, and no connection was made` }));
+    : Effect.fail(new StagingRefused({ message: `${missing.join(" and ")} ${missing.length > 1 ? "are" : "is"} not set: the ${environment} deploy reads both from the environment, and no connection was made` }));
 };
 
 const settle = (work: Effect.Effect<Said, StagingRefused | StagingFailed>): Effect.Effect<Said> =>
@@ -48,7 +44,7 @@ export const makeStaging = (tools: Tools): StagingApi => ({
     settle(Effect.gen(function* () {
       const options = absolute(given);
       const p = yield* planOf(options);
-      const credentials = yield* credentialsOf(options.credentials);
+      const credentials = yield* credentialsOf(options.credentials, p.environment);
       const url = yield* up(tools, credentials, options.root, p);
       return said(`${p.environment} up ${url}\n`);
     })),
@@ -56,7 +52,7 @@ export const makeStaging = (tools: Tools): StagingApi => ({
     settle(Effect.gen(function* () {
       const options = absolute(given);
       const p = yield* planOf(options);
-      const credentials = yield* credentialsOf(options.credentials);
+      const credentials = yield* credentialsOf(options.credentials, p.environment);
       const done = yield* destroy(tools, credentials, options.root, p);
       return said(`${p.environment} destroy ${p.prefix}: alchemy ${done.alchemy}; the sweep deleted ${done.workers} Workers and ${done.databases} databases\n`);
     })),
