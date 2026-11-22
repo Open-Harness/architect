@@ -1,0 +1,2 @@
+src/modules/abi/generated.test.ts > Abi against generated values > decodeResult of 150 generated answers returns the generated values
+src/modules/abi/generated.test.ts > Abi against generated values > encodeCall of 150 generated calls matches the words written by hand

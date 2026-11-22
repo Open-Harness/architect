@@ -1,0 +1,10 @@
+src/modules/tx/read.test.ts > a lost endpoint is a ChainFault of the kind simulate gives for it, not a defect
+src/modules/tx/read.test.ts > a reverting read is mapped exactly as simulate maps it: a locked error is its typed refusal, with the program
+src/modules/tx/read.test.ts > an empty revert, and a revert with no lock entry, are a ChainFault of kind revert, as simulate's are
+src/modules/tx/read.test.ts > read carries the call's value and gas: a payable probe wants 7 wei, and a gas limit too low to finish fails as simulate's does
+src/modules/tx/read.test.ts > read from the zero address is an ordinary sender with no balance
+src/modules/tx/read.test.ts > read returns a view function's data, and 0x from an account with no code
+src/modules/tx/read.test.ts > read runs as the call's sender: the same transfer reverts with a different balance for another account
+src/modules/tx/read.test.ts > read runs inside the port's RPC deadline: an endpoint that accepts and never answers is a timeout fault, through Timers
+src/modules/tx/read.test.ts > read sees the latest block: a state change made since is there, and a transaction still pending is not
+src/modules/tx/read.test.ts > read sends nothing and reserves no nonce: the head, the sender's nonce and the state are as they were

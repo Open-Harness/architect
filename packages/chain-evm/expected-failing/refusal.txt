@@ -1,0 +1,7 @@
+src/modules/abi/refusal.test.ts > Abi.refusal > a tuple error and a no-argument error decode by their entries, and a revert of another error stays a ChainFault
+src/modules/abi/refusal.test.ts > Abi.refusal > an entry made for one program does not decode a revert of another
+src/modules/abi/refusal.test.ts > Abi.refusal > decodeRevert decodes a real revert of the contract's own error by the entry
+src/modules/abi/refusal.test.ts > Abi.refusal > the entry holds the code, the item's name and the item, and a program only when one is given
+src/modules/abi/refusal.test.ts > Abi.refusal > the entry passes the refusal lock's own check, for every kind of item
+src/modules/abi/refusal.test.ts > Abi.refusal > the selector is the first 4 bytes of the keccak-256 of the signature, which has its tuples written out
+src/modules/abi/refusal.test.ts > Abi.refusal > two programs that raise the same selector are told apart by the entry's program
