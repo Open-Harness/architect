@@ -72,7 +72,7 @@ export default Blueprint.operation(Run, {
   answer: { run: Run.fields.id },
   move: machine.moves.start,
   errors: [AgentUnknown, ModelRefused, OverBudget],
-  allowed: [signedIn.via(Via.session, Via.key)],     // K40: an agent is its own thing, made by any operation allowed to create one
+  allowed: [signedIn.via(Via.session, Via.key)],     // a person starts this run; under K40 an agent is its own thing instead
   steps: {
     open: Blueprint.step.use(Agent.open),            // the loop, in the run's own Durable Object
   },
@@ -298,8 +298,6 @@ $ acme run cancel run_9Kx1
    C. No journeys run a model; only benchmarks do.
    **Recommend A.** B is our own fake, which Q1 rules out. C leaves durability and roles unproved.
 3. **Who may start a run?**
-   A. Only a person, through `Via.session` or `Via.key`, unless the app narrows its mount to allow agents.
-   B. Anyone signed in, agents acting for them included.
-   C. Only `system`.
-   **Recommend A.** An agent starting agents spends money without a person, so it must be an explicit choice in the
-   mount.
+   Answered by K40 (22 November 2026): an agent is its own thing (`Agent`, in its own actor), made by any operation
+   allowed to create one, under that operation's roles. Events reach it through the outbox, and it acts as itself.
+   The sketch above keeps the older run-start shape until Goal 10 rewrites it.

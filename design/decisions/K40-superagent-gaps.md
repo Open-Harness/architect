@@ -7,7 +7,7 @@ its own thing**, reached through the outbox (his own call, against round 2 Q2's 
 own thing?"); the sandbox is an adapter speaking pi-env over a socket (round 2, Q3 A); catching up after sleep with
 events keyed by their object (round 1, Q6 A); a short-lived token lent to the sandbox (round 1, Q8 A).
 
-Grounded at `origin/main` `52dddce9`, `origin/goal/stage-1` (22 November, 07:44 UTC), `origin/goal-3/m2-03-check`,
+Grounded at `origin/main` `52dddce9` (still clean against `9f5def91`), `origin/goal/stage-1` (22 November, 07:44 UTC), `origin/goal-3/m2-03-check`,
 `origin/goal-10/s1-decision` (#469), `origin/goal-8/m3-01` (#472) and `origin/goal-11/m5-01` (#479), Pi Durable 1.5.0
 and pi-env 1.4.0 as published, and the prototype's docs 000 to 008 (`deepseek-ai/dsh-superagent-prototype`, read as
 data). Line numbers are at those commits.
@@ -47,7 +47,7 @@ The steps, and the fix each one needs:
 
 ### 1. The door keeps the outside account; accounts are things; a role reads them
 
-**The gap.** A role's rule is given a person (`packages/orthograph/src/modules/roles/types.ts:18`, `goal/stage-1`), and
+**The gap.** A role's rule is given a person (`Acting`, `packages/orthograph/src/modules/roles/types.ts:22, :41`, `goal/stage-1`), and
 a door's caller carries only the mount (`host-cloudflare/src/modules/auth/types.ts:44`, `goal-3/m2-03-check`;
 `M5-reach-out.md:212`, `goal-11/m5-01`). GitHub's `sender` is thrown away, so "only listed accounts may ask" can only be
 handler code.
@@ -147,7 +147,7 @@ export default Blueprint.operation(Agent, {
 });
 // the agent's tools call as itself; a role admits it only on its own Ticket
 { kind: "agent", agent: "agt_…" }
-export const itsAgent = Blueprint.role(Ticket, { who: Ticket.fields.agent });
+export const itsAgent = Blueprint.role(Ticket, { agent: Ticket.fields.agent });
 ```
 
 - **Making an agent is an ordinary create.** Any operation allowed to create an `Agent` makes one, under its own
@@ -155,8 +155,12 @@ export const itsAgent = Blueprint.role(Ticket, { who: Ticket.fields.agent });
 - **Input arrives through the outbox** (M5-reach-out Q1, Q3): delivered at least once, and once only by the event's
   id, which is also Pi's `requestId`. An agent mid-task is steered (`whenBusy: "steer"`); an idle one starts a turn.
 - **The agent acts as itself.** The `agent` caller gains a form with no person, `{ kind: "agent", agent }`. A role
-  admits it like any other caller. The portal's chat keeps the form "an agent for a person" (M2-auth fork 2), and an
-  operation marked `.notVia(Via.agent)` still refuses both forms.
+  admits it through a new role form, `agent:`, which matches the caller's agent id to a field, as fix 1's `actor:`
+  matches an account. The role checks the id itself, as a service role checks its mount, so `Acting` and every rule
+  given it stay person-only: `acting(principal)` returns nothing for the new form, and `who` never matches an agent
+  id. A handler that needs a person still refuses an agent acting as itself. The portal's chat keeps the form "an
+  agent for a person" (M2-auth fork 2). `Via.agent` names both forms: the one with no person has `via: "agent"` too,
+  so an operation marked `.notVia(Via.agent)` refuses both.
 - **The judge** is one `Agent` of kind `judge`, about `gate`, on a cheap model. It gets the "maybe" messages through
   `agent.tell` and answers through a `decide` tool, which is an operation. It judges only; it never routes.
 - **The runs list** becomes Pi's runs inside each agent, read from its conversation. A run is no longer a row.
@@ -290,17 +294,26 @@ Live docs, rewritten in this change:
 
 - design/frame/adapters.md: "**a principal**, `service(<mount>)`, for what comes in through that door" → "**a principal**, `service(<mount>)` with the outside account that sent the event (K40), for what comes in through that door"
 - design/frame/adapters.md: "the door uses `idempotent: "request"` keyed by the event's id" → "the door keys each event by the object it is about, never by a delivery id, so a webhook and a catch-up poll settle once (K40)"
-- design/frame/examples/agents.md: "// a person starts a run; an agent may not, unless the mount allows it" → "// K40: an agent is its own thing, made by any operation allowed to create one"
+- design/frame/examples/agents.md: "// a person starts a run; an agent may not, unless the mount allows it" → "// a person starts this run; under K40 an agent is its own thing instead"
+- design/frame/examples/agents.md: "unless the app narrows its mount to allow agents" → "Answered by K40 (22 November 2026): an agent is its own thing"
+- design/ledger.md: "Who may start an agent run: only a person, unless the app's mount allows agents (S15)." → "Who may make an agent: any operation allowed to create one, under its roles; an agent is its own thing (K40, replacing S15)."
 - design/docs/index.html: "only a person can start a run. A mount can allow agents to start runs, but you have to choose that." → "its own thing, living in its own actor; any operation allowed to create one makes one, and events reach it through the outbox (K40)."
 - design/frame/questions.md: "**A**: an agent starting agents spends money with no person." → "K40 (22 November 2026) replaces all three: an agent is its own thing, made by any operation allowed to create one, under that operation's roles."
 
 ## Dated records
 
-A "Superseded by K40, 22 November 2026" note is added beside these words, which stay as written: `K10-factory.md`
-section 3, "Sandbox providers are adapters of `@orthograph/workspaces`" (now the sandbox is its own adapter,
-`packages/sandbox`, and workspaces use it).
+A "Superseded by K40, 22 November 2026" note is added beside these words, which stay as written:
+
+- `K10-factory.md` section 3, "Sandbox providers are adapters of `@orthograph/workspaces`" (now the sandbox is its own
+  adapter, `packages/sandbox`, and workspaces use it).
+- `K2-forman-frame.md`, S15's line, "only a person starts a run unless the mount allows agents" (now an agent is its
+  own thing).
 
 ## Left to their owners
 
 These are on other goals' branches, so each goes by Ask, never by an edit here: M4-agents calls 1 and 2 and the M4.10
 row (Goal 10); M5-reach-out Q2.1 and Q4 (Goal 11); M2-auth's `service` and `agent` kinds and K20's role forms (Goal 3).
+
+The Asks, filed 22 November 2026: Goal 3, #531 (the outside account and `actor:`), #532 (versions), #533 (an agent
+caller with no person, and `agent:`), #534 (a lent token); Goal 10, #535 (an agent is its own thing; its `env`);
+Goal 11, #536 (the door's account and object keys), #538 (catch-up after sleep).
