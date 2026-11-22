@@ -5,6 +5,7 @@ import type { AnyErrorClass, NotAllowed } from "#modules/errors/types.js";
 import type { Event } from "#modules/events/types.js";
 import type { NotFrom } from "#modules/machines/types.js";
 import type { Operation, PayloadOf, Read } from "#modules/operations/types.js";
+import type { Span } from "#modules/time/types.js";
 import type { NotFound } from "#modules/things/types.js";
 
 /**
@@ -23,6 +24,14 @@ export interface Call {
   readonly payload: { readonly [field: string]: unknown };
   /** The request key, for an operation declared `idempotent: "request"`: the same key twice is one call. */
   readonly request: string | undefined;
+  /** The keeper's call only: the instant the move made by time was due, which with the thing and the move is the request key (K23 section 3). */
+  readonly due?: string;
+}
+
+/** A step that moves the world's clock: `s.clock.advance("1 month")` or `s.clock.moveTo(instant)`. It answers `{ now, fired }` (M8-checks, call 2). */
+export interface ClockCall {
+  readonly kind: "clock-call";
+  readonly move: { readonly advance: string } | { readonly moveTo: string };
 }
 
 /**
@@ -44,7 +53,7 @@ export type Assertion =
 export interface Step {
   readonly kind: "step";
   readonly title: string;
-  readonly call: Call;
+  readonly call: Call | ClockCall;
   readonly checks: ReadonlyArray<Assertion>;
 }
 
@@ -60,7 +69,7 @@ export interface Actor {
     <O extends Operation>(
       operation: O,
       payload: { readonly [K in keyof PayloadOf<O>]: PayloadOf<O>[K] | Ref },
-      options?: { readonly request?: string },
+      options?: { readonly request?: string; readonly due?: string },
     ): Call;
     /** A read: one instance by its id, or a page of them by the filters it names. */
     <R extends Read<any, any, any>>(read: R, payload: { readonly [K in keyof PayloadOf<R>]: PayloadOf<R>[K] | Ref }): Call;
@@ -74,7 +83,12 @@ export type Script<C extends Cast> = { readonly [K in keyof C]: Actor } & {
   readonly world: any;
   /** The answer of the most recent call. */
   readonly last: any;
-  readonly step: (title: string, call: Call, ...checks: ReadonlyArray<Assertion>) => Step;
+  /** The world's clock: a step that moves it by a span in words, or to an instant (K23 section 2). */
+  readonly clock: {
+    readonly advance: (span: Span) => ClockCall;
+    readonly moveTo: (instant: string) => ClockCall;
+  };
+  readonly step: (title: string, call: Call | ClockCall, ...checks: ReadonlyArray<Assertion>) => Step;
 };
 
 export interface Journey<C extends Cast = Cast> {
@@ -91,7 +105,7 @@ export interface StartingWorld<C extends Cast = Cast> {
   /** Another starting world this one begins from: its cast and what it gave are this one's too. */
   readonly from: string | undefined;
   readonly cast: C;
-  readonly makes: (s: Script<C>) => ReadonlyArray<Call>;
+  readonly makes: (s: Script<C>) => ReadonlyArray<Call | ClockCall>;
   readonly gives: (s: Script<C>) => { readonly [key: string]: unknown };
 }
 
@@ -104,7 +118,7 @@ export interface JourneysApi {
   readonly startingWorld: <const C extends Cast>(name: string, spec: {
     readonly from?: string;
     readonly cast: C;
-    readonly makes: (s: Script<C>) => ReadonlyArray<Call>;
+    readonly makes: (s: Script<C>) => ReadonlyArray<Call | ClockCall>;
     readonly gives: (s: Script<C>) => { readonly [key: string]: unknown };
   }) => StartingWorld<C>;
 }

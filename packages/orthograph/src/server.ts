@@ -8,6 +8,7 @@ export type { Wired } from "#modules/visibility/service.js";
 export { listItemFields } from "#modules/operations/service.js";
 export { EventNames } from "#modules/events/service.js";
 export { Scripting } from "#modules/journeys/service.js";
+export { Spans } from "#modules/time/service.js";
 export { Names } from "#modules/names/service.js";
 export type { FrameworkNames } from "#modules/names/types.js";
 export { Mounts } from "#modules/plugins/service.js";

@@ -18,6 +18,7 @@ import { Plugins, Stand } from "#modules/plugins/service.js";
 import { Roles } from "#modules/roles/service.js";
 import { Stores } from "#modules/stores/service.js";
 import { Things } from "#modules/things/service.js";
+import { Clocks, Times } from "#modules/time/service.js";
 import { Values } from "#modules/values/service.js";
 import { Visibilities } from "#modules/visibility/service.js";
 
@@ -37,6 +38,8 @@ export const Blueprint = Object.freeze({
   ...Plugins,
   ...Secrets,
   config: Configs.config,
+  time: Times,
+  clock: Clocks,
   NotAllowed,
   todo: Blanks.todo,
 });
@@ -57,8 +60,9 @@ export type { Machine, Move, NotFrom, State } from "#modules/machines/types.js";
 export type { Role, RoleOf, Allowed, Principal, InstanceOf } from "#modules/roles/types.js";
 export type { Operation, Read, ReadAnswer, Order, Page, ListPayload, ListItem, Steps, OperationSpec, Step, CallStep, StepKind, Runs, TestKind, Budget, PayloadOf, AnswerOf, ErrorOf, StepsOf } from "#modules/operations/types.js";
 export type { Blank } from "#modules/blanks/types.js";
-export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, Ref, Refusal } from "#modules/journeys/types.js";
+export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, Ref, Refusal, ClockCall } from "#modules/journeys/types.js";
 export type { Environment, EnvironmentSpec } from "#modules/environments/types.js";
+export type { Span, TimeBy, OnCalendar, Weekday, Clock } from "#modules/time/types.js";
 export type { Secret } from "#modules/secrets/types.js";
 export type { Identity as IdentityKind } from "#modules/identity/types.js";
 export type { CloudProvider, Database } from "#modules/cloud/types.js";

@@ -30,6 +30,7 @@ export const Values: ValuesApi = {
     const max = options?.max ?? 200;
     return described(Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(max)), { type: "text", max });
   },
+  instant: () => described(Schema.String.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)), { type: "instant" }),
   refAny: () =>
     described(Schema.Struct({
       declaration: Schema.String.check(Schema.isPattern(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/)),

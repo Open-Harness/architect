@@ -5,6 +5,7 @@ import type { TypeOf } from "#modules/values/types.js";
 /** Who is calling. Sign-in fills it in; the runtime checks roles against it before any handler runs. */
 export type Principal =
   | { readonly kind: "anonymous" }
+  | { readonly kind: "keeper" }
   | { readonly kind: "person"; readonly person: string; readonly email?: string };
 
 /** A thing as its handler and its roles see it: its fields and its machine state. */
@@ -26,8 +27,8 @@ export interface RoleOf<T extends Thing = Thing, P extends string = string> {
   readonly path: P;
 }
 
-/** Built in: anyone at all, or anyone signed in. */
-export type Builtin = { readonly kind: "anyone" } | { readonly kind: "signed-in" };
+/** Built in: anyone at all, anyone signed in, or the keeper: the system principal that fires moves made by time (K23 section 3). */
+export type Builtin = { readonly kind: "anyone" } | { readonly kind: "signed-in" } | { readonly kind: "keeper" };
 
 export type Allowed = Role<any> | RoleOf<any> | Builtin;
 
@@ -35,4 +36,6 @@ export interface RolesApi {
   readonly role: <T extends Thing>(thing: T, spec: { readonly rule: Role<T>["rule"] }) => Role<T>;
   readonly anyone: Builtin;
   readonly signedIn: Builtin;
+  /** The keeper as a principal: allowed only where an operation lists it, and refused by every operation that does not. */
+  readonly keeper: Builtin;
 }
