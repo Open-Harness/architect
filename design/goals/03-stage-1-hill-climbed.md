@@ -28,10 +28,10 @@ owns:
 slices:
   - "1 · M1.12a, the request key on every attempt's span, with check 38 (#281)"
   - "2 · M1.49, monitoring derived from the model, check 39 (#290)"
-  - "3 · M1.50, one Graph for machines, the map and the worlds, check 40 (#280)"
+  - "3 · M1.50, one Graph for machines, the map and the worlds, check 40 (#280): handed to Goal 6, built after its cutover (M1-50-after-cutover)"
   - "4 · M7.03 and M7.04, staging up and destroy through Alchemy, and prove --env staging (#282, #291)"
   - "5 · S-35, the unique check indexed by rule and key, not cubic (#292)"
-  - "6 · M1.15, Gate M1, then the preview merge into main (after 1, 2, 3, 4, 5)"
+  - "6 · M1.15, Gate M1, then the preview merge into main (after 1, 2, 4, 5)"
   - "7 · M2.02, journeys for both plugins (#267, #297)"
   - "8 · M2.03, the five principals, paired with M2.02's principal part (#297)"
   - "9 · M2.04, secrets by declaration"
@@ -300,13 +300,15 @@ K28 decides the preview merge and the three releases: [`K28-releases.md`](../dec
 
 ## Where it stands
 
-Rewritten at every slice merge. Last rewritten on 22 November 2026, at `goal/stage-1` `44fbef84`. A fresh lead in any harness starts here, then reads `design/handoff.md` (the ids and the lines of work), `design/goals/03-snags.md`, and the open issues in milestone "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys". Sessions don't carry over; everything below is in the repository or on GitHub. The repository moved to `Open-Harness/orthograph`; older links below point at `AaronAbuUsama/architect` and redirect.
+Rewritten at every slice merge. Last rewritten on 22 November 2026, at `goal/stage-1` `374cd994`. A fresh lead in any harness starts here, then reads `design/handoff.md` (the ids and the lines of work), `design/goals/03-snags.md`, and the open issues in milestone "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys". Sessions don't carry over; everything below is in the repository or on GitHub. The repository moved to `Open-Harness/orthograph`; older links below point at `AaronAbuUsama/architect` and redirect.
 
 **Where the goal is.** Every slice of Gate M1 is on `goal/stage-1`. M1.50, the one `Graph`, is built in Goal 6 after its cutover, and Gate M1 doesn't wait for it ([`M1-50-after-cutover`](../decisions/M1-50-after-cutover.md)). Check 40 is the one entry left on the e2e-m1 ratchet. Plugged In's seven journeys are green in local and test, and the climb is green. Staging deploys: run 3 ([44940466011](https://github.com/Open-Harness/orthograph/actions/runs/44940466011)) went up, passed the story 5 of 5, and destroyed with nothing left, for about $0. In M2, the decision (M2.01) and the principal journeys with M2.03's build ([#297](https://github.com/Open-Harness/orthograph/pull/297)) are in.
 
 **How pull requests run (CI-drafts, #293).** Every pull request opens as a draft, and a draft runs no CI. The 🔍 reads the draft and runs the affected checks locally. Then the pull request is marked ready and CI runs once. At most two of this lane's pull requests are ready at a time. After every push, a background watcher waits for CI to end and merges when it is green with no unresolved thread (`tmp/goal3/automerge.sh`, untracked).
 
 **Merged on 21 and 22 November** (newest first):
+- [#267](https://github.com/Open-Harness/orthograph/pull/267): M2.02's moved journeys, the auth and organizations stand-ins (`e2e/m2`).
+- [#537](https://github.com/Open-Harness/orthograph/pull/537): CI Part B on this branch's `ci.yml` (the CI lane's): a pull request into another goal branch runs the fast gate.
 - [#523](https://github.com/Open-Harness/orthograph/pull/523): `ortho env up|destroy --environment test`, for Goal 15's ask #505.
 - [#547](https://github.com/Open-Harness/orthograph/pull/547): the canon's claim quote follows `acting(principal)`.
 - [#528](https://github.com/Open-Harness/orthograph/pull/528): S-35's 40,000-row backstop is a same-runner ratio (under 30), not a 2-second clock; closes snag #452.
@@ -323,11 +325,9 @@ Rewritten at every slice merge. Last rewritten on 22 November 2026, at `goal/sta
 
 | PR | What it does | State, and the next step |
 |---|---|---|
-| [#267](https://github.com/Open-Harness/orthograph/pull/267) | M2.02's moved journeys, the auth and organizations stand-ins (`e2e/m2`) | Passed 🔍 on 21 November; `goal/stage-1` merged in. Ready, merges once CI is green |
 | [#549](https://github.com/Open-Harness/orthograph/pull/549) | Ask #542: `ortho --version` prints the CLI's version; `wallets` and `language-solidity` are private | Draft, under 🔍 |
 | the #541 fix | Monitoring history apart from the Calls page's 30 minutes, so derived burn alerts can fire locally (also snag #450) | A builder is on it |
 | the #466 checks | An operation declares `needsApproval`; `AR-007` is `ApprovalDeclined` (Goal 5's ask) | An author is on it; a builder follows |
-| [#537](https://github.com/Open-Harness/orthograph/pull/537) | CI Part B on this branch's `ci.yml` (the CI lane's) | Goal 3 said yes; the CI lane merges it |
 | this pull request | M1-50-after-cutover, this section | Draft, under 🔍 |
 
 **Next, in order.**

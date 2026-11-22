@@ -9,8 +9,8 @@ M1.50 is the one `Graph` for machines, the map and the worlds. Gate M1 (M1.15) l
 
 - K29 section 7.3 puts the `Graph` back "on UI SDK in `@orthograph/shell`", once cutover (ST1.27) has deleted
   `@orthograph/portal-ui`. `design/milestones.md` already says `@orthograph/shell` for M1.50.
-- `@orthograph/shell`, the portal, the map language and the theme are Goal 6's (`design/goals/06-portal.md`;
-  `design/goals/05-ui-layer.md` says so too). Goal 3 never edits them.
+- `@orthograph/shell`, the portal, the map language and the theme are Goal 6's (its brief, `design/goals/06-portal.md`, is
+  on `main`; `design/goals/05-ui-layer.md` says so too). Goal 3 never edits them.
 - Check 40 (`e2e/m1/40-m1-50-graph.test.ts`, written on 21 November) still asks for `Graph` in
   `@orthograph/portal-ui` and `@xyflow/react` there. A builder working to it now would build on the package cutover
   deletes.
@@ -24,7 +24,8 @@ cutover for no reason of its own.
    is unchanged.
 2. **Check 40 is rewritten by a checks author before that build**, to ask for the `Graph` in `@orthograph/shell` and
    `@xyflow/react` there. Its 21 entries stay in `e2e/m1/expected-failing/40-m1-50-graph.txt` until then. The builder
-   never touches it.
+   never touches it. Check 40's generator half (positions laid out by `elkjs` in the generator, the graphs in the
+   portal's data) is Goal 3's code; the author may split it out so Goal 3 builds that half here, if Goal 6 asks.
 3. **Gate M1 is M1.02 to M1.14, M1.16 to M1.21, M1.25 to M1.36 and M1.38 to M1.49.** The preview merge goes ahead once
    those are green on `goal/stage-1`. Check 40 stays on the ratchet list, so a regression in what it already passes
    still fails CI.
