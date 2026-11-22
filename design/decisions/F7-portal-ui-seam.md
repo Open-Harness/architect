@@ -7,7 +7,7 @@ thread's, under "Who decides" in `AGENTS.md`. It refines M1.25's Q8 answer (`des
 
 ## Why
 
-We keep HeroUI Pro. Its licence (`node_modules/@heroui-pro/react/LICENSE`, version 1.0.0-beta.11) allows what we do
+We keep HeroUI Pro (superseded by K29, 21 November 2026: HeroUI leaves the portal in ST1.27). Its licence (`node_modules/@heroui-pro/react/LICENSE`, version 1.0.0-beta.11) allows what we do
 and forbids what a seam keeps us clear of:
 
 - **Within the project only.** Section 1: using Pro grants no right to extract, resell or distribute it "outside the
@@ -66,7 +66,7 @@ instead of an edit to every page.
    licensed build. The job that needs it never runs on pull requests from forks, so the secret is never exposed to
    code we didn't write. Installs are cached by lockfile hash, because HeroUI caps CI downloads per token per day
    (https://heroui.pro/docs/react/getting-started/ci-caching).
-5. **The fallback is later work, not a slice** (`design/later.md`): the same exports rebuilt on free HeroUI 3 for the
+5. (Superseded by K29, 21 November 2026: the exports are rebuilt on UI SDK, not free HeroUI 3.) **The fallback is later work, not a slice** (`design/later.md`): the same exports rebuilt on free HeroUI 3 for the
    primitives; Recharts, TanStack Table, cmdk, Shiki, react-markdown and Tiptap; dnd-kit for the board; the shell by
    hand. Pages don't change.
 

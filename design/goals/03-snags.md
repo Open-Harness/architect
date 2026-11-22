@@ -405,6 +405,27 @@ Not a snag, but the done check depends on it: `nx run e2e:stage1` is a target no
 - Owner: Goal 3 lead, for a framework builder.
 - Status: fixed (#288)
 
+## S-35 · language-effect · the pre-commit unique check rescans every written row once for each row it checks
+- Hit: Codex on #283 (Goal 4). `holderOf` (`packages/language-effect/src/modules/records/internal/holder.ts:28-31`) loops
+  `for (const id of written(rule.thing))` and calls `find` for each, and the unit's check (`internal/unit.ts`) calls it for every row it writes.
+- Reproduced (21 November 2026, a call that inserts n rows under one unique rule, then `unit.check`): the looks at a key
+  (`holds` and `ruleKey`) are 40,400 for 200 rows and 361,200 for 600 (9 times for 3 times the rows). `find` itself walks the
+  call's held rows (`heldFor`), so the time is cubic: 3,000 rows had not finished after minutes.
+- Lost: a bulk write (a seed, an import, a handler that writes a few thousand rows) holds its worker for minutes, with the
+  work synchronous, so no timeout can stop it.
+- Cause: the held rows are never indexed by rule and key; each row's lookup walks all of them and reads each again.
+- Fix: framework. Index the call's held rows by rule and key once per check, so each lookup is constant time. Checks:
+  `packages/language-effect/src/modules/records/unique-bulk-scale.test.ts`, held on
+  `packages/language-effect/expected-failing/unique-bulk-scale.txt` (G11). They count the looks at keys through the rule
+  module's seam (at most 6 a row), not the clock; a 4,000 ms bound on the 3,000-row call is the secondary check. The seam is a
+  contract: keys are computed through `ruleKey`/`holds` imported from `internal/unique.ts`, at least once per row; the count check
+  depends on it (the ratio test fails with "0 looks: keys are not computed through internal/unique.ts" when it sees none). A scan
+  that compares every pair on keys worked out once calls neither, and takes about 137 ms at 3,000 rows, so a 40,000-row call with
+  a 2,000 ms bound (pairwise 8 to 11 s, linear about 300 ms) is the backstop for it and for a build that ignores the contract; it runs only
+  once the 3,000-row time test has passed, so a quadratic build cannot hang CI.
+- Owner: Goal 3 lead, for a framework builder in `language-effect`.
+- Status: open; checks written (#292), build next
+
 ## S-36 · language-effect · S-19's write-order ratio sits on its bar under load
 - Issue: [#304](https://github.com/AaronAbuUsama/architect/issues/304) (K33: snags are issues from 21 November 2026; this file keeps the record).
 - Hit: the 🔍 of #292. `write-order-scale.test.ts:60` measured 16.0055 against a limit of 16 once on a loaded Mac, then passed three times.

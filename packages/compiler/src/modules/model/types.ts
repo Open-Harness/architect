@@ -247,6 +247,30 @@ export interface AssetModel {
   readonly decimals: number;
 }
 
+/** One burn alert of an objective: it fires when the objective burns at `burn` or more over both windows (long, then short). */
+export interface BurnAlertModel {
+  readonly name: string;
+  readonly burn: number;
+  readonly windowsMs: ReadonlyArray<number>;
+  readonly severity: "page" | "ticket";
+}
+
+/**
+ * One alert condition the compiler derives (K18): the labels are exactly `environment` (`*` where the rule holds in every environment), its subject
+ * (`operation`, `code` or `journey`), `severity` and `owner`. A latency or defect rule is an objective with its burn alerts; a latency rule also holds the
+ * operation's `budget.p95Ms` as `thresholdMs`. An anomaly or a verdict has neither.
+ */
+export interface AlertRuleModel {
+  readonly id: string;
+  readonly kind: "latency" | "defect" | "anomaly" | "verdict";
+  readonly labels: Readonly<Record<string, string>>;
+  readonly target?: number;
+  readonly windowDays?: number;
+  readonly thresholdMs?: number;
+  readonly minCalls?: number;
+  readonly alerts?: ReadonlyArray<BurnAlertModel>;
+}
+
 export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;
@@ -270,6 +294,8 @@ export interface Model {
   readonly environments?: Readonly<Record<string, EnvironmentModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
+  /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
+  readonly alertRules: ReadonlyArray<AlertRuleModel>;
 }
 
 /** A blueprint the compiler refuses, with every problem found, each naming its file. */

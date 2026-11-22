@@ -9,7 +9,7 @@
 //   same id check 37 pins (`[a-z0-9]{1,20}`), so the address and the resources `up` made share one prefix and one place that forms it.
 //   THE ADDRESS is `https://<prefix>-worker.<subdomain>.workers.dev`, `<prefix>-worker` being check 37's Worker (`ortho-<app>-stg-<run>-worker`) and `<subdomain>` the variable
 //   `ORTHO_STAGING_SUBDOMAIN` (one DNS label: lower-case letters, digits and dashes, 1 to 63, not starting or ending with a dash). WHY A VARIABLE AND NOT THE ACCOUNT: reading the account's
-//   subdomain is a Cloudflare API call that needs the token, and the story step holds no credential (`e2e/staging/workflow.mjs` fails a token on it), so the workflow hands the subdomain over
+//   subdomain is a Cloudflare API call that needs the token, and the story step does not read it (it holds the credentials only for D1's facts, see below), so the workflow hands the subdomain over
 //   as the output of an earlier step that holds the token and reads the account's subdomain (`e2e/staging/subdomain.mjs`; a subdomain is not a secret and only it is written). It is never typed in a project: `ortho.config.ts` and the blueprint
 //   name no host, and the check builds the address from the model and the variable alone, for four apps/runs/subdomains, so a typed one fails.
 //   A LOCAL OVERRIDE, so the same code is judged without the cloud: `ORTHO_STAGING_ORIGIN=http://127.0.0.1:<port>` is the address, used as it is, and the subdomain is then not needed. Loopback
@@ -33,7 +33,7 @@
 //
 // Red today on one reason: `--env` is `local` or `test` and there is no `--run` ("--env staging" is not a value). Controls, true today: the address is check 37's Worker on a workers.dev
 // subdomain; the story and the routes it must and must not reach come from the model; the guard denies a workers.dev host and lets loopback through; the proxy passes and records; the judge
-// passes the right run and fails each planted wrong one; the workflow's story step runs a journey that exists, with the subdomain from the earlier step's output and no credential. No Docker.
+// passes the right run and fails each planted wrong one; the workflow's story step runs a journey that exists, with the subdomain from the earlier step's output and exactly `up`'s two credentials (M7-04-story-reads-d1) and no other secret; the judge of that step fails each planted wrong env. No Docker.
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -196,14 +196,41 @@ describe("41: ortho prove --env staging --run <id> (M7.04), with no cloud", () =
       expect(found.join(" | ")).toMatch(say);
     });
 
-    it("the workflow's story step judges a journey that exists, gets the subdomain from an earlier step's output, and holds no credential", () => {
-      const text = readFileSync(join(repo, ".github/workflows/staging.yml"), "utf8");
-      const step = /- name: the story\n([\s\S]*?)\n\n/.exec(text)?.[1] ?? "";
+    // M7-04-story-reads-d1: the story reads the run's own D1 databases with the operator's credential, so its env is exactly the subdomain plus the two credentials, from the same
+    // expressions `up` uses, and no other `secrets.` expression. A pure judge, run on the real step and on each planted wrong one.
+    const TOKEN = "${{ secrets.CLOUDFLARE_API_TOKEN }}", ACCOUNT = "${{ vars.CLOUDFLARE_ACCOUNT_ID }}", SUB = "${{ steps.subdomain.outputs.subdomain }}";
+    const storyStep = (text: string) => /- name: the story\n([\s\S]*?)\n\n/.exec(text)?.[1] ?? "";
+    const upStep = (text: string) => /- name: up\n([\s\S]*?)\n\n/.exec(text)?.[1] ?? "";
+    const envOf = (step: string) => Object.fromEntries([...(/\n {8}env:\n((?: {10}\S.*\n?)+)/.exec(`\n${step}\n`)?.[1] ?? "").matchAll(/^ {10}([A-Z_]+): (.*)$/gm)].map((m) => [m[1]!, m[2]!.trim()]));
+    const storyProblems = (text: string): string[] => {
+      const step = storyStep(text), up = envOf(upStep(text)), env = envOf(step), found: string[] = [];
+      if (JSON.stringify(Object.entries(env).sort()) !== JSON.stringify([["CLOUDFLARE_ACCOUNT_ID", ACCOUNT], ["CLOUDFLARE_API_TOKEN", TOKEN], ["ORTHO_STAGING_SUBDOMAIN", SUB]])) found.push(`story env is ${JSON.stringify(env)}`);
+      if (env.CLOUDFLARE_API_TOKEN !== up.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_ACCOUNT_ID !== up.CLOUDFLARE_ACCOUNT_ID) found.push("story credentials are not up's expressions");
+      const code = step.split("\n").filter((l) => !l.trim().startsWith("#")).join("\n");
+      const secrets = [...code.matchAll(/\$\{\{\s*secrets\.[^}]*\}\}/g)].map((m) => m[0]);
+      if (secrets.length !== 1 || secrets[0] !== TOKEN) found.push(`story secrets are ${JSON.stringify(secrets)}`);
+      return found;
+    };
+    const flow = readFileSync(join(repo, ".github/workflows/staging.yml"), "utf8");
+    const plant = (re: RegExp, to: string) => { const t = flow.replace(re, to); expect(t, "the plant matched nothing").not.toBe(flow); return t; };
+    const inStory = (what: string) => new RegExp(`(- name: the story\\n[\\s\\S]*?)${what}`);
+    it("the story step's judge passes the real workflow", () => expect(storyProblems(flow)).toEqual([]));
+    it.each<readonly [string, () => string]>([
+      ["a second secret on the story", () => plant(/( {10}ORTHO_STAGING_SUBDOMAIN:)/, "          EXTRA: ${{ secrets.OTHER }}\n$1")],
+      ["a token from a different secret name", () => plant(inStory(" {10}CLOUDFLARE_API_TOKEN: .*"), "$1          CLOUDFLARE_API_TOKEN: ${{ secrets.OTHER_TOKEN }}")],
+      ["a missing account", () => plant(inStory(" {10}CLOUDFLARE_ACCOUNT_ID: .*\\n"), "$1")],
+      ["a missing token", () => plant(inStory(" {10}CLOUDFLARE_API_TOKEN: .*\\n"), "$1")],
+      ["an account typed in", () => plant(inStory(" {10}CLOUDFLARE_ACCOUNT_ID: .*"), "$1          CLOUDFLARE_ACCOUNT_ID: 0123456789abcdef")],
+      ["a secret mentioned in the script", () => plant(/(prove --env staging --run "\$RUN")/, '$1 --token "${{ secrets.OTHER }}"')],
+    ])("the story step's judge fails %s", (_name, make) => expect(storyProblems(make()).length).toBeGreaterThan(0));
+    it("the workflow's story step judges a journey that exists, gets the subdomain from an earlier step's output, and holds exactly up's two credentials", () => {
+      const text = flow;
+      const step = storyStep(text);
       expect(/--only "([^"]+)"/.exec(step)?.[1], step).toBe(STORY);
       expect(storyOf(judged.root).names).toContain(STORY);
       expect(step).toContain("ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}");
       expect(text, "a step that runs before the story reads the account's subdomain").toMatch(/- name: subdomain\n[\s\S]*?subdomain\.mjs[\s\S]*?- name: the story/);
-      expect(step).not.toMatch(/CLOUDFLARE_API_TOKEN|secrets\./);
+      expect(storyProblems(text)).toEqual([]);
     });
   });
 

@@ -207,7 +207,7 @@ conventions of ours, which every sink and every eval relies on:
 
 Today the code writes `refusal`, `refusal.log` and `defect` (`handler/service.ts`), but a failed Effect span ends with
 an error status whether the failure was a declared refusal or a defect, which I did not verify and which would put every
-refusal in "Top Errors". L2.O2 settles it by a test on the span status, and makes refusals end ok.
+refusal in "Top Errors". L2.O2 settles it by a test on the span status, and makes refusals end ok. (Superseded by O4, 21 November 2026: "end ok" is a successful exit, exported as UNSET.)
 
 A **defect record** is one small value the handler wrapper emits per defect: operation, trace id, exception type,
 message, stack, and a fingerprint of operation plus type. It is also on the span and in the log, so a sink that only
@@ -326,7 +326,7 @@ the machine for no new answer.
    example is to be updated in the step that builds the seam.
 3. **Defaults by signal:** traces and logs to Axiom; defects to PostHog; local to the viewer. **Aaron's call, question 1:**
    which tool is the default if he wants one.
-4. **Refusals are never errors.** They end ok, are never sent to error tracking and are never in "Top Errors".
+4. **Refusals are never errors.** They end ok, are never sent to error tracking and are never in "Top Errors". (Superseded by O4, 21 November 2026: "end ok" now means the span exits successfully, which Effect 4.1.4 exports as OTLP UNSET, never ERROR.)
 5. **Prove and CI read only local files.** `watch` reads a `TraceSource`: File, then Axiom; PostHog after its spike.
 6. **Cloud has no Collector;** each sink is a direct exporter from the Worker, our own layer, not Cloudflare's built-in
    export (PostHog does not accept built-in traces at all).

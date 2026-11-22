@@ -30,15 +30,17 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 
 ## How work flows
 
-- **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). Nothing
-  in a milestone starts until the previous milestone's gate passes on `main`. The one exception is K26, Aaron's of
-  20 November 2026: the on-chain work (`design/decisions/K26-on-chain-pulled-forward.md`). Ideas for later go in
-  `design/later.md`, never into code.
+- **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). No slice
+  starts until what it needs has landed, in any milestone order (K34); a milestone is done when its gate passes on `main`.
+  The goals and what each needs are in `design/goals/map.md`. Ideas for later go in `design/later.md`,
+  never into code.
 - **Goals.** Work runs as goals in `design/goals/`: one long autonomous run with a bound and a single done check. A
   goal works on `m<n>`, one commit per milestone slice, each ending green with its "done when" check. It loops
   generate, run, fix until the check passes, then moves on. The milestone reaches `main` by one pull request, merged
   when CI is green, its gate passes and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
-  parallel.
+  parallel. A goal may run in any harness (Claude Code, Amp, Codex) and coordinates only through the repository and
+  GitHub: its brief's "Where it stands", a `goal-<n>` label, the release milestones, and issues for asks between goals
+  (`design/decisions/K32-goals-coordinate-themselves.md`).
 - **Spikes** answer one question in throwaway code under `spikes/<name>/`, on a `spike/<name>` branch. Each ends with
   a README (question, tried, found, the decision it supports, open risks) and is merged into `main` for the record.
   Spike code is never imported by packages.
@@ -73,7 +75,8 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   after a shebang when there is one) and are never edited. Scaffolds start
   with `// Scaffolded from <path>. Yours from now on.`
 - Package rules (Nx module boundaries): `orthograph` (the front door, the `Blueprint` API) depends only on Effect;
-  generated code imports only the language's runtime, `orthograph`, the host and project code; `compiler` and `generators`
+  generated code imports only the language's runtime, `orthograph`, the host and project code, and in `generated/web/`
+  also `@ui-sdk/*`, `react` and `@orthograph/web` (K29); `compiler` and `generators`
   never run in production.
 - Pin dependency versions exactly, and use versions published at least three days before you add them (Aaron, 17
   November 2026). A younger version needs an override: its name in `minimumReleaseAgeExclude` in
@@ -100,8 +103,9 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 Every thread is one type, titled with its emoji; the skills are in `.agents/skills/`: `threads` (the types and each agent's
 word for starting, messaging, reading and archiving a thread), `conductor` (the loop), `spike` (running a spike),
 `author` (writing journeys and checks, and proving each fair), `reviewer` (the 🔍 review), `hashtags` (Aaron's `#shortcuts`), `portal-design` (designing portal and console screens:
-the process and the style guide) and `kanban` (the board Aaron and the conductor track every slice on, its data saved
-in the repo, and `STATE.md`, where the project stands).
+the process and the style guide), `kanban` (the board Aaron and the conductor track every slice on, its data saved
+in the repo, and `STATE.md`, where the project stands) and `ui-sdk` (UI SDK's own skill, vendored at the pinned version, for
+the generated pieces, pages and the portal's components on it; its `README.md` says how we use it).
 On `goal/on-chain`, the `goal-4` skill is how Goal 4's lead works and resumes; its state is
 `.agents/skills/goal-4/STATE.md`. `.claude/skills` and `.claude/agents/reviewer.md`
 are links to it; edit them only in `.agents/skills/`.

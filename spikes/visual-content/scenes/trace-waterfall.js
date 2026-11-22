@@ -8,7 +8,7 @@ export default waterfall({
   subtitle: "allowance.grant · recorded by prove, read back from Tempo",
   unit: "ms",
   intro: "allowance.grant, one call, as prove recorded it",
-  outro: "every span ends ok; the move and its event are written on the operation's span",
+  outro: "no span ends as an error; the move and its event are written on the operation's span",
   spans: [
     { name: "POST /allowance/grant", depth: 0, start: 0, end: 5, color: "accent", say: "the request's span opens: POST /allowance/grant" },
     { name: "sqlite · SELECT organization", depth: 1, start: 3, end: 3, color: "muted", say: "the role check reads the organization, before the operation's span opens" },

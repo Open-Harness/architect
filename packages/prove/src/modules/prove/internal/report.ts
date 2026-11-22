@@ -67,7 +67,8 @@ export const whereLine = (model: Model | undefined, call: CallRecord | undefined
     : `handler ${files.handler}, declared in ${files.declaration} (${files.operation})`;
 };
 
-export const journeyLines = (runs: ReadonlyArray<JourneyRun>, traces: ReadonlyMap<string, Trace>, empty = false, model?: Model) => {
+/** `spans: false` judges the answers, refusals and events only: a staging run has no collector, so no step is failed for the spans it could not read. */
+export const journeyLines = (runs: ReadonlyArray<JourneyRun>, traces: ReadonlyMap<string, Trace>, empty = false, model?: Model, spans = true) => {
   const lines: Array<string> = [];
   /** The traces of every call that went wrong, for `prove --view` to point at. */
   const failedTraces: Array<{ readonly trace: string; readonly what: string }> = [];
@@ -86,7 +87,7 @@ export const journeyLines = (runs: ReadonlyArray<JourneyRun>, traces: ReadonlyMa
     const steps = run.steps.map((s) => {
       const trace = traces.get(s.trace);
       const call = calls.get(s.trace);
-      const spanned = spanFindings(s, trace, call);
+      const spanned = spans ? spanFindings(s, trace, call) : [];
       const detail = (failures: ReadonlyArray<string>) => stepDetail(model, s, failures, spanned, trace, call);
       if (empty) {
         // prove --empty (M1.16): a step whose handler is blank fails by the defect it reached, first.

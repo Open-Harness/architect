@@ -13,6 +13,7 @@ import { RUNS_NEEDS, deviceProblems } from "./device.ts";
 import { environmentsOf } from "./environments.ts";
 import { storiesOf } from "./journeys.ts";
 import { hashOf } from "./hash.ts";
+import { alertRulesOf } from "./rules.ts";
 import { crossStore, storesOf } from "./stores.ts";
 import { breakersOf, declaredErrors } from "./invariants.ts";
 import { camel, type Layout } from "./layout.ts";
@@ -210,8 +211,9 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const stores = storesOf(layout, problems);
   const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel);
   const allBlanks = { ...blanks, ...journeyBlanks };
+  const alertRules = alertRulesOf({ operations, refusals, things, journeys: stories.journeys, environments });
   return {
-    model: { refusals, values, ...(Object.keys(assets).length > 0 ? { assets } : {}), things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}) },
+    model: { refusals, values, ...(Object.keys(assets).length > 0 ? { assets } : {}), things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
     problems,
     lock,
   };
