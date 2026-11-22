@@ -242,16 +242,18 @@ export default Blueprint.view(Allowance, {
 
 1. **It lives in D1**, a table named from its path (`view_allowances_by_organization`), in the default database, or in
    the store its declaration names. Never in an actor: a view exists to list across homes.
-2. **It is kept by the outbox.** A view is a subscriber of each `from` event; its delivery is generated (upsert or delete
-   the row its key names, from the event's fields) and commits with that delivery's request key, so a redelivery changes
-   nothing and events of one subject arrive in order (Q1.3). Each view row keeps the `seq` of the event it last applied
-   (with the store's name, where a view reads more than one), and a delivery whose `seq` is not above it changes nothing:
-   a late redelivery of an older event never undoes a newer one.
+2. **It is kept by the outbox.** A view subscribes to each `from` event. The source thing's id (the journal subject)
+   identifies its row; `key` is a non-unique lookup index. The allowances view has one row per allowance and can list
+   multiple allowances with the same organization. The generated delivery applies the event to that subject's row
+   and commits with its request key. Events for the subject arrive in order (Q1.3). The view also keeps the subject's
+   last applied `seq` and the journal it came from; a delivery at or below that position changes nothing. A removal
+   hides only that subject's row and keeps its last position so an older event cannot bring it back.
 3. **It is rebuilt from the journals.** `ortho view rebuild <name>` empties the table and replays its `from` events from
    every D1 journal, each in `seq` order. That is complete because every event, an actor's included, reaches a D1
    journal (Q1.4). A new view is built the same way when it first deploys.
 4. Its reads (`by: "key"`, a list) are generated in the SDK, CLI and MCP like a thing's reads, and the data map lists it
-   (M5.05, M5.06).
+   (M5.05, M5.06). The M5.05 check lists two actor-homed allowances in one organization, revokes one, and redelivers
+   its older grant. Live delivery and a rebuild must both leave exactly the other allowance in the list.
 
 ### Q7. A workflow's wait on an outside event (`step.await`, the event side)
 
