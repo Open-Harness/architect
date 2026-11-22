@@ -25,7 +25,7 @@ slices:
   - "1b · M6.01, the chain decision"
   - "2 · M6.02, the budgets journeys and the e2e:on-chain done check (after 1b)"
   - "3 · M6.10, the chain store, values and money (after 2)"
-  - "3b · chain-evm's ABI codec and a read that returns data, for Goal 12 (after 3)"
+  - "3b · chain-evm's ABI codec and a read that returns data, for Goal 12"
   - "9 · M6.07, the relayer actor (after 3)"
   - "10 · M6.09, the follower actor, landed early for Goal 9 (after 9)"
   - "4 · M6.11, the Solidity language renders the base contract and surface.json (after 3)"
@@ -268,7 +268,9 @@ Slice 1 also carries what K27 left for it:
 ### Part 2: running for real
 
 Slices 9 and 10 run before slices 4 to 8 (K38, #442): they need only `chain-evm` and Anvil, and Goal 9 needs M6.09
-early. Slice 11 waits for both 8 and 10.
+early. Slice 11 waits for both 8 and 10. Slice 1 (held on M2.05) reshapes `host-cloudflare`, where Durable Objects
+live today: the builders of 9 and 10 read slice 1's state first and keep the actors out of what slice 1 moves, or
+say where they collide.
 
 | # | Slice | Done when |
 |---|---|---|
@@ -308,7 +310,6 @@ When the done check passes, open one pull request from `goal/on-chain`: into `ma
 green, `nx run e2e:on-chain` passes on it, and a 🔍 reviewer has passed the whole branch, reading this file, the snag
 log, each slice's check and the evidence below. Then tag `budgets/on-chain`.
 
-
 ### Early landings (K38)
 
 A slice another goal needs lands early (`design/decisions/K38-early-landing.md`, AGENTS.md). Once its check is green on
@@ -320,6 +321,7 @@ has passed. It carries the slices before it, each already green. Never cherry-pi
 - **Slice 3b** (the ABI codec, #471) needs none of Goal 4's slices, so it is cut from `goal/stage-1` and lands there
   directly.
 - **M6.21** (time on chain) builds once Goal 9 lands M8.09 early (#444).
+
 ## Evidence for Aaron
 
 - **The DX trial:** what a person writes, in full (the blueprint and `src/Budgets.sol`), and a recorded terminal session
