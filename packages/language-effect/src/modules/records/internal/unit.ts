@@ -3,7 +3,7 @@
 import { Effect } from "effect";
 import type { Thing, Unique } from "orthograph";
 import { orderSteps, type Step } from "./order.ts";
-import { holderOf } from "./holder.ts";
+import { holderOf, indexHeld } from "./holder.ts";
 import { inScope, rowOf, ruleKey, rulesOf } from "./unique.ts";
 import type { Instance, NamedRule, Store, Unit, Violation, Write } from "../types.ts";
 
@@ -14,7 +14,13 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
     const rules = rulesOf(given ?? store.rules ?? []);
     const read = new Map<Thing, Map<string, { instance: Instance; version: number } | undefined>>();
     const held: Array<Held> = [];
-    const heldFor = (thing: Thing, id: string) => held.find((h) => h.thing === thing && h.id === id);
+    const heldBy = new Map<Thing, Map<string, Held>>();
+    const heldFor = (thing: Thing, id: string) => heldBy.get(thing)?.get(id);
+    const hold = (h: Held) => {
+      held.push(h);
+      const ids = heldBy.get(h.thing) ?? heldBy.set(h.thing, new Map()).get(h.thing)!;
+      if (!ids.has(h.id)) ids.set(h.id, h);
+    };
     const seen = (thing: Thing) => read.get(thing) ?? read.set(thing, new Map()).get(thing)!;
 
     const load = (thing: Thing, id: string) =>
@@ -52,7 +58,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
         }
         const stored = yield* load(thing, id);
         if (!stored) return yield* Effect.die(new Error(`${id} can't change: it was never stored`));
-        held.push({ thing, id, kind: "update", version: stored.version, fields: { ...fields }, state });
+        hold({ thing, id, kind: "update", version: stored.version, fields: { ...fields }, state });
       });
 
     /** Each held row with the row as the call found it and as it leaves it. */
@@ -71,6 +77,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
     /** The first rule a row breaks by taking a key someone else holds. A row that already held its key (in scope, same key) takes nothing. */
     const check = Effect.gen(function* () {
       const steps = stepsOf();
+      const index = yield* indexHeld(rules.of, find, held);
       // The call's own rows first (G5 section 6.2): two of them under one key is the handler's bug, whoever else holds it in the store.
       const seenKeys = new Map<Thing, Set<string>>();
       for (const { write, after } of steps) {
@@ -88,7 +95,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
           const key = ruleKey(rule, after);
           if (before !== undefined && inScope(rule, before) && ruleKey(rule, before) === key) continue;
           const id = String(after["id"]);
-          const other = yield* holder(rule, after, id);
+          const other = yield* holder(rule, after, id, index);
           if (other !== undefined) {
             return { rule: rule.name, refuse: rule.declared?.refuse, row: after, own: heldFor(rule.thing, String(other["id"])) !== undefined } satisfies Violation;
           }
@@ -104,7 +111,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
         insert: (thing, fields, state) =>
           Effect.sync(() => {
             const id = String((fields as Record<string, unknown>)["id"]);
-            held.push({ thing, id, kind: "insert", version: 0, fields: { ...(fields as Record<string, unknown>) }, state });
+            hold({ thing, id, kind: "insert", version: 0, fields: { ...(fields as Record<string, unknown>) }, state });
           }),
         update: (thing, id, changes) => change(thing, id, changes as Record<string, unknown>, undefined),
       },
