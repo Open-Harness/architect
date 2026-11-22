@@ -31,7 +31,7 @@ it("records the commit and its counts under each operation attempt after a confl
   return Effect.runPromise(Effect.gen(function* () {
     const store = yield* Store;
     const first = yield* Ref.make(true);
-    const answer = yield* call({ allowance: "alw_1" }, { kind: "person", person: "per_ada" }).pipe(
+    const answer = yield* call({ allowance: "alw_1" }, { kind: "person", person: "per_ada", via: "session" }).pipe(
       Effect.provideService(Store, { ...store,
         commit: (commit) => Ref.getAndSet(first, false).pipe(
           Effect.flatMap((conflict) => conflict ? Effect.succeed("conflict" as const) : store.commit(commit)),

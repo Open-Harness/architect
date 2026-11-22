@@ -42,7 +42,7 @@ export const race = (lives: Lives, storeFor: (purse: Thing) => Layer.Layer<Store
       yield* move(remaining === 0n ? "exhausted" : "active");
       return { remaining };
     });
-  const ada = { kind: "person", person: "per_ada" } as const;
+  const ada = { kind: "person", person: "per_ada", via: "session" } as const;
   const opened = Handlers.serve({ name: "purse.open", operation: open, handler: opener });
   const spent = Handlers.serve({ name: "purse.spend", operation: spend, handler: spender, notFrom: "PurseNotActive" });
   return Effect.gen(function* () {

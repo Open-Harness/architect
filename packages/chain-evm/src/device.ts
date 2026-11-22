@@ -5,6 +5,10 @@ export type {
   Call, ChainPort, ChainPortOptions, ConfirmationLevel, Intent, ReplacementPolicy,
   Signed, Signer, Submission, Transaction, TxState, Unsigned,
 } from "./modules/tx/types.ts";
+export { Abi } from "./modules/abi/service.ts";
+export type {
+  AbiApi, AbiConstructor, AbiDocument, AbiError, AbiEvent, AbiFunction, AbiParameter,
+} from "./modules/abi/types.ts";
 export { decodeRevert, mapRpcError } from "./modules/faults/service.ts";
 export { ChainFault, ChainRefusal, type ChainError, type FaultKind, type RefusalLockEntry } from "./modules/faults/types.ts";
 export { makeEventSource } from "./modules/events/service.ts";
