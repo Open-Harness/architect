@@ -150,55 +150,70 @@ jobs:
   # never inside a script; the job never runs for a pull request from a fork, so the secret never reaches code we did not write.
   # Every other job installs the registry's empty shell of Pro and runs without it (portal-ui's typecheck says it was skipped).
   portal-ui:
-    needs: changes
-    if: ${{ github.event.pull_request.draft != true && !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.fast == 'true') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    if: ${{ github.event.pull_request.draft != true && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7.0.1
+      # A pull request into a goal branch runs the fast gate only (CI-integration.md, B1): this job passes without its steps.
+      # It reads the flag itself rather than needing `changes`, so it also runs when `changes` fails.
+      - id: scope
+        run: tools/ci/scope.sh "$EVENT" "$BASE_REF" >> "$GITHUB_OUTPUT"
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
       - uses: pnpm/action-setup@v6.1.0
+        if: steps.scope.outputs.fast != 'true'
       - uses: actions/setup-node@v7.1.0
+        if: steps.scope.outputs.fast != 'true'
         with:
           node-version: 24
           cache: pnpm
       - uses: actions/cache@v6.1.0
+        if: steps.scope.outputs.fast != 'true'
         id: pro-cache
         with:
           path: .cache/heroui-pro
           key: heroui-pro-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm install --frozen-lockfile
+        if: steps.scope.outputs.fast != 'true'
       - name: Restore Pro from the cache
-        if: steps.pro-cache.outputs.cache-hit == 'true'
+        if: steps.pro-cache.outputs.cache-hit == 'true' && steps.scope.outputs.fast != 'true'
         run: node packages/portal-ui/tools/pro.mjs @heroui-pro/react restore .cache/heroui-pro
       - name: Install Pro with the licence token
-        if: steps.pro-cache.outputs.cache-hit != 'true'
+        if: steps.pro-cache.outputs.cache-hit != 'true' && steps.scope.outputs.fast != 'true'
         env:
           HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
         run: node packages/portal-ui/tools/pro.mjs @heroui-pro/react fetch
       - name: Keep Pro for the cache
-        if: steps.pro-cache.outputs.cache-hit != 'true'
+        if: steps.pro-cache.outputs.cache-hit != 'true' && steps.scope.outputs.fast != 'true'
         run: node packages/portal-ui/tools/pro.mjs @heroui-pro/react save .cache/heroui-pro
       - name: Lint, typecheck, test and build portal-ui against the real Pro
+        if: steps.scope.outputs.fast != 'true'
         run: pnpm nx run-many -t lint,typecheck,test,build -p portal-ui --outputStyle=static
         env:
           ORTHO_REQUIRE_PRO: "1"
       # K19: the portal's client (its pages, portal-ui and Pro, bundled by vite) is built here, once, where the licence is, and handed to the
       # jobs that read the portal as built files. Nothing else builds it, so nothing else needs the licence.
       - name: Build the portal's client against the real Pro
+        if: steps.scope.outputs.fast != 'true'
         run: pnpm nx run portal:client --outputStyle=static
         env:
           ORTHO_REQUIRE_PRO: "1"
       - uses: actions/upload-artifact@v7.0.2
+        if: steps.scope.outputs.fast != 'true'
         with:
           name: portal-client
           path: packages/portal/dist/client
           if-no-files-found: error
           retention-days: 7
       - name: List what npm would publish
+        if: steps.scope.outputs.fast != 'true'
         run: npm pack --dry-run --ignore-scripts
         working-directory: packages/portal-ui
       # Check 15 (the seam): the packed files hold nothing of Pro, and no import of Pro lives outside portal-ui.
       - run: pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/15
+        if: steps.scope.outputs.fast != 'true'
 
   # Is this pull request docs only? Then the layer gates, prove-tests, the M1 shards, e2e-climb and e2e-grid skip
   # (design/decisions/CI-docs-fast-path.md, CI-speed.md): main is strict, so every pull request reruns all of CI each time
