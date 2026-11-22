@@ -1,0 +1,37 @@
+# Written before M7.05 is built. Red until tools/release/world-cap.mjs exists.
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > asks GitHub's API for this workflow's runs created today (UTC), with the job's token, once
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > asks for the repository and the workflow it is given
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > goes to api.github.com when no address is given, and nowhere else
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > never prints the token, whichever way it goes
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > passes up to the cap, and says the count and the cap
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses past the cap with an ::error:: naming both numbers
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a cap of zero
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a cap that is not a number
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a cap with trailing text
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a fractional cap
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a negative cap
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a repository that climbs
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a repository that is not owner/repo
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a workflow file that climbs
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > a workflow file with a slash
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > an API address on another host over http
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > an API address that is another https host
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > an API address that only starts like this machine
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > an empty token
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > no cap
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > no repository
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > no token
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2 and no request, what it was not given right > no workflow file
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > a 403 (no `actions: read`)
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > a 404
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > a 500
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > a body that is not JSON
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > a body with no total_count
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > a fractional total_count
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > a list for the body
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > a negative total_count
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > no answer at all
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > nothing listening
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > total_count as a string
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > refuses, with exit 2, when it cannot judge: a count it cannot read is not a count of zero > total_count null
+m7/04-world-cap.test.ts > 04: the day's cap on test worlds (M7.05) > takes the cap from WORLD_CAP, not from a number of its own

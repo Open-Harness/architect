@@ -1,0 +1,127 @@
+# Written before M7.05 is built. Red until .github/workflows/test-worlds.yml exists (the builder writes it; Goal 15 adds it to the brief's owns).
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > ends before a world's life does: the job's timeout is at most 60 minutes, the test environment's lifetime is read from the model
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > is what the check says
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > makes a run id that carries the pull request and the run, within the plan's 20 letters and digits at the largest ids GitHub issues for a long while
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > starts on a pull request alone and shows the name the pull request shows
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the credentials step refuses, before anything is made, and says which are missing > a value that is only blanks, or empty, counts as missing
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the credentials step refuses, before anything is made, and says which are missing > both set: exit 0, and neither value is printed
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the credentials step refuses, before anything is made, and says which are missing > neither set: exit 1, both names said
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the credentials step refuses, before anything is made, and says which are missing > only the account's id: exit 1, the token named and the id not
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the credentials step refuses, before anything is made, and says which are missing > only the token: exit 1, the account's id named and the token not
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a branch filter
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a branch filter on the pull request
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a cap of 21
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a cap that continues on error
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a cap that counts another workflow
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a cap that hides its failure
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a cap that is a dry run
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a cap with no token to count with
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a checkout that leaves the token in .git/config
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credential in the evidence step
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credential in the judge step
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credential in the plan step
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step holding no credential
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that continues on error
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that is skipped
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that never refuses
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that prints the environment
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that puts a program first on the path
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that rewrites the cap for later steps
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that runs a program
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that sends the token away
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step that substitutes a command
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a credentials step with no script
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a final step that exits 0
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a fork's code checked out
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a glob for the evidence
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a hand-started dispatch beside it
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a judgement that does not take --before (a change without the prefix goes unseen)
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a judgement whose exit is 0
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a judgement with the prefix typed
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a path filter
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a plan for staging
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a push trigger beside the pull request
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a schedule beside it
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a second job
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a step named by a secret
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a timeout of a day
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a token supplied by hand
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a type added
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a type left out
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > a typed prefix
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > an action at a floating version
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > an action that is none of the four
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > an evidence upload that does not always run
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > another job name
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > another secret
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > another workflow name
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > checks left off the job (the verdict has no check run of its own)
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > checks: read on the job
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > contents: write on the job
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy by a typed name
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy of staging
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy that does not always run
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy that is a dry run
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy that is always() && false
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy that only echoes
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy that runs even before the credentials were checked
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy that runs only when prove passed
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > destroy that swallows its failure
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > evidence kept for 90 days
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > id-token left off the job
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > id-token: read on the job
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > id-token: write for the whole workflow
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no cap in the job's env
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no cap step
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no credentials step
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no destroy step
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no environment
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no final failure step
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no job guard at all
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no listing before
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > no timeout
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > one group for every pull request
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > pnpm's setup that installs by itself
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove asked for a token on its command line
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove for another environment as well
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove for staging
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove that ends the job before destroy is read
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove that names another project
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove that never runs
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove whose exit is dropped
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove with a second ORTHO_ variable
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove with a secret as a variable
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove with no logbook
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > prove with the logbook's address typed
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > pull-requests: write on the job
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > pull_request_target (secrets for a fork's code)
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > runs of one pull request that cancel each other midway
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > setup-node given a token
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > setup-node pointed at another registry
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the account's id from a secret
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the account's id left out of destroy
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the cap checked after the world is up
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the credentials checked after the plan
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the draft guard dropped
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the evidence upload holding a secret in its env
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the evidence upload named by a secret
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the evidence upload with a hidden-files switch
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the final step holding a secret
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the final step substituting a command
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the fork guard dropped
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the fork guard reversed
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the install after the world is up
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the judgement that continues on error
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the judgement that does not always run
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the listing after destroy that does not always run
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the listing after that keeps going when it cannot read
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the local issuer standing in for GitHub
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the logbook's address smuggled through credentials' output
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the production environment
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the runner's token request typed by hand
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the token in the job's env (every step holds it)
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the whole account's listing uploaded
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > the whole secrets object
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > up for staging
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > up that does not continue on error (destroy still runs, but prove and the verdict are never read)
+m7/01-test-worlds-workflow.test.ts > 01: the test-worlds workflow (M7.05), judged from its text > the judge fails each planted wrong workflow > up that hides its failure
