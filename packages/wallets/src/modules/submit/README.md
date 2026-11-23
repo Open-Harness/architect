@@ -8,7 +8,9 @@ Both take the process's shared port for the chain (`Chain.shared`) and never mak
 lane, whichever signer they came from, so overlapping sends take distinct nonces.
 
 - A transfer whose simulation fails (a revert, a panic, no funds) is `SimulationReverted`. Nothing was signed or sent, the
-  nonce is handed back, so the next send takes the nonce this one would have had.
+  nonce is handed back, so the next send takes the nonce this one would have had. So it is for any exit of a keyed send
+  before the broadcast that is not a success: a refusal, a defect or an interruption. Once broadcast, the port keeps the
+  nonce, so an interruption while following the transfer does not hand it back.
 - A signer that would not sign (a locked keystore, a request the person turned down) is `KeyLocked`.
 - `confirmed` for a plain transfer means in a block, not reverted, and `depth` blocks deep, the setting's depth (M1.38,
   `ORTHO_WALLET_DEPTH` or the world's `chain.depth`; a local chain is 1). The transfer has no event of its own to wait
