@@ -212,3 +212,19 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
 - **A nonce lane shared across processes** (`decisions/W1-wallet-send-lanes.md`, Open). Today one process keeps one lock
   per account and chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
   key from more than one process or Worker, or a journey sends from one account in two processes at once.
+
+## From the Goal 4 relayer review rounds (23 November 2026)
+
+Five rounds of review on the relayer (M6.07) each found a valid nonce fault. The cause was the same every time: the relayer and `chain-evm`'s port
+each owned a piece of one nonce's state, and the relayer guessed the rest. Both entries below are cut from that slice by
+`decisions/M6-relayer-rebroadcast.md`.
+
+- **Fee-bump replacement of a dropped or stuck transaction** (its own slice). Today the relayer sends a dropped transaction again, byte for byte,
+  and a transaction sent too cheap during a fee spike stays stuck, with every nonce behind it (`Relayer.health()` names it). The slice has the
+  port own the whole lifecycle of a nonce (begin, broadcast, refuse, replace) behind one call, so the relayer never infers it, and brings back
+  the two replacement cases on `e2e/on-chain/expected-failing/10-m6-07-relayer.txt` (they come off the list when it lands).
+  **Trigger:** `health()` names a stuck nonce in a real environment, or a journey on a live chain meets a fee spike.
+- **The relayer re-checks inclusion until a reorg depth.** Today a submission is final the first time its receipt is seen, so a reorg that drops an
+  included transaction is not noticed. The relayer would keep a mined row open until it is a chosen number of blocks deep, and send the transaction
+  again if the node no longer shows it. **Trigger:** the relayer runs on a chain that reorgs, or the follower reports a `Corrected` event for a
+  transaction the relayer sent.

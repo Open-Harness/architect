@@ -13,3 +13,5 @@ export { AuthD1 } from "#modules/auth/service.js";
 export type { AuthInstance, AuthOptions, CastMember } from "#modules/auth/types.js";
 export { World, toWorld } from "#modules/world/service.js";
 export type { Cast, WorldEnv, WorldHost } from "#modules/world/types.js";
+export { Relayer } from "#modules/relayer/service.js";
+export type { Relayed, RelayerApi, RelayerConfig, RelayerEnv, RelayState, RelayStatus, Replaced } from "#modules/relayer/types.js";
