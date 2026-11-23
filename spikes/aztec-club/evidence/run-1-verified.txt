@@ -1,0 +1,32 @@
+Run 1, verified world, every person paying their own fee (funded at genesis), 22 November 2026, about 07:57.
+Copied from the console of the run: run 2 wrote over its JSON file. The step lines, as printed:
+
+{"step":"world started","realProofs":true,"nodeReportsRealProofs":true,"startMs":5482}
+{"step":"club deployed","ms":23655}
+{"step":"join ana","by":"treasurer","ok":false,"refused":"Assertion failed: Trying to read from uninitialized PublicImmutable 'assert("}
+{"step":"join ben","by":"treasurer","ok":false,"refused":"Assertion failed: Trying to read from uninitialized PublicImmutable 'assert("}
+{"step":"join cy","by":"treasurer","ok":false,"refused":"Assertion failed: Trying to read from uninitialized PublicImmutable 'assert("}
+{"step":"footprint after joins","footprint":{"members":"0","spent":"0","spends":"0"}}
+{"step":"grant 1 to ana","by":"treasurer","ok":true,"proveMs":13676,"result":"success","includedMs":2695}
+{"step":"grant 2 to ben","by":"treasurer","ok":true,"proveMs":6563,"result":"success","includedMs":2625}
+{"step":"grant 3 to cy","by":"treasurer","ok":true,"proveMs":9726,"result":"success","includedMs":2934}
+{"step":"ana spends 20","by":"ana","ok":true,"proveMs":9830,"result":"success","includedMs":2996}
+{"step":"ana's spend: members named in its bytes","named":["ana"]}
+{"step":"footprint after the spend","footprint":{"members":"0","spent":"20","spends":"1"}}
+{"step":"ana reads her allowance","get":["1","100","20"]}
+{"step":"ana spends 200 (over the limit)","by":"ana","ok":false,"refused":"Assertion failed: [41] AllowanceExceeded { remaining: 80 } ..."}
+{"step":"ben spends from ana's allowance","by":"ben","ok":false,"refused":"Assertion failed: [AR-001] NotAllowed ..."}
+{"step":"outsider spends from ana's allowance","by":"outsider","ok":false,"refused":"Assertion failed: Failed to get a note 'assert(self.is_some(), message)'"}
+{"step":"ana grants herself","by":"ana","ok":false,"refused":"Assertion failed: [AR-001] NotAllowed ..."}
+{"step":"treasurer revokes ben's","by":"treasurer","ok":true,"proveMs":11330,"result":"success","includedMs":2951}
+{"step":"ben spends after the revoke","by":"ben","ok":false,"refused":"Assertion failed: [40] AllowanceNotActive { state: 3 } ..."}
+{"step":"cy spends all 100 (exhausted)","by":"cy","ok":true,"proveMs":8469,"result":"success","includedMs":2725}
+{"step":"cy spends 1 more","by":"cy","ok":false,"refused":"Assertion failed: [40] AllowanceNotActive { state: 2 } ..."}
+{"step":"propose 500","by":"treasurer","ok":true,"proveMs":5609,"result":"success","includedMs":3610}
+(the five ballots were refused with [AR-001] NotAllowed: no member had joined)
+{"step":"treasurer closes","by":"treasurer","ok":true,"proveMs":11066,"result":"success","includedMs":2970}
+{"step":"proposal after the close","proposal":{"state":"3","amount":"500","yes":"0","no":"0"}}
+{"step":"a tampered spend by ana","accepted":false,"refused":"Invalid tx: Invalid proof","footprintBefore":{"members":"0","spent":"120","spends":"2"},"footprintAfter":{"members":"0","spent":"120","spends":"2"}}
+{"step":"an empty proof on a spend by ana","accepted":false,"refused":"Invalid tx: Invalid proof","footprintBefore":{"members":"0","spent":"120","spends":"2"},"footprintAfter":{"members":"0","spent":"120","spends":"2"}}
+{"step":"final","footprint":{"members":"0","spent":"120","spends":"2"},"proposal":{"state":"3","amount":"500","yes":"0","no":"0"},"totalMs":229310}
+{"step":"world stopped","nodeGone":false}   (that run's check asked the in-process node object, which still answers; run 2 asks the L1 endpoint)

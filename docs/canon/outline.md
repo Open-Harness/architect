@@ -41,8 +41,8 @@ level, and the details wait for the layers that own them.
 | 6 · running | `time`, `workflows`, `environments` | 4 and 5 |
 | 7 · what Orthograph ships | `auth`, `agents`; after 1.0, `factory` and `agent-kit` | everything above |
 
-**Examples.** One example runs through the whole canon: Plugged In, `examples/plugged-in`, the app 1.0 is built as
-(K9). Each page takes its example from the stage that needs it. Stage 1 (claim `@name`, a public page of links) teaches
+**Examples.** One example runs through the whole canon: Plugged In, `examples/plugged-in`, the app the canon is built around
+(K9); 1.0 is the framework Capxul core proves (K42, K43). Each page takes its example from the stage that needs it. Stage 1 (claim `@name`, a public page of links) teaches
 layers 1 to 3, the database and actor stores, the projections, `ui`, `portal`, `secrets`, `environments` (locally; the cloud is M7) and sign-in.
 Stage 2 (a wallet, paid by handle) teaches `chains-and-wallets`, the chain store, adapters from an ABI, `on:` and the
 stand-in chain. Stage 3 (a Safe with the budgets plugin) teaches `features` by a plugin of our own, `time` (budgets are

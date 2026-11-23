@@ -31,20 +31,23 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 
 ## How work flows
 
-- **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). No slice
-  starts until what it needs has landed, in any milestone order (K34), except on an integration branch, which builds
-  what it needs there to its owner's design and is merged back by the conductor (Goal 17's, K39); a milestone is done when its gate passes on `main`.
-  The goals and what each needs are in `design/goals/map.md`. Ideas for later go in `design/later.md`,
-  never into code.
-- **Goals.** Work runs as goals in `design/goals/`: one long autonomous run with a bound and a single done check. A
-  goal works on `m<n>`, one commit per milestone slice, each ending green with its "done when" check. It loops
-  generate, run, fix until the check passes, then moves on. The milestone reaches `main` by one pull request, merged
-  when CI is green, its gate passes and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
-  parallel. A goal may run in any harness (Claude Code, Codex, OpenCode, Amp) and coordinates only through the repository and
-  GitHub: its brief's "Where it stands", its goal's milestone and `goal-<n>` label, and Snag and Ask issues in that milestone
-  (`design/decisions/K32-goals-coordinate-themselves.md`, `K33-github-native.md`; the `github` skill says how).
-  A slice another goal needs lands early, by a branch cut at the commit that ends it and merged into `goal/stage-1`
-  by a merge commit, so two goals never wait on each other's whole landing (`K38-early-landing.md`).
+- **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). An
+  app goal builds what it needs in its own slice, unless a running goal has claimed it or its paths (K42); a milestone
+  is done when its gate passes on `main`. The running goals and the collision rule are in `design/goals/map.md`. Ideas
+  for later go in `design/later.md`, never into code.
+- **Goals.** A goal is one long-running agent, today a thread that manages other threads, later a superagent (K42).
+  The framework goal (Goal 18) always runs: it ranks what can run now, starts it and keeps the board. The lander (Goal
+  19) always runs: it brings each app goal's green slices into `main`. An app goal (the superagent, Goal 17, first;
+  then Capxul, Goal 16) builds one app and its share of the framework pieces the apps need, and dogfoods the framework. A goal exists while its
+  agent runs. Its brief in `design/goals/` has one done check; it works one commit per slice, each ending green with
+  its "done when" check. It loops generate, run, fix until the check passes, then moves on. Its work reaches `main` by
+  pull requests, merged when CI is green and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
+  parallel. A goal may run in any harness (Claude Code, Codex, OpenCode, Amp) and coordinates through the repository and
+  GitHub: its brief's "Where it stands", its claims on the board, and Snag issues (K42;
+  `design/decisions/K33-github-native.md`; the `github` skill says how).
+  A slice lands early, by a branch cut at the commit that ends it and merged into `main` (into `goal/stage-1` until
+  the lander retires it) by a merge commit, which is how the lander brings app work into `main` (K42, section 8;
+  `K38-early-landing.md`).
 - **Spikes** answer one question in throwaway code under `spikes/<name>/`, on a `spike/<name>` branch. Each ends with
   a README (question, tried, found, the decision it supports, open risks) and is merged into `main` for the record.
   Spike code is never imported by packages.

@@ -2,7 +2,7 @@
 goal: 17
 title: the superagent, an always-on agent for any job, built on Orthograph
 milestone: "Goal 17: the superagent"
-release: null          # off the 1.0 path: it tests the framework from outside
+release: beta           # K42: the beta is every framework piece the superagent proves
 branch: goal/superagent
 base: goal/stage-1
 status: ready          # ready | running | landing | done | parked
@@ -35,12 +35,21 @@ slices:
 ---
 # Goal 17: the superagent
 
+> **An app goal under K42, and the first** (23 November 2026, `design/decisions/K42-goals-are-agents.md`). It goes
+> before Capxul, because once it works its coding agent helps build Capxul. It takes most framework pieces the two
+> apps share (K42, section 3); a fix is claimed on the board first. The lander (Goal 19) brings its green slices into
+> `main`, and this goal merges `main` in at each slice start, never rebasing; its base moves to `main` with the
+> lander's slice 1. Goal 18, the framework goal, does what the conductor did here. The beta is every framework piece
+> this goal proves, extracted and published. Its lead adds a slice 15, the launch: real sign-in, teams, a live deploy
+> with a public address for webhooks, and a sandbox and a model endpoint off Aaron's Mac. Where this brief and K42
+> disagree, K42 wins.
+
 Branch `goal/superagent`, cut from `goal/stage-1`: an integration branch, where the app and the framework fixes it
 needs are built together and handed back whole. Written 22 November 2026 by a 📐 designer thread with Aaron, from
 DeepSeek's `dsh-superagent-prototype` (its `README.md` and `docs/000` to `008`), Pi Durable 1.5.0, the calls in
 [`K39-superagent.md`](../decisions/K39-superagent.md) and the framework fixes in
-[`K40-superagent-gaps.md`](../decisions/K40-superagent-gaps.md). Milestone `Goal 17: the superagent`, no release
-label: it is off the 1.0 path.
+[`K40-superagent-gaps.md`](../decisions/K40-superagent-gaps.md). Milestone `Goal 17: the superagent`, label
+`release:beta` (K42: the beta is every framework piece this goal proves).
 
 **To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 17. Read `AGENTS.md` and
 `design/goals/17-superagent.md`, and run it." Nothing else is needed.
@@ -562,7 +571,7 @@ the conductor merges each fix back.
 ## What it owns, and the seams it touches
 
 It owns the paths in the front matter. On its integration branch it also changes the framework where the gaps above
-need it, to K40's design or slice 2's (K39 call 6, an exception to the map's rule 1): every such change is listed in
+need it, to K40's design or slice 2's (K39 call 6, now every app goal's rule (K42)): every such change is listed in
 the slice's pull request, the owner hears through an Ask issue, and the conductor merges it back. It reads Goal 9's
 `Timers` for every wait and never changes it.
 
@@ -583,9 +592,10 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
   edits them.
 - **Merging.** Draft first, test locally, a 🔍 pass from a reviewer that wrote none of it, then ready; merge when CI is
   green and every thread is resolved. At most two ready pull requests in CI at once.
-- **Asks.** A framework fix made here is announced to its owner as an Ask issue in the owner's milestone (K32, K33),
-  before its slice merges.
-- **On GitHub.** Every issue and pull request carries the milestone `Goal 17: the superagent` and the label `goal-17`;
+- **Claims.** Since K42 this is an app goal like Capxul's. A framework fix made here is claimed on the board first
+  (`lane:goal-17` and a "Touches" line, K42, section 3), built here unless a running goal has it or its paths, and
+  landed in `main` as soon as it is green. An Ask issue is only for overlapping claims.
+- **On GitHub.** Every issue and pull request carries the milestone `Goal 17: the superagent` and the labels `goal-17` and `release:beta`;
   every comment an agent posts starts `[goal-17 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" at every slice
   merge. Decisions this goal makes are named `GOAL17-<slug>`.

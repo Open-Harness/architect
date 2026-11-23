@@ -36,6 +36,11 @@ slices:
 ---
 # Goal 6: the new portal, on our own components and the app's map
 
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
+
 Branch `goal/portal`, cut from `goal/stage-1`. Written 21 November 2026 with K31, on terms agreed with the conductor the same day.
 
 **To start it, in any harness** (Claude Code, Amp, Codex, OpenCode): "You lead Goal 6. Read `AGENTS.md` and

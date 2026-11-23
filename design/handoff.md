@@ -16,7 +16,7 @@ for the same picture in a page; this file keeps the standing directions, the lin
 listed under "Every open line", and Gate M1 (M1.15) is not run yet. Plugged In's seven journeys run green in CI, in
 local and in test (`e2e-stage1`, a required check), and the climb is green: 331 of 331 cell-and-subject pairs. Goal 4 (on-chain)
 has started on `goal/on-chain`. K28 (21 November) cut three releases: the preview (Gate M1 on `main` plus npm under
-`next`, slice M1.51), the beta (stage 1: Gate M2 plus the staging run) and 1.0 (stages 2 to 4). K29 (`design/decisions/K29-*.md`, PR #272) decides the UI layer, under Aaron's standing authority of 21 November; Goal 5 builds from it.
+`next`, slice M1.51), the beta (the framework the superagent proves, K42) and 1.0 (Capxul core, K42). K29 (`design/decisions/K29-*.md`, PR #272) decides the UI layer, under Aaron's standing authority of 21 November; Goal 5 builds from it.
 
 **Renamed by K15** (19 November 2026, Aaron): the example app is **Plugged In** (`plugged-in`), no longer `links`. Rows below that say `links` predate it;
 `milestones.md` is renamed in place ([`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md)).
@@ -47,9 +47,11 @@ thread's branch, its PR, its PR comments. To steer a thread, comment on its PR, 
 
 ### The goal
 
-**Workable at the end of M2:** plugins mounted and proved, auth and organizations as plugins, the new principals,
-secrets by declaration ([`milestones.md`](milestones.md)). That is the beta (K28), the end of stage 1. Then Aaron builds
-Capxul's plugins on it. Everything below is judged by whether it gets us there sooner and truer.
+**The framework, built by the apps that dogfood it (K42):** the superagent goes first, then Capxul core. Each pulls the
+framework pieces it needs, the lander brings them into `main`, and the releases are cut from there: the beta is what the
+superagent proved, 1.0 what Capxul core proved. Under K28 this was workable at the end of M2 (plugins mounted and
+proved, auth and organizations as plugins, the new principals, secrets by declaration). Everything below is judged by
+whether it gets us there sooner and truer.
 
 ### The direction (Aaron, 17 and 18 November)
 
@@ -148,8 +150,9 @@ plugins and extensions; most won't stick, the kept ones are refactored, and prod
 
 ### Next on the critical path
 
-The beta (K28) is the critical path. On `goal/stage-1`, the order is the goal file's "Where it stands": land the open pull requests and the builders for the merged checks; when M1's slices are green, the preview merge (one pull request from `goal/stage-1` to `main`, Gate M1 passing on it), then M1.51 and Aaron's npm publish. Then M2.03 to M2.08, `npm create orthograph` (M2.09), Gate M2 (M2.12) and the staging run. Beside it, Goal 4
-runs stage 2 and 3 work, and Goal 5 builds the UI layer from K29.
+The superagent's next slice is the critical path (K42). Goal 3 lands #683 and #690 and stops; the lander's slice 1
+lands `goal/stage-1` in `main` and retires it; M1.51's publish stays Aaron's. The M2 slices wait until an app pulls
+them (K42, sections 6 and 7).
 
 ### Open questions carried by threads
 
@@ -204,13 +207,15 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 | K39 | the superagent, built as Orthograph plugins (Goal 17) | `main`, by the 📐 superagent designer thread |
 | K40 | what a superagent needs that Orthograph lacks: outside accounts as things, versions, agents as things, the sandbox over pi-env, catching up, lent tokens | `main`, by the 📐 superagent gaps thread |
 | K41 | the canon map applied: eight clashes settled; the frame, the old docs page, the walkthrough and the sign-up sheet retired; scope, the package map and the model draft merged into the canon | `main`, by the conductor's canon-map session |
+| K42 | a goal is a long-running agent; the framework goal (18) and the lander (19) always run; the apps dogfood the framework, the superagent first; the releases are the framework's | decided with Aaron, 23 November (#694) |
+| K43 | Capxul core: free software in ERPNext's shapes; verification, bank accounts and incorporation are paid | decided with Aaron, 23 November (#694) |
 
 **Also taken, off `main`:** K24 (UI SDK is the base, #217), K25 (the blueprint on chain), K26 (on-chain pulled forward), K27 (five plugin kinds), K29
 (the UI layer, #272), K30 (where the core ends, the repositories, declaring what you know, #185), G12 (a slice that changes acme's wire lands as a pair, #263),
 G9 to G11 (`goal/stage-1`), `M2-auth` (#263, #267), `M6-chain` (#275, #276, #279), `M7-03-infra-projection` (#282). `ST1-25-flakes` is a
 decision file; K29's ST1.25 is a slice id, and the two are unrelated.
 
-**Next free:** D5, E2, F10, G13, H3, K42, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
+**Next free:** D5, E2, F10, G13, H3, K44, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
 before this list existed. `CI-<slug>`, `M<n>-<slug>`, `ST<n>-<slug>` and `Gate<n>` are named by their slug or
 milestone, not numbered; a goal records its own in its brief, not here (K32), and `GOAL<n>-<slug>` names a call that
 belongs to one goal and no milestone.

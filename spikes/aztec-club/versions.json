@@ -1,0 +1,14 @@
+{
+  "checkedOn": "2026-11-22",
+  "rule": "every version published at least three days before it was added; exact pins; the same stack as spikes/chain-languages/aztec and spikes/noir-private-core",
+  "aztec": { "packages": "5.3.0 (every direct @aztec/* dependency, see client/package-lock.json)", "published": "2026-10-26", "npmLatestOn": "2026-11-22", "sourceTag": "v5.3.0" },
+  "aztec-nr": "v5.3.0 (path dependency inside the sparse aztec-packages checkout in tools/)",
+  "nargo": { "version": "1.0.0-beta.25", "published": "2026-07-22" },
+  "bb": "5.3.0, the native binary shipped in @aztec/bb.js; compile caches verification keys in ~/.bb/5.3.0",
+  "node": { "version": "24.12.0", "published": "2025-12-10" },
+  "foundry": { "version": "1.4.1 (anvil, the world's L1)", "published": "2025-10-14" },
+  "typescript": "7.0.2",
+  "tsx": "4.23.15",
+  "host": "Darwin arm64, 10 logical CPUs, shared with nine other goals; load average 60 to 70 during run 2",
+  "upgraded": "nothing"
+}
