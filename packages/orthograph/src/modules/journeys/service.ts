@@ -1,7 +1,12 @@
 import type { Assertion, Call, ChecksApi, ClockCall, JourneysApi, Script, Scripts } from "./types.ts";
 import { isRef, pathOf, refTo, resolve } from "./internal/refs.ts";
 
+/** The script's own words: a cast member named one would be hidden by it, so the script refuses (the compiler says so first, naming the file). */
+const SCRIPT_WORDS = ["clock", "world", "last", "step"];
+
 const script = <C extends Record<string, unknown>>(cast: C): Script<any> => {
+  const clash = Object.keys(cast).find((name) => SCRIPT_WORDS.includes(name));
+  if (clash !== undefined) throw new globalThis.Error(`cast member \`${clash}\` takes a name the script already uses; rename it`);
   const actors = Object.fromEntries(
     Object.keys(cast).map((name) => [
       name,

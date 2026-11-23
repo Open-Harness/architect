@@ -31,10 +31,19 @@ export const stepBlanks = (step: { readonly call: Call | ClockCall; readonly che
     : c.kind === "emits" || c.kind === "refuses" ? blanksIn(c.fields) : c.kind === "is-in" ? blanksIn(c.id) : c.kind === "expect-equal" ? blanksIn(c.value) : [])),
 ];
 
+/** The script's own words, which a cast member may not take: `s.clock`, `s.world`, `s.last` and `s.step` are the script's. */
+const SCRIPT_WORDS: Readonly<Record<string, string>> = { clock: "the world's clock", world: "what the starting world gave", last: "the last answer", step: "its steps" };
+
+/** The cast members whose names the script already uses, each refused with a plain message naming where it is cast. */
+export const castClashes = (cast: Readonly<Record<string, unknown>>, file: string, who: string): ReadonlyArray<string> =>
+  Object.keys(cast).filter((name) => Object.hasOwn(SCRIPT_WORDS, name)).map((name) =>
+    `${file}: ${who} casts a member \`${name}\`, which takes a name the script already uses for ${SCRIPT_WORDS[name]}; rename it`);
+
 export const storiesOf = (
   layout: Layout,
   operations: Readonly<Record<string, OperationModel>>,
   allowed: (rule: Allowed, file: string) => AllowedModel,
+  problems: Array<string> = [],
 ) => {
   const names = new Map([...layout.things.values()].flatMap((t) => [...t.verbs].map(([verb, v]) => [v.declaration, `${t.name}.${verb}`] as const)));
   const things = new Map([...layout.things.values()].map((t) => [t.thing, t.name]));
@@ -89,7 +98,10 @@ export const storiesOf = (
   const blanks: Record<string, Array<string>> = {};
   for (const [file, { declaration: j, sourceHash }] of [...layout.journeys].sort(([a], [b]) => a.localeCompare(b))) {
     const cast = castOf(j.cast, file);
-    const declared = j.steps(Scripting.script(j.cast));
+    // A clash would let the script's own `s.clock` hide a cast member silently, so the journey is refused and its steps not read.
+    const clashes = castClashes(j.cast, file, `the journey "${j.name}"`);
+    problems.push(...clashes);
+    const declared = clashes.length > 0 ? [] : j.steps(Scripting.script(j.cast));
     const found = [...blanksIn(j.starts), ...declared.flatMap(stepBlanks)];
     if (found.length > 0) blanks[file] = found;
     const steps = declared.map((step) => {
@@ -105,6 +117,8 @@ export const storiesOf = (
   const startingWorlds: Record<string, StartingWorldModel> = {};
   for (const [name, { file, declaration: w, sourceHash }] of layout.startingWorlds) {
     const cast = castOf(w.cast, file);
+    const clashes = castClashes(w.cast, file, `the starting world "${name}"`);
+    problems.push(...clashes);
     const members = { ...w.cast };
     const seen = new Set([name]);
     for (let parent = w.from; parent !== undefined && !seen.has(parent);) {
@@ -113,10 +127,11 @@ export const storiesOf = (
       for (const [actor, role] of Object.entries(ancestor?.cast ?? {})) members[actor] ??= role;
       parent = ancestor?.from;
     }
-    const script = Scripting.script(members);
+    // A name an ancestor casts counts too: the script is not made for a cast it would refuse (the ancestor's own clash is a problem of its own).
+    const script = castClashes(members, file, name).length > 0 ? undefined : Scripting.script(members);
     startingWorlds[name] = {
       name, file, from: w.from ?? null, cast, ...(sourceHash ? { sourceHash } : {}),
-      makes: w.makes(script).map((call) => callOf(call) ?? null), gives: data(w.gives(script)),
+      ...(script === undefined ? { makes: [], gives: {} } : { makes: w.makes(script).map((call) => callOf(call) ?? null), gives: data(w.gives(script)) }),
     };
   }
   return { journeys, startingWorlds, journeyBlanks: blanks };

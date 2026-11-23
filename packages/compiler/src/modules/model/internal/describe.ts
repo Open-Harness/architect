@@ -251,7 +251,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   const values = Object.fromEntries([...layout.values].sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => [n, v.meta]));
   const environments = environmentsOf(layout, problems);
   const stores = storesOf(layout, problems);
-  const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel);
+  const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel, problems);
   const allBlanks = { ...blanks, ...journeyBlanks };
   return {
     model: { refusals, values, things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}) },
