@@ -14353,9 +14353,9 @@
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-fIaQjRWbRe6HIdMhpx9mAT4yYyQXFiQKNKdJAd11NEU=",
+      "integrity": "sha256-VM0U55ZlzPGHcIocPR5AOw6AN+LklhxgKRinVfahMX0=",
       "chosen": {},
-      "hash": "046abec4294381e8"
+      "hash": "fa25ea9db0629c24"
     },
     "posthog": {
       "kind": "adapter",

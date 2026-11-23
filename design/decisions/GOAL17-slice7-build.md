@@ -56,6 +56,12 @@ Slice 9, with the outbox doors, must give a call the means to emit them (or `due
 `gate.of` takes the tickets that follow a thread, but `intake` cannot import `tickets` (the reverse is true), so `trigger.receive` passes none. A ticket's `accept` must write what follows a thread where intake can read it;
 that is the follow-up journeys of `22`, with the doors of slices 8 and 9.
 
+### 9. `observedRow` is not changed yet: check 62 pins the old value
+
+GOAL17-stage-one call 8 (and the slice 6 README, point 14) says `observedRow` is `{ listed: "inferred", ... }`. Check `62-the-mappings` (slice 10) pins `OBSERVED = { listed: "explicit", unlisted: "none", unnamed: "none" }` at its line 17,
+for GitHub's and Slack's admission rows, and passed before this slice. I changed it, and two of its tests went red (the repository row, and the Slack channel rows); a builder may not edit a check and the ratchet must exit 0, so I put
+the old value back. The gate does not read this row (it reads the policy's cells, with call 8's defaults), so checks 19 and 23 pass either way. **Asked of 62's author:** change `OBSERVED` to `inferred`, then `observedRow` follows.
+
 ## What still fails, and what stays blank
 
 - `22-stage-one-doors` stays on the ratchet: prove cannot load a journey that imports `@orthograph/stand-in-model` or `outbox` until slices 8 and 9 build the harness surface (`s.runner`, `settle`, `outbox.rows`, `models.script`, the `actor:` cast form).

@@ -14357,9 +14357,9 @@
         "file": "blueprint/features/intake.ts",
         "package": "@orthograph/intake",
         "version": "0.0.0",
-        "integrity": "sha256-fIaQjRWbRe6HIdMhpx9mAT4yYyQXFiQKNKdJAd11NEU=",
+        "integrity": "sha256-VM0U55ZlzPGHcIocPR5AOw6AN+LklhxgKRinVfahMX0=",
         "chosen": {},
-        "hash": "046abec4294381e8"
+        "hash": "fa25ea9db0629c24"
       },
       "posthog": {
         "kind": "adapter",
@@ -14972,5 +14972,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "971c3306aa2b630dca678ce5995b4bf7dd71bd855d87ac1bbb84c3c0d5c3deea"
+  "digest": "cad6f982a15754c10942e54a21795c558e2ad344f147f1e55a1d6a8f291089a4"
 }
