@@ -2,7 +2,8 @@
 // (real, stepped or scaled) decides when each timer is due. Two services, one table (M8-timers-shape):
 // `Timers` waits inside a fiber; `DurableTimers` sets a timer that outlives the fiber and the process, and the world
 // hands it back through the host's `TimerWakes` when it falls due.
-import { Context, type Duration, type Effect, type Option } from "effect";
+import { Context, Effect as Fx, type Duration, type Effect, type Option } from "effect";
+import { Busy } from "#modules/work/types.js";
 
 export interface Timer {
   readonly id: number;
@@ -25,7 +26,25 @@ export class Timers extends Context.Service<Timers, {
   /** The world's driver only: fire every timer due at exactly `at`, in order (set first, then owner); returns what fired. */
   readonly fire: (at: number) => Effect.Effect<ReadonlyArray<Timer>>;
   readonly pending: Effect.Effect<ReadonlyArray<Timer>>;
-}>()("@orthograph/language-effect/Timers") {}
+}>()("@orthograph/language-effect/Timers") {
+  /**
+   * `Effect.all`, for work that sleeps in parallel with other work: the parent only waits, so it is not counted while it does, and the world can fire the sleeper
+   * once the working branches are done. A plain `Effect.all` stays counted, with its children, until every one is done (a move meanwhile
+   * fails `NeverQuiet`, naming the request).
+   */
+  static readonly all = <A, E, R>(effects: ReadonlyArray<Effect.Effect<A, E, R>>, options?: { readonly concurrency?: number | "unbounded" | undefined }): Effect.Effect<ReadonlyArray<A>, E, R | Busy> =>
+    Fx.flatMap(Fx.service(Busy), (busy) => {
+      // Only a call that really forks joins. With the default concurrency the effects run one after another in the calling fiber, which is doing
+      // the work itself: marking it joining would leave real I/O uncounted.
+      const concurrency = options?.concurrency;
+      // Effect runs 0 and negative concurrency, and 1, one after another: only "unbounded" and a number above one fork.
+      const forks = effects.length > 1 && (concurrency === "unbounded" || (typeof concurrency === "number" && concurrency > 1));
+      return forks ? busy.joining(Fx.all(effects, options)) : Fx.all(effects, options);
+    });
+  /** `Effect.raceFirst`, as a join. */
+  static readonly raceFirst = <A, E, R, A2, E2, R2>(a: Effect.Effect<A, E, R>, b: Effect.Effect<A2, E2, R2>): Effect.Effect<A | A2, E | E2, R | R2 | Busy> =>
+    Fx.flatMap(Fx.service(Busy), (busy) => busy.joining(Fx.raceFirst(a, b)));
+}
 
 /** JSON, as the world's table stores it. */
 export type Json = null | boolean | number | string | ReadonlyArray<Json> | { readonly [key: string]: Json };

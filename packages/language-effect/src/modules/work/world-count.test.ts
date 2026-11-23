@@ -98,16 +98,16 @@ describe("BusyReporting: one token per box", () => {
     }), world.layer);
   });
 
-  it("a box that holds an id the world no longer knows (a reset since) takes a fresh token", async () => {
+  it("a box that holds an id the world no longer knows (a reset since) is stale: not counted in the new run", async () => {
     const entry = makeBox("entry:/probe/spin", { id: "0.100", pinned: true });
     const world = makeWorld({ request: entry });
     await run(Effect.gen(function* () {
       const busy = yield* Busy;
       world.reset();
       expect(world.held()).toEqual([]);
-      yield* busy.as("probe.spin").counted(Effect.sync(() => expect(world.held()).toEqual(["probe.spin"])));
-      expect(entry.id).not.toBe("0.100");
-      expect(world.held()).toEqual(["probe.spin"]);
+      yield* busy.as("probe.spin").counted(Effect.sync(() => expect(world.held()).toEqual([])));
+      expect([entry.id, entry.stale]).toEqual([undefined, true]);
+      expect(world.held()).toEqual([]);
     }), world.layer);
   });
 
