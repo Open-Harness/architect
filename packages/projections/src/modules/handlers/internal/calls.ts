@@ -38,8 +38,10 @@ export const wired = (model: Model, op: OperationModel): string => {
 export const handlerTypeAt = (op: OperationModel) => `generated/server/handlers/${op.thing}/${op.verb}.ts`;
 
 /** The handler's type for an operation that calls an adapter: each call step typed by the callable it runs. */
-export const renderHandlerTypes = (model: Model): ReadonlyArray<RenderedFile> =>
-  Object.values(model.operations).flatMap((op) => {
+export const renderHandlerTypes = (model: Model): ReadonlyArray<RenderedFile> => {
+  // Some environment's clock is stepped or scaled (K23): the runtime then provides `Timers` to handlers.
+  const timed = Object.values(model.environments ?? {}).some((e) => e.clock !== undefined && e.clock.kind !== "real");
+  return Object.values(model.operations).flatMap((op) => {
     const steps = callSteps(op);
     if (op.kind !== "operation" || steps.length === 0) return [];
     const path = handlerTypeAt(op);
@@ -50,11 +52,12 @@ export const renderHandlerTypes = (model: Model): ReadonlyArray<RenderedFile> =>
         GENERATED,
         "// What the handler is given: its payload, and its steps, each call typed by the callable it runs.",
         `import type { SqlClient } from "effect/sql";`,
-        `import type { Auth, Handler as Of, Records } from "${Names.pkg("language-effect")}";`,
+        `import type { Auth, Handler as Of, Records${timed ? ", Timers" : ""} } from "${Names.pkg("language-effect")}";`,
         `import type declaration from "${declarationAt(path, op.file)}";`,
         steps.map((s) => `import type ${camel(s.key)}Call from "${callable(model, s.mount, s.call)}";`),
         "",
-        `export type Handler<R = Records | SqlClient.SqlClient | Auth> = Of<typeof declaration, R, { ${steps.map((s) => `${s.key}: typeof ${camel(s.key)}Call`).join(", ")} }>;`,
+        `export type Handler<R = Records | SqlClient.SqlClient | Auth${timed ? " | Timers" : ""}> = Of<typeof declaration, R, { ${steps.map((s) => `${s.key}: typeof ${camel(s.key)}Call`).join(", ")} }>;`,
       ),
     }];
   });
+};

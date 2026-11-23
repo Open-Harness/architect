@@ -1,0 +1,38 @@
+{
+  "name": "@orthograph/shell",
+  "version": "0.0.0",
+  "description": "The app's shell: a router over the generated route table, the layouts and their slots, the navigation, the breadcrumb and the palette, on UI SDK.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@ui-sdk/core": "0.1.0-beta.10",
+    "@ui-sdk/react": "0.1.0-beta.10"
+  },
+  "peerDependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
+    }
+  }
+}

@@ -3,7 +3,7 @@
 `ortho promote --to staging|production` (D3 #14, #90 to #96). `Promote.to({ root, env, target, say })` moves the exact
 bundle `ortho build` kept for the revision (the git commit) to an environment, and never rebuilds it.
 
-- **Refusals come first,** and nothing is started for one: a dirty working tree, a revision with no built bundle or one whose
+- **Refusals come first,** and nothing is started for one: a stored runtime secret with no value in the target (M2.04, named one line each, `Secrets.missing`), a dirty working tree, a revision with no built bundle or one whose
   file no longer matches its recorded hash, and a revision without the verdicts. Staging needs a passing `test` verdict for
   every operation, production a passing verdict in the environment it `promotesFrom` (staging) for every operation, each
   the newest one posted from `main` (`Verdicts.latest`): a pull request's verdict never opens a gate. A refusal is

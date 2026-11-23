@@ -1,12 +1,15 @@
 // orthograph: the declaration language projects import. `import { Blueprint } from "orthograph"`.
+import { Apps } from "#modules/app/service.js";
 import { Blanks } from "#modules/blanks/service.js";
 import { Cloud } from "#modules/cloud/service.js";
+import { Assets } from "#modules/assets/service.js";
+import { Chain } from "#modules/chains/service.js";
 import { Auth, Configs } from "#modules/config/service.js";
 import { Telemetry } from "#modules/telemetry/service.js";
 import { Deploy } from "#modules/deploy/service.js";
 import { Environments } from "#modules/environments/service.js";
 import { Identity } from "#modules/identity/service.js";
-import { Secrets } from "#modules/secrets/service.js";
+import { Secret, Secrets } from "#modules/secrets/service.js";
 import { Errors } from "#modules/errors/service.js";
 import { Events } from "#modules/events/service.js";
 import { Checks, Journeys } from "#modules/journeys/service.js";
@@ -24,6 +27,7 @@ import { Visibilities } from "#modules/visibility/service.js";
 
 export const Blueprint = Object.freeze({
   ...Values,
+  ...Assets,
   ...Visibilities,
   ...Things,
   ...Stores,
@@ -36,6 +40,7 @@ export const Blueprint = Object.freeze({
   ...Journeys,
   ...Environments,
   ...Plugins,
+  ...Apps,
   ...Secrets,
   config: Configs.config,
   time: Times,
@@ -45,11 +50,13 @@ export const Blueprint = Object.freeze({
 });
 
 export { Schema } from "effect";
-export { Auth, Telemetry, Cloud, Deploy, Identity, Stand };
+export { Auth, Telemetry, Cloud, Chain, Deploy, Identity, Stand, Secret };
 export { Via, Host, Door, Ships } from "#modules/plugins/types.js";
 export const { expect, emits, noEvents, refuses, spans, lacks, has } = Checks;
 export { NotAllowed } from "#modules/errors/types.js";
-export type { Value, ValueMeta, TypeOf } from "#modules/values/types.js";
+export type { Value, ValueMeta, AssetRef, MoneyOptions, TypeOf } from "#modules/values/types.js";
+export type { Asset, TokenAsset, CurrencyAsset } from "#modules/assets/types.js";
+export type { ChainNetwork, ChainToken } from "#modules/chains/types.js";
 export type { Visibility, PrivateTo } from "#modules/visibility/types.js";
 export type { Thing, Field, FieldInput, FieldsInput, Lives, StoreKind, NotFound } from "#modules/things/types.js";
 export type { Store } from "#modules/stores/types.js";
@@ -61,11 +68,12 @@ export { acting } from "#modules/roles/types.js";
 export { admitsAgent } from "#modules/roles/service.js";
 export type { Role, RoleOf, ServiceRole, SignedIn, System, Narrowed, Allowed, Principal, Acting, Way, InstanceOf } from "#modules/roles/types.js";
 export type { Operation, Read, ReadAnswer, Order, Page, ListPayload, ListItem, Steps, OperationSpec, Step, CallStep, StepKind, Runs, TestKind, Budget, PayloadOf, AnswerOf, ErrorOf, StepsOf } from "#modules/operations/types.js";
+export type { App, AppPage, AppComponent, AppLayout, NavGroup, NavGroupSpec, AppSpec, PageSpec, ComponentSpec, Route, RouteParam, LayoutName } from "#modules/app/types.js";
 export type { Blank } from "#modules/blanks/types.js";
 export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, ToolsCall, AnyCall, Ref, Refusal, ClockCall } from "#modules/journeys/types.js";
 export type { Environment, EnvironmentSpec } from "#modules/environments/types.js";
 export type { Span, TimeBy, OnCalendar, Weekday, Clock } from "#modules/time/types.js";
-export type { Secret } from "#modules/secrets/types.js";
+export type { SecretDeclaration, SecretKind, SecretNotHanded, Made, Given, GeneratedOptions, StoredOptions } from "#modules/secrets/types.js";
 export type { Identity as IdentityKind } from "#modules/identity/types.js";
 export type { CloudProvider, Database } from "#modules/cloud/types.js";
 export type { Deployment, Publication } from "#modules/deploy/types.js";

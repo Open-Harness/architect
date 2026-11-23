@@ -1,0 +1,266 @@
+{
+  "generated": "Generated from blueprint/. Append-only. Do not edit.",
+  "lockVersion": 1,
+  "refusals": {
+    "AR-001": {
+      "name": "NotAllowed",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotAllowed"
+        }
+      },
+      "earlier": []
+    },
+    "AR-002": {
+      "name": "IdempotencyConflict",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "IdempotencyConflict"
+        }
+      },
+      "earlier": []
+    },
+    "CO-001": {
+      "name": "CompanyNameTaken",
+      "owner": "company",
+      "from": "blueprint/things/company/errors.ts",
+      "fields": {
+        "companyName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CO-002": {
+      "name": "CompanyAbbrTaken",
+      "owner": "company",
+      "from": "blueprint/things/company/errors.ts",
+      "fields": {
+        "abbr": {
+          "value": "text",
+          "max": 10
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyAbbrTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CO-900": {
+      "name": "CompanyNotActive",
+      "owner": "company",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "DE-001": {
+      "name": "DepartmentNameTaken",
+      "owner": "department",
+      "from": "blueprint/things/department/errors.ts",
+      "fields": {
+        "departmentName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "DepartmentNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "DE-900": {
+      "name": "DepartmentNotActive",
+      "owner": "department",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "DepartmentNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "DE-901": {
+      "name": "DepartmentNotFound",
+      "owner": "department",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "dep"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "DepartmentNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "DS-001": {
+      "name": "DesignationNameTaken",
+      "owner": "designation",
+      "from": "blueprint/things/designation/errors.ts",
+      "fields": {
+        "designationName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "DesignationNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "DS-900": {
+      "name": "DesignationNotActive",
+      "owner": "designation",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "DesignationNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "DS-901": {
+      "name": "DesignationNotFound",
+      "owner": "designation",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "dsg"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "DesignationNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "EM-001": {
+      "name": "EmployeeAlreadyHired",
+      "owner": "employee",
+      "from": "blueprint/things/employee/errors.ts",
+      "fields": {
+        "person": {
+          "value": "id",
+          "prefix": "per"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeAlreadyHired"
+        }
+      },
+      "earlier": []
+    },
+    "EM-002": {
+      "name": "DepartmentNotInCompany",
+      "owner": "employee",
+      "from": "blueprint/things/employee/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "DepartmentNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "EM-003": {
+      "name": "DesignationNotInCompany",
+      "owner": "employee",
+      "from": "blueprint/things/employee/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "DesignationNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "EM-004": {
+      "name": "JoinedBeforeBorn",
+      "owner": "employee",
+      "from": "blueprint/things/employee/errors.ts",
+      "fields": {
+        "dateOfBirth": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JoinedBeforeBorn"
+        }
+      },
+      "earlier": []
+    },
+    "EM-005": {
+      "name": "RelievedBeforeJoined",
+      "owner": "employee",
+      "from": "blueprint/things/employee/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RelievedBeforeJoined"
+        }
+      },
+      "earlier": []
+    },
+    "EM-900": {
+      "name": "EmployeeNotActive",
+      "owner": "employee",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeNotActive"
+        }
+      },
+      "earlier": []
+    }
+  },
+  "retired": {}
+}

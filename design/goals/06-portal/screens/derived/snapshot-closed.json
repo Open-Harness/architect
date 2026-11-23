@@ -1,0 +1,55 @@
+[
+  {
+    "ref": "c1",
+    "component": "collapsible",
+    "actions": [
+      "setOpen",
+      "press"
+    ],
+    "label": "Things",
+    "open": true,
+    "buttons": [
+      "Things"
+    ]
+  },
+  {
+    "ref": "c2",
+    "component": "navigation-menu",
+    "actions": [
+      "setValue",
+      "close"
+    ],
+    "label": "Main",
+    "value": null,
+    "items": [
+      {
+        "value": "handle",
+        "label": "handle"
+      },
+      {
+        "value": "link",
+        "label": "link"
+      },
+      {
+        "value": "profile",
+        "label": "profile"
+      }
+    ]
+  },
+  {
+    "ref": "c3",
+    "component": "scroll-area",
+    "actions": [],
+    "label": "Navigation"
+  },
+  {
+    "ref": "c4",
+    "component": "dialog",
+    "actions": [
+      "setOpen",
+      "press"
+    ],
+    "label": "Command palette⌘K",
+    "open": false
+  }
+]
