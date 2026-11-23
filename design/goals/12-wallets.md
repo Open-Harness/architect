@@ -5,11 +5,11 @@ milestone: "Goal 12: wallets"
 release: "1.0"
 branch: goal/wallets
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-22    # the date it started
 done_check: nx run e2e:stage2
 owns:
   - packages/adapters-abi/
@@ -26,10 +26,15 @@ slices:
 ---
 # Goal 12: wallets, stage 2 of Plugged In
 
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
+
 Branch `goal/wallets`, cut from `goal/stage-1`. Written 21 November 2026 by the 🎼 conductor, from the goal map
 (`design/goals/map.md`, K34) and K35. Milestone `Goal 12: wallets`, label `release:1.0` (K33).
 
-**To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 12. Read `AGENTS.md` and
+**To start it, in any harness** (Claude Code, Codex, OpenCode, Amp): "You lead Goal 12. Read `AGENTS.md` and
 `design/goals/12-wallets.md`, and run it." Nothing else is needed.
 
 ## The goal, in plain words
@@ -85,10 +90,10 @@ The rules every goal shares, so this brief stays short. Where they and this file
 - **Merging.** Open pull requests as drafts, test locally, get a 🔍 pass from a reviewer that wrote none of it (the
   `reviewer` skill), then mark ready; merge when CI is green and every thread is resolved. At most two ready pull
   requests in CI at once.
-- **Its needs.** A slice builds once what it needs has landed (K34, `design/goals/map.md`). A slice that needs another
-  goal's work writes its checks first and waits for the build; it never builds a stand-in for the other goal.
-- **Asks.** Anything outside "What it owns" is an Ask issue in the owning goal's milestone, naming this goal and what
-  done looks like (K32, K33). Read this goal's own open issues at every slice start.
+- **Its needs.** Under K42: a gap this goal finds goes by K42's collision rule (section 3), and a
+  slice another goal needs lands early into `main` (K38, K42).
+- **Asks.** Under K42, an Ask issue is only for two goals' claims that overlap (K42, section 3, case 2). Read this
+  goal's own open issues at every slice start.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 12: wallets` and the label `release:1.0`;
   every comment an agent posts starts `[goal-12 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" in the pull
@@ -97,4 +102,18 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+**Parked 22 November 2026**, by the conductor's word ("Narrow to the path", Aaron): Goal 12 is off the Beta path. It
+resumes by the conductor's word.
+
+- **Landed:** `goal/stage-1` merged in, and the goal started (#463).
+- **Open:** ST2.02's checks, draft #497: the decision `design/decisions/ST2-abi-adapters.md` (an ABI adapter's
+  generator writes explicit TypeScript types; reads and simulated-first writes through `chain-evm`; `@orthograph/erc20`
+  is its own package; conformance is the ABI against the deployed stand-in) and the author's first commit, stubs and
+  red checks. The author's six proofs, the hostile pass and the `e2e:stage2` target are not done.
+- **Asks out, left open:** #471 (Goal 4: an ABI codec and `ChainPort.read` in `chain-evm`, which ST2.02's runtime
+  needs, since lint keeps viem there), #474 (Goal 3: `ortho new adapter --from-abi`), #475 (Goal 4: M6.02, M6.09,
+  M6.15 early), #476 (Goal 5: ST1.25 early), #477 (Goal 11: M5.03 early), #478 (Goal 3: M2.13, and a yes before ST2.05).
+- **Asked of Goal 12:** #485 (Goal 16: land ST2.02 early), answered "parked".
+- **Next, on resuming:** merge `goal/stage-1` in; finish #497's proofs and its 🔍 pass; build ST2.02's generator,
+  token and conformance, and its runtime once #471 lands; land it early (K38) for Goals 13 and 16. ST2.01 waits on
+  M6.02 reaching `goal/stage-1`: its journeys need the chain matchers (`receipts`) that are only on `goal/on-chain`.

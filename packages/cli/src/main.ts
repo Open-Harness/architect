@@ -9,6 +9,7 @@ import { dirname, join, relative } from "node:path";
 import { Build, Environments, Prove, ProveFailed, Promote, TestWorlds, Verdicts } from "@orthograph/prove";
 import { ModelCommand } from "#modules/model/service.js";
 import { Add } from "#modules/add/service.js";
+import { SecretsCommand } from "#modules/secrets/service.js";
 import { Mounting } from "#modules/mounting/service.js";
 import type { Kind } from "#modules/mounting/types.js";
 import { AddRefused, type What } from "#modules/add/types.js";
@@ -139,6 +140,23 @@ const promote = Command.make(
       }),
     ),
 );
+
+// `ortho secrets [--env]` lists the declared secrets, names and state only; `ortho secrets set <NAME>` reads the value from stdin and nowhere else (M2.04).
+const secretsEnv = Flag.String("env").pipe(Flag.withDefault("local"));
+const secretsRoot = Flag.String("root").pipe(Flag.withDefault(process.cwd()));
+const secretsSet = Command.make(
+  "set",
+  { name: Argument.String("name"), env: secretsEnv, root: secretsRoot },
+  ({ name, env, root }) =>
+    (process.stdin.isTTY ? Effect.succeed({ out: "", err: `a value is read from stdin, never typed here or put on the command line: printf %s "$VALUE" | ortho secrets set ${name}\n`, exit: 2 })
+      : Effect.sync(() => readFileSync(0, "utf8")).pipe(Effect.flatMap((stdin) => SecretsCommand.set({ root, env, name, stdin })))
+    ).pipe(Effect.flatMap(print)),
+);
+const secrets = Command.make(
+  "secrets",
+  { env: secretsEnv, root: secretsRoot },
+  ({ env, root }) => SecretsCommand.list({ root, env }).pipe(Effect.flatMap(print)),
+).pipe(Command.withSubcommands([secretsSet]));
 
 // `ortho add <what> <name>`: writes the planned files, or with --dry-run prints them and writes nothing.
 const addOne = (what: What) =>
@@ -378,9 +396,15 @@ const reap = Command.make(
 );
 const worlds = Command.make("worlds").pipe(Command.withSubcommands([reap]));
 
+// The CLI's own version is the one in its package.json, which sits next to `src/` and next to `dist/`, so one path serves source and the published package.
+const ownVersion: string = (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { readonly version: string }).version;
+
+const onCommandLine = SecretsCommand.refusesValue(process.argv.slice(2));
+if (onCommandLine !== undefined) { process.stderr.write(onCommandLine); process.exit(2); }
+
 Command.make(Names.short).pipe(
-  Command.withSubcommands([model, dev, prove, promote, add, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
-  Command.run({ version: "0.0.0" }),
+  Command.withSubcommands([model, dev, prove, promote, secrets, add, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
+  Command.run({ version: ownVersion }),
   Effect.provide(NodeServices.layer),
   NodeRuntime.runMain,
 );

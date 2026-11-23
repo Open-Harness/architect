@@ -34,6 +34,34 @@ describe("Access", () => {
     expect(Exit.isFailure(await check(allowed, fields, { allowance: "alw_1" }, bob))).toBe(true);
   });
 
+  it("on a read (payload { id }), a path may name the read's own thing first, as on an operation, or start at its field (#761)", async () => {
+    const read = (allowed: ReadonlyArray<unknown>, principal: Principal) =>
+      Effect.runPromiseExit(
+        Access.check({ allowed: allowed as never, payloadFields: { id: Allowance.fields.id }, payload: { id: "alw_1" }, principal, thing: Allowance }).pipe(Effect.provide(records)),
+      ).then(Exit.isSuccess);
+    expect(await read([owner.of("allowance.organization")], ada)).toBe(true);
+    expect(await read([owner.of("allowance.organization")], bob)).toBe(false);
+    expect(await read([owner.of("organization")], ada)).toBe(true);
+    expect(await read([owner.of("organization")], bob)).toBe(false);
+  });
+
+  it("on an operation, a path whose first key is no payload field still admits nobody: only a read by id names its own thing first", async () => {
+    const op = (principal: Principal) =>
+      Effect.runPromiseExit(
+        Access.check({ allowed: [owner.of("budget.organization")] as never, payloadFields: { allowance: Allowance.fields.id }, payload: { allowance: "alw_1" }, principal, thing: Allowance }).pipe(Effect.provide(records)),
+      ).then(Exit.isSuccess);
+    expect(await op(ada)).toBe(false);
+  });
+
+  it("the keeper is allowed only where it is listed, even by an operation open to anyone, and no one else may be the keeper", async () => {
+    const keeper: Principal = { kind: "keeper" };
+    expect(Exit.isSuccess(await check([Blueprint.keeper] as never, {}, {}, keeper))).toBe(true);
+    expect(Exit.isFailure(await check([Blueprint.anyone] as never, {}, {}, keeper))).toBe(true);
+    expect(Exit.isFailure(await check([Blueprint.signedIn] as never, {}, {}, keeper))).toBe(true);
+    expect(Exit.isFailure(await check([Blueprint.keeper] as never, {}, {}, ada))).toBe(true);
+    expect(Exit.isFailure(await check([Blueprint.keeper] as never, {}, {}, { kind: "anonymous" }))).toBe(true);
+  });
+
   it("signedIn refuses the anonymous; anyone allows them", async () => {
     expect(Exit.isFailure(await check([Blueprint.signedIn] as never, {}, {}, { kind: "anonymous" }))).toBe(true);
     expect(Exit.isSuccess(await check([Blueprint.anyone] as never, {}, {}, { kind: "anonymous" }))).toBe(true);

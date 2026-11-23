@@ -35,6 +35,10 @@
 //     for a same-repository pull request; that job builds `portal-ui`; and an `actions/cache` step before its `pnpm install`
 //     is keyed on `hashFiles` of `pnpm-lock.yaml` and covers `node_modules`, the pnpm store or Pro's folder.
 //
+// The `if`s are evaluated for a live run: `needs.ready.outputs.draft` (the `ready` job of CI-drafts-race) reads "false", as it does
+// on a push and on a non-draft pull request; a draft run starts no job but `ready`. Every other name outside the evaluator's
+// list reads as unset, so a guard that leans on one still fails the check.
+//
 // The tripwire fails and never skips: today it names the package, its files, the rule and the job that are missing. The controls
 // pass today and keep passing: the lint mirror reports a plain finding, the dist scanner and the workflow reader are proved on cases.
 import { spawnSync } from "node:child_process";
@@ -267,5 +271,22 @@ describe("15 controls: the instruments", () => {
     expect(runsOn(guarded, contexts.sameRepo)).toBe(true);
     expect(runsOn(guarded, contexts.push), "this guard keeps the job off pushes").toBe(false);
     expect(() => evaluate("contains(github.ref, 'x')", contexts.fork)).toThrow();
+  });
+
+  it("the ready guard reads as a live run, and the fork rule must still sit above the token", () => {
+    const ready = "    needs: ready\n    if: needs.ready.outputs.draft == 'false'\n";
+    const wf = (jobExtra: string, stepExtra: string) => `on: [push, pull_request]\njobs:\n  pro:\n${jobExtra}    runs-on: ubuntu-latest\n    steps:\n      - run: pnpm install\n${stepExtra}        env:\n          HEROUI_AUTH_TOKEN: \${{ secrets.HEROUI_AUTH_TOKEN }}\n`;
+    const forkRule = "        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository\n";
+    const withFork = read(wf(ready, forkRule));
+    expect(unsafe(withFork)).toEqual([]);
+    const reference = withFork.references[0]!;
+    expect(runsOn(reference, contexts.push)).toBe(true);
+    expect(runsOn(reference, contexts.sameRepo)).toBe(true);
+    expect(runsOn(reference, contexts.fork)).toBe(false);
+    const readyOnly = read(wf(ready, ""));
+    expect(unsafe(readyOnly), "the ready guard alone does not keep a fork off the token").toHaveLength(1);
+    expect(runsOn(readyOnly.references[0]!, contexts.fork)).toBe(true);
+    expect(evaluate("needs.ready.outputs.draft == 'true'", contexts.push), "a draft reads as no run").toBe(false);
+    expect(evaluate("needs.other.outputs.draft == 'false'", contexts.push), "unknown names still read as unset").toBe(false);
   });
 });

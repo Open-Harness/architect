@@ -1,0 +1,33 @@
+{
+  "name": "portal-next",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/portal-next/src",
+  "projectType": "application",
+  "tags": [
+    "scope:portal-next",
+    "layer:2"
+  ],
+  "targets": {
+    "lint": {},
+    "typecheck": {},
+    "test": {},
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec vite build --config vite.config.ts",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "^build"
+      ],
+      "cache": true,
+      "inputs": [
+        "production",
+        "{workspaceRoot}/tsconfig.base.json"
+      ],
+      "outputs": [
+        "{projectRoot}/dist/client"
+      ]
+    }
+  }
+}

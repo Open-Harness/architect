@@ -21,23 +21,26 @@ const roleOf = (role: Role<any> | ServiceRole<any>, path: string): RoleOf<any, s
 
 /**
  * Whether some entry of `allowed` admits an agent (M2-auth, fork 2): `anyone`, or an entry with a person in it whose kept ways in include `agent`.
- * A service role and the system never do. The MCP door lists an operation as a tool by this, and the compiler says it as `agentTool`.
+ * A service role, the system and the keeper never do. The MCP door lists an operation as a tool by this, and the compiler says it as `agentTool`.
  */
 export const admitsAgent = (allowed: ReadonlyArray<Allowed>): boolean =>
   allowed.some((a) => {
     const entry = a.kind === "narrowed" ? a.entry : a;
     if (entry.kind === "anyone") return true;
-    if (entry.kind === "system" || (entry.kind === "role" && entry.service !== undefined) || (entry.kind === "role-of" && entry.role.service !== undefined)) return false;
+    if (entry.kind === "system" || entry.kind === "keeper" || (entry.kind === "role" && entry.service !== undefined) || (entry.kind === "role-of" && entry.role.service !== undefined)) return false;
     return a.kind !== "narrowed" || a.via.includes("agent");
   });
 
+/** A `who` role as a rule: the field holds the caller's person. On a chain the account that signed is compared in the contract. */
+const whoRule = (key: string): Role["rule"] => (instance, principal) => (instance as unknown as Record<string, unknown>)[key] === principal.person;
+
 export const Roles: RolesApi = {
-  role: ((thing: Role["thing"], spec: { readonly rule?: Role["rule"]; readonly service?: ServiceRole["service"] }) => {
+  role: ((thing: Role["thing"], spec: { readonly rule?: Role["rule"]; readonly service?: ServiceRole["service"]; readonly who?: Role["who"] }) => {
     const role: object = Object.freeze({
       kind: "role" as const,
       thing,
-      rule: spec.rule ?? (() => false),
-      ...(spec.service === undefined ? {} : { service: spec.service }),
+      rule: spec.rule ?? (spec.who === undefined ? () => false : whoRule(spec.who.key)),
+      ...(spec.service === undefined ? { who: spec.who } : { service: spec.service }),
       of: (path: string): RoleOf<any, string> => roleOf(role as Role, path),
       ...(spec.service === undefined ? narrowable(() => role) : {}),
     });
@@ -49,4 +52,5 @@ export const Roles: RolesApi = {
     return signedIn;
   })(),
   system: Object.freeze({ kind: "system" }),
+  keeper: Object.freeze({ kind: "keeper" }),
 };

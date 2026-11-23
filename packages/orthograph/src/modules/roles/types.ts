@@ -1,5 +1,5 @@
 // Roles: who may call. A role lives in the thing it is scoped to, and is named by its export.
-import type { Thing } from "#modules/things/types.js";
+import type { Field, Thing } from "#modules/things/types.js";
 import type { TypeOf } from "#modules/values/types.js";
 import type { Mount, Via } from "#modules/plugins/types.js";
 
@@ -16,7 +16,8 @@ export type Principal =
   | { readonly kind: "person"; readonly person: string; readonly email?: string; readonly via: "session" | "key" | "device" }
   | { readonly kind: "agent"; readonly person: string; readonly email?: string; readonly via: "agent" }
   | { readonly kind: "service"; readonly mount: string }
-  | { readonly kind: "system" };
+  | { readonly kind: "system" }
+  | { readonly kind: "keeper" };
 
 /** Someone's hands: a person, or an agent acting for one. What a role's rule is given, so `principal.person` still works there. */
 export type Acting = Extract<Principal, { readonly person: string }>;
@@ -41,6 +42,8 @@ export interface Role<T extends Thing = Thing> extends Narrowable {
   readonly rule: (instance: InstanceOf<T>, principal: Acting) => boolean;
   /** Only a role made for a service has one: the adapter's mount it admits, and nobody else. */
   readonly service?: undefined;
+  /** Declared with `who`: the field of the thing that holds whoever the role is for. Every language renders it; a `rule` is TypeScript only (K20 rule 6). */
+  readonly who: Field | undefined;
   /** This role, decided on the thing that a payload field points at: `owner.of("organization")`. */
   readonly of: <const P extends string>(path: P) => RoleOf<T, P>;
 }
@@ -60,8 +63,8 @@ export interface RoleOf<T extends Thing = Thing, P extends string = string> exte
   readonly path: P;
 }
 
-/** Built in: anyone at all (every kind), or anyone signed in (a person or an agent). */
-export type Builtin = { readonly kind: "anyone" } | SignedIn;
+/** Built in: anyone at all (every kind), anyone signed in (a person or an agent), or the keeper: the principal that fires moves made by time (K23 section 3). */
+export type Builtin = { readonly kind: "anyone" } | SignedIn | { readonly kind: "keeper" };
 export interface SignedIn extends Narrowable {
   readonly kind: "signed-in";
 }
@@ -82,10 +85,18 @@ export type Allowed = Role<any> | ServiceRole<any> | RoleOf<any> | Builtin | Sys
 
 export interface RolesApi {
   readonly role: {
+    /** A role written as a rule in TypeScript: it runs where TypeScript does, and on no chain. */
     <T extends Thing>(thing: T, spec: { readonly rule: Role<T>["rule"] }): Role<T>;
     <T extends Thing>(thing: T, spec: { readonly service: Mount }): ServiceRole<T>;
+    /**
+     * A role held by whoever a field of the thing names (K20): `Blueprint.role(Allowance, { who: Allowance.fields.member })`.
+     * On a chain store the field is an `account()` and the role is the account that signed.
+     */
+    <T extends Thing>(thing: T, spec: { readonly who: T["fields"][string] }): Role<T>;
   };
   readonly anyone: Builtin;
   readonly signedIn: SignedIn;
   readonly system: System;
+  /** The keeper as a principal: allowed only where an operation lists it, and refused by every operation that does not. */
+  readonly keeper: { readonly kind: "keeper" };
 }

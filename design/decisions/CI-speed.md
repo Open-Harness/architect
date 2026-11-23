@@ -101,7 +101,8 @@ A green push run costs 21 runner-minutes on `main` and 55 on `goal/stage-1`. Run
    `e2e/ratchet/check.ts` on the whole. The files still run one at a time on each runner, so each file still has a
    machine to itself.
 3. **The docs fast path covers the suites docs cannot move:** prove's tests, and on `goal/stage-1` the M1 shards,
-   `e2e-climb` and `e2e-grid` skip on a docs-only pull request, as the layer gates already do. No test in them reads
+   `e2e-climb` and `e2e-grid` skip on a docs-only pull request, as the layer gates already do (_Superseded by CI-drafts-race, 21 November 2026:
+   the layer gates now run and pass without their steps; a required job never skips_). No test in them reads
    `design/` or a doc outside `packages/`, `e2e/` and `examples/`: check 15 (`e2e/m1/15-portal-ui-seam.test.ts`) scans
    every tracked file but allows Pro's name in `design/`, `docs/` and every `*.md`, and the grid and check 21 read
    generated docs under `examples/`, which are never docs-only. The one way a doc could still fail check 15 is a path

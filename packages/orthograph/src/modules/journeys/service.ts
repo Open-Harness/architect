@@ -1,24 +1,34 @@
 import type { Via } from "#modules/plugins/types.js";
-import type { Actor, AnyCall, Assertion, Call, ChecksApi, JourneysApi, Script, Scripts, ToolsCall } from "./types.ts";
+import type { Actor, AnyCall, Assertion, Call, ChecksApi, ClockCall, JourneysApi, Script, Scripts, ToolsCall } from "./types.ts";
 import { isRef, pathOf, refTo, resolve } from "./internal/refs.ts";
 
 const actorOf = (name: string, via?: Via): Actor =>
   Object.freeze({
     person: refTo(["cast", name, "person"]),
+    account: refTo(["cast", name, "account"]),
     email: refTo(["cast", name, "email"]),
     password: refTo(["cast", name, "password"]),
-    run: (operation: Call["operation"], payload: Call["payload"], options?: { readonly request?: string }): Call =>
-      Object.freeze({ kind: "call", actor: name, operation, payload, request: options?.request, ...(via === undefined ? {} : { via }) }),
+    run: (operation: Call["operation"], payload: Call["payload"], options?: { readonly request?: string; readonly due?: string }): Call =>
+      Object.freeze({ kind: "call", actor: name, operation, payload, request: options?.request, ...(via === undefined ? {} : { via }), ...(options?.due === undefined ? {} : { due: options.due }) }),
     via: (way: Via) => actorOf(name, way),
     tools: (): ToolsCall => Object.freeze({ kind: "call", actor: name, tools: true as const, ...(via === undefined ? {} : { via }) }),
   }) as Actor;
 
+// The script's own words `world`, `last` and `step` win over a cast member of the same name: the compiler refuses such a cast
+// before any script is made (`castClashes`), so nothing is hidden silently. `clock` is both: a cast member may be named it
+// (acme's system principal is), and then it is that member with the world's clock controls beside its `run`.
 const script = <C extends Record<string, unknown>>(cast: C): Script<any> => {
   const actors = Object.fromEntries(Object.keys(cast).map((name) => [name, actorOf(name)]));
   return Object.freeze({
     ...actors,
     world: refTo(["world"]),
     last: refTo(["last"]),
+    clock: Object.freeze({
+      ...(Object.hasOwn(actors, "clock") ? actors["clock"] : {}),
+      now: refTo(["clock", "now"]),
+      advance: (span: string): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ advance: span }) }),
+      moveTo: (instant: string): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ moveTo: instant }) }),
+    }),
     step: (title: string, call: AnyCall, ...checks: ReadonlyArray<Assertion>) => Object.freeze({ kind: "step" as const, title, call, checks }),
   }) as Script<any>;
 };

@@ -57,8 +57,10 @@ export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E e
   readonly allowed: readonly [AllowedFor<P>, ...Array<AllowedFor<P>>];
   readonly steps?: St;
   readonly idempotent?: "request";
+  /** A person must say yes before it runs. `true` is the only value: leave it out for an operation that asks nobody (#466). */
+  readonly needsApproval?: true;
   readonly budget?: Budget;
-  /** Where it runs. Only `server` is accepted until a target supports another (N1). */
+  /** Where it runs. `server` for a thing in a database or actor store; an operation of a chain-stored thing runs on the `chain`, worked out by the compiler, never written (K25 item 6). */
   readonly runs?: Runs;
   /** A target can say a guarantee needs a network test; defaults to `unit`. */
   readonly test?: TestKind;
@@ -85,8 +87,12 @@ export interface Operation<
   readonly allowed: ReadonlyArray<Allowed>;
   readonly steps: St;
   readonly idempotent: "request" | undefined;
+  /** Present only when declared; the compiler refuses any value but `true`. */
+  readonly needsApproval?: true;
   readonly budget: Budget | undefined;
   readonly runs: Runs;
+  /** Whether the author wrote `runs`, and what: the compiler refuses it on an operation of a chain-stored thing, where it is worked out. */
+  readonly runsDeclared: Runs | undefined;
   readonly test: TestKind;
 }
 

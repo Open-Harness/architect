@@ -5,7 +5,7 @@ milestone: "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys"
 release: beta
 branch: goal/stage-1
 base: main
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude-code
   model: claude-opus-5-5
@@ -28,10 +28,10 @@ owns:
 slices:
   - "1 · M1.12a, the request key on every attempt's span, with check 38 (#281)"
   - "2 · M1.49, monitoring derived from the model, check 39 (#290)"
-  - "3 · M1.50, one Graph for machines, the map and the worlds, check 40 (#280)"
+  - "3 · M1.50, one Graph for machines, the map and the worlds, check 40 (#280): handed to Goal 6, built after its cutover (M1-50-after-cutover)"
   - "4 · M7.03 and M7.04, staging up and destroy through Alchemy, and prove --env staging (#282, #291)"
   - "5 · S-35, the unique check indexed by rule and key, not cubic (#292)"
-  - "6 · M1.15, Gate M1, then the preview merge into main (after 1, 2, 3, 4, 5)"
+  - "6 · M1.15, Gate M1, then the preview merge into main (after 1, 2, 4, 5)"
   - "7 · M2.02, journeys for both plugins (#267, #297)"
   - "8 · M2.03, the five principals, paired with M2.02's principal part (#297)"
   - "9 · M2.04, secrets by declaration"
@@ -49,6 +49,11 @@ slices:
   - "21 · The staging run, then the stage 1 merge into main (after 6, 20)"
 ---
 # Goal 3: stage 1 of Plugged In, hill-climbed through its journeys
+
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
 
 **To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 3. Read `AGENTS.md` and
 `design/goals/03-stage-1-hill-climbed.md`, and run it." Nothing else is needed. Milestone `Goal 3: stage 1, hill-climbed`, label
@@ -300,53 +305,58 @@ K28 decides the preview merge and the three releases: [`K28-releases.md`](../dec
 
 ## Where it stands
 
-Rewritten at every slice merge. Last rewritten on 21 November 2026, at `goal/stage-1` `cb8ddd51`. A fresh lead in any harness starts here, then reads `design/handoff.md` (the ids and the lines of work), `design/goals/03-snags.md`, and the open issues in milestone `Goal 3: stage 1, hill-climbed`. Sessions don't carry over; everything below is in the repository or on GitHub.
+**Parked on 23 November 2026 under K42** (`design/decisions/K42-goals-are-agents.md`): goals become agents, and this goal's open slices become items on the board. Last rewritten at `goal/stage-1` after M2.04's build merged. A fresh owner starts here, then reads `design/goals/03-snags.md` and the open issues in milestone "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys". Nothing is running in this lane.
 
-**Where the goal is.** M1's slices are on `goal/stage-1` except four: M1.12a, M1.49, M1.50, and M7.03 with M7.04 for staging. Gate M1 (M1.15) has not run yet. Plugged In's seven journeys are green in local and test (`e2e-stage1`, a required check). The climb is green: 331 of 331 cell-and-subject pairs. M2 has started: its decision (M2.01) is in, M2.02's moved journeys have passed review, and its principal journeys are written as a pair with M2.03's build. Staging is planned, checked and built on Alchemy, but has never deployed.
+**Where the work is.**
+- **M1 is on `main`.** The M1 preview ([#602](https://github.com/Open-Harness/orthograph/pull/602)) merged on 23 November with Gate M1 green. Only check 40 is left on M1's list. Check 40 is M1.50, the one `Graph`, which is Goal 6's after its cutover ([`M1-50-after-cutover`](../decisions/M1-50-after-cutover.md)).
+- **M1.51, the npm preview, is built on `goal/stage-1`.** The pieces:
+  - checks [#678](https://github.com/Open-Harness/orthograph/pull/678), build [#683](https://github.com/Open-Harness/orthograph/pull/683), and the G12 pair [#702](https://github.com/Open-Harness/orthograph/pull/702);
+  - `node tools/release/preview.mjs --dry-run` lists each public package with version, tag `next`, licence and files. It refuses any other tag on npmjs, makes no connection and sends nothing;
+  - the 16 packages M1.51 covered are Apache-2.0, with a root and a per-package LICENSE ([`L1-apache-2`](../decisions/L1-apache-2.md), Aaron's "Make it all Apache 2.0").
+  - **The dry run refuses today.** Goal 6's #697 added a 17th public package, `@orthograph/shell`, licensed MIT, so the preview ends `refused: @orthograph/shell license is "MIT", not Apache-2.0`. The fix is snag [#753](https://github.com/Open-Harness/orthograph/issues/753): Apache-2.0 and a LICENSE in `packages/shell`. It is Goal 6's or Goal 19's, and must land before #707 does.
 
-**How pull requests run (CI-drafts, #293).** Every pull request opens as a draft, and a draft runs no CI (`goal/stage-1`'s own jobs carry the guard since [#277](https://github.com/AaronAbuUsama/architect/pull/277)). The 🔍 reads the draft and runs the affected checks locally. Then the pull request is marked ready and CI runs once. At most two of this lane's pull requests are ready at a time.
+  The licence moved each package's recorded hash, so acme's and Plugged In's `generated/` and the baselines were regenerated and recaptured as a G12 pair.
+- **Stage 1 to `main`: [#707](https://github.com/Open-Harness/orthograph/pull/707)** (`goal-3/stage-1-to-main-m1-51`) carries M1.51 to `main`. Its 🔍 of everything since `0d0c4b31` passed at `ba9c50bc`. **Goal 19, the lander, owns it now**: it merges `goal/stage-1` in, runs a delta 🔍, and lands it. Then Aaron signs in and runs `npm publish` under `next`, and publishing moves to Goal 15 ([#542](https://github.com/Open-Harness/orthograph/issues/542), item 1).
+- **M2.** The decision (M2.01), the principal journeys and M2.03's build ([#297](https://github.com/Open-Harness/orthograph/pull/297)) are in. M2.04, secrets by declaration, is built:
+  - checks [#659](https://github.com/Open-Harness/orthograph/pull/659), build [#690](https://github.com/Open-Harness/orthograph/pull/690);
+  - `Blueprint.secret`, `Blueprint.layer` hands `Redacted` values, `ortho secrets` and `ortho secrets set` (stdin only, 0600 file), and `promote` refuses a missing stored secret;
+  - the readings are in [`M2-04-secrets-readings`](../decisions/M2-04-secrets-readings.md);
+  - M2.04 is inert until a plugin declares a secret.
 
-**Merged on 20 and 21 November** (newest first):
-- [#277](https://github.com/AaronAbuUsama/architect/pull/277): `main` merged in (K28 releases, #293's draft rule), the draft guard on this branch's own jobs, the state docs.
-- [#288](https://github.com/AaronAbuUsama/architect/pull/288): S-33 and S-34's build. A refusal field must be the same value as the key's, compared strictly, and rule names may not clash ignoring case.
-- [#264](https://github.com/AaronAbuUsama/architect/pull/264): S-27. A journey check that throws fails its step, not the run.
-- [#263](https://github.com/AaronAbuUsama/architect/pull/263): M2.01, the M2-auth decision (principals, roles, `.via`, `issues:`), G12 (paired landing) and M2.05b.
-- [#271](https://github.com/AaronAbuUsama/architect/pull/271): M1.39, the canon's chains-and-wallets page.
-- [#278](https://github.com/AaronAbuUsama/architect/pull/278), [#266](https://github.com/AaronAbuUsama/architect/pull/266), [#269](https://github.com/AaronAbuUsama/architect/pull/269), [#268](https://github.com/AaronAbuUsama/architect/pull/268), [#265](https://github.com/AaronAbuUsama/architect/pull/265), [#261](https://github.com/AaronAbuUsama/architect/pull/261): S-33 and S-34's checks, staging's checks (check 37), S-31, S-17, S-29, stage 1's journeys.
-- On `main`: [#295](https://github.com/AaronAbuUsama/architect/pull/295), effect 4.1.4, for Alchemy's peer range.
+  M2.05 to M2.11, M2.05b and Gate M2 are not started.
+- Plugged In's seven journeys are green in local and test, the climb is green, and staging run 3 passed 5 of 5 and was destroyed.
 
-**In flight.** Each pull request goes into `goal/stage-1`.
-
-| PR | What it does | State, and the next step |
-|---|---|---|
-| [#291](https://github.com/AaronAbuUsama/architect/pull/291) | Check 41, `ortho prove --env staging`; `staging.yml` runs only from a `goal/` branch and refuses elsewhere | Passed 🔍. Ready, merges once CI is green. Then a builder for M7.04's prove side |
-| [#302](https://github.com/AaronAbuUsama/architect/pull/302) | `main` merged in again: effect 4.1.4 everywhere, including the packages only this branch has; K30 | Draft, under 🔍 |
-| [#282](https://github.com/AaronAbuUsama/architect/pull/282) | M7.03 and M7.04: staging up and destroy through an Alchemy stack generated into `generated/infra`; destroy runs Alchemy's, then always the prefix sweep, which works with no state | Passed 🔍. After #302 lands it merges the base in, so its copy of the bump drops out. Then ready |
-| [#281](https://github.com/AaronAbuUsama/architect/pull/281) | M1.12a, the request key on every attempt's span and in the portal, build and check 38 (G12) | Passed 🔍. Draft, waiting for a slot. Close [#270](https://github.com/AaronAbuUsama/architect/pull/270) when it merges |
-| [#292](https://github.com/AaronAbuUsama/architect/pull/292) | S-35's checks: a deterministic count, a 40,000-row bound, and controls for scope and rule | Passed 🔍. Draft, waiting for a slot. Then a builder indexes held rows by rule and key once per check |
-| [#290](https://github.com/AaronAbuUsama/architect/pull/290) | Check 39, M1.49's derived monitor | Passed 🔍. Draft, waiting for a slot. Then a builder |
-| [#280](https://github.com/AaronAbuUsama/architect/pull/280) | Check 40, M1.50's one Graph for machines, the map and the worlds | Passed 🔍. Draft, waiting for a slot. Then a builder |
-| [#267](https://github.com/AaronAbuUsama/architect/pull/267) | M2.02's moved journeys, the auth and organizations stand-ins | Passed 🔍. Draft, waiting for a slot |
-| [#297](https://github.com/AaronAbuUsama/architect/pull/297) | M2.02's principal journeys (person, agent, system, service) as check 42, and the `lacks` journey check; M2.03's build lands on the same branch (G12) | Draft. The author is finishing (check numbering, `lacks`, the hostile pass). Then a 🔍, then the M2.03 builder |
-| this pull request | K33's front matter on this brief, the start line, the coordination paragraph, this section | Draft, under 🔍. Closes #299 |
-
-**Next, in order.**
-1. Land the drafts above, two at a time: #302, then #282, then the rest in the table's order.
-2. A one-file pull request to `main` adding `staging.yml` as it stands here, so it can be dispatched. Its `refuse` job stops a run anywhere but a `goal/` branch.
-3. The first live staging run, dispatched on `goal/stage-1`: our prefix only, under $10, destroy after, the sweep's proof that nothing is left, and the cost. The story step is red until check 41's builder lands; up and destroy are proved either way.
-4. Builders for checks 39, 40 and 41, and for S-35. Then the M2.03 builder on #297.
-5. The preview merge. Once Gate M1's slices are green here, one pull request from `goal/stage-1` to `main`, with CI green, Gate M1 passing and a 🔍 of the whole branch (K28). Then M1.51 and Aaron's npm publish under `next`.
-6. M2.04 to M2.11 in the pairs `design/decisions/M2-auth.md` maps, then M2.05b and Gate M2 (M2.12).
+**Open slices, now board items** (issues #627 to #647, kind:slice). The ones not done:
+- [#636](https://github.com/Open-Harness/orthograph/issues/636) M2.05 identity, with M2.24 and M2.25. Tell Goal 4 the commit when it merges.
+- [#637](https://github.com/Open-Harness/orthograph/issues/637) M2.06 ways in; [#638](https://github.com/Open-Harness/orthograph/issues/638) M2.07 organizations.
+- [#639](https://github.com/Open-Harness/orthograph/issues/639) to [#642](https://github.com/Open-Harness/orthograph/issues/642): M2.08 to M2.11.
+- [#643](https://github.com/Open-Harness/orthograph/issues/643) M2.05b; [#644](https://github.com/Open-Harness/orthograph/issues/644) stage 1's own slices; [#645](https://github.com/Open-Harness/orthograph/issues/645) M2.13 to M2.22.
+- [#646](https://github.com/Open-Harness/orthograph/issues/646) Gate M2; [#647](https://github.com/Open-Harness/orthograph/issues/647) the staging run and the second landing.
+- Pair map: `design/decisions/M2-auth.md`. A slice that moves acme's wire, model or `generated/` lands as a G12 pair.
+- Parked asks from other goals: #480, #474, #486, #531 to #534.
+- The earlier slice issues, #627 to #635, are done (M1.12a, M1.49, M7.03 and M7.04, S-35, Gate M1 and the preview, M2.02, M2.03, M2.04) and can be closed, except [#629](https://github.com/Open-Harness/orthograph/issues/629), M1.50, which is Goal 6's after its cutover.
 
 **Open snags that matter.**
-- S-35, the cubic unique check: checks in #292, build next.
-- [#304](https://github.com/AaronAbuUsama/architect/issues/304) (S-36): S-19's write-order ratio measured 16.0055 against a bar of 16 once under load. A checks author backs it with a count.
-- JOU-13 (no journey can force a race) has no slice. Check 38 forces one in e2e, a pattern a journey API could borrow.
+- [#446](https://github.com/Open-Harness/orthograph/issues/446): an agent's key can mint a person's key through `/api/auth`. This is security work, and it belongs with M2.05.
+- [#695](https://github.com/Open-Harness/orthograph/issues/695): secrets hardening from M2.04's review. `promote` reads only the local `secrets.env`, which M2.05 must settle. Also the argv echo, a non-atomic write, and the `then` key.
+- [#660](https://github.com/Open-Harness/orthograph/issues/660): how secret names with digits or runs of capitals split.
+- [#753](https://github.com/Open-Harness/orthograph/issues/753): `@orthograph/shell` says MIT, so the preview's dry run refuses on `goal/stage-1`. This blocks #707.
+- [#688](https://github.com/Open-Harness/orthograph/issues/688): the preview's root LICENSE check reads the repository, not `--root`.
+- [#620](https://github.com/Open-Harness/orthograph/issues/620): the wallet advice from #616.
+- [#503](https://github.com/Open-Harness/orthograph/issues/503): a pull request's token can record a production release.
+- [#449](https://github.com/Open-Harness/orthograph/issues/449), [#451](https://github.com/Open-Harness/orthograph/issues/451): the API key's daily limit, and a commit issue for a call still retrying.
+- [#606](https://github.com/Open-Harness/orthograph/issues/606): S-19's write-order ratio near its bar under load.
+- [#588](https://github.com/Open-Harness/orthograph/issues/588): e2e-m2 runs on drafts.
 
-**Agreements with other lanes**
-- **The conductor** owns `.agents/skills/kanban/STATE.md` on `main`. Never edit it here; take main's version at each merge of `main`.
-- **Goal 4** (on-chain, `goal/on-chain`): when M2.05 merges, tell it the commit, as an Ask-free comment on its goal issue.
-- **Goal 5** (the UI layer, `goal/ui-layer`, K29): ST1.25 to ST1.28 and M1.22 and M1.23 are its work. The portal moves off HeroUI there (ST1.27). Don't build portal screens here that it replaces.
-- **Goal 6** (the portal, K31): its cutover asks Goal 3 through a `goal-3` pull request that adds a freeze line, and merging it is the freeze.
-- **Aaron's standing authority** (21 November): anything waiting on him goes ahead on the recommendation, and the call is recorded.
-- **M1.37** (the MCP output schema) is left as it is, by the conductor's call.
+**How the work ran here, worth keeping.**
+- Draft first, then a 🔍 that wrote none of it, then ready, with at most two ready per lane. Wait on CI with `tools/ci/watch-required.sh`; any exit but 0 is not green.
+- A cancelled duplicate CI run shows unexpanded `${{ … }}` check names as failed. They aren't required checks; merge by hand with `--match-head-commit`.
+- Never wait with `pgrep -f`: it matches itself. Wait on a PID or a sentinel line.
+- Bring a branch up to date by merging its base, never by rebasing.
+
+**Agreements that carry over.**
+- The conductor owns `.agents/skills/kanban/STATE.md`; take main's version at each merge of `main`.
+- Goal 4: when M2.05 merges, tell it the commit.
+- Goal 5 owns ST1.25 to ST1.28, M1.22 and M1.23, and the portal's move off HeroUI.
+- Goal 6 owns M1.50 after its cutover.
+- M1.37 stays as it is, by the conductor's call.

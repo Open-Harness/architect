@@ -7,3 +7,17 @@ finishes or the timer interrupts it. The world's clock driver asks `due`, moves 
 the world's Durable Object, where `at` becomes an alarm.
 
 `TimersLive` (M1.29) is the `Timers` of code that runs on a device or in a plain process, with no world to drive its clock: `sleep` waits on the real clock, and `at` (a timer to fire later) is a defect, since only a world can keep one. Also from `@orthograph/language-effect/device`.
+
+`DurableTimers` (M8-timers-shape) sets a timer that outlives the fiber and the process: `set(at, owner, name, wake)`,
+once per `(owner, name)` while pending, and `clear(owner, name)`. When it falls due the world hands it to the host's
+`TimerWakes` (`wakesByKind({ workflow, agent, keeper })`), at least once and as counted work, which wakes whatever
+process now runs its owner. `TimersMemory` provides `Timers` and `DurableTimers` over one table, so one instant's
+timers fire in the order they were set. Owners are paths: `workflows/<workflow>/<execution>`, `agents/run/<runId>`,
+`keeper/<thing>.<move>/<id>`.
+
+`TimersWorld` (M8.07) is `Timers` and `DurableTimers` on the world's table, for every process that is not the world's Durable
+Object. A wait is a row there, not a fiber: `sleep` publishes the row, lends its `Busy` token out, and waits on the `WorldTable`
+port; the world holds a token of its own for the sleeper from the firing until the sleeper has taken its own back and acknowledged
+(`cancel`), so it is never quiet in between, and the host points the request's clock at the instant the row fired. The host provides `WorldTable` (host-cloudflare, over the world's RPC).
+
+To sleep in parallel with other work, use `Timers.all` (or `Timers.raceFirst`), not `Effect.all` or `Effect.raceFirst`: the world counts conservatively, so a parent that merely waits on forked children stays counted with them, and a plain `Effect.all([Timers.sleep(...), work])` keeps the request counted, sleeper included, until every child is done (a move meanwhile fails `NeverQuiet`, naming the request). `Timers.all` says "this parent only joins" (when it really forks: more than one effect and a concurrency above one; sequentially it is `Effect.all`, counted): it is not counted while it waits, only its children are. Handlers must not call `Effect.runFork`/`runPromise` (a fiber outside the request is not counted); use `Busy.spawn`. Decision call 13.

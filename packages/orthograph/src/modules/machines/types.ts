@@ -2,6 +2,7 @@
 import type { Event } from "#modules/events/types.js";
 import type { FieldsInput, Thing } from "#modules/things/types.js";
 import type { Assertion } from "#modules/journeys/types.js";
+import type { Span, TimeBy } from "#modules/time/types.js";
 
 export interface MoveSpec<S extends string> {
   /** The states it may start from; `[]` means it creates the thing. */
@@ -9,6 +10,12 @@ export interface MoveSpec<S extends string> {
   /** Where it ends: one state, or a list when the handler chooses the outcome. */
   readonly to: S | ReadonlyArray<S>;
   readonly emits: Event;
+  /** When the move happens by itself, fired by the keeper: `Blueprint.time.every(...)` or `Blueprint.time.after(...)` (K23 section 3). */
+  readonly by?: TimeBy;
+  /** How long after its due instant a move made by time may still run on time. None means it must run exactly when due. */
+  readonly late?: Span;
+  /** Worked out at the thing's next use instead of fired by the keeper. */
+  readonly lazy?: boolean;
 }
 
 export interface Move<S extends string = string, To extends S = S, From extends ReadonlyArray<S> = ReadonlyArray<S>> {
@@ -19,6 +26,10 @@ export interface Move<S extends string = string, To extends S = S, From extends 
   readonly from: From;
   readonly to: ReadonlyArray<To>;
   readonly emits: Event;
+  /** Present only on a move made by time. */
+  readonly by?: TimeBy;
+  readonly late?: Span;
+  readonly lazy?: boolean;
 }
 
 /** The machine's own refusal: a move called from a state it can't start from. Generated as `<Thing>Not<State>`. */
