@@ -233,3 +233,7 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
   rest after each delivery, so a backfill with many confirmed events makes one large value and quadratic writes (🔍 on
   #679). The step would cap its entries or store one key per entry. **Trigger:** a follower backfills from an old
   `fromBlock` with thousands of events, or a Durable Object value nears its size limit.
+
+## From the actions projection (Goal 5 lead, 23 November 2026)
+
+- **A `retrySafe` predicate per operation** (`decisions/WEB-actions-projection.md`, call 5). A generated action never names `retrySafe`. An operation whose payload carries its own idempotency key could emit it as a predicate on the input (`spikes/agent-native-compat` finding 5). **Trigger:** the model can say an operation carries its own key.

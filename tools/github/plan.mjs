@@ -6,10 +6,11 @@ export const LABELS = [
   ["kind:slice", "1d76db", "One slice of a goal: a sub-issue of its goal, closed by the pull request that lands it"],
   ["kind:snag", "d73a4a", "Something a goal hit and could not fix in its own paths"],
   ["kind:ask", "fbca04", "One goal asking another to act; in the milestone of the goal that must act"],
-  ["kind:gap", "c5def5", "A ledger row picked up as work; the title starts with its ledger id"],
+  ["kind:gap", "c5def5", "A hole in the capability map (a row whose id starts gap-), or a ledger row picked up as work"],
+  ["kind:capability", "0052cc", "A row of the capability map in docs/canon/status.md: one item, written by the board sync (K42)"],
   ["kind:decision", "0e8a16", "A call to be made; closed by the pull request that records it in design/decisions/"],
   ["release:preview", "bfd4f2", "Ships in the preview (K28)"],
-  ["release:beta", "bfd4f2", "Ships in the beta, stage 1 (K28)"],
+  ["release:beta", "bfd4f2", "Ships in the beta: the framework the superagent proves (K42)"],
   ["release:1.0", "bfd4f2", "Ships in 1.0 (K28)"],
   ["role:lead", "ededed", "Opened by a goal's lead"],
   ["role:author", "ededed", "Journeys and checks, written first (the author skill)"],
@@ -34,8 +35,9 @@ export const ISSUE_TYPES = [
   ["Ask", "YELLOW", "One goal asking another to act"],
   ["Decision", "GREEN", "A call waiting to be made"],
   ["Gap", "GRAY", "A ledger row picked up as work"],
+  ["Capability", "BLUE", "A row of the capability map: one item of the board"],
 ].map(([name, color, description]) => ({ name, color, description }));
-const NATIVE = { goal: "Feature", slice: "Task", snag: "Bug", ask: "Task", decision: "Task", gap: "Task" };
+const NATIVE = { goal: "Feature", slice: "Task", snag: "Bug", ask: "Task", decision: "Task", gap: "Task", capability: "Task" };
 const own = (state) => state.ownerType === "Organization";
 export const typeOf = (kind, state) => (own(state) ? ISSUE_TYPES.find((x) => x.name.toLowerCase() === kind).name : NATIVE[kind]);
 
