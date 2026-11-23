@@ -523,12 +523,12 @@ has landed there, and built here to its design if not.
 | 12 | The pages and the coding agent end to end; then, with Aaron's yes, one run on a real test repository and Slack workspace | 9, 11 | Goal 6's page map (slice 3) | the goal check's coding half passes |
 | 13 | The triage agent, made by `superagent.create` from data, with no new code | 12 | — | the goal check passes whole |
 | 14 | Extract the plugins into `packages/` as `@orthograph/superagent`, `intake`, `tickets`, `prompts`, `github`, `slack`, `posthog` and `webhook` (`sandbox` is there already), and hand the branch over | 13 | — | the goal check still passes from `packages/`; the conductor has the branch and its list of framework fixes to merge back |
-| 15 | **The launch** (K42, section 6). Checks first, by an author who isn't the builder, then the build: real sign-in (a person signs in, and the app knows who); teams, meaning who owns a superagent and who shares it, built in this lane and kept apart from Capxul's companies (K42, call 10); a live deploy with a public address, so GitHub and Slack deliver webhooks to it; and a sandbox and a model endpoint that run off Aaron's Mac. Each real credential, each cloud resource and the deploy itself waits for Aaron's written yes, and stays within the daily cap. Pieces pulled only here ship in 1.0, not the beta (K42, section 5) | 14 | sign-in and the live deploy, which K42's split gives this goal | a person signs in, makes a team's superagent, connects a test repository and Slack workspace through the public address, and the coding agent answers a mention end to end in the hosted sandbox on the hosted model; nothing of it runs on Aaron's Mac |
+| 15 | **The launch** (K42, section 6). Checks first, by an author who isn't the builder, then the build: real sign-in (a person signs in, and the app knows who); teams, meaning who owns a superagent and who shares it, built in this lane and kept apart from Capxul's companies (K42, call 10); a live deploy with a public address, so GitHub and Slack deliver webhooks to it; and a sandbox and a model endpoint that run off Aaron's Mac. The deploy and the cloud resources on the Cloudflare keys already on hand go ahead under Aaron's standing yes (23 November 2026); each new credential, such as a GitHub App or a Slack app, waits for his written yes; all of it stays within the daily cap and is destroyed after. Pieces pulled only here ship in 1.0, not the beta (K42, section 5) | 14 | sign-in and the live deploy, which K42's split gives this goal | a person signs in, makes a team's superagent, connects a test repository and Slack workspace through the public address, and the coding agent answers a mention end to end in the hosted sandbox on the hosted model; nothing of it runs on Aaron's Mac |
 
 **What runs at once.** Slices 2 and 3 start together, then 4. After slices 2 and 4, slice 5; after it, three lanes of
 checks run side by side, each in its own thread: stage one (6), the agents and the sandbox (8), and the connections
 (10). Then 7, 9 and 11 build side by side, and 12 joins them. Slice 15, the launch, comes after the plugins are extracted; its checks
-are written first, and nothing in it goes live without Aaron's yes.
+are written first; its deploys use the Cloudflare keys already on hand (Aaron's standing yes, 23 November 2026), and a new credential still waits for his yes.
 
 **K40's "Needed by", in this goal's slices.** The GitHub door is slice 11 and the gate slice 7; Policy and Prompts are
 slice 7; the tickets' things are slices 5 and 7, and their agents, the main agent and the executor slice 9.
@@ -593,8 +593,10 @@ the slice's pull request and claimed on the board first, and the lander lands it
 
 **Credentials, each only with Aaron's written yes, in the slice that first needs it:** a GitHub App installed on one
 test repository he names, a Slack app in a workspace he names, all for slice 12's real run, not
-the check. PostHog for real is slice 13's, the same way. Every check runs on stand-ins with no key. No cloud: E2B and
-staging are later, each its own yes.
+the check. PostHog for real is slice 13's, the same way. Every check runs on stand-ins with no key.
+Real model runs through VibeProxy, and deploys on the Cloudflare keys already on hand, go ahead whenever a slice needs
+them (Aaron's standing yes, 23 November 2026), within the daily cap and destroyed after; E2B, and any new cloud
+credential, is still its own yes.
 
 ## How it runs
 
@@ -615,7 +617,7 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
   every comment an agent posts starts `[goal-17 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" at every slice
   merge. Decisions this goal makes are named `GOAL17-<slug>`.
-- **Limits.** No cloud and no keys. Stop every process you start, by its id, before you report.
+- **Limits.** No cloud and no keys, except what Aaron's standing yes covers (GOAL17-standing-yes): VibeProxy and the Cloudflare keys already on hand, within the daily cap. A new credential still waits for his written yes. Stop every process you start, by its id, before you report.
 
 ## Where it stands
 
