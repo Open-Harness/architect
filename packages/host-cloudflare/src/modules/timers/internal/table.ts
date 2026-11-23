@@ -71,14 +71,12 @@ export const makeTable = (
   const fireOne = (r: Stored, source: ClockSource | undefined): Effect.Effect<void, WakeFailed> => {
     if (r.wake === null) {
       // A sleeper: count it first, then hand the instant back.
-      forget(r.id);
       const gate = waiting.get(r.id);
       if (gate === undefined) return Effect.void;
       if (counting) count.enter(r.holder ?? r.owner);
       return Deferred.succeed(gate, source).pipe(Effect.asVoid);
     }
     const timer = durableOf(r);
-    forget(r.id);
     if (wakes === undefined) {
       insert(r);
       return Effect.fail(new WakeFailed({ owner: r.owner, name: r.name, message: `no wake handler routes kind ${timer.wake.kind} in this world` }));
@@ -123,8 +121,10 @@ export const makeTable = (
     fire: (at, source) =>
       Effect.gen(function* () {
         const fired: Array<Row & { readonly durable: boolean }> = [];
-        // Each row leaves the table only as its own firing begins, so a firing that fails leaves the rest pending.
+        // Each row leaves the table only as its own firing begins, so a firing that fails leaves the rest pending; and one an
+        // earlier wake in this walk cleared or cancelled is gone by then, so it never fires (the rule `TimersMemory.fire` follows).
         for (const r of select("WHERE at <= ?", at)) {
+          if (!forget(r.id)) continue;
           yield* fireOne(r, source);
           fired.push({ ...rowOf(r), durable: r.wake !== null });
         }

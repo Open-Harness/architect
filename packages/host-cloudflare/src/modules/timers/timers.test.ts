@@ -127,6 +127,31 @@ describe("a real world", () => {
   });
 });
 
+describe("a wake that clears its same-instant sibling", () => {
+  it("the cleared timer never fires, and a sleeper cancelled by an earlier wake is skipped too", async () => {
+    const woke: Array<string> = [];
+    let world: WorldTimersState | undefined;
+    let sleeper = 0;
+    await inWorld("timers-clear-sibling", STEPPED, async (state) => {
+      world = state;
+      const at = START + DAY;
+      state.rpc.timerSet(at, "first", "due", { kind: "keeper", payload: "first" });
+      state.rpc.timerSet(at, "second", "due", { kind: "keeper", payload: "second" });
+      sleeper = state.rpc.timerAdd("napper", "sleep", at, "napper");
+      void state.rpc.timerWait(sleeper);
+      expect(await settle(state, at)).toMatchObject({ _tag: "Success", success: { fired: [{ owner: "first" }] } });
+      expect(woke).toEqual(["first"]);
+      expect(state.rpc.timersDurable()).toEqual([]);
+      expect(state.rpc.timersSleeping()).toEqual([]);
+      expect(state.held()).toEqual([]);
+    }, (timer) => Effect.sync(() => {
+      woke.push(timer.owner);
+      world!.rpc.timerClear("second", "due");
+      world!.rpc.timerCancel(sleeper);
+    }));
+  });
+});
+
 describe("the wake route", () => {
   it("an empty map fails the wake for any kind and leaves the row pending; the step names it", async () => {
     await inWorld("timers-route-empty", STEPPED, async (world) => {

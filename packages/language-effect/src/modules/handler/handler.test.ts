@@ -1,4 +1,4 @@
-import { Cause, Effect, Exit, Layer, Tracer } from "effect";
+import { Cause, Deferred, Effect, Exit, Fiber, Layer, Tracer } from "effect";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { Blueprint } from "orthograph";
 import { ErrorNames } from "orthograph/server";
@@ -332,5 +332,24 @@ describe("a move with a machine: the race, the machine's refusal, all or nothing
     await Effect.runPromiseExit(dying.call({ allowance: "alw_1", amount: "10" }, ada).pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))));
     expect(memory.rows[0]!.instance["spent"]).toBe(0n);
     expect(memory.entries).toEqual([]);
+  });
+});
+
+describe("counted work spans the whole operation (M8.07)", () => {
+  it("holds the operation's token through its commit, so a world with a commit pending is not quiet", async () => {
+    const { layer } = recording();
+    const seen = await Effect.runPromise(Effect.provide(Effect.gen(function* () {
+      const busy = yield* Busy;
+      const base = yield* Store;
+      const gate = yield* Deferred.make<void>();
+      const slow = { ...base, commit: (c: Parameters<typeof base.commit>[0]) => Effect.andThen(Deferred.await(gate), base.commit(c)) };
+      const fiber = yield* Effect.forkChild(Effect.provideService(served.call({ member: "per_olga", limit: "500" }, ada), Store, slow));
+      for (let i = 0; i < 20; i++) yield* Effect.yieldNow;
+      const during = yield* busy.held;
+      yield* Deferred.succeed(gate, undefined);
+      yield* Fiber.join(fiber);
+      return { during, after: yield* busy.held };
+    }), layer));
+    expect(seen).toEqual({ during: ["allowance.grant"], after: [] });
   });
 });

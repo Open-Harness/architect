@@ -34,10 +34,14 @@ const counting = (world?: Report): BusyShape => {
   const named = (fixed: string | undefined): BusyShape => {
     const owner = fixed === undefined ? Effect.service(BusyOwner) : Effect.succeed(fixed);
     // The work runs knowing whom its token is counted for, so a sleep inside it gives back that same token.
-    const holding = <A, E, R>(work: Effect.Effect<A, E, R>, o: string) => Effect.ensuring(Effect.provideService(work, BusyOwner, o), give(o));
+    // Taking the token (which tells the world, an RPC) and the cleanup that gives it back are one uninterruptible step: an
+    // interrupt that arrives while the world is being told waits for it, then ends the work and gives the token back, so a
+    // token is never taken without a way to give it back. The detached fiber of `spawn` is forked inside the same step.
+    const holding = <A, E, R>(restore: <X, Y, Z>(e: Effect.Effect<X, Y, Z>) => Effect.Effect<X, Y, Z>, work: Effect.Effect<A, E, R>, o: string) =>
+      Effect.ensuring(restore(Effect.provideService(work, BusyOwner, o)), give(o));
     return {
-      counted: (work) => Effect.flatMap(owner, (o) => Effect.andThen(take(o), holding(work, o))),
-      spawn: (work) => Effect.flatMap(owner, (o) => Effect.andThen(take(o), Effect.forkDetach(holding(work, o)))).pipe(Effect.asVoid),
+      counted: (work) => Effect.flatMap(owner, (o) => Effect.uninterruptibleMask((restore) => Effect.andThen(take(o), holding(restore, work, o)))),
+      spawn: (work) => Effect.flatMap(owner, (o) => Effect.uninterruptibleMask((restore) => Effect.andThen(take(o), Effect.forkDetach(holding(restore, work, o))))).pipe(Effect.asVoid),
       enter: Effect.flatMap(owner, take),
       leave: Effect.flatMap(owner, give),
       adopt: Effect.flatMap(owner, adopted),

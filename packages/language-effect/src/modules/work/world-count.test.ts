@@ -1,5 +1,5 @@
 // Counted work across processes (M8.07): tokens carry an owner, and a process reports each one to the world's count.
-import { Deferred, Effect, Layer } from "effect";
+import { type Context, Deferred, Effect, Fiber, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { Busy, WorldCount } from "./types.ts";
 import { BusyLive, BusyReporting } from "./service.ts";
@@ -83,4 +83,38 @@ describe("BusyReporting", () => {
       yield* busy.as("probe.nap").leave;
       expect(reported).toEqual(["-probe.nap"]);
     }), BusyReporting.pipe(Layer.provide(world))));
+});
+
+describe("a token taken while the world is told", () => {
+  /** The world's count is slow to answer `enter`; the work is interrupted while it is. */
+  const interrupted = (start: (busy: Context.Service.Shape<typeof Busy>) => Effect.Effect<unknown>) =>
+    Effect.gen(function* () {
+      const gate = Deferred.makeUnsafe<void>();
+      const held: Array<string> = [];
+      const slow = Layer.succeed(WorldCount, WorldCount.of({
+        enter: (owner) => Deferred.await(gate).pipe(Effect.andThen(Effect.sync(() => void held.push(owner)))),
+        leave: (owner) => Effect.sync(() => void held.splice(held.indexOf(owner), 1)),
+      }));
+      return yield* Effect.gen(function* () {
+        const busy = yield* Busy;
+        const fiber = yield* Effect.forkChild(start(busy));
+        yield* Effect.yieldNow;
+        const interrupting = yield* Effect.forkChild(Fiber.interrupt(fiber));
+        yield* Effect.yieldNow;
+        // The interrupt waits for the world to be told; once it is, the token is given back with the work.
+        yield* Deferred.succeed(gate, undefined);
+        yield* Fiber.join(interrupting);
+        for (let i = 0; i < 5; i++) yield* Effect.yieldNow;
+        yield* busy.quiet;
+        return { held: [...held], count: yield* busy.count };
+      }).pipe(Effect.provide(BusyReporting.pipe(Layer.provide(slow))));
+    });
+
+  it("counted: interrupted during a pending enter, the world is quiet afterwards", async () => {
+    expect(await Effect.runPromise(interrupted((busy) => busy.as("probe.spin").counted(Effect.never)))).toEqual({ held: [], count: 0 });
+  });
+
+  it("spawn: interrupted during a pending enter, the detached work still runs and gives its token back", async () => {
+    expect(await Effect.runPromise(interrupted((busy) => busy.as("probe.spin").spawn(Effect.void)))).toEqual({ held: [], count: 0 });
+  });
 });
