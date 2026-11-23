@@ -1,8 +1,9 @@
-import csv,json,re,collections as C
+import csv,gzip,json,os,re,collections as C
+D=os.path.dirname(os.path.abspath(__file__))   # the folder holding ci.tsv, jobs.tsv.gz and the two prs-*.json.gz snapshots
 from datetime import datetime as T
 p=lambda s: T.fromisoformat(s.replace('Z','+00:00')) if s and s!='null' else None
 runs={}
-for r in csv.reader(open('ci.tsv'),delimiter='\t'):
+for r in csv.reader(open(D+'/ci.tsv'),delimiter='\t'):
     r+=['']*(11-len(r)); runs[r[0]]=dict(event=r[1],branch=r[2],prs=r[9],base=r[10])
 def suite(name):
     ids=re.findall(r"e2e-[a-z0-9-]+",name)
@@ -11,7 +12,7 @@ def suite(name):
     return 'e2e-m1' if s=='e2e-m1-shard' else s
 mins=C.defaultdict(lambda: C.defaultdict(float))   # pr -> suite -> minutes
 alle2e=0; per_suite=C.defaultdict(float)
-for j in csv.reader(open('jobs.tsv'),delimiter='\t'):
+for j in csv.reader(gzip.open(D+'/jobs.tsv.gz','rt'),delimiter='\t'):
     j+=['']*(8-len(j)); run,name,concl,st,dn,runner=j[0],j[1],j[3],p(j[5]),p(j[6]),j[7]
     s=suite(name)
     if not s or not runner or not st or not dn or dn<=st: continue
@@ -41,7 +42,7 @@ KEEP=('e2e-m0','e2e-portal-next')
 branches=set(); honest=inertmin=ceiling=0.0; matched=0; pr_e2e=0.0
 rows=[]; seen=set()
 for base in ['main','goal_stage-1']:
-    for pr in json.load(open(f'prs-{base}.json')):
+    for pr in json.load(gzip.open(f'{D}/prs-{base}.json.gz','rt')):
         n=str(pr['number']); br=pr['headRefName']
         if n in seen or br not in mins: continue
         seen.add(n); matched+=1

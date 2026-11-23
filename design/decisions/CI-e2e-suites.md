@@ -11,8 +11,9 @@ each one's changed files from GitHub and the job minutes in `design/history/ci-2
 20 to 22 November, so the replay covers the 101 of those pull requests that ran `ci` in that window. A pull request's runs are
 matched to it by branch name (the run table's pull-request column is mostly empty). Every run of a pull request is counted against
 its final diff, which slightly overstates a branch whose early runs had a smaller diff. The script is
-`design/history/ci-2026-11-22/e2e_suites_replay.py`; run it on `jobs.tsv`, `ci.tsv` and the two `prs-*.json` lists (`gh pr list
---state merged --base <b> --json number,files,headRefName,baseRefName`).
+`design/history/ci-2026-11-22/e2e_suites_replay.py`; run `python3 e2e_suites_replay.py` from anywhere and it reads `ci.tsv`, `jobs.tsv.gz` and
+the two snapshots of the pull-request lists (`prs-main.json.gz`, `prs-goal_stage-1.json.gz`: number, branches and changed paths, taken with
+`gh pr list --state merged --base <b> --json number,files,headRefName,baseRefName,mergedAt` on 23 November) from its own folder.
 
 The e2e jobs took 17,281 runner-minutes in the window. Where they ran:
 
