@@ -27,12 +27,16 @@ whole file passes; adding a line, adding a file, swapping a line or renaming one
 suite (its checks, fixtures and README) stays protected. The guard matches `^e2e/[^/]+/expected-failing/`, so a
 look-alike folder (`expected-failing-x/`) is still protected. `tools/ci/ci.test.sh` carries five new cases for it.
 
-Goal 3 widened the guard the same way for `e2e/m2/` alone (#267, a list of two folders) while this was in review. The
-pattern above covers `e2e/m2/` too, so the merge keeps the pattern and both sets of test cases.
+Two narrower widenings came first, each its own way, and each conflicted with the others on merge:
 
-Goal 9 then widened it to every milestone folder, `^e2e/m[0-9]+/expected-failing/` (M8-timers-shape), with a case that
-a non-milestone suite (`e2e/mx/`) may not shrink. Under this call every suite's list may shrink, so the 23 November
-merge keeps this pattern, and that case now checks a look-alike folder (`e2e/mx/expected-failing-x/`) instead.
+- Goal 3 added `e2e/m2/` to a list of folders (#267).
+- Goal 9 added every milestone folder, `^e2e/m[0-9]+/expected-failing/` (M8-timers-shape), with a case saying a
+  non-milestone suite (`e2e/mx/`) may not shrink.
+
+The pattern above covers both, so it replaces them. Every m1, m2 and m8 case stays in `tools/ci/ci.test.sh`, with four
+more showing that what the narrower guards held still holds: a swapped m2 or m8 line, a renamed m2 file, and a ratchet
+folder nested below a suite are all hits. Goal 9's non-milestone case now checks a look-alike folder
+(`e2e/mx/expected-failing-x/`), since under this call every suite's list may shrink.
 
 ## Supersedes
 
