@@ -41,8 +41,11 @@ export const Times: TimesApi = {
   },
   keeperUsed,
   keeper: keeperProblems,
-  clock: ({ file, clock }) => {
+  clock: ({ file, clock, environment, promotes }) => {
     if (clock.which === "real") return { clock: { kind: "real" } satisfies ClockModel, problems: [] };
+    if (promotes === true) {
+      return { clock: undefined, problems: [`${file}: environment "${environment ?? "this one"}" promotes to production, so its clock must be real: a ${clock.which} clock is for local and test worlds (ortho check refuses it here)`] };
+    }
     const starts = DateTime.make(clock.starts);
     if (Option.isNone(starts)) return { clock: undefined, problems: [`${file}: the clock starts at "${clock.starts}", which isn't an instant (ISO 8601, like 2027-01-10T09:00:00Z)`] };
     const at = DateTime.formatIso(starts.value);

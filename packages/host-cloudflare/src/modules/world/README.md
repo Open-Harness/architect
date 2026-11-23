@@ -2,8 +2,17 @@
 
 `World`, the Durable Object that is one running world, and `toWorld`, which routes `/_world/*` to it. Stage one's
 world keeps the cast (`POST /_world/cast` with `{ names }` gives each a person id, made once and kept in the world's
-own SQLite storage, and a token signed with the run's secret) and answers `/_world/health`. The clock, the timers
-table and the registry of things join it in stage five.
+own SQLite storage, and a token signed with the run's secret) and answers `/_world/health`. It holds the world's clock
+(M8.06; the `clock` module): `GET /_world/clock`, `POST /_world/clock/advance` and `/move-to`, and `now()` over RPC. The
+timers table (M8.07) and the registry of things join it later.
+
+## Every entry wraps itself (M8.06)
+
+`WorldEntry.entry(handler)` wraps a Worker's `fetch`, `scheduled` and `queue`; `WorldEntry.within(env, f)` any other entry
+that returns a promise (a Workflows step); `WorldEntry.withinNow(env, f)` an RPC that answers at once (the actors'). Each
+reads its world's instant from the world's Durable Object and runs inside `WorldClock.within`, so `Date` and Effect's
+`Clock` read it. A real world skips all of it. The world's `alarm`, `/_world/worlds` and `/_world/arm` and `/_world/end` keep
+real time: they are the world's lifetime. Decision: `design/decisions/M8-06-world-holds-the-clock.md`.
 
 ## Worlds in a long-lived environment (D3 #50)
 

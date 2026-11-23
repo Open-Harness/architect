@@ -35,7 +35,9 @@ export const environmentsOf = (layout: Layout, problems: Array<string>): Readonl
     for (const s of sinks) if (s.which === "axiom" && !GROUP.test(s.group)) problems.push(`${file}: the Axiom group "${s.group}" isn't a dataset group name (letters, digits, - _ .)`);
     const named = sinks.map((s) => JSON.stringify(sinkOf(s)));
     if (new Set(named).size !== named.length) problems.push(`${file}: telemetry names the same sink twice`);
-    const clock = e.clock === undefined ? undefined : Times.clock({ file, clock: e.clock });
+    // An environment in a promotion chain (it promotes from another, or another promotes from it) holds real worlds only (K23 section 1).
+    const promotes = e.promotesFrom !== undefined || [...layout.environments.values()].some((other) => other.declaration.promotesFrom === name);
+    const clock = e.clock === undefined ? undefined : Times.clock({ file, clock: e.clock, environment: name, promotes });
     problems.push(...(clock?.problems ?? []));
     const entry = {
       name, file, runs: e.runs, ...(e.identity === undefined ? {} : { identity: e.identity.which }),

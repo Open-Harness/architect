@@ -118,7 +118,8 @@ export default Blueprint.environment({ runs: "cloudflare", clock: Blueprint.cloc
 - **Real**: the wall clock. Staging, production and any public chain. Nothing can move it, and `ortho check` refuses
   any other kind on an environment that promotes to production or reaches a public chain.
 - **Stepped**: time stands still until it is moved. Journeys, local and test worlds. The default for `local` and
-  `test`.
+  `test`. (Superseded by M8-06-world-holds-the-clock, 23 November 2026: an environment that declares no clock is
+  real, so a blueprint with no time generates what it always did; a local or test environment is stepped by saying so.)
 - **Scaled**: time flows by itself at a speed, one second per second by default, and can also be jumped forward.
   `ortho dev` runs a local or test environment's clock this way (Aaron, Q2): `ortho clock advance "1 month"` or the
   portal's control jumps it, settling exactly as a journey's step does, and `ortho dev --speed 720` (a month an hour)
@@ -212,7 +213,7 @@ fails as `NeverQuiet`, naming each process still busy.
 
 | System | Reads the world's time through | Moved by |
 |---|---|---|
-| The server (Worker, Durable Objects) | Effect's `Clock`, provided at the entry from the world's instant, fixed for the whole request (as workerd fixes `Date` during a request). (Superseded by M8-checks, 20 November 2026: the world's instant, live, so a handler that reads `Clock` after a durable sleep reads the instant the sleep woke at.) In a stepped or scaled world the entry also gives `Date` the world's time, so libraries that read it (Better Auth, jose) agree: a `Date` proxy installed once, and each request run inside `AsyncLocalStorage` with the world's instant, never a global assignment; every entry does this itself, each Durable Object included (amended by spike M8.05, `spikes/world-time-in-worker/`); that is an entry file's job, which the lint rule allows | the controller, at each step |
+| The server (Worker, Durable Objects) | Effect's `Clock`, provided at the entry from the world's instant, fixed for the whole request (as workerd fixes `Date` during a request). (Superseded by M8-06-world-holds-the-clock, 23 November 2026: Effect's default `Clock` reads `Date` at each call, so the entry's `Date` lookup is what provides it, with no second layer. Superseded by M8-checks, 20 November 2026: the world's instant, live, so a handler that reads `Clock` after a durable sleep reads the instant the sleep woke at.) In a stepped or scaled world the entry also gives `Date` the world's time, so libraries that read it (Better Auth, jose) agree: a `Date` proxy installed once, and each request run inside `AsyncLocalStorage` with the world's instant, never a global assignment; every entry does this itself, each Durable Object included (amended by spike M8.05, `spikes/world-time-in-worker/`); that is an entry file's job, which the lint rule allows | the controller, at each step |
 | The database | times passed as parameters; the lint rule gains SQL's `now()`, `CURRENT_TIMESTAMP` and `datetime('now')` | nothing to move |
 | `Timers` | a row in the world's timer table (stepped, scaled); a Durable Object alarm or the engine's sleep (real) | fired by the controller |
 | The chain (`ChainPort.clock`, one per family) | the latest block's timestamp | EVM: Anvil started at the world's start with interval 0; a step sets the next block's timestamp and mines one block, whole seconds only. Aztec: the warp plus the L1 blocks finality needs (stage 4) |

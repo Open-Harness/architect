@@ -4,6 +4,9 @@ import type { WorldEnv, WorldHost } from "./types.ts";
 import { frontDoor, RESET_HEADER } from "./internal/front-door.ts";
 import { AuthD1 } from "#modules/auth/service.js";
 import type { AuthInstance } from "#modules/auth/types.js";
+import { WorldClock } from "#modules/clock/service.js";
+import type { ClockSource, ClockState } from "#modules/clock/types.js";
+import { entry, within, withinNow } from "./internal/entry.ts";
 import { facts } from "./internal/facts.ts";
 import { end, live } from "./internal/leases.ts";
 import { resetDatabases } from "./internal/reset.ts";
@@ -18,9 +21,12 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
  */
 export class World extends DurableObject<WorldEnv> {
   private readonly auth: AuthInstance;
+  /** The world's instant (M8.06): the wall clock, or the one it keeps in its own storage. */
+  private readonly clock: ClockState;
 
   constructor(ctx: DurableObjectState, env: WorldEnv) {
     super(ctx, env);
+    this.clock = WorldClock.state(ctx.storage.sql, WorldClock.declared(env));
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS cast (name TEXT PRIMARY KEY, person TEXT, email TEXT NOT NULL, password TEXT NOT NULL)");
     this.auth = AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: true });
   }
@@ -30,7 +36,28 @@ export class World extends DurableObject<WorldEnv> {
     if (pathname === "/_world/arm" || pathname === "/_world/end") {
       return request.json().then((body) => (pathname === "/_world/arm" ? this.arm(body as { id: string; expires: number }) : this.finish(body as { id: string; reason: "destroyed" | "expired" })));
     }
-    return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE));
+    const clock = WorldClock.door(this.clock, request);
+    if (clock) return clock;
+    // The cast signs up and in through Better Auth, which reads `Date`: at the world's instant, not the machine's.
+    const answered = this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)));
+    // The warm reset between runs (ST1.24) is the one way back: the clock returns to its declared start, a scaled one re-anchored now.
+    // Only the reset the world itself accepted (its nonce matched) does it.
+    return pathname === "/_world/reset" && request.method === "POST" ? answered.then((response) => { if (response.ok) this.clock.reset(); return response; }) : answered;
+  }
+
+  /** The world's instant now. */
+  now(): number {
+    return this.clock.now();
+  }
+
+  /** What to read the world's time from. Every other entry (the Worker, the actors) asks this over RPC, once, to run in this world's time. */
+  source(): ClockSource | undefined {
+    return this.clock.source();
+  }
+
+  private inTime<A>(f: () => Promise<A>): Promise<A> {
+    const source = this.clock.source();
+    return source === undefined ? f() : WorldClock.within(source, f);
   }
 
   /** Remember the world's id and wake at its expiry. */
@@ -44,10 +71,18 @@ export class World extends DurableObject<WorldEnv> {
       this.ctx.storage.deleteAlarm().then(() => this.ctx.storage.deleteAll()).then(() => json({ ended })));
   }
 
+  /** The world's own lifetime: real time, never the world's (K23 section 1), so it is the one entry that is not wrapped. */
   override alarm(): Promise<void> {
     return this.ctx.storage.get<string>("world").then((id) => (id === undefined ? undefined : this.finish({ id, reason: "expired" }).then(() => undefined)));
   }
 }
+
+/**
+ * Every entry that runs app code wraps itself in its world's time (M8.06). `entry` wraps a Worker's `fetch`, `scheduled`
+ * and `queue`; `within` wraps any other promise-returning entry (a Workflows step), and `withinNow` an RPC method that
+ * answers at once. A real world runs each as it is.
+ */
+export const WorldEntry = { entry, within, withinNow };
 
 /**
  * A `/_world/*` request. Facts come straight from the database. `/_world/worlds` is the environment's registry of worlds,
