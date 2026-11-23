@@ -5,7 +5,7 @@ milestone: "Goal 13: the vault"
 release: "1.0"
 branch: goal/vault
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: null        # claude | codex | opencode | amp, set by the lead when it starts
   model: null          # the model id it runs on
@@ -107,4 +107,4 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+23 November 2026, parked under K42 (section 7) without starting. Its slices become items on the board at their stage.
