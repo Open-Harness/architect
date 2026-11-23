@@ -249,8 +249,9 @@ jobs:
       - name: Restore Pro from the cache
         if: steps.pro-cache.outputs.cache-hit == 'true' && steps.run.outputs.skip != 'true'
         run: node packages/portal-ui/tools/pro.mjs @heroui-pro/react restore .cache/heroui-pro
+      # The fork rule is written out here too, where the secret is read, so the guard on the token is plain to see (check 15).
       - name: Install Pro with the licence token
-        if: steps.pro-cache.outputs.cache-hit != 'true' && steps.run.outputs.skip != 'true'
+        if: steps.pro-cache.outputs.cache-hit != 'true' && steps.run.outputs.skip != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         env:
           HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
         run: node packages/portal-ui/tools/pro.mjs @heroui-pro/react fetch
