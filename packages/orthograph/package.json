@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./server": "./src/server.ts",
-    "./sentences": "./src/sentences.ts"
+    "./sentences": "./src/sentences.ts",
+    "./actions": "./src/actions.ts"
   },
   "dependencies": {
     "effect": "4.1.4"
@@ -30,6 +31,10 @@
       "./sentences": {
         "types": "./dist/sentences.d.ts",
         "default": "./dist/sentences.js"
+      },
+      "./actions": {
+        "types": "./dist/actions.d.ts",
+        "default": "./dist/actions.js"
       }
     },
     "imports": {
