@@ -1,7 +1,7 @@
 <!-- Generated from the blueprint. Do not edit. -->
 # assignment.waiting
 
-List assignments, oldest first, 255 to a page, filtered by superagent.
+List assignments, oldest first, 255 to a page, filtered by superagent, the rows with why person ahead of the rest.
 
 **Who may call:** the system.
 

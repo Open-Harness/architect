@@ -61,7 +61,7 @@ export const indexFile = (head: string, title: string, version: string, tree: Tr
     `import { schemaOf } from "./runtime/json-schema.ts";`,
     `import { components } from "./spec/components.ts";`,
     `import { eventPayloads } from "./spec/events.ts";`]),
-  `import { events as written, standIn } from "./written.ts";`, "",
+  `import { door, events as written, standIn } from "./written.ts";`, "",
   ...(events.length === 0 ? [] : [
     `/** The payload of an event: any one of the payloads its service documents for it. */`,
     `const payload = (event: string) => Blueprint.incoming(schemaOf(components, { oneOf: eventPayloads[event] ?? [] }));`, ""]),
@@ -70,6 +70,7 @@ export const indexFile = (head: string, title: string, version: string, tree: Tr
   `  calls: {`, callsText(tree, "    "), `  },`,
   `  events: {`, ...byName(events).map((e) => `    ${JSON.stringify(e.name)}: payload(${JSON.stringify(e.name)}),`), `    ...written,`, `  },`,
   `  standIn,`,
+  `  ...(door === undefined ? {} : { door }),`,
   `});`, "",
 ].join("\n");
 

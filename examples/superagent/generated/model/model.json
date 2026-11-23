@@ -15,6 +15,8 @@
   "sources": {
     "github": {
       "mount": "github",
+      "file": "@orthograph/intake/blueprint/sources/github.ts",
+      "export": "githubSource",
       "events": [
         "checkRun",
         "issueComment",
@@ -25,7 +27,8 @@
       ],
       "calls": [
         "issues.createComment",
-        "issues.listComments"
+        "issues.listComments",
+        "repos.listCollaborators"
       ],
       "variables": {
         "GITHUB_REPOSITORY": "owner/name of the repository the ticket started on",
@@ -38,15 +41,37 @@
         "review"
       ]
     },
+    "posthog": {
+      "mount": "posthog",
+      "file": "@orthograph/intake/blueprint/sources/posthog.ts",
+      "export": "posthogSource",
+      "events": [
+        "errorAlert",
+        "errorResolved"
+      ],
+      "calls": [
+        "errorTrackingIssuesRetrieve"
+      ],
+      "variables": {
+        "POSTHOG_PROJECT": "the PostHog project the error is in",
+        "POSTHOG_ISSUE": "the id of the error tracking issue"
+      },
+      "kinds": [
+        "errorIssue"
+      ]
+    },
     "slack": {
       "mount": "slack",
+      "file": "@orthograph/intake/blueprint/sources/slack.ts",
+      "export": "slackSource",
       "events": [
         "appMention",
         "message"
       ],
       "calls": [
         "chatPostMessage",
-        "conversationsReplies"
+        "conversationsReplies",
+        "usergroupsUsersList"
       ],
       "variables": {
         "SLACK_CHANNEL": "the channel the ticket started in",
@@ -54,7 +79,6 @@
       },
       "kinds": [
         "direct",
-        "im",
         "mention",
         "message"
       ]
@@ -4696,7 +4720,7 @@
         "version": "0.0.0",
         "thing": "assignment"
       },
-      "description": "List assignments, oldest first, 255 to a page, filtered by superagent.",
+      "description": "List assignments, oldest first, 255 to a page, filtered by superagent, the rows with why person ahead of the rest.",
       "payload": {
         "superagent": {
           "value": {
@@ -4753,7 +4777,10 @@
       "only": {
         "state": "pending"
       },
-      "hash": "e5dee96c1e703657"
+      "first": {
+        "why": "person"
+      },
+      "hash": "916fe964873841a5"
     },
     "decision.dismiss": {
       "kind": "operation",
@@ -14322,7 +14349,7 @@
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-+QfhY3BLjzDhN6TqngzRoEjSzKIeXsoa57cgNm4Kw0E=",
+      "integrity": "sha256-CAUnDeUqjBpnYub4fXTsDFmVCSblbezu1as5rGcQwC8=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -14332,7 +14359,8 @@
         "pulls.createReviewComment",
         "pulls.get",
         "pulls.listReviewComments",
-        "pulls.listReviews"
+        "pulls.listReviews",
+        "repos.listCollaborators"
       ],
       "events": [
         "checkRun",
@@ -14346,34 +14374,41 @@
         "how": "process",
         "what": "a bare git repository served by git http-backend, with a small server for GitHub's REST API over it"
       },
-      "hash": "8a6f135b591e3864"
+      "door": {
+        "secret": "GITHUB_WEBHOOK_SIGNING"
+      },
+      "hash": "e8baeb91fc9464a7"
     },
     "intake": {
       "kind": "feature",
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-VM0U55ZlzPGHcIocPR5AOw6AN+LklhxgKRinVfahMX0=",
+      "integrity": "sha256-AxlU2lbZMTRycljdlDPstQ0TZIFRGZwBhAxXddqqRc0=",
       "chosen": {},
-      "hash": "fa25ea9db0629c24"
+      "hash": "f47cbc400b9c2b82"
     },
     "posthog": {
       "kind": "adapter",
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-2BIrFP+ilUntYsgklqNdvBHkCHuF4MpNj27GMV4JAug=",
+      "integrity": "sha256-f4GWwLntJhjpCWQOE37qqkVNMQM3BXVbJeErsxyVOoA=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
         "errorTrackingIssuesPartialUpdate",
         "errorTrackingIssuesRetrieve"
       ],
+      "events": [
+        "errorAlert",
+        "errorResolved"
+      ],
       "standIn": {
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "78f7cfc1e1296a86"
+      "hash": "f0d93648359426f7"
     },
     "prompts": {
       "kind": "feature",
@@ -14389,11 +14424,12 @@
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-cgYvochHojf+Y0SfD1jGexHVKhCU9eWvYssJDbYbGYw=",
+      "integrity": "sha256-A81tsrSDlCfTfvb1eoiw4qh6jHWvCskP67AfhTtQtQA=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
-        "conversationsReplies"
+        "conversationsReplies",
+        "usergroupsUsersList"
       ],
       "events": [
         "appMention",
@@ -14403,7 +14439,10 @@
         "how": "process",
         "what": "a small server over channel C024BE91L that answers Slack's Web API as Slack does"
       },
-      "hash": "5167dd11573985b8"
+      "door": {
+        "secret": "SLACK_WEBHOOK_SIGNING"
+      },
+      "hash": "e30078e58778c834"
     },
     "superagent": {
       "kind": "feature",
@@ -14419,9 +14458,9 @@
       "file": "blueprint/features/tickets.ts",
       "package": "@orthograph/tickets",
       "version": "0.0.0",
-      "integrity": "sha256-MYJy9LmLJKpiOplj7W1+Fwm1YJPQ1Gb8KSYqPWrKQL4=",
+      "integrity": "sha256-TEG5oJJgoK6lU+f9gYsc9wIC7VSCGd0JWXXrdPoAE40=",
       "chosen": {},
-      "hash": "39d4a5fdcd36efac"
+      "hash": "97aaf0278d30506b"
     }
   }
 }

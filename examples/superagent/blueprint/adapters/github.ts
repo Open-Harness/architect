@@ -11,6 +11,7 @@ export default Blueprint.use(github, (g) => [
   g.include(g.calls.pulls.listReviews),
   g.include(g.calls.pulls.createReviewComment),
   g.include(g.calls.pulls.listReviewComments),
+  g.include(g.calls.repos.listCollaborators),
   g.include(g.events.issueComment),
   g.include(g.events.issues),
   g.include(g.events.pullRequest),

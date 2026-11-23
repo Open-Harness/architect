@@ -9,5 +9,7 @@ export type { StoreD1Options } from "#modules/store/types.js";
 export { Actor } from "#modules/actors/service.js";
 export { AuthD1 } from "#modules/auth/service.js";
 export type { AuthInstance, AuthOptions, CastMember } from "#modules/auth/types.js";
+export { Inbound } from "#modules/inbound/service.js";
+export type { Door, InboundApi, InboundOptions } from "#modules/inbound/types.js";
 export { World, toWorld } from "#modules/world/service.js";
 export type { Cast, WorldEnv, WorldHost } from "#modules/world/types.js";

@@ -24,9 +24,11 @@ export const blueprintReadme = (name: string) =>
 /** The one file a person writes in a generated plugin: what the description doesn't say. */
 export const writtenFile = () => [
   `// Scaffolded from ortho new adapter. Yours from now on.`,
-  `import { Stand } from "orthograph";`, "",
+  `import { Stand, type AdapterDoor } from "orthograph";`, "",
   `/** Events the service sends that its description has no schema for, each \`Blueprint.incoming(<an Effect schema of its payload>)\`. */`,
   `export const events = {};`, "",
   `/** What stands in for the service in a world: \`Stand.process("...")\`, \`Stand.vendor("...")\` or, with nothing local, \`Stand.none\`. */`,
   `export const standIn = Stand.none;`, "",
+  `/** How its door receives the events: how the sender signs, where the event's name is. \`undefined\` for a service that sends none. */`,
+  `export const door: AdapterDoor | undefined = undefined;`, "",
 ].join("\n");

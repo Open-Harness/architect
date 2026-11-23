@@ -79,7 +79,7 @@ export interface Reply<Addr> {
 export interface History<Addr> {
   readonly call: Call;
   readonly args: (thread: Addr, cursor?: string) => unknown;
-  readonly page: (answer: never) => { readonly messages: ReadonlyArray<ContextMessage>; readonly next?: string | undefined };
+  readonly page: (answer: never, cursor?: string) => { readonly messages: ReadonlyArray<ContextMessage>; readonly next?: string | undefined };
 }
 
 export interface PolicyPart<Cfg> {

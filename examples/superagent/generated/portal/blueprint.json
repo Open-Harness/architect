@@ -19,6 +19,8 @@
     "sources": {
       "github": {
         "mount": "github",
+        "file": "@orthograph/intake/blueprint/sources/github.ts",
+        "export": "githubSource",
         "events": [
           "checkRun",
           "issueComment",
@@ -29,7 +31,8 @@
         ],
         "calls": [
           "issues.createComment",
-          "issues.listComments"
+          "issues.listComments",
+          "repos.listCollaborators"
         ],
         "variables": {
           "GITHUB_REPOSITORY": "owner/name of the repository the ticket started on",
@@ -42,15 +45,37 @@
           "review"
         ]
       },
+      "posthog": {
+        "mount": "posthog",
+        "file": "@orthograph/intake/blueprint/sources/posthog.ts",
+        "export": "posthogSource",
+        "events": [
+          "errorAlert",
+          "errorResolved"
+        ],
+        "calls": [
+          "errorTrackingIssuesRetrieve"
+        ],
+        "variables": {
+          "POSTHOG_PROJECT": "the PostHog project the error is in",
+          "POSTHOG_ISSUE": "the id of the error tracking issue"
+        },
+        "kinds": [
+          "errorIssue"
+        ]
+      },
       "slack": {
         "mount": "slack",
+        "file": "@orthograph/intake/blueprint/sources/slack.ts",
+        "export": "slackSource",
         "events": [
           "appMention",
           "message"
         ],
         "calls": [
           "chatPostMessage",
-          "conversationsReplies"
+          "conversationsReplies",
+          "usergroupsUsersList"
         ],
         "variables": {
           "SLACK_CHANNEL": "the channel the ticket started in",
@@ -58,7 +83,6 @@
         },
         "kinds": [
           "direct",
-          "im",
           "mention",
           "message"
         ]
@@ -4700,7 +4724,7 @@
           "version": "0.0.0",
           "thing": "assignment"
         },
-        "description": "List assignments, oldest first, 255 to a page, filtered by superagent.",
+        "description": "List assignments, oldest first, 255 to a page, filtered by superagent, the rows with why person ahead of the rest.",
         "payload": {
           "superagent": {
             "value": {
@@ -4757,7 +4781,10 @@
         "only": {
           "state": "pending"
         },
-        "hash": "e5dee96c1e703657"
+        "first": {
+          "why": "person"
+        },
+        "hash": "916fe964873841a5"
       },
       "decision.dismiss": {
         "kind": "operation",
@@ -14326,7 +14353,7 @@
         "file": "blueprint/adapters/github.ts",
         "package": "@orthograph/github",
         "version": "0.0.0",
-        "integrity": "sha256-+QfhY3BLjzDhN6TqngzRoEjSzKIeXsoa57cgNm4Kw0E=",
+        "integrity": "sha256-CAUnDeUqjBpnYub4fXTsDFmVCSblbezu1as5rGcQwC8=",
         "chosen": {},
         "calls": [
           "issues.createComment",
@@ -14336,7 +14363,8 @@
           "pulls.createReviewComment",
           "pulls.get",
           "pulls.listReviewComments",
-          "pulls.listReviews"
+          "pulls.listReviews",
+          "repos.listCollaborators"
         ],
         "events": [
           "checkRun",
@@ -14350,34 +14378,41 @@
           "how": "process",
           "what": "a bare git repository served by git http-backend, with a small server for GitHub's REST API over it"
         },
-        "hash": "8a6f135b591e3864"
+        "door": {
+          "secret": "GITHUB_WEBHOOK_SIGNING"
+        },
+        "hash": "e8baeb91fc9464a7"
       },
       "intake": {
         "kind": "feature",
         "file": "blueprint/features/intake.ts",
         "package": "@orthograph/intake",
         "version": "0.0.0",
-        "integrity": "sha256-VM0U55ZlzPGHcIocPR5AOw6AN+LklhxgKRinVfahMX0=",
+        "integrity": "sha256-AxlU2lbZMTRycljdlDPstQ0TZIFRGZwBhAxXddqqRc0=",
         "chosen": {},
-        "hash": "fa25ea9db0629c24"
+        "hash": "f47cbc400b9c2b82"
       },
       "posthog": {
         "kind": "adapter",
         "file": "blueprint/adapters/posthog.ts",
         "package": "@orthograph/posthog",
         "version": "0.0.0",
-        "integrity": "sha256-2BIrFP+ilUntYsgklqNdvBHkCHuF4MpNj27GMV4JAug=",
+        "integrity": "sha256-f4GWwLntJhjpCWQOE37qqkVNMQM3BXVbJeErsxyVOoA=",
         "chosen": {},
         "calls": [
           "errorTrackingIssuesList",
           "errorTrackingIssuesPartialUpdate",
           "errorTrackingIssuesRetrieve"
         ],
+        "events": [
+          "errorAlert",
+          "errorResolved"
+        ],
         "standIn": {
           "how": "process",
           "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
         },
-        "hash": "78f7cfc1e1296a86"
+        "hash": "f0d93648359426f7"
       },
       "prompts": {
         "kind": "feature",
@@ -14393,11 +14428,12 @@
         "file": "blueprint/adapters/slack.ts",
         "package": "@orthograph/slack",
         "version": "0.0.0",
-        "integrity": "sha256-cgYvochHojf+Y0SfD1jGexHVKhCU9eWvYssJDbYbGYw=",
+        "integrity": "sha256-A81tsrSDlCfTfvb1eoiw4qh6jHWvCskP67AfhTtQtQA=",
         "chosen": {},
         "calls": [
           "chatPostMessage",
-          "conversationsReplies"
+          "conversationsReplies",
+          "usergroupsUsersList"
         ],
         "events": [
           "appMention",
@@ -14407,7 +14443,10 @@
           "how": "process",
           "what": "a small server over channel C024BE91L that answers Slack's Web API as Slack does"
         },
-        "hash": "5167dd11573985b8"
+        "door": {
+          "secret": "SLACK_WEBHOOK_SIGNING"
+        },
+        "hash": "e30078e58778c834"
       },
       "superagent": {
         "kind": "feature",
@@ -14423,9 +14462,9 @@
         "file": "blueprint/features/tickets.ts",
         "package": "@orthograph/tickets",
         "version": "0.0.0",
-        "integrity": "sha256-MYJy9LmLJKpiOplj7W1+Fwm1YJPQ1Gb8KSYqPWrKQL4=",
+        "integrity": "sha256-TEG5oJJgoK6lU+f9gYsc9wIC7VSCGd0JWXXrdPoAE40=",
         "chosen": {},
-        "hash": "39d4a5fdcd36efac"
+        "hash": "97aaf0278d30506b"
       }
     }
   },
@@ -14501,7 +14540,7 @@
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "assignment.waiting": {
-      "operation:assignment.waiting": "e5dee96c1e703657",
+      "operation:assignment.waiting": "916fe964873841a5",
       "thing:agent": "a369aaa882ce59e7",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
@@ -14861,13 +14900,13 @@
     "agent/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# agent.open\n\nMake an agent of one kind, about one thing: any operation allowed to create one makes it.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| kind | agent.kind |\n| about | agent.about |\n\n## Answer\n\n| field | value |\n|---|---|\n| agent | agent.id |\n\n## Move\n\n`open`: from nothing (it creates) to idle, emitting AgentOpened.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent agent open --kind <kind> --about <about>\n```\n\nHTTP: `POST /agent/open` with the payload as JSON. SDK: `Sdk.agent.open(payload)`.\n",
     "agent/tell.md": "<!-- Generated from the blueprint. Do not edit. -->\n# agent.tell\n\nGive an agent one input, steering it when it is busy. Only an outbox hop calls it, with the delivering event's id as the request id.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| agent | agent.id |\n| requestId | text |\n| input | text |\n| assignment (optional) | id |\n| opens | schema |\n\n## Answer\n\n(none)\n\n## Move\n\n`tell`: from idle or working to working, emitting AgentTold.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleAssignment | 51 | AG-001 | declared in errors.ts, carrying assignment |\n| AgentNotIdle | 50 | AG-900 | the agent is in a state tell can't start from; carries `state` |\n| AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent agent tell --agent <agent> --requestId <requestId> --input <input> [--assignment <assignment>] --opens <opens>\n```\n\nHTTP: `POST /agent/tell` with the payload as JSON. SDK: `Sdk.agent.tell(payload)`.\n",
     "assignment/cancelled.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.cancelled\n\nEnd a pending Assignment that was never seated or told.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`cancelled`: from pending to ended, emitting AssignmentEnded.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AssignmentNotPending | 94 | AS-900 | the assignment is in a state cancelled can't start from; carries `state` |\n| AssignmentNotFound | 4 | AS-901 | nothing has the id in assignment; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment cancelled --assignment <assignment>\n```\n\nHTTP: `POST /assignment/cancelled` with the payload as JSON. SDK: `Sdk.assignment.cancelled(payload)`.\n",
-    "assignment/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment\n\nOne stretch of a ticket's executor holding a seat: it waits, runs, ends.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| ticket | ticket.id |\n| agent | agent.id |\n| input | input.id |\n| why | schema |\n| seat | uint |\n\n## Machine\n\nStates: pending, running, closing, ended. A move from the wrong state is refused AssignmentNotPending (exit 94).\n\n| move | from | to | emits |\n|---|---|---|---|\n| queued | (creates) | pending | AssignmentQueued |\n| promoted | pending | pending | AssignmentPromoted |\n| started | pending | running | AssignmentStarted |\n| cancelled | pending | ended | AssignmentEnded |\n| interrupted | running | closing | AssignmentInterrupted |\n| turnEnded | running, closing | ended | AssignmentEnded |\n\n## Invariants\n\n- `assignment.oneHolderPerSeat`: another running or closing assignment holds this superagent and seat. Unique on superagent, seat, while running or closing; refused SeatTaken.\n- `assignment.oneLivePerExecutor`: another pending, running or closing assignment holds this agent. Unique on agent, while pending or running or closing; refused ExecutorAlreadyQueued.\n\n## Events\n\n- `AssignmentEnded`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket), seat (assignment.seat); emitted by the move cancelled, turnEnded\n- `AssignmentInterrupted`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket), agent (assignment.agent), seat (assignment.seat); emitted by the move interrupted\n- `AssignmentPromoted`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket); emitted by the move promoted\n- `AssignmentQueued`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket), input (assignment.input), why (assignment.why); emitted by the move queued\n- `AssignmentStarted`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket), agent (assignment.agent), input (assignment.input), text (text), seat (assignment.seat), why (assignment.why); emitted by the move started\n\n## Operations\n\n- [assignment.cancelled](cancelled.md): End a pending Assignment that was never seated or told.\n- [assignment.interrupted](interrupted.md): Close a running Assignment: a stop, a retire or a reap. It keeps its seat until the Agent says it closed.\n- [assignment.promoted](promoted.md): A person's Input on a pending Assignment moves it up: its reason becomes a person's.\n- [assignment.queued](queued.md): Queue an Assignment for a ticket's executor: an accept, an Input or a resume. It names the Input that woke it.\n- [assignment.started](started.md): Give a waiting Assignment a seat, if one is free for it.\n- [assignment.turn-ended](turn-ended.md): The Agent idled on this Assignment or closed it: it ends, and its seat is free.\n- [assignment.waiting](waiting.md): List assignments, oldest first, 255 to a page, filtered by superagent.\n",
+    "assignment/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment\n\nOne stretch of a ticket's executor holding a seat: it waits, runs, ends.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| ticket | ticket.id |\n| agent | agent.id |\n| input | input.id |\n| why | schema |\n| seat | uint |\n\n## Machine\n\nStates: pending, running, closing, ended. A move from the wrong state is refused AssignmentNotPending (exit 94).\n\n| move | from | to | emits |\n|---|---|---|---|\n| queued | (creates) | pending | AssignmentQueued |\n| promoted | pending | pending | AssignmentPromoted |\n| started | pending | running | AssignmentStarted |\n| cancelled | pending | ended | AssignmentEnded |\n| interrupted | running | closing | AssignmentInterrupted |\n| turnEnded | running, closing | ended | AssignmentEnded |\n\n## Invariants\n\n- `assignment.oneHolderPerSeat`: another running or closing assignment holds this superagent and seat. Unique on superagent, seat, while running or closing; refused SeatTaken.\n- `assignment.oneLivePerExecutor`: another pending, running or closing assignment holds this agent. Unique on agent, while pending or running or closing; refused ExecutorAlreadyQueued.\n\n## Events\n\n- `AssignmentEnded`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket), seat (assignment.seat); emitted by the move cancelled, turnEnded\n- `AssignmentInterrupted`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket), agent (assignment.agent), seat (assignment.seat); emitted by the move interrupted\n- `AssignmentPromoted`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket); emitted by the move promoted\n- `AssignmentQueued`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket), input (assignment.input), why (assignment.why); emitted by the move queued\n- `AssignmentStarted`: carries superagent (assignment.superagent), assignment (assignment.id), ticket (assignment.ticket), agent (assignment.agent), input (assignment.input), text (text), seat (assignment.seat), why (assignment.why); emitted by the move started\n\n## Operations\n\n- [assignment.cancelled](cancelled.md): End a pending Assignment that was never seated or told.\n- [assignment.interrupted](interrupted.md): Close a running Assignment: a stop, a retire or a reap. It keeps its seat until the Agent says it closed.\n- [assignment.promoted](promoted.md): A person's Input on a pending Assignment moves it up: its reason becomes a person's.\n- [assignment.queued](queued.md): Queue an Assignment for a ticket's executor: an accept, an Input or a resume. It names the Input that woke it.\n- [assignment.started](started.md): Give a waiting Assignment a seat, if one is free for it.\n- [assignment.turn-ended](turn-ended.md): The Agent idled on this Assignment or closed it: it ends, and its seat is free.\n- [assignment.waiting](waiting.md): List assignments, oldest first, 255 to a page, filtered by superagent, the rows with why person ahead of the rest.\n",
     "assignment/interrupted.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.interrupted\n\nClose a running Assignment: a stop, a retire or a reap. It keeps its seat until the Agent says it closed.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`interrupted`: from running to closing, emitting AssignmentInterrupted.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SeatTaken | 96 | AS-002 | another running or closing assignment holds this superagent and seat; by the rule assignment.oneHolderPerSeat, carrying seat |\n| ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |\n| AssignmentNotPending | 94 | AS-900 | the assignment is in a state interrupted can't start from; carries `state` |\n| AssignmentNotFound | 4 | AS-901 | nothing has the id in assignment; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment interrupted --assignment <assignment>\n```\n\nHTTP: `POST /assignment/interrupted` with the payload as JSON. SDK: `Sdk.assignment.interrupted(payload)`.\n",
     "assignment/promoted.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.promoted\n\nA person's Input on a pending Assignment moves it up: its reason becomes a person's.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`promoted`: from pending to pending, emitting AssignmentPromoted.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |\n| AssignmentNotPending | 94 | AS-900 | the assignment is in a state promoted can't start from; carries `state` |\n| AssignmentNotFound | 4 | AS-901 | nothing has the id in assignment; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment promoted --assignment <assignment>\n```\n\nHTTP: `POST /assignment/promoted` with the payload as JSON. SDK: `Sdk.assignment.promoted(payload)`.\n",
     "assignment/queued.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.queued\n\nQueue an Assignment for a ticket's executor: an accept, an Input or a resume. It names the Input that woke it.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | assignment.superagent |\n| ticket | assignment.ticket |\n| agent | assignment.agent |\n| input | assignment.input |\n| why | assignment.why |\n\n## Answer\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n\n## Move\n\n`queued`: from nothing (it creates) to pending, emitting AssignmentQueued.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |\n| InputNotFound | 4 | IN-901 | nothing has the id in input; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment queued --superagent <superagent> --ticket <ticket> --agent <agent> --input <input> --why <why>\n```\n\nHTTP: `POST /assignment/queued` with the payload as JSON. SDK: `Sdk.assignment.queued(payload)`.\n",
     "assignment/started.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.started\n\nGive a waiting Assignment a seat, if one is free for it.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n| seat | assignment.seat |\n\n## Answer\n\n| field | value |\n|---|---|\n| text | text |\n\n## Move\n\n`started`: from pending to running, emitting AssignmentStarted.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NoSeat | 95 | AS-001 | declared in errors.ts |\n| SeatTaken | 96 | AS-002 | another running or closing assignment holds this superagent and seat; by the rule assignment.oneHolderPerSeat, carrying seat |\n| ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |\n| AssignmentNotPending | 94 | AS-900 | the assignment is in a state started can't start from; carries `state` |\n| AssignmentNotFound | 4 | AS-901 | nothing has the id in assignment; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment started --assignment <assignment> --seat <seat>\n```\n\nHTTP: `POST /assignment/started` with the payload as JSON. SDK: `Sdk.assignment.started(payload)`.\n",
     "assignment/turn-ended.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.turn-ended\n\nThe Agent idled on this Assignment or closed it: it ends, and its seat is free.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`turnEnded`: from running or closing to ended, emitting AssignmentEnded.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AssignmentNotPending | 94 | AS-900 | the assignment is in a state turnEnded can't start from; carries `state` |\n| AssignmentNotFound | 4 | AS-901 | nothing has the id in assignment; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment turn-ended --assignment <assignment>\n```\n\nHTTP: `POST /assignment/turn-ended` with the payload as JSON. SDK: `Sdk.assignment.turn-ended(payload)`.\n",
-    "assignment/waiting.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.waiting\n\nList assignments, oldest first, 255 to a page, filtered by superagent.\n\n**Who may call:** the system.\n\n**A read:** answered from the records, with no handler. A page of 255 at a time, oldest first, narrowed by superagent; pass the answer's `next` as `cursor` for the page after it.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent (optional) | assignment.superagent |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment waiting [--superagent <superagent>] [--cursor <cursor>]\n```\n\nHTTP: `POST /assignment/waiting` with the payload as JSON. SDK: `Sdk.assignment.waiting(payload)`.\n",
+    "assignment/waiting.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.waiting\n\nList assignments, oldest first, 255 to a page, filtered by superagent, the rows with why person ahead of the rest.\n\n**Who may call:** the system.\n\n**A read:** answered from the records, with no handler. A page of 255 at a time, oldest first, narrowed by superagent; pass the answer's `next` as `cursor` for the page after it.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent (optional) | assignment.superagent |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment waiting [--superagent <superagent>] [--cursor <cursor>]\n```\n\nHTTP: `POST /assignment/waiting` with the payload as JSON. SDK: `Sdk.assignment.waiting(payload)`.\n",
     "attention/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention\n\nA question a person must answer, made by a report; a person's next message answers it.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| ticket | ticket.id |\n| question | text |\n\n## Machine\n\nStates: open. A move from the wrong state is refused AttentionNotOpen (exit 100).\n\n| move | from | to | emits |\n|---|---|---|---|\n| raise | (creates) | open | AttentionRaised |\n\n## Events\n\n- `AttentionRaised`: carries superagent (attention.superagent), attention (attention.id), ticket (attention.ticket); emitted by the move raise\n\n## Operations\n\n(none yet)\n",
     "correlation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# correlation\n\nA trigger seen on another thread: it adds context to a judgement and never routes.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| trigger | id |\n| thread | text |\n\n## Operations\n\n(none yet)\n",
     "decision/dismiss.md": "<!-- Generated from the blueprint. Do not edit. -->\n# decision.dismiss\n\nSet aside a decision a person disagrees with.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| decision | decision.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`dismiss`: from recorded to dismissed, emitting DecisionDismissed.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DecisionNotRecorded | 86 | DE-900 | the decision is in a state dismiss can't start from; carries `state` |\n| DecisionNotFound | 4 | DE-901 | nothing has the id in decision; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent decision dismiss --decision <decision>\n```\n\nHTTP: `POST /decision/dismiss` with the payload as JSON. SDK: `Sdk.decision.dismiss(payload)`.\n",
@@ -14972,5 +15011,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "cad6f982a15754c10942e54a21795c558e2ad344f147f1e55a1d6a8f291089a4"
+  "digest": "ec278c3847b7da6012909febf35e38295dccf3e9d0dea28e8b81997211451977"
 }

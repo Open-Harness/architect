@@ -1,8 +1,0 @@
-# Slice 10 checks. Red until slice 11 includes PostHog's alert events in the app's mount and maps them (posthog.ts).
-superagent/65-posthog-is-a-source.test.ts > 65 posthog is an active source > GitHub, Slack, PostHog and the timer are the sources, and PostHog's variables are named from PostHog, never as a secret
-superagent/65-posthog-is-a-source.test.ts > 65 posthog is an active source > `sources.posthog` is in the model exactly: its mount, the two events it maps, the one call it reads, its two variables, and the one kind it makes
-superagent/65-posthog-is-a-source.test.ts > 65 posthog is an active source > the app's mount includes exactly PostHog's two alert events beside its three calls
-superagent/65-posthog-is-a-source.test.ts > 65 posthog: what a mount that includes some of it and not the rest does > a mount that leaves out the call its history reads (`errorTrackingIssuesRetrieve`) is refused the same way
-superagent/65-posthog-is-a-source.test.ts > 65 posthog: what a mount that includes some of it and not the rest does > a mount that leaves out the event its source closes on (`errorResolved`) is refused, naming the mount's file, the event, the source and the line to add
-superagent/65-posthog-is-a-source.test.ts > 65 posthog: what a mount that includes some of it and not the rest does > a mount that leaves out the event its source opens on (`errorAlert`) is refused the same way
-superagent/65-posthog-is-a-source.test.ts > 65 posthog: what a mount that includes some of it and not the rest does > control: the mount with both events and the three calls passes, and PostHog is a source

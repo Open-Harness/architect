@@ -51,4 +51,4 @@ States: pending, running, closing, ended. A move from the wrong state is refused
 - [assignment.queued](queued.md): Queue an Assignment for a ticket's executor: an accept, an Input or a resume. It names the Input that woke it.
 - [assignment.started](started.md): Give a waiting Assignment a seat, if one is free for it.
 - [assignment.turn-ended](turn-ended.md): The Agent idled on this Assignment or closed it: it ends, and its seat is free.
-- [assignment.waiting](waiting.md): List assignments, oldest first, 255 to a page, filtered by superagent.
+- [assignment.waiting](waiting.md): List assignments, oldest first, 255 to a page, filtered by superagent, the rows with why person ahead of the rest.

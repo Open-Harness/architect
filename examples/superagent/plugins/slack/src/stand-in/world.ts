@@ -61,6 +61,11 @@ export const createWorld = (context: Context) => {
     return { status: 200, body: { ok: true, messages: thread, has_more: false } };
   };
 
+  /** The one user group the policy syncs from: its members' ids, one each. */
+  const GROUP = "S0614TZR7";
+  const members = (fields: Record<string, unknown>): Reply =>
+    fields["usergroup"] === GROUP ? { status: 200, body: { ok: true, users: ["U060R4BJ4", "W123A4BC5"] } } : failed("no_such_subteam");
+
   const handle = (request: Request): Reply => {
     const method = /^\/api\/([a-zA-Z.]+)$/.exec(request.path)?.[1];
     if (method === undefined) return { status: 404, body: { ok: false, error: "unknown_method" } };
@@ -68,6 +73,7 @@ export const createWorld = (context: Context) => {
     const fields = fieldsOf(request);
     if (method === "chat.postMessage") return post(fields);
     if (method === "conversations.replies") return replies(fields);
+    if (method === "usergroups.users.list") return members(fields);
     return failed("unknown_method");
   };
 
