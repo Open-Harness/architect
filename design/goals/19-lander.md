@@ -5,11 +5,11 @@ milestone: "Goal 19: the lander"
 release: beta
 branch: main
 base: main
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: amp         # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5  # the model id it runs on
+  since: 2026-11-23    # the date it started
 done_check: never done; it runs while the apps are being built (K42, section 8)
 owns:
   - main
@@ -84,5 +84,14 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-Not started: written 23 November 2026 with K42 (#694). Aaron starts it with the line above. The lead rewrites this
-section every round that changes it.
+Started 23 November 2026 by Aaron, in Amp (the Space "Orthograph lander"). The lead rewrites this section every round
+that changes it.
+
+- **Slice 1, running.** Protection parity first. `main` requires nine of `goal/stage-1`'s ten checks, all but
+  `e2e-stage1`, and that job ran its steps only for `goal/stage-1`. It now runs on `main` too
+  (`design/decisions/CI-main-stage1.md`); once it is green there, Aaron adds it to `main`'s required checks, since the
+  lander's token cannot change branch protection. `builder-paths` and resolved threads are already required on `main`
+  (CI-branch-protection, CI-main-required).
+- **Next in slice 1.** Goal 3's last pull requests into `goal/stage-1` (#690, #696, #697) finish there, then
+  `goal/stage-1` lands in `main` and is retired, and every goal branch bases on `main`.
+- **Slices 2 and 3** wait on slice 1.
