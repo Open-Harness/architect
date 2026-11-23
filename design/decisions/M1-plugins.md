@@ -1,6 +1,6 @@
 # M1-plugins: the plugin descriptor, mounts and the verbs
 
-Decided 18 November 2026 by the 🧭 lead of M1's plugin path (goal 3, [`../goals/03-m1-plugin-path.md`](../goals/03-m1-plugin-path.md)).
+Decided 18 November 2026 by the 🧭 lead of M1's plugin path (goal 3, [`../goals/03-m1-plugin-path.md`](../history/goals/03-m1-plugin-path.md)).
 Slice M1.01. It harvests sections 1 to 3 of Codex's D4 (`layer/4:design/decisions/D4.md`, "kits, dependencies and
 the chain") under the frame's words ([`../frame/mounting.md`](../frame/mounting.md),
 [`../frame/projections.md`](../frame/projections.md), [`../frame/adapters.md`](../frame/adapters.md),

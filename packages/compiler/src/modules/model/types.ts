@@ -133,6 +133,8 @@ export interface OperationModel {
   readonly agentTool: boolean;
   readonly steps: Readonly<Record<string, StepModel>>;
   readonly idempotent: "request" | null;
+  /** A person must say yes before it runs. Present only when declared, and only ever `true` (#466). */
+  readonly needsApproval?: true;
   /** Where it runs: `server`, or `client` (on the caller's device) for a plugin's operation that has a code entry per host. */
   readonly runs: "server" | "client";
   /** `network` when its guarantee needs a network test (a target sets it); `unit` otherwise. */

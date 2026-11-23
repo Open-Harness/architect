@@ -61,7 +61,8 @@ findings become tasks, money and security go to a person (S7); the agent kit is 
 (S8); CI is a short scaffolded workflow calling `forman ci` (S9); generated Markdown carries an HTML-comment header
 (S10); a separate `agents` projection built on `builder` (S11); the neutral kit plus Claude Code and Pi forms first
 (S12); each role's slice of the model inline (S13); a small local model stands in for providers (S14); only a person
-starts a run unless the mount allows agents (S15); the factory references an agents run (S16); the factory runs on the
+starts a run unless the mount allows agents (S15) (_Superseded by K40, 22 November 2026: an agent is its own
+thing, made by any operation allowed to create one_); the factory references an agents run (S16); the factory runs on the
 last released Forman (S17); a hand-written logbook adapter until the logbook publishes a model (S18); a world sends an
 adapter's event itself (S19); money going out is `.notVia(Via.agent)` by default (S20); webhooks registered by the
 adapter's `provision` step (S21); our own events drive operations through `on:` as `system` (S22); email over SMTP so
