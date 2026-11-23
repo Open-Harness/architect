@@ -7,7 +7,7 @@ branch: goal/capxul
 base: goal/stage-1
 status: ready          # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
+  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
   model: null          # the model id it runs on
   since: null          # the date it started
 done_check: M7.11: Capxul's first feature's journeys green in Capxul's staging
@@ -23,7 +23,7 @@ slices:
 Branch `goal/capxul`, cut from `goal/stage-1`. Written 21 November 2026 by the 🎼 conductor, from the goal map
 (`design/goals/map.md`, K34) and K35. Milestone `Goal 16: Capxul on Orthograph`, label `release:1.0` (K33).
 
-**To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 16. Read `AGENTS.md` and
+**To start it, in any harness** (Claude Code, Codex, OpenCode, Amp): "You lead Goal 16. Read `AGENTS.md` and
 `design/goals/16-capxul.md`, and run it." Nothing else is needed.
 
 ## The goal, in plain words
@@ -76,6 +76,9 @@ The rules every goal shares, so this brief stays short. Where they and this file
   requests in CI at once.
 - **Its needs.** A slice builds once what it needs has landed (K34, `design/goals/map.md`). A slice that needs another
   goal's work writes its checks first and waits for the build; it never builds a stand-in for the other goal.
+  A slice another goal needs lands early, once its check is green: a branch `goal/<name>-early-<slice>` cut at the
+  commit that ends it, merged into `goal/stage-1` by a merge commit, never squashed (K38). Ask for one by an Ask
+  issue in the owning goal's milestone.
 - **Asks.** Anything outside "What it owns" is an Ask issue in the owning goal's milestone, naming this goal and what
   done looks like (K32, K33). Read this goal's own open issues at every slice start.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 16: Capxul on Orthograph` and the label `release:1.0`;
