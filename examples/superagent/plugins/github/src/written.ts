@@ -4,7 +4,7 @@
 // the object's kind, the repository, the object's own id and its own last-change time, with no action and no delivery in it, so a
 // poll's copy of the object (no `action`, no `sender`) gives the id its webhook gave. The stand-in is a real bare git repository,
 // served over git's smart HTTP, with GitHub's REST API for issues and pull requests beside it.
-import { Blueprint, Stand } from "orthograph";
+import { Blueprint, Stand, type AdapterDoor, type AdapterEvent } from "orthograph";
 import { schemaOf } from "./runtime/json-schema.ts";
 import { components } from "./spec/components.ts";
 import { eventPayloads } from "./spec/events.ts";
@@ -25,7 +25,8 @@ const named = (event: string, object: (p: Payload) => string | number, at: (p: P
     actor: (raw: unknown) => sender(raw as Payload),
   });
 
-export const events = {
+/** Optional, so the generated descriptor may list the same names first and have these replace them (a spread of required keys over them is a type error). */
+export const events: Partial<Record<"issueComment" | "issues" | "pullRequest" | "pullRequestReview" | "pullRequestReviewComment" | "checkRun", AdapterEvent<unknown>>> = {
   issueComment: named("issueComment", (p) => p["comment"]["id"], (p) => p["comment"]["updated_at"]),
   issues: named("issues", (p) => p["issue"]["number"], (p) => p["issue"]["updated_at"]),
   pullRequest: named("pullRequest", (p) => p["pull_request"]["number"], (p) => p["pull_request"]["updated_at"]),
@@ -35,3 +36,13 @@ export const events = {
 };
 
 export const standIn = Stand.process("a bare git repository served by git http-backend, with a small server for GitHub's REST API over it");
+
+/** GitHub's signing secret (its webhook's `secret`): in an environment it is `<MOUNT>_WEBHOOK_SIGNING`, `GITHUB_WEBHOOK_SIGNING` for the mount `github`. */
+export const webhookSigning = Blueprint.secret.stored();
+
+/** GitHub signs the raw body with HMAC-SHA256 (`X-Hub-Signature-256: sha256=<hex>`) and names the event in `X-GitHub-Event`; the delivery's own id (`X-GitHub-Delivery`) is never used (GOAL17-connections A). */
+export const door: AdapterDoor = {
+  signing: webhookSigning,
+  verify: { header: "x-hub-signature-256", prefix: "sha256=", signs: "body" },
+  event: { header: "x-github-event" },
+};

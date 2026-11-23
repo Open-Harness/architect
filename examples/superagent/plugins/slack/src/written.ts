@@ -2,7 +2,7 @@
 // What Slack's description doesn't say. Its Web API description has no events, so the two the superagent listens to are
 // written here from Slack's Events API (api.slack.com/events/app_mention, /events/message, /apis/events-api): the whole
 // envelope the HTTP door receives, since only the envelope has the team, the event's id and its time.
-import { Blueprint, Stand } from "orthograph";
+import { Blueprint, Stand, type AdapterDoor } from "orthograph";
 import { schemaOf } from "./runtime/json-schema.ts";
 import type { JsonSchema } from "./runtime/types.ts";
 
@@ -53,3 +53,18 @@ export const events = {
 };
 
 export const standIn = Stand.process("a small server over channel C024BE91L that answers Slack's Web API as Slack does");
+
+/** Slack's signing secret: in an environment it is `<MOUNT>_WEBHOOK_SIGNING`, `SLACK_WEBHOOK_SIGNING` for the mount `slack`. */
+export const webhookSigning = Blueprint.secret.stored();
+
+/**
+ * Slack signs `v0:<X-Slack-Request-Timestamp>:<raw body>` with HMAC-SHA256 (`X-Slack-Signature: v0=<hex>`) and a request more than five
+ * minutes from the clock is refused (docs.slack.dev, "Verifying requests from Slack"). The event's name is in the envelope, and a
+ * `url_verification` request is answered with its challenge once signed.
+ */
+export const door: AdapterDoor = {
+  signing: webhookSigning,
+  verify: { header: "x-slack-signature", prefix: "v0=", signs: { version: "v0" }, timestamp: { header: "x-slack-request-timestamp", within: 300 } },
+  event: { path: ["event", "type"] },
+  challenge: { field: "type", is: "url_verification", answer: "challenge" },
+};

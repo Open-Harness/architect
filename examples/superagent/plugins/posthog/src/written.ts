@@ -3,7 +3,7 @@
 // body is ours, written once here and once in the template a person pastes into the destination (GOAL17-connections D).
 // Two events, both about one error tracking issue: `errorAlert` (the issue is active: created, or reopened) and `errorResolved`.
 // What a template adds is kept at every level. An alert names no account, and its identity is its issue, its kind and its time.
-import { Blueprint, Stand } from "orthograph";
+import { Blueprint, Stand, type AdapterDoor } from "orthograph";
 import { schemaOf } from "./runtime/json-schema.ts";
 import type { JsonSchema } from "./runtime/types.ts";
 
@@ -38,3 +38,6 @@ export const events = {
 };
 
 export const standIn = Stand.process("a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does");
+
+/** PostHog documents no signature for a webhook destination, so it has no door until a record says how one verifies (GOAL17-connections, open risks). */
+export const door: AdapterDoor | undefined = undefined;

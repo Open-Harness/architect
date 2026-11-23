@@ -2,6 +2,7 @@
 // file in a project that says "use this plugin here, like this" (decisions/M1-plugins.md).
 import type { Effect, Schema } from "effect";
 import type { AnyErrorClass } from "#modules/errors/types.js";
+import type { Secret } from "#modules/secrets/types.js";
 import type { Event, On } from "#modules/events/types.js";
 import type { Operation, Read } from "#modules/operations/types.js";
 import type { Value } from "#modules/values/types.js";
@@ -109,6 +110,28 @@ export interface MissingEvent {
   readonly name: string;
 }
 
+/**
+ * How an adapter's door receives a delivery (M5-reach-out Q2, built in Goal 17 slice 11): how its sender signs, where the event's
+ * name is, and the one request that is a handshake. Pure data, so the compiler can read it and the Worker can run it. The
+ * signing secret is the adapter's own `webhookSigning`; its name in an environment is `<MOUNT>_WEBHOOK_SIGNING`.
+ */
+export interface AdapterDoor {
+  readonly signing: Secret;
+  readonly verify: {
+    /** The header holding the signature: `prefix` then HMAC-SHA256 in lowercase hex. */
+    readonly header: string;
+    readonly prefix: string;
+    /** What is signed: the raw bytes of the body, or `<version>:<timestamp>:<body>` (Slack's v0). */
+    readonly signs: "body" | { readonly version: string };
+    /** A request signed more than `within` seconds from the door's clock, either way, is refused. Needed when `signs` has a timestamp. */
+    readonly timestamp?: { readonly header: string; readonly within: number };
+  };
+  /** Where the event's name is, as the sender writes it (`issue_comment`); the adapter's name for it is the camel case (`issueComment`). */
+  readonly event: { readonly header: string } | { readonly path: ReadonlyArray<string> };
+  /** A signed request whose body has `field` equal to `is` is answered with the body's `answer` and written nowhere (Slack's url_verification). */
+  readonly challenge?: { readonly field: string; readonly is: string; readonly answer: string };
+}
+
 /** What stands in for an adapter's outside system in a world, said honestly. */
 export type StandIn =
   | { readonly kind: "stand-in"; readonly how: "process" | "vendor"; readonly what: string }
@@ -134,6 +157,8 @@ export interface AdapterSpec<C extends Choices = Choices, Ca extends CallTree = 
   readonly needs?: ReadonlyArray<Need>;
   readonly settings?: Readonly<Record<string, Setting>>;
   readonly standIn?: StandIn;
+  /** How its door receives events; an adapter that sends none has no door. */
+  readonly door?: AdapterDoor;
 }
 
 /** An operation as a projection sees it in the model: enough to decide whether it takes it. */

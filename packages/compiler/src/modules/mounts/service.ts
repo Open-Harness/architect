@@ -39,6 +39,10 @@ const standInOf = (descriptor: unknown): MountModel["standIn"] => {
   return stand?.how === "process" || stand?.how === "vendor" ? { how: stand.how, ...(stand.what === undefined ? {} : { what: stand.what }) } : stand?.how === "none" ? { how: "none" } : undefined;
 };
 
+/** The door a mount's adapter opens: only when it has one and the mount includes an event for it to receive. */
+const doorOf = (mount: string, descriptor: unknown, events: ReadonlyArray<string>): MountModel["door"] =>
+  (descriptor as { readonly door?: unknown }).door !== undefined && events.length > 0 ? { secret: `${mount.toUpperCase().replaceAll("-", "_")}_WEBHOOK_SIGNING` } : undefined;
+
 export const Mounts: MountsApi = {
   fold: (layout) => Effect.gen(function* () {
     if (layout.mounts.size === 0) return { things: new Map(), stores: new Map(), journeys: new Map(), mounts: {}, calls: new Map(), agents: new Map(), sources: new Map(), problems: [] };
@@ -62,7 +66,7 @@ export const Mounts: MountsApi = {
       problems.push(...picks);
       const files = yield* source.pluginFiles(plugin.name).pipe(Effect.result);
       if (files._tag === "Failure") { problems.push(`${file}: ${files.failure.message}`); continue; }
-      let verbs: Pick<MountModel, "omitted" | "narrowed" | "calls" | "events" | "layer" | "standIn"> = {};
+      let verbs: Pick<MountModel, "omitted" | "narrowed" | "calls" | "events" | "door" | "layer" | "standIn"> = {};
       if (me.kind === "feature" || me.kind === "adapter") {
         // An adapter adds no operations, but its errors are declared in its things, which the model names like a feature's.
         const own = readLayout(files.success.files.filter((f) => f.path.startsWith("things/") || (me.kind === "feature" && (f.path.startsWith("journeys/") || f.path.startsWith("stores/") || f.path.startsWith("agents/") || f.path.startsWith("sources/")))), (path) => `${plugin.name}/blueprint/${path}`);
@@ -105,7 +109,8 @@ export const Mounts: MountsApi = {
         problems.push(...reached.problems);
         for (const [call, reach] of reached.reach) calls.set(call, reach);
         const stand = standInOf(mount.plugin);
-        verbs = { ...verbs, ...(reached.included.length > 0 ? { calls: reached.included } : {}), ...(reached.events.length > 0 ? { events: reached.events } : {}), ...(files.success.layer ? { layer: true as const } : {}), ...(stand ? { standIn: stand } : {}) };
+        const door = doorOf(name, mount.plugin, reached.events);
+        verbs = { ...verbs, ...(reached.included.length > 0 ? { calls: reached.included } : {}), ...(reached.events.length > 0 ? { events: reached.events } : {}), ...(files.success.layer ? { layer: true as const } : {}), ...(stand ? { standIn: stand } : {}), ...(door ? { door } : {}) };
       }
       const needs = needsOf(me, matched, plugins);
       problems.push(...needs.problems);
