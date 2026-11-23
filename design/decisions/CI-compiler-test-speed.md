@@ -53,6 +53,15 @@ runner's (load average 164 when they started, 224 when they ended).
 | Under load, timeout lifted: slowest test | 14.7 s, 19.5 s (`vault.test.ts > mounts …`) | 2.0 s, 2.3 s |
 | Without the extra load, timeout lifted: wall, slowest | 47 s, 15.2 s | 10 s, 1.9 s |
 
+**On a GitHub runner**, `check-static`'s `nx run compiler:test`, from the vitest summary in the job log:
+
+| | Before: `main`, run 45125139194 (green) | After: this pull request, run 45132981499 |
+|---|---|---|
+| Suite duration | 24.4 s (transform 31.8 s, import 20.3 s) | 9.0 s (transform 0.4 s, import 12.9 s) |
+| `model.test.ts` | 17.1 s | 2.5 s |
+| `needs-approval.test.ts` | 8.3 s | 1.1 s |
+| Slowest test | 2.1 s (`needs-approval.test.ts`, `model.test.ts > describes acme`) | 1.3 s (`vault.test.ts > mounts …`) |
+
 The 20 runs in a row, default timeout, at load average 164 to 224, all green: wall time and the slowest test.
 
 | Run | Wall | Passed | Slowest test | In |
