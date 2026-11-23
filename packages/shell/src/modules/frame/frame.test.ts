@@ -30,7 +30,7 @@ const props: ShellProps = {
   pages: {},
   slots: { header: () => undefined },
 };
-const at = (path: string): History => ({ path: () => path, push: () => undefined, subscribe: () => () => undefined });
+const at = (path: string, search = ""): History => ({ path: () => path, search: () => search, push: () => undefined, subscribe: () => () => undefined });
 const render = (path: string, layout = "sidebar") =>
   renderToStaticMarkup(createElement(Frame.Shell, { props: { ...props, navigation: { ...props.navigation, layout } }, history: at(path) }));
 const count = (html: string, pattern: string): number => html.split(pattern).length - 1;
@@ -68,6 +68,14 @@ describe("the navigation and the breadcrumb", () => {
   it("draws the chain of parents, the page last", () => {
     const html = render("/@aaron/edit");
     expect([...html.matchAll(/data-shell="crumb" data-page="(\w+)" data-current="(\w+)"/g)].map((m) => [m[1], m[2]])).toEqual([["home", "false"], ["profile", "false"], ["edit", "true"]]);
+  });
+});
+
+describe("the app's own 404", () => {
+  const html = renderToStaticMarkup(createElement(Frame.Shell, { props: { ...props, notFound: () => undefined }, history: at("/nowhere") }));
+  it("keeps the shell's hooks and leaves the body to the app", () => {
+    expect(html).toContain('data-page="" data-status="404"');
+    expect(html).not.toContain("Page not found");
   });
 });
 

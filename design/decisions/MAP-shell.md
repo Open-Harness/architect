@@ -55,6 +55,22 @@ Decided 22 November 2026, Goal 6 slice 5 (framework builder). Builds K31 section
     `@ui-sdk/core` and `@ui-sdk/react`, and nothing else. `exports` points at `src/index.ts` as `packages/portal` does, with
     `publishConfig` for `dist`.
 
+## Added for the portal's client (snags #665, #666, 23 November 2026)
+
+12. **Extra palette rows (`extra`, #665).** A client reads things, operations and refusal codes from its data API at run time, so the map's
+    `palette.json` cannot hold them. `props.extra` is a typed source, `{ read(): ExtraEntry[]; subscribe(listener) }` (the shell reads it with
+    `useSyncExternalStore`, so `read` returns the same array until the rows change), of `{ name, group, description?, allowed, href?, run? }`.
+    Rows are listed after the map's own, under a heading per `group` in the order groups first appear; `href` navigates, `run` calls the app, and
+    both close the palette. Each row's `allowed` goes through the same rule as a map entry (`Palette.visibleExtra`, with `caller` and `roles`), so a
+    role-only row is hidden unless `roles` holds it. A row is `data-kind="extra"` with `data-group` and `data-name`; its value is `group:name`, so two
+    groups may share a name.
+13. **The app's own 404 (`notFound`, #666).** `props.notFound` is a `PageFn` painted into the shell's 404 element, which keeps its hooks
+    (`data-shell="page"`, `data-page=""`, `data-status="404"`); without it the shell's "Page not found" text stays. The shell knows no name the
+    app marks itself ready with. The body is painted again when the unmatched address changes.
+14. **The query (`search`).** A `PageFn` takes a third argument, the address's `URLSearchParams` (read-only by convention), so a page does not read
+    `location`. `History` gained `search()`. The router still matches the pathname only, so a query never changes which page it is; a change
+    of query paints the page body again, since the page read it when it painted (the portal's `?tab=`).
+
 ## What the agent reads
 
 The check's `snapshot()` lists a `navigation-menu` Main, a `scroll-area` Navigation, a `collapsible` for each group (its title), the links as

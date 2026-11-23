@@ -4,6 +4,8 @@
 export interface History {
   /** The current pathname, as the browser has it (still percent-encoded). */
   readonly path: () => string;
+  /** The current query string, with its `?` (or empty). Read-only to the app: it moves with `push`. */
+  readonly search: () => string;
   /** Go to an address (a pathname, with a query if it has one): one new entry, and every subscriber told. The current address is not pushed again. */
   readonly push: (to: string) => void;
   /** Call `listener` when the address changes, by `push` or by the browser's back and forward. Returns the way to stop. */

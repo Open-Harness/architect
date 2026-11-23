@@ -7,7 +7,8 @@ const browser = (win: Browser): HistoryType => {
     for (const listener of listeners) listener();
   };
   const path = (): string => win.location.pathname;
-  const push = (to: string): void => {
+  const search = (): string => win.location.search;
+  const push =(to: string): void => {
     if (to === `${win.location.pathname}${win.location.search}`) return;
     win.history.pushState(null, "", to);
     notify();
@@ -20,7 +21,7 @@ const browser = (win: Browser): HistoryType => {
       win.removeEventListener("popstate", listener);
     };
   };
-  return { path, push, subscribe };
+  return { path, search, push, subscribe };
 };
 
 export const History = { browser } as const;

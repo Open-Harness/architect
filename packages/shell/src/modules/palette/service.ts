@@ -6,4 +6,5 @@ export const Palette: PaletteApi = {
     const open = new Set(entries.flatMap((e) => (e.kind === "page" && passes(e.allowed, caller, roles) ? [e.name] : [])));
     return entries.filter((e) => (e.kind === "page" ? open.has(e.name) : e.page === page && open.has(e.page) && passes(e.allowed, caller, roles)));
   },
+  visibleExtra: (extras, caller, roles) => extras.filter((e) => passes(e.allowed, caller, roles)),
 };
