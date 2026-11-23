@@ -179,8 +179,10 @@ and its Directors' signatures, in a slice that is no longer first; nothing here 
 
 ### What it waits on
 
-Narrowed from "stage 3" in the brief, which said more than the feature needs: (Under K42, 23 November 2026, the goals named as owners below are winding down; each piece is now an
-item on the board, and Goal 16 takes what it needs by K42's collision rule.)
+Under K42, 23 November 2026, the goals named as owners below are winding down; each piece is now an item on the
+board, and Goal 16 takes what it needs by K42's collision rule.
+
+Narrowed from "stage 3" in the brief, which said more than the feature needs:
 
 | Needs | What | Owner | Status, 22 November |
 |---|---|---|---|
