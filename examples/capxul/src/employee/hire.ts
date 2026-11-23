@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/employee/verbs/hire.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/employee/hire.handler.ts";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
 
 const { DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn } = Errors.declared;
 
@@ -54,33 +55,35 @@ const { DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn } = Er
  *   once it answers, it writes EmployeeHired: employee from the answer, company and person from the payload;
  *   the call is the span employee.hire, and its commit employee.hire.commit.
  */
-const hire: Handler = (_payload, { steps, move, id }) =>
+const hire: Handler = (payload, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span employee.hire.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+
+    // Step load: database, span employee.hire.load. The runtime has read both and handed them in, so this step
+    // only takes them; a missing one never reaches here.
+    const { department, designation } = yield* steps.load(Effect.succeed(refs));
+    if (!department || !designation) return yield* Effect.die(new Error("the department or designation was read and then not handed in"));
 
     // DepartmentNotInCompany: exit 42, EM-002.
-    if (yield* Handlers.blank<boolean>("refuse DepartmentNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why DepartmentNotInCompany was refused"));
+    if (department["company"] !== payload.company) {
+      yield* Effect.logInfo("the department belongs to another company");
       return yield* new DepartmentNotInCompany({});
     }
 
     // DesignationNotInCompany: exit 43, EM-003.
-    if (yield* Handlers.blank<boolean>("refuse DesignationNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why DesignationNotInCompany was refused"));
+    if (designation["company"] !== payload.company) {
+      yield* Effect.logInfo("the designation belongs to another company");
       return yield* new DesignationNotInCompany({});
     }
 
-    // JoinedBeforeBorn: exit 44, EM-004.
-    if (yield* Handlers.blank<boolean>("refuse JoinedBeforeBorn when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why JoinedBeforeBorn was refused"));
-      return yield* new JoinedBeforeBorn({
-        dateOfBirth: yield* Handlers.blank("JoinedBeforeBorn.dateOfBirth, a Day"),
-      });
+    // JoinedBeforeBorn: exit 44, EM-004. Days are YYYY-MM-DD, so they compare as text; the same day is allowed.
+    if (payload.dateOfJoining < payload.dateOfBirth) {
+      yield* Effect.logInfo("the joining day is before the birthday");
+      return yield* new JoinedBeforeBorn({ dateOfBirth: payload.dateOfBirth });
     }
 
-    // Step insert: database, span employee.hire.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span employee.hire.insert. One active place per person is the runtime's rule.
+    yield* steps.insert(records.insert(Employee, { id, ...payload }));
 
     // The move hire, to active.
     yield* move();
