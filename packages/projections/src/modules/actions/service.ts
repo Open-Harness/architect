@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import { Blueprint, Host, Ships } from "orthograph";
 import { modelOf, serverModel, within } from "#modules/names/service.js";
 import { renderActions } from "./internal/actions.ts";
@@ -10,5 +11,5 @@ export const actions = Blueprint.projection({
   description: "The actions: a module per operation, its name, flags, refusals and schema from the model, its run the SDK's call through the host.",
   host: [Host.node, Host.browser],
   ships: [Ships.release],
-  render: (input) => within(input, "actions", renderActions(serverModel(modelOf(input)), input.name)),
+  render: (input) => Effect.flatMap(renderActions(serverModel(modelOf(input)), input.name), (files) => within(input, "actions", files)),
 });

@@ -35,6 +35,13 @@ describe("actions", () => {
     expect(text).toContain('description: "closes */ early"');
   });
 
+  it("fails the render, as an error value, when an operation declares a refusal the model has no code for", async () => {
+    const { NotAllowed: _gone, ...refusals } = model.refusals;
+    const made = await Effect.runPromise(Effect.result(actions.render({ name: "acme", model: { ...model, refusals }, mount: "actions", mounts: {} })));
+    expect(made._tag).toBe("Failure");
+    expect(JSON.stringify(made)).toContain("NotAllowed");
+  });
+
   it("is refused under another mount name", async () => {
     const made = await Effect.runPromise(Effect.result(actions.render({ name: "acme", model, mount: "tools", mounts: {} })));
     expect(made._tag).toBe("Failure");
