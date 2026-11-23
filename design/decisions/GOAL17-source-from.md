@@ -379,12 +379,12 @@ K40's role `listed = Blueprint.role(Account, { actor: { mount: Account.fields.so
 matches because `Account.source` holds the **mount's name** (a text field, not `Source.fields.id`). K40's example
 wrote `Source.fields.id`; this record fixes it to the mount name, since a mount is what the caller carries
 (`roles/types.ts:18`, `{ kind: "service"; mount }`). One mount serves several superagents, so an Account's key is
-`(superagent, source, id)`, and the mount and id alone would admit one superagent's listed account for another's call.
+`(superagent, source, id)` (Superseded by GOAL17-account-key, 23 November 2026: `(superagent, source, external)`, the row's own `id` apart), and the mount and id alone would admit one superagent's listed account for another's call.
 **A GOAL17 refinement of K40 fix 1:** the role also compares the row's `superagent` to the call's own.
 
 ```ts
 export const listed = Blueprint.role(Account, {
-  actor: { mount: Account.fields.source, id: Account.fields.id },
+  actor: { mount: Account.fields.source, id: Account.fields.id },   // Superseded by GOAL17-account-key, 23 November 2026: `id: Account.fields.external`
   within: Account.fields.superagent,           // the call's `superagent` must equal this row's: a new key on the role form
   while: [machine.states.listed],
 });
@@ -434,7 +434,7 @@ Orthograph's packages once they have worked.
 | Dependent | Why it cares |
 |---|---|
 | Goal 11 (M5.03, `catchUp`) | a typed `events` on `Adapter` and `ViewOf`; `include` of events; `Blueprint.incoming(schema)` (slice 4), which slice 11 widens with `{ id, actor }` (Superseded by GOAL17-adapters-from-spec, 23 November 2026: was `Blueprint.event(…, { id, actor })`); `meta.actor`; the door's `Inbox.accept` storing the actor. This record is the first user of all of them. |
-| Goal 3 (M2.03, K40 fix 1) | the `service` caller's `actor`, and the role form `actor:`, which gains `within`. `Account.source` is the mount's name, and the key is `(superagent, source, id)`. |
+| Goal 3 (M2.03, K40 fix 1) | the `service` caller's `actor`, and the role form `actor:`, which gains `within`. `Account.source` is the mount's name, and the key is `(superagent, source, id)` (Superseded by GOAL17-account-key, 23 November 2026: `external`). |
 | `17-superagent.md`, slice 4 | the generator emits `events` as typed values with a `MissingEvent` sentinel, and an event's `id` and `actor` slots (by hand); its conformance checks every `reply` and `history` call against the stand-in |
 | Slice 7 (intake handlers) | `trigger.receive`, `account.seen`, `thread.closed` and the gate take `Mapped` and `TriggerView`; journeys call `trigger.receive` directly with a mapped payload |
 | Slice 9 (agents) | `environment.of` and `lend` meet at the sandbox's `exec`; `reply` and `history` are among the included calls an executor holds as tools |

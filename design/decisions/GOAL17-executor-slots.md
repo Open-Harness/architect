@@ -499,7 +499,7 @@ lives. This is every such pair across the four records, with its guard. Rows mar
 | `approve` and any other save of what it changes | it reads a base version and writes the Policy, Prompts or Superagent | `versions:` (K40 fix 2): a stale base is refused and the Proposal keeps its draft |
 | two `thread.follow` of one thread by one ticket (**fixed**) | both read "not subscribed" and create a Subscription | a unique rule on `(ticket, thread)` while live: the second `follow` refuses and runs again |
 | `thread.unrelated` and `ticket.end` | both move the Subscription | the Subscription's machine |
-| two `account.seen` for one sender (**fixed**) | both read "no Account" and create one | a unique rule on `(superagent, source, id)` (the Account's key, GOAL17-source-from) |
+| two `account.seen` for one sender (**fixed**) | both read "no Account" and create one | a unique rule on `(superagent, source, id)` (the Account's key, GOAL17-source-from; Superseded by GOAL17-account-key, 23 November 2026: `external`) |
 | `account.list` and `account.seen` | both move the Account | the Account's machine |
 | a pause and a claim | the claim reads the Superagent's state and writes the outbox row | one SQL statement: the claim's `NOT EXISTS` over the hold view (GOAL17-pause) |
 | a poll's failure count and `disable` | both write the Source | the Source row's version |
