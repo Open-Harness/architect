@@ -28,8 +28,9 @@ and follower checks and the ABI codec checks through a 🔍 and into builders.
   - M6.09 lands early into `goal/stage-1` for Goal 9 (Ask #442, answered).
   - Slice 3b, `chain-evm`'s ABI codec and `ChainPort.read`, is for Goal 12 (Ask #471, answered: its shape as asked).
     It is cut from `goal/stage-1` and lands there directly.
-  - The follower calls Goal 11's `Inbox.accept` per `Confirmed` and `Corrected`, or a `FollowerSink` port until
-    `Inbox` is on `goal/stage-1` (Ask #481, answered).
+  - The follower calls Goal 11's `Inbox.accept` per `Confirmed` and per `Corrected` with `wasConfirmed: true`, never
+    for an unconfirmed take-back, or a `FollowerSink` port until `Inbox` is on `goal/stage-1` (Ask #481, answered;
+    narrowed by M6-chain item 12).
 - **Checks authors running (subagents):**
   - `goal-4/abi-codec-check`, off `goal/stage-1`;
   - `goal-4/m607-m609-check`, off `goal/on-chain`.
