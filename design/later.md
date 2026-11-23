@@ -210,3 +210,7 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
   and the CLI only those a device session or a key can reach. **Trigger:** a generated client's refusal on a call its credential
   could never make is reported as confusing in a journey or by a user, or the second app ships a CLI with an operation
   only `Via.agent` reaches.
+
+## From the actions projection (Goal 5 lead, 23 November 2026)
+
+- **A `retrySafe` predicate per operation** (`decisions/WEB-actions-projection.md`, call 5). A generated action never names `retrySafe`. An operation whose payload carries its own idempotency key could emit it as a predicate on the input (`spikes/agent-native-compat` finding 5). **Trigger:** the model can say an operation carries its own key.
