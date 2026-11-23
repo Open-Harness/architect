@@ -4,6 +4,7 @@
 import type { Node, Rule } from "../types.ts";
 import { SCHEMA, constructed } from "./facts.ts";
 import { collector, optionsOf, sourcePath } from "./baselined.ts";
+import { sqlClockMessage } from "./sql-clock.ts";
 
 const ENTRY = /^packages\/[^/]+\/src\/main\.ts$/;
 const TEST = /\.test\.tsx?$/;
@@ -48,6 +49,15 @@ export const effectOnly: Rule = {
         const global = callee.type === "MemberExpression" && callee.computed !== true && callee.object?.type === "Identifier" && GLOBALS.has(callee.object.name ?? "");
         const name = global ? callee.property?.name : constructed(node);
         if (name === "setTimeout" || name === "setInterval") add(node, `${name} waits outside counted work: use Timers`);
+      },
+      // SQL that asks the database for the time: a world has one clock, and the database is not it (K23 section 6).
+      Literal: (node) => {
+        const message = sqlClockMessage(node);
+        if (message !== undefined) add(node, message);
+      },
+      TemplateElement: (node) => {
+        const message = sqlClockMessage(node);
+        if (message !== undefined) add(node, message);
       },
       "Program:exit": flush,
     };

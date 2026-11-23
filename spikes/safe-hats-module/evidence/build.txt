@@ -1,0 +1,45 @@
+Compiling 95 files with Solc 0.8.30
+Solc 0.8.30 finished in 4.01s
+Compiler run successful!
+Warning: AST source not found for /private/var/folders/4r/x7bvvh3x6053m_zvmnrwq2680000gn/T/safe-hats-clean-mdj6r2qu/safe-hats-module/test/SafeRelease.sol
+warning[missing-zero-check]: address parameter is used in a state write or value transfer without a zero-address check
+   ╭▸ src/HatSpendModule.sol:17:58
+   │
+17 │     constructor(Safe safe_, IHats hats_, uint256 hatId_, address token_) {
+   │                                                          ━━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/missing-zero-check
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+   ╭▸ src/BudgetAuthorization.sol:35:13
+   │
+35 │         if (block.timestamp > deadline) revert SignatureExpired(deadline);
+   │             ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+   ╭▸ src/HatBudgetModule.sol:77:13
+   │
+77 │         if (period != budget.period) {
+   │             ━━━━━━━━━━━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+   ╭▸ src/HatBudgetModule.sol:97:9
+   │
+97 │         emit BudgetSpent(by, nonce, safe, hatId, budget.token, to, period, amount, remaining - amount);
+   │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ src/HatBudgetModule.sol:112:13
+    │
+112 │         if (period != budget.period) {
+    │             ━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+Wall time: 4.347 s

@@ -51,6 +51,48 @@
       "options": { "command": "vitest run --root {projectRoot} --config vitest.m1.config.ts m1" },
       "cache": false
     },
+    "portal-next-checks": {
+      "metadata": {
+        "description": "Goal 6's own checks: the theme (slice 1), the map's compiler and projection, the two-client runner and the parity ratchet's controls (slice 2), and, as they land, the shell's."
+      },
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot}/portal-next --config vitest.config.ts" },
+      "cache": false
+    },
+    "portal-next-parity": {
+      "metadata": {
+        "description": "Every portal check that reads a served client, run against the new one (PORTAL_CLIENT=next), through the parity ratchet (it builds packages/portal-next's client first, once that package exists): it fails on a red check that is not on e2e/portal-next/expected-failing.txt and on a listed check that passes."
+      },
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "if [ -f packages/portal-next/project.json ]; then NX_DAEMON=false nx run portal-next:build --outputStyle=static || exit 1; fi; mkdir -p tmp && rm -f tmp/parity-report.json tmp/parity-errors.json; PORTAL_CLIENT=next RATCHET_ERRORS_FILE=tmp/parity-errors.json vitest run --root e2e --config portal-next/vitest.parity.config.ts --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/parity-report.json; node e2e/portal-next/parity/main.ts tmp/parity-report.json e2e/portal-next/expected-failing.txt tmp/parity-errors.json"
+      },
+      "cache": false
+    },
+    "portal-next-grid": {
+      "metadata": {
+        "description": "The grid's portal evals, run against the new client (PORTAL_CLIENT=next, built first once packages/portal-next exists) on their own list, e2e/portal-next/grid-switched-on.json (the portal cells of the grid's own), through the grid's ratchet with e2e/portal-next/grid-expected-red.json: it fails on a red pair not on that list and on a listed pair that is green. Goal 3's expected-red.json is not touched."
+      },
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "if [ -f packages/portal-next/project.json ]; then NX_DAEMON=false nx run portal-next:build --outputStyle=static || exit 1; fi; PORTAL_CLIENT=next tsx e2e/grid/src/main.ts run --list e2e/portal-next/grid-switched-on.json --expected e2e/portal-next/grid-expected-red.json --out tmp/grid-portal-verdicts.json; status=$?; node -e \"console.log('parity-grid-red: ' + require('./e2e/portal-next/grid-expected-red.json').pairs.length)\"; exit $status"
+      },
+      "cache": false
+    },
+    "portal-next": {
+      "metadata": {
+        "description": "The done check of Goal 6, begun: its own checks, the parity ratchet over the portal checks, and the grid's portal evals. All three run, and it fails if any fails."
+      },
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run e2e:portal-next-checks; checks=$?; nx run e2e:portal-next-parity; parity=$?; nx run e2e:portal-next-grid; grid=$?; [ $checks -eq 0 ] && [ $parity -eq 0 ] && [ $grid -eq 0 ]"
+      },
+      "cache": false
+    },
     "climb": {
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot} --config vitest.climb.config.ts climb" },
@@ -109,9 +151,73 @@
       "options": { "command": "nx run e2e:stage1-ratchet" },
       "cache": false
     },
+    "on-chain-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "mkdir -p tmp && rm -f tmp/on-chain-report.json tmp/on-chain-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/on-chain-errors.json vitest run --root e2e --config vitest.on-chain.config.ts on-chain --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/on-chain-report.json; node e2e/ratchet/check.ts tmp/on-chain-report.json e2e/on-chain/expected-failing tmp/on-chain-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "on-chain": {
+      "metadata": {
+        "description": "The done check of Goal 4 (design/goals/04-on-chain.md): the ratchet over e2e/on-chain, then red while e2e/on-chain/expected-failing/ holds any file, then red while a check listed in e2e/on-chain/slices.json (slices 3 to 12) is missing. Today it holds the budgets journeys (01) and the snag log (03); each slice's checks author adds its check as NN-<slice>.test.ts. Still needs, per e2e/on-chain/README.md: every slice's check (the signer of each step is checked in 01 from today, and waits on S-11)."
+      },
+      "executor": "nx:run-commands",
+      "options": { "parallel": false, "commands": ["nx run e2e:on-chain-ratchet", "node e2e/on-chain/empty-list.mjs; a=$?; node e2e/on-chain/presence.mjs; b=$?; exit $((a || b))"] },
+      "cache": false
+    },
     "m1": {
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m1-checks" },
+      "cache": false
+    },
+    "m2-checks": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.m2.config.ts m2" },
+      "cache": false
+    },
+    "m2-ratchet": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/m2-report.json tmp/m2-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/m2-errors.json vitest run --root e2e --config vitest.m2-ratchet.config.ts m2 --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/m2-report.json; node e2e/ratchet/check.ts tmp/m2-report.json e2e/m2/expected-failing tmp/m2-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "m2": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:m2-checks" },
+      "cache": false
+    }
+,
+    "ui-layer-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/ui-layer-report.json tmp/ui-layer-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/ui-layer-errors.json vitest run --root e2e --config vitest.ui-layer-ratchet.config.ts ui-layer --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/ui-layer-report.json; node e2e/ratchet/check.ts tmp/ui-layer-report.json e2e/ui-layer/expected-failing tmp/ui-layer-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "ui-layer": {
+      "metadata": {
+        "description": "The done check of Goal 5, begun: slice 1's check of the actions module (M1.23). Red, as listed in e2e/ui-layer/expected-failing/, until the goal is done; each later slice adds its checks (see e2e/ui-layer/README.md)."
+      },
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:ui-layer-ratchet" },
       "cache": false
     },
     "m8-checks": {
@@ -134,6 +240,28 @@
     "m8": {
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m8-checks" },
+      "cache": false
+    },
+    "m7-checks": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.m7.config.ts m7" },
+      "cache": false
+    },
+    "m7-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/m7-report.json tmp/m7-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/m7-errors.json vitest run --root e2e --config vitest.m7-ratchet.config.ts m7 --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/m7-report.json; node e2e/ratchet/check.ts tmp/m7-report.json e2e/m7/expected-failing tmp/m7-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "m7": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:m7-checks" },
       "cache": false
     }
   }

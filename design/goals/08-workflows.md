@@ -5,9 +5,9 @@ milestone: "Goal 8: workflows"
 release: "1.0"
 branch: goal/workflows
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
+  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
   model: null          # the model id it runs on
   since: null          # the date it started
 done_check: nx run e2e:workflows
@@ -26,10 +26,15 @@ slices:
 ---
 # Goal 8: workflows
 
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
+
 Branch `goal/workflows`, cut from `goal/stage-1`. Written 21 November 2026 by the 🎼 conductor, from the goal map
 (`design/goals/map.md`, K34) and K35. Milestone `Goal 8: workflows`, label `release:1.0` (K33).
 
-**To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 8. Read `AGENTS.md` and
+**To start it, in any harness** (Claude Code, Codex, OpenCode, Amp): "You lead Goal 8. Read `AGENTS.md` and
 `design/goals/08-workflows.md`, and run it." Nothing else is needed.
 
 ## The goal, in plain words
@@ -66,7 +71,7 @@ in #289. Slices 2 and 3 are new rows (K35); before them `milestones.md` had no s
 
 ## What it owns, and the seams it touches
 
-It owns the paths in the front matter, and nothing else. `Blueprint.workflow` goes in a new module of `orthograph`, added only, as `design/goals/map.md` rule 2 says; anything else in the engine is an ask to Goal 3. Goal 9 owns `Timers`: agree its cross-process shape with Goal 9 by an Ask issue before slice 3 builds. Goal 13 (owners' signatures, ST3.06) and Goal 11 (`emits:`, M3.16) build on this goal's slices 1 and 3.
+It owns the paths in the front matter, and nothing else. `Blueprint.workflow` goes in a new module of `orthograph`, added only, as the old map's rule 2 said (`git show 990d4a17:design/goals/map.md`); anything else in the engine is an ask to Goal 3. Goal 9 owns `Timers`: agree its cross-process shape with Goal 9 by an Ask issue before slice 3 builds. Goal 13 (owners' signatures, ST3.06) and Goal 11 (`emits:`, M3.16) build on this goal's slices 1 and 3.
 
 **Done check:** `nx run e2e:workflows` passes on `goal/workflows`. It lands in `main` by one pull request
 once `goal/stage-1` has, or into `goal/stage-1` by one pull request if Goal 3 is still open.
@@ -84,10 +89,10 @@ The rules every goal shares, so this brief stays short. Where they and this file
 - **Merging.** Open pull requests as drafts, test locally, get a 🔍 pass from a reviewer that wrote none of it (the
   `reviewer` skill), then mark ready; merge when CI is green and every thread is resolved. At most two ready pull
   requests in CI at once.
-- **Its needs.** A slice builds once what it needs has landed (K34, `design/goals/map.md`). A slice that needs another
-  goal's work writes its checks first and waits for the build; it never builds a stand-in for the other goal.
-- **Asks.** Anything outside "What it owns" is an Ask issue in the owning goal's milestone, naming this goal and what
-  done looks like (K32, K33). Read this goal's own open issues at every slice start.
+- **Its needs.** Under K42: a gap this goal finds goes by K42's collision rule (section 3), and a
+  slice another goal needs lands early into `main` (K38, K42).
+- **Asks.** Under K42, an Ask issue is only for two goals' claims that overlap (K42, section 3, case 2). Read this
+  goal's own open issues at every slice start.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 8: workflows` and the label `release:1.0`;
   every comment an agent posts starts `[goal-8 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" in the pull
@@ -96,4 +101,19 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+Parked on 22 November 2026, by the conductor's word: Aaron narrowed the work to the Beta path (Goals 3, 5, 6 and 15)
+and the two long poles (Goals 4 and 9). It resumes by the conductor's word. Lead on Claude (claude-opus-5-5).
+
+- **Landed:** slice 1 (M3.01), the shape of a workflow: `design/decisions/M3-workflows.md`, landed in
+  `goal/workflows` by the pull request that carries this line (#472). A workflow is a declaration in `blueprint/workflows/` and a handler in `src/workflows/`, with three
+  kinds of activity (`call`, `await`, `after`/`at`) on Effect's engine; every `call` carries its request key; every
+  wait goes through Goal 9's `DurableTimers`.
+- **Open:** Ask #462 (Goal 11) wants M3.01 landed early into `goal/stage-1` (K38). Not started: on resume, cut
+  `goal/workflows-early-M3.01` at slice 1's merge and open it into `goal/stage-1`. Goal 9 answered the `Timers` Ask
+  (#467) with `M8-timers-shape` (#483); slice 3 still waits on M8.07.
+- **Begun, not finished:** slice 2 (M3.27), the journeys and checks. An author subagent stopped mid-slice; its work is
+  saved, unreviewed and with no pull request, as one WIP commit on `goal-8/m3-27-check`.
+- **Next, on resume:** the early landing for #462; then slice 2 finished from that branch by an author who is not the builder, against
+  `DurableTimers` in `TimersMemory`; then slice 3 once M8.07 is on `goal/stage-1`, with its Asks to Goal 3 (the
+  compiler and generators know `blueprint/workflows/`, the lint rule, a delivery hook after a call commits).
+- **Decisions this goal makes:** `M3-workflows`.

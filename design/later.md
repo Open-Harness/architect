@@ -6,6 +6,11 @@ belongs to, and why it waits.
 - Indexers beyond the generated follower, for views too large for an organisation's index. Later.
 - Safe as a kit, built from its own events and our own small core. Later.
 - Python as a third target. Later.
+- **The rest of the app's map** (K31): the docs' page per screen, `ortho add page <name>`, the agent's `map` tool on
+  an app, and `open(pages.x)` in `ortho prove --through web`; and K36's rest: the web projection's component wiring,
+  `ortho add component <name>`, a component on its screen's docs page, a journey acting on a component, and Plugged
+  In's link list declared. Goal 6 builds the map, the app projection and the shell
+  first, and proves them on the portal; these wait until an app other than the portal has a declared map.
 - **Scaffolds that follow the blueprint** (Aaron, 21 November 2026, with the 📐 designer thread): a file scaffolded
   once and "yours from now on" falls out of line when its declaration changes later, so it must be marked and
   ratcheted, not left alone. Four steps, on what exists:
@@ -53,9 +58,8 @@ belongs to, and why it waits.
   naming until then.
 - **An intent key on actors** (K21): `idempotent: { by }` for things that `lives: "actor"` waits with idempotency by
   request on actors, below.
-- **Money as a value** (ledger THI-07; a known gap, Aaron, 20 November 2026): a signed or fixed-point amount that knows
-  its currency or token and its decimals, can go negative in a ledger, and means the same in Effect and in Solidity.
-  Capxul's Payment, Budget, Invoice and Ledger entry each need one. Waits for a design pass; no slice until then.
+- **Money, what is left** (ledger THI-07, `design/decisions/M6-money.md`): an amount that knows its asset is decided in
+  M6-money, 21 November 2026; a currency taken from a field on the row, and the portal's formatting, are later.
 - **Named value kinds** (ledger THI-08, K24): a web address, a pattern, a choice, yes or no, carried into the model so
   every output can tell them apart and a form picks the right input. Waits for a design pass, beside THI-02.
 - **Approval on an operation** (ledger OPS-15, K24): a declared mark that the action asks once and the page's agent
@@ -124,7 +128,7 @@ belongs to, and why it waits.
 
 ## From the factory (K10)
 
-- **A `cloudflare` sandbox choice** for `@orthograph/workspaces`, beside `localCopy` and `e2b`, if E2B falls short. Not spiked.
+- **A `cloudflare` sandbox choice** for `@orthograph/sandbox`, beside `local` and `e2b` (K39, K40), if E2B falls short. Not spiked.
 - **A person's feedback on a run** (HeroUI Pro's Rating and Emoji Reaction Button on a run's answer) as input to the bench (H2). Waits until the bench reports exist (M4.14).
 - **Experiments shared between projects**: a kept experiment's plugin published for another app to mount. Waits on plugins published from their own CI (M2.10).
 
@@ -194,7 +198,7 @@ Each is a parked snag in `design/goals/03-snags.md`, with its trigger.
 Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three; the fixed shapes are in the addendum of `design/decisions/K18-monitoring-falls-out.md`.
 
 - **An anomaly and a verdict actually firing**: the rules are derived and listed, but check 39 judges only the burn alerts' firing. A check that makes a refusal-code spike fire its anomaly, and a failed journey fire its verdict.
-- **Nested step spans, the deepest wins**: an issue's step is the deepest failing step span; check 39 plants one level (`link.add.record`). A defect two steps down, and a call with no step span at all, are not judged.
+- **Nested declared steps, the deepest wins**: an issue's step is the deepest declared step span that errored with the failed attempt's own `error.tag` (an adapter's span is never chosen; a step that errored and was recovered is passed over when it carries a different tag; no such step is `-`, the operation itself; a call that ran out of tries is `commit`); check 39 plants one level (`link.add.record`). A defect two declared steps down, and the `-` and out-of-tries cases, are not judged.
 - **The constructor-name fallback for `error.tag`**: a thrown error with no `_tag` takes its constructor's name; check 39 plants only a tagged error whose class name differs from its tag.
 
 ## From M2-auth (Goal 3 lead, 21 November 2026)
@@ -205,3 +209,30 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
   and the CLI only those a device session or a key can reach. **Trigger:** a generated client's refusal on a call its credential
   could never make is reported as confusing in a journey or by a user, or the second app ships a CLI with an operation
   only `Via.agent` reaches.
+- **A nonce lane shared across processes** (`decisions/W1-wallet-send-lanes.md`, Open). Today one process keeps one lock
+  per account and chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
+  key from more than one process or Worker, or a journey sends from one account in two processes at once.
+
+## From the Goal 4 relayer review rounds (23 November 2026)
+
+Five rounds of review on the relayer (M6.07) each found a valid nonce fault. The cause was the same every time: the relayer and `chain-evm`'s port
+each owned a piece of one nonce's state, and the relayer guessed the rest. The first two entries below are cut from that slice by
+`decisions/M6-relayer-rebroadcast.md`.
+
+- **Fee-bump replacement of a dropped or stuck transaction** (its own slice). Today the relayer sends a dropped transaction again, byte for byte,
+  and a transaction sent too cheap during a fee spike stays stuck, with every nonce behind it (`Relayer.health()` names it). The slice has the
+  port own the whole lifecycle of a nonce (begin, broadcast, refuse, replace) behind one call, so the relayer never infers it, and brings back
+  the two replacement cases on `e2e/on-chain/expected-failing/10-m6-07-relayer.txt` (they come off the list when it lands).
+  **Trigger:** `health()` names a stuck nonce in a real environment, or a journey on a live chain meets a fee spike.
+- **The relayer re-checks inclusion until a reorg depth.** Today a submission is final the first time its receipt is seen, so a reorg that drops an
+  included transaction is not noticed. The relayer would keep a mined row open until it is a chosen number of blocks deep, and send the transaction
+  again if the node no longer shows it. **Trigger:** the relayer runs on a chain that reorgs, or the follower reports a `Corrected` event for a
+  transaction the relayer sent.
+- **The follower's outbox, one key per entry.** Today a step stores all its sink entries as one value and rewrites the
+  rest after each delivery, so a backfill with many confirmed events makes one large value and quadratic writes (🔍 on
+  #679). The step would cap its entries or store one key per entry. **Trigger:** a follower backfills from an old
+  `fromBlock` with thousands of events, or a Durable Object value nears its size limit.
+
+## From the actions projection (Goal 5 lead, 23 November 2026)
+
+- **A `retrySafe` predicate per operation** (`decisions/WEB-actions-projection.md`, call 5). A generated action never names `retrySafe`. An operation whose payload carries its own idempotency key could emit it as a predicate on the input (`spikes/agent-native-compat` finding 5). **Trigger:** the model can say an operation carries its own key.

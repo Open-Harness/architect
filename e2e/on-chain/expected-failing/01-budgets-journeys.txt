@@ -1,0 +1,2 @@
+# examples/budgets cannot compile yet: the chain store, Blueprint.account(), who roles and a cast with wallets arrive in slices 3 to 8 (design/goals/04-snags.md S-01 to S-09). Comes off when slice 12 (M6.16) turns every journey green.
+on-chain/01-budgets-journeys.test.ts > --env local > every budgets journey is green: 7 journeys, 26 steps, each signed by its actor, read from prove's report

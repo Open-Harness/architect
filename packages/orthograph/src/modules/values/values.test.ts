@@ -28,6 +28,55 @@ describe("values", () => {
     expect(Schema.encodeSync(Values.uint(128).schema)(2n ** 100n)).toBe("1267650600228229401496703205376");
   });
 
+  it("an instant is a real moment in its canonical spelling", () => {
+    const Instant = Values.instant();
+    expect(Instant.meta).toEqual({ type: "instant" });
+    expect(decode(Instant.schema, "2027-01-10T09:00:00.000Z")).toBe("Success");
+    expect(decode(Instant.schema, "2028-02-29T23:59:59.999Z")).toBe("Success");
+    for (const bad of ["2027-02-30T09:00:00.000Z", "2027-99-99T99:99:99.000Z", "2027-02-29T09:00:00.000Z", "2027-01-10T24:00:00.000Z", "2027-01-10T09:00:00Z", "2027-01-10"]) {
+      expect(decode(Instant.schema, bad), bad).toBe("Failure");
+    }
+  });
+
+  it("whole numbers travel as base-unit digits only: no leading zero, no plus, no minus zero, no point, no exponent, no space", () => {
+    const U8 = Values.uint(8);
+    for (const bad of ["007", "-0", "+1", "1.5", "1e3", " 1", "1 ", "0x10"]) expect(decode(U8.schema, bad), bad).toBe("Failure");
+    expect(decode(U8.schema, "0")).toBe("Success");
+  });
+
+  it("a width that is no whole number does not throw while the blueprint loads, and accepts nothing", () => {
+    for (const bits of [Number.NaN, 1.5, Number.POSITIVE_INFINITY, 0, -8]) {
+      expect(() => Values.uint(bits), String(bits)).not.toThrow();
+      expect(decode(Values.uint(bits).schema, "0"), String(bits)).toBe("Failure");
+      expect(() => Values.money({ kind: "asset", of: "currency", code: "EUR" }, { bits }), String(bits)).not.toThrow();
+    }
+  });
+
+  it("an account is CAIP-10 text", () => {
+    expect(Values.account().meta).toEqual({ type: "account" });
+    expect(decode(Values.account().schema, "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")).toBe("Success");
+    expect(decode(Values.account().schema, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")).toBe("Failure");
+  });
+
+  it("money names its asset, is unsigned unless it says so, and keeps its range", () => {
+    const usdc = { kind: "asset", of: "token", symbol: "USDC", decimals: 6 } as const;
+    const price = Values.money(usdc);
+    expect(price.meta).toEqual({ type: "money", bits: 128, signed: false, asset: { kind: "fixed", asset: usdc } });
+    expect(decode(price.schema, "1250000")).toBe("Success");
+    expect(decode(price.schema, "-1")).toBe("Failure");
+    const fee = Values.money(usdc, { signed: true, bits: 8 });
+    expect(decode(fee.schema, "-128")).toBe("Success");
+    expect(decode(fee.schema, "-129")).toBe("Failure");
+    expect(decode(fee.schema, "128")).toBe("Failure");
+    const token = Values.account();
+    expect(Values.money.of(token).meta).toEqual({ type: "money", bits: 128, signed: false, asset: { kind: "of", of: token } });
+  });
+
+  it("an email is text of at most 254 characters, and says it is an email", () => {
+    expect(Values.email().meta).toEqual({ type: "text", max: 254 });
+    expect(Values.email().format).toBe("email");
+  });
+
   it("text is never empty", () => {
     expect(decode(Values.text().schema, "")).toBe("Failure");
     expect(decode(Values.text({ max: 3 }).schema, "abcd")).toBe("Failure");

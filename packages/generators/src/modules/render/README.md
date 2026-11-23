@@ -7,6 +7,10 @@ makes its folder: the model, the api, the server, the sdk, the cli and the mcp a
 mounts no projection gets those six as if mounted, headers as they were. Still fixed here, until M1.13: `generated/docs`, `generated/portal` and the handler scaffolds. Generated files start with the do-not-edit line; scaffolds say where they came from
 and are the project's from then on.
 
+A move made by time says when it happens (`@orthograph/projections` names, `when.ts`, in M8-checks call 10's words): on its operation's docs page
+and its thing's page, in its MCP tool description (plain text) and in its handler scaffold. A blueprint with none renders
+byte for byte as before.
+
 The CLI's session commands are special when the model has the starter's `session.sign-in` and `session.show`
 (`internal/cli-session.ts`): `--env <env>` signs in by device code and shows the person that environment's kept session
 belongs to; without it they are the operations' own commands. The device flow and the kept session are

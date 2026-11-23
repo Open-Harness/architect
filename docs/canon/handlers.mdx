@@ -111,7 +111,7 @@ refuses a handler that fails with an error its operation doesn't list
 (`packages/generators/src/modules/render/handler-type.test.ts:40`). At run time, an answer outside its declaration
 is never sent. It dies as the handler's bug:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=119-123
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=123-127
 // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
 const wire = yield* check(answer).pipe(
   Effect.mapError((e) => new Error(`${name} answered outside its declaration: ${e.message}`)),
@@ -251,7 +251,7 @@ roles a `roles.ts` exports (F5). Signup has no blank left, so this example is wo
 **A blank in a handler** is `Handlers.blank("…")`, what every fresh scaffold holds. It type-checks as anything, and
 reaching it at run time is a defect that names what is missing:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=189-192
+```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=197-200
 export const Handlers: HandlerApi = {
   serve: serve as unknown as HandlerApi["serve"],
   blank: ((what: string, kind?: "failure") => (kind === "failure" ? () => new BlankReached({ what }) : Effect.die(new BlankReached({ what })))) as unknown as HandlerApi["blank"],
@@ -406,7 +406,7 @@ would be committed for a call that changed nothing (see `operations`).
   The frame's own comment says a project writes its handler in `<verb>.handler.ts`
   (`packages/language-effect/src/modules/handler/types.ts:29`). That is the generated frame's name; the project
   writes `src/<thing>/<verb>.ts`. The design docs' handler example uses an `instance` in the context and
-  `steps.record` with a patch (`design/docs/index.html:435`); the real handler reads through `Records` and passes
+  `steps.record` with a patch (`design/history/retired-2026-11-23/docs/index.html:435`); the real handler reads through `Records` and passes
   each step its work. Both should match the code. Ledger: HAN-05.
 </Note>
 

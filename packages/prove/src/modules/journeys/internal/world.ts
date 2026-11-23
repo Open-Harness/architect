@@ -29,10 +29,10 @@ export const castPeople = (url: string, names: ReadonlyArray<string>, anonymous:
  * A POST from something that is not a browser. Node's `fetch` adds `Sec-Fetch-*` headers, which Better Auth reads as a
  * browser's first login and so demands an `Origin` for; `node:http` sends none, as `curl` doesn't. The transport is chosen by the address's protocol: a deployed Worker is `https`.
  */
-const postJson = (url: string, body: object) =>
+const postJson = (url: string, body: object, headers: Readonly<Record<string, string>> = {}) =>
   Effect.callback<{ readonly status: number; readonly body: unknown }>((resume) => {
     const text = JSON.stringify(body);
-    const req = (url.startsWith("https:") ? httpsRequest : httpRequest)(url, { method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(text) } }, (res) => {
+    const req = (url.startsWith("https:") ? httpsRequest : httpRequest)(url, { method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(text), ...headers } }, (res) => {
       let received = "";
       res.on("data", (chunk: Buffer) => (received += chunk.toString()));
       res.on("end", () => resume(Effect.succeed({ status: res.statusCode ?? 0, body: Option.getOrElse(parse(received), () => received) as unknown })));
@@ -68,6 +68,45 @@ export const signUpPeople = (url: string, names: ReadonlyArray<string>, anonymou
       cast[name] = { person, token, ...member };
     }
     return cast;
+  });
+
+/**
+ * The credential the world mints for one cast member's way in (`key` or `agent`: an `ak_` key, the second made for an agent), or for
+ * the system or a service: none of which a sign-in makes. `undefined` when the world has no such door or will not mint it.
+ */
+export const mintCredential = (url: string, spec: { readonly name: string; readonly via: string } | { readonly system: true } | { readonly service: string }) =>
+  fetchJson(`${url}/_world/credential`, { method: "POST", body: JSON.stringify(spec) }).pipe(
+    Effect.map((r) => (r.status === 200 ? (r.body as { readonly token?: unknown } | null)?.token : undefined)),
+    Effect.map((token) => (typeof token === "string" ? token : undefined)),
+  );
+
+/**
+ * A real environment has no `/_world/credential`: a person makes their own key through Better Auth's route, signed in with their session, and
+ * marks it for an agent the way a person may (`metadata.acts`). The system and a service have no credential there, so a journey that is one of
+ * them runs as no one, which is refused wherever it is refused for being no person.
+ */
+export const makeKey = (url: string, session: string, forAnAgent: boolean) =>
+  postJson(`${url}/api/auth/api-key/create`, { name: forAnAgent ? "prove agent" : "prove key", ...(forAnAgent ? { metadata: { acts: "agent" } } : {}) }, { authorization: `Bearer ${session}` }).pipe(
+    Effect.map((r) => (r.status === 200 ? (r.body as { readonly key?: unknown } | null)?.key : undefined)),
+    Effect.map((key) => (typeof key === "string" ? key : undefined)),
+  );
+
+/** The tools the MCP door lists for a credential: the wire names, as `{ tools }`; any other answer is kept as it came. */
+export const callTools = (url: string, token: string) =>
+  Effect.gen(function* () {
+    const trace = randomBytes(16).toString("hex");
+    const parent = `${PROVE_SPAN_PREFIX}${randomBytes(4).toString("hex")}`;
+    const r = yield* fetchJson(`${url}/mcp`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json", accept: "application/json, text/event-stream", traceparent: `00-${trace}-${parent}-01`,
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+    });
+    const listed = (r.body as { readonly result?: { readonly tools?: ReadonlyArray<{ readonly name?: unknown }> } } | null)?.result?.tools;
+    const body = r.status === 200 && Array.isArray(listed) ? { tools: listed.flatMap((t) => (typeof t.name === "string" ? [t.name] : [])) } : r.body;
+    return { wire: {}, status: r.status, body, trace, parent, journal: [] as CallRecord["journal"] };
   });
 
 /** Encode the payload by its declaration, call the route, and record what came back. */
@@ -126,8 +165,11 @@ export const factsRecords = (facts: Facts, tableOf: (thing: Thing) => string | u
   }));
 
 /** Whether the declaration's `allowed` lets this caller make this call, judged on the world's facts. */
-export const mayCall = (facts: Facts, tableOf: (thing: Thing) => string | undefined, op: Operation | Read, payload: object, principal: Principal) =>
-  Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing }).pipe(
+export const mayCall = (
+  facts: Facts, tableOf: (thing: Thing) => string | undefined, op: Operation | Read, payload: object, principal: Principal,
+  mounts?: ReadonlyMap<unknown, string>,
+) =>
+  Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
     Effect.as(true),
     Effect.catchTag("NotAllowed", () => Effect.succeed(false)),
     Effect.provide(factsRecords(facts, tableOf)),

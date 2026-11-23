@@ -23,8 +23,11 @@ export interface ActorEntry {
   readonly fields: string;
 }
 
-/** What the Worker calls on an actor, over Durable Object RPC. */
+/**
+ * What the Worker calls on an actor, over Durable Object RPC. An actor in a world that is not real answers after it has
+ * read its world's instant (M8.06), so each may answer with a promise; in a real world it answers at once, as it did.
+ */
 export interface ActorApi {
-  find(): ActorRow | null;
-  commit(writes: ReadonlyArray<ActorWrite>, entries: ReadonlyArray<ActorEntry>): Committed;
+  find(): ActorRow | null | Promise<ActorRow | null>;
+  commit(writes: ReadonlyArray<ActorWrite>, entries: ReadonlyArray<ActorEntry>): Committed | Promise<Committed>;
 }

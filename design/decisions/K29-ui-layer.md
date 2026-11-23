@@ -324,6 +324,7 @@ import { PluggedIn } from "../../generated/sdk/src/index.ts";
 import { PluggedInHost } from "../../generated/web/react.tsx";
 import { App } from "./app.tsx";
 
+// Superseded by WEB-host-seam, 23 November 2026: `WebHost.make({ client: PluggedIn.layer({ url: location.origin }), ask })`, and the next line's ask takes `{ action, description, args }`.
 const host = WebHost.make({ client: PluggedIn.layer({ baseUrl: location.origin }), session: WebHost.session.cookie });
 const agent = createAgent({ allow: (step, { signal }) => (step.confirm ? host.ask(step.confirm, { signal }) : true) });
 registerTools(agent, { allow: () => true });
@@ -354,7 +355,7 @@ form field by hand for a payload the blueprint declares.
 
 ## 5. A component of the app's own
 
-`/edit`'s list of links, dragged or moved with the keyboard, is nothing the blueprint can generate: it is
+`/edit`'s list of links, dragged or moved with the keyboard, is nothing the blueprint can generate (_superseded by K36, 21 November 2026: it is declared as a component, its wiring generated, its behaviour still hand-written_): it is
 `profile.get`'s answer laid out, with `link.order` and `link.remove` as its moves. It joins as a UI SDK primitive of
 the app's own, with its order as `controlled` state, so an agent reads it, and its saves through the generated actions:
 

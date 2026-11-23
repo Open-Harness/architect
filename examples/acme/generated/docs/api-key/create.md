@@ -3,7 +3,7 @@
 
 Create an API key in an organisation. The key itself is shown once.
 
-**Who may call:** the owner of its organization.
+**Who may call:** the owner of its organization by device or session.
 
 **Budget:** p95 250ms.
 
@@ -30,9 +30,17 @@ Create an API key in an organisation. The key itself is shown once.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization; the handler never runs |
+| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization by device or session; the handler never runs |
 
 ## Worked examples
+
+### an agent passes the owner rule
+
+Starts from the world `founded`.
+
+- **ada's agent can't make a key: that entry is for a person in person.** `ada` (role organization.owner) calls and sends organization the world's organization, name `agent's key`, and is refused with NotAllowed, AR-001.
+- **ada, in her own session, makes one.** `ada` (role organization.owner) calls and sends organization the world's organization, name `ci`, and gets back an answer matching `^key_[0-9a-z]+$` and gets back an answer matching `^.+$`.
+- **ada's own key can't make another: a key never makes a key.** `ada` (role organization.owner) calls and sends organization the world's organization, name `the key's key`, and is refused with NotAllowed, AR-001.
 
 ### an owner makes an api key
 

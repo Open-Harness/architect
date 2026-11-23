@@ -26,7 +26,7 @@ const open = Blueprint.operation(Locker, {
 const handler: Handler<typeof open> = ({ organization }, { steps }) =>
   steps.read(Effect.succeed({ locker: "lkr_1" as never, note: `NOTE-of-${organization}` }));
 
-const ada = { kind: "person", person: "per_ada" } as const;
+const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 
 describe("a request key and the payload it was first used with", () => {
   it("refuses the same key with a payload naming another organisation, and never returns the kept answer", async () => {

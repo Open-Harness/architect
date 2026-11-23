@@ -1,0 +1,276 @@
+[
+  {
+    "step": "world started",
+    "realProofs": true,
+    "nodeReportsRealProofs": true,
+    "startMs": 6092
+  },
+  {
+    "step": "club deployed",
+    "ms": 48318
+  },
+  {
+    "step": "join ana",
+    "by": "treasurer",
+    "ok": false,
+    "refused": "Invalid tx: Block header not found"
+  },
+  {
+    "step": "join ben",
+    "by": "treasurer",
+    "ok": true,
+    "proveMs": 41529,
+    "result": "success",
+    "includedMs": 6746
+  },
+  {
+    "step": "join ben: members named in its bytes",
+    "named": [],
+    "feePayer": "the sponsor"
+  },
+  {
+    "step": "join cy",
+    "by": "treasurer",
+    "ok": true,
+    "proveMs": 46582,
+    "result": "success",
+    "includedMs": 5518
+  },
+  {
+    "step": "join cy: members named in its bytes",
+    "named": [],
+    "feePayer": "the sponsor"
+  },
+  {
+    "step": "footprint after joins",
+    "footprint": {
+      "members": "2",
+      "spent": "0",
+      "spends": "0"
+    }
+  },
+  {
+    "step": "grant 1 to ana",
+    "by": "treasurer",
+    "ok": true,
+    "proveMs": 52908,
+    "result": "success",
+    "includedMs": 12463
+  },
+  {
+    "step": "grant 2 to ben",
+    "by": "treasurer",
+    "ok": true,
+    "proveMs": 61949,
+    "result": "success",
+    "includedMs": 6724
+  },
+  {
+    "step": "grant 3 to cy",
+    "by": "treasurer",
+    "ok": true,
+    "proveMs": 94532,
+    "result": "success",
+    "includedMs": 8556
+  },
+  {
+    "step": "ana spends 20",
+    "by": "ana",
+    "ok": true,
+    "proveMs": 161481,
+    "result": "success",
+    "includedMs": 15332
+  },
+  {
+    "step": "ana's spend: members named in its bytes",
+    "named": [],
+    "feePayer": "the sponsor"
+  },
+  {
+    "step": "footprint after the spend",
+    "footprint": {
+      "members": "2",
+      "spent": "20",
+      "spends": "1"
+    }
+  },
+  {
+    "step": "ana reads her allowance",
+    "get": [
+      "1",
+      "100",
+      "20"
+    ]
+  },
+  {
+    "step": "ana spends 200 (over the limit)",
+    "by": "ana",
+    "ok": false,
+    "refused": "Assertion failed: [41] AllowanceExceeded { remaining: 80 } 'assert(amount <= remaining, f\"[41] AllowanceExceeded {{ remaining: {remaining} }}\")'"
+  },
+  {
+    "step": "ben spends from ana's allowance",
+    "by": "ben",
+    "ok": false,
+    "refused": "Assertion failed: [AR-001] NotAllowed 'assert(a.member == caller, \"[AR-001] NotAllowed\")'"
+  },
+  {
+    "step": "outsider spends from ana's allowance",
+    "by": "outsider",
+    "ok": false,
+    "refused": "Assertion failed: Failed to get a note 'assert(self.is_some(), message)'"
+  },
+  {
+    "step": "ana grants herself",
+    "by": "ana",
+    "ok": false,
+    "refused": "Assertion failed: [AR-001] NotAllowed 'assert(self.storage.treasurer.read() == self.msg_sender(), \"[AR-001] NotAllowed\")'"
+  },
+  {
+    "step": "treasurer revokes ben's",
+    "by": "treasurer",
+    "ok": true,
+    "proveMs": 180052,
+    "result": "success",
+    "includedMs": 24780
+  },
+  {
+    "step": "ben spends after the revoke",
+    "by": "ben",
+    "ok": false,
+    "refused": "Assertion failed: [40] AllowanceNotActive { state: 3 } 'assert(state == ACTIVE, f\"[40] AllowanceNotActive {{ state: {state} }}\")'"
+  },
+  {
+    "step": "cy spends all 100 (exhausted)",
+    "by": "cy",
+    "ok": true,
+    "proveMs": 169965,
+    "result": "success",
+    "includedMs": 9771
+  },
+  {
+    "step": "cy spends 1 more",
+    "by": "cy",
+    "ok": false,
+    "refused": "Assertion failed: [40] AllowanceNotActive { state: 2 } 'assert(state == ACTIVE, f\"[40] AllowanceNotActive {{ state: {state} }}\")'"
+  },
+  {
+    "step": "propose 500",
+    "by": "treasurer",
+    "ok": true,
+    "proveMs": 218287,
+    "result": "success",
+    "includedMs": 9091
+  },
+  {
+    "step": "ana casts",
+    "by": "ana",
+    "ok": false,
+    "refused": "Assertion failed: [AR-001] NotAllowed 'assert(mine.len() == 1, \"[AR-001] NotAllowed\")'"
+  },
+  {
+    "step": "ben casts",
+    "by": "ben",
+    "ok": true,
+    "proveMs": 151979,
+    "result": "success",
+    "includedMs": 22147
+  },
+  {
+    "step": "ben's ballot: members named in its bytes",
+    "named": [],
+    "feePayer": "the sponsor"
+  },
+  {
+    "step": "cy casts",
+    "by": "cy",
+    "ok": true,
+    "proveMs": 151729,
+    "result": "success",
+    "includedMs": 22708
+  },
+  {
+    "step": "cy's ballot: members named in its bytes",
+    "named": [],
+    "feePayer": "the sponsor"
+  },
+  {
+    "step": "ana casts a second ballot",
+    "by": "ana",
+    "ok": false,
+    "refused": "Assertion failed: [AR-001] NotAllowed 'assert(mine.len() == 1, \"[AR-001] NotAllowed\")'"
+  },
+  {
+    "step": "outsider casts",
+    "by": "outsider",
+    "ok": false,
+    "refused": "Assertion failed: [AR-001] NotAllowed 'assert(mine.len() == 1, \"[AR-001] NotAllowed\")'"
+  },
+  {
+    "step": "treasurer closes",
+    "by": "treasurer",
+    "ok": true,
+    "proveMs": 93076,
+    "result": "success",
+    "includedMs": 7265
+  },
+  {
+    "step": "proposal after the close",
+    "proposal": {
+      "state": "3",
+      "amount": "500",
+      "yes": "1",
+      "no": "1"
+    }
+  },
+  {
+    "step": "a tampered spend by ana",
+    "accepted": false,
+    "refused": "Invalid tx: Invalid proof",
+    "footprintBefore": {
+      "members": "2",
+      "spent": "120",
+      "spends": "2"
+    },
+    "footprintAfter": {
+      "members": "2",
+      "spent": "120",
+      "spends": "2"
+    }
+  },
+  {
+    "step": "an empty proof on a spend by ana",
+    "accepted": false,
+    "refused": "Invalid tx: Invalid proof",
+    "footprintBefore": {
+      "members": "2",
+      "spent": "120",
+      "spends": "2"
+    },
+    "footprintAfter": {
+      "members": "2",
+      "spent": "120",
+      "spends": "2"
+    }
+  },
+  {
+    "step": "final",
+    "footprint": {
+      "members": "2",
+      "spent": "120",
+      "spends": "2"
+    },
+    "proposal": {
+      "state": "3",
+      "amount": "500",
+      "yes": "1",
+      "no": "1"
+    },
+    "totalMs": 2540509
+  },
+  {
+    "step": "world stopped",
+    "l1Gone": true,
+    "l1": "http://host:53902"
+  }
+]

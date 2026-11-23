@@ -1,0 +1,96 @@
+{
+  "cells": [
+    {
+      "cell": "error.portal",
+      "subjects": [
+        "HandleTaken",
+        "LinkNeedsHandle",
+        "NotAllowed",
+        "LinkAlreadyRemoved",
+        "LinkNotListed",
+        "HandleNotFound",
+        "ProfileNotFound",
+        "HandleAlreadyOwned",
+        "HandleNotClaimed"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "event.portal",
+      "subjects": [
+        "HandleClaimed",
+        "HandleReleased",
+        "LinkAdded",
+        "LinkRemoved"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "journey.portal",
+      "subjects": [
+        "a name is claimed once",
+        "a stranger cannot edit a page",
+        "add, order and remove a link",
+        "anyone reads a public page",
+        "claim a handle",
+        "release a handle",
+        "a person claims a page and shares it"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.portal",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.portal",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.portal",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.portal",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "invariant.portal",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    }
+  ]
+}

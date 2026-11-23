@@ -815,7 +815,7 @@
   "what": "Live steps (K5 seam 10): a step signal as each step starts and ends, sent under waitUntil, not at dispose; committed events read from the journal for the portal"
  },
  "M1-22": {
-  "doneWhen": "an action's run refused by the role check returns the same typed refusal as the SDK; an operation .notVia(Via.agent) has no agent tool; a type test checks each generated options(host) against the field list and the no-write error's fields recorded from agent-native 0.228.2, with no agent-native package installed; every generated action advertises non-empty parameters",
+  "doneWhen": "an action's run refused by the role check returns the same typed refusal as the SDK; an operation .notVia(Via.agent) has no agent tool; a type test checks each generated options(host) against the field list and the no-write error's fields recorded from agent-native 0.228.2, with no agent-native package installed; every action whose payload has fields advertises non-empty parameters",
   "history": [
    {
     "at": "2026-11-19T09:00:00Z",
@@ -3180,10 +3180,10 @@
   "size": "M",
   "stage": "backlog",
   "thread": null,
-  "title": "@orthograph/workspaces with the localCopy choice",
+  "title": "@orthograph/workspaces on the sandbox's local provider",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "@orthograph/workspaces with the localCopy choice (K10 section 3): Workspace and its machine, ortho as its operations (brief, read, write, check, prove, add, generate, diff, push, close), writes fenced by realpath and case-insensitive paths, push through the github adapter (its stand-in a bare local repository), WorkspacePoolFull"
+  "what": "@orthograph/workspaces on @orthograph/sandbox's local provider (K10 section 3; K39: the sandbox holds the machine, the workspace adds ortho): Workspace and its machine, ortho as its operations (brief, read, write, check, prove, add, generate, diff, push, close), writes fenced by realpath and case-insensitive paths, push through the github adapter (its stand-in a bare local repository), WorkspacePoolFull"
  },
  "M4-19": {
   "doneWhen": "M4.18's journeys pass on E2B with Aaron's existing key; evicting the run's Durable Object mid-prove resumes and reads the result; 0 sandboxes are left after",
@@ -3205,7 +3205,7 @@
   "title": "The e2b choice",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "The e2b choice: our template, long commands in the background checked on an alarm, a sweep by tag, sandbox spend under its share ($5 a day by default)"
+  "what": "The sandbox's e2b provider (@orthograph/sandbox, K39), for workspaces: our template, long commands in the background checked on an alarm, a sweep by tag, sandbox spend under its share ($5 a day by default)"
  },
  "M4-20": {
   "doneWhen": "build",
@@ -3326,13 +3326,13 @@
   "what": "Promotion by verdicts (K10 section 3): promote also requires the revision's review verdict; a revision on main with its prove and review verdicts goes to staging with nobody asked; production is an attention only a person approves"
  },
  "M4-25": {
-  "doneWhen": "the adapter's conformance passes against the stand-in; a pushed branch and its opened pull request read back; a merge emits pullRequest.merged once",
+  "doneWhen": "the adapter's conformance passes against the stand-in; a pushed branch and its opened pull request read back; a merge emits pullRequest closed and merged once; a webhook with a bad signature is refused",
   "history": [],
   "id": "M4-25",
   "kind": "build",
   "lane": "M4",
   "needs": [],
-  "needsText": "Gate M2",
+  "needsText": "Gate M2, M5.03 and M5.07, or Goal 17's own build of them on its integration branch (K39)",
   "order": 108,
   "plain": "",
   "pr": null,
@@ -3340,10 +3340,10 @@
   "size": "M",
   "stage": "backlog",
   "thread": null,
-  "title": "The github adapter for pull requests",
+  "title": "The github adapter, built by Goal 17",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "The github adapter for pull requests (K10 section 3): branches.push, pullRequests.open, the pullRequest.merged event; secrets declared by the adapter; its stand-in a bare local repository with a small pull-request record (second rung: Gitea)"
+  "what": "The github adapter, @orthograph/github, built by Goal 17 (K39; K10 section 3): a GitHub App, generated from GitHub's published API description (M5.07); the mount includes pulls.create, issues.createComment, issues.listComments, pulls.createReplyForReviewComment and reactions.createForIssueComment, and lend, a short-lived token for git push (K40 fix 6); signed webhook events issueComment, issues, pullRequest (its merged close among them), pullRequestReview, pullRequestReviewComment and checkRun, each keyed by its object (K40 fix 5); secrets declared by the adapter; its stand-in a bare local repository with a small pull-request record (second rung: Gitea)"
  },
  "M5-01": {
   "doneWhen": "decisions/M5-reach-out.md written",
@@ -3524,7 +3524,7 @@
   "title": "ortho new adapter --from-openapi and the conformance harness",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "ortho new adapter --from-openapi and the conformance harness"
+  "what": "ortho new adapter --from-openapi and the conformance harness, built first by Goal 17 on its integration branch (K39)"
  },
  "M5-08": {
   "doneWhen": "the payments journeys pass",
@@ -3828,7 +3828,7 @@
   "what": "Moved to M1.31 (K7 F4: the wallet is the first plugin)"
  },
  "M6-07": {
-  "doneWhen": "100 concurrent submissions, nonces 0 to 99, a dropped one replaced",
+  "doneWhen": "100 concurrent submissions, nonces 0 to 99, a dropped one rebroadcast (replacing it with a higher fee is later)",
   "history": [],
   "id": "M6-07",
   "kind": "build",
@@ -3892,7 +3892,7 @@
   "what": "The chain follower (L3.08), which also feeds the portal's committed chain events (K5 seam 10); its checkpoint is a block number plus a window of block hashes, and a take-back emits <Event>Corrected { wasConfirmed } (K7 Q6)"
  },
  "M6-10": {
-  "doneWhen": "ortho check reports the change as major; swapping two declared errors keeps both codes; renaming a published code is refused",
+  "doneWhen": "ortho check reports the change as major; swapping two declared errors keeps both codes; renaming a locked error gives it a new code and retires the old one, and ortho check reports it as major (M6-chain item 4)",
   "history": [],
   "id": "M6-10",
   "kind": "build",
@@ -5371,13 +5371,13 @@
   "pr": null,
   "questions": [
    {
-    "answer": null,
+    "answer": "Apache-2.0 for every published package (Aaron, 23 November 2026: \"Make it all Apache 2.0\"; design/decisions/L1-apache-2.md).",
     "id": "q1",
     "owner": "aaron",
     "raisedAt": "2026-11-19T09:47:54Z",
     "source": "m1-lead",
-    "status": "open",
-    "text": "Which licence do the published packages carry? portal-ui's builder chose MIT, but the repo has none, and the npm preview needs one for every package that publishes."
+    "status": "answered",
+    "text": "Which licence do the published packages carry? The npm preview needs one for every package that publishes."
    }
   ],
   "ref": "npm",

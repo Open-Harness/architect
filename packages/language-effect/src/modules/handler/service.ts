@@ -18,6 +18,7 @@ import { prehandle, type Prehandled } from "./internal/prehandle.ts";
 import { recordingLogs } from "./internal/decided.ts";
 import { settleViolation } from "./internal/invariants.ts";
 import { signalled, spanned } from "./internal/span.ts";
+import { defectAttributes } from "./internal/defect.ts";
 export { Reads } from "./internal/read.ts";
 export { Environment } from "./internal/environment.ts";
 
@@ -47,9 +48,11 @@ interface Spec {
   readonly codes?: Readonly<Record<string, string>>;
   /** The refusals the runtime makes for this operation's writes (G5): each error's tag to the full name of the rule it refuses for. From the model's `operations.<op>.invariants`. */
   readonly invariants?: Readonly<Record<string, string>>;
+  /** Each adapter's mount by the name it is mounted under: what a `service` role in `allowed` is read against. */
+  readonly mounts?: ReadonlyMap<unknown, string>;
 }
 
-const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes, invariants = {} }: Spec) => {
+const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes, invariants = {}, mounts }: Spec) => {
   const op = operation as Operation;
   const budgetMs = op.budget === undefined ? undefined : Duration.toMillis(op.budget.p95);
   const decode = Schema.decodeUnknownEffect(op.payloadSchema as unknown as AnyCodec);
@@ -78,7 +81,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
     const tag = tagOf(e);
     const code = codes?.[tag];
     return Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }) }).pipe(
-      spanned(`${name}.refused`, { operation: name, attempt: number, [CALL_ID]: callId, "principal.kind": principal.kind, ...requestAttributes(request) }),
+      spanned(`${name}.refused`, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal, true), ...requestAttributes(request) }),
     );
   };
   const decodeAnswer = Schema.decodeUnknownEffect(op.answerSchema as unknown as AnyCodec);
@@ -88,14 +91,15 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
       const unit = yield* Unit.make(store);
       const withRecords = Effect.provideService(Records, unit.records);
       // The check's own reads are not traced: a refusal is, in its own span.
-      yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing }).pipe(
+      yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
         withRecords, Effect.withTracerEnabled(false), Effect.tapError(refused(principal, number, callId, request)),
       );
       const logs = yield* recordingLogs(payload, op.payload);
+      // The operation is counted work from its handler to its commit (M8.07): a world is quiet only once its writes are visible.
+      const busy = (yield* Busy).as(name);
       return yield* Effect.gen(function* () {
         // The operation's span, which a move's attributes are written on whichever step span the handler is in.
         const operationSpan = yield* Effect.currentSpan;
-        const busy = yield* Busy;
         yield* Effect.annotateCurrentSpan(payloadAttributes(payload, op.payload));
         // Where the call ran: the world's environment, and the kind of store its thing lives in.
         yield* Effect.annotateCurrentSpan({ environment: yield* Environment, store: op.thing.lives });
@@ -113,7 +117,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         const from = yield* checkFrom(op, notFrom, handed.subject);
         const chosen = yield* Ref.make<string | undefined>(undefined);
         const move = (to?: string) => chooseOutcome(name, op, to, operationSpan).pipe(Effect.flatMap((o) => Ref.set(chosen, o)));
-        const answer = yield* busy.counted(handler(payload, { principal, steps, move, ...handed })).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
+        const answer = yield* handler(payload, { principal, steps, move, ...handed }).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
         // Recorded before the check, so an answer outside its declaration is evidence `prove` can name.
         yield* Effect.annotateCurrentSpan(answerAttributes(answer, op.answer));
         // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
@@ -137,6 +141,8 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
             ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
           })),
           spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
+          // A write section: the commit happens only while the world still holds this request's token, and a reset waits for it (M8.07).
+          busy.fenced,
         );
         if (committed === "conflict") return yield* new Conflict();
         return answer;
@@ -144,7 +150,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         // Every refusal and every defect is written on the operation's span: what `prove` reads.
         // A refusal also carries the log that decided it, when the handler logged one before refusing.
         Effect.tapCause((cause) => {
-          if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan({ defect: Cause.pretty(cause).split("\n")[0] ?? "" });
+          if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
           const refusal = Cause.squash(cause);
           if (refusal instanceof Conflict) return Effect.void;
           const tag = tagOf(refusal);
@@ -153,12 +159,14 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
             Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }), ...(log === undefined ? {} : { "refusal.log": log }) })));
         }),
         spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
+        busy.counted,
       );
     });
 
   const run = (payload: object, principal: Principal, request?: string) => {
     // Keyed by operation and caller as well, so one caller's key never answers another's call.
-    const who = principal.kind === "person" ? principal.person : "anonymous";
+    // Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
+    const who = "person" in principal ? `${principal.kind}:${principal.person}` : principal.kind === "service" ? `service:${principal.mount}` : principal.kind;
     const key = op.idempotent === "request" && request !== undefined ? `${name}|${who}|${request}` : undefined;
     // The call is named once, before its first attempt, and every attempt's span carries the name: attempts of one call are sequential, but different
     // calls' attempts overlap, so nothing else in a trace says which attempts belong together (O3).

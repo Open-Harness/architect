@@ -45,7 +45,7 @@ describe.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("a server operatio
       const served = Handlers.serve({ name: "payout.send", operation: send, handler });
       const store = storeMemory();
       const layer = Layer.mergeAll(BusyLive, store.layer, TimersLive);
-      const ada = { kind: "person", person: "per_ada" } as const;
+      const ada = { kind: "person", person: "per_ada", via: "session" } as const;
       const call = (value: string) => served.call({ to, value }, ada).pipe(Effect.provide(layer));
 
       const first = yield* call("1000");

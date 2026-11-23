@@ -1,15 +1,16 @@
 // Adapted from @prb/effect-evm@5.0.3 src/tx/{manager,tracker,replacement}.ts. See LICENSE-prb-effect-evm.
 import { Effect, Option, Semaphore } from "effect";
-import type { Hash, TransactionSerialized } from "viem";
+import { keccak256, type Hash, type TransactionSerialized } from "viem";
 import { hasMessage, isDefiniteRejection, isPendingReceipt, rpcFaultKind } from "../../faults/internal/viem-mapper.ts";
-import { mapRpcError, rpcFault } from "../../faults/service.ts";
+import { isDefinite, mapRpcError, rpcFault } from "../../faults/service.ts";
 import { ChainFault, type ChainError } from "../../faults/types.ts";
 import { makeNonces } from "../../nonce/service.ts";
 import type { NonceReservation } from "../../nonce/types.ts";
 import type { Call, ChainPort, ChainPortOptions, Submission, Transaction, Unsigned, Signed } from "../types.ts";
 import { estimateFees, replacementTransaction } from "./fees.ts";
 import type { Rpc } from "./rpc.ts";
-import { signTransaction } from "./sign.ts";
+import { readSigned, signTransaction } from "./sign.ts";
+import { readCall } from "./read.ts";
 import { simulateCall } from "./simulate.ts";
 
 const unsimulated = () => new ChainFault({ kind: "unsimulated", message: "The transaction was not simulated before it was signed or sent" });
@@ -17,7 +18,7 @@ const unavailable = () => new ChainFault({ kind: "nonce", message: "The transact
 
 export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
   Effect.gen(function* () {
-    const nonces = yield* makeNonces(rpc);
+    const nonces = yield* makeNonces(rpc, options.keepOnReject === true);
     const reservations = new WeakMap<Unsigned, { readonly nonce: NonceReservation; readonly send: Semaphore.Semaphore }>();
     // Only a transaction that simulated cleanly may be signed or sent. Nothing else adds to this set.
     const simulated = new WeakSet<Unsigned>();
@@ -85,8 +86,14 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
             );
             if (found?.hash === signed.hash) return signed.hash;
           }
-          if (isDefiniteRejection(error)) yield* nonces.rejectBroadcast(reservation, attempt);
-          return yield* mapRpcError(error, transaction.to ?? undefined, options.refusals);
+          const mapped = mapRpcError(error, transaction.to ?? undefined, options.refusals);
+          if (!isDefiniteRejection(error)) return yield* mapped;
+          // The nonce is reset (or, with keepOnReject, left held by its owner): the error says the refusal is final, whatever the node's wording mapped to.
+          yield* nonces.rejectBroadcast(reservation, attempt);
+          const refusal = yield* Effect.flip(mapped);
+          return yield* (isDefinite(refusal) ? Effect.fail(refusal) : Effect.fail(new ChainFault({
+            kind: "rejected", ...(transaction.to == null ? {} : { program: transaction.to }), message: "The node refused the transaction for good",
+          })));
         })));
         if (hash.toLowerCase() !== signed.hash.toLowerCase()) {
           return yield* new ChainFault({ kind: "transport", message: "EVM RPC returned an unexpected transaction hash" });
@@ -102,7 +109,13 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
 
     const replace: ChainPort["replace"] = (signed, signer, policy) => Effect.gen(function* () {
       const original = signedTransactions.get(signed)?.transaction;
-      if (original === undefined) return yield* unavailable();
+      const reserved = reservations.get(signed.prepared);
+      if (original === undefined || reserved === undefined) return yield* unavailable();
+      // Only the transaction broadcast at the nonce can be replaced: a nonce whose broadcast was refused (and reset) has nothing to replace.
+      const owned = yield* nonces.ownership(reserved.nonce);
+      if (owned?.broadcast?.hash !== signed.hash) {
+        return yield* new ChainFault({ kind: "nonce", message: "The transaction is not the one broadcast at its nonce" });
+      }
       const bumped = yield* replacementTransaction(rpc, original, policy.maxFeePerGas);
       const transaction = Object.freeze(policy.strategy === "speedup"
         ? bumped
@@ -112,10 +125,53 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
       return next;
     }).pipe(Effect.withSpan("chain.evm.replace", { attributes: { hash: signed.hash, strategy: policy.strategy } }));
 
+    const resume: ChainPort["resume"] = (serialized, fromBlock) => Effect.gen(function* () {
+      const { transaction, from } = yield* readSigned(serialized, options.chainId);
+      const reservation = yield* nonces.reserveNext(from, transaction.nonce);
+      if (reservation.nonce !== transaction.nonce) {
+        yield* nonces.release(reservation);
+        return yield* new ChainFault({ kind: "nonce", message: "The nonce of a resumed transaction is already reserved" });
+      }
+      const prepared: Unsigned = Object.freeze({ from, transaction });
+      const signed: Signed = Object.freeze({ prepared, serialized, hash: keccak256(serialized) });
+      reservations.set(prepared, { nonce: reservation, send: Semaphore.makeUnsafe(1) });
+      simulated.add(prepared);
+      signedTransactions.set(signed, { transaction });
+      yield* nonces.beginBroadcast(reservation, { hash: signed.hash, fromBlock });
+      return signed;
+    }).pipe(Effect.withSpan("chain.evm.resume", { attributes: { chainId: options.chainId } }));
+
+    const hold: ChainPort["hold"] = (from, nonce) => Effect.gen(function* () {
+      const reservation = yield* nonces.reserveNext(from, nonce);
+      if (reservation.nonce !== nonce) {
+        yield* nonces.release(reservation);
+        return yield* new ChainFault({ kind: "nonce", message: "The nonce to hold is already reserved" });
+      }
+      return reservation;
+    });
+
+    const fill: ChainPort["fill"] = (reservation, signer) => Effect.gen(function* () {
+      const owned = yield* nonces.ownership(reservation);
+      if (owned === undefined) return yield* new ChainFault({ kind: "nonce", message: "The reservation to fill is not the one held at its nonce" });
+      const { address: from, nonce } = reservation;
+      const fees = yield* estimateFees(rpc);
+      const transaction: Transaction = Object.freeze({ chainId: options.chainId, nonce, gas: 21_000n, to: from, value: 0n, ...fees });
+      const prepared: Unsigned = Object.freeze({ from, transaction });
+      const signed = yield* signTransaction(prepared, signer);
+      reservations.set(prepared, { nonce: reservation, send: Semaphore.makeUnsafe(1) });
+      simulated.add(prepared);
+      signedTransactions.set(signed, { transaction, ...(owned.broadcast === undefined ? {} : { replaces: owned.broadcast.hash }) });
+      return signed;
+    }).pipe(Effect.withSpan("chain.evm.fill", { attributes: { chainId: options.chainId } }));
+
+    const reservationOf: ChainPort["reservationOf"] = (tx) => reservations.get(tx)?.nonce;
+
     const release: ChainPort["release"] = (prepared) =>
       Effect.suspend(() => Option.fromUndefinedOr(reservations.get(prepared)?.nonce).pipe(
         Option.match({ onNone: () => Effect.void, onSome: nonces.release }),
       ));
 
-    return { prepare, simulate, sign, submit, replace, release, nonces };
+    const read = readCall(rpc, options);
+
+    return { prepare, simulate, read, sign, submit, replace, release, resume, hold, fill, reservationOf, nonces };
   });
