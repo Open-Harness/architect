@@ -28,6 +28,10 @@ States: current. A move from the wrong state is refused PolicyNotCurrent (exit 8
 | save | (creates) | current | PolicyChanged |
 | restore | (creates) | current | PolicyChanged |
 
+## Invariants
+
+- `policy.oneVersionPerRevision`: another policy holds this superagent and revision. Unique on superagent, revision, in every state; refuses nothing, a break is a defect.
+
 ## Events
 
 - `PolicyChanged`: carries superagent (policy.superagent), revision (policy.revision); emitted by the move save, restore

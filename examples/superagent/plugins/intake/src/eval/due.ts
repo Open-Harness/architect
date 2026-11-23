@@ -1,5 +1,7 @@
 import { Clock, Effect } from "effect";
 import { Ids, Records, Store, type Handler, type Instance } from "@orthograph/language-effect";
+import { Superagent } from "@orthograph/superagent/blueprint/things/superagent/thing.ts";
+import { activeClock } from "../modules/clock/service.ts";
 import type declaration from "../../blueprint/things/eval/verbs/due.ts";
 import { Eval } from "../../blueprint/things/eval/thing.ts";
 import { Trigger } from "../../blueprint/things/trigger/thing.ts";
@@ -7,12 +9,22 @@ import { Thread } from "../../blueprint/things/thread/thing.ts";
 
 /** How long the main agent has to judge an eval: ten minutes from the moment it is told. */
 const TIMEOUT_MS = 600_000n;
-/** How many rows of each kind one pass reads: far past what waits at once. */
-const SCAN = 1000;
+/** A page of the store's list: evals and triggers are never deleted, so a pass reads each kind to its end, never a first few. */
+const PAGE = 100;
 const LIVE = ["queued", "delivered"];
 
 const all = (superagent: unknown, thing: typeof Eval | typeof Trigger | typeof Thread, order: "newest" | "oldest") =>
-  Effect.flatMap(Store, (store) => Effect.map(store.list({ thing, where: { superagent }, state: undefined, order, limit: SCAN, after: undefined }), (page) => page.items));
+  Effect.flatMap(Store, (store) =>
+    Effect.gen(function* () {
+      const rows: Array<Instance> = [];
+      let after: string | undefined;
+      do {
+        const page = yield* store.list({ thing, where: { superagent }, state: undefined, order, limit: PAGE, after });
+        rows.push(...page.items);
+        after = page.next ?? undefined;
+      } while (after !== undefined);
+      return rows;
+    }));
 
 /**
  * One pass of the eval clock. An eval that was told to the main agent and ran out of time is given up on (`unavailable`). Then each
@@ -25,7 +37,10 @@ const all = (superagent: unknown, thing: typeof Eval | typeof Trigger | typeof T
 const due: Handler<typeof declaration, Records | Store> = ({ superagent }) =>
   Effect.gen(function* () {
     const records = yield* Records;
-    const now = BigInt(yield* Clock.currentTimeMillis);
+    const owner = yield* records.find(Superagent, superagent);
+    const wall = BigInt(yield* Clock.currentTimeMillis);
+    // An eval's clock is the superagent's active one (GOAL17-pause): the time it spent paused does not count against an eval that spans it.
+    const now = owner === undefined ? wall : activeClock({ state: String(owner.state), pausedAt: owner["pausedAt"] as bigint | undefined, pausedFor: owner["pausedFor"] as bigint }, wall);
     const evals = yield* all(superagent, Eval, "oldest");
     const overdue = (e: Instance) => e.state === "delivered" && e["deliveredAt"] !== undefined && (e["deliveredAt"] as bigint) + (e["timeoutMs"] as bigint) <= now;
     for (const e of evals.filter(overdue)) yield* records.update(Eval, String(e["id"]), {}, "unavailable");

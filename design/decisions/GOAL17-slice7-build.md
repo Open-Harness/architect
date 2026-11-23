@@ -56,11 +56,33 @@ Slice 9, with the outbox doors, must give a call the means to emit them (or `due
 `gate.of` takes the tickets that follow a thread, but `intake` cannot import `tickets` (the reverse is true), so `trigger.receive` passes none. A ticket's `accept` must write what follows a thread where intake can read it;
 that is the follow-up journeys of `22`, with the doors of slices 8 and 9.
 
-### 9. `observedRow` is not changed yet: check 62 pins the old value
+### 9. `observedRow` is `inferred` (after #760 changed check 62)
+
+Flipped to `{ listed: "inferred", unlisted: "none", unnamed: "none" }` once #760 landed; check 62's `observedRow` tests pass and its expected-failing file is deleted. The history, kept as written:
 
 GOAL17-stage-one call 8 (and the slice 6 README, point 14) says `observedRow` is `{ listed: "inferred", ... }`. Check `62-the-mappings` (slice 10) pins `OBSERVED = { listed: "explicit", unlisted: "none", unnamed: "none" }` at its line 17,
 for GitHub's and Slack's admission rows, and passed before this slice. I changed it, and two of its tests went red (the repository row, and the Slack channel rows); a builder may not edit a check and the ratchet must exit 0, so I put
 the old value back. The gate does not read this row (it reads the policy's cells, with call 8's defaults), so checks 19 and 23 pass either way. **Asked of 62's author:** change `OBSERVED` to `inferred`, then `observedRow` follows.
+
+### 10. Review of #756: what the 🔍 pass changed
+
+- **A first save cannot race.** A thing with versions holds one rule it does not declare: one row per revision of its key (`versionRule` in `orthograph`; `FieldModel`'s sibling `InvariantModel.framework`).
+  The compiler puts it in the model, so the migration makes the index (`policy_oneVersionPerRevision` over `superagent, revision`; `settings_...` over `revision`, since Settings is keyed by its own id), and the
+  generated server hands the runtime `Versions.rulesOf(...)`. The second of two first saves conflicts at commit, runs again, and is refused as stale. `settings.save` has the same rule with no code of its own.
+- **A lost race at that rule is a retry, not a defect.** `versionRule` marks the rule `framework`; a call whose pre-commit check finds it broken by another save that already committed goes
+  through `settleViolation` as the call's retry (`Conflict`), so it reruns and is refused `StaleRevision { current }`. Test: the first attempt reads no version, the rival commits its revision 1, the check finds it.
+- **Codex's three findings on #756.**
+  - **`records.update`'s `state` was dropped** by the watching wrapper every served handler is given (`handler/internal/decided.ts` forwarded three arguments). So `ticket.stop` left the mandate held and the
+    assignment pending, and `eval.due` never saved its expirations. It is forwarded now; tests go through `Handlers.serve` (`state-update.test.ts`, `ticket/stop.test.ts`, `eval/due.test.ts`). No journey caught it:
+    check 19 has no ticket, and no step of it reads a mandate, an assignment or an eval's state back. The steps that would are `22`'s "a stop withdraws the mandate" and "a stop cancels or closes from the state it reads", which wait on the harness's doors.
+  - **An eval's clock is the superagent's active clock** (GOAL17-pause): `eval.delivered` records the wall clock less `pausedFor`, and `eval.due` judges overdue on the same (`modules/clock`), standing still while paused. An eval that spans a pause does not expire for it.
+  - **One live eval per thread is enforced at commit** (`oneLiveEvalPerThread`, a partial unique index over queued and delivered). A rule may say `retry: true` (it replaces call 10's `framework` flag on the rule): breaking it is a lost race, the call reruns and meets what the winner made. A pass that loses makes nothing.
+- **A derived list checks its cursor** with the same `CURSOR` check as a plain list (`NotAllowed`).
+- **`eval.due` reads each kind to its end,** a page of 100 at a time, where it read the oldest 1000. Test: 1100 triggers already covered, then one new one (`due.test.ts`).
+- **The migration is `0009_columns.sql`** (`0008_inbox.sql` is another's).
+- **`Versions.restore` is tested:** an old revision becomes a new version from its content; a never-saved one, and one made from an older version, are refused.
+- **Line counts.** `compiler/.../model/types.ts` was 303 lines and `describe.ts` 275 before this slice (both over by `wc -l`; the lint rule counts lines of code, and passes on both). This slice added about 5 and 2.
+- `observedRow` stays `explicit` until #760 changes check 62.
 
 ## What still fails, and what stays blank
 

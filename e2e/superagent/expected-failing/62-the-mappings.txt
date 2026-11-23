@@ -1,4 +1,0 @@
-# Check 62 now follows GOAL17-stage-one call 8: `observedRow` is `{ listed: "inferred", unlisted: "none", unnamed: "none" }`. The intake plugin's source helpers
-# (plugins/intake/src/modules/source/types.ts) still say `listed: "explicit"`; slice 7's build changes them. Due before slice 7 merges.
-superagent/62-the-mappings.test.ts > 62 github: each event makes the trigger the record says > its part of the policy has one admission row, the repository, that admits a listed account's message as inferred and nothing else
-superagent/62-the-mappings.test.ts > 62 slack: each event makes the trigger the record says > its part of the policy has one row per channel; the executor's environment names the channel and the thread

@@ -63,7 +63,7 @@ export const recordingLogs = (payload: object, fields: FieldsInput) => Effect.sy
       return (records.findBy as (...args: ReadonlyArray<unknown>) => ReturnType<Records["Service"]["findBy"]>)(rule, value).pipe(Effect.tap((found) => Effect.sync(() => { if (found) learn(thing, found); })));
     }) as Records["Service"]["findBy"],
     insert: (thing, values, state) => { learn(thing, values); return records.insert(thing, values, state); },
-    update: (thing, id, changes) => { learn(thing, changes); return records.update(thing, id, changes); },
+    update: (thing, id, changes, state) => { learn(thing, changes); return records.update(thing, id, changes, state); },
   });
 
   const redact = (line: string) => hidden.reduce((out, h) =>

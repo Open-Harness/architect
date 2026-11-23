@@ -17,6 +17,10 @@ Lives in the database.
 | overrides | schema |
 | saved (optional) | schema |
 
+## Invariants
+
+- `prompt-set.oneVersionPerRevision`: another prompt set holds this superagent and revision. Unique on superagent, revision, in every state; refuses nothing, a break is a defect.
+
 ## Operations
 
 - [prompt-set.compose](compose.md): Make the prompt for one agent's model request, from the current version.
