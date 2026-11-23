@@ -74,7 +74,7 @@ and run it." Nothing else is needed.
 
 ## The slices
 
-Slices 7 to 11 are provisional. Slice 6 rewrites them from what slices 3 to 5 find (K42, section 2). Slices 1 and 2
+Slices 7 to 11 are provisional. Slice 6 rewrote them on 23 November 2026 from slices 3 to 5: the grill (`decisions/CX-grill.md`), the doctype spike (#743, its gaps in #742) and the Bridge spike (#744, its gaps in #739). The record types each takes are in `examples/capxul/doctypes.md` (K42, section 2). Slices 1 and 2
 keep the numbers their issues already have.
 
 | # | Slice | After |
@@ -85,7 +85,11 @@ keep the numbers their issues already have.
 | 4 | Spike: can Orthograph things, machines and journeys be scaffolded from ERPNext's record-type files (Sales Invoice, Payment Entry, GL Entry first)? If so, it becomes a scaffolder in the framework, built under K42's collision rule | — |
 | 5 | Spike: `ortho new adapter --from-openapi` on Bridge's published description; customers, KYC links, virtual accounts and transfers, against a stand-in | — |
 | 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge as board items, each at its stage, with every record type Capxul takes in one catalogue (CX-grill) | 1, 3, 4, 5 |
-| 7 to 11 | The books, HR, payroll, Bridge's features built in full (their gating comes later, CX-grill) and the CRM, as slice 6 writes them | as the front matter lists |
+| 7 | The books, 284 record types: first the chart of accounts, parties, sales and purchase invoices, payments, journal entries, the ledger and fiscal years, on Capxul's Company with company-wide roles; then taxes, payment terms, pricing, POS and subscriptions; then fixed assets, budgets, period closing and the reports. Pulls #742's columns, wide things, values and company roles | 2 |
+| 8 | HR, 122 record types: employees, departments and designations first, then leave, attendance and shifts, expense claims, recruitment and appraisals | 6 |
+| 9 | Payroll, 37 record types: salary components and structures, their assignment, pay runs and slips, each run posting to the books' journal; India's tax-exemption shapes generalised. A scheduled run pulls timers and workflows, the superagent's share | 7, 8 |
+| 10 | Bridge, built in full through Capxul's own Bridge account: the adapter from #744 (its gaps in #739), customers, KYC and KYB, virtual accounts and transfers into Bank Account and Bank Transaction, then help with incorporation. How it is sold comes later (CX-grill, section 4) | 5, 6 |
+| 11 | The CRM, 50 Frappe CRM record types, as a module a running Capxul mounts. Pulls mounting a plugin into an app that already holds data (K43, section 2) | 9 |
 
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18
