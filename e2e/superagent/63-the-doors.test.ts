@@ -10,8 +10,9 @@
 // the delivery or the action. Red until slice 11 builds the doors: today the Worker has no `/_in/` route and answers 404.
 import { afterAll, describe, expect, it } from "vitest";
 import {
-  CHECK_ON_PR, COMMENT_CREATED, COMMENT_EDITED, ISSUE_OPENED, PR_CLOSED, REVIEW_COMMENT_CREATED, REVIEW_SUBMITTED, githubSignature, setAt, slackSignature,
+  CHECK_ON_PR, COMMENT_CREATED, githubSchemaOf, githubSpec, type Obj, COMMENT_EDITED, ISSUE_OPENED, PR_CLOSED, REVIEW_COMMENT_CREATED, REVIEW_SUBMITTED, githubSignature, setAt, slackSignature,
 } from "./connections.ts";
+import { problems } from "./schema.ts";
 import { github, journalOf, openDoor, slack, trace, type Door } from "./door.ts";
 import { githubLegacySignature } from "./connections.ts";
 import { APP_MENTION, SLACK_ENVELOPES, THREAD_REPLY, USER_MESSAGE } from "./slack-events.ts";
@@ -52,8 +53,11 @@ describe("63 github: a delivery signed as GitHub signs it", () => {
     const comment = setAt(COMMENT_CREATED, "comment.id", 9150);
     expect(said(await github(door, "issue_comment", comment))).toEqual(ACCEPTED);
     for (const [what, again] of [
-      ["another installation", { ...comment, installation: { id: 99 } }], ["another sender", setAt(comment, "sender.id", 7)], ["another action", setAt(comment, "action", "edited")],
-    ] as const) expect(said(await github(door, "issue_comment", again as never)), what).toEqual(SEEN);
+      ["another installation", { ...comment, installation: { id: 99 } }], ["another sender", setAt(comment, "sender.id", 7)], ["another action: the edit event, with its `changes`, of the same comment at the same time", setAt(setAt(setAt(COMMENT_EDITED, "comment.id", 9150), "comment.updated_at", (COMMENT_CREATED["comment"] as Obj)["updated_at"] as string), "comment.body", (COMMENT_CREATED["comment"] as Obj)["body"] as string)],
+    ] as const) {
+      if (what.startsWith("another action")) expect(problems(githubSpec(), githubSchemaOf("issue-comment-edited"), again), "the edit event is a payload the spec allows").toEqual([]);
+      expect(said(await github(door, "issue_comment", again as never)), what).toEqual(SEEN);
+    }
   });
 
   it("a body signed as it was written is accepted, however it was written: indented, or with `<` as \\u003c, which JSON.stringify would not give back", async () => {

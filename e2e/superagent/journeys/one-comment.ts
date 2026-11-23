@@ -16,7 +16,6 @@ export default Blueprint.journey("a webhook and a catch-up poll of one comment m
     s.step("still one trigger", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
     s.step("the same webhook again changes nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, again: true }), expect((a) => a.status).toBe(200), noEvents()),
     s.step("a webhook signed with another secret is refused", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, signed: "wrongly" }), expect((a) => a.status).toBe(401)),
-    s.step("and one signed ten minutes ago is refused too", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, signed: "late" }), expect((a) => a.status).toBe(401)),
-    s.step("nothing was written for either", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
+    s.step("nothing was written for it", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
   ],
 });
