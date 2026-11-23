@@ -123,4 +123,5 @@ The builder's calls, where the decision left the shape open.
    merge, so check 15 blocks the `portal-ui` job.*
 6. **The package's licence is MIT** for its own files (nothing in the repository chose one; reversible), with a line that
    Pro is not covered. *The lead holds this open for Aaron: the repository has no licence, and the npm preview after Gate
-   M1 needs his choice for every package that publishes, not only this one.*
+   M1 needs his choice for every package that publishes, not only this one.* Superseded by L1, 23 November 2026: every
+   published package is Apache-2.0.
