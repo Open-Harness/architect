@@ -1,5 +1,5 @@
 // The smaller framework forms in the model: agents and their slots, declared instances, and what can fail beside a thing.
-import type { Event, Field, Thing } from "orthograph";
+import type { Event, Field, Thing, Value } from "orthograph";
 import type { MountModel, ThingModel } from "../types.ts";
 import { holdsModel } from "./holds.ts";
 import type { Layout } from "./layout.ts";
@@ -13,6 +13,25 @@ export interface FormContext {
 
 const fieldName = (ctx: FormContext, f: Field) => `${ctx.thingNames.get(f.of) ?? "?"}.${f.key}`;
 
+/** The thing whose rows hold the seats: named by the thing, or by the id prefix it owns. */
+const heldName = (ctx: FormContext, file: string, held: Thing | Value): string => {
+  if (held.kind === "thing") return ctx.thingNames.get(held) ?? "?";
+  if (held.meta.type !== "id") {
+    ctx.problems.push(`${file}: slots.held must be a thing, or the id of one (Blueprint.id("asg")), and it is a ${held.meta.type}`);
+    return "?";
+  }
+  const prefix = held.meta.prefix;
+  // Every thing that owns the prefix: a plugin mounted twice, under two names, brings two, and the pool must not bind to either by luck.
+  const owners = [...ctx.thingNames].filter(([t]) => (t.fields["id"]?.value.meta as { readonly prefix?: string } | undefined)?.prefix === prefix).map(([, name]) => name).sort();
+  if (owners.length !== 1) {
+    ctx.problems.push(owners.length === 0
+      ? `${file}: slots.held names the id prefix "${prefix}", which no thing owns`
+      : `${file}: slots.held names the id prefix "${prefix}", which ${owners.length} things own (${owners.join(", ")}): name the thing itself, so the seats are held by the one you mean`);
+    return "?";
+  }
+  return owners[0]!;
+};
+
 /** `agents.<name>`: its file, and its slots as `{ size, reserve, held }` when it holds a seat. */
 export const agentsModel = (ctx: FormContext) =>
   Object.fromEntries([...ctx.layout.agents].sort(([a], [b]) => a.localeCompare(b)).map(([name, { file, declaration: a }]) => {
@@ -21,7 +40,7 @@ export const agentsModel = (ctx: FormContext) =>
     if (slots !== undefined && (!Number.isInteger(slots.reserve) || slots.reserve < 0)) ctx.problems.push(`${file}: slots.reserve must be a whole number, 0 or more`);
     return [name, {
       file,
-      ...(slots === undefined ? {} : { slots: { size: fieldName(ctx, slots.size), reserve: slots.reserve, held: ctx.thingNames.get(slots.held) ?? "?" } }),
+      ...(slots === undefined ? {} : { slots: { size: fieldName(ctx, slots.size), reserve: slots.reserve, held: heldName(ctx, file, slots.held) } }),
     }];
   }));
 

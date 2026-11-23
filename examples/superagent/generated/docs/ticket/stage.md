@@ -29,6 +29,7 @@ Read one ticket by its id: superagent, title, state.
 | refusal | exit | code | when |
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent, or the itsAgent of the ticket; the handler never runs |
+| ReadNotServed | 90 | AR-008 | the ticket is in a state this can't start from; carries `state` |
 
 ## How to call
 

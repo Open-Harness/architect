@@ -1,6 +1,6 @@
 // Turns the layout into the model: every declaration named, every reference resolved, every entry hashed.
 import { Duration } from "effect";
-import type { AnyErrorClass, CallStep, Field, FieldsInput, Operation, Read, Role, Step, Thing, Value, Visibility } from "orthograph";
+import type { AnyErrorClass, CallStep, On, Field, FieldsInput, Operation, Read, Role, Step, Thing, Value, Visibility } from "orthograph";
 import type { AllowedModel, BlankOperationModel, FieldModel, FieldsModel, Model, OperationModel, StepModel, ThingModel, VisibilityModel } from "../types.ts";
 import { admitsAgent } from "orthograph";
 import { Blanks } from "orthograph/server";
@@ -21,14 +21,9 @@ import { breakersOf, declaredErrors, invariantsOf } from "./invariants.ts";
 import { camel, pascal, type Layout } from "./layout.ts";
 import { deriveModel } from "./derive.ts";
 import { formsOf } from "./forms.ts";
+import { roleRuleOf, withReadNotServed } from "./bits.ts";
 import { readModelOf, type ReadContext } from "./reads.ts";
 import type { MountModel } from "../types.ts";
-
-/** What a role's rule is in the model: its function's text, or the words of an `actor:` or `agent:` role. */
-const roleRuleOf = (r: Role): string =>
-  r.actor ? `actor(${r.actor.mount.key}, ${r.actor.id.key}) within ${r.actor.within?.key ?? "nothing"} while [${r.actor.while.map((s) => s.key).join(", ")}]`
-  : r.agent ? `agent(${r.agent.key})`
-  : r.rule.toString();
 
 /** A module's exports in name order: a namespace's own order differs between loaders, and the model must not. */
 const byName = <V>(m: ReadonlyMap<string, V>) => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
@@ -42,6 +37,9 @@ export const describe = (layout: Layout, mounts: Readonly<Record<string, MountMo
   const eventThing = new Map([...layout.things].flatMap(([n, t]) => [...t.events.values()].map((e) => [e, n] as const)));
   const opNames = new Map([...layout.things].flatMap(([n, t]) => [...t.verbs].map(([verb, v]) => [v.declaration as unknown, `${n}.${verb}`] as const)));
   const opName = (declaration: unknown) => opNames.get(declaration);
+  // A feature mount's `on` verb makes an operation of its plugin the hop of an event, as the operation's own `on:` does.
+  const mountHops = new Map<unknown, Array<On>>();
+  for (const m of layout.mounts.values()) for (const v of m.mount.verbs) if (v.verb === "on") mountHops.set(v.operation, [...(mountHops.get(v.operation) ?? []), v.hop]);
   const errorNames = new Map([...layout.things.values()].flatMap((t) => [...t.errors].map(([n, e]) => [e, n] as const)));
   const roleNames = new Map(
     [...layout.things.values()].flatMap((t) => [...t.roles].map(([n, r]) => [r, `${t.name}.${n}`] as const)),
@@ -147,6 +145,7 @@ export const describe = (layout: Layout, mounts: Readonly<Record<string, MountMo
   const keeperUsed = Times.keeperUsed([...layout.things.values()].flatMap((t) => [...t.verbs.values()].map((v) => v.declaration.allowed)));
   // With a keeper in the blueprint, even an operation open to anyone refuses it NotAllowed (M8-checks call 4).
   const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
+  const hopsOf = (op: Operation): ReadonlyArray<On> => [...op.on, ...(mountHops.get(op) ?? [])];
   const readCtx: ReadContext = { layout, thingNames, problems, allowedModel, fieldsModel, openToAll };
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
@@ -217,7 +216,7 @@ export const describe = (layout: Layout, mounts: Readonly<Record<string, MountMo
     const entry = {
       kind: "operation" as const,
       name: `${thing}.${verb}`, thing, verb, identifier: camel(verb), file, from, description: op.description,
-      payload, answer, move, errors, ...(op.on.length > 0 ? { on: op.on.map((h) => ({ event: eventNames.get(h.event) ?? problem(problems, `${file}: is delivered an event that is not exported from an events.ts`), thing: eventThing.get(h.event) ?? "?" })) } : {}), ...(Object.keys(broken.refusals).length > 0 ? { invariants: broken.refusals } : {}), breaks: broken.breaks, refusals, allowed, agentTool: !onDevice && admitsAgent(op.allowed), ...found, ...(mints !== undefined ? { mints } : {}),
+      payload, answer, move, errors, ...(hopsOf(op).length > 0 ? { on: hopsOf(op).map((h) => ({ event: eventNames.get(h.event) ?? problem(problems, `${file}: is delivered an event that is not exported from an events.ts`), thing: eventThing.get(h.event) ?? "?" })) } : {}), ...(Object.keys(broken.refusals).length > 0 ? { invariants: broken.refusals } : {}), breaks: broken.breaks, refusals, allowed, agentTool: !onDevice && admitsAgent(op.allowed), ...found, ...(mints !== undefined ? { mints } : {}),
       steps,
       ...(blanks[`${thing}.${verb}`] ? { blanks: blanks[`${thing}.${verb}`]! } : {}),
       idempotent: op.idempotent ?? null,
@@ -258,7 +257,7 @@ export const describe = (layout: Layout, mounts: Readonly<Record<string, MountMo
     return readModelOf(readCtx, thing, verb, file, from, read);
   }
 
-  const refusals = refusalsOf(things, problems);
+  const refusals = withReadNotServed(refusalsOf(things, problems), operations);
   problems.push(...exitClashes(things), ...operationExitClashes(things, operations), ...notFoundShapes(things));
   const values = Object.fromEntries([...layout.values].sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => [n, v.meta]));
   const environments = environmentsOf(layout, problems);

@@ -11,6 +11,13 @@ export const MACHINE_NUMBER = 900;
 /** The runtime's refusal for a request key reused with another payload: its name, written once. */
 export const IDEMPOTENCY_CONFLICT = "IdempotencyConflict";
 
+/**
+ * The runtime's refusal of a read it does not serve yet: one that pins a field (`only`) or works its answer out (`derive`) is served from
+ * slice 7 of Goal 17. Present in a model only when some read is such a read, so a blueprint without one generates what it did.
+ */
+export const READ_NOT_SERVED = "ReadNotServed";
+export const READ_NOT_SERVED_CODE = "AR-008";
+
 /** Refusals the runtime makes for every thing, numbered in the order it gained them: who may call (before any handler runs), then a request key reused with another payload. */
 export const RUNTIME_CODES = { NotAllowed: "AR-001", [IDEMPOTENCY_CONFLICT]: "AR-002" } as const;
 

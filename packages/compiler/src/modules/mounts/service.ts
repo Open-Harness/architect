@@ -114,12 +114,14 @@ export const Mounts: MountsApi = {
     }
     // Each such folder joins its thing; its operations are the plugin's that wrote them.
     for (const { file, plugin, t } of extensions) {
-      const target = things.get(t.name) ?? layout.things.get(t.name);
-      if (!target?.thing) { problems.push(`${file}: ${plugin} adds operations to thing ${t.name}, which no mounted plugin or the app brings`); continue; }
+      // The thing it adds to is found by the thing its operations are declared on, never by the folder's name: either mount may be aliased.
+      const declaredOn = [...t.verbs.values()][0]?.declaration.thing;
+      const target = declaredOn === undefined ? undefined : [...things.values(), ...layout.things.values()].find((x) => x.thing === declaredOn);
+      if (!target?.thing) { problems.push(`${file}: ${plugin} adds operations to thing ${t.from.kind === "app" ? t.name : t.from.thing}, which no mounted plugin or the app brings`); continue; }
       for (const [verb, v] of t.verbs) {
         const taken = target.verbs.get(verb);
         // One operation has one declaration: an added verb may not be one the thing already has, nor one another folder adds.
-        if (taken) problems.push(`${file}: ${plugin} adds ${t.name}.${verb} (${v.file}), which ${t.name} already has (${taken.file}): name the operation another verb`);
+        if (taken) problems.push(`${file}: ${plugin} adds ${target.name}.${verb} (${v.file}), which ${target.name} already has (${taken.file}): name the operation another verb`);
         else target.verbs.set(verb, { ...v, from: t.from });
       }
     }
