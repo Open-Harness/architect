@@ -33,12 +33,16 @@ export const readModelOf = (c: ReadContext, thing: string, verb: string, file: s
   const known = (n: string) => n in (t?.thing?.fields ?? {}) || n === "state" || n in (read.derive?.adds ?? {});
   for (const n of read.where) if (!known(n)) problems.push(`${file}: where names ${n}, which is neither a stored field of ${thing} nor one a derive adds`);
   for (const n of Object.keys(read.only ?? {})) if (!known(n)) problems.push(`${file}: only pins ${n}, which is neither a stored field of ${thing} nor one a derive adds`);
+  const firstKeys = Object.keys(read.first ?? {});
+  if (read.first !== undefined && !list) problems.push(`${file}: first is for a list read`);
+  if (firstKeys.length > 1) problems.push(`${file}: first names one field and one value, not ${firstKeys.length}`);
+  for (const n of firstKeys) if (!(n in (t?.thing?.fields ?? {}))) problems.push(`${file}: first names ${n}, which is not a stored field of ${thing}`);
   const pinned = Object.keys(read.only ?? {});
   const entry = {
     kind: "read" as const,
     name: `${thing}.${verb}`, thing, verb, identifier: camel(verb), file, from,
     description: list
-      ? `List ${thing}s, ${read.order === "newest" ? "newest first" : "oldest first"}, ${read.page} to a page${read.where.length > 0 ? `, filtered by ${read.where.join(", ")}` : ""}.`
+      ? `List ${thing}s, ${read.order === "newest" ? "newest first" : "oldest first"}, ${read.page} to a page${read.where.length > 0 ? `, filtered by ${read.where.join(", ")}` : ""}${firstKeys.length === 1 ? `, the rows with ${firstKeys[0]} ${String((read.first as Record<string, unknown>)[firstKeys[0]!])} ahead of the rest` : ""}.`
       : `Read one ${thing} by its id: ${read.fields.map(String).join(", ")}.`,
     payload, answer: fieldsModel(read.answer, `${file} answer`, "a read answer"),
     move: null, errors: [], breaks: [],
@@ -48,6 +52,7 @@ export const readModelOf = (c: ReadContext, thing: string, verb: string, file: s
     budget: read.budget ? { p95Ms: Duration.toMillis(read.budget.p95) } : null,
     ...(list ? { list: { where: read.where.filter((n) => !pinned.includes(n)), order: read.order ?? "newest", page: read.page ?? 0 } } : {}),
     ...(read.only === undefined ? {} : { only: read.only }),
+    ...(read.first === undefined ? {} : { first: read.first }),
     ...(derive === undefined ? {} : { derive }),
   };
   return { ...entry, hash: hashOf(entry) };

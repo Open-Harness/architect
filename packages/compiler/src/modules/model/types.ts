@@ -151,6 +151,8 @@ export interface OperationModel {
   readonly list?: { readonly where: ReadonlyArray<string>; readonly order: string; readonly page: number };
   /** A list read's fields pinned to one value, taken out of its payload (GOAL17-derived-reads). */
   readonly only?: Readonly<Record<string, unknown>>;
+  /** A list read's `first`: the one field and value whose rows come ahead of the rest. Present only when declared. */
+  readonly first?: Readonly<Record<string, unknown>>;
   /** A read worked out from other records: what it looks at, what it adds to its answer, and the hash of its function. */
   readonly derive?: { readonly looks: Readonly<Record<string, unknown>>; readonly adds: FieldsModel; readonly hash: string };
   /** The events that call it, each as an outbox hop (`Blueprint.on`), with the thing that declares the event. */

@@ -20,7 +20,7 @@ export const listItemFields = (thing: Thing): FieldsInput => ({ ...thing.fields,
 
 type Pinned = { readonly [field: string]: unknown };
 type ByIdSpec = { readonly by: "id"; readonly fields: ReadonlyArray<string>; readonly allowed: ReadonlyArray<Allowed>; readonly budget?: Budget; readonly derive?: AnyDerive };
-type ListSpec = { readonly where: ReadonlyArray<string>; readonly order: Order; readonly page: number; readonly allowed: ReadonlyArray<Allowed>; readonly budget?: Budget; readonly derive?: AnyDerive; readonly only?: Pinned };
+type ListSpec = { readonly where: ReadonlyArray<string>; readonly order: Order; readonly page: number; readonly allowed: ReadonlyArray<Allowed>; readonly budget?: Budget; readonly derive?: AnyDerive; readonly only?: Pinned; readonly first?: Pinned };
 type ReadSpec = ByIdSpec | ListSpec;
 
 /** A read by id: its payload is the thing's id, its answer the fields it names, `state` as text. */
@@ -32,7 +32,7 @@ const idRead = (thing: Thing, spec: ByIdSpec) => {
   if (spec.derive) Object.assign(answer, spec.derive.adds);
   return Object.freeze({
     kind: "read", thing, by: "id", fields: spec.fields, where: [], order: undefined, page: undefined,
-    allowed: spec.allowed, budget: spec.budget, derive: spec.derive, only: undefined, payload, optional: [], answer,
+    allowed: spec.allowed, budget: spec.budget, derive: spec.derive, only: undefined, first: undefined, payload, optional: [], answer,
     payloadSchema: structOf(payload), answerSchema: structOf(answer),
   }) as never;
 };
@@ -59,7 +59,7 @@ const listRead = (thing: Thing, spec: ListSpec) => {
   const payloadSchema = Schema.Struct(Object.fromEntries(Object.entries(payload).map(([k, f]) => [k, Schema.optionalKey(valueOf(f).schema)])));
   return Object.freeze({
     kind: "read", thing, by: "list", fields, where, order: spec.order, page: spec.page,
-    allowed: spec.allowed, budget: spec.budget, derive: spec.derive, only: spec.only, payload, optional, answer, payloadSchema, answerSchema: structOf(answer),
+    allowed: spec.allowed, budget: spec.budget, derive: spec.derive, only: spec.only, first: spec.first, payload, optional, answer, payloadSchema, answerSchema: structOf(answer),
   }) as never;
 };
 

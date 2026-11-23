@@ -2,7 +2,7 @@ import { Cause, Effect, Schema } from "effect";
 import { NotAllowed, type Principal, type Read } from "orthograph";
 import { Access } from "#modules/access/service.js";
 import { Unit } from "#modules/records/service.js";
-import { Records, Store, type Unit as UnitOf } from "#modules/records/types.js";
+import { Records, Store, type ListQuery, type Unit as UnitOf } from "#modules/records/types.js";
 import { derivedOne, derivedPage, notServed, unserved } from "./derived.ts";
 import { answerAttributes, payloadAttributes, principalAttributes } from "./attributes.ts";
 import { CALL_ID, newCallId } from "./call-id.ts";
@@ -37,6 +37,27 @@ const CURSOR = /^[0-9]{1,15}$/;
 const refusals = new Set(["NotAllowed", "ReadNotServed"]);
 const callRefusals = new Set([...refusals, "SchemaError"]);
 
+type Listing = Omit<ListQuery, "after">;
+
+/**
+ * A list with `first` (GOAL17-slice9-build call 2): the rows holding the value come first, then the rest, each group in the read's order, in one page
+ * of `limit` rows and no cursor. The rest is read page by page and the first group's rows left out, until the page is full or the rows run out.
+ */
+const firstThenRest = (store: Store["Service"], listing: Listing, [field, value]: readonly [string, unknown]) =>
+  Effect.gen(function* () {
+    const ahead = yield* store.list({ ...listing, where: { ...listing.where, [field]: value }, after: undefined });
+    const rows = [...ahead.items];
+    let after: string | undefined;
+    let more = rows.length < listing.limit;
+    while (more) {
+      const page = yield* store.list({ ...listing, after });
+      for (const row of page.items) if (rows.length < listing.limit && row[field] !== value) rows.push(row);
+      after = page.next ?? undefined;
+      more = page.next !== null && rows.length < listing.limit;
+    }
+    return { items: rows.map((i) => ({ ...i, state: i.state ?? "none" })), next: null } as ReadAnswer;
+  });
+
 /** A page: the instances matching the filters the caller gave, `page` of them, in the read's order. */
 const byList = (read: Read<any, any, any>, payload: ReadPayload) =>
   Effect.gen(function* () {
@@ -45,14 +66,11 @@ const byList = (read: Read<any, any, any>, payload: ReadPayload) =>
     if (cursor !== undefined && !CURSOR.test(cursor)) return yield* new NotAllowed();
     // A field the read pins (`only`) is never the caller's to set: it is the read's own filter, whatever the payload says.
     const { state: pinnedState, ...pinned } = (read.only ?? {}) as { readonly state?: string; readonly [field: string]: unknown };
-    const listed = yield* store.list({
-      thing: read.thing,
-      where: { ...Object.fromEntries(Object.entries(filters).filter(([k]) => read.where.includes(k))), ...pinned },
-      state: pinnedState ?? state,
-      order: read.order ?? "newest",
-      limit: read.page ?? 50,
-      after: cursor,
-    });
+    const where = { ...Object.fromEntries(Object.entries(filters).filter(([k]) => read.where.includes(k))), ...pinned };
+    const spec = { thing: read.thing, state: pinnedState ?? state, order: read.order ?? "newest", limit: read.page ?? 50 } as const;
+    const ahead = Object.entries(read.first ?? {})[0];
+    if (ahead !== undefined) return yield* firstThenRest(store, { ...spec, where }, ahead);
+    const listed = yield* store.list({ ...spec, where, after: cursor });
     const items = listed.items.map((i) => ({ ...i, state: i.state ?? "none" }));
     return { items, next: listed.next } as ReadAnswer;
   });

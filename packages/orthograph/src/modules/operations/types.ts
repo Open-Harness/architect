@@ -145,6 +145,8 @@ export interface Read<T extends Thing = Thing, P = { readonly id: string }, A = 
   readonly derive: AnyDerive | undefined;
   /** Fields pinned to one value, taken out of the payload: a caller can't set them. */
   readonly only: { readonly [field: string]: unknown } | undefined;
+  /** A list that puts the rows holding one value of a field ahead of the rest, each group in `order` (GOAL17-slice9-build call 2). One page: it has no cursor. */
+  readonly first: { readonly [field: string]: unknown } | undefined;
   readonly payloadSchema: Schema.Codec<P, unknown>;
   readonly answerSchema: Schema.Codec<A, unknown>;
 }
@@ -187,6 +189,8 @@ export interface OperationsApi {
       readonly budget?: Budget;
       readonly derive?: AnyDerive;
       readonly only?: { readonly [field: string]: unknown };
+      /** One field and the value whose rows come first, then the rest, each group in `order`. A list with `first` answers one page and no cursor, so `page` must hold the whole line. */
+      readonly first?: { readonly [field: string]: unknown };
     }): Read<T, ListPayload<T, W>, Page<ListItem<T>>>;
   };
   readonly step: {
