@@ -50,6 +50,7 @@ Starts from the world `a company`.
 - **Ada can't give a second company of hers the same name.** `ada` (role company.owner) calls and sends companyName `Acme Trading`, abbr `AT2`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyNameTaken, CO-001, carrying companyName `Acme Trading`.
 - **nor the same abbreviation.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyAbbrTaken, CO-002, carrying abbr `AT`.
 - **Bo may use both for his own company, because her names don't bind him.** `bo` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Ada sets up a second company under other names, which she runs too.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AH`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
 ### set up a company
 
