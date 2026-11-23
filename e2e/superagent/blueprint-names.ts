@@ -68,7 +68,7 @@ export const intake: PluginNames = {
   things: {
     // "The spec, translated": Source row (states, failures, failAfter; save/enable/disable/positionAdvanced/problem)
     source: { states: ["setup", "ready", "paused", "error", "off"], fields: ["failures", "failAfter"], ops: ["save", "enable", "disable", "position-advanced", "problem"] },
-    // Account row; GOAL17-source-from "Account (K40 fix 1) is resolved from it": keyed by (superagent, source, id)
+    // Account row; GOAL17-source-from "Account (K40 fix 1) is resolved from it": keyed by (superagent, source, external) (GOAL17-account-key)
     account: { states: ["seen", "listed", "unlisted"], fields: ["superagent", "source", "id", "external", "login", "bot"], ops: ["seen", "list", "unlist", "sync"] },
     // Trigger row: never changed, so no machine; receive, requeue, reevaluate
     trigger: { ops: ["receive", "requeue", "reevaluate"] },
