@@ -45,7 +45,7 @@ answer from the plugin's own handler, collisions and unmet needs are refused by 
 ## The rules that shape the slices
 
 1. **The decision first.** M1.01 harvests D4 sections 1 to 3 under the frame's words and pins the public surface the
-   checks judge: [`../decisions/M1-plugins.md`](../decisions/M1-plugins.md). Checks are written against it, never
+   checks judge: [`../decisions/M1-plugins.md`](../../decisions/M1-plugins.md). Checks are written against it, never
    against guessed private APIs.
 2. **Checks from another agent.** M1.02's author ports Codex's `00` to `06` to `e2e/m1` in the new words, adds `07`
    (descriptors, M1.05) and `08` (verbs, M1.07), and shows each failing on `main` for the right reason.
@@ -113,7 +113,7 @@ $ ortho check
 check ✔
 ```
 
-Evidence: [`evidence/goal-03/demo.txt`](../evidence/goal-03/demo.txt). Check 02 in CI's `e2e-m1` job also runs proof
+Evidence: [`evidence/goal-03/demo.txt`](../../evidence/goal-03/demo.txt). Check 02 in CI's `e2e-m1` job also runs proof
 with the feature mounted.
 
 ### Demo: the wallet, `acme wallet create && acme wallet send` (M1.29)
@@ -156,7 +156,7 @@ ORTHO_CHAIN_EVM_ANVIL=1 pnpm exec vitest run --root packages/wallets          # 
 ORTHO_CHAIN_EVM_ANVIL=1 pnpm exec vitest run --root packages/prove test/device-journeys.test.ts   # prove's run of the journeys, and of check 09's stand-in
 ```
 
-Evidence: [`evidence/M1.29/`](../evidence/M1.29/).
+Evidence: [`evidence/M1.29/`](../../evidence/M1.29/).
 
 ## Reporting
 

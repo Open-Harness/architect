@@ -51,6 +51,15 @@
       "options": { "command": "vitest run --root {projectRoot} --config vitest.m1.config.ts m1" },
       "cache": false
     },
+    "portal-next": {
+      "metadata": {
+        "description": "Goal 6's done check, begun: the theme's check (slice 1). Slice 2 adds the rest of the portal checks to it."
+      },
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot}/portal-next --config vitest.config.ts" },
+      "cache": false
+    },
     "climb": {
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot} --config vitest.climb.config.ts climb" },
@@ -133,6 +142,31 @@
       "options": { "command": "nx run e2e:m1-checks" },
       "cache": false
     },
+    "m2-checks": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.m2.config.ts m2" },
+      "cache": false
+    },
+    "m2-ratchet": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/m2-report.json tmp/m2-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/m2-errors.json vitest run --root e2e --config vitest.m2-ratchet.config.ts m2 --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/m2-report.json; node e2e/ratchet/check.ts tmp/m2-report.json e2e/m2/expected-failing tmp/m2-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "m2": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:m2-checks" },
+      "cache": false
+    }
+,
     "m8-checks": {
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot} --config vitest.m8.config.ts m8" },

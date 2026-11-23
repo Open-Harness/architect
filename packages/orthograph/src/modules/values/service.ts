@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { DateTime, Option, Schema } from "effect";
 import type { Field } from "#modules/things/types.js";
 import type { MoneyApi, MoneyOptions, Value, ValueMeta, ValuesApi } from "./types.ts";
 import { whole } from "./internal/wire.ts";
@@ -8,6 +8,12 @@ const isValue = (x: unknown): x is Value =>
 
 const value = <S extends Schema.Constraint>(schema: S | Value<S>): Value<S> =>
   isValue(schema) ? (schema as Value<S>) : Object.freeze({ kind: "value", schema: schema as S, meta: { type: "schema" } as const, visibility: "public" as const });
+
+/** An instant is real when it parses and spells back exactly as written: February 30th and month 99 do not. */
+const isRealInstant = (text: string): boolean => {
+  const parsed = DateTime.make(text);
+  return Option.isSome(parsed) && DateTime.formatIso(parsed.value) === text;
+};
 
 const described = <S extends Schema.Constraint>(schema: S, meta: ValueMeta): Value<S> =>
   Object.freeze({ kind: "value", schema, meta: Object.freeze(meta), visibility: "public" as const });
@@ -44,6 +50,7 @@ export const Values: ValuesApi = {
     const max = options?.max ?? 200;
     return described(Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(max)), { type: "text", max });
   },
+  instant: () => described(Schema.String.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/), Schema.makeFilter(isRealInstant, { description: "a real instant, ISO 8601 with milliseconds" })), { type: "instant" }),
   account: () => described(Schema.String.check(Schema.isPattern(CAIP10)), { type: "account" }),
   money,
   refAny: () =>

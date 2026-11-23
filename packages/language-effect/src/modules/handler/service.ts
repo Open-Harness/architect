@@ -48,9 +48,11 @@ interface Spec {
   readonly codes?: Readonly<Record<string, string>>;
   /** The refusals the runtime makes for this operation's writes (G5): each error's tag to the full name of the rule it refuses for. From the model's `operations.<op>.invariants`. */
   readonly invariants?: Readonly<Record<string, string>>;
+  /** Each adapter's mount by the name it is mounted under: what a `service` role in `allowed` is read against. */
+  readonly mounts?: ReadonlyMap<unknown, string>;
 }
 
-const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes, invariants = {} }: Spec) => {
+const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes, invariants = {}, mounts }: Spec) => {
   const op = operation as Operation;
   const budgetMs = op.budget === undefined ? undefined : Duration.toMillis(op.budget.p95);
   const decode = Schema.decodeUnknownEffect(op.payloadSchema as unknown as AnyCodec);
@@ -79,7 +81,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
     const tag = tagOf(e);
     const code = codes?.[tag];
     return Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }) }).pipe(
-      spanned(`${name}.refused`, { operation: name, attempt: number, [CALL_ID]: callId, "principal.kind": principal.kind, ...requestAttributes(request) }),
+      spanned(`${name}.refused`, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal, true), ...requestAttributes(request) }),
     );
   };
   const decodeAnswer = Schema.decodeUnknownEffect(op.answerSchema as unknown as AnyCodec);
@@ -89,7 +91,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
       const unit = yield* Unit.make(store);
       const withRecords = Effect.provideService(Records, unit.records);
       // The check's own reads are not traced: a refusal is, in its own span.
-      yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing }).pipe(
+      yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
         withRecords, Effect.withTracerEnabled(false), Effect.tapError(refused(principal, number, callId, request)),
       );
       const logs = yield* recordingLogs(payload, op.payload);
@@ -159,7 +161,8 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
 
   const run = (payload: object, principal: Principal, request?: string) => {
     // Keyed by operation and caller as well, so one caller's key never answers another's call.
-    const who = principal.kind === "person" ? principal.person : "anonymous";
+    // Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
+    const who = "person" in principal ? `${principal.kind}:${principal.person}` : principal.kind === "service" ? `service:${principal.mount}` : principal.kind;
     const key = op.idempotent === "request" && request !== undefined ? `${name}|${who}|${request}` : undefined;
     // The call is named once, before its first attempt, and every attempt's span carries the name: attempts of one call are sequential, but different
     // calls' attempts overlap, so nothing else in a trace says which attempts belong together (O3).

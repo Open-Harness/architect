@@ -3,7 +3,8 @@
 # proposal 6 in design/process/proposals.md). CI runs this on a pull request whose head branch ends in `-build`:
 #   tools/ci/builder-paths.sh <base> <head>
 # It prints each protected file the branch changes and exits 1, or exits 0 when there is none.
-# The one exception: the ratchet lists, one file per check in e2e/m1/expected-failing/ (G9), one per check in e2e/on-chain/expected-failing/ (Goal 4's done check) and one per test file in packages/<package>/expected-failing/ (G11), may shrink (a builder's slice lands and its
+# The one exception: the ratchet lists, one file per check in an e2e suite's expected-failing/ (e2e/m1/ G9, and every other
+# suite's, e2e/<suite>/expected-failing/) and one per test file in packages/<package>/expected-failing/ (G11), may shrink (a builder's slice lands and its
 # checks pass; the list only shrinks, e2e/ratchet/README.md): a line deleted from a file, or a whole file deleted, passes; a line added to
 # one, or a file added, is a hit. The grid's list, e2e/grid/expected-red.json, is the same kind of list (G7): it may lose pairs, judged by
 # cell and subject with jq, but a pair added there is a hit.
@@ -14,9 +15,8 @@ set -euo pipefail
 
 base="${1:?usage: builder-paths.sh <base> <head>}"
 head="${2:?usage: builder-paths.sh <base> <head>}"
-shrink_only_folder="e2e/m1/expected-failing/"
-# Goal 4: the done check's list, one file per check, the same kind of list.
-shrink_only_on_chain="e2e/on-chain/expected-failing/"
+# Every e2e suite's ratchet list: e2e/m1/, e2e/stage1/, e2e/ui-layer/ and the rest, the same kind of list.
+shrink_only_suite='^e2e/[^/]+/expected-failing/'
 # G11: a package's own ratchet list, packages/<package>/expected-failing/, the same kind of list.
 shrink_only_package='^packages/[^/]+/expected-failing/'
 shrink_only_pairs="e2e/grid/expected-red.json"
@@ -40,7 +40,7 @@ changed=$(git diff --no-renames --name-only "$base...$head" -- "${protected[@]}"
 hits=()
 while IFS= read -r file; do
   [ -z "$file" ] && continue
-  if [[ "$file" == "$shrink_only_folder"* || "$file" == "$shrink_only_on_chain"* || "$file" =~ $shrink_only_package ]]; then
+  if [[ "$file" =~ $shrink_only_suite || "$file" =~ $shrink_only_package ]]; then
     # A file that is not at the merge base is an added file: a hit. One that is, may only lose lines (or be deleted: no added line).
     mb=$(git merge-base "$base" "$head")
     if git cat-file -e "$mb:$file" 2>/dev/null; then

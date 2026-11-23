@@ -1169,6 +1169,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "attention": "attention"
@@ -1188,7 +1189,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "2e54f07444e8bd32"
+        "hash": "b41d3eb8001d82bb"
       },
       "attention.decline": {
         "kind": "operation",
@@ -1249,6 +1250,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "attention": "attention"
@@ -1268,7 +1270,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "acf14768a906379f"
+        "hash": "fd7efa41d9865b82"
       },
       "attention.list": {
         "kind": "read",
@@ -1330,6 +1332,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1345,7 +1348,7 @@
           "order": "newest",
           "page": 50
         },
-        "hash": "546ee9ed061133d6"
+        "hash": "ebdea41f9007b66c"
       },
       "attention.raise": {
         "kind": "operation",
@@ -1431,6 +1434,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -1447,7 +1451,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "63f3e3a9a1f76c0b"
+        "hash": "9615fc0b9525f656"
       },
       "milestone.add": {
         "kind": "operation",
@@ -1532,6 +1536,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -1548,7 +1553,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "8741d706f606dbdd"
+        "hash": "343a86926bb38881"
       },
       "milestone.drop": {
         "kind": "operation",
@@ -1602,6 +1607,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "milestone": "milestone"
@@ -1621,7 +1627,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "d8f6c3099dcbaac2"
+        "hash": "8f1ca999fe2d6160"
       },
       "milestone.list": {
         "kind": "read",
@@ -1683,6 +1689,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1698,7 +1705,7 @@
           "order": "oldest",
           "page": 50
         },
-        "hash": "54e4a92d5603079f"
+        "hash": "73a47df6293bbb14"
       },
       "mission.finish": {
         "kind": "operation",
@@ -1747,6 +1754,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -1762,7 +1770,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "b2b695ae86f9580f"
+        "hash": "a7f9c485cfc7907a"
       },
       "mission.get": {
         "kind": "read",
@@ -1834,6 +1842,7 @@
             "role": "mission.owner"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1841,7 +1850,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "e859421e4d1e9557"
+        "hash": "c6e071db7e259620"
       },
       "mission.list": {
         "kind": "read",
@@ -1901,6 +1910,7 @@
             "kind": "signed-in"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1916,7 +1926,7 @@
           "order": "newest",
           "page": 20
         },
-        "hash": "4878b1ae7dcb07b5"
+        "hash": "adb7a03ed6088cec"
       },
       "mission.open": {
         "kind": "operation",
@@ -1982,6 +1992,7 @@
             "kind": "signed-in"
           }
         ],
+        "agentTool": true,
         "mints": "mission",
         "steps": {
           "insert": {
@@ -1995,7 +2006,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "7696cc08ce2c8120"
+        "hash": "812106af3ec81b4c"
       },
       "mission.pause": {
         "kind": "operation",
@@ -2048,6 +2059,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -2063,7 +2075,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "8f544f950aed776a"
+        "hash": "d3b6f3dc816bdfed"
       },
       "mission.resume": {
         "kind": "operation",
@@ -2109,6 +2121,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -2124,7 +2137,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "4f9b6a7aa4f5f2c2"
+        "hash": "5036eb1dbbb1edd7"
       },
       "mission.start": {
         "kind": "operation",
@@ -2173,6 +2186,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -2188,7 +2202,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "53dad46d247f945e"
+        "hash": "759e820cdcef06b3"
       },
       "mission.stop": {
         "kind": "operation",
@@ -2243,6 +2257,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -2258,7 +2273,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "5cb491a38ce99ed2"
+        "hash": "562e14aae500c09c"
       },
       "mission.tasks": {
         "kind": "operation",
@@ -2301,6 +2316,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -2323,7 +2339,7 @@
         "budget": {
           "p95Ms": 300
         },
-        "hash": "e8d289654ab045c9"
+        "hash": "f032f66ccaa2cee0"
       },
       "question.answer": {
         "kind": "operation",
@@ -2387,6 +2403,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "question": "question"
@@ -2406,7 +2423,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "b72ab7ff0d0ad02e"
+        "hash": "af190c907ab1cb4a"
       },
       "question.ask": {
         "kind": "operation",
@@ -2492,6 +2509,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -2508,7 +2526,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "4cc965ca9f7d7451"
+        "hash": "ad554a00d4c4326a"
       },
       "question.list": {
         "kind": "read",
@@ -2570,6 +2588,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -2585,7 +2604,7 @@
           "order": "oldest",
           "page": 50
         },
-        "hash": "3d5ece99d11d56cd"
+        "hash": "327ea58f20e30eed"
       },
       "question.spike": {
         "kind": "operation",
@@ -2639,6 +2658,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "question": "question"
@@ -2658,7 +2678,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "700b27c086fa0126"
+        "hash": "7cfbd133245e5bca"
       },
       "run.fail": {
         "kind": "operation",
@@ -2720,6 +2740,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "run": "run"
@@ -2739,7 +2760,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "ac5714fe9cb41265"
+        "hash": "0596c85907d6d342"
       },
       "run.finish": {
         "kind": "operation",
@@ -2800,6 +2821,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "run": "run"
@@ -2819,7 +2841,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "84023d7e9325fec7"
+        "hash": "4bb786b8cc371857"
       },
       "run.list": {
         "kind": "read",
@@ -2890,6 +2912,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -2906,7 +2929,7 @@
           "order": "newest",
           "page": 50
         },
-        "hash": "491af709ada6a32f"
+        "hash": "ad4643ee90683db2"
       },
       "run.report": {
         "kind": "operation",
@@ -2975,6 +2998,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "run": "run"
@@ -2994,7 +3018,7 @@
         "budget": {
           "p95Ms": 100
         },
-        "hash": "17c2439292ac201d"
+        "hash": "cd06c7ba79eefc74"
       },
       "run.start": {
         "kind": "operation",
@@ -3087,6 +3111,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission"
         },
@@ -3103,7 +3128,7 @@
         "budget": {
           "p95Ms": 250
         },
-        "hash": "fdf1cc6613c27598"
+        "hash": "410a9424a5ad91e2"
       },
       "run.stop": {
         "kind": "operation",
@@ -3165,6 +3190,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "refs": {
           "mission": "mission",
           "run": "run"
@@ -3184,7 +3210,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "12ffa9f2539b3fd6"
+        "hash": "a58ba19ad179e771"
       }
     },
     "journeys": {},
@@ -5647,132 +5673,132 @@
   },
   "dependsOnByOperation": {
     "attention.approve": {
-      "operation:attention.approve": "2e54f07444e8bd32",
+      "operation:attention.approve": "b41d3eb8001d82bb",
       "thing:attention": "4bc4bbfa3bc73459",
       "thing:mission": "0ce414120027dab4"
     },
     "attention.decline": {
-      "operation:attention.decline": "acf14768a906379f",
+      "operation:attention.decline": "fd7efa41d9865b82",
       "thing:attention": "4bc4bbfa3bc73459",
       "thing:mission": "0ce414120027dab4"
     },
     "attention.list": {
-      "operation:attention.list": "546ee9ed061133d6",
+      "operation:attention.list": "ebdea41f9007b66c",
       "thing:attention": "4bc4bbfa3bc73459",
       "thing:mission": "0ce414120027dab4"
     },
     "attention.raise": {
-      "operation:attention.raise": "63f3e3a9a1f76c0b",
+      "operation:attention.raise": "9615fc0b9525f656",
       "thing:attention": "4bc4bbfa3bc73459",
       "thing:mission": "0ce414120027dab4"
     },
     "milestone.add": {
-      "operation:milestone.add": "8741d706f606dbdd",
+      "operation:milestone.add": "343a86926bb38881",
       "thing:milestone": "10bfc73701266a5a",
       "thing:mission": "0ce414120027dab4"
     },
     "milestone.drop": {
-      "operation:milestone.drop": "d8f6c3099dcbaac2",
+      "operation:milestone.drop": "8f1ca999fe2d6160",
       "thing:milestone": "10bfc73701266a5a",
       "thing:mission": "0ce414120027dab4"
     },
     "milestone.list": {
-      "operation:milestone.list": "54e4a92d5603079f",
+      "operation:milestone.list": "73a47df6293bbb14",
       "thing:milestone": "10bfc73701266a5a",
       "thing:mission": "0ce414120027dab4"
     },
     "mission.finish": {
-      "operation:mission.finish": "b2b695ae86f9580f",
+      "operation:mission.finish": "a7f9c485cfc7907a",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "mission.get": {
-      "operation:mission.get": "e859421e4d1e9557",
+      "operation:mission.get": "c6e071db7e259620",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "mission.list": {
-      "operation:mission.list": "4878b1ae7dcb07b5",
+      "operation:mission.list": "adb7a03ed6088cec",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "mission.open": {
-      "operation:mission.open": "7696cc08ce2c8120",
+      "operation:mission.open": "812106af3ec81b4c",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "mission.pause": {
-      "operation:mission.pause": "8f544f950aed776a",
+      "operation:mission.pause": "d3b6f3dc816bdfed",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "mission.resume": {
-      "operation:mission.resume": "4f9b6a7aa4f5f2c2",
+      "operation:mission.resume": "5036eb1dbbb1edd7",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "mission.start": {
-      "operation:mission.start": "53dad46d247f945e",
+      "operation:mission.start": "759e820cdcef06b3",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "mission.stop": {
-      "operation:mission.stop": "5cb491a38ce99ed2",
+      "operation:mission.stop": "562e14aae500c09c",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "mission.tasks": {
-      "operation:mission.tasks": "e8d289654ab045c9",
+      "operation:mission.tasks": "f032f66ccaa2cee0",
       "thing:mission": "0ce414120027dab4",
       "thing:person": "c9a028d47a5f83b2"
     },
     "question.answer": {
-      "operation:question.answer": "b72ab7ff0d0ad02e",
+      "operation:question.answer": "af190c907ab1cb4a",
       "thing:mission": "0ce414120027dab4",
       "thing:question": "eb3656bcee0f85ef"
     },
     "question.ask": {
-      "operation:question.ask": "4cc965ca9f7d7451",
+      "operation:question.ask": "ad554a00d4c4326a",
       "thing:mission": "0ce414120027dab4",
       "thing:question": "eb3656bcee0f85ef"
     },
     "question.list": {
-      "operation:question.list": "3d5ece99d11d56cd",
+      "operation:question.list": "327ea58f20e30eed",
       "thing:mission": "0ce414120027dab4",
       "thing:question": "eb3656bcee0f85ef"
     },
     "question.spike": {
-      "operation:question.spike": "700b27c086fa0126",
+      "operation:question.spike": "7cfbd133245e5bca",
       "thing:mission": "0ce414120027dab4",
       "thing:question": "eb3656bcee0f85ef"
     },
     "run.fail": {
-      "operation:run.fail": "ac5714fe9cb41265",
+      "operation:run.fail": "0596c85907d6d342",
       "thing:mission": "0ce414120027dab4",
       "thing:run": "3ec697db6baa81eb"
     },
     "run.finish": {
-      "operation:run.finish": "84023d7e9325fec7",
+      "operation:run.finish": "4bb786b8cc371857",
       "thing:mission": "0ce414120027dab4",
       "thing:run": "3ec697db6baa81eb"
     },
     "run.list": {
-      "operation:run.list": "491af709ada6a32f",
+      "operation:run.list": "ad4643ee90683db2",
       "thing:mission": "0ce414120027dab4",
       "thing:run": "3ec697db6baa81eb"
     },
     "run.report": {
-      "operation:run.report": "17c2439292ac201d",
+      "operation:run.report": "cd06c7ba79eefc74",
       "thing:mission": "0ce414120027dab4",
       "thing:run": "3ec697db6baa81eb"
     },
     "run.start": {
-      "operation:run.start": "fdf1cc6613c27598",
+      "operation:run.start": "410a9424a5ad91e2",
       "thing:mission": "0ce414120027dab4",
       "thing:run": "3ec697db6baa81eb"
     },
     "run.stop": {
-      "operation:run.stop": "12ffa9f2539b3fd6",
+      "operation:run.stop": "a58ba19ad179e771",
       "thing:mission": "0ce414120027dab4",
       "thing:run": "3ec697db6baa81eb"
     }
@@ -5825,5 +5851,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "8b8c34d08d2759a872213ce6c1fc0d2208bfbada4b43faec880aae59a2318a64"
+  "digest": "c45f5b574d4fce5dafcdccb25e517110022d9fe73c5a469ff244b44349f1fb67"
 }
