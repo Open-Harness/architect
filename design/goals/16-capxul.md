@@ -132,10 +132,10 @@ Slice 6 has begun: every record type Capxul takes is in `examples/capxul/doctype
 Goal 18 (#749). Slice 8 has its first checks in `goal/capxul`: Capxul's app and its Company (#757), then
 employees, departments and job titles (8a, #763), red until a builder, not their author, writes the handlers (`company.create` among them). Leave (8b) waits on handlers
 that can list records (#764, case 2 with Goal 17's #758). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
-and bank accounts), and their handlers are being built; the generated Bridge adapter waits on Goal 17's slice 4 (#739). Goal 16 has claimed two
+and bank accounts). Its builder has started, with no build pull request yet; the generated Bridge adapter waits on Goal 17's slice 4 (#739). Goal 16 has claimed two
 framework gaps under K42's case 3: #761's access part, landed in `main` by #768 and merged into `goal/capxul` by #773,
-and #759 (a check on extra writes), which waits on a case-2 split of `prove`'s paths with Goal 17. Slice 3 is decided
+and #759 (a check on extra writes), which waits on a case-2 split with Goal 17's #758 (the fix needs `language-effect`'s handler or `prove`'s journeys module) and on deciding what an unset `writes` means. Slice 3 is decided
 (`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
 customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged into
-`goal/capxul` at the restart (#745) and again by #773, so this brief replaced the branch's old one. The lead rewrites this section at
+`goal/capxul` at the restart (#745), so this brief replaced the branch's old one; #773 merged it in again. The lead rewrites this section at
 every slice merge.
