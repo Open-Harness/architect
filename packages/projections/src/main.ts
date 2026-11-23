@@ -8,3 +8,4 @@ export { sdk } from "#modules/sdk/service.js";
 export { cli } from "#modules/cli/service.js";
 export { mcp } from "#modules/mcp/service.js";
 export { infra } from "#modules/infra/service.js";
+export { app } from "#modules/app/service.js";

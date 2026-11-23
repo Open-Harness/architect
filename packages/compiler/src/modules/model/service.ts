@@ -7,12 +7,14 @@ import { hashOf } from "./internal/hash.ts";
 import { describe } from "./internal/describe.ts";
 import { readLayout } from "./internal/layout.ts";
 import { Mounts } from "#modules/mounts/service.js";
+import { App } from "#modules/app/service.js";
 
 const locked: CompilerApi["locked"] = Effect.gen(function* () {
   const source = yield* BlueprintSource;
   const paths = yield* source.list;
   const files = yield* Effect.forEach(paths, source.load);
-  const layout = readLayout(files);
+  const { app: appFiles, rest } = App.setAside(files);
+  const layout = readLayout(rest);
   // Each mount's plugin, folded in: its things beside the project's own, under the names the mount gives them.
   const folded = yield* Mounts.fold(layout);
   for (const [name, t] of folded.things) layout.things.set(name, t);
@@ -27,8 +29,12 @@ const locked: CompilerApi["locked"] = Effect.gen(function* () {
   // The codes come from the lock the project keeps (M6-chain item 4): a name keeps its code, a new name takes the next number.
   const text = source.lock === undefined ? undefined : yield* source.lock;
   const before = yield* RefusalLock.parse(text).pipe(Effect.mapError((e) => new BlueprintInvalid({ problems: [`blueprint/refusals.lock: ${e.message}`] })));
-  const { model, problems, lock } = describe(layout, before);
+  const described = describe(layout, before);
+  const { app, problems: appProblems } = App.describe(appFiles, layout, described.model);
+  const problems = [...described.problems, ...appProblems];
   if (problems.length > 0) return yield* new BlueprintInvalid({ problems: Mounts.attributed(problems, folded.mounts) });
+  const { lock } = described;
+  const model = app ? { ...described.model, app } : described.model;
   return { model: Object.keys(folded.mounts).length > 0 ? { ...narrowed(model, folded.mounts), mounts: folded.mounts } : model, lock: RefusalLock.text(lock) };
 });
 

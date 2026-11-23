@@ -111,9 +111,9 @@ declaration instead.
 
 ### The model
 
-The model is the one contract every projection is made from (K5, seam 1). Today it has fourteen parts. This is its type:
+The model is the one contract every projection is made from (K5, seam 1). Today it has fifteen parts. This is its type:
 
-```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=314-341
+```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=315-344
 export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;
@@ -141,6 +141,8 @@ export interface Model {
   readonly mounts?: Readonly<Record<string, MountModel>>;
   /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
   readonly alertRules: ReadonlyArray<AlertRuleModel>;
+  /** The app's map: its pages, components and navigation (K31, K36). Present only when the blueprint has an `app/` folder. */
+  readonly app?: AppModel;
 }
 ```
 

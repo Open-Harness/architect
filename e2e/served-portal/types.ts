@@ -50,7 +50,7 @@ export interface OpenOptions {
   readonly context?: unknown;
   /** A portal already served by a Worker (`http://127.0.0.1:<port>`, a world `ortho` started): the harness plays no Worker and opens routes of it. */
   readonly url?: string;
-  /** Where the built client is. Default: `packages/portal/dist/client`. */
+  /** Where the built client is. Default: `packages/portal/dist/client`, or `packages/portal-next/dist/client` when `PORTAL_CLIENT=next`. */
   readonly clientDir?: string;
   /** The server module, when a control supplies its own. Default: `@orthograph/portal/server`. */
   readonly server?: PortalServerModule;
