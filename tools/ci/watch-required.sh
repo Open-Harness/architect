@@ -37,16 +37,21 @@ while :; do
   state=$(jq -r .state <<<"$pr_json")
   [ "$state" = "OPEN" ] || [ "$state" = "MERGED" ] || { echo "#$pr is closed" >&2; exit 2; }
   head=$(jq -r .headRefOid <<<"$pr_json")
-  run=$(gh run list -R "$repo" --commit "$head" --workflow ci --event pull_request --limit 1 --json status,conclusion 2>/dev/null) || run='[]'
+  run=$(gh run list -R "$repo" --commit "$head" --workflow ci --event pull_request --limit 1 --json databaseId,status,conclusion 2>/dev/null) || run='[]'
   if [ "$(jq -r '.[0].status // "none"' <<<"$run")" = "none" ] && [ "$state" = "MERGED" ]; then
     echo "#$pr is merged and has no ci run on its head" >&2; exit 2
   fi
   if [ "$(jq -r '.[0].status // "none"' <<<"$run")" = "completed" ]; then
-    if [ -z "$required" ]; then
+    # A draft's run completes with its jobs named "<id> (draft)" and their steps skipped (CI-drafts-race), so only a
+    # run with no such job tells an unprotected base anything; a draft run here is the one before the ready run starts.
+    drafted=$(gh run view "$(jq -r '.[0].databaseId' <<<"$run")" -R "$repo" --json jobs 2>/dev/null |
+      jq '[.jobs[]?.name | select(endswith(" (draft)"))] | length' 2>/dev/null) || drafted=unknown
+    if [ -z "$required" ] && [ "$drafted" = 0 ]; then
       conclusion=$(jq -r '.[0].conclusion' <<<"$run")
       echo "$base has no required checks; the ci run's conclusion: $conclusion"
       if [ "$conclusion" = "success" ]; then exit 0; else exit 1; fi
     fi
+    if [ -n "$required" ]; then
     checks=$(gh pr checks "$pr" -R "$repo" --json name,state,startedAt 2>/dev/null) || { echo "cannot read the checks of #$pr" >&2; exit 2; }
     report=$(while IFS= read -r name; do
       printf '%s\t%s\n' "$name" "$(jq -r --arg n "$name" '[.[] | select(.name == $n)] | if length == 0 then "MISSING" else (sort_by(.startedAt // "") | last | .state) end' <<<"$checks")"
@@ -55,6 +60,7 @@ while :; do
     if [ "$unfinished" = 0 ] || [ "$SECONDS" -ge "$max" ]; then
       echo "$report"
       awk -F'\t' '$2 != "SUCCESS" && $2 != "SKIPPED" && $2 != "NEUTRAL" { bad = 1 } END { exit bad }' <<<"$report"; exit $?
+    fi
     fi
   fi
   [ "$SECONDS" -lt "$max" ] || { echo "#$pr: CI did not finish within ${max}s" >&2; exit 3; }

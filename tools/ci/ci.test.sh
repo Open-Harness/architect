@@ -466,6 +466,7 @@ case "$1 $2" in
   "pr view") cat "$W/pr" ;;
   "run list") n=$(cat "$W/polls" 2>/dev/null || echo 0); echo $((n + 1)) > "$W/polls"
     if [ "$n" -lt "$(cat "$W/pending_polls" 2>/dev/null || echo 0)" ]; then echo '[{"status":"in_progress","conclusion":""}]'; else cat "$W/run"; fi ;;
+  "run view") cat "$W/jobs" ;;
   "pr checks") c=$(cat "$W/check_calls" 2>/dev/null || echo 0); echo $((c + 1)) > "$W/check_calls"
     if [ "$c" -lt "$(cat "$W/partial_calls" 2>/dev/null || echo 0)" ]; then echo '[{"name":"check","state":"SUCCESS"}]'; else cat "$W/checks"; fi ;;
   api*) [ -f "$W/required" ] && { cat "$W/required"; exit 0; }; cat "$W/api_err" >&2; exit 1 ;;
@@ -476,9 +477,10 @@ chmod +x "$W/bin/gh"
 watch() { # <pr json> <run json> <checks json> <required json or ""> [api error] [pending polls]
   rm -f "$W/polls" "$W/required" "$W/check_calls"; printf '%s' "${PARTIAL:-0}" > "$W/partial_calls"; printf '%s' "$1" > "$W/pr"; printf '%s' "$2" > "$W/run"; printf '%s' "$3" > "$W/checks"
   [ -n "$4" ] && printf '%s' "$4" > "$W/required"; printf '%s' "${5:-gh: Branch not protected (HTTP 404)}" > "$W/api_err"
-  printf '%s' "${6:-0}" > "$W/pending_polls"
+  printf '%s' "${6:-0}" > "$W/pending_polls"; printf '%s' "${JOBS:-$ready_jobs}" > "$W/jobs"
   W="$W" PATH="$W/bin:$PATH" WATCH_MAX_SECONDS="${MAXS:-60}" "$here/watch-required.sh" 7 0
 }
+ready_jobs='{"jobs":[{"name":"check"}]}'
 watch_late() { PARTIAL=2 watch "$@"; }
 open='{"state":"OPEN","isDraft":false,"headRefOid":"abc","baseRefName":"main"}'
 done_ok='[{"status":"completed","conclusion":"success"}]'
@@ -492,6 +494,7 @@ expect "watch: a cancelled required check is a failure" 1 watch "$open" "$done_o
 expect "watch: the newest row decides when an older run listed the same name" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED","startedAt":"2026-11-23T01:00:00Z"},{"name":"e2e-m1","state":"SUCCESS","startedAt":"2026-11-23T02:00:00Z"}]' "$req"
 expect "watch: an unprotected base goes by the run's conclusion (success)" 0 watch "$open" "$done_ok" '[]' ""
 expect "watch: an unprotected base goes by the run's conclusion (failure)" 1 watch "$open" '[{"status":"completed","conclusion":"failure"}]' '[]' ""
+MAXS=0 JOBS='{"jobs":[{"name":"check (draft)"}]}' expect "watch: an unprotected base never trusts a draft run's success" 3 watch "$open" "$done_ok" '[]' ""
 expect "watch: gh failing on the protection is not read as unprotected" 2 watch "$open" "$done_ok" '[]' "" "gh: HTTP 502"
 expect "watch: a draft cannot be watched" 2 watch '{"state":"OPEN","isDraft":true,"headRefOid":"abc","baseRefName":"main"}' "$done_ok" '[]' "$req"
 expect "watch: a closed pull request cannot be watched" 2 watch '{"state":"CLOSED","isDraft":false,"headRefOid":"abc","baseRefName":"main"}' "$done_ok" '[]' "$req"
