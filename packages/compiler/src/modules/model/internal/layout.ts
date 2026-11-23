@@ -135,7 +135,7 @@ export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) 
     }
     if (parts[0] === "sources" && parts.length === 2) {
       const name = parts[1]!;
-      const kinds = Object.entries(exports).filter(([, v]) => typeof v === "function" && kindOf(v) === "source-kind");
+      const kinds = Object.entries(exports).filter(([, v]) => typeof v === "function" && (v as { readonly kind?: unknown }).kind === "source-kind");
       if (kinds.length !== 1) layout.problems.push(`${at(path)}: must export exactly one Source.from or Source.timer`);
       else layout.sources.set(name, { file: at(path), declaration: kinds[0]![1] as SourceKind<any>, exportName: kinds[0]![0] });
       continue;

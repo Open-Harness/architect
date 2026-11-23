@@ -1,0 +1,14 @@
+import { Blueprint } from "orthograph";
+import { Ticket } from "../ticket/thing.ts";
+
+export const Report = Blueprint.thing({
+  description: "How the executor says a ticket stands. Its state is its kind.",
+  fields: {
+    id: Blueprint.id("rpt"),
+    superagent: Blueprint.id("sag"),
+    ticket: Ticket.fields.id,
+    text: Blueprint.text({ max: 65536 }),
+    seq: Blueprint.uint(64),
+  },
+  code: "RE",
+});

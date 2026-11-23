@@ -1,6 +1,6 @@
 // Operations and reads: what can be called. An operation's name is its path; nothing here carries a name.
 import type { Duration, Schema } from "effect";
-import type { Derive } from "#modules/derive/types.js";
+import type { AnyDerive } from "#modules/derive/types.js";
 import type { AnyErrorClass } from "#modules/errors/types.js";
 import type { On } from "#modules/events/types.js";
 import type { Move } from "#modules/machines/types.js";
@@ -142,7 +142,7 @@ export interface Read<T extends Thing = Thing, P = { readonly id: string }, A = 
   /** The fields it names, with `state` as text; or a list's `items` and `next`. */
   readonly answer: FieldsInput;
   /** What it works out from other records and adds to each answer (GOAL17-derived-reads). */
-  readonly derive: Derive | undefined;
+  readonly derive: AnyDerive | undefined;
   /** Fields pinned to one value, taken out of the payload: a caller can't set them. */
   readonly only: { readonly [field: string]: unknown } | undefined;
   readonly payloadSchema: Schema.Codec<P, unknown>;
@@ -173,7 +173,7 @@ export interface OperationsApi {
       readonly allowed: readonly [Allowed, ...Array<Allowed>];
       readonly budget?: Budget;
       /** Worked out from other records and added to the answer. */
-      readonly derive?: Derive;
+      readonly derive?: AnyDerive;
     }): Read<T>;
     /**
      * A page of instances: filtered by `where` (a derived field too), in `order`, `page` to a page. Answers `{ items, next }`.
@@ -185,7 +185,7 @@ export interface OperationsApi {
       readonly page: number;
       readonly allowed: readonly [Allowed, ...Array<Allowed>];
       readonly budget?: Budget;
-      readonly derive?: Derive;
+      readonly derive?: AnyDerive;
       readonly only?: { readonly [field: string]: unknown };
     }): Read<T, ListPayload<T, W>, Page<ListItem<T>>>;
   };

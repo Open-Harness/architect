@@ -52,6 +52,7 @@ export const Mounts: MountsApi = {
     const stores = new Map<string, StoreFile>();
     const agents = new Map<string, BroughtAgent>();
     const sources = new Map<string, BroughtSource>();
+    const extensions: Array<{ readonly file: string; readonly plugin: string; readonly t: ThingFiles }> = [];
     const brought = new Map<string, Matched>();
     const mounts: Record<string, MountModel> = {};
 
@@ -65,7 +66,9 @@ export const Mounts: MountsApi = {
       if (me.kind === "feature" || me.kind === "adapter") {
         // An adapter adds no operations, but its errors are declared in its things, which the model names like a feature's.
         const own = readLayout(files.success.files.filter((f) => f.path.startsWith("things/") || (me.kind === "feature" && (f.path.startsWith("journeys/") || f.path.startsWith("stores/") || f.path.startsWith("agents/") || f.path.startsWith("sources/")))), (path) => `${plugin.name}/blueprint/${path}`);
-        problems.push(...own.problems);
+        // A folder of verbs and no thing.ts adds operations to a thing another plugin (or the app) brings: not a thing of its own.
+        const added = [...own.things.values()].filter((t) => !t.thing).map((t) => t.name);
+        problems.push(...own.problems.filter((p) => !added.some((n) => p === `${plugin.name}/blueprint/things/${n}: has no thing.ts`)));
         for (const [path, journey] of own.journeys) journeys.set(path, journey);
         for (const [n, a] of own.agents) {
           if (agents.has(n)) problems.push(`${file}: ${plugin.name} brings agent ${n}, and ${agents.get(n)!.mount} brings one by that name`);
@@ -84,7 +87,8 @@ export const Mounts: MountsApi = {
           else stores.set(s.name, s);
         }
         verbs = { ...(applied.omitted.length > 0 ? { omitted: applied.omitted } : {}), ...(Object.keys(applied.narrowed).length > 0 ? { narrowed: applied.narrowed } : {}) };
-        for (const t of mine) {
+        for (const t of mine.filter((x) => !x.thing)) extensions.push({ file, plugin: plugin.name, t });
+        for (const t of mine.filter((x) => x.thing)) {
           const app = layout.things.get(t.name);
           const other = brought.get(t.name);
           // An app folder with verbs and no thing.ts adds operations to the plugin's thing; it is not a second thing.
@@ -104,6 +108,12 @@ export const Mounts: MountsApi = {
       problems.push(...needs.problems);
       const entry = { kind: me.kind as MountModel["kind"], file, package: plugin.name, version: plugin.version, integrity: files.success.integrity, chosen, ...verbs, ...(needs.needs.length > 0 ? { needs: needs.needs } : {}) };
       mounts[name] = { ...entry, hash: hashOf({ ...entry, file: undefined }) };
+    }
+    // Each such folder joins its thing; its operations are the plugin's that wrote them.
+    for (const { file, plugin, t } of extensions) {
+      const target = things.get(t.name) ?? layout.things.get(t.name);
+      if (!target?.thing) { problems.push(`${file}: ${plugin} adds operations to thing ${t.name}, which no mounted plugin or the app brings`); continue; }
+      for (const [verb, v] of t.verbs) target.verbs.set(verb, { ...v, from: t.from });
     }
     return { things, stores, journeys, mounts, calls, agents, sources, problems };
   }),

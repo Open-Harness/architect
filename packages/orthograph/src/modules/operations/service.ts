@@ -3,7 +3,7 @@ import { structOf, valueOf } from "#modules/things/service.js";
 import type { Allowed } from "#modules/roles/types.js";
 import { Values } from "#modules/values/service.js";
 import { Visibilities } from "#modules/visibility/service.js";
-import type { Derive } from "#modules/derive/types.js";
+import type { AnyDerive } from "#modules/derive/types.js";
 import type { FieldsInput, Thing } from "#modules/things/types.js";
 import type { Budget, CallStep, Operation, OperationsApi, Order, Step } from "./types.ts";
 import { Blanks } from "#modules/blanks/service.js";
@@ -19,8 +19,8 @@ const State = Visibilities.traced(StateFilter);
 export const listItemFields = (thing: Thing): FieldsInput => ({ ...thing.fields, state: State });
 
 type Pinned = { readonly [field: string]: unknown };
-type ByIdSpec = { readonly by: "id"; readonly fields: ReadonlyArray<string>; readonly allowed: ReadonlyArray<Allowed>; readonly budget?: Budget; readonly derive?: Derive };
-type ListSpec = { readonly where: ReadonlyArray<string>; readonly order: Order; readonly page: number; readonly allowed: ReadonlyArray<Allowed>; readonly budget?: Budget; readonly derive?: Derive; readonly only?: Pinned };
+type ByIdSpec = { readonly by: "id"; readonly fields: ReadonlyArray<string>; readonly allowed: ReadonlyArray<Allowed>; readonly budget?: Budget; readonly derive?: AnyDerive };
+type ListSpec = { readonly where: ReadonlyArray<string>; readonly order: Order; readonly page: number; readonly allowed: ReadonlyArray<Allowed>; readonly budget?: Budget; readonly derive?: AnyDerive; readonly only?: Pinned };
 type ReadSpec = ByIdSpec | ListSpec;
 
 /** A read by id: its payload is the thing's id, its answer the fields it names, `state` as text. */

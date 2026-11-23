@@ -1,0 +1,15 @@
+// Generated from the blueprint. Do not edit.
+// Local only: the database id is a placeholder until a deploy names a real one (stage two).
+{
+  "name": "superagent",
+  "main": "main.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "superagent", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+  ],
+  "durable_objects": { "bindings": [{ "name": "WORLD", "class_name": "World" }, { "name": "ACTORS", "class_name": "Actor" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["World", "Actor"] }],
+  // Where telemetry goes. `ortho prove` and `ortho dev --otlp` set it; unset, nothing is exported.
+  "vars": { "OTLP_URL": "" }
+}

@@ -14,7 +14,9 @@ export const missingHandlers = (absoluteRoot: string, model: Model): ReadonlyArr
     const dir = packageDir(absoluteRoot, from.package);
     const src = dir ? (JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as { orthograph?: { src?: string } }).orthograph?.src ?? "./dist/src" : undefined;
     const entry = ({ host, module }: { readonly host: string; readonly module: string }) => {
-      return dir && src && existsSync(join(dir, src, module.slice("src/".length)))
+      // A plugin shipped as source (no build) has the handler as `.ts`; a built one as `.js`.
+      const at = dir && src ? join(dir, src, module.slice("src/".length)) : undefined;
+      return at && (existsSync(at) || existsSync(at.replace(/\.js$/, ".ts")))
         ? []
         : [`${mount?.file ?? "a mount"}: ${op.name} has no ${host === "worker" ? "handler for the worker" : `${host} entry`} in ${from.package}: ${from.package}/${module} is missing`];
     };

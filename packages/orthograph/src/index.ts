@@ -85,7 +85,7 @@ export type { Sink, LocalSink, AxiomSink } from "#modules/telemetry/types.js";
 export type { Feature, Adapter, Projection, Plugin, Mount, Verb, Choice, Choices, Option, OptionsIn, Need, NeedWhen, Call as AdapterCall, CallTree, AdapterEvent, CallsOf, MissingCall, MissingEvent, AnyChoice, Setting, StandIn, FeatureSpec, AdapterSpec, ProjectionSpec, ProjectedOperation, ProjectionInput, Output, ViewOf } from "#modules/plugins/types.js";
 export type { Agent, AgentSpec, Slots } from "#modules/agents/types.js";
 export type { Declared } from "#modules/declare/types.js";
-export type { Derive, Look, Looks, Problem, Problems, FoundOf } from "#modules/derive/types.js";
+export type { AnyDerive, Derive, Look, Looks, Problem, Problems, FoundOf } from "#modules/derive/types.js";
 export type { Hold, Held, Delivery, Unheld } from "#modules/holds/types.js";
 export type { On } from "#modules/events/types.js";
 export type { SourceKind, SourceSpec, Connection, Mapped, Scope, AccountRef, Seen, Cells, AdmissionRow, ContextMessage, TimerConfig } from "#modules/sources/types.js";

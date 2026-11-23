@@ -6,7 +6,7 @@ export const scaffolded = (from: string) => `// Scaffolded from ${from}. Yours f
 export const pascal = (name: string) => name.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join("");
 export const camel = (name: string) => pascal(name).replace(/^./, (c) => c.toLowerCase());
 
-const RESERVED = new Set(["await", "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum", "export", "extends", "false", "finally", "for", "function", "if", "implements", "import", "in", "instanceof", "interface", "let", "new", "null", "package", "private", "protected", "public", "return", "static", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield"]);
+const RESERVED = new Set(["await", "break", "case", "catch", "class", "const", "continue", "arguments", "debugger", "default", "delete", "do", "else", "enum", "eval", "export", "extends", "false", "finally", "for", "function", "if", "implements", "import", "in", "instanceof", "interface", "let", "new", "null", "package", "private", "protected", "public", "return", "static", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield"]);
 
 /**
  * The name a verb gets as a local binding. A verb may be a reserved word (`import`, `delete`): it is still the property

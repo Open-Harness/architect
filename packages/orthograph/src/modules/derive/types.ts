@@ -43,6 +43,10 @@ export interface Derive<R extends Thing = Thing, L extends Looks = Looks, A exte
   readonly is: (root: InstanceOf<R>, found: FoundOf<L>) => { readonly [K in keyof A]: unknown };
 }
 
+/** A derive of any thing: what a read's `derive:` takes, since each read's own function is typed for its own root. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyDerive = Derive<any, any, any>;
+
 /** What one `Blueprint.problem` says: which records can fail, and which of their fields count the failures. */
 export interface Problem<T extends Thing = Thing> {
   readonly kind: "problem";
