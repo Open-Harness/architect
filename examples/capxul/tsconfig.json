@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "blueprint/**/*.ts",
+    "generated/**/*.ts",
+    "src/**/*.ts",
+    "journeys/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "test/fixtures/**"
+  ],
+  "compilerOptions": {
+    "types": [
+      "node",
+      "@cloudflare/workers-types"
+    ]
+  }
+}

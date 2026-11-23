@@ -1,0 +1,22 @@
+[
+  {
+    "from": "company.create",
+    "to": "company",
+    "kind": "acts-on"
+  },
+  {
+    "from": "company.create",
+    "to": "company.CompanyCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "company.get",
+    "to": "company",
+    "kind": "reads"
+  },
+  {
+    "from": "company.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  }
+]
