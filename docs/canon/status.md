@@ -104,14 +104,14 @@ once planned.
 | EVM adapter and Anvil per world | Built | `packages/chain-evm` | M1.30, M1.31 |
 | Confirmation depth per environment | Built | check 18 | M1.38 |
 | Browser wallet signer | Partial | only against a stub; never in Chromium | M1.29, ST2.03 |
-| Relayer, follower | Partial | library pieces only; no actors | M6.07, M6.09 |
+| Relayer, follower | Partial | the follower actor is on `main` (`Follower` in `packages/host-cloudflare`, #679); the relayer actor is on `goal/on-chain` (#677), not yet on `main` | M6.07, M6.09 |
 | Link a wallet with SIWE | Spiked | 26 checks in a spike; in no goal | M2.13 |
 | Pay by handle | None | | ST2.04 to ST2.06 |
 | Webhooks and `on:` events | None | no decision, nothing scheduled | M5.01, M5.03 |
 | Language and host plugin kinds | None | design only | K27, Goal 4 slice 1 |
 | Chain store, Solidity output, Foundry tests and fuzz | Spiked | `language-solidity` is empty; shape proved in `spikes/chain-languages` | M6.10 to M6.13 |
 | Contract client and signing | Spiked | | M6.01, M6.14, M6.15 |
-| Safe, Hats and the budgets module | None | no spike yet | ST3.01 to ST3.08, M6.16 |
+| Safe, Hats and the budgets module | Spiked | `spikes/safe-hats-module` (#294); the budgets design is the spike's recommendation in `design/decisions/ST3-budgets.md`, decided when an app pulls budgets | ST3.01 to ST3.08, M6.16 |
 
 ### Workflows, agents, time (1.0, stage 3)
 
@@ -129,7 +129,7 @@ once planned.
 
 | Capability | Status | Evidence, or what is missing | Slices |
 |---|---|---|---|
-| Private club on Aztec | Spiked | `spikes/noir-private-core`; `spikes/aztec-club` doesn't exist | ST4.01 to ST4.08 |
+| Private club on Aztec | Spiked | `spikes/noir-private-core` and `spikes/aztec-club` (#504) | ST4.01 to ST4.08 |
 | Real npm, Homebrew, GitHub releases | Partial | local tap and binary only | M7.02, M7.06, M7.13 |
 | CI-signed verdicts | Spiked | `spikes/ci-oidc` | M7.05 |
 
@@ -149,7 +149,6 @@ Spiked.
 5. Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike.
 6. The journey language's open problems: one world per journey, comparing one answer with the last, and sending
    malformed payloads.
-7. Stage 3's Safe and Hats spike and stage 4's Aztec club spike don't exist, though both stages start from them.
 
 ## 4. The framework map
 
