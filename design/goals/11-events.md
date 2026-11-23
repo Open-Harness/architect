@@ -5,7 +5,7 @@ milestone: "Goal 11: events in and out"
 release: "1.0"
 branch: goal/events
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: amp          # claude | codex | opencode | amp, set by the lead when it starts
   model: gpt-6.2-sol     # the model id it runs on
@@ -99,12 +99,23 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Running again on 22 November 2026. This replaces the earlier parking call from the same day.
+**Parked on 23 November 2026 under K42** (section 7: "11 · Events | nothing in review | parked; #498 stays a draft").
+Its open slices go back to the board as items at their stage; no lead holds them.
 
-- **First:** land the decision on doors, the inbox, `on:`, the outbox, views and workflow events (#479).
-- **Next:** write slice 3's signed-door and `on:` checks, including the GitHub-style webhook. The door calls as
-  `service(<mount>)`; the build waits for Goal 3's M2.03 (#297) on `goal/stage-1`, with no stand-in. The host asks
-  are open with Goal 3 for the engine seams (#480) and Goal 4 for the follower's `Inbox.accept` seam (#481).
-- **Then:** land slice 3 early for Goal 12 (#477) and take slice 4, the outbox for every move.
-- **Later, Aaron 22 November:** slices 2 and 5 wait until after the beta. Slice 2's draft checks remain on
-  `goal-11/m5-02-check`; slice 5 still needs Goal 8's workflow decision (#462).
+- **Landed on `goal/events`:** the base merge from `goal/stage-1` (#454) and slice 1, the decision on doors, the inbox,
+  `on:`, the outbox, views and workflow events, `design/decisions/M5-reach-out.md` (#479, merge `8d13eca3`). #387 is
+  closed. Codex's last pass on #479 was still running at the merge (Codex is advisory); a finding that arrives after
+  it is answered in the next pull request on this design.
+- **Open, as board items:**
+  - Slice 3, events in (#389): signed doors, including the GitHub-style webhook (HMAC-SHA256 over the raw body, an event
+    id for idempotency), and `on:`. Nothing written. Goal 3's service principal (M2.03, #297) has landed on
+    `goal/stage-1`, after `goal/events`' last base merge; its build needs that merged in and the engine seams asked in #480. Goal 12 asked for it early (#477).
+  - Slice 4, the outbox for every move (#390): after slice 3; seams in #480.
+  - Slice 2, journeys for payments and notifications (#388): after the beta (Aaron, 22 November). Draft #498 holds
+    `design/decisions/M5-checks.md`, a `builder-paths` change making `e2e/events/expected-failing/` shrink-only, and
+    unrun, unreviewed checks under `e2e/events/` that slice 3's checks can start from.
+  - Slice 5, `emits:` on an operation (#391): after the beta; needs Goal 8's workflow decision (#462).
+- **Asks still open:** #480 (Goal 3, the engine seams), #481 (Goal 4, the follower through `Inbox.accept`), #462
+  (Goal 8, M3.01 early). #501 passed a Codex finding on Goal 3's staging code to Goal 3.
+- **Next, for whoever takes slice 3:** merge the integration branch in, write the signed-door and `on:` checks from
+  #498's start, then build once the #480 seams have landed, and land it early for Goal 12.
