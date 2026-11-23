@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/designation/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/designation/create.handler.ts";
+import { Designation } from "../../blueprint/things/designation/thing.ts";
 
 /**
  * designation.create: Add a job title to a company.
@@ -37,10 +38,12 @@ import type { Handler } from "../../generated/api/src/designation/create.handler
  *   once it answers, it writes DesignationCreated: designation from the answer, company from the payload;
  *   the call is the span designation.create, and its commit designation.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, designationName }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span designation.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span designation.create.insert. A name taken in the company is the runtime's refusal.
+    yield* steps.insert(records.insert(Designation, { id, company, designationName }));
 
     // The move create, to active.
     yield* move();

@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/employee/verbs/relieve.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/employee/relieve.handler.ts";
 
@@ -43,29 +42,28 @@ const { RelievedBeforeJoined } = Errors.declared;
  *   once it answers, it writes EmployeeRelieved: employee and relievingDate from the answer;
  *   the call is the span employee.relieve, and its commit employee.relieve.commit.
  */
-const relieve: Handler = (_payload, { steps, move }) =>
+const relieve: Handler = ({ employee, relievingDate }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span employee.relieve.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    // Step load: database, span employee.relieve.load. The runtime read the employee for its role and state checks
+    // and hands it in, so this step only takes it.
+    const found = yield* steps.load(Effect.succeed(subject));
+    if (!found) return yield* Effect.die(new Error(`employee ${employee} was checked and then not found`));
+    const dateOfJoining = found["dateOfJoining"] as string;
 
-    // RelievedBeforeJoined: exit 45, EM-005.
-    if (yield* Handlers.blank<boolean>("refuse RelievedBeforeJoined when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RelievedBeforeJoined was refused"));
-      return yield* new RelievedBeforeJoined({
-        dateOfJoining: yield* Handlers.blank("RelievedBeforeJoined.dateOfJoining, a Day"),
-      });
+    // RelievedBeforeJoined: exit 45, EM-005. Days are YYYY-MM-DD, so they compare as text; the same day is allowed.
+    if (relievingDate < dateOfJoining) {
+      yield* Effect.logInfo("the relieving day is before the joining day");
+      return yield* new RelievedBeforeJoined({ dateOfJoining: dateOfJoining as never });
     }
 
-    // Step update: database, span employee.relieve.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span employee.relieve.update. The employee keeps no relieving day of its own yet (it
+    // travels on EmployeeRelieved), so the only change is its state, which the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move relieve, from active, to left.
     yield* move();
 
-    return {
-      employee: yield* Handlers.blank("employee, an employee.id"),
-      relievingDate: yield* Handlers.blank("relievingDate, a Day"),
-    };
+    return { employee, relievingDate };
   });
 
 export default relieve;
