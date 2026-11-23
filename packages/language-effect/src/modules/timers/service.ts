@@ -2,6 +2,8 @@ import { Clock, Context, Deferred, Duration, Effect, Layer, Option } from "effec
 import { Busy } from "#modules/work/types.js";
 import { DurableTimers, TimerWakes, Timers, type DurableTimer, type Timer, type Wake } from "./types.ts";
 
+export { TimersWorld } from "./internal/world.ts";
+
 const timerOf = (t: Timer): Timer => ({ id: t.id, at: t.at, owner: t.owner, name: t.name });
 const durableOf = (t: DurableTimer): DurableTimer => ({ ...timerOf(t), wake: t.wake });
 

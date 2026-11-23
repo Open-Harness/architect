@@ -146,6 +146,26 @@ describe("the entry's lookup", () => {
     both.forEach((seen, i) => expect(seen, `request ${i}`).toEqual([i % 2 === 0 ? a : b, i % 2 === 0 ? a : b, i % 2 === 0 ? a : b, i % 2 === 0 ? a : b, 0]));
   });
 
+  it("refresh points the running request at a fresh source (a durable sleep's wake), and only that request", async () => {
+    const [a, b] = [ms("2027-01-10T09:00:00.000Z"), ms("2027-02-10T09:00:00.000Z")];
+    const sleeper = (instant: number, wakesAt: number) =>
+      WorldClock.within({ kind: "stepped", instant }, async () => {
+        const before = Date.now();
+        await new Promise<void>((resolve) => { setTimeout(resolve, 5); });
+        const refreshed = WorldClock.refresh({ kind: "stepped", instant: wakesAt });
+        await new Promise<void>((resolve) => { setTimeout(resolve, 5); });
+        return { before, refreshed, after: Date.now(), clock: await Effect.runPromise(Clock.currentTimeMillis) };
+      });
+    const [moved, still] = await Promise.all([sleeper(a, b), WorldClock.within({ kind: "stepped", instant: a }, async () => {
+      await new Promise<void>((resolve) => { setTimeout(resolve, 20); });
+      return Date.now();
+    })]);
+    expect(moved).toEqual({ before: a, refreshed: true, after: b, clock: b });
+    expect(still).toBe(a);
+    // Outside a request there is nothing to point.
+    expect(WorldClock.refresh({ kind: "stepped", instant: b })).toBe(false);
+  });
+
   it("is installed once, keeps Date's shape, and outside a request reads real time", () => {
     expect(globalThis.Date).not.toBe(RealDate);
     expect(Math.abs(Date.now() - WorldClock.wall())).toBeLessThan(1000);

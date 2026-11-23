@@ -5,12 +5,20 @@
 import { Effect } from "effect";
 import { WorldClock } from "#modules/clock/service.js";
 import type { ClockSource } from "#modules/clock/types.js";
+import type { WorldTimersRpc } from "#modules/timers/types.js";
 import type { EntryEnv } from "../types.ts";
 import { live } from "./leases.ts";
 
-interface Keeper {
+/** What the Worker calls on its world's Durable Object, over RPC. */
+export interface Keeper extends WorldTimersRpc {
   readonly source: () => Promise<ClockSource | undefined>;
 }
+
+/** The world's Durable Object stub: the live world's own instance in an environment with leases, the one named `world` otherwise. */
+export const keeperOf = (env: EntryEnv): Promise<Keeper> => {
+  const name = env.ORTHO_WORLDS === "1" ? Effect.runPromise(live(env.DB)).then((held) => held[0]?.id ?? "world") : Promise.resolve("world");
+  return name.then((id) => env.WORLD.get(env.WORLD.idFromName(id)) as unknown as Keeper);
+};
 
 /**
  * What this request reads the world's time from, asked of the world's Durable Object once per entry; nothing for a real
@@ -19,8 +27,7 @@ interface Keeper {
  */
 export const sourceOf = (env: EntryEnv): Promise<ClockSource | undefined> => {
   if (WorldClock.declared(env).kind === "real") return Promise.resolve(undefined);
-  const name = env.ORTHO_WORLDS === "1" ? Effect.runPromise(live(env.DB)).then((held) => held[0]?.id ?? "world") : Promise.resolve("world");
-  return name.then((id) => (env.WORLD.get(env.WORLD.idFromName(id)) as unknown as Keeper).source());
+  return keeperOf(env).then((keeper) => keeper.source());
 };
 
 /** Run `f` in this request's world: `Date` and Effect's `Clock` read the world's time. A real world runs `f` as it is. */

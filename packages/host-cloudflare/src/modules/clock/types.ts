@@ -1,6 +1,7 @@
 // The world's clock: what an environment declares (K23 section 1), the instant a world keeps, and the lookup that makes
 // `Date` and Effect's `Clock` read it for the request that is running (M8.05, M8.06). Real time is the default and is
 // never patched.
+import type { Effect } from "effect";
 
 /** An environment's clock as the model writes it (`environments.<e>.clock`), instants in ISO 8601 with milliseconds. */
 export type ClockDeclaration =
@@ -23,11 +24,35 @@ export interface ClockEnv {
   readonly ORTHO_ENVIRONMENT?: string;
 }
 
-/** What `GET /_world/clock` answers. `timers` is the world's timer table (M8.07); until it exists it is always empty. */
+/** A row of the world's timer table as the door shows it. */
+export interface ClockTimer {
+  readonly due: string;
+  readonly owner: string;
+  readonly name: string;
+}
+
+/** What `GET /_world/clock` answers: the clock's kind and instant, and the world's timer table in firing order (M8.07). */
 export interface ClockReading {
   readonly kind: ClockDeclaration["kind"];
   readonly now: string;
-  readonly timers: ReadonlyArray<{ readonly due: string; readonly owner: string; readonly name: string }>;
+  readonly timers: ReadonlyArray<ClockTimer>;
+}
+
+/** Where a move would land, or why it cannot: nothing is changed. */
+export type Planned = { readonly ok: true; readonly target: number } | Extract<Moved, { readonly ok: false }>;
+
+/** Why a move did not settle (M8.07): a process stayed busy past the real-time limit, or a durable timer's wake failed. */
+export type Unsettled =
+  | { readonly _tag: "NeverQuiet"; readonly busy: ReadonlyArray<string> }
+  | { readonly _tag: "WakeFailed"; readonly owner: string; readonly name: string; readonly message: string };
+
+/**
+ * What settles a stepped world's move (the timers module builds it): walks the clock to the target, firing what is due
+ * on the way, and answers once the world is quiet there. `fired` lists the durable timers that ran on the way.
+ */
+export interface Controller {
+  readonly settle: (target: number) => Effect.Effect<{ readonly now: string; readonly fired: ReadonlyArray<ClockTimer> }, Unsettled>;
+  readonly timers: () => ReadonlyArray<ClockTimer>;
 }
 
 /** A move of the world's clock: where it landed, or why it could not go. */
@@ -47,6 +72,8 @@ export interface ClockState {
    * reset between runs (ST1.24). The door's `move-to` still refuses an earlier instant. A real clock has nothing to reset.
    */
   readonly reset: () => void;
+  /** Where a move would land, without making it: a span (`"1 month"`) or an instant. A real clock refuses; so does a move back. */
+  readonly plan: (move: { readonly span: string } | { readonly to: string }) => Planned;
   /** Move by a span in words (`"1 month"`; months and years on the calendar, in UTC). A real clock refuses. */
   readonly advance: (span: string) => Moved;
   /** Move to an instant (ISO 8601). It never goes back. A real clock refuses. */
@@ -59,7 +86,7 @@ export interface WorldClockApi {
   /** The world's own state over its SQLite storage; `starts` is read once, when the world is made. */
   readonly state: (sql: SqlStorage, declaration: ClockDeclaration) => ClockState;
   /** `/_world/clock` (GET), `/_world/clock/advance` and `/_world/clock/move-to` (POST); nothing for any other request. */
-  readonly door: (state: ClockState, request: Request) => Promise<Response> | undefined;
+  readonly door: (state: ClockState, request: Request, controller?: Controller) => Promise<Response> | undefined;
   /**
    * Run `f` with `Date` and Effect's `Clock` reading `source`, through every await, timer and `waitUntil` it starts. The
    * `Date` proxy is installed once, here, the first time it is asked; the source is per async context
@@ -67,6 +94,11 @@ export interface WorldClockApi {
    * Callers ask only for a world that is not real.
    */
   readonly within: <A>(source: ClockSource, f: () => A) => A;
+  /**
+   * Point the request that is running at a fresh source: a durable sleep's wake does it, because the request outlived a move
+   * of the world's clock (M8.06 call 4). Only this request's own cell changes. False outside a request.
+   */
+  readonly refresh: (source: ClockSource) => boolean;
   /** The wall clock, for the world's own lifetime and for a scaled clock to anchor against. Never patched. */
   readonly wall: () => number;
 }

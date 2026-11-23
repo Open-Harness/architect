@@ -8,12 +8,16 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import type { ClockSource } from "../types.ts";
 
 const RealDate = globalThis.Date;
-const store = new AsyncLocalStorage<ClockSource>();
+/** One cell per request: its source can be replaced when a durable sleep wakes (`refresh`), and nothing else can reach it. */
+interface Cell {
+  source: ClockSource;
+}
+const store = new AsyncLocalStorage<Cell>();
 
 const read = (source: ClockSource | undefined): number =>
   source === undefined ? RealDate.now() : source.kind === "stepped" ? source.instant : Math.floor(source.worldAnchor + (RealDate.now() - source.realAnchor) * source.speed);
 
-const now = (): number => read(store.getStore());
+const now = (): number => read(store.getStore()?.source);
 
 const WorldDate: DateConstructor = new Proxy(RealDate, {
   // `newTarget` is forwarded so a subclass of Date keeps its own prototype and methods.
@@ -29,7 +33,15 @@ export const install = (): void => {
 };
 
 /** Run `f` with the proxy reading `source` for it and everything it starts. */
-export const inWorld = <A>(source: ClockSource, f: () => A): A => store.run(source, f);
+export const inWorld = <A>(source: ClockSource, f: () => A): A => store.run({ source }, f);
+
+/** Point the running request at a fresh source, as a durable sleep's wake does: only this request's cell, never another's. False outside a request. */
+export const refresh = (source: ClockSource): boolean => {
+  const cell = store.getStore();
+  if (cell === undefined) return false;
+  cell.source = source;
+  return true;
+};
 
 /** The wall clock, whatever the proxy says. */
 export const wall = (): number => RealDate.now();

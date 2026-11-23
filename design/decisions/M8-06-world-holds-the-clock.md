@@ -55,7 +55,7 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
    | World `alarm` | **not wrapped** | it is the world's lifetime, and a lifetime is real time (K23 section 1) |
    | `/_world/worlds`, `/_world/arm`, `/_world/end` | **not wrapped** | the registry and its leases are the machine's time |
    | Actor Durable Object, `find` and `commit` (RPC) | `WorldEntry.withinNow`: a real world answers at once as before; a stepped or scaled one answers a promise after reading its world's instant | the caller's world does not travel into another object's request (M8.05, check 8) |
-   | (M8.07) the timer table's alarm | **must wrap**: unlike the lifetime alarm above, an alarm that fires the world's timers runs app code and has to read its world's instant | the lifetime alarm stays unwrapped on purpose |
+   | (M8.07) the timer table's alarm | **must wrap** (Superseded by M8-07-timers-and-quiet, 23 November 2026: a real world's only, through `inTime`): unlike the lifetime alarm above, an alarm that fires the world's timers runs app code and has to read its world's instant | the lifetime alarm stays unwrapped on purpose |
    | A Workflows step | `WorldEntry.within(env, step)` | no workflow engine is on this branch yet (Goal 8); the entry is ready for it |
 
 4. **The `Date` proxy is installed once and only for a world that is not real.** `WorldClock.within` installs it the first
@@ -68,7 +68,7 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
    the world move on (a workerd test awaits about 50 ms of real I/O and reads a second instant about 50 ms × speed later).
    A stepped world stores `{ kind: "stepped", instant }`, a fixed instant per request, which is live enough because an
    advance waits for quiet (M8.07's `NeverQuiet`), so the instant cannot change while a request is in flight. **M8.07
-   must make a durable sleep's wake rewrap its continuation with a fresh source** (`WorldEntry.within`), since a sleep is
+   must make a durable sleep's wake rewrap its continuation with a fresh source** (`WorldEntry.within`) (Superseded by M8-07-timers-and-quiet, 23 November 2026: the wake points its own request's cell at a fresh source), since a sleep is
    exactly where a request outlives a move.
 5. **Effect's `Clock` is the world's because its default reads `Date`.** Effect 4.1.4's default `Clock` reads `Date.now()`
    at each call (`effect/dist/internal/effect.js:2935`), so under the proxy `Clock.currentTimeMillis` is the world's

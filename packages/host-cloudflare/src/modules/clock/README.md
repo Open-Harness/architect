@@ -11,12 +11,16 @@ or a real one, is never patched and never reads this module's state):
   instant, speed, the real instant it was written). Stepped: stands still until moved. Scaled: flows at its speed.
   `advance` takes a span in words (`1 month` is calendar, UTC); `moveTo` takes an instant and never goes back. A real
   clock refuses both: 409 `ClockNotMovable`. `WorldClock.door` is `/_world/clock` (GET), `/_world/clock/advance` and
-  `/_world/clock/move-to`; it only sets the instant (settling is M8.07's).
+  `/_world/clock/move-to`; with the world's timers (M8.07) a move settles: it walks the clock from timer to timer, fires what is due, and
+  answers once the world is quiet (409 `NeverQuiet` naming who is busy, when it never is). Without them it only sets the instant.
 - **The lookup.** `WorldClock.within(instant, f)` installs, once, a `Date` proxy over the global whose `now()` and
   argument-less `new Date()` read the instant stored for the running async context (`AsyncLocalStorage`), then runs `f`
   inside `AsyncLocalStorage.run(instant, f)`. Never a global assignment: requests in one isolate interleave at every
   await (M8.05, check 9). Effect's default `Clock` reads `Date` at each call, so it is the world's too. `WorldClock.wall()`
   is real time, for a world's own lifetime.
+
+`WorldClock.refresh(source)` points the running request at a fresh source: a durable sleep's wake calls it, because the
+request outlived a move of the clock. Only this request's own cell changes.
 
 Who calls `within` is the world module (`WorldEntry`): the Worker's `fetch`, `scheduled` and `queue`, each Durable
 Object's `fetch`, RPC and `alarm`, and a Workflows step. Test: `clock.test.ts`.
