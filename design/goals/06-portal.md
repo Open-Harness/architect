@@ -307,6 +307,8 @@ thing.
 |---|---|---|
 | 12 | **Cutover (ST1.27)**, after the cut-off (the protocol, point 5). Check 15 rewritten first by a checks author (ST1.28); then one pull request into `goal/stage-1` that serves `portal-next` at `/portal`, deletes the old client, `@orthograph/portal-ui`, HeroUI and the licence machinery (`pro.mjs`, `sheets.mjs`, the CI step and cache, `ortho/no-pro-outside-portal-ui`), folds `e2e:portal-next` into the normal portal checks, and rewrites every live doc line that still names `portal-ui` or HeroUI as current (`git grep -n "portal-ui\|HeroUI"` outside `design/decisions/`, `design/history/` and `design/process/`: the `portal-design` skill, `design/walkthrough/journey.md`, `design/ui/heroui-inventory.md` section 8, `portal.md`, `packages.md`), with a Supersedes list. It merges after the freeze, with Goal 3's lead's yes and a 🔍 pass | every portal check passes on the one client; check 15 passes; the portal builds with `HEROUI_AUTH_TOKEN` unset |
 
+**After cutover: M1.50, the one Graph** (`design/decisions/M1-50-after-cutover.md`, Goal 3's call of 22 November 2026). The one Graph for machines, the map and the worlds is this goal's, built in `@orthograph/shell` once the old client is gone. Check 40 (`e2e/m1/40-m1-50-graph.test.ts`) moves to the shell first, rewritten by a checks author. Goal 3 offered to build the generator half (elk layout into the portal's data); this goal asks for it in an Ask issue if it wants it.
+
 ## Decision IDs
 
 A decision this goal makes is named `MAP-<slug>` or `PORTAL-<slug>` (K32), never a number, so no allocator is
@@ -318,6 +320,9 @@ started, since it crosses goals.
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
 | MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
 | MAP-screens | `design/decisions/MAP-screens.md` | Aaron, 23 November 2026: the Map tab, the page tree, the derived map marked, the "As an agent" drawer |
+| MAP-language | `design/decisions/MAP-language.md` | slice 3, the map language, the compiler's `app` module and its refusals |
+| MAP-projection | `design/decisions/MAP-projection.md` | slice 4, `generated/app/` and the derived default |
+| MAP-shell | `design/decisions/MAP-shell.md` | slice 5, the shell: router, layouts, navigation, palette, 404, the query |
 
 ## The done check
 
@@ -353,7 +358,4 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 
 ## Where it stands
 
-22 November 2026. The theme is built, one shared look on UI SDK taken from today's portal, and it is on its way
-into stage 1 on its own, for the UI layer. The map's checks have landed: a hundred portal checks and forty-four grid
-cells are owed by the new portal, all red so far, and the list can only shrink. The shell's checks land with this.
-The map language, the app projection and the shell are built and reviewed, and land next.
+23 November 2026. The theme is in stage 1, for the UI layer. The map language, the app projection and the shell are built, reviewed and in this goal's branch, with every one of their checks green, and the generated files of every app without a map are unchanged, byte for byte. Aaron said yes to the four screen questions: the map in its own tab beside the things, the pages as a tree, the worked-out map marked when nobody declared one, and an "As an agent" drawer on every page. The new portal's frame is reviewed and lands next; thirteen of the hundred portal checks it owes already pass. Then the map goes into stage 1, and the pages follow.
