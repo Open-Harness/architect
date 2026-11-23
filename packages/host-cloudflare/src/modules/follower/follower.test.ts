@@ -50,3 +50,41 @@ describe("the follower's alarm (M6-chain item 12)", () => {
     });
   });
 });
+
+describe("configure and health", () => {
+  it("a changed interval resets the alarm, and none deletes it", async () => {
+    await runInDurableObject(env.FOLLOWER.getByName("reconfigure") as DurableObjectStub<Follower>, async (follower, state) => {
+      await follower.configure(configOf({ pollIntervalMs: 600_000 }));
+      const slow = (await state.storage.getAlarm())!;
+      await follower.configure(configOf({ pollIntervalMs: 1_000 }));
+      expect((await state.storage.getAlarm())!).toBeLessThan(slow);
+      await follower.configure(configOf({}));
+      expect(await state.storage.getAlarm()).toBeNull();
+    });
+  });
+
+  it("the same source keeps the checkpoint; another one starts a new stream", async () => {
+    await runInDurableObject(env.FOLLOWER.getByName("source") as DurableObjectStub<Follower>, async (follower, state) => {
+      await follower.configure(configOf({}));
+      await state.storage.put("checkpoint", { through: { number: 5n, hash: "0xab" }, window: [{ number: 5n, hash: "0xab" }], seen: [] });
+      await follower.configure(configOf({ pollIntervalMs: 60_000 }));
+      expect((await follower.checkpoint()).through).toEqual({ number: "5", hash: "0xab" });
+      await follower.configure(configOf({ fromBlock: "9" }));
+      expect(await follower.checkpoint()).toEqual({ window: [] });
+    });
+  });
+
+  it("a failing alarm is recorded without the URL, counted, and the next alarm is set", async () => {
+    const stub = env.FOLLOWER.getByName("health") as DurableObjectStub<Follower>;
+    await runInDurableObject(stub, (follower) => follower.configure(configOf({ rpcUrl: "http://user:secret@127.0.0.1:1/key", pollIntervalMs: 60_000 })));
+    expect(await runDurableObjectAlarm(stub)).toBe(true);
+    expect(await runDurableObjectAlarm(stub)).toBe(true);
+    await runInDurableObject(stub, async (follower, state) => {
+      const health = (await follower.health())!;
+      expect(health.failures).toBe(2);
+      expect(health.lastError.tag.length).toBeGreaterThan(0);
+      expect(JSON.stringify(health)).not.toMatch(/secret|127\.0\.0\.1/);
+      expect(await state.storage.getAlarm()).not.toBeNull();
+    });
+  });
+});

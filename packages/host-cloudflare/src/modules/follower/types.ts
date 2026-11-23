@@ -22,6 +22,12 @@ export interface BlockView { readonly number: string; readonly hash: string }
 /** What `checkpoint()` answers: the last block read, and the window of block hashes, oldest first. */
 export interface CheckpointView { readonly through?: BlockView; readonly window: ReadonlyArray<BlockView> }
 
+/** Why the alarm's last steps failed: the error's tag and message (no URL, no key), when (ms), and how many in a row. Cleared by the next step that succeeds. */
+export interface FollowerHealth {
+  readonly failures: number;
+  readonly lastError: { readonly tag: string; readonly message: string; readonly at: number };
+}
+
 /** What reaches the sink: `Inbox.accept`'s shape (Ask #481). */
 export interface SinkEntry {
   readonly source: "chain";
@@ -44,4 +50,6 @@ export interface FollowerApi {
   configure(config: FollowerConfig): Promise<void>;
   poll(): Promise<{ readonly caughtUp: boolean }>;
   checkpoint(): Promise<CheckpointView>;
+  /** `null` while the follower is well. */
+  health(): Promise<FollowerHealth | null>;
 }
