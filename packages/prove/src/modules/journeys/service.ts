@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import type { AnyCall, Call, Operation, Principal, Read, StartingWorld, Thing, ToolsCall, Via } from "orthograph";
+import type { AnyCall, Call, Operation, Principal, Read, Role, StartingWorld, Thing, ToolsCall, Via } from "orthograph";
 import { Blueprint } from "orthograph";
 import { Scripting } from "orthograph/server";
 import type { CallRecord, JourneyRun, JourneysApi, Project, StepResult } from "./types.ts";
@@ -12,6 +12,7 @@ import { d1Facts } from "./internal/d1-facts.ts";
 import { subjectId } from "./internal/subject.ts";
 import { runChecks, show } from "./internal/checks.ts";
 import { standsUsed } from "./internal/uses.ts";
+import { bind, namesNoPerson, type Bound } from "./internal/bind.ts";
 import { recordOf, runnerDoor, standDoor, worldDoor } from "./internal/doors.ts";
 
 /** A call that runs an operation, or lists the tools: what a starting world makes and `make` makes. */
@@ -38,11 +39,11 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
 
     // Each journey has its own people: the same name in two journeys is two people.
     const names = [...new Set([...Object.keys(journey.cast), ...lineage.flatMap((w) => Object.keys(w.cast))])];
-    const cast = Object.assign({}, ...lineage.map((w) => w.cast), journey.cast) as Record<string, { readonly kind?: string; readonly service?: unknown } | undefined>;
+    const cast = Object.assign({}, ...lineage.map((w) => w.cast), journey.cast) as Record<string, ({ readonly kind?: string; readonly service?: unknown; readonly actor?: unknown; readonly agent?: unknown }) | undefined>;
     // The system and a service are not people: nobody signs them up, and a world mints each one's token (M2-auth, fork 3).
     // The keeper is no one to sign up either: it is the system's own principal, and it is not built yet (M8.10).
     const keepers = keepersIn(names, [...lineage.map((w) => w.cast), journey.cast]);
-    const outsiders = names.filter((n) => keepers.has(n) || cast[n]?.kind === "system" || (cast[n]?.kind === "role" && cast[n]?.service !== undefined));
+    const outsiders = names.filter((n) => keepers.has(n) || cast[n]?.kind === "system" || (cast[n]?.kind === "role" && cast[n]?.service !== undefined) || namesNoPerson(cast[n]));
     // Cast as anyone: not signed up, so the script can sign them up itself; everyone else is, for real.
     const anyone = names.filter((n) => cast[n]?.kind === "anyone" && !lineage.some((w) => n in w.cast));
     const wanted = [names.filter((n) => !anyone.includes(n) && !outsiders.includes(n)).map((n) => `j${index}.${n}`), anyone.map((n) => `j${index}.${n}`)] as const;
@@ -64,12 +65,23 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       : call.kind === "together-call" ? call.calls.map((c) => unbuilt(c, kept)).find((w) => w !== undefined)
       : kept.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)"
       : undefined;
+    // A cast member that is an outside account or an agent acting as itself is bound to the instance the world gave, when it first calls (it may be made by a starting world).
+    const bound = new Map<string, Bound>();
+    const bindOf = (actor: string) =>
+      Effect.gen(function* () {
+        const held = bound.get(actor);
+        if (held !== undefined) return held;
+        const made = yield* bind(url, facts.facts, facts.tableOf, (env["world"] ?? {}) as Record<string, unknown>, cast[actor] as unknown as Role);
+        if (made.problem === undefined) bound.set(actor, made);
+        return made;
+      });
     // Each credential the world minted for a cast member's way in, once per journey.
     const minted = new Map<string, string | undefined>();
     const tokenFor = (actor: string, via: Via | undefined) =>
       Effect.gen(function* () {
         const kind = cast[actor]?.kind;
         if (kind === "system") return (yield* mintCredential(url, { system: true })) ?? "";
+        if (namesNoPerson(cast[actor])) return (yield* bindOf(actor)).token;
         const mount = kind === "role" ? project.mounts?.get(cast[actor]!.service) : undefined;
         if (mount !== undefined) return (yield* mintCredential(url, { service: mount })) ?? "";
         if (via === undefined || via === "session") return people[actor]?.token ?? "";
@@ -82,8 +94,12 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         return minted.get(key) ?? "";
       });
     /** Who the call is made as, from the cast member and the way in: what the declaration's `allowed` is read against before the call. */
-    const principalOf = (actor: string, via: Via | undefined): Principal => {
+    const principalOf = (actor: string, via: Via | undefined): Effect.Effect<Principal> => Effect.gen(function* () {
       const kind = cast[actor]?.kind;
+      if (namesNoPerson(cast[actor])) return (yield* bindOf(actor)).principal;
+      return principalOfPerson(actor, via, kind);
+    });
+    const principalOfPerson = (actor: string, via: Via | undefined, kind: string | undefined): Principal => {
       if (kind === "system") return { kind: "system" };
       if (kind === "role" && cast[actor]?.service !== undefined) return { kind: "service", mount: project.mounts?.get(cast[actor]!.service) ?? "" };
       const who = people[actor];
@@ -109,7 +125,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         const resolved = Scripting.resolve(call.payload, env);
         const payload = resolved.value as Record<string, unknown>;
         const person = people[call.actor]?.person ?? "";
-        const may = yield* mayCall(facts.facts, facts.tableOf, call.operation, payload, principalOf(call.actor, call.via), project.mounts);
+        const may = yield* mayCall(facts.facts, facts.tableOf, call.operation, payload, yield* principalOf(call.actor, call.via), project.mounts);
         const model = project.model.operations[operation];
         // A plugin's operation that runs on the device is run in this process, by its `world` entry, never sent to the server.
         const r = device !== undefined && onDevice(model)

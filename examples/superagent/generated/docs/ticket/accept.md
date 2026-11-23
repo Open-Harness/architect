@@ -10,7 +10,7 @@ Make a ticket from an accepted trigger: its mandate, subscription, first assignm
 | field | value |
 |---|---|
 | superagent | ticket.superagent |
-| account | id |
+| account | account.id |
 | title | ticket.title |
 | agent | ticket.agent |
 | thread | text |

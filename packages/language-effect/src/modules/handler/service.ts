@@ -162,7 +162,9 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
   const run = (payload: object, principal: Principal, request?: string) => {
     // Keyed by operation and caller as well, so one caller's key never answers another's call.
     // Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
-    const who = "person" in principal ? `${principal.kind}:${principal.person}` : principal.kind === "service" ? `service:${principal.mount}` : principal.kind;
+    const who = "person" in principal ? `${principal.kind}:${principal.person}`
+      : principal.kind === "service" ? `service:${principal.mount}${principal.actor === undefined ? "" : `:${principal.actor.id}`}`
+      : principal.kind === "agent" ? `agent:${principal.agent}` : principal.kind;
     const key = op.idempotent === "request" && request !== undefined ? `${name}|${who}|${request}` : undefined;
     // The call is named once, before its first attempt, and every attempt's span carries the name: attempts of one call are sequential, but different
     // calls' attempts overlap, so nothing else in a trace says which attempts belong together (O3).

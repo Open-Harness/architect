@@ -22,7 +22,8 @@ export const principalAttributes = (principal: Principal, refused = false): Reco
   "principal.kind": principal.kind,
   ...("via" in principal ? { "principal.via": principal.via } : {}),
   ...(!refused && "person" in principal ? { "principal.person": principal.person } : {}),
-  ...(principal.kind === "service" ? { "principal.mount": principal.mount } : {}),
+  ...(principal.kind === "service" ? { "principal.mount": principal.mount, ...(principal.actor === undefined ? {} : { "principal.actor": principal.actor.id }) } : {}),
+  ...(principal.kind === "agent" && "agent" in principal ? { "principal.agent": principal.agent } : {}),
 });
 
 /** The request key a call was made with, as the caller sent it (never the store's `<op>|<who>|<key>`): an id, so traced. Only a key the operation honours (M1.12a). */

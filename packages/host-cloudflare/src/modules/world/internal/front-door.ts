@@ -28,9 +28,16 @@ export const frontDoor = (sql: SqlStorage, auth: AuthInstance, request: Request,
     }
     if (path === "/_world/credential" && request.method === "POST") {
       // A credential for one cast member's way in, or for the system or a service: `{ name, via }`, `{ system: true }` or `{ service }`.
-      const body = (yield* Effect.promise(() => request.json().catch(() => ({})))) as { readonly name?: unknown; readonly via?: unknown; readonly system?: unknown; readonly service?: unknown };
+      // A service may name the outside account that sends (`actor`, with its stable `id`), and an agent that acts as itself is `{ agent }`.
+      const body = (yield* Effect.promise(() => request.json().catch(() => ({})))) as { readonly name?: unknown; readonly via?: unknown; readonly system?: unknown; readonly service?: unknown; readonly actor?: { readonly id?: unknown; readonly name?: unknown; readonly bot?: unknown }; readonly agent?: unknown };
       if (body.system === true) return json(yield* AuthD1.credential(auth, { kind: "system" }));
-      if (typeof body.service === "string") return json(yield* AuthD1.credential(auth, { kind: "service", mount: body.service }));
+      if (typeof body.agent === "string") return json(yield* AuthD1.credential(auth, { kind: "self", agent: body.agent }));
+      if (typeof body.service === "string") {
+        const actor = body.actor !== undefined && typeof body.actor.id === "string"
+          ? { id: body.actor.id, ...(typeof body.actor.name === "string" ? { name: body.actor.name } : {}), ...(typeof body.actor.bot === "boolean" ? { bot: body.actor.bot } : {}) }
+          : undefined;
+        return json(yield* AuthD1.credential(auth, { kind: "service", mount: body.service, ...(actor === undefined ? {} : { actor }) }));
+      }
       const name = typeof body.name === "string" ? body.name : "";
       const row = sql.exec<{ person: string | null; email: string; password: string }>("SELECT person, email, password FROM cast WHERE name = ?", name).toArray()[0];
       if (!row?.person) return json({ error: `${name || "no one"} is not a signed-up member of this world's cast` }, 404);

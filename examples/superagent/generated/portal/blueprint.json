@@ -4913,14 +4913,14 @@
             "path": "superagent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "mints": "decision",
         "steps": {},
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "ac441b2f522969a7"
+        "hash": "b899daffdebae606"
       },
       "eval.context": {
         "kind": "operation",
@@ -4975,7 +4975,7 @@
             "path": "superagent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "eval": "eval"
         },
@@ -4987,7 +4987,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "e8bdfffac8c064ae"
+        "hash": "da20312e66d5de7e"
       },
       "eval.decide": {
         "kind": "operation",
@@ -5050,7 +5050,7 @@
             "path": "superagent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "eval": "eval"
         },
@@ -5062,7 +5062,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "418da247641c3352"
+        "hash": "754cd1fc4f73d27d"
       },
       "eval.delivered": {
         "kind": "operation",
@@ -5329,7 +5329,7 @@
             "path": "superagent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "eval": "eval"
         },
@@ -5341,7 +5341,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "0f332f810a4e3b97"
+        "hash": "54570d3c1a0a268b"
       },
       "eval.start": {
         "kind": "operation",
@@ -6029,7 +6029,7 @@
             "kind": "system"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "ticket": "ticket"
         },
@@ -6042,7 +6042,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "b8a58400239dc5cb"
+        "hash": "d148b83dd3b9d402"
       },
       "outgoing-message.retry": {
         "kind": "operation",
@@ -7039,7 +7039,7 @@
             "path": "superagent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "superagent": "superagent"
         },
@@ -7049,7 +7049,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "45d78daaade4b987"
+        "hash": "8130c1eb64c87ec6"
       },
       "proposal.reject": {
         "kind": "operation",
@@ -8587,7 +8587,7 @@
             "path": "ticket"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "ticket": "ticket"
         },
@@ -8604,7 +8604,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "5d1783f67aaef6c2"
+        "hash": "cd5e672f8b710c71"
       },
       "thread.unrelated": {
         "kind": "operation",
@@ -8656,7 +8656,7 @@
             "path": "ticket"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "ticket": "ticket"
         },
@@ -8673,7 +8673,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "118733929cc6a0a4"
+        "hash": "8c4102945d579e44"
       },
       "thread.unsubscribe": {
         "kind": "operation",
@@ -8777,7 +8777,8 @@
             "value": {
               "type": "id",
               "prefix": "acc"
-            }
+            },
+            "ref": "account.id"
           },
           "title": {
             "value": {
@@ -8850,6 +8851,7 @@
         ],
         "agentTool": false,
         "refs": {
+          "account": "account",
           "agent": "agent"
         },
         "notFound": {
@@ -8873,7 +8875,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "f46afb9000616292"
+        "hash": "6c60427e91c1c590"
       },
       "ticket.ack": {
         "kind": "operation",
@@ -8924,7 +8926,7 @@
             "role": "ticket.itsAgent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "ticket": "ticket"
         },
@@ -8942,7 +8944,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "372f1be183a3e6d5"
+        "hash": "feeee6918b82d623"
       },
       "ticket.attach": {
         "kind": "operation",
@@ -8996,7 +8998,7 @@
             "path": "superagent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "ticket": "ticket"
         },
@@ -9008,7 +9010,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "e490a1c0b9510652"
+        "hash": "ed5474f48fe13d88"
       },
       "ticket.end": {
         "kind": "operation",
@@ -9123,7 +9125,7 @@
             "path": "superagent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "ticket": "ticket"
         },
@@ -9135,7 +9137,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "88c6f72ac6456296"
+        "hash": "20a5ad29a22df3fd"
       },
       "ticket.policy-changed": {
         "kind": "operation",
@@ -9250,7 +9252,7 @@
             "role": "ticket.itsAgent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "ticket": "ticket"
         },
@@ -9268,7 +9270,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "ffda332695dfe9ae"
+        "hash": "4c3254d7512b5ff5"
       },
       "ticket.request-status": {
         "kind": "operation",
@@ -9933,7 +9935,7 @@
             "path": "ticket"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "ticket": "ticket",
           "trigger": "trigger"
@@ -9946,7 +9948,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "71ea998b4dc7597b"
+        "hash": "398e18236fb286f1"
       },
       "trigger.receive": {
         "kind": "operation",
@@ -10195,7 +10197,7 @@
             "path": "superagent"
           }
         ],
-        "agentTool": true,
+        "agentTool": false,
         "refs": {
           "trigger": "trigger"
         },
@@ -10207,7 +10209,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "788e6c271e3025f1"
+        "hash": "2c3bd7d6a9cea3ff"
       }
     },
     "journeys": {},
@@ -14344,9 +14346,9 @@
         "file": "blueprint/features/agents.ts",
         "package": "@orthograph/agents",
         "version": "0.0.0",
-        "integrity": "sha256-EGyb2YiamN0KyeslAuFTqUdoegkF+BTOCikuJ7xTiHo=",
+        "integrity": "sha256-wvH1Vkiv+njXb9ewuCUx02zGODJNH3NvAAhvHo8OfZs=",
         "chosen": {},
-        "hash": "295eae320672a7aa"
+        "hash": "a6583fab3899a955"
       },
       "github": {
         "kind": "adapter",
@@ -14462,9 +14464,9 @@
         "file": "blueprint/features/tickets.ts",
         "package": "@orthograph/tickets",
         "version": "0.0.0",
-        "integrity": "sha256-TEG5oJJgoK6lU+f9gYsc9wIC7VSCGd0JWXXrdPoAE40=",
+        "integrity": "sha256-eIWws2k9XAGmYXfW6dn+czOMqqd16Xy8RabGD6NW2n0=",
         "chosen": {},
-        "hash": "97aaf0278d30506b"
+        "hash": "3711b33847546abf"
       }
     }
   },
@@ -14551,17 +14553,17 @@
       "thing:decision": "afdbb04d22e31d1c"
     },
     "decision.route": {
-      "operation:decision.route": "ac441b2f522969a7",
+      "operation:decision.route": "b899daffdebae606",
       "thing:decision": "afdbb04d22e31d1c",
       "thing:superagent": "7239711b73e83825"
     },
     "eval.context": {
-      "operation:eval.context": "e8bdfffac8c064ae",
+      "operation:eval.context": "da20312e66d5de7e",
       "thing:eval": "cb2bdb98ee308abb",
       "thing:superagent": "7239711b73e83825"
     },
     "eval.decide": {
-      "operation:eval.decide": "418da247641c3352",
+      "operation:eval.decide": "754cd1fc4f73d27d",
       "thing:eval": "cb2bdb98ee308abb",
       "thing:superagent": "7239711b73e83825"
     },
@@ -14578,7 +14580,7 @@
       "thing:eval": "cb2bdb98ee308abb"
     },
     "eval.read": {
-      "operation:eval.read": "0f332f810a4e3b97",
+      "operation:eval.read": "54570d3c1a0a268b",
       "thing:eval": "cb2bdb98ee308abb",
       "thing:superagent": "7239711b73e83825"
     },
@@ -14623,7 +14625,7 @@
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "outgoing-message.reply": {
-      "operation:outgoing-message.reply": "b8a58400239dc5cb",
+      "operation:outgoing-message.reply": "d148b83dd3b9d402",
       "thing:outgoing-message": "c5d5f8116c02a156",
       "thing:superagent": "7239711b73e83825",
       "thing:ticket": "41fd9017a6d64eb1"
@@ -14686,7 +14688,7 @@
       "thing:superagent": "7239711b73e83825"
     },
     "proposal.propose": {
-      "operation:proposal.propose": "45d78daaade4b987",
+      "operation:proposal.propose": "8130c1eb64c87ec6",
       "thing:proposal": "0487db5954021933",
       "thing:superagent": "7239711b73e83825"
     },
@@ -14783,12 +14785,12 @@
       "thing:thread": "605b68a909d28291"
     },
     "thread.follow": {
-      "operation:thread.follow": "5d1783f67aaef6c2",
+      "operation:thread.follow": "cd5e672f8b710c71",
       "thing:thread": "605b68a909d28291",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "thread.unrelated": {
-      "operation:thread.unrelated": "118733929cc6a0a4",
+      "operation:thread.unrelated": "8c4102945d579e44",
       "thing:thread": "605b68a909d28291",
       "thing:ticket": "41fd9017a6d64eb1"
     },
@@ -14798,18 +14800,18 @@
       "thing:thread": "605b68a909d28291"
     },
     "ticket.accept": {
-      "operation:ticket.accept": "f46afb9000616292",
+      "operation:ticket.accept": "6c60427e91c1c590",
       "thing:account": "c261b466a3c7689c",
       "thing:agent": "a369aaa882ce59e7",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.ack": {
-      "operation:ticket.ack": "372f1be183a3e6d5",
+      "operation:ticket.ack": "feeee6918b82d623",
       "thing:agent": "a369aaa882ce59e7",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.attach": {
-      "operation:ticket.attach": "e490a1c0b9510652",
+      "operation:ticket.attach": "ed5474f48fe13d88",
       "thing:agent": "a369aaa882ce59e7",
       "thing:superagent": "7239711b73e83825",
       "thing:ticket": "41fd9017a6d64eb1"
@@ -14820,7 +14822,7 @@
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.note": {
-      "operation:ticket.note": "88c6f72ac6456296",
+      "operation:ticket.note": "20a5ad29a22df3fd",
       "thing:agent": "a369aaa882ce59e7",
       "thing:superagent": "7239711b73e83825",
       "thing:ticket": "41fd9017a6d64eb1"
@@ -14831,7 +14833,7 @@
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.report": {
-      "operation:ticket.report": "ffda332695dfe9ae",
+      "operation:ticket.report": "4c3254d7512b5ff5",
       "thing:agent": "a369aaa882ce59e7",
       "thing:ticket": "41fd9017a6d64eb1"
     },
@@ -14871,7 +14873,7 @@
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "trigger.handback": {
-      "operation:trigger.handback": "71ea998b4dc7597b",
+      "operation:trigger.handback": "398e18236fb286f1",
       "thing:ticket": "41fd9017a6d64eb1",
       "thing:trigger": "11d0bc1aa3c79f78"
     },
@@ -14884,7 +14886,7 @@
       "thing:trigger": "11d0bc1aa3c79f78"
     },
     "trigger.requeue": {
-      "operation:trigger.requeue": "788e6c271e3025f1",
+      "operation:trigger.requeue": "2c3bd7d6a9cea3ff",
       "thing:superagent": "7239711b73e83825",
       "thing:trigger": "11d0bc1aa3c79f78"
     }
@@ -14977,7 +14979,7 @@
     "thread/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# thread\n\nAn issue, a pull request or a Slack thread a superagent listens to. One eval runs on it at a time.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| source | text |\n| key | text |\n| channel | schema |\n\n## Machine\n\nStates: idle. A move from the wrong state is refused ThreadNotIdle (exit 84).\n\n| move | from | to | emits |\n|---|---|---|---|\n| bind | (creates) | idle | ThreadSubscribed |\n| closed | idle | idle | ThreadClosed |\n| unsubscribe | idle | idle | ThreadUnsubscribed |\n\n## Invariants\n\n- `thread.oneThreadPerKey`: another thread holds this superagent, source and key. Unique on superagent, source, key, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `ThreadClosed`: carries thread (thread.id); emitted by the move closed\n- `ThreadSubscribed`: carries superagent (thread.superagent), thread (thread.id); emitted by the move bind\n- `ThreadUnsubscribed`: carries superagent (thread.superagent), thread (thread.id); emitted by the move unsubscribe\n\n## Operations\n\n- [thread.bind](bind.md): Make the thread an event belongs to, once, for this superagent.\n- [thread.closed](closed.md): Say a thread closed: a merged pull request, a closed issue.\n- [thread.follow](follow.md): The executor follows a thread: its next messages go straight to it, with no eval.\n- [thread.unrelated](unrelated.md): The executor says a thread has nothing to do with its ticket.\n- [thread.unsubscribe](unsubscribe.md): Stop a ticket following a thread: a person's call, or the main agent's.\n",
     "thread/unrelated.md": "<!-- Generated from the blueprint. Do not edit. -->\n# thread.unrelated\n\nThe executor says a thread has nothing to do with its ticket.\n\n**Who may call:** the itsAgent of its ticket.\n\n## Payload\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n| thread | text |\n\n## Answer\n\n(none)\n\n## Steps\n\n- `thread.unrelated.write` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AlreadyFollowing | 93 | SB-001 | another live subscription holds this ticket and thread; by the rule subscription.oneFollowPerThread, carrying ticket, thread |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsAgent of its ticket; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent thread unrelated --ticket <ticket> --thread <thread>\n```\n\nHTTP: `POST /thread/unrelated` with the payload as JSON. SDK: `Sdk.thread.unrelated(payload)`.\n",
     "thread/unsubscribe.md": "<!-- Generated from the blueprint. Do not edit. -->\n# thread.unsubscribe\n\nStop a ticket following a thread: a person's call, or the main agent's.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | thread.superagent |\n| thread | thread.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`unsubscribe`: from idle to idle, emitting ThreadUnsubscribed.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ThreadNotIdle | 84 | TH-900 | the thread is in a state unsubscribe can't start from; carries `state` |\n| ThreadNotFound | 4 | TH-901 | nothing has the id in thread; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent thread unsubscribe --superagent <superagent> --thread <thread>\n```\n\nHTTP: `POST /thread/unsubscribe` with the payload as JSON. SDK: `Sdk.thread.unsubscribe(payload)`.\n",
-    "ticket/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.accept\n\nMake a ticket from an accepted trigger: its mandate, subscription, first assignment and first input, in one commit.\n\n**Who may call:** the listed of its account.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | ticket.superagent |\n| account | id |\n| title | ticket.title |\n| agent | ticket.agent |\n| thread | text |\n| text | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n\n## Move\n\n`accept`: from nothing (it creates) to open, emitting TicketCreated.\n\n## Steps\n\n- `ticket.accept.write` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SeatTaken | 96 | AS-002 | another running or closing assignment holds this superagent and seat; by the rule assignment.oneHolderPerSeat, carrying seat |\n| ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |\n| AlreadyFollowing | 93 | SB-001 | another live subscription holds this ticket and thread; by the rule subscription.oneFollowPerThread, carrying ticket, thread |\n| AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the listed of its account; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket accept --superagent <superagent> --account <account> --title <title> --agent <agent> --thread <thread> --text <text>\n```\n\nHTTP: `POST /ticket/accept` with the payload as JSON. SDK: `Sdk.ticket.accept(payload)`.\n",
+    "ticket/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.accept\n\nMake a ticket from an accepted trigger: its mandate, subscription, first assignment and first input, in one commit.\n\n**Who may call:** the listed of its account.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | ticket.superagent |\n| account | account.id |\n| title | ticket.title |\n| agent | ticket.agent |\n| thread | text |\n| text | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n\n## Move\n\n`accept`: from nothing (it creates) to open, emitting TicketCreated.\n\n## Steps\n\n- `ticket.accept.write` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SeatTaken | 96 | AS-002 | another running or closing assignment holds this superagent and seat; by the rule assignment.oneHolderPerSeat, carrying seat |\n| ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |\n| AlreadyFollowing | 93 | SB-001 | another live subscription holds this ticket and thread; by the rule subscription.oneFollowPerThread, carrying ticket, thread |\n| AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the listed of its account; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket accept --superagent <superagent> --account <account> --title <title> --agent <agent> --thread <thread> --text <text>\n```\n\nHTTP: `POST /ticket/accept` with the payload as JSON. SDK: `Sdk.ticket.accept(payload)`.\n",
     "ticket/ack.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.ack\n\nThe executor acknowledges the message it was woken by, once, in one short reply.\n\n**Who may call:** the itsAgent of the ticket.\n\n## Payload\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n| trigger | text |\n| text | text |\n\n## Answer\n\n(none)\n\n## Steps\n\n- `ticket.ack.write` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the itsAgent of the ticket; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket ack --ticket <ticket> --trigger <trigger> --text <text>\n```\n\nHTTP: `POST /ticket/ack` with the payload as JSON. SDK: `Sdk.ticket.ack(payload)`.\n",
     "ticket/attach.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.attach\n\nAttach another thread to a ticket.\n\n**Who may call:** the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | ticket.superagent |\n| ticket | ticket.id |\n| thread | text |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket attach --superagent <superagent> --ticket <ticket> --thread <thread>\n```\n\nHTTP: `POST /ticket/attach` with the payload as JSON. SDK: `Sdk.ticket.attach(payload)`.\n",
     "ticket/end.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.end\n\nEnd a ticket: the reported work is ready, its threads are closed, or the playbook says so. Its executor stays, idle.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`end`: from open to ended, emitting TicketEnded.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TicketNotOpen | 90 | TI-900 | the ticket is in a state end can't start from; carries `state` |\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket end --ticket <ticket>\n```\n\nHTTP: `POST /ticket/end` with the payload as JSON. SDK: `Sdk.ticket.end(payload)`.\n",
@@ -15011,5 +15013,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "ec278c3847b7da6012909febf35e38295dccf3e9d0dea28e8b81997211451977"
+  "digest": "133c206062646130b073b379065cf16d712e2f2867209c226148289ce30f6b43"
 }

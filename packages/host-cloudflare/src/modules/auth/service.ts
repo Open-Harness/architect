@@ -130,8 +130,8 @@ const castMember: AuthD1Api["castMember"] = (a, name, anonymous, stored) =>
   });
 
 const credential: AuthD1Api["credential"] = (a, spec) =>
-  spec.kind === "system" || spec.kind === "service"
-    ? worldToken.mint(held(a).secret, spec.kind === "system" ? { kind: "system" } : { kind: "service", mount: spec.mount }).pipe(Effect.map((token) => ({ token })))
+  spec.kind === "system" || spec.kind === "service" || spec.kind === "self"
+    ? worldToken.mint(held(a).secret, spec.kind === "system" ? { kind: "system" } : spec.kind === "self" ? { kind: "agent", agent: spec.agent } : { kind: "service", mount: spec.mount, ...(spec.actor === undefined ? {} : { actor: spec.actor }) }).pipe(Effect.map((token) => ({ token })))
     : call(a, (auth) => auth.api.createApiKey({
         body: { userId: spec.person, name: `world ${spec.kind}`, ...(spec.kind === "agent" ? { metadata: { acts: ACTS_FOR_AN_AGENT } } : {}) },
       })).pipe(Effect.map((r) => ({ token: r.key })), Effect.orDie);

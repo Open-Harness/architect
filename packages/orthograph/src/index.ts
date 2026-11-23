@@ -61,6 +61,7 @@ export { outbox, type OutboxRow } from "#modules/plugins/probes.js";
 export { Via, Host, Door, Ships } from "#modules/plugins/types.js";
 export const { expect, emits, noEvents, refuses, spans, lacks, has } = Checks;
 export { NotAllowed } from "#modules/errors/types.js";
+export type { Sender } from "#modules/roles/types.js";
 export type { Value, ValueMeta, TypeOf } from "#modules/values/types.js";
 export type { Visibility, PrivateTo } from "#modules/visibility/types.js";
 export type { Thing, Field, FieldInput, FieldsInput, Lives, StoreKind, NotFound } from "#modules/things/types.js";

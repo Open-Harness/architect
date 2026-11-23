@@ -41,7 +41,9 @@ export type CredentialSpec =
   | { readonly kind: "key"; readonly person: string }
   | { readonly kind: "agent"; readonly person: string }
   | { readonly kind: "system" }
-  | { readonly kind: "service"; readonly mount: string };
+  | { readonly kind: "service"; readonly mount: string; readonly actor?: { readonly id: string; readonly name?: string; readonly bot?: boolean } }
+  /** An agent acting as itself (K40 fix 3): the world signs for the agent whose id this is. */
+  | { readonly kind: "self"; readonly agent: string };
 
 export interface AuthD1Api {
   readonly make: (options: AuthOptions) => AuthInstance;

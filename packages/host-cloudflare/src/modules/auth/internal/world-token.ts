@@ -8,11 +8,18 @@ import type { Principal } from "orthograph";
 export const WORLD_PREFIX = "wld_";
 
 /** Who a world token is for. */
-export type WorldCaller = { readonly kind: "system" } | { readonly kind: "service"; readonly mount: string };
+export type WorldCaller =
+  | { readonly kind: "system" }
+  | { readonly kind: "service"; readonly mount: string; readonly actor?: { readonly id: string; readonly name?: string; readonly bot?: boolean } }
+  | { readonly kind: "agent"; readonly agent: string };
 
 const Caller = Schema.Union([
   Schema.Struct({ kind: Schema.Literal("system") }),
-  Schema.Struct({ kind: Schema.Literal("service"), mount: Schema.String }),
+  Schema.Struct({
+    kind: Schema.Literal("service"), mount: Schema.String,
+    actor: Schema.optionalKey(Schema.Struct({ id: Schema.String, name: Schema.optionalKey(Schema.String), bot: Schema.optionalKey(Schema.Boolean) })),
+  }),
+  Schema.Struct({ kind: Schema.Literal("agent"), agent: Schema.String }),
 ]);
 const parse = Schema.decodeUnknownOption(Schema.fromJsonString(Caller));
 
@@ -46,7 +53,9 @@ export const principalOf = (secret: string, token: string): Effect.Effect<Princi
     Effect.map((expected): Principal => {
       if (expected !== signature) return ANONYMOUS;
       const caller = parse(new TextDecoder().decode(unhex(payload)));
-      return Option.isSome(caller) ? caller.value : ANONYMOUS;
+      if (Option.isNone(caller)) return ANONYMOUS;
+      // An agent a world signs for acts as itself: no person, and the `agent` way in.
+      return caller.value.kind === "agent" ? { kind: "agent", agent: caller.value.agent, via: "agent" } : caller.value;
     }),
   );
 };

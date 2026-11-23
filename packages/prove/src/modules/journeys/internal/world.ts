@@ -7,6 +7,7 @@ import type { Operation, Read, Principal, Thing } from "orthograph";
 import { structOf } from "orthograph/server";
 import { Access, Records, type Instance } from "@orthograph/language-effect";
 import type { CallRecord, Facts } from "../types.ts";
+import { fieldsOfRow } from "./columns.ts";
 import { PROVE_SPAN_PREFIX } from "#modules/telemetry/types.js";
 
 type Codec = Schema.Codec<Record<string, unknown>, Record<string, unknown>>;
@@ -74,7 +75,7 @@ export const signUpPeople = (url: string, names: ReadonlyArray<string>, anonymou
  * The credential the world mints for one cast member's way in (`key` or `agent`: an `ak_` key, the second made for an agent), or for
  * the system or a service: none of which a sign-in makes. `undefined` when the world has no such door or will not mint it.
  */
-export const mintCredential = (url: string, spec: { readonly name: string; readonly via: string } | { readonly system: true } | { readonly service: string }) =>
+export const mintCredential = (url: string, spec: { readonly name: string; readonly via: string } | { readonly system: true } | { readonly service: string; readonly actor?: { readonly id: string } } | { readonly agent: string }) =>
   fetchJson(`${url}/_world/credential`, { method: "POST", body: JSON.stringify(spec) }).pipe(
     Effect.map((r) => (r.status === 200 ? (r.body as { readonly token?: unknown } | null)?.token : undefined)),
     Effect.map((token) => (typeof token === "string" ? token : undefined)),
@@ -154,7 +155,7 @@ export const factsRecords = (facts: Facts, tableOf: (thing: Thing) => string | u
         if (!table) return undefined;
         const row = yield* facts.record(table, id);
         if (!row) return undefined;
-        const fields = yield* Schema.decodeUnknownEffect(structOf(thing.fields) as unknown as Codec)(row).pipe(Effect.orDie);
+        const fields = yield* Schema.decodeUnknownEffect(structOf(thing.fields) as unknown as Codec)(fieldsOfRow(thing, row)).pipe(Effect.orDie);
         return (typeof row["state"] === "string" ? { ...fields, state: row["state"] } : fields) as Instance;
       }),
     // A role's rule reads by id only. A lookup by a rule (G5, `findBy(rule, value)`) is a handler's, and a handler

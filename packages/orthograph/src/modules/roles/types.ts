@@ -18,9 +18,16 @@ export type Principal =
   | { readonly kind: "agent"; readonly person: string; readonly email?: string; readonly via: "agent" }
   /** An agent acting as itself (K40 fix 3): no person. Only a role made with `agent:` admits it, by the agent's id; `acting` gives it no hands. */
   | { readonly kind: "agent"; readonly agent: string; readonly via: "agent" }
-  | { readonly kind: "service"; readonly mount: string }
+  | { readonly kind: "service"; readonly mount: string; readonly actor?: Sender }
   | { readonly kind: "system" }
   | { readonly kind: "keeper" };
+
+/** The outside account that sent a call through an adapter's door (K40 fix 1): its stable id, never its login, which can change. */
+export interface Sender {
+  readonly id: string;
+  readonly name?: string;
+  readonly bot?: boolean;
+}
 
 /** Someone's hands: a person, or an agent acting for one. What a role's rule is given, so `principal.person` still works there. */
 export type Acting = Extract<Principal, { readonly person: string }>;
