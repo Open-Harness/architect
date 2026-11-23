@@ -26,9 +26,15 @@ describe("10 @orthograph/intake: what only this plugin's design says", () => {
     for (const f of ["activeAtStart", "timeoutMs"]) expect(fields?.[f]?.value, `eval.${f}`).toMatchObject({ type: "uint", bits: 64 });
   });
 
-  it("an Account is unique by (superagent, source, id) (GOAL17-source-from; GOAL17-executor-slots, 'Two writers, one guard')", () => {
+  it("an Account is unique by (superagent, source, external): the outside id is `external`, `id` is the row's own (GOAL17-account-key)", () => {
     const rules = Object.values<any>(built().model["things"]["account"]?.invariants ?? {});
-    expect(rules.some((r) => r.kind === "unique" && JSON.stringify([...r.fields].sort()) === JSON.stringify(["id", "source", "superagent"]))).toBe(true);
+    expect(rules.some((r) => r.kind === "unique" && JSON.stringify([...r.fields].sort()) === JSON.stringify(["external", "source", "superagent"]))).toBe(true);
+  });
+
+  it("an Account's row key is its own id, and the outside account's id is the text field `external` (GOAL17-account-key)", () => {
+    const f = built().model["things"]["account"]?.fields;
+    expect(f?.["id"]?.value?.type).toBe("id");
+    expect(f?.["external"]?.value?.type).toBe("text");
   });
 
   it("the Account's `listed` role is a role of the Account (K40 fix 1: the `actor:` form)", () => {
