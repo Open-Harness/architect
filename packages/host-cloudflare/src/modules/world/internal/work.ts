@@ -13,16 +13,6 @@ const call = <A>(env: EntryEnv, f: (keeper: Awaited<ReturnType<typeof keeperOf>>
   Effect.promise(() => keeperOf(env).then(f));
 
 /**
- * The entry's token, taken out of the request's cell and given back to the world as one uninterruptible step: an interrupt
- * between the two would lose a token the world still counts.
- */
-export const handover = (env: EntryEnv): Effect.Effect<void> =>
-  Effect.uninterruptible(Effect.suspend(() => {
-    const held = WorldClock.release();
-    return held === undefined ? Effect.void : call(env, (keeper) => keeper.countLeave(held));
-  }));
-
-/**
  * The one way a request takes up the world's clock after it has been without it: it asks the world for its source now and points its
  * own cell at it. A request parked at day 0 whose wait ends at day +1 reads day +1, whichever side of the race won. A real world
  * has no source to ask for.
@@ -36,10 +26,12 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
   // A real world has no controller to tell: nobody waits for it to be quiet.
   const counted = WorldClock.declared(env).kind !== "real";
   const count = Layer.succeed(WorldCount, WorldCount.of({
-    enter: (owner) => (counted ? call(env, (keeper) => keeper.countEnter(owner)) : Effect.void),
-    leave: (owner) => (counted ? call(env, (keeper) => keeper.countLeave(owner)) : Effect.void),
-    // The entry's own token goes once the work has one: this request's, taken out of its cell, given back to the world.
-    handover: counted ? handover(env) : Effect.void,
+    // Tokens have identity: the id the world gave carries its generation, and releases exactly that token.
+    enter: (owner) => (counted ? call(env, (keeper) => keeper.countEnter(owner)) : Effect.succeed("real")),
+    leave: (id) => (counted ? call(env, (keeper) => keeper.countLeave(id)) : Effect.void),
+    name: (id, owner) => (counted ? call(env, (keeper) => keeper.countName(id, owner)) : Effect.void),
+    // The box of the request this fiber runs in, taken at its entry: the work counts under it instead of taking another token.
+    request: Effect.sync(() => WorldClock.box()),
   }));
   const table = Layer.succeed(WorldTable, WorldTable.of({
     add: (owner, name, at, holder) => call(env, (keeper) => keeper.timerAdd(owner, name, at, holder)),

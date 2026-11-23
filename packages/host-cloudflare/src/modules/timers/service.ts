@@ -29,7 +29,7 @@ export const WorldTimers = {
     const { sql, clock, env, wakes, changed } = options;
     const real = clock.kind === "real";
     const count = makeCount();
-    const table = makeTable(sql, count, wakes, !real);
+    const table = makeTable(sql, count, wakes, !real, limitOf(env.ORTHO_QUIET_MS));
     // A wake that failed put its row back; the alarm tries again a second later rather than at once, in a loop.
     let retryAt: number | undefined;
     const touched = <A>(value: A): A => {
@@ -38,11 +38,13 @@ export const WorldTimers = {
     };
     return {
       rpc: {
-        countEnter: (owner) => (real ? undefined : count.enter(owner)),
-        countLeave: (owner) => (real ? undefined : count.leave(owner)),
+        // A real world counts nothing: its tokens are never taken, so they cannot be missed.
+        countEnter: (owner) => (real ? "real" : count.enter(owner)),
+        countLeave: (id) => (real ? undefined : count.leave(id)),
+        countName: (id, owner) => (real ? undefined : count.name(id, owner)),
         timerAdd: (owner, name, at, holder) => touched(table.add(owner, name, at, holder)),
         timerWait: (id) => Effect.runPromise(table.wait(id)),
-        timerCancel: (id) => touched(table.cancel(id)),
+        timerCancel: (id) => void touched(table.cancel(id)),
         timerSet: (at, owner, name, wake) => touched(table.set(at, owner, name, wake)),
         timerClear: (owner, name) => touched(table.clear(owner, name)),
         timersSleeping: () => table.sleeping(),

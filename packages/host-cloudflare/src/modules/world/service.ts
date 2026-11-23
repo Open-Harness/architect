@@ -72,10 +72,9 @@ export class World extends DurableObject<WorldEnv> {
     return this.clock.now();
   }
 
-  /** An entry begins (M8.07): the world counts it under `owner` (`entry:<path>`) and answers the source its request reads time from. */
-  begin(owner: string): ClockSource | undefined {
-    if (this.clock.kind !== "real") this.timers.rpc.countEnter(owner);
-    return this.clock.source();
+  /** An entry begins (M8.07): the world takes a token for it under `owner` (`entry:<path>`) and answers it with the source its request reads time from. */
+  begin(owner: string): { readonly source: ClockSource | undefined; readonly token: string | undefined } {
+    return { source: this.clock.source(), token: this.clock.kind === "real" ? undefined : this.timers.rpc.countEnter(owner) };
   }
 
   /** What to read the world's time from. Every other entry (the Worker, the actors) asks this over RPC, once, to run in this world's time. */
@@ -123,11 +122,12 @@ export class World extends DurableObject<WorldEnv> {
   }
 
   // What the Worker and every other process call on the world (M8.07): the count of work in flight and the timer table.
-  countEnter(owner: string): void { return this.timers.rpc.countEnter(owner); }
-  countLeave(owner: string): void { return this.timers.rpc.countLeave(owner); }
+  countEnter(owner: string): string { return this.timers.rpc.countEnter(owner); }
+  countLeave(id: string): void { return this.timers.rpc.countLeave(id); }
+  countName(id: string, owner: string): void { return this.timers.rpc.countName(id, owner); }
   timerAdd(...args: Parameters<WorldTimersRpc["timerAdd"]>): number { return this.timers.rpc.timerAdd(...args); }
   timerWait(id: number): ReturnType<WorldTimersRpc["timerWait"]> { return this.timers.rpc.timerWait(id); }
-  timerCancel(id: number): boolean { return this.timers.rpc.timerCancel(id); }
+  timerCancel(id: number): void { return this.timers.rpc.timerCancel(id); }
   timerSet(...args: Parameters<WorldTimersRpc["timerSet"]>): number { return this.timers.rpc.timerSet(...args); }
   timerClear(...args: Parameters<WorldTimersRpc["timerClear"]>): boolean { return this.timers.rpc.timerClear(...args); }
   timersSleeping(): ReturnType<WorldTimersRpc["timersSleeping"]> { return this.timers.rpc.timersSleeping(); }

@@ -16,12 +16,14 @@ describe("resuming on the world's current clock", () => {
   it("within: parked with a two-day deadline, the world advances one day, the work wins, and the request reads day +1", async () => {
     let instant = T;
     const tokens: Array<string> = [];
+    const owners = new Map<string, string>();
     const stub = {
-      countEnter: (owner: string) => void tokens.push(`+${owner}`),
-      countLeave: (owner: string) => void tokens.push(`-${owner}`),
+      countEnter: (owner: string) => { const id = `0.${owners.size}`; owners.set(id, owner); tokens.push(`+${owner}`); return id; },
+      countLeave: (id: string) => void tokens.push(`-${owners.get(id)}`),
+      countName: () => undefined,
       timerAdd: () => 1,
       timerWait: () => new Promise<never>(() => undefined),
-      timerCancel: () => true,
+      timerCancel: () => undefined,
       source: () => Promise.resolve({ kind: "stepped", instant }),
     };
     const at: EntryEnv = { WORLD: { idFromName: (name: string) => name, get: () => stub } as unknown as DurableObjectNamespace, DB: env.DB, ORTHO_CLOCKS: CLOCKS, ORTHO_ENVIRONMENT: "local" };

@@ -24,6 +24,6 @@ export type { ItemFields } from "#modules/visibility/types.js";
 export { CallTelemetry, Wire } from "#modules/wire/service.js";
 export type { ShownOperation, WireClasses } from "#modules/wire/types.js";
 export { BusyLive, BusyReporting } from "#modules/work/service.js";
-export { Busy, BusyOwner, WorldCount, type BusyShape } from "#modules/work/types.js";
+export { Busy, BusyBoxRef, WorldCount, makeBox, type BusyBox, type BusyShape, type Lease } from "#modules/work/types.js";
 export { Mount } from "#modules/mount/service.js";
 export { Mounted, type MountApi } from "#modules/mount/types.js";

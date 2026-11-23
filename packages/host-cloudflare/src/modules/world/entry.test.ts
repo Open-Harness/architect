@@ -6,15 +6,17 @@ import { describe, expect, it } from "vitest";
 import type { EntryEnv } from "./types.ts";
 import { WorldClock } from "#modules/clock/service.js";
 import { WorldTimers } from "#modules/timers/service.js";
-import { handover } from "./internal/work.ts";
+import { Busy, Timers } from "@orthograph/language-effect";
+import { work } from "./internal/work.ts";
 import { WorldEntry } from "./service.ts";
 
 const RealDate = globalThis.Date;
 const T = RealDate.parse("2027-01-10T09:00:00.000Z");
+const DAY = 86_400_000;
 const CLOCKS = JSON.stringify({ local: { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" } });
 
 /** A world namespace whose Durable Object only says the instant: what the entry looks up. */
-const keeper = (instant: number) => ({ source: () => Promise.resolve({ kind: "stepped", instant }), begin: () => Promise.resolve({ kind: "stepped", instant }), countLeave: () => undefined });
+const keeper = (instant: number) => ({ source: () => Promise.resolve({ kind: "stepped", instant }), begin: () => Promise.resolve({ source: { kind: "stepped", instant }, token: "0.0" }), countLeave: () => undefined });
 const keeping = (instant: number): DurableObjectNamespace => ({ idFromName: (name: string) => name, get: () => keeper(instant) }) as unknown as DurableObjectNamespace;
 
 const stepped: EntryEnv = { WORLD: keeping(T), DB: env.DB, ORTHO_CLOCKS: CLOCKS, ORTHO_ENVIRONMENT: "local" };
@@ -62,72 +64,107 @@ describe("a stepped world", () => {
   });
 });
 
-describe("a request is counted from the moment it arrives", () => {
-  it("holds a token for the entry (entry:<path>) until the work hands it over or the request ends, so an advance cannot pass it", async () => {
-    await runInDurableObject(env.WORLD.get(env.WORLD.idFromName("entry-counted")), async (_instance, state) => {
-      const clock = WorldClock.state(state.storage.sql, { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" });
-      const timers = WorldTimers.state({ sql: state.storage.sql, clock, env: { ORTHO_QUIET_MS: "100" }, changed: () => undefined });
-      const stub = {
-        source: () => Promise.resolve(clock.source()),
-        begin: (owner: string) => { timers.rpc.countEnter(owner); return Promise.resolve(clock.source()); },
-        countLeave: (owner: string) => timers.rpc.countLeave(owner),
-      };
-      const world = { idFromName: (name: string) => name, get: () => stub } as unknown as DurableObjectNamespace;
-      const at = { ...stepped, WORLD: world };
+/** The world's Durable Object as the Worker sees it, over a real clock, count and table. */
+const stubOf = (clock: ReturnType<typeof WorldClock.state>, timers: ReturnType<typeof WorldTimers.state>) => ({
+  source: () => Promise.resolve(clock.source()),
+  begin: (owner: string) => Promise.resolve({ source: clock.source(), token: timers.rpc.countEnter(owner) }),
+  countEnter: (owner: string) => timers.rpc.countEnter(owner),
+  countLeave: (id: string) => timers.rpc.countLeave(id),
+  countName: (id: string, owner: string) => timers.rpc.countName(id, owner),
+  timerAdd: (...args: Parameters<typeof timers.rpc.timerAdd>) => timers.rpc.timerAdd(...args),
+  timerWait: (id: number) => timers.rpc.timerWait(id),
+  timerCancel: (id: number) => timers.rpc.timerCancel(id),
+});
+const worldOf = async <A>(name: string, use: (stub: ReturnType<typeof stubOf>, timers: ReturnType<typeof WorldTimers.state>, clock: ReturnType<typeof WorldClock.state>, at: EntryEnv) => Promise<A>) =>
+  runInDurableObject(env.WORLD.get(env.WORLD.idFromName(name)), async (_instance, state) => {
+    const clock = WorldClock.state(state.storage.sql, { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" });
+    const timers = WorldTimers.state({ sql: state.storage.sql, clock, env: { ORTHO_QUIET_MS: "100" }, changed: () => undefined });
+    const stub = stubOf(clock, timers);
+    return use(stub, timers, clock, { ...stepped, WORLD: { idFromName: (n: string) => n, get: () => stub } as unknown as DurableObjectNamespace });
+  });
+const pause = (ms = 10) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
+
+describe("a request holds one token for its whole life", () => {
+  it("is counted from arrival, through its work, the gaps between attempts and a sleep that lends it out, until the response ends", async () => {
+    await worldOf("entry-counted", async (_stub, timers, clock, at) => {
       const gates: Array<() => void> = [];
       const wait = () => new Promise<void>((resolve) => { gates.push(resolve); });
+      const release = async () => { gates.shift()!(); await pause(); };
+      let wokeAt = 0;
       const entry = WorldEntry.entry<EntryEnv>({
         fetch: async (request) => {
           await wait();
-          // The work takes its own token, then the entry's is handed over (what `Busy` does on its first token).
           if (new URL(request.url).pathname === "/probe/spin") {
-            timers.rpc.countEnter("probe.spin");
-            const held = WorldClock.release();
-            if (held !== undefined) timers.rpc.countLeave(held);
-            await wait();
-            timers.rpc.countLeave("probe.spin");
+            const program = Effect.gen(function* () {
+              const busy = yield* Busy;
+              const sleeping = yield* Timers;
+              // Attempt one; then the gap in which a retry's authorization reads run; then the retry, which sleeps.
+              yield* busy.as("probe.spin").counted(Effect.promise(() => wait()));
+              yield* Effect.promise(() => wait());
+              yield* busy.as("probe.spin").counted(sleeping.sleep("probe.spin", "1 day"));
+              wokeAt = Date.now();
+            }).pipe(Effect.provide(work(at)));
+            await Effect.runPromise(program);
           }
           return new Response("ok");
         },
       });
-      const settle = () => Effect.runPromise(Effect.result(timers.controller.settle(() => ({ ok: true, target: T + 1000 }))));
+      const settle = (to: number) => Effect.runPromise(Effect.result(timers.controller.settle(() => ({ ok: true, target: to }))));
 
-      // A read, held before it does anything: nothing but the entry knows it is in flight.
+      // A read held before it does anything: only the entry's token says it is in flight.
       const read = entry.fetch!(new Request("http://app/portal/x"), at, undefined as never);
-      await Promise.resolve();
-      await new Promise<void>((resolve) => { setTimeout(resolve, 10); });
+      await pause();
       expect(timers.held()).toEqual(["entry:/portal/x"]);
-      expect(await settle()).toMatchObject({ _tag: "Failure", failure: { _tag: "NeverQuiet", busy: ["entry:/portal/x"] } });
-      gates.shift()!();
+      expect(await settle(T + 1000)).toMatchObject({ _tag: "Failure", failure: { _tag: "NeverQuiet", busy: ["entry:/portal/x"] } });
+      await release();
       await read;
       expect(timers.held()).toEqual([]);
 
-      // An operation: its own token takes over from the entry's, and then the entry is not what keeps the world busy.
+      // An operation: the same token, named by the operation, through the attempt and the gap after it.
       const spin = entry.fetch!(new Request("http://app/probe/spin"), at, undefined as never);
-      await new Promise<void>((resolve) => { setTimeout(resolve, 10); });
+      await pause();
       expect(timers.held()).toEqual(["entry:/probe/spin"]);
-      gates.shift()!();
-      await new Promise<void>((resolve) => { setTimeout(resolve, 10); });
+      await release();
       expect(timers.held()).toEqual(["probe.spin"]);
-      gates.shift()!();
-      await spin;
+      await release();
+      expect(timers.held()).toEqual(["probe.spin"]);
+      await release();
+      // Parked in a sleep: the token is lent out, the world may move, and the request wakes on the instant it moved to.
       expect(timers.held()).toEqual([]);
-      expect(await settle()).toMatchObject({ _tag: "Success" });
+      expect(await settle(T + DAY)).toMatchObject({ _tag: "Success", success: { now: new RealDate(T + DAY).toISOString() } });
+      await spin;
+      expect(wokeAt).toBe(T + DAY);
+      expect(clock.now()).toBe(T + DAY);
+      expect(timers.held()).toEqual([]);
+    });
+  });
+
+  it("a spawn has a token of its own, which outlives the response", async () => {
+    await worldOf("entry-spawn", async (_stub, timers, _clock, at) => {
+      let finish: () => void = () => undefined;
+      const background = new Promise<void>((resolve) => { finish = resolve; });
+      const entry = WorldEntry.entry<EntryEnv>({
+        fetch: async () => {
+          await Effect.runPromise(Effect.gen(function* () {
+            const busy = yield* Busy;
+            yield* busy.as("agents/run/run_1").spawn(Effect.promise(() => background));
+          }).pipe(Effect.provide(work(at))));
+          return new Response("accepted");
+        },
+      });
+      await entry.fetch!(new Request("http://app/agents/start"), at, undefined as never);
+      // The response is out; the request's own token has gone back; the detached work still holds its own.
+      expect(timers.held()).toEqual(["agents/run/run_1"]);
+      finish();
+      await pause();
+      expect(timers.held()).toEqual([]);
     });
   });
 });
 
 describe("an entry whose callback throws", () => {
   it("gives its token back on every path, so the world stays quiet", async () => {
-    await runInDurableObject(env.WORLD.get(env.WORLD.idFromName("entry-throws")), async (_instance, state) => {
-      const clock = WorldClock.state(state.storage.sql, { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" });
-      const timers = WorldTimers.state({ sql: state.storage.sql, clock, env: { ORTHO_QUIET_MS: "100" }, changed: () => undefined });
-      const stub = {
-        source: () => Promise.resolve(clock.source()),
-        begin: (owner: string) => { timers.rpc.countEnter(owner); return Promise.resolve(clock.source()); },
-        countLeave: (owner: string) => timers.rpc.countLeave(owner),
-      };
-      const at = { ...stepped, WORLD: { idFromName: (name: string) => name, get: () => stub } as unknown as DurableObjectNamespace };
+    await worldOf("entry-throws", async (_stub, timers, _clock, at) => {
       const boom = (): never => { throw new Error("boom"); };
       const entry = WorldEntry.entry<EntryEnv>({ fetch: boom, scheduled: boom, queue: boom });
       await expect(entry.fetch!(new Request("http://app/x"), at, undefined as never)).rejects.toThrow("boom");
@@ -138,22 +175,5 @@ describe("an entry whose callback throws", () => {
       expect(timers.held()).toEqual([]);
       expect(await Effect.runPromise(Effect.result(timers.controller.settle(() => ({ ok: true, target: T + 1000 }))))).toMatchObject({ _tag: "Success" });
     });
-  });
-});
-
-describe("the handover", () => {
-  it("takes the entry's token out of its cell and gives it back to the world as one step, even when interrupted at once", async () => {
-    const left: Array<string> = [];
-    const stub = { ...keeper(T), countLeave: (owner: string) => { left.push(owner); } };
-    const at = { ...stepped, WORLD: { idFromName: (name: string) => name, get: () => stub } as unknown as DurableObjectNamespace };
-    await WorldClock.entered({ kind: "stepped", instant: T }, "entry:/probe/spin", async () => {
-      const fiber = Effect.runFork(handover(at));
-      await Effect.runPromise(Effect.sync(() => fiber.interruptUnsafe()));
-      await new Promise<void>((resolve) => { setTimeout(resolve, 20); });
-      expect(left).toEqual(["entry:/probe/spin"]);
-      expect(WorldClock.release()).toBeUndefined();
-    }, (owner) => Promise.resolve(void left.push(owner)));
-    // Given back once: the entry's own cleanup finds nothing left to give.
-    expect(left).toEqual(["entry:/probe/spin"]);
   });
 });

@@ -30,11 +30,11 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
 | Piece | Where |
 |---|---|
 | The table: one SQLite table in the world's Durable Object, `timers (id, at, owner, name, holder, wake)`; sleeps and durable timers in it | `host-cloudflare/src/modules/timers/internal/table.ts` |
-| The count: tokens by owner, quiet on two reads that agree, `NeverQuiet` naming each owner | `.../timers/internal/count.ts` |
+| The count: tokens with identity (an id carrying the generation), quiet on two reads that agree, `NeverQuiet` naming each owner | `.../timers/internal/count.ts` |
 | The controller: the walk from timer to timer, one move at a time | `.../timers/internal/controller.ts` |
 | The door: `advance` and `move-to` settle through the controller; `GET /_world/clock` lists the table | `host-cloudflare/src/modules/clock/internal/door.ts` |
 | The Worker's side: `WorldEntry.work(env, wakes)`, a layer of `Busy`, `Timers` and `DurableTimers` over the Durable Object's RPC | `host-cloudflare/src/modules/world/internal/work.ts` |
-| `Busy.as(owner)`, `held`, `adopt`; `BusyReporting` and `WorldCount` | `language-effect/src/modules/work` |
+| `Busy.as(owner)`, `held`, `lend`; `BusyBox`; `BusyReporting` and `WorldCount` | `language-effect/src/modules/work` |
 | `TimersWorld` and the `WorldTable` port | `language-effect/src/modules/timers/internal/world.ts` |
 | `s.clock.advance`, `.moveTo` and `.now` run in journeys | `prove/src/modules/world-clock`, `prove/src/modules/journeys/service.ts`, `orthograph` journeys |
 | The generated Worker, for a blueprint with a stepped or scaled clock only | `projections/src/modules/server/internal/server.ts` |
@@ -45,27 +45,30 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
    a sleep (a row with no wake) and a durable timer (a row with a wake as JSON), so they share one id sequence and one order
    (`M8-timers-shape` rule 2). A sleeping row belongs to a process that is gone when the object starts afresh, so
    the object drops sleeping rows when it starts; a durable row stays. The warm reset (`/_world/reset`) empties the table.
-2. **A sleep is a row and a pending RPC.** `Timers.sleep` adds the row (`timerAdd`), gives its `Busy` token back, and calls
-   `timerWait(id)` on the world, which stays pending until the world fires the row. The row is published before the token goes
-   back, so the world never sees the process idle with no row. When the controller fires it, the world counts the sleeper
-   (under the owner of the token it gave back, `holder`) **before** it resolves the pending call, so the world is never quiet
-   between the firing and the wake; the Worker then `adopt`s a token locally without reporting it again. An interrupted
-   sleep takes its row back (`timerCancel`): if it was still there the sleeper takes its token again, and if it had fired the
-   world has already counted it. `within` is the same pair. `Timers.at` is in-process only, as in the shape: its row is the
-   world's and its closure runs, counted, in the process that set it.
-3. **How busy is counted across processes: each process reports to the world's count over RPC, by owner, from the moment a
-   request arrives.** `BusyReporting` does what `BusyLive` did and also tells the world each token it takes and gives back
-   (`countEnter(owner)`, `countLeave(owner)`). Every wrapped entry (the Worker's `fetch`, `scheduled` and `queue`, a
-   Workflows step, an actor's RPC) takes a token under `entry:<path>` (`entry:/portal/x`, `entry:scheduled`) in the same
-   RPC that asks for the world's instant (`begin`), and gives it back when the entry ends. So a read, an MCP read, the portal,
-   a sign-in, a session request and an operation before its handler are all in flight as far as the world knows. The work's
-   own token takes over: the first token a request's work takes (`Busy.as(name).counted`; a handler's owner is its operation's
-   name) hands the entry's token over (`WorldCount.handover`, which takes it out of the request's cell and gives it back to the
-   world, after the new token is counted), so a `sleep`, which gives back the work's token, leaves nothing counted. `counted`
-   and `spawn` put the owner in a fiber reference (`BusyOwner`), so a sleep gives back that same token whatever owner its
-   own argument names. In a real world nobody waits for quiet, so the Worker reports nothing and the world counts nothing.
-   Tested in workerd (`world/entry.test.ts`): a request held before it does anything makes the controller fail as
-   `NeverQuiet` naming `entry:/portal/x`; one that has handed over is named by its operation.
+2. **A sleep is a row, a lent token and a pending RPC.** `Timers.sleep` adds the row (`timerAdd`), lends its token out (`Busy.lend`), and
+   calls `timerWait(id)` on the world, which stays pending until the world fires the row. The row is published before the token is lent,
+   so the world never sees the process idle with no row. When the controller fires the row, the world takes a token of its own for the
+   sleeper (`T_w`, named by the row's owner) **before** it resolves the pending call. The sleeper then takes its own token back
+   (`lease.reclaim`, an `enter`) and only then acknowledges (`timerCancel(id)`), which releases `T_w`: the two overlap, so the world is
+   never quiet between the firing and the wake. The same two steps, in the same order, are what an interrupted sleep runs (it first
+   reclaims, then cancels: a row not yet fired is taken back, one that fired has its `T_w` released), so a lost reply cannot lose a
+   token. `within` is the same pair. `Timers.at` is in-process only, as in the shape: its row is the world's, its waiter is a detached
+   fiber, and its work runs under a token of its own (a `spawn`) taken before `T_w` is released.
+3. **How busy is counted across processes: one token per request, with an identity, from its entry to its end.** Every wrapped entry (the
+   Worker's `fetch`, `scheduled` and `queue`, a Workflows step, an actor's RPC) asks the world for a token in the same RPC that fetches
+   the world's instant (`begin`), named `entry:<path>`, and holds it in the request's box (`BusyBox`, in the request's `AsyncLocalStorage`
+   cell) until the entry's promise settles, however it settles. Work inside the request (`Busy.counted`) runs under that same box: a
+   handler's retries, its authorization reads and its commit are inside the one token; the operation renames it to its own name the
+   first time it counts (`countName`), so `NeverQuiet` says `probe.spin`. A token is a string id `<generation>.<n>` the world made, and
+   `leave(id)` releases exactly that token: an id of an older generation, or one already released, does nothing. The world's count keeps
+   owner names only to say who is busy. A **sleep lends** the box's token out and takes a new one back (call 2, and `resumed`: every
+   resume also takes the world's current clock source); the token goes back only when every fiber of the box is lent (`lent ===
+   holders`), so two fibers of one request cannot lend it out from under a third that is running. A **`spawn` gets a box of its own**,
+   its token taken before `spawn` returns and so before the parent's can end. In a real world nobody waits for quiet, so the Worker takes
+   no tokens and the world counts nothing. Tested in workerd (`world/entry.test.ts`), with the real count, table and controller behind a
+   stub of the world's Durable Object: a read held before it does anything makes the controller fail as `NeverQuiet` naming
+   `entry:/portal/x`; an operation holds one token through its attempt, the gap after it and its sleep, wakes on the instant the world
+   moved to, and ends quiet; a spawn's token outlives the response.
 4. **The firing order is the table's: by due instant, then the order set (the id), then owner.** The id is unique, so the owner
    only breaks a tie that cannot happen; it is in the query (`ORDER BY at, id, owner`) for a table that someday has two
    writers. A timer already past due fires where the world stands: the clock never goes back. Rows set while the world fires
@@ -117,106 +120,93 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     instead of leaving its request hanging. A `NeverQuiet` after the first quiet wait leaves the clock where the walk had
     reached (call 5), and says so in `now`: it is recorded, not undone.
 
-12. **Two classes, fixed whole** (review of #626: each had been fixed one instance at a time). Every place was traced; the list is the proof.
+12. **The model, its invariants, and the proof by path** (review of #626: the same faults kept coming back one instance at a time, so the
+    model was changed instead of patched). The model is: a token has an identity (an id that carries its generation); a request holds
+    exactly one for its whole life; a sleep lends it out and takes it back through one helper; a spawn has its own; a timer row has one
+    owner through each state; every wait the controller does is bounded. It guarantees one thing:
 
-    *Class A: an awaited call that creates world-side state, then local work that owns it.* An interrupt between the two leaves the
-    world holding something nobody owns, and the world is never quiet again. The rule: the call and the step that owns its result
-    are one uninterruptible step, and whatever waits afterwards gives the state up itself if it is interrupted.
+    > **The world reads quiet only when no request, wake or spawn of the current generation is running.**
 
-    | Place | Verdict | How |
-    |---|---|---|
-    | `Timers.at`: `table.add`, then the fiber that waits for the row | **was open** | add and fork are one uninterruptible step; the waiter cancels its row on interrupt, or adopts and gives back the token the world counted (`timers/world.test.ts`) |
-    | `Busy.enter`, `Busy.leave` (bare): local count, then `world.enter`/`world.leave` | **was open** | each is one uninterruptible step, so the process and the world never disagree (`work/world-count.test.ts`, both) |
-    | `Busy.counted`, `Busy.spawn`: `take` (RPC), then the work's cleanup | fixed in the last round | one `uninterruptibleMask`, the detached fiber forked inside it |
-    | `Timers.sleep`, `Timers.within`: `table.add`, `leave`, the wait | already safe | the whole body is inside `uninterruptibleMask`; only the wait is restored, and it gives the row up on interrupt |
-    | handover (`work.ts`): take the token out of the request's cell, then tell the world | **was open** | one uninterruptible step (`handover(env)`; `world/entry.test.ts`) |
-    | `begin` then `WorldClock.entered` (the entry) | already safe | plain promises, no interruption; a throw is a rejection and the token is given back (last round) |
-    | `fireOne` in the world: take the row out, count the sleeper or the wake, then run it | **was open** | one `uninterruptibleMask`; a sleeper is counted and its gate opened in one synchronous step; a wake that is interrupted or fails puts its row back and gives its count back (`timers.test.ts`) |
-    | `DurableTimers.set`/`clear`, `Timers.pending`, `WorldTable.cancel`/`wait` | no gap | nothing local owns the result |
+    From these invariants, which the code is designed to:
 
-    *Class B: reporting settled without rechecking.* Settled means quiet and nothing due, together, on one read.
+    1. **I1.** Every piece of work that can read the clock (request, retry, authorization, commit, wake, spawn, alarm sweep) is counted from
+       start to end under its own token.
+    2. **I2.** A reset fences by generation. Tokens and rows from an earlier generation can never release, fire or settle anything in the new one.
+    3. **I3.** A timer row has exactly one owner through each state (pending, firing, gone or pending again), and every transition is a single SQL step.
+    4. **I4.** Every wait the controller does is bounded in real time, and when the bound is hit, nothing is lost and nothing is still counted.
+    5. **I5.** Resuming after a lent token always reads the world's current clock source.
 
-    | Place | Verdict | How |
-    |---|---|---|
-    | the controller's last quiet wait (`advance`, `move-to`) | **was open** | one loop: find what is due at the target, fire it, or move to the target; wait until quiet; and go round until a quiet wait ends with nothing due and the clock at the target (`timers.test.ts`: a zero-length sleep slipped in during the final wait is fired) |
-    | the first quiet wait, and the loop after each firing | already rechecked | the loop reads the table after every wait |
-    | the real world's alarm (`fireDue`) | **was open** | it fires until nothing is due, so a wake that set an already-due timer is not left to a reschedule (`timers.test.ts`) |
-    | the warm reset | **was open** | it also forgets the count, so a token nobody will give back cannot hold up the next move (`timers.test.ts`) |
-    | a move refused at planning | no gap | the plan is inside the lock and fails before anything moves |
+    **Why the guarantee follows.** Quiet is "no token of the current generation is held, on two reads". By I1 a running request, wake or
+    spawn holds a token for as long as it runs, so while one runs the count is not empty. By I2 a token of an older generation is not in the
+    count at all, and its id cannot release a current one, so a stale release can neither make the world look quiet nor spoil a running
+    request's token. By I3 and I4 a timer is either pending (visible to the walk, so the move is not settled), firing (held by a token for
+    its owner), or gone because its wake returned or a replacement stands: none is lost and none is double-fired in one generation. By I5 what
+    a request reads after being parked is the instant the world is at, so work that resumes does not act on a stale clock. Each path:
 
-    *Bounded:* a timer that sets itself again at the instant it fired at would keep the walk going for ever, because each quiet wait
-    ends. One move fires at most `ORTHO_FIRE_LIMIT` timers at one instant (10 000 when unset, beside `ORTHO_QUIET_MS`). Past it
-    the move fails as `NeverQuiet`, `busy` naming each owner still registering timers due then, and the clock stands where the walk
-    reached, as call 11 says (`settled.test.ts`).
+    | Path | Why quiet cannot be read while it runs |
+    |---|---|
+    | A request (`fetch`, `scheduled`, `queue`, a step, an RPC) | the entry's `begin` takes the token before the callback runs; it is released only when the entry's promise settles (a throw is a rejection, so the cleanup is always attached), or lent by a sleep that has every fiber lent |
+    | A handler's retry, authorization reads, answer check, move, invariants, `commit` | all inside the request's pinned token; `Busy.counted` adds fibers to the box and never releases the world's token while the box is pinned |
+    | A sleep, `within` | row published, then token lent; a fired row has the world's own token `T_w` until the sleeper has taken its own and acknowledged |
+    | `Timers.at`'s work | the waiter's `T_w`, then a spawn's own token taken before `T_w` is released |
+    | A `spawn` | own box, own token, taken before it returns |
+    | A durable wake | `take` (pending to firing) and `count.enter(owner)` in one uninterruptible step; released after the row is deleted or restored, or after the wake is abandoned at the bound |
+    | The real world's alarm sweep | a real world has no controller and nobody waits for it to be quiet, so it counts nothing (the alarm fires rows by the wall clock and nothing else can be waiting on quiet) |
+    | The controller's walk | a move waits quiet, fires, waits quiet, and goes round until a quiet wait ends with nothing due and the clock at the target |
+    | A reset | the generation moves on: tokens, rows, waiters and the count are cleared in one step; every id and row id of the old generation is then a no-op |
 
-    *Class C: a loop or repeat whose input was captured once.* An effect built eagerly inside a loop carries the value it saw when it was
-    built, so the loop's check and the loop's action disagree. Every loop and repeat was traced.
+    **Every site, against each invariant.** ✓ holds, with how; n/a does not apply there.
 
-    | Place | Verdict | How |
-    |---|---|---|
-    | the real world's alarm sweep (`fireDue`): `table.fire(wall(), ...)` built once, checked against a fresh wall time | **was open** (the alarm never returned) | `Effect.suspend`, so each sweep reads its own cutoff (`settled.test.ts`: a row that falls due during a wake) |
-    | the controller's walk | already per iteration | `table.fire(at, clock.source())` is built inside the loop body, from this turn's `at` and source; a row a wake sets that falls due on the way is fired in the same move (`settled.test.ts`) |
-    | `table.fire`'s own loop | already per row | each row is looked up and taken out as its own step; rows that fall due during the batch belong to the caller's next turn |
-    | `count.quiet`'s `settled` (re-read after a yield) | already per turn | its body reads the count when it runs |
-    | the Worker's RPC wrappers (`call`) | already lazy | every call is a thunk run when the effect runs, including the ones stored as values (`sleeping`, `durable`) |
+    | Site | I1 counted | I2 generation | I3 one owner | I4 bounded | I5 clock |
+    |---|---|---|---|---|---|
+    | entry: `fetch`, `scheduled`, `queue` (`entry`) | ✓ `begin` token, box pinned | ✓ id of its generation | n/a | n/a | ✓ source comes with the token |
+    | entry: `within`, `withinNow` (steps, RPC) | ✓ same | ✓ | n/a | n/a | ✓ |
+    | entry throws or rejects | ✓ released in `finally`, whichever way | ✓ stale id is a no-op | n/a | n/a | n/a |
+    | handler attempt, retry, authorization, commit | ✓ one pinned token for all | ✓ | n/a | n/a | ✓ one source per request, replaced only by `resumed` |
+    | operation names its token | ✓ `countName` | ✓ ignored if stale | n/a | n/a | n/a |
+    | `Busy.counted` / `enter` / `leave` | ✓ uninterruptible take and give | ✓ | n/a | n/a | n/a |
+    | `spawn` | ✓ own token before return | ✓ | n/a | n/a | n/a |
+    | sleep: add, lend, wait, reclaim, cancel | ✓ lent only when all fibers lent; `T_w` overlaps | ✓ `T_w` and ids fenced | ✓ sleeping row removed in one step | n/a | ✓ `wait` and `cancel` both `resumed` |
+    | sleep interrupted | ✓ reclaim then cancel | ✓ | ✓ | n/a | ✓ |
+    | `within`, work wins or deadline wins | ✓ same pair | ✓ | ✓ | n/a | ✓ cancel is `resumed` |
+    | `Timers.at` (add, fork, wait, spawn, cancel) | ✓ add and fork one step; spawn own token | ✓ | ✓ | n/a | ✓ |
+    | durable `set`, `clear`, replace | n/a | ✓ reset deletes rows | ✓ replacement is a new pending row; clear takes pending only | n/a | n/a |
+    | durable wake: success | ✓ token across `take` to `done` | ✓ `done` by id, a no-op after reset | ✓ firing to gone, one DELETE | ✓ bounded | ✓ wake runs in `inTime`, fresh source |
+    | durable wake: fails | ✓ token given back | ✓ | ✓ firing to pending (or gone if replaced), one statement each | ✓ | ✓ |
+    | durable wake: never acknowledges | ✓ released at the bound | ✓ | ✓ restored to pending, then fails `NeverQuiet` naming the owner | ✓ `ORTHO_QUIET_MS`, wake interrupted without waiting for it | n/a |
+    | durable wake: interrupted | ✓ released | ✓ | ✓ restored | ✓ | n/a |
+    | durable wake: the world dies | n/a (the world's memory is gone) | ✓ new object, new count | ✓ `firing` rows become pending on build; replaced ones are dropped; newest wins | n/a | n/a |
+    | controller: first quiet wait, after each firing, final wait | n/a | ✓ a reset ends waits | n/a | ✓ `count.quiet(limit)` | n/a |
+    | controller: second move while the first runs | n/a | n/a | n/a | ✓ the first is bounded, so the lock frees | n/a |
+    | controller: self re-registering timer | n/a | n/a | n/a | ✓ `ORTHO_FIRE_LIMIT` per instant | n/a |
+    | alarm sweep (real world) | n/a (counts nothing, as above) | n/a | ✓ fires until nothing is due, one cutoff per sweep (`Effect.suspend`) | ✓ wakes bounded by the same limit | n/a |
+    | stepped or scaled alarm | n/a | n/a | n/a | n/a | n/a: there is none |
+    | warm reset | ✓ count cleared, waiters released | ✓ generation + 1 | ✓ rows deleted | n/a | n/a |
+    | reset while a request is in flight | ✓ its later release is ignored (stale id) | ✓ | n/a | n/a | ✓ its next resume reads the new clock |
+    | instants and payloads into SQL | n/a | n/a | ✓ refused before SQL (finite, within a Date's range, JSON) | n/a | n/a |
 
-    *Class D: resuming without the world's current clock.* A request that gave up its token takes the world's source before it goes on.
-    One helper, `resumed(env)` (`world/internal/work.ts`): ask the world for its source and point this request's cell at it.
+    **What a violation would look like, and where it is tested.** I1: `world/entry.test.ts` (a request held before its handler, a retry's gap, a
+    spawn that outlives the response, a throwing callback), `work/world-count.test.ts` (the pinned token is never released between attempts; a
+    sleep lends it out and reclaims). I2: `timers/generation.test.ts` (a stale-generation `leave`), `timers/settled.test.ts` (a reset forgets the
+    count). I3: `timers/crash.test.ts` (a firing survives a rebuild; replacement wins; success leaves no record), `timers/settled.test.ts` (a wake
+    that clears its sibling; a replacement set during a failing wake). I4: `timers/settled.test.ts` (a wake that never acknowledges fails
+    `NeverQuiet` within the bound, its row recoverable and nothing counted; the lock frees; a self re-registering timer is bounded). I5:
+    `world/work.test.ts` (parked with a two-day deadline, the world advances a day, the request reads day +1), `world/entry.test.ts` (a sleeping request wakes on the instant the world moved to).
 
-    | Place | Verdict | How |
-    |---|---|---|
-    | `Timers.within`, the work wins the race: the deadline row is taken back and the token again | **was open** | `WorldTable.cancel` is `resumed` after the cancel, so every give-up path (`within`, an interrupted `sleep`, an interrupted `at`) resumes on the current clock (`world/work.test.ts`: parked with a two-day deadline, the world advances a day, the request reads day +1) |
-    | `Timers.within`, the deadline wins; `Timers.sleep`; `Timers.at`'s waiter | already refreshed | `wait` points the request at the source the world fired at |
-    | the handover | no gap | it gives a token away and never resumes work |
-    | the wake entry in the world (`inTime` per wake) | already fresh | the source is read when the wake runs |
-    | an entry's first read (`begin`) | fresh by construction | the source comes with the token |
-    | a real world | none | there is no source to take |
+    **The classes the earlier rounds fixed, now covered by the invariants above** (kept for the record): an awaited call that creates
+    world-side state and the step that owns it are one uninterruptible step (I1: `Timers.at`, bare `enter`/`leave`, the entry's take,
+    `fireOne`); settled means quiet and nothing due on one read, and a loop reads its input afresh each turn (I4: the walk, the alarm
+    sweep, the reset); a resume takes the world's current clock (I5); a firing survives a crash (I3); nothing that is not an instant, or
+    JSON, reaches the table (I3).
 
-    *Class E: a firing that is not crash-safe* (`M8-timers-shape` rule 3, at least once). A durable row is no longer deleted at fire time.
-    `firing` is a column: the same SQL step that takes a row out of the pending set marks it, and it is deleted only once its wake has
-    returned. A wake that fails or is interrupted puts it back to pending, unless a pending row now has the same (owner, name), when the
-    replacement stands alone. When the table is built, any `firing` row left over is pending again, due as it was, unless there is a
-    replacement (of several firing rows for one key the newest wins); a real world also sets its alarm for it. Tested in
-    `timers/crash.test.ts`: a row firing mid-wake survives the table being built again and fires again; a replacement set during the wake wins;
-    a successful wake leaves no record; a failed one is pending again.
+    **Self-review** found and fixed in earlier rounds: a `timerWait` on a forgotten row hung; a cancelled row left its wait unsettled; a
+    stepped world's lifetime alarm could fire rows against the wall clock (`fireDue` is a real world's only); a stepped world re-armed the
+    alarm for nothing (`changed` is a real world's only).
 
-    | Place | Verdict | How |
-    |---|---|---|
-    | a durable row's firing | **was open** | `firing` column, deleted on return, recovered on build |
-    | a durable row a wake clears or replaces mid-firing | covered | `clear` takes pending rows only; `set` sees only pending ones, so a replacement is a new pending row |
-    | a sleeper's row | **not durable, no record** | a sleep is an in-memory wait that lives and dies with the process that parked it, and its rows are dropped when the object starts, so a firing in progress needs no record |
-    | `TimerWakes` with no route | nothing is taken | the row stays pending and the step fails, naming it |
-
-    *Class F: a value that crosses into SQL or the clock unchecked.* Nothing that cannot be an instant (not finite, or beyond a Date's
-    +/-8.64e15 ms) is stored. Refused as a defect before it leaves the process (`language-effect`: a sleep's computed instant,
-    `within`'s deadline, `Timers.at`, `DurableTimers.set`) and again in the world's table (`add`, `set`: the trust boundary); a durable
-    payload that is not JSON (a bigint, a cycle) is refused the same way.
-
-    | Place | Verdict | How |
-    |---|---|---|
-    | a sleep or deadline: `now + span` (`Duration.infinity`) | **was open** | refused before `table.add` (`timers/world.test.ts`) and in `add` (`timers/crash.test.ts`) |
-    | `Timers.at`, `DurableTimers.set` with `NaN` or `Infinity` | **was open** | the same |
-    | a durable payload | **was open** | `JSON.stringify` failing is a defect, nothing stored |
-    | `GET /_world/clock`, the walk: `iso(row.at)` | follows | no row can hold what `Date` cannot |
-    | the door's spans and instants (`advance`, `move-to`) | already refused | `plan` checks finite and range; tested with `99999999999999 months`, `years` and `days` (`clock/clock.test.ts`) |
-    | `ORTHO_QUIET_MS`, `ORTHO_FIRE_LIMIT` | already checked | a positive finite number, or the default |
-    | owner, name, holder | strings by type | nothing to range-check |
-
-    **Self-review of the whole diff** (adversarial, against `origin/goal/time`): tokens, rows, gates, clock sources, the alarm. Found and
-    fixed in this round:
-    - a `timerWait` on a row the world had forgotten (a reset) or no longer knew hung for ever: it now wakes uncounted;
-    - a row taken back by `cancel` left its pending `timerWait` promise unsettled in the world: it is now let go;
-    - a stepped or scaled world's lifetime alarm could fall through to `fireDue` and fire rows against the wall clock: `fireDue` is a real world's only;
-    - every `timerAdd` and `timerSet` in a stepped world re-armed the lifetime alarm for nothing: `changed` is a real world's only.
-
-    Checked and sound: the entry token (taken with `begin`, handed over once, given back on every path including a throw); a handler's token
-    across retries (each attempt is its own counted step); the order of `enter` before `handover` (the world is never at zero between);
-    `reset` while requests are in flight (their later `leave` of an owner the world forgot is ignored); a failed wake and a replaced row;
-    the semaphore around moves (a second move plans after the first ends); the fire bound; the alarm's retry after a failed wake; the
-    Date cell (one per request, replaced only by that request's own resume); `Busy.spawn`'s detached fiber (forked inside the uninterruptible step).
-    **Known limit, not fixed:** if a Worker isolate is killed while a request is parked on a row, nobody cancels it. When the row fires the
-    world counts its holder and nobody gives the token back, so the world is `NeverQuiet` until it is reset or ends. The world cannot tell a
-    parked request from a dead one; a lease on each parked row would, and is not built.
+    **Known limit, not fixed:** if a Worker isolate is killed while a request is parked on a row (or after `begin`), nobody gives its token
+    back. A parked sleeper's `T_w` is released by its acknowledgement, which never comes, and an entry's token by its end. The world cannot
+    tell a parked or running request from a dead one; the world is `NeverQuiet` until it is reset or ends. A lease on each token would
+    tell, and is not built.
 
 ## Evidence
 

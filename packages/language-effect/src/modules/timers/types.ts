@@ -71,17 +71,20 @@ export class TimerWakes extends Context.Service<TimerWakes, {
  */
 export class WorldTable extends Context.Service<WorldTable, {
   /**
-   * Park a row for a sleeper: `at` on the world's clock. `holder` is whom the sleeper's token is counted for, which the
-   * world counts again when it fires the row. Returns its id.
+   * Park a row for a sleeper: `at` on the world's clock. `holder` names the token the world holds for the sleeper once the
+   * row fires. Returns its id.
    */
   readonly add: (owner: string, name: string, at: number, holder: string) => Effect.Effect<number>;
   /**
-   * Resolve when the world fires the row. The world counts the sleeper before it resolves, and the host has put this
-   * request on the world's instant at the firing, so the caller adopts a token and reads the instant it woke at.
+   * Resolve when the world fires the row. The world holds a token of its own for the sleeper from the firing, and the host has
+   * put this request on the world's instant at the firing, so the caller reads the instant it woke at.
    */
   readonly wait: (id: number) => Effect.Effect<void>;
-  /** Take the row back before it fired; false when it already fired (and the sleeper is already counted). */
-  readonly cancel: (id: number) => Effect.Effect<boolean>;
+  /**
+   * The sleeper is back (it holds its own token again) or gave up: take the row back if it has not fired, and let go of the
+   * token the world held for it if it has. Idempotent; a row the world no longer knows is a no-op.
+   */
+  readonly cancel: (id: number) => Effect.Effect<void>;
   readonly sleeping: Effect.Effect<ReadonlyArray<Timer>>;
   readonly set: (at: number, owner: string, name: string, wake: Wake) => Effect.Effect<number>;
   readonly clear: (owner: string, name: string) => Effect.Effect<boolean>;

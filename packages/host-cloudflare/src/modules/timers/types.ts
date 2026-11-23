@@ -24,11 +24,16 @@ export interface TimerRow {
  * world counts the sleeper (`holder`) before it answers, with the source of the instant it fired at.
  */
 export interface WorldTimersRpc {
-  countEnter(owner: string): void;
-  countLeave(owner: string): void;
+  /** Take a token for `owner`: its id, which carries the generation and releases exactly that token. */
+  countEnter(owner: string): string;
+  /** Release a token by its id; one of an older generation, or one already released, does nothing. */
+  countLeave(id: string): void;
+  /** Name a token again: the operation names its request's token, which the entry named by its path. */
+  countName(id: string, owner: string): void;
   timerAdd(owner: string, name: string, at: number, holder: string): number;
   timerWait(id: number): Promise<ClockSource | undefined>;
-  timerCancel(id: number): boolean;
+  /** The sleeper is back or gave up: take the row back if it has not fired, release the token the world held for it. Idempotent. */
+  timerCancel(id: number): void;
   timerSet(at: number, owner: string, name: string, wake: Wake): number;
   timerClear(owner: string, name: string): boolean;
   timersSleeping(): ReadonlyArray<TimerRow>;

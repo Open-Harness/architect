@@ -8,32 +8,40 @@ import { BusyReporting } from "#modules/work/service.js";
 import { DurableTimers, TimerWakes, Timers, WorldTable, type DurableTimer } from "./types.ts";
 import { TimersWorld } from "./service.ts";
 
-interface Row { readonly id: number; readonly at: number; readonly owner: string; readonly name: string; readonly holder: string; readonly woken: Deferred.Deferred<void> }
+interface Row { readonly id: number; readonly at: number; readonly owner: string; readonly name: string; readonly holder: string; readonly woken: Deferred.Deferred<void>; token?: string }
 
-/** The world's side, in memory: a table, the world's count of tokens by owner, and the way it fires a row. */
+/** The world's side, in memory: a table, the world's count of tokens by id, and the way it fires a row (holding a token for the sleeper until it acknowledges). */
 const makeWorld = (slowAdd?: Deferred.Deferred<void>) => {
   const rows: Array<Row> = [];
   const durable: Array<DurableTimer> = [];
-  const held = new Map<string, number>();
+  const tokens = new Map<string, string>();
   const events: Array<string> = [];
   let next = 1;
-  const bump = (owner: string, by: number, who = "process") => {
-    held.set(owner, (held.get(owner) ?? 0) + by);
-    events.push(`${who}${by > 0 ? "+" : "-"}${owner}`);
+  let ids = 0;
+  const enter = (owner: string, who = "") => {
+    const id = `0.${ids++}`;
+    tokens.set(id, owner);
+    events.push(`${who}+${owner}`);
+    return id;
   };
-  const count = Layer.succeed(WorldCount, WorldCount.of({ enter: (o) => Effect.sync(() => bump(o, 1)), leave: (o) => Effect.sync(() => bump(o, -1)) }));
+  const leave = (id: string, who = "") => {
+    const owner = tokens.get(id);
+    if (tokens.delete(id)) events.push(`${who}-${owner}`);
+  };
+  const count = Layer.succeed(WorldCount, WorldCount.of({ enter: (o) => Effect.sync(() => enter(o)), leave: (id) => Effect.sync(() => leave(id)) }));
   const table = Layer.succeed(WorldTable, WorldTable.of({
     add: (owner, name, at, holder) => Effect.andThen(slowAdd === undefined ? Effect.void : Deferred.await(slowAdd), Effect.sync(() => {
-      const row = { id: next++, at, owner, name, holder, woken: Deferred.makeUnsafe<void>() };
+      const row: Row = { id: next++, at, owner, name, holder, woken: Deferred.makeUnsafe<void>() };
       rows.push(row);
       return row.id;
     })),
     wait: (id) => Deferred.await(rows.find((r) => r.id === id)!.woken),
+    // The sleeper is back or gave up: the row goes if it had not fired, and the token the world held for it goes back.
     cancel: (id) => Effect.sync(() => {
-      const at = rows.findIndex((r) => r.id === id && !Deferred.isDoneUnsafe(r.woken));
-      if (at === -1) return false;
-      rows.splice(at, 1);
-      return true;
+      const at = rows.findIndex((r) => r.id === id);
+      if (at === -1) return;
+      const [row] = rows.splice(at, 1);
+      if (row?.token !== undefined) leave(row.token, "world");
     }),
     sleeping: Effect.sync(() => rows.filter((r) => !Deferred.isDoneUnsafe(r.woken)).map(({ id, at, owner, name }) => ({ id, at, owner, name }))),
     set: (at, owner, name, wake) => Effect.sync(() => {
@@ -49,13 +57,13 @@ const makeWorld = (slowAdd?: Deferred.Deferred<void>) => {
     }),
     durable: Effect.sync(() => [...durable]),
   }));
-  /** The world fires a row: it counts the sleeper first, then wakes it. */
+  /** The world fires a row: it takes a token for the sleeper first, then wakes it. */
   const fire = (id: number) => Effect.gen(function* () {
     const row = rows.find((r) => r.id === id)!;
-    bump(row.holder, 1, "world");
+    row.token = enter(row.holder, "world");
     yield* Deferred.succeed(row.woken, undefined);
   });
-  return { events, held: () => [...held].filter(([, n]) => n !== 0), rows, durable, fire, layer: TimersWorld.pipe(Layer.provide(table), Layer.provideMerge(BusyReporting.pipe(Layer.provide(count))), Layer.provideMerge(TestClock.layer())) };
+  return { events, held: () => [...tokens.values()].sort(), rows, durable, fire, layer: TimersWorld.pipe(Layer.provide(table), Layer.provideMerge(BusyReporting.pipe(Layer.provide(count))), Layer.provideMerge(TestClock.layer())) };
 };
 
 const wakes = Layer.succeed(TimerWakes, TimerWakes.of({ wake: () => Effect.void }));
@@ -63,7 +71,7 @@ const run = <A, E>(world: ReturnType<typeof makeWorld>, e: Effect.Effect<A, E, B
   Effect.runPromise(Effect.provide(e, provided ? Layer.provideMerge(world.layer, wakes) : world.layer));
 
 describe("Timers on the world's table", () => {
-  it("a sleep is a row, gives its token back while parked, and is counted again by the world before it wakes", async () => {
+  it("a sleep is a row, lends its token out while parked, and the world holds one for it until it is back", async () => {
     const world = makeWorld();
     await run(world, Effect.gen(function* () {
       const busy = yield* Busy;
@@ -78,8 +86,9 @@ describe("Timers on the world's table", () => {
       yield* Deferred.await(done);
       yield* busy.quiet;
       expect(world.held()).toEqual([]);
-      // The token goes back before the world can look; the world counts the sleeper before it wakes it; the work then ends and gives it back.
-      expect(world.events).toEqual(["process+probe.nap", "process-probe.nap", "world+probe.nap", "process-probe.nap"]);
+      // The token is lent out before the world can look; the world holds one for the sleeper from the firing; the sleeper takes its own
+      // before the world lets go of that one; the work then ends and gives its token back.
+      expect(world.events).toEqual(["+probe.nap", "-probe.nap", "world+probe.nap", "+probe.nap", "world-probe.nap", "-probe.nap"]);
     }));
   });
 

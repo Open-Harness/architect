@@ -2,6 +2,7 @@
 // `Date` and Effect's `Clock` read it for the request that is running (M8.05, M8.06). Real time is the default and is
 // never patched.
 import type { Effect } from "effect";
+import type { BusyBox } from "@orthograph/language-effect";
 
 /** An environment's clock as the model writes it (`environments.<e>.clock`), instants in ISO 8601 with milliseconds. */
 export type ClockDeclaration =
@@ -101,12 +102,12 @@ export interface WorldClockApi {
    */
   readonly within: <A>(source: ClockSource, f: () => A) => A;
   /**
-   * `within` for an entry that holds a token of the world's count (`owner`, `entry:<path>`) while it runs: `leave` gives it
-   * back when the entry ends, unless the work handed it over first (`release`).
+   * `within` for an entry that holds a token of the world's count for its request (`box`): `end` gives it back when the entry
+   * ends, whatever way it ends.
    */
-  readonly entered: <A>(source: ClockSource, owner: string, f: () => Promise<A>, leave: (owner: string) => Promise<unknown>) => Promise<A>;
-  /** The running request's entry token, taken out of it so the caller can give it back; nothing once taken, or outside a request. */
-  readonly release: () => string | undefined;
+  readonly entered: <A>(source: ClockSource, box: BusyBox, f: () => Promise<A>, end: (box: BusyBox) => Promise<unknown>) => Promise<A>;
+  /** The running request's token box; nothing outside a request. */
+  readonly box: () => BusyBox | undefined;
   /**
    * Point the request that is running at a fresh source: a durable sleep's wake does it, because the request outlived a move
    * of the world's clock (M8.06 call 4). Only this request's own cell changes. False outside a request.

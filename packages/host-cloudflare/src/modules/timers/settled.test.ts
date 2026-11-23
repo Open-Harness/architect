@@ -36,7 +36,7 @@ describe("settled means quiet and nothing due, together", () => {
         waits += 1;
         if (waits === 2) {
           const id = table.add("z", "sleep", clock.now(), "z");
-          void Effect.runPromise(table.wait(id)).then(() => { woke += 1; count.leave("z"); });
+          void Effect.runPromise(table.wait(id)).then(() => { woke += 1; table.cancel(id); });
         }
         return count.quiet(limit);
       } };
@@ -65,11 +65,12 @@ describe("settled means quiet and nothing due, together", () => {
 
   it("a reset forgets the count with the table, so the next move is not held up by a token nobody will give back", async () => {
     await inWorld("timers-reset-count", STEPPED, async (world) => {
-      world.rpc.countEnter("probe.spin");
+      const stale = world.rpc.countEnter("probe.spin");
       world.reset();
       expect(world.held()).toEqual([]);
       expect(await settle(world, START + DAY)).toMatchObject({ _tag: "Success" });
-      world.rpc.countLeave("probe.spin");
+      // A token of the generation before the reset can no longer release anything.
+      world.rpc.countLeave(stale);
       expect(world.held()).toEqual([]);
     });
   });
@@ -167,11 +168,28 @@ describe("a wait on a row the world let go of", () => {
     await inWorld("timers-let-go", STEPPED, async (world) => {
       const taken = world.rpc.timerAdd("probe.nap", "sleep", START + DAY, "probe.nap");
       const pending = world.rpc.timerWait(taken);
-      expect(world.rpc.timerCancel(taken)).toBe(true);
+      world.rpc.timerCancel(taken);
       expect(await pending).toBeUndefined();
       const forgotten = world.rpc.timerAdd("probe.nap", "sleep", START + DAY, "probe.nap");
       world.reset();
       expect(await world.rpc.timerWait(forgotten)).toBeUndefined();
     });
+  });
+});
+
+describe("a wake that never acknowledges", () => {
+  it("fails the move as NeverQuiet within the bound, naming its owner, with its row recoverable and nothing counted; the next move is not blocked", async () => {
+    await inWorld("timers-never-acknowledges", STEPPED, async (world) => {
+      world.rpc.timerSet(START + DAY, "keeper/membership.renew/mem_1", "due", { kind: "keeper", payload: "mem_1" });
+      const began = Date.now();
+      const stuck = await settle(world, START + 2 * DAY);
+      expect(Date.now() - began).toBeLessThan(2_000);
+      expect(stuck).toMatchObject({ _tag: "Failure", failure: { _tag: "NeverQuiet", busy: ["keeper/membership.renew/mem_1"] } });
+      // Pending again, due as it was, and nobody is counted for it.
+      expect(world.rpc.timersDurable()).toMatchObject([{ at: START + DAY, owner: "keeper/membership.renew/mem_1" }]);
+      expect(world.held()).toEqual([]);
+      // The lock is free: a move that has nothing to wait for goes through.
+      expect(await settle(world, START)).toMatchObject({ _tag: "Success" });
+    }, () => Effect.never);
   });
 });

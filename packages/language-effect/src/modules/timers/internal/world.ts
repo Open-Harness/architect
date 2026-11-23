@@ -1,8 +1,9 @@
-// `Timers` and `DurableTimers` on the world's table (M8.07), for a process that is not the world's Durable Object. A wait
-// is a row in the world's table, not a fiber the world can see: the world fires it when its clock reaches the instant,
-// after it has counted the sleeper, so the world is never quiet between the firing and the wake.
+// `Timers` and `DurableTimers` on the world's table (M8.07), for a process that is not the world's Durable Object. A wait is a row in
+// the world's table, not a fiber the world can see: the world fires it when its clock reaches the instant, holding a token of its own
+// for the sleeper until the sleeper has taken its token back (`reclaim`) and acknowledged (`cancel`), so the world is never quiet
+// between the firing and the wake.
 import { Clock, Context, Duration, Effect, Layer, Option } from "effect";
-import { Busy, BusyOwner } from "#modules/work/types.js";
+import { Busy } from "#modules/work/types.js";
 import { DurableTimers, TimerWakes, Timers, WorldTable } from "../types.ts";
 
 /** The furthest instant a `Date` holds either side of the epoch: the world's clock cannot hold more, so nothing past it is set. */
@@ -17,43 +18,42 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
     const busy = yield* Busy;
     const table = yield* WorldTable;
     const wakes = yield* Effect.serviceOption(TimerWakes);
-    /** A row taken back: when it had not fired the sleeper takes its token again, and when it had the world already counted it. */
-    const giveUp = (id: number) => Effect.flatMap(table.cancel(id), (removed) => (removed ? busy.enter : busy.adopt));
+    /** Back to work: the sleeper takes its own token again first, and only then does the world let go of the one it held for it. */
+    const resume = (lease: { readonly reclaim: Effect.Effect<void> }, id: number) => Effect.andThen(lease.reclaim, table.cancel(id));
     const timers = Timers.of({
-      // In-process only: the row is the world's, the work stays here and runs, counted, when the row fires.
       // The row and the fiber that owns it are one uninterruptible step: an interrupt while the world is being told waits for it,
-      // so a row the world holds always has a waiter to adopt the token the world counts when it fires. The waiter itself
-      // gives the row up (or the token the world counted for it) if it is interrupted while it waits.
+      // so a row the world holds always has a waiter to take the token the world holds for it. The waiter gives the row up itself
+      // if it is interrupted while it waits.
       at: (at, owner, name, work) =>
         Effect.uninterruptibleMask((restore) =>
           Effect.flatMap(Effect.andThen(instantOf(at, `a timer for ${owner} ${name}`), table.add(owner, name, at, owner)), (id) => {
-            const mine = busy.as(owner);
-            const woken = restore(table.wait(id)).pipe(
-              Effect.onInterrupt(() => Effect.flatMap(table.cancel(id), (removed) => (removed ? Effect.void : Effect.andThen(mine.adopt, mine.leave)))),
+            const run = restore(table.wait(id)).pipe(
+              Effect.onInterrupt(() => table.cancel(id)),
+              // The work gets a token of its own (taken before `spawn` returns) before the world lets go of the one it held for the row.
+              Effect.andThen(busy.as(owner).spawn(Effect.andThen(table.cancel(id), Effect.ignore(work)))),
             );
-            const run = Effect.andThen(woken, Effect.andThen(mine.adopt, Effect.ensuring(restore(Effect.provideService(Effect.ignore(work), BusyOwner, owner)), mine.leave)));
             return Effect.as(Effect.forkDetach(run), id);
           })),
       sleep: (owner, span) =>
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
           const now = yield* Clock.currentTimeMillis;
-          const holder = yield* Effect.service(BusyOwner);
-          const id = yield* Effect.andThen(instantOf(now + Duration.toMillis(span), `a sleep for ${owner}`), table.add(owner, "sleep", now + Duration.toMillis(span), holder));
-          // The row is published before the token goes back, so the world never sees the process idle with no row.
-          yield* busy.leave;
-          yield* restore(table.wait(id)).pipe(Effect.onInterrupt(() => giveUp(id)));
-          yield* busy.adopt;
+          const at = yield* instantOf(now + Duration.toMillis(span), `a sleep for ${owner}`);
+          // The row is published before the token is lent out, so the world never sees the process idle with no row.
+          const id = yield* table.add(owner, "sleep", at, owner);
+          const lease = yield* busy.lend;
+          yield* restore(table.wait(id)).pipe(Effect.onInterrupt(() => resume(lease, id)));
+          yield* resume(lease, id);
         })),
       within: (owner, span, wait) =>
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
           const now = yield* Clock.currentTimeMillis;
-          const holder = yield* Effect.service(BusyOwner);
-          const id = yield* Effect.andThen(instantOf(now + Duration.toMillis(span), `a deadline for ${owner}`), table.add(owner, "deadline", now + Duration.toMillis(span), holder));
-          yield* busy.leave;
+          const at = yield* instantOf(now + Duration.toMillis(span), `a deadline for ${owner}`);
+          const id = yield* table.add(owner, "deadline", at, owner);
+          const lease = yield* busy.lend;
           return yield* restore(Effect.raceFirst(
             Effect.map(wait, Option.some),
             table.wait(id).pipe(Effect.as(Option.none())),
-          )).pipe(Effect.ensuring(giveUp(id)));
+          )).pipe(Effect.ensuring(resume(lease, id)));
         })),
       due: () => Effect.succeed(undefined),
       fire: () => Effect.succeed([]),

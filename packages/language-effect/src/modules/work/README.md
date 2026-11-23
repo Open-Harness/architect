@@ -4,8 +4,10 @@
 quiet before it moves its clock. The clock spike (`design/spikes/world-clock.md`) showed why: Effect's `TestClock`
 can't see a fiber waiting on I/O, so quiet has to be counted, not inferred. `BusyLive` counts inside one process.
 
-Each token is counted for an owner (M8.07): `busy.as(owner)` is the same service with its tokens named (a handler's is its
-operation's name; `agents/run/<runId>` for an agent), `counted` and `spawn` tell the fiber whom its token is counted for so a
-sleep gives back that same token, and `held` lists the owners a process holds. `BusyReporting` also reports each token to a
-`WorldCount`, the world's count across every process, so a world that cannot become quiet can name who is busy. `adopt` keeps a
-token the world already counted (a timer counts its sleeper before it wakes it) without reporting it again.
+Counted work holds a token while it runs (M8.07). The unit is a box (`BusyBox`): a request's, taken at its entry and held until the
+response or the work ends; a spawn's own. `busy.as(owner)` names it (an operation's name, `agents/run/<runId>`), `counted` runs work under
+the request's box when there is one, and `held` lists the owners of the fibers running. A sleep lends its token out (`lend`, a `Lease`)
+and takes it back (`reclaim`) from wherever the wake happens; the token goes back to the world only when every fiber of the box is lent.
+`BusyReporting` takes the box's token in the world's count (`WorldCount.enter`, an id with the world's generation) and releases exactly
+that token (`leave(id)`); an id of an older generation or one already released does nothing. `spawn` gets a box and a token of its own,
+taken before it returns.

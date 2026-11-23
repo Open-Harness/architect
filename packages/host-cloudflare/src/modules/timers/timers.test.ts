@@ -25,11 +25,10 @@ const settle = (world: WorldTimersState, target: number) => Effect.runPromise(Ef
 /** What a Worker does with a sleeper: wait on its row, note the instant it woke at, and give its token back. */
 const sleeper = (world: WorldTimersState, owner: string, at: number, woke: Array<string>) => {
   const id = world.rpc.timerAdd(owner, "sleep", at, owner);
-  world.rpc.countEnter(owner);
-  world.rpc.countLeave(owner);
   return world.rpc.timerWait(id).then((source) => {
     woke.push(`${owner}@${(source as Extract<ClockSource, { kind: "stepped" }>).instant}`);
-    world.rpc.countLeave(owner);
+    // Back at work with its own token: the world lets go of the one it held for the sleeper.
+    world.rpc.timerCancel(id);
   });
 };
 
@@ -97,13 +96,13 @@ describe("the controller walks the clock from timer to timer", () => {
 describe("a world that is never quiet", () => {
   it("fails as NeverQuiet naming who is busy, moves nothing, and moves once they are done", async () => {
     await inWorld("timers-never", STEPPED, async (world) => {
-      world.rpc.countEnter("probe.spin");
-      world.rpc.countEnter("agents/run/run_1");
+      const spin = world.rpc.countEnter("probe.spin");
+      const run = world.rpc.countEnter("agents/run/run_1");
       const refused = await settle(world, START + DAY);
       expect(refused).toMatchObject({ _tag: "Failure", failure: { _tag: "NeverQuiet", busy: ["agents/run/run_1", "probe.spin"] } });
       expect(await settle(world, START)).toMatchObject({ _tag: "Failure" });
-      world.rpc.countLeave("probe.spin");
-      world.rpc.countLeave("agents/run/run_1");
+      world.rpc.countLeave(spin);
+      world.rpc.countLeave(run);
       expect(await settle(world, START + DAY)).toMatchObject({ _tag: "Success", success: { now: new RealDate(START + DAY).toISOString() } });
     });
   });

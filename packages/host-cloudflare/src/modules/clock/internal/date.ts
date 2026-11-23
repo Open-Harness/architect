@@ -5,14 +5,15 @@
 // Libraries inside the world (Better Auth, jose, Effect's default `Clock`) read `Date` at call time, so one patch reaches
 // them all. Outside any request the proxy reads real time.
 import { AsyncLocalStorage } from "node:async_hooks";
+import type { BusyBox } from "@orthograph/language-effect";
 import type { ClockSource } from "../types.ts";
 
 const RealDate = globalThis.Date;
 /** One cell per request: its source can be replaced when a durable sleep wakes (`refresh`), and nothing else can reach it. */
 interface Cell {
   source: ClockSource;
-  /** The token the entry took for this request (`entry:<path>`), until the work hands it over or the request ends. */
-  held?: string | undefined;
+  /** The request's token box, taken at its entry (`entry:<path>`) and held until the entry ends. */
+  box?: BusyBox | undefined;
 }
 const store = new AsyncLocalStorage<Cell>();
 
@@ -38,26 +39,16 @@ export const install = (): void => {
 export const inWorld = <A>(source: ClockSource, f: () => A): A => store.run({ source }, f);
 
 /**
- * Run an entry in its world's time holding `owner`'s token for as long as it runs: `leave` gives the token back when the
- * entry ends, unless the work has already handed it over (`release`).
+ * Run an entry in its world's time under its request's box. `end` gives the box's token back when the entry ends, whatever
+ * way it ends; a callback that throws before it returns a promise is a rejection like any other, so the cleanup is always attached.
  */
-export const inEntry = <A>(source: ClockSource, owner: string, f: () => Promise<A>, leave: (owner: string) => Promise<unknown>): Promise<A> => {
-  const cell: Cell = { source, held: owner };
-  // A callback that throws before it returns a promise is a rejection like any other, so the cleanup is always attached.
-  return new Promise<A>((resolve) => { resolve(store.run(cell, f)); }).finally(() => {
-    const held = cell.held;
-    cell.held = undefined;
-    return held === undefined ? undefined : leave(held);
-  });
+export const inEntry = <A>(source: ClockSource, box: BusyBox, f: () => Promise<A>, end: (box: BusyBox) => Promise<unknown>): Promise<A> => {
+  const cell: Cell = { source, box };
+  return new Promise<A>((resolve) => { resolve(store.run(cell, f)); }).finally(() => end(box));
 };
 
-/** Take the running request's entry token out of its cell, so the caller can give it back: once, and nothing outside a request. */
-export const release = (): string | undefined => {
-  const cell = store.getStore();
-  const held = cell?.held;
-  if (cell !== undefined) cell.held = undefined;
-  return held;
-};
+/** The box of the request that is running; nothing outside a request, or in a real world. */
+export const boxOf = (): BusyBox | undefined => store.getStore()?.box;
 
 /** Point the running request at a fresh source, as a durable sleep's wake does: only this request's cell, never another's. False outside a request. */
 export const refresh = (source: ClockSource): boolean => {

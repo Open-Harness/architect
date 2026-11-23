@@ -1,6 +1,7 @@
 import { Clock, Context, Deferred, Duration, Effect, Layer, Option } from "effect";
 import { Busy } from "#modules/work/types.js";
 import { DurableTimers, TimerWakes, Timers, type DurableTimer, type Timer, type Wake } from "./types.ts";
+import type { Lease } from "#modules/work/types.js";
 
 export { TimersWorld } from "./internal/world.ts";
 
@@ -78,11 +79,13 @@ export const TimersMemory: Layer.Layer<Timers | DurableTimers, never, Busy> = La
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
           const now = yield* Clock.currentTimeMillis;
           const woken = yield* Deferred.make<void>();
-          // The timer takes a token for the sleeper before waking it, so a woken fiber is never uncounted.
-          const id = yield* add(now + Duration.toMillis(span), owner, "sleep", Effect.andThen(busy.enter, Deferred.succeed(woken, undefined)));
-          yield* busy.leave;
+          let lease: Lease | undefined;
+          // The timer takes the sleeper's token back before waking it, so a woken fiber is never uncounted.
+          const id = yield* add(now + Duration.toMillis(span), owner, "sleep", Effect.suspend(() => Effect.andThen(lease?.reclaim ?? Effect.void, Deferred.succeed(woken, undefined))));
+          lease = yield* busy.lend;
+          const mine = lease;
           yield* restore(Deferred.await(woken)).pipe(Effect.onInterrupt(() => Effect.gen(function* () {
-            if (remove(id)) yield* busy.enter;
+            if (remove(id)) yield* mine.reclaim;
             // A firing timer has already claimed ownership of the wakeup.
             else yield* Deferred.await(woken);
           })));
@@ -91,20 +94,15 @@ export const TimersMemory: Layer.Layer<Timers | DurableTimers, never, Busy> = La
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
           const now = yield* Clock.currentTimeMillis;
           const ended = yield* Deferred.make<void>();
-          const counted = yield* Deferred.make<void>();
-          let claimed = false;
-          const resume = Effect.suspend(() => {
-            if (claimed) return Deferred.await(counted);
-            claimed = true;
-            return busy.enter.pipe(Effect.andThen(Deferred.succeed(counted, undefined)), Effect.asVoid);
-          });
-          const id = yield* add(now + Duration.toMillis(span), owner, "deadline", Effect.andThen(resume, Deferred.succeed(ended, undefined)));
-          // Publish the deadline before releasing our work token so the world can advance it.
-          yield* busy.leave;
+          let lease: Lease | undefined;
+          const id = yield* add(now + Duration.toMillis(span), owner, "deadline", Effect.suspend(() => Effect.andThen(lease?.reclaim ?? Effect.void, Deferred.succeed(ended, undefined))));
+          // Publish the deadline before lending our token out so the world can advance it.
+          lease = yield* busy.lend;
+          const mine = lease;
           return yield* restore(Effect.raceFirst(
             Effect.map(wait, Option.some),
             Deferred.await(ended).pipe(Effect.as(Option.none())),
-          )).pipe(Effect.ensuring(Effect.sync(() => remove(id)).pipe(Effect.andThen(resume))));
+          )).pipe(Effect.ensuring(Effect.sync(() => remove(id)).pipe(Effect.andThen(mine.reclaim))));
         })),
       due: (target) =>
         Effect.sync(() => table.reduce<number | undefined>((best, t) => (t.at <= target && (best === undefined || t.at < best) ? t.at : best), undefined)),
