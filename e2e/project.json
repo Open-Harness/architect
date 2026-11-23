@@ -53,7 +53,7 @@
     },
     "portal-next-checks": {
       "metadata": {
-        "description": "Goal 6's own checks: the theme (slice 1), the map's compiler and projection, the two-client runner and the parity ratchet's controls (slice 2), and, as they land, the shell's."
+        "description": "Goal 6's own checks: the theme (slice 1), the map's compiler and projection, the two-client runner and the parity ratchet's controls (slice 2), the shell's, and the new client's Map tab (slice 7: `map-tab/`, which builds `packages/portal-next` and opens it over Plugged In's generated blueprint)."
       },
       "dependsOn": ["browser"],
       "executor": "nx:run-commands",
