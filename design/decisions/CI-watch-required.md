@@ -20,8 +20,8 @@ requires by name, taking its newest row (an older cancelled run can list the sam
 | Exit | Means |
 |---|---|
 | 0 | every required check is `SUCCESS` or `SKIPPED` (GitHub counts a skip as passed) |
-| 1 | a required check failed, was cancelled, or never reported; on a base with no protection (most goal branches), the run's conclusion was not `success` |
-| 2 | it cannot watch: no number, a draft (a draft runs no CI), a closed pull request, or `gh` failing (only a 404 on the protection reads as "unprotected") |
+| 1 | a required check failed or was cancelled, or was still missing at the deadline (one missing or pending after the run completed is waited on: a draft run on the same commit can be the newest for a moment); on a base with no protection (most goal branches), the run's conclusion was not `success` |
+| 2 | it cannot watch: no number, a draft (a draft runs no CI), a closed pull request, a merged one with no `ci` run, or `gh` failing (only a 404 on the protection reads as "unprotected") |
 | 3 | `WATCH_MAX_SECONDS` (default three hours) ran out before the run finished |
 
 Its cases are in `tools/ci/ci.test.sh`, with a fake `gh` on the PATH. Tried on GitHub: #653 (merged into `main`) prints

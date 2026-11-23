@@ -466,24 +466,28 @@ case "$1 $2" in
   "pr view") cat "$W/pr" ;;
   "run list") n=$(cat "$W/polls" 2>/dev/null || echo 0); echo $((n + 1)) > "$W/polls"
     if [ "$n" -lt "$(cat "$W/pending_polls" 2>/dev/null || echo 0)" ]; then echo '[{"status":"in_progress","conclusion":""}]'; else cat "$W/run"; fi ;;
-  "pr checks") cat "$W/checks" ;;
+  "pr checks") c=$(cat "$W/check_calls" 2>/dev/null || echo 0); echo $((c + 1)) > "$W/check_calls"
+    if [ "$c" -lt "$(cat "$W/partial_calls" 2>/dev/null || echo 0)" ]; then echo '[{"name":"check","state":"SUCCESS"}]'; else cat "$W/checks"; fi ;;
   api*) [ -f "$W/required" ] && { cat "$W/required"; exit 0; }; cat "$W/api_err" >&2; exit 1 ;;
   *) echo "fake gh: $*" >&2; exit 9 ;;
 esac
 GH
 chmod +x "$W/bin/gh"
 watch() { # <pr json> <run json> <checks json> <required json or ""> [api error] [pending polls]
-  rm -f "$W/polls" "$W/required"; printf '%s' "$1" > "$W/pr"; printf '%s' "$2" > "$W/run"; printf '%s' "$3" > "$W/checks"
+  rm -f "$W/polls" "$W/required" "$W/check_calls"; printf '%s' "${PARTIAL:-0}" > "$W/partial_calls"; printf '%s' "$1" > "$W/pr"; printf '%s' "$2" > "$W/run"; printf '%s' "$3" > "$W/checks"
   [ -n "$4" ] && printf '%s' "$4" > "$W/required"; printf '%s' "${5:-gh: Branch not protected (HTTP 404)}" > "$W/api_err"
   printf '%s' "${6:-0}" > "$W/pending_polls"
   W="$W" PATH="$W/bin:$PATH" WATCH_MAX_SECONDS="${MAXS:-60}" "$here/watch-required.sh" 7 0
 }
+watch_late() { PARTIAL=2 watch "$@"; }
 open='{"state":"OPEN","isDraft":false,"headRefOid":"abc","baseRefName":"main"}'
 done_ok='[{"status":"completed","conclusion":"success"}]'
 req='{"contexts":["check","e2e-m1"]}'
 expect "watch: every required check passed" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SUCCESS"}]' "$req"
 expect "watch: waits while the run is in progress, then reads the checks" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SKIPPED"}]' "$req" "" 3
-expect "watch: a required check that never reported is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"}]' "$req"
+MAXS=0 expect "watch: a required check still missing at the deadline is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"}]' "$req"
+expect "watch: a required check missing after the run completed is waited on (a draft run on the same commit)" 0 watch_late "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SUCCESS"}]' "$req"
+expect "watch: a merged pull request with no ci run cannot be watched" 2 watch '{"state":"MERGED","isDraft":false,"headRefOid":"abc","baseRefName":"main"}' '[]' '[]' "$req"
 expect "watch: a cancelled required check is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED"}]' "$req"
 expect "watch: the newest row decides when an older run listed the same name" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED","startedAt":"2026-11-23T01:00:00Z"},{"name":"e2e-m1","state":"SUCCESS","startedAt":"2026-11-23T02:00:00Z"}]' "$req"
 expect "watch: an unprotected base goes by the run's conclusion (success)" 0 watch "$open" "$done_ok" '[]' ""
