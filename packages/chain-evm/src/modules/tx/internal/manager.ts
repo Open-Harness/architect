@@ -129,6 +129,14 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
       return signed;
     }).pipe(Effect.withSpan("chain.evm.resume", { attributes: { chainId: options.chainId } }));
 
+    const hold: ChainPort["hold"] = (from, nonce) => Effect.gen(function* () {
+      const reservation = yield* nonces.reserveNext(from, nonce);
+      if (reservation.nonce !== nonce) {
+        yield* nonces.release(reservation);
+        return yield* new ChainFault({ kind: "nonce", message: "The nonce to hold is already reserved" });
+      }
+    });
+
     const release: ChainPort["release"] = (prepared) =>
       Effect.suspend(() => Option.fromUndefinedOr(reservations.get(prepared)?.nonce).pipe(
         Option.match({ onNone: () => Effect.void, onSome: nonces.release }),
@@ -136,5 +144,5 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
 
     const read = readCall(rpc, options);
 
-    return { prepare, simulate, read, sign, submit, replace, release, resume, nonces };
+    return { prepare, simulate, read, sign, submit, replace, release, resume, hold, nonces };
   });

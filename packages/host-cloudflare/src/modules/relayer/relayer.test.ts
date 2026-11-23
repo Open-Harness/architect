@@ -5,7 +5,7 @@ import type { Relayer } from "./service.ts";
 
 const hash = (n: number) => `0x${n.toString(16).padStart(64, "0")}` as const;
 const row = (id: string, nonce: number): Row => ({
-  id, nonce, state: "submitted", hash: hash(nonce), serialized: "0x02ab", replaces: [], fromBlock: 12n, cap: 10_000_000_000n,
+  id, nonce, state: "submitted", hash: hash(nonce), serialized: "0x02ab", replaces: [], fromBlock: 12n, cap: 10_000_000_000n, fill: false, note: "",
 });
 
 describe("the relayer, in workerd (the chain side is checked on Anvil by e2e/on-chain/10-m6-07-relayer.test.ts)", () => {

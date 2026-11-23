@@ -57,6 +57,7 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
       if (!Number.isSafeInteger(config.chainId) || config.chainId <= 0) return yield* invalid("chainId must be a positive integer");
       if (config.pollIntervalMs !== undefined && (!Number.isSafeInteger(config.pollIntervalMs) || config.pollIntervalMs <= 0)) return yield* invalid("pollIntervalMs must be a positive integer");
       if (kept !== undefined && kept.chainId !== config.chainId) return yield* invalid(`this relayer is for chain ${kept.chainId}`);
+      if (kept?.pollIntervalMs !== config.pollIntervalMs) yield* Effect.promise(() => this.ctx.storage.deleteAlarm());
       if (kept?.rpcUrl !== config.rpcUrl || kept.pollIntervalMs !== config.pollIntervalMs) {
         this.store.keep({ rpcUrl: config.rpcUrl, chainId: config.chainId, ...(config.pollIntervalMs === undefined ? {} : { pollIntervalMs: config.pollIntervalMs }) });
         this.live = undefined;

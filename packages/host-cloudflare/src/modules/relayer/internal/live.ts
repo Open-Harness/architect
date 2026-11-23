@@ -3,6 +3,7 @@
 import { ChainFault, Keys, makeChainPort, type ChainError, type ChainPort, type Key, type Signed } from "@orthograph/chain-evm/device";
 import { Effect, Redacted, type Semaphore } from "effect";
 import type { RelayerConfig } from "../types.ts";
+import { adopt } from "./adopt.ts";
 import type { Store } from "./store.ts";
 
 export interface Live {
@@ -35,11 +36,8 @@ export const startLive = (config: RelayerConfig, secret: string | undefined, sto
     if (secret === undefined || secret === "") return yield* new ChainFault({ kind: "configuration", message: "the relayer has no key: bind RELAYER_KEY" });
     const key = yield* Keys.fromSecret(Redacted.make(secret));
     const port = yield* makeChainPort({ chainId: config.chainId, rpcUrl: config.rpcUrl, rpcTimeoutMs: 30_000 });
-    const sent = new Map<string, Signed>();
+    const live: Live = { key, port, sent: new Map<string, Signed>() };
     // Lowest nonce first: each one takes its own nonce back, so a new call can never be handed a nonce that a held one is using.
-    for (const row of store.open()) {
-      const signed = yield* port.resume(row.serialized, row.fromBlock).pipe(Effect.catch(() => Effect.succeed(undefined)));
-      if (signed !== undefined) sent.set(row.id, signed);
-    }
-    return { key, port, sent } satisfies Live;
+    for (const row of store.open()) yield* adopt(live, store, row);
+    return live;
   });

@@ -185,7 +185,7 @@ export const depthOf = (setting: ChainSetting): Effect.Effect<number> =>
    passed it (`ChainFault` of kind `unsimulated`, `packages/chain-evm/src/modules/tx/internal/manager.ts:59`), so no
    path sends without simulating, and a failed simulation hands its nonce back (`release`):
 
-```ts file=packages/chain-evm/src/modules/tx/types.ts name=ChainPort lines=78-105
+```ts file=packages/chain-evm/src/modules/tx/types.ts name=ChainPort lines=78-110
 export interface ChainPort {
   readonly prepare: (call: Call) => Effect.Effect<Unsigned, ChainError>;
   /** An `eth_call` of the prepared transaction. `sign` and `submit` refuse a transaction that has not passed it. On failure, `release` it. */
@@ -213,6 +213,11 @@ export interface ChainPort {
    * order; a nonce already reserved, or bytes that are not a transaction this port can send, fail.
    */
   readonly resume: (serialized: Hex, fromBlock: bigint) => Effect.Effect<Signed, ChainFault>;
+  /**
+   * Keep a nonce of this sender out of `prepare`'s reach without sending anything with it, for a transaction that exists but can
+   * no longer be read. The hold ends when the node's finalized count passes the nonce. Fails when the nonce is already reserved.
+   */
+  readonly hold: (from: Address, nonce: number) => Effect.Effect<void, ChainFault>;
 }
 ```
 

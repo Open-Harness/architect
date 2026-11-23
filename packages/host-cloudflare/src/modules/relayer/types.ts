@@ -35,6 +35,8 @@ export interface RelayStatus {
   readonly state: RelayState;
   /** The hashes it replaced, oldest first. */
   readonly replaces: ReadonlyArray<Hex>;
+  /** Why the last attempt to send it again failed (a fee cap reached, a node that refuses), when one did. */
+  readonly problem?: string;
 }
 
 export interface Replaced {

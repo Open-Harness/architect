@@ -102,6 +102,11 @@ export interface ChainPort {
    * order; a nonce already reserved, or bytes that are not a transaction this port can send, fail.
    */
   readonly resume: (serialized: Hex, fromBlock: bigint) => Effect.Effect<Signed, ChainFault>;
+  /**
+   * Keep a nonce of this sender out of `prepare`'s reach without sending anything with it, for a transaction that exists but can
+   * no longer be read. The hold ends when the node's finalized count passes the nonce. Fails when the nonce is already reserved.
+   */
+  readonly hold: (from: Address, nonce: number) => Effect.Effect<void, ChainFault>;
 }
 
 export interface ReplacementPolicy {

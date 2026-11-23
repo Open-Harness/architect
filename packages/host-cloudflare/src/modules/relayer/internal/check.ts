@@ -3,24 +3,27 @@
 import { ChainFault, type Standing } from "@orthograph/chain-evm/device";
 import { Effect } from "effect";
 import type { RelayState, RelayStatus, Replaced } from "../types.ts";
+import { adopt, definite, reason } from "./adopt.ts";
 import type { Parts } from "./live.ts";
 import type { Kept, Row } from "./store.ts";
 
-const shown = (state: Kept): RelayState => (state === "lost" ? "dropped" : state);
-const view = (row: Row, state: RelayState = shown(row.state)): RelayStatus => ({ id: row.id, nonce: row.nonce, hash: row.hash, state, replaces: row.replaces });
+const shown = (state: Kept): RelayState => (state === "lost" ? "dropped" : state === "submitting" ? "submitted" : state);
+const view = (row: Row, state: RelayState = shown(row.state)): RelayStatus => ({
+  id: row.id, nonce: row.nonce, hash: row.hash, state, replaces: row.replaces, ...(row.note === "" ? {} : { problem: row.note }),
+});
 
-/** Where the chain says this submission's current transaction stands. None when the relayer no longer holds what it needs to ask. */
-const standing = (parts: Parts, row: Row): Effect.Effect<Standing | undefined, ChainFault> => {
-  const signed = parts.live.sent.get(row.id);
-  if (signed === undefined) return Effect.succeed(undefined);
+/** Where the chain says this submission's current transaction stands. None when the relayer cannot take back what it needs to ask. */
+const standing = (parts: Parts, row: Row): Effect.Effect<Standing | undefined, ChainFault> => Effect.gen(function* () {
+  const signed = yield* adopt(parts.live, parts.store, row);
+  if (signed === undefined) return undefined;
   const { from, transaction } = signed.prepared;
-  return parts.live.port.probe({
+  return yield* parts.live.port.probe({
     hash: row.hash, from, nonce: row.nonce, fromBlock: row.fromBlock,
     ...(transaction.to == null ? {} : { to: transaction.to }),
     ...(transaction.data === undefined ? {} : { data: transaction.data }),
     ...(transaction.value === undefined ? {} : { value: transaction.value }),
   });
-};
+});
 
 /** What a submission is now, read from the chain. Only a mined answer is written down: it cannot change back. */
 export const status = (parts: Parts, id: string) => Effect.gen(function* () {
@@ -33,19 +36,23 @@ export const status = (parts: Parts, id: string) => Effect.gen(function* () {
     case "Reverted": parts.store.setState(id, "reverted"); return view(row, "reverted");
     case "Dropped": return view(row, "dropped");
     case "Replaced": return view(row, "dropped");
-    default: return view(row, "submitted");
+    default: return view(parts.store.find(id) ?? row);
   }
 });
 
-/** Send the same call again at the same nonce, paying more, and keep the new transaction as the submission's current one. */
+/**
+ * Send the call again at its nonce, paying more, and keep the new transaction as the submission's current one. A row that is a fill
+ * sends the zero-value transfer to the relayer itself instead. When the send fails in transit the new transaction is recorded all
+ * the same: the allocator now expects it, and the next look at the node finds out whether it arrived.
+ */
 const resend = (parts: Parts, row: Row) => Effect.gen(function* () {
   const { live, store } = parts;
-  const held = live.sent.get(row.id);
-  const signed = held ?? (yield* live.port.resume(row.serialized, row.fromBlock));
-  const next = yield* live.port.replace(signed, live.key.signer, { strategy: "speedup", maxFeePerGas: row.cap });
-  const submission = yield* live.port.submit(next);
+  const signed = yield* adopt(live, store, row);
+  if (signed === undefined) return undefined;
+  const next = yield* live.port.replace(signed, live.key.signer, { strategy: row.fill ? "cancel" : "speedup", maxFeePerGas: row.cap });
+  const submission = yield* live.port.submit(next).pipe(Effect.catch((error) => definite(error) ? Effect.fail(error) : Effect.succeed(undefined)));
   live.sent.set(row.id, next);
-  store.replace(row, next.hash, next.serialized, submission.fromBlock);
+  store.replace(row, next.hash, next.serialized, submission?.fromBlock ?? row.fromBlock);
   return { id: row.id, nonce: row.nonce, oldHash: row.hash, newHash: next.hash } satisfies Replaced;
 });
 
@@ -59,7 +66,10 @@ const settle = (parts: Parts, row: Row) => Effect.gen(function* () {
       parts.store.setState(row.id, now._tag === "Included" ? "included" : "reverted");
       return undefined;
     }
-    case "Held": if (row.state !== "submitted") parts.store.setState(row.id, "submitted"); return undefined;
+    case "Held":
+      if (row.state !== "submitted") parts.store.setState(row.id, "submitted");
+      if (row.note !== "") parts.store.note(row.id, "");
+      return undefined;
     case "Replaced": parts.store.setState(row.id, "lost"); return undefined; // a different call took the nonce
     case "Dropped": return yield* resend(parts, row);
     case undefined: return undefined;
@@ -69,13 +79,13 @@ const settle = (parts: Parts, row: Row) => Effect.gen(function* () {
 /**
  * Every submission that may still change is read from the chain, lowest nonce first, and every dropped one is sent again. One at a
  * time (the lock): an alarm that comes while a call is reconciling waits, then finds nothing left to replace. A submission that
- * cannot be read or sent now is left for the next time.
+ * cannot be read or sent now is left for the next time, with the reason on its row (`status` shows it as `problem`).
  */
 export const reconcile = (parts: Parts) => parts.lock.withPermit(Effect.gen(function* () {
   const replaced: Replaced[] = [];
   for (const row of parts.store.open()) {
-    const done = yield* settle(parts, row).pipe(Effect.catch(() => Effect.succeed(undefined)));
-    if (done !== undefined) replaced.push(done);
+    const done = yield* settle(parts, row).pipe(Effect.catch((error) => Effect.sync(() => { parts.store.note(row.id, reason(error)); return undefined; })));
+    if (done !== undefined && !row.fill) replaced.push(done);
   }
   return { replaced };
 }));

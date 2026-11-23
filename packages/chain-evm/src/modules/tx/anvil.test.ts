@@ -245,5 +245,9 @@ test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("probes a submission, 
     expect(yield* second.probe(again)).toMatchObject({ _tag: "Included", receipt: { transactionHash: next.hash, status: "success" } });
     // The first hash was never mined, and the same call took its nonce under the new hash: it reads as included under that hash.
     expect(yield* second.probe(submission)).toMatchObject({ _tag: "Included", receipt: { transactionHash: next.hash } });
+    // A held nonce is skipped by prepare, and cannot be held twice.
+    yield* second.hold(account.address, 1);
+    expect(yield* second.hold(account.address, 1).pipe(Effect.flip)).toMatchObject({ _tag: "ChainFault", kind: "nonce" });
+    expect((yield* second.prepare({ from: account.address, to: recipient, value: 1n })).transaction.nonce).toBe(2);
     expect(yield* second.resume("0x1234", 0n).pipe(Effect.flip)).toMatchObject({ _tag: "ChainFault", kind: "signing" });
   }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 30_000);

@@ -401,6 +401,7 @@ The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m
 - **The checkpoint moves only after the sink has taken the change.** If the sink answers with an error, the follower
   keeps its checkpoint and hands the same change on again at its next poll. A replay after a restart may call the sink
   again with an id it has taken; `seen` is harmless, and what may never happen twice is `accepted` for one id.
+- **The relayer writes before it sends, and never leaves a gap.** A submission is stored, with its signed bytes, before it is sent, so a crash cannot orphan it; the alarm retries anything whose send was uncertain, and a nonce left unusable by a definite failure is filled with a zero-value transfer to the relayer itself, so the nonces after it still go through (🔍 on #677, 23 November 2026).
 
 ## The budgets example, as the journey author will write it
 
