@@ -34,6 +34,12 @@ Read one bridge-business by its id: company, legalName, email, kybLink, tosLink,
 
 ## Worked examples
 
+### bridge: a rejected kyb keeps what bridge gave
+
+Starts from the world `kyb started`.
+
+- **the decision changes nothing else Ada was given.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, the world's kybLink, the world's tosLink, `rejected`].
+
 ### bridge: kyb is decided by bridge
 
 Starts from the world `kyb started`.

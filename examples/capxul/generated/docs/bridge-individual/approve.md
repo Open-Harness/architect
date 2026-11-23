@@ -49,6 +49,12 @@ Starts from an empty world.
 - **Bridge approves her.** `bridge` (system) calls and sends individual the last call's individual, and gets back an answer matching `^kyc_[0-9a-z]+$`.
 - **a turned-down KYC can't then be approved.** `bridge` (system) calls and sends individual the last call's individual, and is refused with BridgeIndividualNotStarted, KC-900, carrying state `rejected`.
 
+### bridge: an approved kyc keeps what bridge gave
+
+Starts from the world `kyc started`.
+
+- **Bridge approves her.** `bridge` (system) calls and sends individual the world's individual, and gets back the world's individual.
+
 ## How to call
 
 ```sh

@@ -42,6 +42,12 @@ Record that Bridge turned down a company's KYB, and why.
 
 ## Worked examples
 
+### bridge: a rejected kyb keeps what bridge gave
+
+Starts from the world `kyb started`.
+
+- **Bridge turns Acme Trading down.** `bridge` (system) calls and sends business the world's business, reason `proof of address missing`, and gets back the world's business.
+
 ### bridge: kyb is decided by bridge
 
 Starts from the world `kyb started`.

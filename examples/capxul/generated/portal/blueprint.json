@@ -124,10 +124,9 @@
         },
         "lives": "database",
         "invariants": {
-          "oneAccountPerDetails": {
+          "oneAccountPerNumber": {
             "kind": "unique",
             "fields": [
-              "routingNumber",
               "accountNumber"
             ]
           },
@@ -242,7 +241,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "cc48d3eb41db3d32"
+        "hash": "25003fc246749f17"
       },
       "bridge-business": {
         "name": "bridge-business",
@@ -772,7 +771,7 @@
         },
         "errors": [],
         "breaks": [
-          "bank-account.oneAccountPerDetails"
+          "bank-account.oneAccountPerNumber"
         ],
         "refusals": [
           "BankAccountNotOpen",
@@ -802,7 +801,7 @@
         "budget": {
           "p95Ms": 800
         },
-        "hash": "0821f87742afb120"
+        "hash": "22fa1486e5caa162"
       },
       "bank-account.get": {
         "kind": "read",
@@ -1003,7 +1002,7 @@
           "BankAccountNameTaken": "bank-account.oneNamePerCompany"
         },
         "breaks": [
-          "bank-account.oneAccountPerDetails",
+          "bank-account.oneAccountPerNumber",
           "bank-account.oneNamePerCompany"
         ],
         "refusals": [
@@ -1040,7 +1039,7 @@
         "budget": {
           "p95Ms": 800
         },
-        "hash": "12b119e751e61654"
+        "hash": "010a747b50ed2cac"
       },
       "bridge-business.approve": {
         "kind": "operation",
@@ -2242,7 +2241,20 @@
               {
                 "kind": "expect-equal",
                 "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "business"
+                    ]
+                  },
                   "Operating",
+                  "USD",
                   {
                     "ref": [
                       "world",
@@ -2287,6 +2299,18 @@
               {
                 "kind": "expect-equal",
                 "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "business"
+                    ]
+                  },
                   "Payroll",
                   "EUR",
                   {
@@ -2316,7 +2340,7 @@
             ]
           }
         ],
-        "sourceHash": "1f791f53e0f84a1bd2f9416e2b098d165d452db577d2b41e648e44b8843f2c5f"
+        "sourceHash": "c71fa9dbb65ad8a17eea00bb6b6fb9b78430cef112e5aa37a25be098d4ab9cc9"
       },
       "journeys/bridge-a-kyc-keeps-what-bridge-gave.ts": {
         "name": "bridge: a kyc keeps what bridge gave",
@@ -2916,6 +2940,337 @@
           }
         ],
         "sourceHash": "561f552fb30e1a085a6a81ec90bd22213bf302b2d89b153a628c9ff44cf524f6"
+      },
+      "journeys/bridge-a-rejected-kyb-keeps-what-bridge-gave.ts": {
+        "name": "bridge: a rejected kyb keeps what bridge gave",
+        "file": "journeys/bridge-a-rejected-kyb-keeps-what-bridge-gave.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "bridge": {
+            "kind": "system"
+          }
+        },
+        "starts": "kyb started",
+        "steps": [
+          {
+            "title": "Bridge turns Acme Trading down",
+            "call": {
+              "actor": "bridge",
+              "operation": "bridge-business.reject",
+              "payload": {
+                "business": {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                },
+                "reason": "proof of address missing"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                }
+              },
+              {
+                "kind": "emits",
+                "event": "KybRejected",
+                "fields": {
+                  "business": {
+                    "ref": [
+                      "world",
+                      "business"
+                    ]
+                  },
+                  "reason": "proof of address missing"
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "bridge-business",
+                "id": {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                },
+                "state": "rejected"
+              }
+            ]
+          },
+          {
+            "title": "the decision changes nothing else Ada was given",
+            "call": {
+              "actor": "ada",
+              "operation": "bridge-business.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Acme Trading Limited",
+                  "finance@acme-trading.test",
+                  {
+                    "ref": [
+                      "world",
+                      "kybLink"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "tosLink"
+                    ]
+                  },
+                  "rejected"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "09d49d2a76d1c23a4ce17f783a7408a5847a904c001f07da64dda8d93103e5e9"
+      },
+      "journeys/bridge-a-reopened-account-is-its-own.ts": {
+        "name": "bridge: a reopened account is its own",
+        "file": "journeys/bridge-a-reopened-account-is-its-own.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "starts": "a reopened account",
+        "steps": [
+          {
+            "title": "the new account reads back with the details its opening answered",
+            "call": {
+              "actor": "ada",
+              "operation": "bank-account.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "business"
+                    ]
+                  },
+                  "Operating",
+                  "USD",
+                  {
+                    "ref": [
+                      "world",
+                      "bankName"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "accountNumber"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "routingNumber"
+                    ]
+                  },
+                  "open"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "the old one is closed, and keeps its own number",
+            "call": {
+              "actor": "ada",
+              "operation": "bank-account.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "old"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "oldAccountNumber"
+                    ]
+                  },
+                  "closed"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "c47e2df195047ce59b64f157d7be17c861f917a27145327c023ff812391d4984"
+      },
+      "journeys/bridge-an-approved-kyc-keeps-what-bridge-gave.ts": {
+        "name": "bridge: an approved kyc keeps what bridge gave",
+        "file": "journeys/bridge-an-approved-kyc-keeps-what-bridge-gave.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "bridge-individual.self"
+          },
+          "bridge": {
+            "kind": "system"
+          }
+        },
+        "starts": "kyc started",
+        "steps": [
+          {
+            "title": "Bridge approves her",
+            "call": {
+              "actor": "bridge",
+              "operation": "bridge-individual.approve",
+              "payload": {
+                "individual": {
+                  "ref": [
+                    "world",
+                    "individual"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "individual"
+                  ]
+                }
+              },
+              {
+                "kind": "emits",
+                "event": "KycApproved",
+                "fields": {
+                  "individual": {
+                    "ref": [
+                      "world",
+                      "individual"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "bridge-individual",
+                "id": {
+                  "ref": [
+                    "world",
+                    "individual"
+                  ]
+                },
+                "state": "approved"
+              }
+            ]
+          },
+          {
+            "title": "the approval changes nothing else she was given",
+            "call": {
+              "actor": "ada",
+              "operation": "bridge-individual.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "individual"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  },
+                  "Ada Wanjiru Kamau",
+                  "ada@acme-trading.test",
+                  {
+                    "ref": [
+                      "world",
+                      "kycLink"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "tosLink"
+                    ]
+                  },
+                  "approved"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "705aefcefc3ab7fd1017f2202c4430672476a49318f1c57dc04d21816b3edc4f"
       },
       "journeys/bridge-kyb-is-decided-by-bridge.ts": {
         "name": "bridge: kyb is decided by bridge",
@@ -4577,6 +4932,98 @@
           }
         }
       },
+      "a reopened account": {
+        "name": "a reopened account",
+        "file": "blueprint/starting-worlds/a-reopened-account.ts",
+        "from": "two bank accounts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "a0e46a5ca593ea357b5bb21972db5842bb35e6b7a4c379f89065e20546110d4d",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "bank-account.close",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            },
+            "request": "acme-close-operating"
+          },
+          {
+            "actor": "ada",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "accountName": "Operating",
+              "currency": "USD"
+            },
+            "request": "acme-reopen"
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "business": {
+            "ref": [
+              "world",
+              "business"
+            ]
+          },
+          "old": {
+            "ref": [
+              "world",
+              "account"
+            ]
+          },
+          "oldAccountNumber": {
+            "ref": [
+              "world",
+              "accountNumber"
+            ]
+          },
+          "account": {
+            "ref": [
+              "last",
+              "account"
+            ]
+          },
+          "bankName": {
+            "ref": [
+              "last",
+              "bankName"
+            ]
+          },
+          "accountNumber": {
+            "ref": [
+              "last",
+              "accountNumber"
+            ]
+          },
+          "routingNumber": {
+            "ref": [
+              "last",
+              "routingNumber"
+            ]
+          }
+        }
+      },
       "kyb approved": {
         "name": "kyb approved",
         "file": "blueprint/starting-worlds/kyb-approved.ts",
@@ -6103,6 +6550,36 @@
         }
       },
       {
+        "id": "verdict:bridge: a rejected kyb keeps what bridge gave:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "bridge: a rejected kyb keeps what bridge gave",
+          "severity": "page",
+          "owner": "journeys/bridge-a-rejected-kyb-keeps-what-bridge-gave.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: a reopened account is its own:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "bridge: a reopened account is its own",
+          "severity": "page",
+          "owner": "journeys/bridge-a-reopened-account-is-its-own.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: an approved kyc keeps what bridge gave:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "bridge: an approved kyc keeps what bridge gave",
+          "severity": "page",
+          "owner": "journeys/bridge-an-approved-kyc-keeps-what-bridge-gave.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: kyb is decided by bridge:local",
         "kind": "verdict",
         "labels": {
@@ -6156,20 +6633,20 @@
   },
   "dependsOnByOperation": {
     "bank-account.close": {
-      "operation:bank-account.close": "0821f87742afb120",
-      "thing:bank-account": "cc48d3eb41db3d32",
+      "operation:bank-account.close": "22fa1486e5caa162",
+      "thing:bank-account": "25003fc246749f17",
       "thing:bridge-business": "d522f5db0c79f857",
       "thing:company": "7e7c8934b44c2510"
     },
     "bank-account.get": {
       "operation:bank-account.get": "eccdba12eb056468",
-      "thing:bank-account": "cc48d3eb41db3d32",
+      "thing:bank-account": "25003fc246749f17",
       "thing:bridge-business": "d522f5db0c79f857",
       "thing:company": "7e7c8934b44c2510"
     },
     "bank-account.open": {
-      "operation:bank-account.open": "12b119e751e61654",
-      "thing:bank-account": "cc48d3eb41db3d32",
+      "operation:bank-account.open": "010a747b50ed2cac",
+      "thing:bank-account": "25003fc246749f17",
       "thing:bridge-business": "d522f5db0c79f857",
       "thing:company": "7e7c8934b44c2510"
     },
@@ -6220,16 +6697,16 @@
   },
   "docs": {
     "bank-account/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account.close\n\nClose a company's bank account; it takes no more deposits.\n\n**Who may call:** the owner of its account.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 800ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| account | bank-account.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| account | bank-account.id |\n\n## Move\n\n`close`: from open to closed, emitting BankAccountClosed.\n\n## Steps\n\n- `bank-account.close.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| BankAccountNotOpen | 40 | BA-900 | the bank-account is in a state close can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its account.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a bank account closes\n\nStarts from the world `two bank accounts`.\n\n- **Bo can't close it.** `bo` (signed in) calls and sends account the world's account, and is refused with NotAllowed, AR-001.\n- **Ada closes it.** `ada` (role company.owner) calls and sends account the world's account, and gets back the world's account.\n- **it can't be closed twice.** `ada` (role company.owner) calls and sends account the world's account, and is refused with BankAccountNotOpen, BA-900, carrying state `closed`.\n\n## How to call\n\n```sh\ncapxul bank-account close --account <account>\n```\n\nHTTP: `POST /bank-account/close` with the payload as JSON. SDK: `Sdk.bank-account.close(payload)`.\n",
-    "bank-account/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account.get\n\nRead one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bank-account.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | bank-account.company |  |\n| business | bank-account.business | The company's approved KYB the account is opened on. |\n| accountName | bank-account.accountName | What the company calls the account (ERPNext's `account_name`). |\n| currency | bank-account.currency | The currency it takes deposits in. |\n| bankName | bank-account.bankName | The bank that holds it, as Bridge names it. |\n| accountNumber | bank-account.accountNumber | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | bank-account.routingNumber | Its routing number, or BIC, as Bridge gives it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### bridge: a bank account closes\n\nStarts from the world `two bank accounts`.\n\n- **Ada reads it back with the deposit details she was given.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].\n- **the new account is a different one.** `ada` (role company.owner) calls and sends id the last call's account, and gets back `open`.\n- **and the old one stays closed.** `ada` (role company.owner) calls and sends id the world's account, and gets back [`Operating`, the world's bankName, the world's accountNumber, the world's routingNumber, `closed`].\n- **the euro account is untouched, with the details it was opened with.** `ada` (role company.owner) calls and sends id the world's payroll, and gets back [`Payroll`, `EUR`, the world's payrollBankName, the world's payrollAccountNumber, the world's payrollRoutingNumber, `open`].\n\n### bridge: open a bank account\n\nStarts from the world `kyb approved`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's account, and is refused with NotAllowed, AR-001.\n- **it reads back as the second account, not the first.** `ada` (role company.owner) calls and sends id the last call's account, and gets back [the world's company, the world's business, `Payroll`, `EUR`, `open`] and gets back an answer matching `^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$`.\n\n## How to call\n\n```sh\ncapxul bank-account get --id <id>\n```\n\nHTTP: `POST /bank-account/get` with the payload as JSON. SDK: `Sdk.bank-account.get(payload)`.\n",
-    "bank-account/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account\n\nA bank account a company holds through Bridge, which takes deposits in one currency.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| business | bridge-business.id | The company's approved KYB the account is opened on. |\n| accountName | Name | What the company calls the account (ERPNext's `account_name`). |\n| currency | AccountCurrency | The currency it takes deposits in. |\n| bankName | DepositDetail | The bank that holds it, as Bridge names it. |\n| accountNumber | DepositDetail | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | DepositDetail | Its routing number, or BIC, as Bridge gives it. |\n\n## Machine\n\nStates: open, closed. A move from the wrong state is refused BankAccountNotOpen (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | open | BankAccountOpened |\n| close | open | closed | BankAccountClosed |\n\n## Invariants\n\n- `bank-account.oneAccountPerDetails`: another bank account holds this routing number and account number. Unique on routingNumber, accountNumber, in every state; refuses nothing, a break is a defect.\n- `bank-account.oneNamePerCompany`: another open bank account holds this company and account name. Unique on company, accountName, while open; refused BankAccountNameTaken.\n\n## Events\n\n- `BankAccountClosed`: carries account (bank-account.id); emitted by the move close\n- `BankAccountOpened`: carries account (bank-account.id), company (bank-account.company), business (bank-account.business: The company's approved KYB the account is opened on.), currency (bank-account.currency: The currency it takes deposits in.); emitted by the move open\n\n## Operations\n\n- [bank-account.close](close.md): Close a company's bank account; it takes no more deposits.\n- [bank-account.get](get.md): Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.\n- [bank-account.open](open.md): Open a bank account for a company whose KYB Bridge approved: answers where to send deposits.\n",
+    "bank-account/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account.get\n\nRead one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bank-account.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | bank-account.company |  |\n| business | bank-account.business | The company's approved KYB the account is opened on. |\n| accountName | bank-account.accountName | What the company calls the account (ERPNext's `account_name`). |\n| currency | bank-account.currency | The currency it takes deposits in. |\n| bankName | bank-account.bankName | The bank that holds it, as Bridge names it. |\n| accountNumber | bank-account.accountNumber | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | bank-account.routingNumber | Its routing number, or BIC, as Bridge gives it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### bridge: a bank account closes\n\nStarts from the world `two bank accounts`.\n\n- **Ada reads it back with the deposit details she was given.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].\n- **the new account is a different one.** `ada` (role company.owner) calls and sends id the last call's account, and gets back `open`.\n- **and the old one stays closed.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `closed`].\n- **the euro account is untouched, with the details it was opened with.** `ada` (role company.owner) calls and sends id the world's payroll, and gets back [the world's company, the world's business, `Payroll`, `EUR`, the world's payrollBankName, the world's payrollAccountNumber, the world's payrollRoutingNumber, `open`].\n\n### bridge: a reopened account is its own\n\nStarts from the world `a reopened account`.\n\n- **the new account reads back with the details its opening answered.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].\n- **the old one is closed, and keeps its own number.** `ada` (role company.owner) calls and sends id the world's old, and gets back [the world's oldAccountNumber, `closed`].\n\n### bridge: open a bank account\n\nStarts from the world `kyb approved`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's account, and is refused with NotAllowed, AR-001.\n- **it reads back as the second account, not the first.** `ada` (role company.owner) calls and sends id the last call's account, and gets back [the world's company, the world's business, `Payroll`, `EUR`, `open`] and gets back an answer matching `^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$`.\n\n## How to call\n\n```sh\ncapxul bank-account get --id <id>\n```\n\nHTTP: `POST /bank-account/get` with the payload as JSON. SDK: `Sdk.bank-account.get(payload)`.\n",
+    "bank-account/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account\n\nA bank account a company holds through Bridge, which takes deposits in one currency.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| business | bridge-business.id | The company's approved KYB the account is opened on. |\n| accountName | Name | What the company calls the account (ERPNext's `account_name`). |\n| currency | AccountCurrency | The currency it takes deposits in. |\n| bankName | DepositDetail | The bank that holds it, as Bridge names it. |\n| accountNumber | DepositDetail | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | DepositDetail | Its routing number, or BIC, as Bridge gives it. |\n\n## Machine\n\nStates: open, closed. A move from the wrong state is refused BankAccountNotOpen (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | open | BankAccountOpened |\n| close | open | closed | BankAccountClosed |\n\n## Invariants\n\n- `bank-account.oneAccountPerNumber`: another bank account holds this account number. Unique on accountNumber, in every state; refuses nothing, a break is a defect.\n- `bank-account.oneNamePerCompany`: another open bank account holds this company and account name. Unique on company, accountName, while open; refused BankAccountNameTaken.\n\n## Events\n\n- `BankAccountClosed`: carries account (bank-account.id); emitted by the move close\n- `BankAccountOpened`: carries account (bank-account.id), company (bank-account.company), business (bank-account.business: The company's approved KYB the account is opened on.), currency (bank-account.currency: The currency it takes deposits in.); emitted by the move open\n\n## Operations\n\n- [bank-account.close](close.md): Close a company's bank account; it takes no more deposits.\n- [bank-account.get](get.md): Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.\n- [bank-account.open](open.md): Open a bank account for a company whose KYB Bridge approved: answers where to send deposits.\n",
     "bank-account/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account.open\n\nOpen a bank account for a company whose KYB Bridge approved: answers where to send deposits.\n\n**Who may call:** the owner of its business.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 800ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| business | bank-account.business | The company's approved KYB the account is opened on. |\n| accountName | bank-account.accountName | What the company calls the account (ERPNext's `account_name`). |\n| currency | bank-account.currency | The currency it takes deposits in. |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| account | bank-account.id |  |\n| bankName | bank-account.bankName | The bank that holds it, as Bridge names it. |\n| accountNumber | bank-account.accountNumber | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | bank-account.routingNumber | Its routing number, or BIC, as Bridge gives it. |\n\n## Move\n\n`open`: from nothing (it creates) to open, emitting BankAccountOpened.\n\n## Steps\n\n- `bank-account.open.load` (database)\n- `bank-account.open.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KybNotApproved | 41 | BA-001 | declared in errors.ts |\n| BankAccountNameTaken | 42 | BA-002 | another open bank account holds this company and account name; by the rule bank-account.oneNamePerCompany, carrying accountName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its business.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a bank account closes\n\nStarts from the world `two bank accounts`.\n\n- **a closed account frees its name for a new one.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, and gets back an answer matching `^bac_[0-9a-z]+$`.\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `kyb started`.\n\n- **nor open a bank account before Bridge approves it.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, and is refused with KybNotApproved, BA-001.\n- **and opens no bank account.** `bo` (signed in) calls and sends business the last call's business, accountName `Main`, currency `EUR`, and is refused with KybNotApproved, BA-001.\n\n### bridge: open a bank account\n\nStarts from the world `kyb approved`.\n\n- **Bo can't open an account on Ada's company.** `bo` (signed in) calls and sends business the world's business, accountName `Operating`, currency `USD`, and is refused with NotAllowed, AR-001.\n- **Ada opens a US dollar account and gets where to send deposits.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, with the request key `acme-operating`, and gets back an answer matching `^bac_[0-9a-z]+$` and gets back an answer matching `\\S` and gets back an answer matching `^\\d{4,17}$` and gets back an answer matching `^\\d{9}$`.\n- **the company has one open account by a name.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `EUR`, and is refused with BankAccountNameTaken, BA-002, carrying accountName `Operating`.\n- **she opens a euro account under another name.** `ada` (role company.owner) calls and sends business the world's business, accountName `Payroll`, currency `EUR`, and gets back an answer matching `^bac_[0-9a-z]+$` and gets back an answer matching `^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$` and gets back an answer matching `^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$`.\n\n## How to call\n\n```sh\ncapxul bank-account open --business <business> --accountName <accountName> --currency <currency>\n```\n\nHTTP: `POST /bank-account/open` with the payload as JSON. SDK: `Sdk.bank-account.open(payload)`.\n",
     "bridge-business/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business.approve\n\nRecord that Bridge approved a company's KYB.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| business | bridge-business.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| business | bridge-business.id |\n\n## Move\n\n`approve`: from started to approved, emitting KybApproved.\n\n## Steps\n\n- `bridge-business.approve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KybAlreadyStarted | 41 | KB-001 | another bridge business holds this company; by the rule bridge-business.oneKybPerCompany, carrying company |\n| BridgeBusinessNotStarted | 40 | KB-900 | the bridge-business is in a state approve can't start from; carries `state` |\n| BridgeBusinessNotFound | 4 | KB-901 | nothing has the id in business; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `kyb started`.\n\n- **Ada can't approve her own company's KYB.** `ada` (role company.owner) calls and sends business the world's business, and is refused with NotAllowed, AR-001.\n- **Bridge approves it.** `bridge` (system) calls and sends business the world's business, and gets back the world's business.\n- **an approved KYB can't be approved again.** `bridge` (system) calls and sends business the world's business, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `approved`.\n- **a turned-down KYB can't then be approved.** `bridge` (system) calls and sends business the last call's business, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul bridge-business approve --business <business>\n```\n\nHTTP: `POST /bridge-business/approve` with the payload as JSON. SDK: `Sdk.bridge-business.approve(payload)`.\n",
-    "bridge-business/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business.get\n\nRead one bridge-business by its id: company, legalName, email, kybLink, tosLink, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bridge-business.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | bridge-business.company |  |\n| legalName | bridge-business.legalName | The company's name as it is registered, which Bridge checks. |\n| email | bridge-business.email | Where Bridge writes to the business about its KYB. |\n| kybLink | bridge-business.kybLink | Bridge's hosted KYB form for this business. |\n| tosLink | bridge-business.tosLink | Bridge's terms of service, which the business accepts before it is approved. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `kyb started`.\n\n- **Ada reads it back approved, with everything else as it was started.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, the world's kybLink, the world's tosLink, `approved`].\n- **Bo reads his back turned down, as he typed it.** `bo` (signed in) calls and sends id the last call's business, and gets back [`Bo Limited`, `bo@bo-ltd.test`, `rejected`].\n- **Ada's approval is untouched by Bo's refusal.** `ada` (role company.owner) calls and sends id the world's business, and gets back `approved`.\n\n### bridge: start a kyb\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's KYB.** `bo` (signed in) calls and sends id the last call's business, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, still started, with a form and terms that differ.** `ada` (role company.owner) calls and sends id the last call's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, `started`] and gets back false.\n\n## How to call\n\n```sh\ncapxul bridge-business get --id <id>\n```\n\nHTTP: `POST /bridge-business/get` with the payload as JSON. SDK: `Sdk.bridge-business.get(payload)`.\n",
+    "bridge-business/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business.get\n\nRead one bridge-business by its id: company, legalName, email, kybLink, tosLink, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bridge-business.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | bridge-business.company |  |\n| legalName | bridge-business.legalName | The company's name as it is registered, which Bridge checks. |\n| email | bridge-business.email | Where Bridge writes to the business about its KYB. |\n| kybLink | bridge-business.kybLink | Bridge's hosted KYB form for this business. |\n| tosLink | bridge-business.tosLink | Bridge's terms of service, which the business accepts before it is approved. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### bridge: a rejected kyb keeps what bridge gave\n\nStarts from the world `kyb started`.\n\n- **the decision changes nothing else Ada was given.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, the world's kybLink, the world's tosLink, `rejected`].\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `kyb started`.\n\n- **Ada reads it back approved, with everything else as it was started.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, the world's kybLink, the world's tosLink, `approved`].\n- **Bo reads his back turned down, as he typed it.** `bo` (signed in) calls and sends id the last call's business, and gets back [`Bo Limited`, `bo@bo-ltd.test`, `rejected`].\n- **Ada's approval is untouched by Bo's refusal.** `ada` (role company.owner) calls and sends id the world's business, and gets back `approved`.\n\n### bridge: start a kyb\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's KYB.** `bo` (signed in) calls and sends id the last call's business, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, still started, with a form and terms that differ.** `ada` (role company.owner) calls and sends id the last call's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, `started`] and gets back false.\n\n## How to call\n\n```sh\ncapxul bridge-business get --id <id>\n```\n\nHTTP: `POST /bridge-business/get` with the payload as JSON. SDK: `Sdk.bridge-business.get(payload)`.\n",
     "bridge-business/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business\n\nA company's KYB with Bridge: the check of who the business is, which its bank accounts need.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| legalName | LegalName | The company's name as it is registered, which Bridge checks. |\n| email | text | Where Bridge writes to the business about its KYB. |\n| kybLink | BridgeLink | Bridge's hosted KYB form for this business. |\n| tosLink | BridgeLink | Bridge's terms of service, which the business accepts before it is approved. |\n\n## Machine\n\nStates: started, approved, rejected. A move from the wrong state is refused BridgeBusinessNotStarted (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| start | (creates) | started | KybStarted |\n| approve | started | approved | KybApproved |\n| reject | started | rejected | KybRejected |\n\n## Invariants\n\n- `bridge-business.oneKybPerCompany`: another bridge business holds this company. Unique on company, in every state; refused KybAlreadyStarted.\n\n## Events\n\n- `KybApproved`: carries business (bridge-business.id); emitted by the move approve\n- `KybRejected`: carries business (bridge-business.id), reason (RejectionReason); emitted by the move reject\n- `KybStarted`: carries business (bridge-business.id), company (bridge-business.company); emitted by the move start\n\n## Operations\n\n- [bridge-business.approve](approve.md): Record that Bridge approved a company's KYB.\n- [bridge-business.get](get.md): Read one bridge-business by its id: company, legalName, email, kybLink, tosLink, state.\n- [bridge-business.reject](reject.md): Record that Bridge turned down a company's KYB, and why.\n- [bridge-business.start](start.md): Start a company's KYB with Bridge: answers the form the business fills in, and Bridge's terms.\n",
-    "bridge-business/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business.reject\n\nRecord that Bridge turned down a company's KYB, and why.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| business | bridge-business.id |\n| reason | RejectionReason |\n\n## Answer\n\n| field | value |\n|---|---|\n| business | bridge-business.id |\n\n## Move\n\n`reject`: from started to rejected, emitting KybRejected.\n\n## Steps\n\n- `bridge-business.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KybAlreadyStarted | 41 | KB-001 | another bridge business holds this company; by the rule bridge-business.oneKybPerCompany, carrying company |\n| BridgeBusinessNotStarted | 40 | KB-900 | the bridge-business is in a state reject can't start from; carries `state` |\n| BridgeBusinessNotFound | 4 | KB-901 | nothing has the id in business; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `kyb started`.\n\n- **nor turned down afterwards.** `bridge` (system) calls and sends business the world's business, reason `documents expired`, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `approved`.\n- **Bo can't turn down his own KYB either.** `bo` (signed in) calls and sends business the last call's business, reason `changed my mind`, and is refused with NotAllowed, AR-001.\n- **Bridge turns Bo's down, with its reason.** `bridge` (system) calls and sends business the last call's business, reason `registration certificate unreadable`, and gets back an answer matching `^kyb_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul bridge-business reject --business <business> --reason <reason>\n```\n\nHTTP: `POST /bridge-business/reject` with the payload as JSON. SDK: `Sdk.bridge-business.reject(payload)`.\n",
+    "bridge-business/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business.reject\n\nRecord that Bridge turned down a company's KYB, and why.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| business | bridge-business.id |\n| reason | RejectionReason |\n\n## Answer\n\n| field | value |\n|---|---|\n| business | bridge-business.id |\n\n## Move\n\n`reject`: from started to rejected, emitting KybRejected.\n\n## Steps\n\n- `bridge-business.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KybAlreadyStarted | 41 | KB-001 | another bridge business holds this company; by the rule bridge-business.oneKybPerCompany, carrying company |\n| BridgeBusinessNotStarted | 40 | KB-900 | the bridge-business is in a state reject can't start from; carries `state` |\n| BridgeBusinessNotFound | 4 | KB-901 | nothing has the id in business; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a rejected kyb keeps what bridge gave\n\nStarts from the world `kyb started`.\n\n- **Bridge turns Acme Trading down.** `bridge` (system) calls and sends business the world's business, reason `proof of address missing`, and gets back the world's business.\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `kyb started`.\n\n- **nor turned down afterwards.** `bridge` (system) calls and sends business the world's business, reason `documents expired`, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `approved`.\n- **Bo can't turn down his own KYB either.** `bo` (signed in) calls and sends business the last call's business, reason `changed my mind`, and is refused with NotAllowed, AR-001.\n- **Bridge turns Bo's down, with its reason.** `bridge` (system) calls and sends business the last call's business, reason `registration certificate unreadable`, and gets back an answer matching `^kyb_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul bridge-business reject --business <business> --reason <reason>\n```\n\nHTTP: `POST /bridge-business/reject` with the payload as JSON. SDK: `Sdk.bridge-business.reject(payload)`.\n",
     "bridge-business/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business.start\n\nStart a company's KYB with Bridge: answers the form the business fills in, and Bridge's terms.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 800ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | bridge-business.company |  |\n| legalName | bridge-business.legalName | The company's name as it is registered, which Bridge checks. |\n| email | bridge-business.email | Where Bridge writes to the business about its KYB. |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| business | bridge-business.id |  |\n| kybLink | bridge-business.kybLink | Bridge's hosted KYB form for this business. |\n| tosLink | bridge-business.tosLink | Bridge's terms of service, which the business accepts before it is approved. |\n\n## Move\n\n`start`: from nothing (it creates) to started, emitting KybStarted.\n\n## Steps\n\n- `bridge-business.start.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KybAlreadyStarted | 41 | KB-001 | another bridge business holds this company; by the rule bridge-business.oneKybPerCompany, carrying company |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `kyb started`.\n\n- **Bo starts its KYB.** `bo` (signed in) calls and sends company the last call's company, legalName `Bo Limited`, email `bo@bo-ltd.test`, and gets back an answer matching `^kyb_[0-9a-z]+$`.\n\n### bridge: start a kyb\n\nStarts from the world `a company`.\n\n- **Bo can't start KYB for a company he doesn't run.** `bo` (signed in) calls and sends company the world's company, legalName `Acme Trading Limited`, email `bo@elsewhere.test`, and is refused with NotAllowed, AR-001.\n- **Ada starts her company's KYB and gets Bridge's form and terms.** `ada` (role company.owner) calls and sends company the world's company, legalName `Acme Trading Limited`, email `finance@acme-trading.test`, with the request key `acme-kyb`, and gets back an answer matching `^kyb_[0-9a-z]+$` and gets back an answer matching `^https:\\/\\/\\S+$` and gets back an answer matching `^https:\\/\\/\\S+$`.\n- **a company has one KYB, so a second start is refused.** `ada` (role company.owner) calls and sends company the world's company, legalName `Acme Trading Ltd`, email `ops@acme-trading.test`, and is refused with KybAlreadyStarted, KB-001, carrying company the world's company.\n\n## How to call\n\n```sh\ncapxul bridge-business start --company <company> --legalName <legalName> --email <email>\n```\n\nHTTP: `POST /bridge-business/start` with the payload as JSON. SDK: `Sdk.bridge-business.start(payload)`.\n",
-    "bridge-individual/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.approve\n\nRecord that Bridge approved a person's KYC.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n\n## Move\n\n`approve`: from started to approved, emitting KycApproved.\n\n## Steps\n\n- `bridge-individual.approve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KycAlreadyStarted | 41 | KC-001 | another bridge individual holds this person; by the rule bridge-individual.oneKycPerPerson, carrying person |\n| BridgeIndividualNotStarted | 40 | KC-900 | the bridge-individual is in a state approve can't start from; carries `state` |\n| BridgeIndividualNotFound | 4 | KC-901 | nothing has the id in individual; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **Ada can't approve herself.** `ada` (signed in) calls and sends individual the last call's individual, and is refused with NotAllowed, AR-001.\n- **Bridge approves her.** `bridge` (system) calls and sends individual the last call's individual, and gets back an answer matching `^kyc_[0-9a-z]+$`.\n- **a turned-down KYC can't then be approved.** `bridge` (system) calls and sends individual the last call's individual, and is refused with BridgeIndividualNotStarted, KC-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul bridge-individual approve --individual <individual>\n```\n\nHTTP: `POST /bridge-individual/approve` with the payload as JSON. SDK: `Sdk.bridge-individual.approve(payload)`.\n",
-    "bridge-individual/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.get\n\nRead one bridge-individual by its id: person, fullName, email, kycLink, tosLink, state.\n\n**Who may call:** the self of the bridge-individual.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bridge-individual.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| person | bridge-individual.person | The person checked, who started it. |\n| fullName | bridge-individual.fullName | The person's name as their documents give it, which Bridge checks. |\n| email | bridge-individual.email | Where Bridge writes to the person about their KYC. |\n| kycLink | bridge-individual.kycLink | Bridge's hosted KYC form for this person. |\n| tosLink | bridge-individual.tosLink | Bridge's terms of service, which the person accepts before they are approved. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of the bridge-individual; the handler never runs |\n\n## Worked examples\n\n### bridge: a kyc keeps what bridge gave\n\nStarts from the world `kyc started`.\n\n- **Ada reads her KYC back with the form and terms she was given.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `started`].\n- **the decision changes nothing else she was given.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `rejected`].\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **Bo can't read Ada's KYC.** `bo` (signed in) calls and sends id the last call's individual, and is refused with NotAllowed, AR-001.\n- **she reads it back as she typed it, approved, with a form and terms that differ.** `ada` (signed in) calls and sends id the last call's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, `approved`] and gets back false.\n- **Bo reads his own back, turned down.** `bo` (signed in) calls and sends id the last call's individual, and gets back [the cast's bo person, `Bo Otieno`, `bo@bo-ltd.test`, `rejected`].\n\n## How to call\n\n```sh\ncapxul bridge-individual get --id <id>\n```\n\nHTTP: `POST /bridge-individual/get` with the payload as JSON. SDK: `Sdk.bridge-individual.get(payload)`.\n",
+    "bridge-individual/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.approve\n\nRecord that Bridge approved a person's KYC.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n\n## Move\n\n`approve`: from started to approved, emitting KycApproved.\n\n## Steps\n\n- `bridge-individual.approve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KycAlreadyStarted | 41 | KC-001 | another bridge individual holds this person; by the rule bridge-individual.oneKycPerPerson, carrying person |\n| BridgeIndividualNotStarted | 40 | KC-900 | the bridge-individual is in a state approve can't start from; carries `state` |\n| BridgeIndividualNotFound | 4 | KC-901 | nothing has the id in individual; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **Ada can't approve herself.** `ada` (signed in) calls and sends individual the last call's individual, and is refused with NotAllowed, AR-001.\n- **Bridge approves her.** `bridge` (system) calls and sends individual the last call's individual, and gets back an answer matching `^kyc_[0-9a-z]+$`.\n- **a turned-down KYC can't then be approved.** `bridge` (system) calls and sends individual the last call's individual, and is refused with BridgeIndividualNotStarted, KC-900, carrying state `rejected`.\n\n### bridge: an approved kyc keeps what bridge gave\n\nStarts from the world `kyc started`.\n\n- **Bridge approves her.** `bridge` (system) calls and sends individual the world's individual, and gets back the world's individual.\n\n## How to call\n\n```sh\ncapxul bridge-individual approve --individual <individual>\n```\n\nHTTP: `POST /bridge-individual/approve` with the payload as JSON. SDK: `Sdk.bridge-individual.approve(payload)`.\n",
+    "bridge-individual/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.get\n\nRead one bridge-individual by its id: person, fullName, email, kycLink, tosLink, state.\n\n**Who may call:** the self of the bridge-individual.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bridge-individual.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| person | bridge-individual.person | The person checked, who started it. |\n| fullName | bridge-individual.fullName | The person's name as their documents give it, which Bridge checks. |\n| email | bridge-individual.email | Where Bridge writes to the person about their KYC. |\n| kycLink | bridge-individual.kycLink | Bridge's hosted KYC form for this person. |\n| tosLink | bridge-individual.tosLink | Bridge's terms of service, which the person accepts before they are approved. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of the bridge-individual; the handler never runs |\n\n## Worked examples\n\n### bridge: a kyc keeps what bridge gave\n\nStarts from the world `kyc started`.\n\n- **Ada reads her KYC back with the form and terms she was given.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `started`].\n- **the decision changes nothing else she was given.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `rejected`].\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **Bo can't read Ada's KYC.** `bo` (signed in) calls and sends id the last call's individual, and is refused with NotAllowed, AR-001.\n- **she reads it back as she typed it, approved, with a form and terms that differ.** `ada` (signed in) calls and sends id the last call's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, `approved`] and gets back false.\n- **Bo reads his own back, turned down.** `bo` (signed in) calls and sends id the last call's individual, and gets back [the cast's bo person, `Bo Otieno`, `bo@bo-ltd.test`, `rejected`].\n\n### bridge: an approved kyc keeps what bridge gave\n\nStarts from the world `kyc started`.\n\n- **the approval changes nothing else she was given.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `approved`].\n\n## How to call\n\n```sh\ncapxul bridge-individual get --id <id>\n```\n\nHTTP: `POST /bridge-individual/get` with the payload as JSON. SDK: `Sdk.bridge-individual.get(payload)`.\n",
     "bridge-individual/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual\n\nA person's KYC with Bridge: the check of who they are.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| person | id | The person checked, who started it. |\n| fullName | LegalName | The person's name as their documents give it, which Bridge checks. |\n| email | text | Where Bridge writes to the person about their KYC. |\n| kycLink | BridgeLink | Bridge's hosted KYC form for this person. |\n| tosLink | BridgeLink | Bridge's terms of service, which the person accepts before they are approved. |\n\n## Machine\n\nStates: started, approved, rejected. A move from the wrong state is refused BridgeIndividualNotStarted (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| start | (creates) | started | KycStarted |\n| approve | started | approved | KycApproved |\n| reject | started | rejected | KycRejected |\n\n## Invariants\n\n- `bridge-individual.oneKycPerPerson`: another bridge individual holds this person. Unique on person, in every state; refused KycAlreadyStarted.\n\n## Events\n\n- `KycApproved`: carries individual (bridge-individual.id); emitted by the move approve\n- `KycRejected`: carries individual (bridge-individual.id), reason (RejectionReason); emitted by the move reject\n- `KycStarted`: carries individual (bridge-individual.id), person (bridge-individual.person: The person checked, who started it.); emitted by the move start\n\n## Roles\n\n- self\n\n## Operations\n\n- [bridge-individual.approve](approve.md): Record that Bridge approved a person's KYC.\n- [bridge-individual.get](get.md): Read one bridge-individual by its id: person, fullName, email, kycLink, tosLink, state.\n- [bridge-individual.reject](reject.md): Record that Bridge turned down a person's KYC, and why.\n- [bridge-individual.start](start.md): Start your own KYC with Bridge: answers the form you fill in, and Bridge's terms.\n",
     "bridge-individual/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.reject\n\nRecord that Bridge turned down a person's KYC, and why.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n| reason | RejectionReason |\n\n## Answer\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n\n## Move\n\n`reject`: from started to rejected, emitting KycRejected.\n\n## Steps\n\n- `bridge-individual.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KycAlreadyStarted | 41 | KC-001 | another bridge individual holds this person; by the rule bridge-individual.oneKycPerPerson, carrying person |\n| BridgeIndividualNotStarted | 40 | KC-900 | the bridge-individual is in a state reject can't start from; carries `state` |\n| BridgeIndividualNotFound | 4 | KC-901 | nothing has the id in individual; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a kyc keeps what bridge gave\n\nStarts from the world `kyc started`.\n\n- **Bridge turns her down.** `bridge` (system) calls and sends individual the world's individual, reason `document photo too dark`, and is answered.\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **Bridge turns Bo down, with its reason.** `bridge` (system) calls and sends individual the last call's individual, reason `selfie does not match the passport`, and gets back an answer matching `^kyc_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul bridge-individual reject --individual <individual> --reason <reason>\n```\n\nHTTP: `POST /bridge-individual/reject` with the payload as JSON. SDK: `Sdk.bridge-individual.reject(payload)`.\n",
     "bridge-individual/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.start\n\nStart your own KYC with Bridge: answers the form you fill in, and Bridge's terms.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 800ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| fullName | bridge-individual.fullName | The person's name as their documents give it, which Bridge checks. |\n| email | bridge-individual.email | Where Bridge writes to the person about their KYC. |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| individual | bridge-individual.id |  |\n| kycLink | bridge-individual.kycLink | Bridge's hosted KYC form for this person. |\n| tosLink | bridge-individual.tosLink | Bridge's terms of service, which the person accepts before they are approved. |\n\n## Move\n\n`start`: from nothing (it creates) to started, emitting KycStarted.\n\n## Steps\n\n- `bridge-individual.start.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KycAlreadyStarted | 41 | KC-001 | another bridge individual holds this person; by the rule bridge-individual.oneKycPerPerson, carrying person |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **the system can't start a KYC: it is nobody.** `bridge` (system) calls and sends fullName `Nobody At All`, email `nobody@capxul.test`, and is refused with NotAllowed, AR-001.\n- **Ada starts her own KYC and gets Bridge's form and terms.** `ada` (signed in) calls and sends fullName `Ada Wanjiru Kamau`, email `ada@acme-trading.test`, with the request key `ada-kyc`, and gets back an answer matching `^kyc_[0-9a-z]+$` and gets back an answer matching `^https:\\/\\/\\S+$` and gets back an answer matching `^https:\\/\\/\\S+$`.\n- **a person has one KYC, so a second start is refused.** `ada` (signed in) calls and sends fullName `Ada W. Kamau`, email `ada.k@acme-trading.test`, and is refused with KycAlreadyStarted, KC-001, carrying person the cast's ada person.\n- **Bo starts his own, which Ada's doesn't block.** `bo` (signed in) calls and sends fullName `Bo Otieno`, email `bo@bo-ltd.test`, and gets back an answer matching `^kyc_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul bridge-individual start --fullName <fullName> --email <email>\n```\n\nHTTP: `POST /bridge-individual/start` with the payload as JSON. SDK: `Sdk.bridge-individual.start(payload)`.\n",
@@ -6251,5 +6728,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "097ef5c7a92c26c723d20f4c11d05dda61e003377695efac80aa364006c19543"
+  "digest": "19f37728da7de39d14e90aac8272136dcb8f6bc6b3414845501513e578e0bbd1"
 }

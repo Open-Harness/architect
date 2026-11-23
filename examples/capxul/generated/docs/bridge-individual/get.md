@@ -49,6 +49,12 @@ Starts from an empty world.
 - **she reads it back as she typed it, approved, with a form and terms that differ.** `ada` (signed in) calls and sends id the last call's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, `approved`] and gets back false.
 - **Bo reads his own back, turned down.** `bo` (signed in) calls and sends id the last call's individual, and gets back [the cast's bo person, `Bo Otieno`, `bo@bo-ltd.test`, `rejected`].
 
+### bridge: an approved kyc keeps what bridge gave
+
+Starts from the world `kyc started`.
+
+- **the approval changes nothing else she was given.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `approved`].
+
 ## How to call
 
 ```sh

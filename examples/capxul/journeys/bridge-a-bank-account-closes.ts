@@ -66,8 +66,11 @@ export default Blueprint.journey("bridge: a bank account closes", {
     s.step(
       "and the old one stays closed",
       s.ada.run(get, { id: s.world.account }),
-      expect((a) => [a.accountName, a.bankName, a.accountNumber, a.routingNumber, a.state]).toEqual([
+      expect((a) => [a.company, a.business, a.accountName, a.currency, a.bankName, a.accountNumber, a.routingNumber, a.state]).toEqual([
+        s.world.company,
+        s.world.business,
         "Operating",
+        "USD",
         s.world.bankName,
         s.world.accountNumber,
         s.world.routingNumber,
@@ -78,7 +81,9 @@ export default Blueprint.journey("bridge: a bank account closes", {
     s.step(
       "the euro account is untouched, with the details it was opened with",
       s.ada.run(get, { id: s.world.payroll }),
-      expect((a) => [a.accountName, a.currency, a.bankName, a.accountNumber, a.routingNumber, a.state]).toEqual([
+      expect((a) => [a.company, a.business, a.accountName, a.currency, a.bankName, a.accountNumber, a.routingNumber, a.state]).toEqual([
+        s.world.company,
+        s.world.business,
         "Payroll",
         "EUR",
         s.world.payrollBankName,

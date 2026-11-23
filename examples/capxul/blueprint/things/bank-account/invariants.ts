@@ -10,6 +10,6 @@ export const oneNamePerCompany = Blueprint.invariant.unique([BankAccount.fields.
   refuse: BankAccountNameTaken,
 });
 
-// Bridge routes a deposit by its details, so no two accounts, open or closed, share them. It names no refusal: a clash
-// is the handler's bug, not the caller's.
-export const oneAccountPerDetails = Blueprint.invariant.unique([BankAccount.fields.routingNumber, BankAccount.fields.accountNumber]);
+// Bridge routes a deposit by its account number (or IBAN), so no two accounts, open or closed, share one. It names no
+// refusal: a clash is the handler's bug, not the caller's.
+export const oneAccountPerNumber = Blueprint.invariant.unique([BankAccount.fields.accountNumber]);
