@@ -5,6 +5,7 @@ declare namespace Cloudflare {
     WORLD: DurableObjectNamespace;
     ACTORS: DurableObjectNamespace;
     RELAYER: DurableObjectNamespace<import("../src/modules/relayer/service.ts").Relayer>;
+    FOLLOWER: DurableObjectNamespace<import("../src/modules/follower/service.ts").Follower>;
     AUTH_SECRET: string;
     TEST_MIGRATIONS: import("cloudflare:test").D1Migration[];
     TEST_MIGRATIONS_VAULT: import("cloudflare:test").D1Migration[];

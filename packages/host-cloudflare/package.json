@@ -9,6 +9,7 @@
     "orthograph": "workspace:*",
     "@orthograph/chain-evm": "workspace:*",
     "@orthograph/language-effect": "workspace:*",
+    "@orthograph/chain-evm": "workspace:*",
     "@better-auth/api-key": "1.7.15",
     "@better-auth/core": "1.7.15",
     "@better-auth/oauth-provider": "1.7.15",
