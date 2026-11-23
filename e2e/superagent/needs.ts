@@ -24,7 +24,9 @@ export const NEEDS: Readonly<Record<Name, Needs>> = {
   },
   posthog: {
     calls: ["errorTrackingIssuesList", "errorTrackingIssuesRetrieve", "errorTrackingIssuesPartialUpdate"],
-    events: [],
+    // not in PostHog's spec: written by hand in the adapter (slice 11, GOAL17-names call 6), as Slack's are. PostHog publishes no
+    // alert-webhook body (its destinations template one), so 65 judges them against the shape the README fixes (slice 10).
+    events: ["errorAlert", "errorResolved"],
   },
 };
 

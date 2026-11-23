@@ -1,0 +1,7 @@
+# Slice 10 checks. Red until slice 11's compiler refuses GOAL17-source-from :322, :324, :326 and :325's `environment.of` half.
+superagent/64-the-deferred-source-refusals.test.ts > 64 :322 a `gone` error is one the reply call declares > an error the reply call (`issues.createComment`) does not declare, listed in `gone`, is refused, naming the error, `gone` and the call
+superagent/64-the-deferred-source-refusals.test.ts > 64 :322 a `gone` error is one the reply call declares > the same for Slack's reply: an error `chatPostMessage` does not declare
+superagent/64-the-deferred-source-refusals.test.ts > 64 :324 a `config` has a `me` of the { id, login } shape > a `me` that is a plain string, or has an `id` and no `login`, or a `login` and no `id`, is refused the same way
+superagent/64-the-deferred-source-refusals.test.ts > 64 :324 a `config` has a `me` of the { id, login } shape > a config with no `me` is refused, naming the source and `me`
+superagent/64-the-deferred-source-refusals.test.ts > 64 :325 `environment.of` answers the names `variables` declares, no others > a key `of` returns that `variables` does not declare is refused, naming it
+superagent/64-the-deferred-source-refusals.test.ts > 64 :326 a connection names only events some kind the source makes produces > an event no kind produces (`bogus`), in a declared connection, is refused, naming it and the source

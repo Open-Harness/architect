@@ -222,3 +222,73 @@ changed stops and asks its author.
 - `tools/ci/builder-paths.sh` lets a `-build` branch shrink only M1's and M2's lists: add `e2e/superagent/expected-failing/`,
   or slice 4's builder cannot take its lines off the list.
 - `e2e/project.json` and `e2e/vitest.superagent*.config.ts` register the checks, as M8's are.
+
+# Goal 17's checks: the connections (slice 10)
+
+Written before slice 11 builds the doors, by an author who builds none of it. Slice 11's done-when is "slice 10 passes": the
+doors with accounts and object keys (K40 fixes 1 and 5), the PostHog source with its hand-written events, and the stand-ins.
+They judge the connections through what a user of them reaches: the adapter descriptors' events (`id`, `actor`), the source
+kinds' pure mappings (`Source.from`'s `spec`), `ortho check` and `ortho model --json` on a copy of the app, and the doors over
+HTTP in a world (`Worlds.start`). Each says in its header what is red today and why.
+
+| Check | What it proves | Reads |
+|---|---|---|
+| `60-connections-oracle` | the instruments are sound: the signing helpers give GitHub's documented test vector and Slack's `v0` scheme; every GitHub payload the checks send fits GitHub's spec, and each part left out or mistyped does not | the pinned GitHub spec |
+| `61-events-carry-ids-and-accounts` | each event an adapter offers names its identity (`id(e)`: one change to one object, the same from door and poll) and its account (`actor(e)`: stable id as a string, name, bot); PostHog's `errorAlert` and `errorResolved` decode whole and refuse each wrong payload | the held adapters' descriptors |
+| `62-the-mappings` | each mapping makes the right trigger: kind, thread, text, url, `addressed`, address, which connections listen, how a reply and a history are made, what the environment holds; GitHub's, Slack's and PostHog's | the source kinds' `spec` |
+| `63-the-doors` | `/_in/github` and `/_in/slack`: a signed delivery accepted and written once; each bad signature refused with nothing written; a comment settles once by any delivery id, an edit is another event; ignored types; Slack's challenge, retry and five-minute window | the app in a world |
+| `64-the-deferred-source-refusals` | the four refusals check 15 deferred (GOAL17-source-from :322, :324, :326 and :325's second half), each with a passing control | `ortho generate`, `ortho check` |
+| `65-posthog-is-a-source` | with its events, PostHog is an active source: the mount, `sources.posthog`, its refusals and its silence when nothing is included | `ortho model --json`, `ortho check` |
+
+Also changed: `needs.ts` lists PostHog's two events (so `02-includes` now asks the held PostHog plugin for them, red until slice
+11); `14-the-framework-forms` no longer says PostHog is not a source (65 says it is); `app.ts` gains `swapPlugins`, which copies every
+held plugin and links each copy to the others', so an edited plugin still passes `ortho check` where nothing else is wrong (`swapPlugin`
+leaves the others importing the original, and `ortho check` then refuses for that whatever the edit).
+
+## What the builder must make, and where the checks read it (slice 10)
+
+The records settle most of it (GOAL17-source-from, K40 fixes 1 and 5, `M5-reach-out.md` Q2 for the door, `M5-checks.md` call 4 for its
+answers). These are the points they leave open, fixed here so a check can read them. A builder who needs one changed stops and asks
+its author.
+
+1. **An adapter's event has `id` and `actor`.** `descriptor.events.<name>.id(payload)` is a non-empty string and `.actor(payload)`
+   is `{ id: string, name: string, bot: boolean }` or `undefined` (no sender), as K40 fixes 1 and 5 write them on the event; slice 11
+   widens `Blueprint.incoming(schema)` to take them (GOAL17-adapters-from-spec, "Supersedes"). They are functions of the decoded payload
+   alone. For Slack, `name` is not judged (its events carry only the user's id).
+2. **The identity of a GitHub event** is its object, its action and, for a comment, the object's own `updated_at` (K40 fix 5: "a comment
+   edited twice is two events"; the brief's sketch leaves `updated_at` out, K40 wins since it says why). The check judges that these
+   differ and that nothing else (the sender, the delivery, the installation, the issue a comment is on) is in it, never the string.
+   Two kinds of object with the same number are two ids.
+3. **PostHog's alert body.** PostHog publishes no payload for an alert: a destination's template makes it, so there is none to judge
+   against. The check fixes the shape GOAL17-source-from's mapping reads: `{ project: { id: string }, issue: { id, name, url, status,
+   description? } }`, with what a template adds kept; `errorAlert` has `issue.status` `"active"` and `errorResolved` `"resolved"`, so
+   each refuses the other's payload. The plugin's template writes this body once.
+4. **The doors.** `POST /_in/<mount>`, answering as `M5-checks.md` call 4: 401 `{ _tag: "BadSignature" }` for a bad or stale
+   signature, 200 `{ accepted: true }`, `{ seen: true }` or `{ ignored: true }`, 404 for a mount the app does not have, 405 for any
+   method but POST; the inbox row is in the request's trace (`traceparent` continued) as `id` `<mount>:<identity>`, `operation`
+   `in:<mount>`, `event` the event's name. GitHub: `X-Hub-Signature-256` and `X-GitHub-Event`; the event's identity, never
+   `X-GitHub-Delivery`, settles it. Slack: `X-Slack-Signature`, `X-Slack-Request-Timestamp` (more than five minutes from the door's
+   clock, either way, is refused), its `url_verification` answered with the challenge (the body says it, as JSON or as text), a
+   retry of one event seen. A header or an event the door does not know is `ignored`, and an included event that does not decode is too.
+5. **The signing secret** of a mount is its adapter's export `webhookSigning` (as `design/frame/adapters.md` names it), so the
+   world's name for it is `GITHUB_WEBHOOK_SIGNING`, `SLACK_WEBHOOK_SIGNING` (`frame/secrets.md`: `<MOUNT>_<EXPORT>`). A world takes
+   it as a Worker secret (`Worlds.start`'s `secretEnv`), which the check makes random.
+6. **The compiler's four refusals** (64) name: for :322 the error, `gone` and the reply call (`createComment`, `chatPostMessage`); for
+   :324 `me`; for :326 the event name and the source; for :325 the variable. A source's file is the plugin's, so a fault is planted
+   in `plugins/intake/blueprint/sources/`, past TypeScript (`as any`).
+7. **The source file** `plugins/intake/blueprint/sources/posthog.ts` exports `posthogSource`, as `githubSource` is in `github.ts`; a
+   source kind's `spec` is what `Source.from` was given (the shape `SourceKind` already has).
+8. **PostHog is active** (65) when its mount includes `errorAlert` and `errorResolved`; `sources.posthog` is `{ mount: "posthog",
+   events: [errorAlert, errorResolved], calls, variables: POSTHOG_ISSUE and POSTHOG_PROJECT, kinds: ["errorIssue"] }`.
+
+## Not judged here, and why
+
+- **Waits on GOAL17-check-harness** (the record that fixes how a check steps the outbox and Timers, reads `_outbox` rows and kills a
+  world): a reply going out once and in order; the door's caller carrying the account, read on the delivery's span; a webhook and a
+  catch-up poll of one comment settling once (61 judges the identity both would key by, 63 the door's half); the poll's timing; a
+  delivery surviving a restart.
+- **PostHog's door.** PostHog documents no signature for a webhook destination, and no record says how the door verifies one.
+- **`@orthograph/webhook`** and **`Source.timer`'s ticks.** Neither has a named shape (the webhook's events, signing and config) nor a
+  harness for a tick.
+- **GitHub's collaborators and Slack's user group** (`policyPart.sync`): `repos.listCollaborators` and `usergroupsUsersList` are not
+  in `needs.ts`, so no check holds them.

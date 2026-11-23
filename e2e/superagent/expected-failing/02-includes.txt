@@ -1,1 +1,3 @@
 # Written before slice 4. Red until generated adapters have nested call groups and events and `ortho check` refuses a missing include (slice 4); due before it merges.
+# Slice 10: needs.ts lists PostHog's two alert events (slice 11 writes them), so the held PostHog plugin lacks them until then.
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > posthog: every call and event the superagent includes is in the plugin, and a missing one is refused

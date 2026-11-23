@@ -109,8 +109,8 @@ describe("14 the framework forms: each is accepted, and in the model as its reco
       expect(s["slack"]?.events).toEqual(expect.arrayContaining(["appMention", "message"]));
       expect(keys(s["slack"]?.variables)).toEqual(expect.arrayContaining(["SLACK_CHANNEL", "SLACK_THREAD"]));
       expect(s["slack"]?.kinds).toEqual(expect.arrayContaining(["mention", "message", "direct"]));
-      // PostHog is not here: it has no events until slice 11 (GOAL17-names call 6), so it is not an active source in slice 5 (GOAL17-source-from :54)
-      expect(keys(s), "only the sources whose adapter has events are active").not.toContain("posthog");
+      // PostHog has no events until slice 11 (GOAL17-names call 6), so it was not an active source in slice 5 (GOAL17-source-from :54);
+      // check 65 says it is one once it has them, so this file no longer says it is not.
     });
 
     it("a source's `kinds` is the `kind` its mapping gives each trigger, read from the `kind:` literals of its `on` results (the model's key, fixed in the README)", () => {

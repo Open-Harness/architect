@@ -1,0 +1,9 @@
+# Slice 10 checks. Red until slice 11: GitHub's scope hears only the groups `events` lists, Slack's history answers its next cursor, and PostHog's source (posthog.ts) exists.
+superagent/62-the-mappings.test.ts > 62 github: each event makes the trigger the record says > a connection hears its own repository, and only the groups of events its `events` lists: issues, comments, reviews, checks
+superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > a resolved error closes its thread, and an alert does not
+superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > an alert with no description is its name alone, and a project and an issue are what a reply would be addressed to
+superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > an error alert: kind errorIssue, the thread `error/<issue id>`, the name and description as text, the issue's url; it is never addressed, and names no author
+superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > it has no reply: PostHog is only listened to; its history is the issue read back, as one message
+superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > it hears its project and the kinds it lists
+superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > its admission row is the one the unnamed sender passes, inferred; the environment names the project and the issue
+superagent/62-the-mappings.test.ts > 62 slack: each event makes the trigger the record says > a history is the thread's replies, a cursor at a time, each as a message; a bot's message has its bot id as sender; the key comes back in `meta`
