@@ -1,0 +1,48 @@
+$ pnpm nx run-many -t test -p language-effect,generators --outputStyle=static --skip-nx-cache
+# commit 3f762331 · 2026-11-19T07:34:41Z · exit 0 (expected 0) · 9.7s
+
+
+ NX   Running target test for 2 projects:
+
+- language-effect
+- generators
+
+
+
+> nx run language-effect:test
+
+> vitest run --root packages/language-effect --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/language-effect
+
+
+ Test Files  21 passed (21)
+      Tests  67 passed (67)
+   Start at  07:34:32
+   Duration  5.14s (transform 6.34s, setup 0ms, import 31.68s, tests 2.54s, environment 11ms)
+
+
+> nx run generators:test
+
+> vitest run --root packages/generators --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/generators
+
+
+ Test Files  5 passed (5)
+      Tests  24 passed (24)
+   Start at  07:34:32
+   Duration  5.90s (transform 5.37s, setup 0ms, import 13.02s, tests 11.35s, environment 0ms)
+
+
+
+
+ NX   Successfully ran target test for 2 projects
+
+
+  Run duration:      6.3s
+  Cache:             Skipped (--skip-nx-cache)
+  Critical path:     6.2s (1 task)
+  Recoverable time:  <1ms

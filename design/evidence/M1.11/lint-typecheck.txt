@@ -1,0 +1,233 @@
+$ pnpm nx run-many -t lint,typecheck --outputStyle=static --skip-nx-cache
+# commit 15491548 · 2026-11-19T07:42:54Z · exit 0 (expected 0) · 10.8s
+
+
+ NX   Running targets lint, typecheck for 19 projects:
+
+- language-solidity
+- host-cloudflare
+- language-effect
+- projections
+- generators
+- orthograph
+- chain-evm
+- compiler
+- logbook
+- starter
+- portal
+- preset
+- signup
+- prove
+- acme
+- lint
+- work
+- cli
+- e2e
+
+
+
+> nx run orthograph:typecheck
+
+> tsc -p packages/orthograph/tsconfig.json
+
+
+> nx run logbook:typecheck
+
+> tsc -p packages/logbook/tsconfig.json
+
+
+> nx run logbook:lint
+
+> oxlint packages/logbook
+
+packages/logbook/src/modules/local/local.test.ts:85:156: warning unicorn(no-invalid-fetch-options): "body" is not allowed when method is "GET"
+
+> nx run orthograph:lint
+
+> oxlint packages/orthograph
+
+
+> nx run language-effect:lint
+
+> oxlint packages/language-effect
+
+packages/language-effect/src/modules/handler/internal/decided.ts:25:9: warning unicorn(no-useless-length-check): Found a useless array length check help: The non-empty check is useless as `Array#some()` returns `false` for an empty array.
+
+> nx run language-effect:typecheck
+
+> tsc -p packages/language-effect/tsconfig.json
+
+
+> nx run portal:typecheck
+
+> tsc -p packages/portal/tsconfig.json
+
+
+> nx run compiler:typecheck
+
+> tsc -p packages/compiler/tsconfig.json
+
+
+> nx run portal:lint
+
+> oxlint packages/portal
+
+
+> nx run projections:typecheck
+
+> tsc -p packages/projections/tsconfig.json
+
+
+> nx run compiler:lint
+
+> oxlint packages/compiler
+
+
+> nx run projections:lint
+
+> oxlint packages/projections
+
+
+> nx run generators:lint
+
+> oxlint packages/generators
+
+
+> nx run host-cloudflare:typecheck
+
+> tsc -p packages/host-cloudflare/tsconfig.json
+
+
+> nx run generators:typecheck
+
+> tsc -p packages/generators/tsconfig.json
+
+
+> nx run host-cloudflare:lint
+
+> oxlint packages/host-cloudflare
+
+
+> nx run chain-evm:typecheck
+
+> tsc -p packages/chain-evm/tsconfig.json
+
+
+> nx run chain-evm:lint
+
+> oxlint packages/chain-evm
+
+
+> nx run prove:lint
+
+> oxlint packages/prove
+
+packages/prove/src/modules/world/device-sign-in.test.ts:3:33: warning eslint(no-unused-vars): Type 'ChildProcess' is imported but never used. help: Consider removing this import.
+
+> nx run prove:typecheck
+
+> tsc -p packages/prove/tsconfig.json
+
+
+> nx run signup:lint
+
+> oxlint examples/signup
+
+
+> nx run signup:typecheck
+
+> tsc -p examples/signup/tsconfig.json
+
+
+> nx run lint:typecheck
+
+> tsc -p packages/lint/tsconfig.json
+
+
+> nx run lint:lint
+
+> oxlint packages/lint
+
+
+> nx run cli:lint
+
+> oxlint packages/cli
+
+
+> nx run work:typecheck
+
+> tsc -p examples/work/tsconfig.json
+
+
+> nx run e2e:lint
+
+> oxlint e2e
+
+e2e/layer1/04-agent-writes-a-handler.test.ts:13:23: warning eslint(no-unused-vars): Identifier 'cli' is imported but never used. help: Consider removing this import.
+e2e/m1/05-graph.test.ts:12:10: warning eslint(no-unused-vars): Identifier 'digest' is imported but never used. help: Consider removing this import.
+e2e/m1/07-descriptors.test.ts:31:25: warning eslint(no-control-regex): Unexpected control character help: Avoid matching control characters in regular expressions. If intentional, disable this rule for the expression.
+
+> nx run acme:typecheck
+
+> tsc -p examples/acme/tsconfig.json
+
+
+> nx run acme:lint
+
+> oxlint examples/acme
+
+
+> nx run starter:lint
+
+> oxlint examples/starter
+
+
+> nx run starter:typecheck
+
+> tsc -p examples/starter/tsconfig.json
+
+
+> nx run work:lint
+
+> oxlint examples/work
+
+
+> nx run language-solidity:lint
+
+> oxlint packages/language-solidity
+
+
+> nx run cli:typecheck
+
+> tsc -p packages/cli/tsconfig.json
+
+
+> nx run e2e:typecheck
+
+> tsc -p e2e/tsconfig.json
+
+
+> nx run language-solidity:typecheck
+
+> tsc -p packages/language-solidity/tsconfig.json
+
+
+> nx run preset:typecheck
+
+> tsc -p packages/preset/tsconfig.json
+
+
+> nx run preset:lint
+
+> oxlint packages/preset
+
+
+
+
+ NX   Successfully ran targets lint, typecheck for 19 projects
+
+
+  Run duration:      9.9s
+  Cache:             Skipped (--skip-nx-cache)
+  Critical path:     1.5s (1 task)
+  Recoverable time:  8.4s (85% of the run)

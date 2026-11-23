@@ -25,6 +25,11 @@ States: active, dropped. A move from the wrong state is refused MilestoneNotActi
 | add | (creates) | active | MilestoneAdded |
 | drop | active | dropped | MilestoneDropped |
 
+## Events
+
+- `MilestoneAdded`: carries milestone (milestone.id), mission (milestone.mission), kinds (milestone.kinds), of (milestone.of), until (milestone.until); emitted by the move add
+- `MilestoneDropped`: carries milestone (milestone.id); emitted by the move drop
+
 ## Operations
 
 - [milestone.add](add.md): Add a milestone to a mission. Its tasks appear at once: its kinds over its subject.

@@ -55,6 +55,12 @@ export {};
 `,
     },
     {
+      path: `blueprint/things/${thing}/invariants.ts`,
+      content: `// What stays true among many instances, one rule per export: \`export const oneHolder = Blueprint.invariant.unique(${T}.fields.name)\`.
+export {};
+`,
+    },
+    {
       path: `blueprint/values/${thing}.ts`,
       content: `// The values ${article(thing)}'s fields are made of: \`export const Amount = Blueprint.value(Blueprint.uint(128))\`.
 export {};

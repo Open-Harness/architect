@@ -1,0 +1,356 @@
+---
+title: Invariants
+concept: invariant
+owns: [invariant, rule, unique]
+questions:
+  - Why a rule, and not a check in every handler?
+  - Where is a rule written, and which operations does it touch?
+  - Who refuses when a rule breaks, and when?
+  - How does a handler read through a rule?
+  - What happens when two calls race for one name?
+status: specified
+milestone: M1
+slices: [ST1.14, ST1.15, ST1.16, ST1.17, ST1.18, ST1.19, ST1.20, ST1.22]
+decisions: [G5, G4]
+links: [things, machines, operations, roles, handlers, stores, journeys, traces, blueprint]
+---
+
+## The idea
+
+An **invariant** is something that stays true among many records of one thing: a name has one holder, a person holds
+one name, a handle has one page. A machine can't say it, because a machine knows one record's states and these are
+about all of them. Written as a check in every handler that could break it, it is forgotten by the next handler.
+Orthograph calls one such declaration a **rule**, and the one form today is **unique**: at most one record holds a key,
+within the states the rule names. One rule decides it: **a rule is declared once, on its thing, and the runtime
+refuses its break before the commit, with the rule's own error when the rule names one. A handler never writes a check
+for a rule: the runtime makes it for every operation that can break the rule.** The store backs it at commit, so two
+calls racing for one name can't both win.
+
+## The smallest example
+
+Plugged In is the example here, because the sign-up sheet has nothing to hold one of: a sheet can be joined by anyone,
+many times. Plugged In gives every name to one person. A handle (a claimed name) has two rules, in the file
+`invariants.ts` beside its machine, each one a named export:
+
+```ts file=examples/plugged-in/blueprint/things/handle/invariants.ts name=oneHolderPerName,oneNamePerPerson lines=7-17
+export const oneHolderPerName = Blueprint.invariant.unique(Handle.fields.name, {
+  while: [machine.states.claimed],
+  refuse: HandleTaken,
+});
+
+// A person holds one claimed name at a time.
+export const oneNamePerPerson = Blueprint.invariant.unique(Handle.fields.owner, {
+  while: [machine.states.claimed],
+  refuse: HandleAlreadyOwned,
+  description: "you already hold a name", // the generated sentence reads poorly here
+});
+```
+
+Read the first as a sentence: the `name` field is unique, while a handle is `claimed`, and when it breaks the caller
+gets `HandleTaken`. A released handle keeps its name and frees it, so someone else may claim it. Nothing names a field,
+a state or an error as a string: each is the declaration itself, so renaming one moves the rule with it
+([blueprint](blueprint.mdx), "a name comes from its path").
+
+A rule needs no refusal. A profile page belongs to one handle, and no caller can break that: only `handle.claim`
+makes a page, once. So the rule names none, and a break would be the app's own bug:
+
+```ts file=examples/plugged-in/blueprint/things/profile/invariants.ts name=onePagePerHandle lines=6
+export const onePagePerHandle = Blueprint.invariant.unique(Profile.fields.handle);
+```
+
+And the operation that claims a name no longer lists the refusals, because they are the rules' (`HandleTaken` and
+`HandleAlreadyOwned` are in no `errors:`). The compiled model says which operations a rule touches, and which refusal
+belongs to which rule:
+
+```json file=examples/plugged-in/generated/model/model.json lines=393-407
+"invariants": {
+  "HandleTaken": "handle.oneHolderPerName",
+  "HandleAlreadyOwned": "handle.oneNamePerPerson"
+},
+"breaks": [
+  "handle.oneHolderPerName",
+  "handle.oneNamePerPerson",
+  "profile.onePagePerHandle"
+],
+"refusals": [
+  "HandleTaken",
+  "HandleAlreadyOwned",
+  "NotAllowed",
+  "IdempotencyConflict"
+],
+```
+
+`breaks` also names `profile.onePagePerHandle`, a rule that refuses nothing: claiming a name writes a profile, and its step says so (`writes: [Profile]`).
+
+A journey sees the refusal as it sees any other. Bob claims a name Aaron holds:
+
+<Scenario journey="examples/plugged-in/journeys/a-name-is-claimed-once.ts" step="a taken name is refused" />
+
+## How it works
+
+### Where a rule is written
+
+A thing may have `blueprint/things/<thing>/invariants.ts`, one export per rule. The export's name is the rule's name,
+and its full name is `<thing>.<export>`, as roles and errors are named: `handle.oneHolderPerName`. The compiler reads
+the file as it reads `errors.ts` and `roles.ts`; any file name it doesn't know is refused
+(`packages/compiler/src/modules/model/internal/layout.ts:167`). `ortho add thing` writes an empty one, so the place is
+there when the first rule is.
+
+A rule's key is one field, or a tuple of fields for a composite key. It takes three options, all optional:
+
+| Option | What it does |
+|---|---|
+| `while` | the states of the thing's own machine in which a record counts. Left out, the rule holds in every state. `machine.states.claimed` is a reference, so a renamed state fails to compile |
+| `refuse` | the error the runtime gives when the rule breaks, one declared in the same thing's `errors.ts` |
+| `description` | words for the reader. Left out, every surface says a sentence generated from the rule |
+
+The types are in `packages/orthograph/src/modules/invariants/types.ts:45`. The compiler refuses a rule that can't hold,
+naming its file: a key that is another thing's field, a state of another machine, a refusal that carries a field the
+key doesn't, or an error that two rules (or a rule and an operation's `errors`) both claim.
+
+### The model says what it touches
+
+The model keeps each rule under its thing, with its key, its states and its refusal:
+
+```json file=examples/plugged-in/generated/model/model.json lines=60-82
+"invariants": {
+  "oneHolderPerName": {
+    "kind": "unique",
+    "fields": [
+      "name"
+    ],
+    "while": [
+      "claimed"
+    ],
+    "refuse": "HandleTaken"
+  },
+  "oneNamePerPerson": {
+    "kind": "unique",
+    "fields": [
+      "owner"
+    ],
+    "while": [
+      "claimed"
+    ],
+    "refuse": "HandleAlreadyOwned",
+    "description": "you already hold a name"
+  }
+},
+```
+
+The compiler then works out which operations can break each rule, and adds the rule's refusal to those operations'
+`refusals`, with a map back to the rule (`operations.<op>.invariants`), and lists every rule the operation can break,
+with a refusal or without, in `operations.<op>.breaks`, which the portal's rules stop reads. An operation breaks a rule
+when its move ends in one of the rule's `while` states, or one of its database steps names the thing in `writes`, or the
+thing has no machine and the operation has a database step that leaves `writes` unset. A step that says `writes: []`
+reads only and breaks nothing:
+
+```ts file=packages/compiler/src/modules/model/internal/invariants.ts name=breakersOf lines=116-124
+for (const [name, rule] of Object.entries(t.invariants ?? {})) {
+  const own = op.thing === thing;
+  const byMove = own && op.move !== null && (rule.while === undefined || op.move.to.some((s) => rule.while!.includes(s)));
+  const byWrites = database.some((s) => s.writes?.includes(thing));
+  const bare = own && t.machine === null && database.some((s) => s.writes === undefined);
+  if (!byMove && !byWrites && !bare) continue;
+  breaks.push(`${thing}.${name}`);
+  if (rule.refuse !== undefined) refusals[rule.refuse] = `${thing}.${name}`;
+}
+```
+
+On Plugged In that makes `handle.claim` a breaker, and not `handle.release`, which only leaves `claimed`. Because the
+refusal is in `refusals` like any other, every door already shows it: the SDK's errors, the CLI's exit code, MCP's
+error codes, and a row in the operation's generated docs page, with the rule's sentence beside it:
+
+```md file=examples/plugged-in/generated/docs/handle/claim.md lines=36-37
+| HandleTaken | 10 | HN-001 | another claimed handle holds this name; by the rule handle.oneHolderPerName |
+| HandleAlreadyOwned | 12 | HN-002 | you already hold a name; by the rule handle.oneNamePerPerson |
+```
+
+The first sentence is generated from the rule. The second is the rule's own `description`, because the generated one
+for an owner field ("another claimed handle has this owner") reads poorly.
+
+### The runtime refuses
+
+A rule is one stop on the path every call runs. It comes after the handler has answered and the move is made, because
+the move is what puts a handle into `claimed`, and before the commit:
+
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=132-134
+// Every rule this call's rows could break, after the move and before the commit: the store's own index then catches the race.
+const broken = yield* unit.check;
+if (broken !== undefined) return yield* settleViolation(name, invariants, logs)(broken);
+```
+
+The check looks at each row as this call leaves it. For a rule the row is in scope for, it looks for another holder of
+the same key. If there is one, the call fails with the rule's own error, and nothing is written:
+
+```ts file=packages/language-effect/src/modules/handler/internal/invariants.ts name=settleViolation lines=26-29
+const fields = Object.fromEntries(Object.keys(refuse.fields).map((key) => [key, row[key]]));
+yield* Effect.annotateCurrentSpan({ "refusal.invariant": rule });
+yield* logs.around(Effect.logInfo(decidingLog(rule)));
+return yield* Effect.fail(new refuse(fields));
+```
+
+Three things in it are the point:
+
+- **The refusal is filled from the caller's own row.** Every field it carries must be in the rule's key, so the
+  refusal never says who holds the name.
+- **It is a refusal, not a defect.** The span does not end as an error, and carries `refusal.invariant`, the rule's full name, beside the
+  `refusal` and `refusal.code` every refusal has. The runtime writes the log that decided it, so the trace can say why
+  ([traces](traces.mdx)).
+- **A break nobody declared is a defect.** A rule with no refusal, a rule the compiler didn't list this operation as
+  able to break, and two rows of one call that hold one key each die, naming the rule and the operation. The compiler
+  can't see which fields a step rewrites, so it errs wide, and the runtime says so loudly where it errs narrow
+  (`packages/language-effect/src/modules/handler/internal/invariants.ts:21`).
+
+### The store holds it at commit
+
+The check before the commit sees the state this call read. Another call may commit between. So the same rule is also an
+index in the store, one per rule, named after it, over the rule's key and within its `while` states:
+
+```sql file=examples/plugged-in/generated/server/migrations/0001_things.sql lines=10-11
+CREATE UNIQUE INDEX "handle_oneHolderPerName" ON "handle" ("name") WHERE "state" IN ('claimed');
+CREATE UNIQUE INDEX "handle_oneNamePerPerson" ON "handle" ("owner") WHERE "state" IN ('claimed');
+```
+
+Of two racing commits, the store refuses the second, and the host maps that to a conflict, not to a caller's refusal
+(`packages/host-cloudflare/src/modules/store/internal/unique.ts:11`). The call then runs again from the top, as any
+conflict does ([stores](stores.mdx)), and its check sees the winner and refuses. So after a conflict, a rule's break is
+always another call's, and running again is right. A call that moves a value between two holders in one go writes the
+row that frees a key before the row that takes it, so D1 and the memory store agree; a cycle has no order and dies,
+naming the rule.
+
+### A handler reads through a rule
+
+A handler never refuses a rule, but it may need to look up by one. `Records.findBy(rule, value)` returns the one
+record that holds a key within the rule's scope, or nothing, and sees this call's own writes first. Plugged In reads
+a name's holder through `oneHolderPerName`:
+
+```ts file=examples/plugged-in/src/handle/resolve.ts name=resolve lines=39
+const held = yield* steps.load(records.findBy(oneHolderPerName, name));
+```
+
+And a profile page by its handle, through `onePagePerHandle`, which has no refusal and needs only this:
+
+```ts file=examples/plugged-in/src/profile/get.ts name=get lines=45
+const page = yield* steps.load(records.findBy(onePagePerHandle, held["id"] as never));
+```
+
+The rule is the argument, so no field or state is written as a string. `findBy` takes the field's own type for the key.
+The `as never` is only there because `held["id"]` comes off a loaded record untyped, so the cast stands in for the
+field's type. A composite key takes an object of its fields. A rule's `findBy` is a read inside a step, and the store
+backs it as it backs every read ([operations](operations.mdx), on steps).
+
+### The portal shows it
+
+The portal's page for a thing shows its rules under the lifecycle, one row per rule, and every refusal a rule owns
+reads as the rule's sentence and links to its row (ST1.22, as decided on 20 November 2026). An operation that can
+break a rule gets a "rules" stop on its spine, between the move and the commit. The portal reads all of it off the
+model it is given, so a renamed or re-worded rule shows as it is declared; the rules an operation's spine names are
+the ones in the operation's `breaks`, with a refusal or without:
+
+```ts file=packages/portal/src/modules/pages/internal/rules.ts name=rulesBroken lines=40-44
+export const rulesBroken = (b: BlueprintWire, op: OperationWire): ReadonlyArray<RuleRef> => {
+  const fulls = op.breaks ?? Object.values(op.invariants ?? {});
+  const found = fulls.flatMap((full) => ruleNamed(b, full) ?? []);
+  return found.filter((r, i) => found.findIndex((o) => o.full === r.full) === i);
+};
+```
+
+## Choices
+
+### A rule or a machine
+
+A machine says what one record may do next: `release` starts only from `claimed`. A rule says what several records
+may hold at once: only one `claimed` handle has this name. If the question is about this record's state, it is a
+machine ([machines](machines.mdx)). If it is "can another record already hold this", it is a rule.
+
+### A rule or a refusal in the handler
+
+If the answer depends only on records of the one thing and a key, make it a rule: the runtime refuses it everywhere the
+rule can break, with one error, and a new operation that breaks it is refused without anyone remembering to. If it
+depends on what the handler reads from several things, or computes, it is a declared error the handler raises
+([operations](operations.mdx)). `SheetFull` is the second kind: it depends on how many people ask.
+
+### With a refusal, or without
+
+Give a rule a `refuse` when a caller can break it and should be told: `HandleTaken`. Leave it off when only the app's
+own steps can, as with the profile's page. Then a break is a defect naming the rule, which is what you want from a bug.
+Either way the rule gets its index and its `findBy`.
+
+### `while`, or every state
+
+Name the states in which a record counts when a state frees the key: a released handle frees its name. Leave `while`
+out when a record holds its key for its whole life, as a profile holds its handle.
+
+### Generated words, or your own
+
+Leave `description` out and every surface says a sentence made from the rule, which stays true as the rule changes.
+Write one when the generated sentence reads poorly, as `oneNamePerPerson` does. It replaces the sentence everywhere.
+
+## What it is not
+
+- **Not a field's own check.** What a value must look like (a name's length and letters) is the value's, on
+  [things](things.mdx). A rule compares records.
+- **Not a machine.** A machine holds across one record's states, and the wrong-state refusal is its own. See
+  [machines](machines.mdx).
+- **Not a role.** Who may call is [roles](roles.mdx), and it is checked first, before any rule.
+- **Not an error the handler declares.** Those depend on what only the handler can know. See
+  [operations](operations.mdx), where all four places a refusal comes from are listed.
+- **Not an index you write.** The store's index is generated from the rule. See [stores](stores.mdx).
+- **Not across things, yet.** A rule that needs a record of another thing to exist, or a running total under a bound,
+  is not built. Plugged In's `LinkNeedsHandle` is still written in its handler.
+
+## Where it lives
+
+| What | Where | |
+|---|---|---|
+| The rule's API, `Blueprint.invariant.unique` | `packages/orthograph/src/modules/invariants/types.ts:45` | built |
+| `machine.states.<state>`, a state as a reference | `packages/orthograph/src/modules/machines/types.ts` | built |
+| The layout reading `invariants.ts` | `packages/compiler/src/modules/model/internal/layout.ts:157` | built |
+| Rules in the model, and the operations that break them | `packages/compiler/src/modules/model/internal/invariants.ts:48` | built |
+| The runtime's check, before the commit | `packages/language-effect/src/modules/handler/service.ts:130` | built |
+| The refusal, or the defect | `packages/language-effect/src/modules/handler/internal/invariants.ts:14` | built |
+| `findBy(rule, value)` | `packages/language-effect/src/modules/records/internal/unit.ts:38` | built |
+| The index at commit, and a lost race as a conflict | `packages/host-cloudflare/src/modules/store/internal/unique.ts:11` | built |
+| Plugged In's rules | `examples/plugged-in/blueprint/things/handle/invariants.ts` | built |
+| The rule's sentence on the docs page | `examples/plugged-in/generated/docs/handle/index.md:25` | built |
+| The portal's Rules section | `packages/portal/src/modules/pages/internal/rules.tsx:53` | built |
+
+## Status
+
+<Status />
+
+| Part | Status | Slice | Proved by |
+|---|---|---|---|
+| The model carries each rule and the operations that can break it, and the compiler refuses a rule that can't hold | proved | ST1.15 | `packages/compiler/src/modules/model/invariants.test.ts`, and check 25 in `e2e/m1/25-unique-fields.test.ts:62` |
+| The runtime refuses a break with the rule's own error, on the span, with its log | proved | ST1.16 | `e2e/m1/25-unique-fields.test.ts:135` |
+| Ten calls racing for one name: one wins, nine are refused, none dies | proved | ST1.16 | `e2e/m1/25-unique-fields.test.ts:184` |
+| `findBy(rule, value)` finds the holder inside the rule's scope only | proved | ST1.16 | `e2e/m1/25-unique-fields.test.ts:193`, `packages/language-effect/src/modules/records/find-by.test.ts` |
+| One call moving a value between holders | proved | ST1.16 | `e2e/m1/31-s19-moving-a-value.test.ts` |
+| The docs, MCP's tool description and the scaffold's header say each rule | proved | ST1.17 | `e2e/m1/25-unique-fields.test.ts:223` |
+| `prove` asks for each rule's refusal once, from any journey | proved | ST1.18 | `e2e/m1/32-st1-18-prove-invariants.test.ts` |
+| Plugged In declares its rules | proved | ST1.19 | `e2e/m1/34-st1-19-plugged-in-declares-its-rules.test.ts` |
+| The portal's Rules section, each refusal linked to its rule | proved | ST1.22 | `e2e/m1/28-st1-22-rules-in-the-portal.test.ts`, in Chromium on Plugged In |
+| A rule across things (`requires`), a bound, and a rule on actors | specified | `design/later.md` | each has a decision step before the slice that first needs it |
+
+The page is specified, not proved, because a rule across things, a bound and a rule on actors are not built.
+
+## Notes
+
+<Note kind="decision" decision="G5">
+  Invariants are their own kind of declaration, one file per thing, with one refusal per rule, owned by the rule and
+  made by the runtime. It keeps G4's runtime (the rule holds at commit, a conflict retries) and replaces its spelling.
+</Note>
+
+<Note kind="status">
+  Two kinds of rule are known and not built: a rule across things (Plugged In's `LinkNeedsHandle`, which a handler
+  still checks), and a bound on a record (`SheetFull`, which a handler still raises). Both are in `design/later.md`.
+  Rules on a thing that lives as actors are refused: each instance is its own Durable Object, so there is no shared
+  index to look in.
+</Note>
+
+<Note kind="question" id="requires-when">
+  When a rule across things arrives, does it hold only when a record is made, or always? If always, releasing a handle
+  breaks `LinkNeedsHandle` for every link on its page, so `handle.release` would have to refuse or cascade. It is
+  decided before the slice that first needs it, and it changes what `release` may do.
+</Note>

@@ -4,6 +4,9 @@
 A dirty tree is refused before touching its deployable artefact. Local `dev` and local `prove` still run the
 working tree; revision-based test/staging/production flows require a commit.
 
+The portal's prebuilt client, when the project's `@orthograph/portal` has one, is copied beside the bundle as `portal/` (K19: static
+assets the Worker serves at `/portal`); the dry run reads a config derived from the generated one (`server-config`).
+
 A complete build is published atomically from a temporary directory to `.ortho/artefacts/<revision>/`.
 `bundle.json` version 1 records the full clean source commit and sha256. A later build reuses that immutable
 artefact, and `Build.find` verifies provenance, revision and bytes. Legacy, partial or altered records are refused:

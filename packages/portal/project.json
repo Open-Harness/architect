@@ -10,7 +10,18 @@
   ],
   "targets": {
     "lint": {},
-    "typecheck": {},
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "tsc -p tsconfig.json",
+          "node ../portal-ui/tools/pro.mjs pro gate tsc -p tsconfig.client.json"
+        ],
+        "parallel": false,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false
+    },
     "test": {},
     "build": {
       "executor": "nx:run-commands",
@@ -28,6 +39,17 @@
       ],
       "outputs": [
         "{projectRoot}/dist"
+      ]
+    },
+    "client": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../portal-ui/tools/pro.mjs pro require pnpm exec vite build --config vite.config.ts",
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "outputs": [
+        "{projectRoot}/dist/client"
       ]
     }
   }

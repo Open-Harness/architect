@@ -1,0 +1,13 @@
+$ pnpm exec vitest run --root packages/wallets
+# commit 3f762331 · 2026-11-19T07:33:14Z · exit 0 (expected 0) · 11.8s
+
+
+ RUN  v4.1.12 ./packages/wallets
+
+(node:59646) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  11 passed (11)
+      Tests  46 passed (46)
+   Start at  07:33:03
+   Duration  10.60s (transform 7.92s, setup 0ms, import 33.84s, tests 14.93s, environment 1ms)

@@ -1,0 +1,266 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/18
+# commit 2afbfb73 · 2026-11-19T08:52:47Z · exit 1 (expected 1) · 43.5s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/18-confirmation-depth.test.ts (14 tests | 13 failed) 41712ms
+     × 0 blocks mined: submitted, still in the mempool; 1 (included) and 2: submitted, the send has not answered; 3: confirmed, and it answers 8123ms
+     × every level the send reports agrees with its block count: confirmed from the third block and never before, submitted below it 8058ms
+     × it says so: the one block counts, and its level is `confirmed` at 1, with no `submitted` after it 8096ms
+     × a world that declares depth one on the local chain does the same 8124ms
+     × a chain that is not local and declares no depth refuses the send as a defect naming ORTHO_WALLET_DEPTH, before anything is signed or submitted 597ms
+     × the same chain with a declared depth sends: the declaration is what lets it 8125ms
+     × a device host declares it with ORTHO_WALLET_DEPTH 2ms
+     × the local chain, declaring nothing, is depth 1; another chain, declaring nothing, has none (its keys still work, its send is the defect above) 2ms
+     × a depth of "0" is a defect naming ORTHO_WALLET_DEPTH 1ms
+     × a depth of "-1" is a defect naming ORTHO_WALLET_DEPTH 0ms
+     × a depth of "1.5" is a defect naming ORTHO_WALLET_DEPTH 0ms
+     × a depth of "three" is a defect naming ORTHO_WALLET_DEPTH 0ms
+     × `flow.ts` no longer hard-codes a depth of one 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 depth three: a send is submitted until the third block, then confirmed > 0 blocks mined: submitted, still in the mempool; 1 (included) and 2: submitted, the send has not answered; 3: confirmed, and it answers
+AssertionError: submitted and in no block yet: no "wallet.send.level" span from the send (the surface check 18 requires); the send's spans were: chain.evm.prepare, chain.evm.nonce.reserve, chain.evm.simulate, chain.evm.sign, chain.evm.submit: expected undefined to be defined
+ ❯ m1/18-confirmation-depth.test.ts:180:62
+    178|       const at = (blocks: number, level: string, then: string) => Effe…
+    179|         const seen = yield* w.reported(blocks);
+    180|         expect(seen, `${then}: ${sendLevel(w.spanNames())}`).toBeDefin…
+       |                                                              ^
+    181|         expect(seen?.level, `${then}: the level with ${blocks} of 3 bl…
+    182|       });
+ ❯ ~effect/Effect/successCont ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1482:27
+ ❯ ~effect/Effect/evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/core.ts:587:30
+ ❯ FiberImpl.runLoop ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:700:41
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:635:22
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:624:28
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1210:16
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1144:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 depth three: a send is submitted until the third block, then confirmed > every level the send reports agrees with its block count: confirmed from the third block and never before, submitted below it
+AssertionError: no "wallet.send.level" span from the send (the surface check 18 requires); the send's spans were: chain.evm.prepare, chain.evm.nonce.reserve, chain.evm.simulate, chain.evm.sign, chain.evm.submit: expected undefined to be defined
+ ❯ m1/18-confirmation-depth.test.ts:201:62
+    199|     inScope(Effect.gen(function* () {
+    200|       const w = yield* scenario({ declared: 3 });
+    201|       expect(yield* w.reported(0), sendLevel(w.spanNames())).toBeDefin…
+       |                                                              ^
+    202|       for (let n = 1; n <= 3; n++) { yield* w.mine(); yield* w.reporte…
+    203|       yield* w.answered();
+ ❯ ~effect/Effect/successCont ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1482:27
+ ❯ ~effect/Effect/evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/core.ts:587:30
+ ❯ FiberImpl.runLoop ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:700:41
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:635:22
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:624:28
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1210:16
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1144:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 a local environment: depth one, as today > it says so: the one block counts, and its level is `confirmed` at 1, with no `submitted` after it
+AssertionError: no "wallet.send.level" span from the send (the surface check 18 requires); the send's spans were: chain.evm.prepare, chain.evm.nonce.reserve, chain.evm.simulate, chain.evm.sign, chain.evm.submit, chain.evm.receipt: expected undefined to be defined
+ ❯ m1/18-confirmation-depth.test.ts:227:46
+    225|       yield* w.mine();
+    226|       const seen = yield* w.reported(1);
+    227|       expect(seen, sendLevel(w.spanNames())).toBeDefined();
+       |                                              ^
+    228|       expect(seen?.level).toBe("confirmed");
+    229|       expect(yield* w.answered()).toBe("answered");
+ ❯ ~effect/Effect/successCont ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1482:27
+ ❯ ~effect/Effect/evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/core.ts:587:30
+ ❯ FiberImpl.runLoop ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:700:41
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:635:22
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:624:28
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1210:16
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1144:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 a local environment: depth one, as today > a world that declares depth one on the local chain does the same
+AssertionError: no "wallet.send.level" span from the send (the surface check 18 requires); the send's spans were: chain.evm.prepare, chain.evm.nonce.reserve, chain.evm.simulate, chain.evm.sign, chain.evm.submit, chain.evm.receipt: expected undefined to be defined
+ ❯ m1/18-confirmation-depth.test.ts:238:46
+    236|       yield* w.mine();
+    237|       const seen = yield* w.reported(1);
+    238|       expect(seen, sendLevel(w.spanNames())).toBeDefined();
+       |                                              ^
+    239|       expect(seen?.level).toBe("confirmed");
+    240|       expect(yield* w.answered()).toBe("answered");
+ ❯ ~effect/Effect/successCont ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1482:27
+ ❯ ~effect/Effect/evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/core.ts:587:30
+ ❯ FiberImpl.runLoop ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:700:41
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:635:22
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:624:28
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1210:16
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1144:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 depth one is for a local chain only > a chain that is not local and declares no depth refuses the send as a defect naming ORTHO_WALLET_DEPTH, before anything is signed or submitted
+AssertionError: a send on a chain with no declared depth must not be answered as confirmed at depth one: expected 'answered' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "answered"
+
+ ❯ m1/18-confirmation-depth.test.ts:249:122
+    247|       const w = yield* scenario({ chainId: 1, automine: true });
+    248|       expect(yield* w.answered(), "the send on chain 1 with no declare…
+    249|       expect(w.outcome.state, "a send on a chain with no declared dept…
+       |                                                                                                                          ^
+    250|       const exit = w.outcome.value as Exit.Exit<unknown, unknown>;
+    251|       expect(Exit.isFailure(exit) && String(exit.cause)).toContain("OR…
+ ❯ ~effect/Effect/successCont ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1482:27
+ ❯ ~effect/Effect/evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/core.ts:587:30
+ ❯ FiberImpl.runLoop ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:700:41
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:635:22
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:624:28
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1210:16
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1144:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 depth one is for a local chain only > the same chain with a declared depth sends: the declaration is what lets it
+AssertionError: no "wallet.send.level" span from the send (the surface check 18 requires); the send's spans were: chain.evm.prepare, chain.evm.nonce.reserve, chain.evm.simulate, chain.evm.sign, chain.evm.submit, chain.evm.receipt: expected undefined to be 'submitted' // Object.is equality
+
+- Expected:
+"submitted"
+
++ Received:
+undefined
+
+ ❯ m1/18-confirmation-depth.test.ts:259:71
+    257|       const w = yield* scenario({ chainId: 1, declared: 2 });
+    258|       yield* w.mine();
+    259|       expect((yield* w.reported(1))?.level, sendLevel(w.spanNames())).…
+       |                                                                       ^
+    260|       yield* w.mine();
+    261|       expect((yield* w.reported(2))?.level).toBe("confirmed");
+ ❯ ~effect/Effect/successCont ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1482:27
+ ❯ ~effect/Effect/evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/core.ts:587:30
+ ❯ FiberImpl.runLoop ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:700:41
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:635:22
+ ❯ FiberImpl.evaluate ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:624:28
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1210:16
+ ❯ ../node_modules/.pnpm/effect@4.1.1/node_modules/effect/src/internal/effect.ts:1144:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 where the depth is read from > a device host declares it with ORTHO_WALLET_DEPTH
+AssertionError: expected undefined to be 3 // Object.is equality
+
+- Expected:
+3
+
++ Received:
+undefined
+
+ ❯ m1/18-confirmation-depth.test.ts:271:145
+    269|
+    270|   it("a device host declares it with ORTHO_WALLET_DEPTH", async () => {
+    271|     expect((await read({ ORTHO_WALLET_CHAIN: "eip155:11155111", ORTHO_…
+       |                                                                                                                                                 ^
+    272|   });
+    273|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 where the depth is read from > the local chain, declaring nothing, is depth 1; another chain, declaring nothing, has none (its keys still work, its send is the defect above)
+AssertionError: expected { chainId: 31337, …(1) } to match object { chainId: 31337, depth: 1 }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "chainId": 31337,
+-   "depth": 1,
+  }
+
+ ❯ m1/18-confirmation-depth.test.ts:275:113
+    273|
+    274|   it("the local chain, declaring nothing, is depth 1; another chain, d…
+    275|     expect((await read({ ORTHO_WALLET_CHAIN: "eip155:31337", ORTHO_WAL…
+       |                                                                                                                 ^
+    276|     const other = await read({ ORTHO_WALLET_CHAIN: "eip155:1" });
+    277|     expect(other).toMatchObject({ chainId: 1 });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 where the depth is read from > a depth of "0" is a defect naming ORTHO_WALLET_DEPTH
+ FAIL  m1/18-confirmation-depth.test.ts > 18 where the depth is read from > a depth of "-1" is a defect naming ORTHO_WALLET_DEPTH
+ FAIL  m1/18-confirmation-depth.test.ts > 18 where the depth is read from > a depth of "1.5" is a defect naming ORTHO_WALLET_DEPTH
+ FAIL  m1/18-confirmation-depth.test.ts > 18 where the depth is read from > a depth of "three" is a defect naming ORTHO_WALLET_DEPTH
+AssertionError: expected [] to include 'ORTHO_WALLET_DEPTH'
+ ❯ m1/18-confirmation-depth.test.ts:283:56
+    281|   it.each(["0", "-1", "1.5", "three"])("a depth of %j is a defect nami…
+    282|     const exit = await fails({ ORTHO_WALLET_CHAIN: "eip155:31337", ORT…
+    283|     expect(Exit.isFailure(exit) && String(exit.cause)).toContain("ORTH…
+       |                                                        ^
+    284|   });
+    285|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  m1/18-confirmation-depth.test.ts > 18 where the depth is read from > `flow.ts` no longer hard-codes a depth of one
+AssertionError: flow.ts still passes `depth: 1` to track: expected '// The lifecycle of one transfer: sim…' not to match /depth:\s*1\b/
+
+- Expected:
+/depth:\s*1\b/
+
++ Received:
+"// The lifecycle of one transfer: simulated, then submitted, then included (K7 Q3). Simulation is not an option here: the
+// chain port itself refuses to sign or submit what has not passed it (M1.32).
+import { Effect, Stream } from \"effect\";
+import type { Timers } from \"@orthograph/language-effect\";
+import type { ChainError, ChainPort, Submission, Unsigned } from \"@orthograph/chain-evm/device\";
+import { KeyLocked, SimulationReverted } from \"../../../../blueprint/things/wallet/errors.js\";
+import type { Sent } from \"../types.ts\";
+
+/** What a fault of the chain is, said without the provider's own text. */
+const describe = (error: ChainError) => (error._tag === \"ChainRefusal\" ? `the contract refused it as ${error.name}` : `${error.kind}: ${error.message}`);
+
+/** What a fault of the chain is to the person asking: a refused transfer, a signer that would not, or a defect. */
+export const refused = (error: ChainError): Effect.Effect<never, SimulationReverted | KeyLocked> => {
+  if (error._tag === \"ChainRefusal\" || error.kind === \"revert\" || error.kind === \"panic\" || error.kind === \"funds\") {
+    return Effect.logInfo(`the chain's simulation refused the transfer before anything was signed or sent (${describe(error)})`).pipe(
+      Effect.andThen(Effect.fail(new SimulationReverted({}))),
+    );
+  }
+  if (error.kind === \"rejected\" || error.kind === \"signing\") {
+    return Effect.logInfo(`the signer would not sign (${describe(error)})`).pipe(Effect.andThen(Effect.fail(new KeyLocked({}))));
+  }
+  // Nothing the person can fix in a send: an unreachable chain, a wrong endpoint, a timeout.
+  return Effect.die(new Error(`the chain could not be used: ${describe(error)}`));
+};
+
+/** Follow a submission to its receipt: included and not reverted is `confirmed`, as a local chain's level is depth one. */
+export const follow = (port: ChainPort, submission: Submission): Effect.Effect<Sent, SimulationReverted | KeyLocked, Timers> =>
+  Effect.gen(function* () {
+    const states = yield* port.track(submission, { depth: 1 }).pipe(Stream.runCollect, Effect.catch(refused));
+    if (states.some((s) => s._tag === \"Reverted\")) {
+      return yield* Effect.logInfo(\"the transfer was mined and reverted\").pipe(Effect.andThen(Effect.fail(new SimulationReverted({}))));
+    }
+    if (!states.some((s) => s._tag === \"Included\")) return yield* Effect.die(new Error(\"the transfer was never included: it was replaced or dropped\"));
+    return { transaction: submission.hash, level: \"confirmed\", nonce: BigInt(submission.nonce) } satisfies Sent;
+  });
+
+/** Give the nonce a prepared transaction took back, whatever became of it. */
+export const settle = (port: ChainPort, unsigned: Unsigned) => port.release(unsigned);
+"
+
+ ❯ m1/18-confirmation-depth.test.ts:288:68
+    286|   it("`flow.ts` no longer hard-codes a depth of one", () => {
+    287|     const source = readFileSync(join(repo, "packages/wallets/src/modul…
+    288|     expect(source, "flow.ts still passes `depth: 1` to track").not.toM…
+       |                                                                    ^
+    289|   });
+    290| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 1 passed (14)
+   Start at  08:52:04
+   Duration  42.78s (transform 306ms, setup 0ms, import 904ms, tests 41.71s, environment 0ms)

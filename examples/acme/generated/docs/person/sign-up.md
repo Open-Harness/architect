@@ -31,6 +31,15 @@ Sign up with an email address and a password.
 |---|---|---|---|
 | PersonEmailTaken | 11 | PE-001 | declared in errors.ts |
 
+## Worked examples
+
+### sign up and sign in
+
+Starts from an empty world.
+
+- **the newcomer signs up.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, name `Newcomer`, and gets back an answer matching `^per_[0-9a-z]+$`.
+- **signing up again with the same email is refused.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, name `Newcomer again`, and is refused with PersonEmailTaken, PE-001.
+
 ## How to call
 
 ```sh

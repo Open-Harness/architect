@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./device": "./src/device.ts",
+    "./visibility": "./src/visibility.ts"
   },
   "dependencies": {
     "orthograph": "workspace:*",
@@ -24,6 +26,14 @@
       ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
+      },
+      "./device": {
+        "types": "./dist/device.d.ts",
+        "default": "./dist/device.js"
+      },
+      "./visibility": {
+        "types": "./dist/visibility.d.ts",
+        "default": "./dist/visibility.js"
       }
     },
     "imports": {

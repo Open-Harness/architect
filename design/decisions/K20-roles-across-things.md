@@ -167,7 +167,7 @@ Aaron asked (20 November 2026) how option A comes out through the stack: in Type
 declaration, the Director role above, renders to the same check in each, refused with the same `NotAllowed` (`AR-001`),
 in K7's order: the role, then the machine, then the developer's body. Only the Effect half is planned soon (M2); the
 Solidity target is an empty package today (`packages/language-solidity/src/index.ts`, M6.10 and M6.11), and Noir is a
-later target (N1). The chain sketches follow the shapes the chain spikes ran (`K7-chain-languages.md:97-124`,
+later target (N1). (Superseded by K27, 20 November 2026: Solidity and Noir are languages, not targets.) The chain sketches follow the shapes the chain spikes ran (`K7-chain-languages.md:97-124`,
 `design/noir/spike-2-role-gate-e2.md`).
 
 **The model**, which every generator reads:
@@ -232,6 +232,9 @@ function _leaveActive(bytes32 company, address person, Seat seat) internal { if 
 // the operation's entry: role, machine, then the developer's body (K7)
 function createBudget(bytes32 company, uint256 limit) external onlyDirector(company) { _createBudget(company, limit); }
 ```
+
+(Superseded in part by K25, 20 November 2026: the same count also answers OpenZeppelin's `hasRole(role, account)`,
+with one role id per instance, and the moves emit `RoleGranted` and `RoleRevoked`.)
 
 **Noir (Aztec, private).** The check runs on the caller's device and is proved: the chain learns that a Director
 acted, never which one. Each held row is a private note owned by its person; the membership's move into `active`
@@ -350,7 +353,7 @@ The rules are already decided across K3, K7 and N1; this gathers them, with role
 
 1. **You never write a blueprint for a language.** It says what the app keeps, who may do what, the moves and the
    refusals. A thing's `lives` picks where it is kept, and the language follows from that: the project's database or an
-   actor is TypeScript on the Worker, `Blueprint.chain.evm(...)` is Solidity, `.aztec(...)` is Noir, `.solana(...)` is
+   actor is TypeScript on the Worker, `Blueprint.chain.evm(...)` is Solidity (superseded by K25, 20 November 2026: a chain store, `Blueprint.store.chain.evm`), `.aztec(...)` is Noir, `.solana(...)` is
    Rust (K7 Q4). One app may use several at once, and moving a thing is one line.
 2. **Every language renders the same contract**: the same checks in the same order (role, then machine, then the body),
    the same refusal codes from one `refusals.lock`, the same events (K7 Q5, Q8). The SDK, CLI and MCP sit on top and
@@ -364,7 +367,8 @@ The rules are already decided across K3, K7 and N1; this gathers them, with role
 6. **For roles, which this record adds:** a declared role (`who`, `holds`) is data, so every language renders it; a
    `rule` is TypeScript only, so an operation that runs on a chain may name only declared roles, and the compiler
    refuses a `rule` there. A `holds` role's holding thing must be readable where the operation runs: on a chain, it
-   lives on the same chain; the compiler refuses otherwise.
+   lives on the same chain; the compiler refuses otherwise. (Superseded by K25, 20 November 2026: in the same chain
+   store, so the same contract.)
 
 ## Supersedes
 

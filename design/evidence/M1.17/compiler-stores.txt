@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/compiler src/modules/model/stores.test.ts src/modules/model/vault.test.ts src/modules/model/model.test.ts
+# commit 892851a · 2026-11-18T22:41:00Z · exit 0 (expected 0) · 3.8s
+
+
+ RUN  v4.1.12 ./packages/compiler
+
+
+ Test Files  3 passed (3)
+      Tests  23 passed (23)
+   Start at  22:40:56
+   Duration  3.13s (transform 2.88s, setup 0ms, import 1.15s, tests 3.89s, environment 0ms)

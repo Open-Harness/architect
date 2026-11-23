@@ -2,6 +2,13 @@
 // Nothing here knows about tokens or HTTP; the worker passes the claims of a token it has already verified.
 export type VerdictValue = "pass" | "fail";
 
+export interface JourneyVerdict {
+  readonly journey: string;
+  readonly modelHash: string;
+  readonly handlerHash: string | null;
+  readonly verdict: VerdictValue;
+}
+
 /** What a caller posts. `revision` is the job's own field, never the token's `sha` (D3 #8). */
 export interface VerdictInput {
   readonly revision: string;
@@ -10,6 +17,7 @@ export interface VerdictInput {
   readonly verdict: VerdictValue;
   /** Bundle proved by this verdict. Absent or null on legacy rows; never inferred or backfilled. */
   readonly sha256?: string | null;
+  readonly journeys?: ReadonlyArray<JourneyVerdict>;
 }
 
 /** Where a write came from: the verified token's claims. Stored with it so a pull request's verdict is never taken for main's. */

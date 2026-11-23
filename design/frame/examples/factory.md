@@ -35,7 +35,7 @@ feature ([`agents.md`](agents.md)).
 ```ts
 // blueprint/features/auth.ts, blueprint/features/agents.ts: mounted, not copied
 export default Blueprint.use(auth, (a) => [a.choose(a.choices.signIn.passkey)]);
-export default Blueprint.use(agents, (a) => [a.narrow(a.operations.start, { allowed: [manager] })]);
+export default Blueprint.use(agents, (a) => [a.narrow(start, { via: [Via.session] })]); // start: the plugin's own declaration, imported
 ```
 
 The mission's machine is unchanged from `origin/main:examples/work/blueprint/things/mission/machine.ts`:

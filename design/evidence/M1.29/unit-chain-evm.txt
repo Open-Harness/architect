@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/chain-evm
+# commit 3f762331 · 2026-11-19T07:34:31Z · exit 0 (expected 0) · 3.0s
+
+
+ RUN  v4.1.12 ./packages/chain-evm
+
+
+ Test Files  8 passed (8)
+      Tests  18 passed (18)
+   Start at  07:34:29
+   Duration  2.19s (transform 1.63s, setup 0ms, import 8.78s, tests 847ms, environment 1ms)

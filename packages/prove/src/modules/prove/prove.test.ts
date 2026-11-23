@@ -1,13 +1,15 @@
 // The stage-one gate for prove: acme passes, and each planted fixture (written by the journey author, never by the
 // builder) fails its own eval in a scratch copy of acme.
-import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
+import { createServer } from "node:http";
 import { Effect } from "effect";
 import { afterAll, describe, expect, it } from "vitest";
 import { FsTree, flushChanges } from "nx/src/generators/tree.js";
 import { Sync } from "@orthograph/generators/sync";
+import { Owned } from "@orthograph/services";
 import { acmeCopy } from "../../../test/acme.ts";
+import { coverageLine } from "../evals/testing.ts";
 import { Prove } from "./service.ts";
 
 // Dot-folders (.wrangler, .ortho) belong to whatever is running there; a filter also keeps cpSync off its native path,
@@ -54,9 +56,8 @@ const planted = (name: string, installs: ReadonlyArray<readonly [string, string]
 
 const GRANT = "src/allowance/grant.ts";
 const nothingRunning = () => {
-  const containers = spawnSync("docker", ["ps", "--format", "{{.Names}}"], { encoding: "utf8" }).stdout;
-  // This process's collectors only: other test files prove their own projects at the same time.
-  expect(containers).not.toContain(`ortho-collector-${process.pid}-`);
+  // This process's own processes only: other test files prove their own projects at the same time.
+  expect(Owned.leaks().filter((m) => m.owner === process.pid)).toEqual([]);
 };
 
 // A collector may still be flushing its last lines as the scope closes: retry instead of failing on ENOTEMPTY.
@@ -65,10 +66,11 @@ afterAll(() => { rmSync(scratch, { recursive: true, force: true, maxRetries: 5, 
 describe("ortho prove --env local", () => {
   it("passes on acme: every journey, every eval, coverage, and leaves nothing running", { timeout: 180_000 }, async () => {
     const report = await prove(own.root, 0);
-    expect(report.lines).toContain("journey grant an allowance ✔ 3/3 steps");
+    expect(report.lines).toContain("journey grant an allowance ✔ 4/4 steps");
     // acme is the starter plus the allowance (L1.51): the starter's five journeys run beside acme's own six.
     for (const j of ["an outsider cannot revoke", "read an allowance", "revoke then spend", "spend twice with one request", "spend within an allowance",
-      "an invitation is used once", "an owner makes an api key", "health is up", "invite and accept", "sign up and sign in"]) {
+      "an invitation is used once", "an owner makes an api key", "health is up", "invite and accept", "sign up and sign in",
+      "a key and a session are the same person", "an agent passes the owner rule", "an agent cannot consent for a person", "the system is nobody signed in"]) {
       expect(report.lines.some((l) => l.startsWith(`journey ${j} ✔`))).toBe(true);
     }
     for (const op of ["allowance.get", "allowance.grant", "allowance.revoke", "allowance.spend", "organization.create", "organization.get",
@@ -77,9 +79,25 @@ describe("ortho prove --env local", () => {
       expect(report.lines.some((l) => l.startsWith(`${op} 9 evals ✔ p50 `))).toBe(true);
     }
     expect(report.lines.some((l) => l.startsWith("allowance.grant performance ✔ p50 "))).toBe(true);
-    expect(report.lines).toContain("coverage ✔ moves 7/7 · outcomes 7/7 · refusals 4/4 · runtime refusals 13/16");
+    expect(report.lines).toContain(coverageLine("moves 7/7 · outcomes 7/7 · refusals 4/4 · runtime refusals 15/17", JSON.parse(readFileSync(join(own.root, "generated/model/model.json"), "utf8"))));
     expect(report.lines.at(-1)).toBe("prove ✔");
     expect(report.passed).toBe(true);
+    nothingRunning();
+  });
+
+  // S-25: `ortho prove` defaults to port 0, a free port the OS picks. Another session's world on the old fixed default
+  // (8799) answers every request, so a run that landed on it would report its verdicts instead of its own.
+  it("with port 0 it runs its own world while 8799 is held by something else (S-25)", { timeout: 180_000 }, async () => {
+    const held = createServer((_, res) => { res.writeHead(200, { "content-type": "application/json" }); res.end("{}"); });
+    const taken = await new Promise<boolean>((done) => { held.once("error", () => done(true)); held.listen(8799, "127.0.0.1", () => done(true)); });
+    expect(taken).toBe(true);
+    try {
+      const report = await Effect.runPromise(Effect.scoped(Prove.run({ root: acme, port: 0, only: "grant an allowance" })));
+      expect(report.lines).toContain("journey grant an allowance ✔ 4/4 steps");
+      expect(report.lines.some((l) => l.includes("telemetry missing"))).toBe(false);
+    } finally {
+      held.close();
+    }
     nothingRunning();
   });
 
@@ -94,7 +112,7 @@ describe("ortho prove --env local", () => {
 
   const cases: ReadonlyArray<{ readonly fixture: string; readonly installs: ReadonlyArray<readonly [string, string]>; readonly line: string; readonly says: string; readonly sync?: boolean }> = [
     { fixture: "answer-shape", installs: [["grant.ts", GRANT]], line: "allowance.grant answer shape ✘", says: 'grant-an-allowance "ada grants olga 500": answer.allowance: expected alw_<id>, got 500' },
-    { fixture: "declared-errors", installs: [["grant.ts", GRANT]], line: "allowance.grant declared errors ✘", says: "refused with AllowanceMemberUnknown, not one of AllowanceLimitTooHigh, NotAllowed" },
+    { fixture: "declared-errors", installs: [["grant.ts", GRANT]], line: "allowance.grant declared errors ✘", says: "refused with AllowanceMemberUnknown, not one of AllowanceLimitTooHigh, PersonNotFound, NotAllowed" },
     { fixture: "machine-path", installs: [["grant.ts", GRANT]], line: "allowance.grant machine path ✘", says: 'grant ended in "paused", not one of active' },
     { fixture: "events", installs: [["grant.ts", GRANT]], line: "allowance.grant events ✘", says: "move grant emitted no AllowanceGranted" },
     { fixture: "who-may-call", installs: [["main.ts", "generated/server/main.ts"]], line: "allowance.grant who may call ✘", says: "and was answered, not refused" },

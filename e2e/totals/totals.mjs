@@ -1,22 +1,26 @@
-// Writes the totals in an e2e suite's README from facts, so no pull request keeps a count by hand.
-//   node e2e/totals/totals.mjs            rewrite every block
-//   node e2e/totals/totals.mjs --check    exit 1, naming the fix, when a block is not what would be written
-//   --root <dir>                          the folder that holds the suites (default: e2e/)
-// A suite is a folder e2e/<suite>/ with a README.md that holds <!-- totals:start --> and <!-- totals:end -->.
+// Prints the totals of an e2e suite from facts, so no pull request keeps a count by hand and none can conflict with another over one (G9).
+//   node e2e/totals/totals.mjs                 every suite that has an expected-failing/ folder, as markdown on stdout
+//   node e2e/totals/totals.mjs --suite <name>  that suite (repeatable), with or without a list
+//   --root <dir>                               the folder that holds the suites (default: e2e/)
 // Tests are counted by `vitest list --json` (nothing runs) with e2e/vitest.<suite>.config.ts, else e2e/vitest.config.ts.
-// Reds are the lines of e2e/<suite>/expected-failing.txt, when it exists.
+// Reds are the lines of the files in e2e/<suite>/expected-failing/ (one `<check>.txt` per check file). CI appends the output to the
+// e2e-m1 job's step summary; nothing is written to a README.
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const START = "<!-- totals:start -->";
-export const END = "<!-- totals:end -->";
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, "../..");
 
-/** The expected-failing keys of a list: `m1/14-x.test.ts > describe > test`, one per line, `#` lines and blanks skipped. */
+/** The expected-failing keys of a list file: `m1/14-x.test.ts > describe > test`, one per line, `#` lines and blanks skipped. */
 export const parseList = (text) => text.split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
+
+/** Every key of every `*.txt` file in a suite's expected-failing/ folder, or undefined when the suite has none. */
+export const readKeys = (dir) =>
+  existsSync(dir) && statSync(dir).isDirectory()
+    ? readdirSync(dir).filter((n) => n.endsWith(".txt")).sort().flatMap((n) => parseList(readFileSync(join(dir, n), "utf8")))
+    : undefined;
 
 /** An entry for a hook or a file that errored is not a test, so it is never counted as one. */
 const isErrorKey = (key, file) => key === file || /\[[a-zA-Z ]* error\]$/.test(key);
@@ -39,30 +43,16 @@ export const facts = (suite, tests, keys) => {
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-/** The block, markers included. */
-export const render = ({ rows, stale, hasList }) => {
+/** The suite's totals as markdown: a heading, a sentence and a table. */
+export const render = (suite, { rows, stale, hasList }) => {
   const total = rows.reduce((n, r) => n + r.tests, 0);
   const red = rows.reduce((n, r) => n + (r.red ?? 0), 0);
   const sentence = hasList
-    ? `${plural(total, "test", "tests")} in all; ${total - red} pass; ${red} expected to fail, listed in \`expected-failing.txt\`.${stale ? ` ${plural(stale, "listed line matches", "listed lines match")} no test: take ${stale === 1 ? "it" : "them"} off the list.` : ""}`
+    ? `${plural(total, "test", "tests")} in all; ${total - red} pass; ${red} expected to fail, listed in \`expected-failing/\`.${stale ? ` ${plural(stale, "listed line matches", "listed lines match")} no test: take ${stale === 1 ? "it" : "them"} off the list.` : ""}`
     : `${plural(total, "test", "tests")} in all; all pass.`;
   const head = hasList ? ["| File | Tests | Expected to fail |", "|---|---|---|"] : ["| File | Tests |", "|---|---|"];
   const line = (name, r) => `| ${name} | ${r.tests} |${hasList ? ` ${r.red} |` : ""}`;
-  return [
-    START, "<!-- Written by `nx run e2e:totals` from the tests and expected-failing.txt. Do not edit by hand. -->", "",
-    sentence, "", ...head, ...rows.map((r) => line(`\`${r.file}\``, r)), line("**All**", { tests: total, red }), "", END,
-  ].join("\n");
-};
-
-/** Where `marker` stands on a line of its own: a marker named in prose (`totals:start` in backticks) is not one. */
-export const markersIn = (text, marker) => [...text.matchAll(new RegExp(`^${marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "gm"))].map((m) => m.index);
-
-/** The README with its block replaced; throws when the markers are not one start, then one end. */
-export const replaceBlock = (readme, block) => {
-  const [a, ...more] = markersIn(readme, START);
-  const [b] = markersIn(readme, END);
-  if (a === undefined || b === undefined || b < a || more.length > 0) throw new Error(`needs one ${START} followed by one ${END}, each on a line of its own`);
-  return readme.slice(0, a) + block + readme.slice(b + END.length);
+  return [`### e2e/${suite}`, "", sentence, "", ...head, ...rows.map((r) => line(`\`${r.file}\``, r)), line("**All**", { tests: total, red }), ""].join("\n");
 };
 
 const listTests = (root, suite) => {
@@ -75,26 +65,12 @@ const listTests = (root, suite) => {
 };
 
 export const run = (argv) => {
-  const check = argv.includes("--check");
   const root = resolve(argv.includes("--root") ? argv[argv.indexOf("--root") + 1] : join(repo, "e2e"));
-  const readmes = readdirSync(root)
-    .filter((n) => statSync(join(root, n)).isDirectory() && existsSync(join(root, n, "README.md")))
-    .filter((n) => markersIn(readFileSync(join(root, n, "README.md"), "utf8"), START).length > 0);
-  let stale = 0;
-  for (const suite of readmes) {
-    const path = join(root, suite, "README.md");
-    const listFile = join(root, suite, "expected-failing.txt");
-    const keys = existsSync(listFile) ? parseList(readFileSync(listFile, "utf8")) : undefined;
-    const old = readFileSync(path, "utf8");
-    const next = replaceBlock(old, render(facts(suite, listTests(root, suite), keys)));
-    if (next === old) continue;
-    stale++;
-    if (check) console.error(`${relative(process.cwd(), path)}: the totals are out of date. Run: pnpm nx run e2e:totals`);
-    else { writeFileSync(path, next); console.log(`${relative(process.cwd(), path)}: totals written`); }
-  }
-  if (!readmes.length) console.log(`no suite README under ${relative(process.cwd(), root) || "."} has ${START}`);
-  else if (!stale) console.log(`totals are current in ${readmes.map((s) => `${s}/README.md`).join(", ")}`);
-  return check && stale ? 1 : 0;
+  const named = argv.flatMap((a, i) => (a === "--suite" ? [argv[i + 1]] : []));
+  const suites = named.length > 0 ? named : readdirSync(root).filter((n) => statSync(join(root, n)).isDirectory() && existsSync(join(root, n, "expected-failing"))).sort();
+  if (suites.length === 0) { console.log(`no suite under ${relative(process.cwd(), root) || "."} has an expected-failing/ folder`); return 0; }
+  for (const suite of suites) console.log(render(suite, facts(suite, listTests(root, suite), readKeys(join(root, suite, "expected-failing")))));
+  return 0;
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) process.exit(run(process.argv.slice(2)));

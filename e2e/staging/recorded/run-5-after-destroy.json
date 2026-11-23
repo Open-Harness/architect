@@ -1,0 +1,57 @@
+[
+  {
+    "label": "workers",
+    "names": [
+      "other-app-a",
+      "other-app-b",
+      "other-app-c",
+      "other-app-d",
+      "other-app-e",
+      "other-app-f",
+      "other-app-g",
+      "other-app-h",
+      "other-app-i",
+      "other-app-j",
+      "other-app-k",
+      "other-app-l",
+      "other-app-m",
+      "other-app-n",
+      "other-app-o",
+      "other-app-p",
+      "other-app-q",
+      "other-app-r"
+    ]
+  },
+  {
+    "label": "d1",
+    "names": []
+  },
+  {
+    "label": "durable-object-namespaces",
+    "names": [
+      "other-app-q:Bench:other-app-q_Bench",
+      "other-app-p:DirectoryDO:other-app-p_DirectoryDO",
+      "other-app-p:SandboxDO:other-app-p_SandboxDO",
+      "other-app-p:ManagerDO:other-app-p_ManagerDO",
+      "other-app-p:LedgerDO:other-app-p_LedgerDO",
+      "other-app-a:Store:other-app-a_Store",
+      "other-app-d:Indexer:other-app-d_Indexer",
+      "other-app-d:Chain:other-app-d_Chain",
+      "other-app-d:Bundler:other-app-d_Bundler",
+      "other-app-e:Indexer:other-app-e_Indexer",
+      "other-app-e:Chain:other-app-e_Chain",
+      "other-app-e:Bundler:other-app-e_Bundler"
+    ]
+  },
+  {
+    "label": "r2",
+    "names": [
+      "other-app-s",
+      "other-app-t",
+      "other-app-u",
+      "other-app-v",
+      "other-app-w",
+      "other-app-r"
+    ]
+  }
+]

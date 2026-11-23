@@ -31,6 +31,22 @@ Read one allowance by its id: organization, member, limit, spent, state.
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't the grantee of the allowance, or the owner of its organization; the handler never runs |
 
+## Worked examples
+
+### read an allowance
+
+Starts from the world `funded`.
+
+- **olga reads her allowance.** `olga` (role allowance.grantee) calls and sends id the world's allowance, and gets back `active` and gets back `500` and gets back `0`.
+- **ada, the owner, reads it too.** `ada` (role organization.owner) calls and sends id the world's allowance, and gets back the cast's olga person and gets back [`active`, `500`, `0`].
+- **bob is refused.** `bob` (signed in) calls and sends id the world's allowance, and is refused with NotAllowed, AR-001.
+
+### spend twice with one request
+
+Starts from the world `funded`.
+
+- **only 100 was spent.** `olga` (role allowance.grantee) calls and sends id the world's allowance, and gets back `100`.
+
 ## How to call
 
 ```sh

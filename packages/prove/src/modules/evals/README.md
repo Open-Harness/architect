@@ -6,6 +6,7 @@ against the model, never from what the server says about itself:
 1. answer shape: every answer, read from the operation's span, decodes against its declaration. Schema-valued fields use their observed
    response type when available without filling a missing public span field; otherwise valid text is kept before decoding JSON. No secret or private value, sent
    or answered, is in any span, log or journal entry of the call (by name and by value; L2.P, D3 #83).
+   A field declared `Blueprint.issued` must be on the answer of the operation that issues it (HAN-15), read from the model, which is authoritative (the compiler copies the mark in from the declaration and refuses it outside a secret answer value): visibility decides what is shown, never whether an issued token is there. The report names the operation and the field, never the value.
 2. declared errors: every refusal is one the operation declares (its errors, its machine's, `NotAllowed`), and its answer carries the
    code the model fixed for it.
 3. machine path: every move ends in a declared state, and the stored state is where it ended.

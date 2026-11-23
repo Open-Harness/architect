@@ -422,6 +422,8 @@ full template, so each gets its options and a recommendation in a line or two. T
 - **S26. How much fuzzing runs on every check.** A: a fixed seed set in `check`, the long run in CI. B: always long.
   **A**, the CI seed in the verdict.
 - **S27. One vault per organisation or one for all.** A: per organisation, as L4.07 plans. B: one with a mapping. **A.**
+  (Settled otherwise by K25, 20 November 2026: an organisation is not deployed. One budgets module per network, which
+  each organisation's Safe enables; the money stays in the Safe.)
 - **S28. Is "leaks nothing" a journey check or an eval?** A: a built-in eval on every operation with a private field.
   B: a journey check. **A.**
 - **S29. Where custody is proved first.** A: in Solidity with wallets, so Noir inherits it. B: only with Noir. **A.**

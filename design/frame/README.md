@@ -42,8 +42,8 @@ names.
 1. **One description.** What exists (things), how it changes (machines, operations), who may change it (roles), what is
    recorded (events, steps), what must hold (journeys). That is the blueprint; compiled, it is the model.
 2. **Many projections.** The server is the description projected onto a host. The SDK, CLI and MCP are projections onto
-   callers. Docs and the portal are projections onto readers. Solidity is a projection onto a chain. A world is the
-   description running for a test. None of them is the system; each is a view of it.
+   callers. Docs and the portal are projections onto readers. Solidity is a language on a chain host (K27). A world
+   is the description running for a test. None of them is the system; each is a view of it.
 3. **Behaviour is the only freehand.** Handlers fill blanks in generated frames. Their types come from the declaration,
    so code that breaks the contract doesn't compile.
 4. **Evidence comes back under the same names.** Spans, events and refusals carry the names that came from paths. Evals
@@ -151,9 +151,9 @@ description and judged against it.
 |---|---|
 | anonymous | nothing; only `anyone` admits it |
 | person | `Via.session`, `Via.key` or `Via.device` |
-| agent, acting for a person | `Via.agent`: an OAuth token from the MCP sign-in |
+| agent, acting for a person | `Via.agent`: a credential made for an agent, such as an OAuth token from the MCP sign-in or a key made for an agent |
 | service | an adapter's door: the outside system's own verification, such as Stripe's signature |
-| system | the keeper's own key, limited to time moves |
+| system | the runtime's own work: the keeper, `on:` and workflows; it has no credential |
 
 ### Audiences
 
@@ -181,7 +181,8 @@ description and judged against it.
 - **Environments bind; worlds run.** An environment says where each projection lives and where secrets come from; a
   world is one running copy of it, with stand-ins for every adapter that has one.
 - **Proof follows the plugin kinds.** A feature brings journeys. An adapter brings a conformance test against its
-  stand-in. A projection that callers use replays the journeys it takes; the rest say "not proved by replay".
+  stand-in. A projection that callers use replays the journeys it takes; the rest say "not proved by replay". A
+  language brings the tests it generates and agreement with the Effect machine; a host brings a world to run in.
 
 ## Each plugin brings its proof
 
@@ -190,6 +191,10 @@ description and judged against it.
   CLI and MCP must leave the same evidence. Docs, infrastructure and the like are "not proved by replay". Today journeys call the server over raw HTTP (`prove/.../journeys/internal/world.ts:85`), so the SDK,
   CLI and MCP are never proved by a journey.
 - **An adapter** brings a conformance test against a stand-in that runs in the world.
+- **A language** (K27) brings the tests it generates for its frame and, for any language after Effect, a fuzz that
+  runs the same moves through its code and the Effect machine and must find no difference.
+- **A host** (K27) brings a world: its place stood up locally (workerd and D1, or Anvil for `Host.chain`), where the
+  journeys run.
 
 ## What a person looks at
 

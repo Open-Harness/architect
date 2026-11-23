@@ -55,6 +55,8 @@ M1.41 turns each ✗ and ~ that matters red; M1.42 makes it pass.
 | M1.22, M1.23, M1.24, M1.37 in M1; ST1.05 in stage 1 | in M3, ids unchanged; Gate M3 needs them, Gate M1 and Gate M2 don't |
 | The canon's first example: the sign-up sheet, then ticketing | the links app, all the way through (the canon thread's pass) |
 
+**Amended 20 November 2026:** the move into `@orthograph/projections` landed with M1.12, because check 14 (M1's gate) requires the clients as projections; M3.22 keeps only what is left of plugins.
+
 M1.24 keeps the chat, "Needs you" and screen context; its frame (tree, top bar, live rail, drawer) is now M1.13's.
 M3.17 and M4.23 now need M3.21 for faces.
 

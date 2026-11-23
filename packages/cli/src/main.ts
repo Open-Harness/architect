@@ -7,9 +7,10 @@ import { Argument, Command, Flag } from "effect/cli";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { Build, Environments, Prove, ProveFailed, Promote, TestWorlds, Verdicts } from "@orthograph/prove";
-import { spawn } from "node:child_process";
 import { ModelCommand } from "#modules/model/service.js";
 import { Add } from "#modules/add/service.js";
+import { Mounting } from "#modules/mounting/service.js";
+import type { Kind } from "#modules/mounting/types.js";
 import { AddRefused, type What } from "#modules/add/types.js";
 import { Check } from "#modules/check/service.js";
 import { Generate } from "#modules/generate/service.js";
@@ -17,6 +18,7 @@ import { Ship } from "#modules/ship/service.js";
 import { Brief } from "#modules/brief/service.js";
 import { TelemetryCommand } from "#modules/telemetry/service.js";
 import { WatchCommand } from "#modules/watch/service.js";
+import { proveAddress, stagingLive } from "#modules/staging/service.js";
 import { Compiler, nodeSource } from "@orthograph/compiler";
 
 const model = Command.make(
@@ -31,7 +33,7 @@ const model = Command.make(
       Effect.tap((said) => (said.err ? Console.error(said.err.trimEnd()) : Effect.void)),
       Effect.tap((said) => Effect.sync(() => (process.exitCode = said.exit))),
     ),
-);
+).pipe(Command.withAlias("describe"));
 
 const dev = Command.make(
   "dev",
@@ -41,7 +43,7 @@ const dev = Command.make(
   },
   ({ root, port }) =>
     Effect.scoped(
-      Prove.dev({ root, port, env: process.env }).pipe(
+      Prove.dev({ root, port, pid: process.pid, env: process.env }).pipe(
         Effect.tap(({ notes }) => Effect.forEach(notes, (n) => Console.log(n))),
         Effect.tap(({ url, log }) => Console.log(`running at ${url}  (world at ${url}/_world, wrangler output in ${log})`)),
         Effect.andThen(Effect.never),
@@ -64,13 +66,37 @@ const attestation = (root: string) =>
 const prove = Command.make(
   "prove",
   {
-    env: Flag.Literals("env", ["local", "test"]).pipe(Flag.withDefault("local")),
+    env: Flag.Literals("env", ["local", "test", "staging"]).pipe(Flag.withDefault("local")),
     root: Flag.String("root").pipe(Flag.withDefault(process.cwd())),
-    port: Flag.Int("port").pipe(Flag.withDefault(8799)),
-    view: Flag.Boolean("view").pipe(Flag.withDefault(false)),
+    port: Flag.Int("port").pipe(Flag.withDefault(0)),
+    empty: Flag.Boolean("empty").pipe(Flag.withDefault(false)),
+    only: Flag.String("only").pipe(Flag.optional),
+    // Only the journeys a change since the last proof's record touches; everything, saying why, when it cannot tell (ST1.23).
+    changed: Flag.Boolean("changed").pipe(Flag.withDefault(false)),
+    // The run as data (per journey, per step: verdict, expected, got, handler and declaration files; totals; timings).
+    json: Flag.Boolean("json").pipe(Flag.withDefault(false)),
+    report: Flag.String("report").pipe(Flag.optional),
+    // The run whose deployed Worker is judged (`--env staging` only): the address is formed from it and the account's subdomain.
+    run: Flag.String("run").pipe(Flag.optional),
   },
-  ({ env, root, port, view }) => {
-    const proved = env === "test"
+  ({ env, root, port, empty, only, changed, json, report, run }) => {
+    if (env !== "staging" && Option.isSome(run)) return fail("--run requires --env staging", 2);
+    if (env === "staging" && (empty || changed)) return fail(`${empty ? "--empty" : "--changed"} can't be used with --env staging: it judges the deployed Worker, not a world of its own`, 2);
+    if (env === "test" && (empty || Option.isSome(only))) return fail("--empty and --only require --env local", 2);
+    if (env === "test" && changed) return fail("--changed requires --env local", 2);
+    if (changed && (empty || Option.isSome(only))) return fail("--changed can't be combined with --empty or --only", 2);
+    if (env === "test" && (json || Option.isSome(report))) return fail("--json and --report require --env local", 2);
+    const proved = env === "staging"
+      ? proveAddress({ root, run: Option.getOrUndefined(run), subdomain: process.env[Names.variable("STAGING_SUBDOMAIN")], origin: process.env[Names.variable("STAGING_ORIGIN")] }).pipe(
+          Effect.mapError((e) => e.message),
+          Effect.flatMap(({ url, label, owns }) => Prove.staged({ root, url, label, ...(process.env["CLOUDFLARE_API_TOKEN"] && process.env["CLOUDFLARE_ACCOUNT_ID"] ? { d1: { token: process.env["CLOUDFLARE_API_TOKEN"], account: process.env["CLOUDFLARE_ACCOUNT_ID"], owns } } : {}), ...(Option.isSome(only) ? { only: only.value } : {}) })),
+          Effect.tap((proved) => Effect.sync(() => {
+            if (Option.isSome(report)) writeFileSync(report.value, JSON.stringify(proved.structured, null, 2) + "\n");
+            process.stdout.write(json ? JSON.stringify(proved.structured, null, 2) + "\n" : proved.lines.join("\n") + "\n");
+            process.exitCode = proved.passed ? 0 : 1;
+          })),
+        )
+      : env === "test"
       ? attestation(root).pipe(
           Effect.flatMap(({ token, logbook }) => {
             const lifetime = process.env[Names.variable("LIFETIME")];
@@ -79,9 +105,12 @@ const prove = Command.make(
           Effect.tap((report) => Effect.sync(() => (process.exitCode = report.passed ? 0 : 1))),
           Effect.catchTag("EnvironmentFailed", (e) => Effect.fail(new ProveFailed({ message: e.message }))),
         )
-      : Effect.scoped(Prove.run({ root, port, view, env: process.env })).pipe(
-          Effect.tap((report) => Effect.sync(() => process.stdout.write(report.lines.join("\n") + "\n"))),
-          Effect.tap((report) => Effect.sync(() => (process.exitCode = report.passed ? 0 : 1))),
+      : Effect.scoped(Prove.run({ root, port, empty, changed, env: process.env, ...(changed && !json ? { say: (line: string) => Console.log(line) } : {}), ...(Option.isSome(only) ? { only: only.value } : {}) })).pipe(
+          Effect.tap((proved) => Effect.sync(() => {
+            if (Option.isSome(report)) writeFileSync(report.value, JSON.stringify(proved.structured, null, 2) + "\n");
+            process.stdout.write(json ? JSON.stringify(proved.structured, null, 2) + "\n" : proved.lines.slice(proved.said ?? 0).join("\n") + "\n");
+          })),
+          Effect.tap((proved) => Effect.sync(() => (process.exitCode = proved.passed ? 0 : 1))),
         );
     return proved.pipe(
       Effect.catchTag("ProveFailed", (e) => Console.error(`prove couldn't run: ${e.message}`).pipe(Effect.tap(() => Effect.sync(() => (process.exitCode = 2))))),
@@ -136,7 +165,47 @@ const addOne = (what: What) =>
       });
     },
   );
-const add = Command.make("add").pipe(Command.withSubcommands([addOne("thing"), addOne("operation"), addOne("read"), addOne("journey")]));
+// `ortho add feature|adapter|projection <package>`: one mount file, the version pinned exactly, and what it needs.
+const addPlugin = (kind: Kind) =>
+  Command.make(
+    kind,
+    {
+      pkg: Argument.String("package"),
+      as: Flag.String("as").pipe(Flag.optional),
+      dryRun: Flag.Boolean("dry-run").pipe(Flag.withDefault(false)),
+      root: Flag.String("root").pipe(Flag.withDefault(process.cwd())),
+    },
+    ({ pkg, as, dryRun, root }) =>
+      Mounting.add({ root, kind, pkg, dryRun, registry: process.env["npm_config_registry"] ?? "https://registry.npmjs.org", ...(Option.isSome(as) ? { as: as.value } : {}) }).pipe(
+        Effect.flatMap((added) => Console.log(added.lines.join("\n"))),
+        Effect.catchTag("MountRefused", (e) => fail(e.message, 2)),
+      ),
+  );
+// `ortho add journeys <thing>`: a stub per path, role and declared error, writing only the ones that are missing (K16 e).
+const addJourneys = Command.make(
+  "journeys",
+  { thing: Argument.String("thing"), root: Flag.String("root").pipe(Flag.withDefault(process.cwd())) },
+  ({ thing, root }) =>
+    Compiler.model.pipe(
+      Effect.provide(nodeSource(root)),
+      Effect.flatMap((m) => {
+        const planned = Add.journeys(m, thing, (path) => existsSync(join(root, path)));
+        if (planned instanceof AddRefused) return fail(planned.message, 2);
+        return Effect.sync(() => {
+          for (const f of planned.write) {
+            mkdirSync(dirname(join(root, f.path)), { recursive: true });
+            writeFileSync(join(root, f.path), f.content);
+            process.stdout.write(`wrote ${f.path}\n`);
+          }
+          for (const path of planned.there) process.stdout.write(`kept ${path} (already there)\n`);
+        });
+      }),
+      Effect.catchTags({ BlueprintInvalid: (e) => fail(e.problems.join("\n"), 2), SourceError: (e) => fail(e.message, 2) }),
+    ),
+);
+const add = Command.make("add").pipe(
+  Command.withSubcommands([addOne("thing"), addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),
+);
 
 const tsFiles = (dir: string): ReadonlyArray<string> =>
   existsSync(dir) ? readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? tsFiles(join(dir, d.name)) : d.name.endsWith(".ts") ? [join(dir, d.name)] : [])) : [];
@@ -178,30 +247,13 @@ const version = Command.make(
   ({ next, root }) => (next ? Ship.next({ root, env: process.env }).pipe(Effect.flatMap(print)) : fail("usage: ortho version --next", 2)),
 );
 
-// `ortho telemetry view | stop | trace <id> | open <id>`: the local viewer, and a trace read from the files (O1).
-const open = (url: string) =>
-  Effect.sync(() => {
-    const [cmd, ...args] = process.platform === "darwin" ? ["open", url] : process.platform === "win32" ? ["cmd", "/c", "start", "", url] : ["xdg-open", url];
-    spawn(cmd!, args, { stdio: "ignore", detached: true }).on("error", () => undefined).unref();
-  });
+// `ortho telemetry trace <id>`: a trace read from the files a Collector wrote (O1); the portal's trace view is the page for it.
 const telemetryEnv = Flag.optional(Flag.String("env"));
 const telemetry = Command.make("telemetry").pipe(Command.withSubcommands([
-  Command.make("view", {}, () =>
-    Console.log("starting the viewer (the first start pulls its image once; it is large)").pipe(Effect.andThen(TelemetryCommand.view()), Effect.flatMap(print))),
-  Command.make("stop", {}, () => TelemetryCommand.stop().pipe(Effect.flatMap(print))),
   Command.make(
     "trace",
     { id: Argument.String("id"), env: telemetryEnv, root: Flag.String("root").pipe(Flag.withDefault(process.cwd())) },
     ({ id, env, root }) => TelemetryCommand.trace({ root, id, ...(Option.isSome(env) ? { env: env.value } : {}) }).pipe(Effect.flatMap(print)),
-  ),
-  Command.make(
-    "open",
-    { id: Argument.String("id"), env: telemetryEnv, root: Flag.String("root").pipe(Flag.withDefault(process.cwd())) },
-    ({ id, env, root }) =>
-      TelemetryCommand.open({ root, id, ...(Option.isSome(env) ? { env: env.value } : {}) }).pipe(
-        Effect.tap((said) => (said.open ? open(said.open) : Effect.void)),
-        Effect.flatMap(print),
-      ),
   ),
 ]));
 
@@ -259,6 +311,18 @@ const build = Command.make(
     ),
 );
 
+// `ortho env up <env> --plan|--run <id>` and `ortho env destroy <env> --run <id>`: an environment in the cloud (M7.03, M7.04). `--plan` prints what would be made and touches nothing.
+// The Cloudflare credentials are read here and nowhere else.
+const cloud = (verb: "up" | "destroy", env: string, plan: boolean, run: Option.Option<string>, root: string) => {
+  const options = { root, environment: env, run: Option.getOrUndefined(run), credentials: { token: process.env["CLOUDFLARE_API_TOKEN"], account: process.env["CLOUDFLARE_ACCOUNT_ID"] } };
+  const api = stagingLive((millis) => Effect.sleep(millis), process.env);
+  return (plan ? api.plan(options) : verb === "up" ? api.up(options) : api.destroy(options)).pipe(
+    Effect.tap((said) => (said.out ? Effect.sync(() => process.stdout.write(said.out)) : Effect.void)),
+    Effect.tap((said) => (said.err ? Console.error(said.err.trimEnd()) : Effect.void)),
+    Effect.tap((said) => Effect.sync(() => (process.exitCode = said.exit))),
+  );
+};
+
 // `ortho env up|down|status <env>`: a long-lived local environment (D3 #4).
 const environment = (verb: "up" | "down" | "status") =>
   Command.make(
@@ -267,9 +331,13 @@ const environment = (verb: "up" | "down" | "status") =>
       env: Argument.String("env"),
       port: Flag.optional(Flag.Int("port")),
       revision: Flag.optional(Flag.String("revision")),
+      plan: Flag.Boolean("plan").pipe(Flag.withDefault(false)),
+      run: Flag.optional(Flag.String("run")),
       root: Flag.String("root").pipe(Flag.withDefault(process.cwd())),
     },
-    ({ env, port, revision, root }) => {
+    ({ env, port, revision, plan, run, root }) => {
+      // `up` with `--plan` or `--run` is the cloud's (the same plan, printed or made); with neither it stays the long-lived local environment.
+      if (verb === "up" && (plan || Option.isSome(run))) return cloud("up", env, plan, run, root);
       const name = { root, name: env };
       // The logbook trusts one issuer, a repository, refs and workflows: from the environment, like a prove's token (D3 #33).
       const list = (text: string | undefined) => (text ?? "").split(",").map((s) => s.trim()).filter((s) => s !== "");
@@ -291,7 +359,12 @@ const environment = (verb: "up" | "down" | "status") =>
       return said.pipe(Effect.flatMap((lines) => Console.log(lines.join("\n"))), Effect.catchTag("EnvironmentFailed", (e) => fail(e.message, 2)));
     },
   );
-const env = Command.make("env").pipe(Command.withSubcommands([environment("up"), environment("down"), environment("status")]));
+const destroyEnvironment = Command.make(
+  "destroy",
+  { env: Argument.String("env"), plan: Flag.Boolean("plan").pipe(Flag.withDefault(false)), run: Flag.optional(Flag.String("run")), root: Flag.String("root").pipe(Flag.withDefault(process.cwd())) },
+  ({ env, plan, run, root }) => cloud("destroy", env, plan, run, root),
+);
+const env = Command.make("env").pipe(Command.withSubcommands([environment("up"), environment("down"), environment("status"), destroyEnvironment]));
 
 // `ortho worlds reap`: destroys every world of the test environment that is past its lifetime (D3 #7, #50).
 const reap = Command.make(
@@ -305,9 +378,12 @@ const reap = Command.make(
 );
 const worlds = Command.make("worlds").pipe(Command.withSubcommands([reap]));
 
+// The CLI's own version is the one in its package.json, which sits next to `src/` and next to `dist/`, so one path serves source and the published package.
+const ownVersion: string = (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { readonly version: string }).version;
+
 Command.make(Names.short).pipe(
   Command.withSubcommands([model, dev, prove, promote, add, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
-  Command.run({ version: "0.0.0" }),
+  Command.run({ version: ownVersion }),
   Effect.provide(NodeServices.layer),
   NodeRuntime.runMain,
 );

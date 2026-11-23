@@ -1,0 +1,24 @@
+// Scaffolded from blueprint/things/allowance/machine.ts. Yours from now on.
+import { Blueprint, noEvents, refuses } from "orthograph";
+import { machine } from "../things/allowance/machine.ts";
+import { grantee } from "../things/allowance/roles.ts";
+import spend from "../things/allowance/verbs/spend.ts";
+
+/**
+ * One path through the allowance's machine, from blueprint/things/allowance/machine.ts:
+ *   revoked  spend  refused AllowanceNotActive (exit 40, AL-900), because spend starts only from active
+ * Refused: the grantee of the allowance calls allowance.spend on an allowance in revoked, and nothing changes.
+ */
+export default Blueprint.journey("allowance.spend: refused from revoked", {
+  cast: { grantee },
+  starts: Blueprint.todo("a starting world with an allowance in revoked"),
+  steps: (s) => [
+    s.step(
+      "the grantee calls allowance.spend",
+      s.grantee.run(spend, Blueprint.todo("allowance.spend's payload: allowance, amount, memo")),
+      refuses(machine.notFrom, { state: "revoked" }),
+      noEvents(),
+      machine.isIn(Blueprint.todo("the allowance's id"), "revoked"),
+    ),
+  ],
+});

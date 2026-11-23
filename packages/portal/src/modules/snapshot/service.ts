@@ -18,9 +18,9 @@ const environmentsOf = (blueprint: BlueprintWire): ReadonlyArray<string> => {
 /** The blueprint's own model, as what the logbook holds would be read, so a head the logbook cannot give still has something to judge against. */
 const bundleCore = (blueprint: BlueprintWire) => Wire.core(blueprint.model).pipe(Effect.catch(() => Effect.succeed<ModelCore>({ things: {}, operations: {} })));
 
-const take: SnapshotApi["take"] = ({ blueprint, reader, bundleRevision, ref = MAIN }) =>
+const take: SnapshotApi["take"] = ({ blueprint, reader, bundleRevision, ref = MAIN, now }) =>
   Effect.gen(function* () {
-    const observedAt = new Date(yield* Clock.currentTimeMillis).toISOString();
+    const observedAt = new Date(now ?? (yield* Clock.currentTimeMillis)).toISOString();
     const environments = environmentsOf(blueprint);
     const bundle = yield* bundleCore(blueprint);
     const base = {

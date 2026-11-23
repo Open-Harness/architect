@@ -1851,7 +1851,7 @@
   "what": "The detail of principals and roles: agent acting for a person, service(<mount>), system; .via and .notVia; what auth and organizations each own; how acme's copied things move; a plugin's own CI"
  },
  "M2-02": {
-  "doneWhen": "they fail on empty handlers",
+  "doneWhen": "moved part: they fail on empty handlers; principal part: they fail on today's build for the missing surface only (.via, .tools(), Blueprint.system, the service role, via in session.show's answer)",
   "history": [],
   "id": "M2-02",
   "kind": "checks",
@@ -1867,33 +1867,36 @@
   "size": "M",
   "stage": "backlog",
   "thread": null,
-  "title": "Journeys for both plugins, moved out of acme",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "title": "Journeys for both plugins: the moved part and the principal part",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "Journeys for both plugins, moved out of acme (sign up and in, an owner makes a key, invite and accept, an invitation used once, an outsider can't revoke) plus new ones: service and system refused where not allowed; an agent passes the owner rule unless .notVia(Via.agent)"
+  "what": "Journeys for both plugins, in two parts. The moved part (#267): the journeys moved out of acme (sign up and in, an owner makes a key, invite and accept, an invitation used once, an outsider can't revoke) plus new ones, as stand-ins under e2e/fixtures/m2/ with the e2e/m2 checks, ratcheted; M2.24 moves them into the packages. The principal part: the principal journeys in acme, person, agent and system, via assertions included (a key and a session are the same person, an agent passes the owner rule, an agent cannot consent for a person, the system is nobody signed in), with the declarations they import (session.show answers via, and the two narrowings on api-key.create and invitation.accept), and the service one in the adapter fixture (a service is nobody signed in); it is authored on goal-3/m2-03-check and lands with M2.03 as a pair (decisions/G12-paired-landing.md)"
  },
  "M2-03": {
-  "doneWhen": "build",
+  "doneWhen": "the four principal journeys of M2.02 (a key and a session are the same person, an agent passes the owner rule, an agent cannot consent for a person, the system is nobody signed in) pass in acme, a service is nobody signed in passes in the adapter fixture, and the pair merges into goal/stage-1 green after the author recaptures the baselines",
   "history": [],
   "id": "M2-03",
-  "kind": "M2.01",
+  "kind": "build",
   "lane": "M2",
-  "needs": [],
-  "needsText": "person, lines 6 to 8) and the runtime; issues: per environment",
+  "needs": [
+   "M2.01",
+   "M2.02"
+  ],
+  "needsText": "M2.01, M2.02",
   "order": 48,
   "plain": "",
   "pr": null,
   "ref": "M2.03",
-  "size": "the principal journeys pass in acme",
+  "size": "M",
   "stage": "backlog",
   "thread": null,
-  "title": "Principals in roles/types.ts",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "title": "The five principals, and the principal journeys in acme",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "Principals in roles/types.ts (today anonymous \\"
+  "what": "The five principals in roles/types.ts (today anonymous | person, lines 6 to 8) and the runtime; .via and .notVia; Blueprint.system and the service role; the world's credentials and the journeys' .via; issues: per environment, replacing identity: (decisions/M2-auth.md; ortho.config.ts keeps auth until the app mounts auth); the two narrowings' via in the model; a pair with M2.02's principal part (decisions/G12-paired-landing.md)"
  },
  "M2-04": {
-  "doneWhen": "acme's environments name no secret; prove passes",
+  "doneWhen": "acme's environments name no secret; prove passes; acme's generated/ is unchanged, so checks 12, 14 and 21 stay green with no baseline recaptured",
   "history": [],
   "id": "M2-04",
   "kind": "build",
@@ -1910,21 +1913,23 @@
   "stage": "backlog",
   "thread": null,
   "title": "Secrets by declaration",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
   "what": "Secrets by declaration: Blueprint.secret, names from mount and export, Redacted through the plugin's layer, ortho secrets and secrets set locally"
  },
  "M2-05": {
-  "doneWhen": "the identity journeys pass with acme mounting it",
+  "doneWhen": "the identity journeys pass with acme mounting it, starter, plugged-in, signup and work still prove, and the pair merges green after the author recaptures the baselines",
   "history": [],
   "id": "M2-05",
   "kind": "build",
   "lane": "M2",
   "needs": [
    "M2.03",
-   "M2.04"
+   "M2.04",
+   "M2.24",
+   "M2.25"
   ],
-  "needsText": "M2.03, M2.04",
+  "needsText": "M2.03, M2.04, M2.24, M2.25",
   "order": 53,
   "plain": "",
   "pr": null,
@@ -1933,20 +1938,21 @@
   "stage": "backlog",
   "thread": null,
   "title": "@orthograph/auth, identity",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "@orthograph/auth, identity: person, session, api-key; Better Auth behind its worker entry; AUTH_SECRET declared"
+  "what": "@orthograph/auth, identity: person and session, with the key, device and agent credentials; Better Auth behind its worker entry (packages/auth, provides identity); AUTH_SECRET declared; auth leaves acme's ortho.config.ts, and check refuses issues with no identity mounted (until M2.11 work's config.auth counts as one); host-cloudflare keeps its Better Auth as the fallback for an app that mounts none, until M2.05b. It fills the handlers and the runtime of the skeleton M2.24 made, writes no journey, and is a pair with M2.25 (decisions/G12-paired-landing.md)"
  },
  "M2-06": {
-  "doneWhen": "acme login and MCP sign-in journeys pass",
+  "doneWhen": "acme login and MCP sign-in journeys pass, through the real pages, with checks 12, 14 and 21 green and no baseline recaptured",
   "history": [],
   "id": "M2-06",
   "kind": "build",
   "lane": "M2",
   "needs": [
-   "M2.05"
+   "M2.05",
+   "M2.26"
   ],
-  "needsText": "M2.05",
+  "needsText": "M2.05, M2.26",
   "order": 54,
   "plain": "",
   "pr": null,
@@ -1955,20 +1961,24 @@
   "stage": "backlog",
   "thread": null,
   "title": "@orthograph/auth, ways in",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "@orthograph/auth, ways in: the device flow, OAuth for MCP, the builder's sign-in to the portal (K5 seam 9), choices (signIn, keys), settings (sessionLength, allowedOrigins)"
+  "what": "@orthograph/auth, ways in: the device flow, OAuth for MCP, the builder's sign-in to the portal (K5 seam 9), choices (signIn, keys), settings (sessionLength, allowedOrigins); /login, /consent and /device as plain pages"
  },
  "M2-07": {
-  "doneWhen": "the tenancy journeys pass from the plugin; acme has no organization/ folder",
+  "doneWhen": "the tenancy journeys pass from the plugin; acme has no organization/ folder; the pair merges green after the author recaptures the baselines",
   "history": [],
   "id": "M2-07",
   "kind": "build",
   "lane": "M2",
   "needs": [
-   "M2.05"
+   "M2.05",
+   "M2.18",
+   "M2.22",
+   "M2.23",
+   "M2.24"
   ],
-  "needsText": "M2.05",
+  "needsText": "M2.05, M2.18, M2.22, M2.23, M2.24",
   "order": 55,
   "plain": "",
   "pr": null,
@@ -1977,40 +1987,44 @@
   "stage": "backlog",
   "thread": null,
   "title": "@orthograph/organizations",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "@orthograph/organizations: organisation, membership, invitation, owner, member, holds, starting worlds founded and invited; acme's copies deleted"
+  "what": "@orthograph/organizations: organisation, membership, invitation, api-key, owner and member as holds roles (K20), starting worlds founded, invited and joined; acme's copies deleted, and its cap becomes acme's own allowance-policy. It fills handlers and the runtime, and writes no journey, world or check; a pair with M2.23 (decisions/G12-paired-landing.md)"
  },
  "M2-08": {
-  "doneWhen": "M2.05",
+  "doneWhen": "the auth journeys pass all three ways",
   "history": [],
   "id": "M2-08",
-  "kind": "actions` (`journeys/internal/world.ts:85` calls HTTP directly today)",
+  "kind": "build",
   "lane": "M2",
-  "needs": [],
-  "needsText": "mcp\\",
+  "needs": [
+   "M2.05"
+  ],
+  "needsText": "M2.05",
   "order": 56,
   "plain": "",
   "pr": null,
   "ref": "M2.08",
-  "size": "build",
+  "size": "M",
   "stage": "backlog",
   "thread": null,
   "title": "Journeys through the clients",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "Journeys through the clients: a world runs steps through the SDK, with --through cli\\"
+  "what": "Journeys through the clients: a world runs steps through the SDK, with --through cli|mcp (actions join with M1.22, in stage 1, K29) (journeys/internal/world.ts:85 calls HTTP directly today); settles snags S-11, S-16 and S-20"
  },
  "M2-09": {
-  "doneWhen": "npm create orthograph demo from Verdaccio, then ortho prove --env local is green; the template's blueprint/ and src/ are identical to examples/links's on the same commit; once links/stage-1 is tagged (M2.12), the check compares against the tag",
+  "doneWhen": "npm create orthograph demo from Verdaccio, then ortho prove --env local is green; the template's blueprint/ and src/ are identical to examples/plugged-in's on the same commit; once plugged-in/stage-1 is tagged (M2.12), the check compares against the tag",
   "history": [],
   "id": "M2-09",
   "kind": "build",
   "lane": "M2",
   "needs": [
-   "M2.07"
+   "M2.07",
+   "ST1.07",
+   "M2.27"
   ],
-  "needsText": "M2.07, ST1.07",
+  "needsText": "M2.07, ST1.07, M2.27",
   "order": 57,
   "plain": "The one command that makes a new app: links at stage 1, with sign-in and handles.",
   "pr": null,
@@ -2019,9 +2033,9 @@
   "stage": "backlog",
   "thread": null,
   "title": "ortho new",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "ortho new replaces the Nx preset: the app it scaffolds is links at stage 1 (K9), with auth and handles mounted; examples/starter becomes that template"
+  "what": "ortho new replaces the Nx preset: the app it scaffolds is Plugged In at stage 1 (K9), with auth and handles mounted; examples/starter becomes that template (M2.05b then removes the host's Better Auth); a pair with M2.27 (decisions/G12-paired-landing.md)"
  },
  "M2-10": {
   "doneWhen": "the notes feature goes from new to proved to published to mounted",
@@ -2052,9 +2066,9 @@
   "kind": "build",
   "lane": "M2",
   "needs": [
-   "M2.07"
+   "M2.05"
   ],
-  "needsText": "M2.07",
+  "needsText": "M2.05",
   "order": 59,
   "plain": "",
   "pr": null,
@@ -2062,13 +2076,13 @@
   "size": "S",
   "stage": "backlog",
   "thread": null,
-  "title": "The work app mounts auth and organizations",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "title": "The work app mounts auth",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
-  "what": "The work app mounts auth and organizations"
+  "what": "The work app mounts auth; auth leaves its ortho.config.ts, and Identity and AuthKit go"
  },
  "M2-12": {
-  "doneWhen": "nx run e2e:m2 passes on main; examples/links is tagged links/stage-1",
+  "doneWhen": "nx run e2e:m2 passes on main; examples/plugged-in is tagged plugged-in/stage-1",
   "history": [],
   "id": "M2-12",
   "kind": "e2e",
@@ -2077,18 +2091,23 @@
    "M2.02",
    "M2.11",
    "M2.13",
-   "M2.16"
+   "M2.27",
+   "ST1.01",
+   "ST1.04",
+   "ST1.06",
+   "ST1.22",
+   "M2.05b"
   ],
-  "needsText": "M2.02 to M2.11, M2.13 to M2.16, ST1.01 to ST1.08",
+  "needsText": "M2.02 to M2.11, M2.05b, M2.13 to M2.27, ST1.01 to ST1.04, ST1.06 to ST1.22",
   "order": 64,
-  "plain": "One command makes a new app with sign-in and organisations; the links example at stage 1.",
+  "plain": "One command makes a new app with sign-in and handles (Plugged In at stage 1); Plugged In is tagged at stage 1.",
   "pr": null,
   "ref": "M2.12",
   "size": "S",
   "stage": "backlog",
   "thread": null,
   "title": "Gate M2: workable",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "updatedAt": "2026-11-21T07:53:57Z",
   "waiting": null,
   "what": "Gate M2: workable, and the stage 1 gate (K9)"
  },
@@ -3685,7 +3704,7 @@
     "raisedAt": "2026-11-19T09:38:00Z",
     "source": "M6.01",
     "status": "open",
-    "text": "D5: values across languages, signedBy as EIP-712, one vault per organisation?"
+    "text": "D5: values across languages, signedBy as EIP-712 (K25 settled where the money sits: in each Safe)"
    },
    {
     "answer": null,
@@ -3704,7 +3723,7 @@
   "title": "Starts from decisions/K7-chain-languages.md, which settles the operation-to-chain ma…",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "Starts from decisions/K7-chain-languages.md, which settles the operation-to-chain mapping, client exposure, refusals, the submission lifecycle and confirmed. What is left: D5 (values across languages, signedBy as EIP-712, one vault per organisation) and the exact schema of surface.json and refusals.lock"
+  "what": "Starts from decisions/K7-chain-languages.md, which settles the operation-to-chain mapping, client exposure, refusals, the submission lifecycle and confirmed. What is left: D5 (values across languages, signedBy as EIP-712; one budgets module per network, enabled by each organisation's Safe, is settled by K25) and the exact schema of surface.json and refusals.lock"
  },
  "M6-02": {
   "doneWhen": "they fail on empty handlers",
@@ -3892,7 +3911,7 @@
   "title": "Values with Solidity types and lives",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "Values with Solidity types and lives: Blueprint.chain.evm(...) (chain as a family of store kinds, K7 Q4); the compiler accepts runs: \"chain\" (L4.01; describe.ts:108 refuses it today); blueprint/refusals.lock for every language, so codes no longer come from declaration order (describe.ts:79; K7 Q5)"
+  "what": "Values with Solidity types, chain stores (Blueprint.store.chain.evm(), chain as a family of store kinds, K7 Q4, K25) and Blueprint.account(); the compiler works out runs for an operation on a thing in a chain store, and an author never writes it (K25 item 6; L4.01; describe.ts:108 refuses it today); blueprint/refusals.lock for every language, so codes no longer come from declaration order (describe.ts:79; K7 Q5)"
  },
  "M6-11": {
   "doneWhen": "forge build compiles the generated files; the SDK reaches every external function; a hand-written writer with no role gives a check warning",
@@ -3914,7 +3933,7 @@
   "title": "language-solidity, no longer a placeholder",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "language-solidity, no longer a placeholder: types, the compiled machine, roles and refusals compiled in (one custom error per declared error), the ABI, roles generated in (OpenZeppelin-style onlyRole, generated, not imported), and generated/solidity/surface.json listing every external function for the clients; ortho check warns on a hand-written external writer with no role modifier (L4.02; K7 Q1, F1)"
+  "what": "language-solidity, no longer a placeholder: types, the compiled machine, roles and refusals compiled in (one custom error per declared error), the ABI, roles generated in behind OpenZeppelin's IAccessControl, one role id per instance (K25), and generated/solidity/surface.json listing every external function for the clients; ortho check warns on a hand-written external writer with no role modifier (L4.02; K7 Q1, F1)"
  },
  "M6-12": {
   "doneWhen": "the scaffold gives 0 passed · 24 failed: NotWritten",
@@ -4029,7 +4048,7 @@
   "title": "Worlds with a chain",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "Worlds with a chain: a vault per organisation, journeys on Anvil (L4.07)"
+  "what": "Worlds with a chain: a Safe per organisation with the budgets module enabled (K25), journeys on Anvil (L4.07)"
  },
  "M6-17": {
   "doneWhen": "promoting twice with the same bytecode deploys nothing the second time",
@@ -4143,7 +4162,7 @@
     "raisedAt": "2026-11-19T09:38:00Z",
     "source": "M7.01",
     "status": "open",
-    "text": "What scope does the orthograph-staging token get?"
+    "text": "What scope does the Cloudflare token get?"
    },
    {
     "answer": null,
@@ -4171,7 +4190,7 @@
   "title": "The cloud pass for staging",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "The cloud pass for staging (K10 section 8): the orthograph-staging account Aaron approved in K10, its token's scope, a cost estimate under the cap, which secret store Cloudflare.secrets means"
+  "what": "The cloud pass for staging (K10 section 8): the Cloudflare account Aaron uses for every environment for now, every resource prefixed, its token's scope, a cost estimate under the cap, which secret store Cloudflare.secrets means"
  },
  "M7-02": {
   "doneWhen": "npm view orthograph shows the release",
@@ -4218,7 +4237,7 @@
   "what": "The infra projection: an Alchemy stack per environment from the model and mounts"
  },
  "M7-04": {
-  "doneWhen": "ortho env destroy leaves nothing in the account",
+  "doneWhen": "ortho env destroy leaves nothing with its run's prefix in the account and changes nothing without it",
   "history": [],
   "id": "M7-04",
   "kind": "build",
@@ -4621,7 +4640,7 @@
   "title": "links mounts auth",
   "updatedAt": "2026-11-19T09:38:00Z",
   "waiting": null,
-  "what": "links mounts auth: the copied identity deleted"
+  "what": "Plugged In mounts auth: the copied identity deleted (one of the four M2.05b waits on)"
  },
  "ST1-08": {
   "doneWhen": "no file outside the records names examples/signup; e2e/layer1/08-* proves links",
@@ -4644,7 +4663,7 @@
   "title": "examples/signup deleted once the canon quotes links",
   "updatedAt": "2026-11-19T09:38:00Z",
   "waiting": null,
-  "what": "examples/signup deleted once the canon quotes links (the canon thread's change, K9); e2e/layer1/08-* moved onto links. A checks slice: it edits a gate's suite, so an author writes it, never the builder"
+  "what": "examples/signup deleted once the canon quotes Plugged In (the canon thread's change, K9); e2e/layer1/08-* moved onto Plugged In. A checks slice: it edits a gate's suite, so an author writes it, never the builder; M2.05b, a builder's, removes the host's Better Auth after it"
  },
  "ST2-01": {
   "doneWhen": "they fail on empty handlers",
@@ -5526,5 +5545,184 @@
   "updatedAt": "2026-11-19T09:38:00Z",
   "waiting": null,
   "what": ""
+ },
+ "M2-21": {
+  "doneWhen": "they fail on today's compiler for the right reason (the folder is ignored, so a journey's starts names a world the model lacks), and pass on a hand-built fixture of the expected model; once M2.22 has folded the world and the fixture plugin's handlers are blank, each of its journeys that starts from a plugin world reads ✘ starting world <world>: <operation> died: …BlankReached, the world's own call hitting BlankReached, and no step of that journey runs",
+  "history": [],
+  "id": "M2-21",
+  "kind": "checks",
+  "lane": "M2",
+  "needs": [],
+  "needsText": "Gate M1",
+  "order": 63.1,
+  "plain": "",
+  "pr": null,
+  "ref": "M2.21",
+  "size": "S",
+  "stage": "backlog",
+  "thread": null,
+  "title": "Checks for plugin starting worlds",
+  "updatedAt": "2026-11-21T07:53:57Z",
+  "waiting": null,
+  "what": "Checks for plugin starting worlds (decisions/M2-auth.md), written by a different agent from M2.22's builder: a fixture plugin brings a starting world and a journey that starts from it; an app's world starts from the plugin's; a renamed mount prefixes it, and the plugin's own from and starts follow; a clash with the app's own world is a check error naming both files; ortho impact stales the world's journeys when the plugin's world changes"
+ },
+ "M2-22": {
+  "doneWhen": "M2.21's checks pass; acme's ortho prove is unchanged",
+  "history": [],
+  "id": "M2-22",
+  "kind": "build",
+  "lane": "M2",
+  "needs": [
+   "M2.21"
+  ],
+  "needsText": "M2.21",
+  "order": 63.2,
+  "plain": "",
+  "pr": null,
+  "ref": "M2.22",
+  "size": "S",
+  "stage": "backlog",
+  "thread": null,
+  "title": "The mount fold carries starting worlds",
+  "updatedAt": "2026-11-21T07:53:57Z",
+  "waiting": null,
+  "what": "The mount fold carries a plugin's starting-worlds/, prove loads them with the model, and names, from and starts follow the mount"
+ },
+ "M2-23": {
+  "doneWhen": "the check branch's first commits fail on today's build for two stated reasons only: organization.create still takes cap, and acme does not yet mount organizations, so capped has no founded to start from; on blank handlers a journey that starts from one of these worlds reads ✘ starting world founded: organization.create died: …BlankReached and no step runs. After M2.07 is merged into the branch and the author has recaptured, the pair merges into goal/stage-1 with every layer 1, layer 2 and m1 job green",
+  "history": [],
+  "id": "M2-23",
+  "kind": "checks",
+  "lane": "M2",
+  "needs": [
+   "M2.01",
+   "M2.24"
+  ],
+  "needsText": "M2.01, M2.24",
+  "order": 63.3,
+  "plain": "",
+  "pr": null,
+  "ref": "M2.23",
+  "size": "M",
+  "stage": "backlog",
+  "thread": null,
+  "title": "Checks for acme without cap (pair with M2.07)",
+  "updatedAt": "2026-11-21T07:53:57Z",
+  "waiting": null,
+  "what": "Checks for acme without cap, the check half of M2.07's pair (decisions/G12-paired-landing.md; decisions/M2-auth.md), written by a different agent from M2.07's builder. Senders and baselines re-authored without cap and --cap: e2e/layer1/05-the-generated-surfaces.test.ts:35, e2e/layer1/06-check-and-the-authoring-loop.test.ts:38-43 (it copies acme's organization folder and create.ts onto the starter), e2e/layer2/support.ts:128, e2e/m1/14-clients.test.ts:157, e2e/m1/17-telemetry-model.test.ts:168, e2e/m1/24-idempotency-conflict.test.ts:135, e2e/m1/visibility-outputs.ts:45, the eval fixture examples/acme/test/fixtures/evals/performance/grant.ts:21 (it reads organization.cap), the baselines e2e/fixtures/m1/clients/acme-baseline.json, e2e/fixtures/m1/projections/acme-baseline.json and e2e/fixtures/m1/portal/acme-docs-baseline.json (checks 12, 14 and 21 hash them), and the compiler's packages/compiler/src/modules/model/__snapshots__/acme.model.json; the grid's e2e/grid/fixtures/acme/ are frozen copies (e2e/grid/README.md:23) and stay. Moved files: acme's allowance-policy declarations, its worlds capped and funded, the allowance-policy journeys and the rewritten grant-an-allowance; acme's copies of the organizations plugin's journeys and of the principal journeys it carries (an agent passes the owner rule, an agent cannot consent for a person, the system is nobody signed in), and its own founded and invited worlds, deleted; the retained journeys, the coverage and who-may-call eval fixtures and test/fixtures/layer2/list-read/ pointed at @orthograph/organizations/blueprint/...; who-may-call recaptured. The builder edits, not the author, the package tests that use cap as seed data: packages/prove/src/modules/portal-feed/portal-feed.test.ts:38, prove/call-metrics.test.ts:62, world/mcp.test.ts:140, world/world.test.ts:40,61, and tools/watch/replay.sh:38. The error field cap of AllowanceLimitTooHigh stays"
+ },
+ "M2-24": {
+  "doneWhen": "the e2e/m2 checks fail on the blank handlers and nothing else, the packages' own lint, typecheck and test pass, and no app mounts them yet, so acme proves as before",
+  "history": [],
+  "id": "M2-24",
+  "kind": "checks",
+  "lane": "M2",
+  "needs": [
+   "M2.02",
+   "M2.03"
+  ],
+  "needsText": "M2.02, M2.03",
+  "order": 63.4,
+  "plain": "",
+  "pr": null,
+  "ref": "M2.24",
+  "size": "M",
+  "stage": "backlog",
+  "thread": null,
+  "title": "Checks for the two plugin skeletons",
+  "updatedAt": "2026-11-21T07:53:57Z",
+  "waiting": null,
+  "what": "Checks for the two plugin skeletons (decisions/M2-auth.md), written by a different agent from M2.05's and M2.07's builders: packages/auth and packages/organizations created as skeletons (feature.ts, package.json, project.json, tags, blueprint/ declarations with the narrowings, acts and session.show's via, src/ with every handler Handlers.blank, the plugins' journeys), all moved from the M2.02 stand-ins in e2e/fixtures/m2/*/source/, which are deleted; the e2e/m2 checks then point at the packages, red on BlankReached and listed in e2e/m2/expected-failing/; M2.08's --through check is written here too"
+ },
+ "M2-25": {
+  "doneWhen": "the check branch's first commits fail on today's build for one stated reason: with its copy gone and auth not mounted, the coverage eval names PersonEmailTaken and SessionCredentialsWrong as reached by no journey; after M2.05 and the recapture, the pair merges green",
+  "history": [],
+  "id": "M2-25",
+  "kind": "checks",
+  "lane": "M2",
+  "needs": [
+   "M2.24"
+  ],
+  "needsText": "M2.24",
+  "order": 63.5,
+  "plain": "",
+  "pr": null,
+  "ref": "M2.25",
+  "size": "S",
+  "stage": "backlog",
+  "thread": null,
+  "title": "Checks for acme mounting auth (pair with M2.05)",
+  "updatedAt": "2026-11-21T07:53:57Z",
+  "waiting": null,
+  "what": "Checks for acme mounting auth, the check half of M2.05's pair (decisions/G12-paired-landing.md), written by a different agent from M2.05's builder: acme's sign up and sign in copy and its copy of a key and a session are the same person deleted, invite and accept, grant an allowance and the system is nobody signed in pointed at @orthograph/auth/blueprint/..., who-may-call, the three baselines and the compiler snapshot recaptured from M2.05's output"
+ },
+ "M2-26": {
+  "doneWhen": "they fail on today's build because nothing serves /login, /consent or /device (ledger AUT-02), and are listed in e2e/m2/expected-failing/",
+  "history": [],
+  "id": "M2-26",
+  "kind": "checks",
+  "lane": "M2",
+  "needs": [
+   "M2.24"
+  ],
+  "needsText": "M2.24",
+  "order": 63.6,
+  "plain": "",
+  "pr": null,
+  "ref": "M2.26",
+  "size": "M",
+  "stage": "backlog",
+  "thread": null,
+  "title": "Checks for M2.06's journeys",
+  "updatedAt": "2026-11-21T07:53:57Z",
+  "waiting": null,
+  "what": "Checks for M2.06's journeys, written by a different agent from M2.06's builder: the acme login and MCP sign-in journeys; their page steps through /login, /consent and /device; the runner's browser step they need (the generic check for it is journeys/internal/checks.ts, author-owned), reusing the headless Chromium of checks 21 and 28 through e2e/served-portal"
+ },
+ "M2-27": {
+  "doneWhen": "the check branch's first commits fail on today's examples/starter, which still has organization, membership, invitation and api-key and no handles; after M2.09 the pair merges green",
+  "history": [],
+  "id": "M2-27",
+  "kind": "checks",
+  "lane": "M2",
+  "needs": [
+   "M2.01"
+  ],
+  "needsText": "M2.01",
+  "order": 63.7,
+  "plain": "",
+  "pr": null,
+  "ref": "M2.27",
+  "size": "S",
+  "stage": "backlog",
+  "thread": null,
+  "title": "Checks for the scaffold as Plugged In (pair with M2.09)",
+  "updatedAt": "2026-11-21T07:53:57Z",
+  "waiting": null,
+  "what": "Checks for the scaffold becoming Plugged In at stage 1, the check half of M2.09's pair (decisions/G12-paired-landing.md), written by a different agent from M2.09's builder: e2e/layer1/01-a-project-from-the-preset.test.ts, 06-check-and-the-authoring-loop.test.ts, e2e/layer2/05-publishing.test.ts and services.ts, e2e/m1/25-unique-fields.test.ts and packages/prove/src/modules/prove/starter.test.ts re-authored for the new template; the starter's five journeys and three planted fixtures deleted or replaced by Plugged In's; the check that the template's blueprint/ and src/ equal examples/plugged-in's"
+ },
+ "M2-05b": {
+  "doneWhen": "git grep AuthD1 -- packages/host-cloudflare finds nothing, and every example proves",
+  "history": [],
+  "id": "M2-05b",
+  "kind": "build",
+  "lane": "M2",
+  "needs": [
+   "ST1.07",
+   "M2.09",
+   "ST1.08",
+   "M2.11"
+  ],
+  "needsText": "ST1.07, M2.09, ST1.08, M2.11",
+  "order": 59.5,
+  "plain": "",
+  "pr": null,
+  "ref": "M2.05b",
+  "size": "S",
+  "stage": "backlog",
+  "thread": null,
+  "title": "The host's Better Auth removed",
+  "updatedAt": "2026-11-21T07:53:57Z",
+  "waiting": null,
+  "what": "host-cloudflare loses AuthD1, its Better Auth dependencies and the world's fallback for an app with no identity mounted, and the server generator's no-identity branch emits Identity.none (decisions/M2-auth.md, Smaller calls 4)"
  }
 }

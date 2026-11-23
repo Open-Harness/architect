@@ -7,7 +7,8 @@ import { Password, Secret } from "../../../values/identity.ts";
 export default Blueprint.operation(Session, {
   description: "Sign in with email and password. The token is the bearer for every later call.",
   payload: { email: Person.fields.email, password: Password },
-  answer: { session: Blueprint.visibility.secret(Session.fields.id), token: Secret },
+  // The caller is handed both once, in this answer: `issued` lets a secret leave there and nowhere else.
+  answer: { session: Blueprint.issued(Blueprint.visibility.secret(Session.fields.id)), token: Blueprint.issued(Secret) },
   errors: [SessionCredentialsWrong],
   allowed: [Blueprint.anyone],
   steps: { verify: Blueprint.step.database() },

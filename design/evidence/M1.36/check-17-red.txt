@@ -1,0 +1,123 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/17
+# commit 2afbfb73 · 2026-11-19T08:45:04Z · exit 1 (expected 1) · 76.7s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/17-telemetry-model.test.ts (8 tests | 5 failed) 72331ms
+     × writes `move.from` on the operation span: the state the subject was in, not the declared list 6165ms
+     × writes `event.name` on the commit span: the event the move emitted, per the model, and none on a refusal 6338ms
+     × writes `refusal.code` on the operation span: the declared error's, and the machine's, from the model; none on an answered call 6398ms
+     × writes `environment` and `store` on the operation span of an answered call and of a refused one 5481ms
+     × counts one call held past the declared `budget.p95` in `ortho.budget.breaches`, and not the call inside it 22793ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/17-telemetry-model.test.ts > 17 M1.36: the move and the event, on the right spans > writes `move.from` on the operation span: the state the subject was in, not the declared list
+AssertionError: spend 120 from the active allowance: expected undefined to be 'active' // Object.is equality
+
+- Expected:
+"active"
+
++ Received:
+undefined
+
+ ❯ m1/17-telemetry-model.test.ts:223:118
+    221|     await inWorld(root, async (seen) => {
+    222|       const calls = await story(seen);
+    223|       expect(named(calls.first.spans, "allowance.spend")?.attrs["move.…
+       |                                                                                                                      ^
+    224|       expect(named(calls.last.spans, "allowance.spend")?.attrs["move.f…
+    225|       expect(named(calls.revoked.spans, "allowance.revoke")?.attrs["mo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  m1/17-telemetry-model.test.ts > 17 M1.36: the move and the event, on the right spans > writes `event.name` on the commit span: the event the move emitted, per the model, and none on a refusal
+AssertionError: expected undefined to be 'AllowanceSpent' // Object.is equality
+
+- Expected:
+"AllowanceSpent"
+
++ Received:
+undefined
+
+ ❯ m1/17-telemetry-model.test.ts:239:87
+    237|     await inWorld(root, async (seen) => {
+    238|       const calls = await story(seen);
+    239|       expect(named(calls.first.spans, "allowance.spend.commit")?.attrs…
+       |                                                                                       ^
+    240|       expect(named(calls.last.spans, "allowance.spend.commit")?.attrs[…
+    241|       expect(named(calls.revoked.spans, "allowance.revoke.commit")?.at…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  m1/17-telemetry-model.test.ts > 17 M1.36: the refusal's code > writes `refusal.code` on the operation span: the declared error's, and the machine's, from the model; none on an answered call
+AssertionError: expected { operation: 'allowance.spend', …(6) } to match object { refusal: 'AllowanceExceeded', …(1) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "refusal": "AllowanceExceeded",
+-   "refusal.code": "AL-001",
+  }
+
+ ❯ m1/17-telemetry-model.test.ts:257:65
+    255|     await inWorld(root, async (seen) => {
+    256|       const calls = await story(seen);
+    257|       expect(named(calls.over.spans, "allowance.spend")?.attrs).toMatc…
+       |                                                                 ^
+    258|       expect(named(calls.after.spans, "allowance.spend")?.attrs).toMat…
+    259|       for (const answered of [calls.first, calls.last, calls.revoked])…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  m1/17-telemetry-model.test.ts > 17 M1.36: the environment and the store, on every call > writes `environment` and `store` on the operation span of an answered call and of a refused one
+AssertionError: allowance.spend (200): expected { operation: 'allowance.spend', …(8) } to match object { environment: 'local', …(1) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "environment": "local",
+-   "store": "database",
++   "answer.remaining": "380",
++   "attempt": 1,
++   "event.name": "AllowanceSpent",
++   "move.name": "spend",
++   "move.to": "active",
++   "operation": "allowance.spend",
++   "payload.allowance": "alw_xibcimya0dfgculd",
++   "payload.amount": "120",
++   "principal.person": "per_ju8y3rcntus9nnpx",
+  }
+
+ ❯ m1/17-telemetry-model.test.ts:276:86
+    274|       const operations = [[calls.first, "allowance.spend"], [calls.ove…
+    275|       for (const [call, operation] of operations) {
+    276|         expect(named(call.spans, operation)?.attrs, `${operation} (${c…
+       |                                                                                      ^
+    277|       }
+    278|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  m1/17-telemetry-model.test.ts > 17 M1.36: the budget's breaches > counts one call held past the declared `budget.p95` in `ortho.budget.breaches`, and not the call inside it
+AssertionError: `ortho.budget.breaches` is exported for lamp.glow: expected 0 to be greater than 0
+ ❯ m1/17-telemetry-model.test.ts:309:84
+    307|
+    308|       const breaches = await until(async () => ours(seen.metrics()).fi…
+    309|       expect(breaches.length, "`ortho.budget.breaches` is exported for…
+       |                                                                                    ^
+    310|       for (const point of breaches) expect(point.labels, "exactly the …
+    311|       // Delta or cumulative, the last export carries the total for th…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 3 passed (8)
+   Start at  08:43:48
+   Duration  75.94s (transform 1.93s, setup 0ms, import 3.50s, tests 72.33s, environment 0ms)

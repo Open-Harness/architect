@@ -46,4 +46,10 @@ export interface CompareApi {
   readonly dependsOn: (model: Model, operation: string) => Depends;
   /** The current hash of each key of `depends`, or undefined when it no longer exists. */
   readonly hashOf: (model: Model, key: string) => string | undefined;
+  /**
+   * What each mount provides and needs, one line each, sorted and without duplicates:
+   * `feature:echo -> echo.repeat  provides`, `feature:greet -> feature:echo  needs`, and for an adapter the
+   * operation that calls it, `adapter:pricing -> probe.quote  used-by`. None without mounts.
+   */
+  readonly edges: (model: Model) => ReadonlyArray<string>;
 }

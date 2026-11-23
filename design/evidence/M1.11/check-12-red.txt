@@ -1,0 +1,124 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/12
+# commit 11250677 · 2026-11-19T07:00:38Z · exit 1 (expected 1) · 3.3s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/12-projections.test.ts (7 tests | 5 failed) 2526ms
+     × has @orthograph/projections with model, api and server as projections, and acme's three mount files 5ms
+     × mounts each from @orthograph/projections in its own file, and depends on the package 1ms
+     × generates generated/server and generated/api as before, the model as before plus its mounts, and check passes 75ms
+     × records the three mounts in the model as projections, with their file and package 2261ms
+     × writes no generated/server when its mount is removed, and still writes the api 71ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/12-projections.test.ts > 12 the surface: what acme needs to mount its projections > has @orthograph/projections with model, api and server as projections, and acme's three mount files
+AssertionError: acme cannot mount its projections until: @orthograph/projections, as a dependency of examples/acme (M1-plugins section 15, X-10); examples/acme/blueprint/projections/model.ts; examples/acme/blueprint/projections/api.ts; examples/acme/blueprint/projections/server.ts. This is a tripwire: it fails, it never skips.: expected [ …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "@orthograph/projections, as a dependency of examples/acme (M1-plugins section 15, X-10)",
++   "examples/acme/blueprint/projections/model.ts",
++   "examples/acme/blueprint/projections/api.ts",
++   "examples/acme/blueprint/projections/server.ts",
++ ]
+
+ ❯ m1/12-projections.test.ts:62:134
+     60|     }
+     61|     for (const name of mounted) if (!existsSync(join(acme, mountPath(n…
+     62|     expect(missing, `acme cannot mount its projections until: ${missin…
+       |                                                                                                                                      ^
+     63|   });
+     64| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  m1/12-projections.test.ts > 12 M1.11: acme mounts the model, the api and the server > mounts each from @orthograph/projections in its own file, and depends on the package
+AssertionError: acme's package.json: expected undefined to be 'workspace:*' // Object.is equality
+
+- Expected:
+"workspace:*"
+
++ Received:
+undefined
+
+ ❯ m1/12-projections.test.ts:95:82
+     93|   it("mounts each from @orthograph/projections in its own file, and de…
+     94|     const pkg = JSON.parse(readFileSync(join(acme, "package.json"), "u…
+     95|     expect(pkg.dependencies?.["@orthograph/projections"], "acme's pack…
+       |                                                                                  ^
+     96|     for (const name of mounted) {
+     97|       const file = join(acme, mountPath(name));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  m1/12-projections.test.ts > 12 M1.11: acme mounts the model, the api and the server > generates generated/server and generated/api as before, the model as before plus its mounts, and check passes
+AssertionError: blueprint/projections/model.ts is not in the project: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/12-projections.test.ts:107:125
+    105|   it("generates generated/server and generated/api as before, the mode…
+    106|     const root = fresh();
+    107|     for (const name of mounted) expect(existsSync(join(root, mountPath…
+       |                                                                                                                             ^
+    108|     removeAt(root, "generated/server");
+    109|     removeAt(root, "generated/api");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  m1/12-projections.test.ts > 12 M1.11: acme mounts the model, the api and the server > records the three mounts in the model as projections, with their file and package
+AssertionError: mounts.model: expected undefined to match object { kind: 'projection', …(2) }
+
+- Expected:
+{
+  "file": "blueprint/projections/model.ts",
+  "kind": "projection",
+  "package": "@orthograph/projections",
+}
+
++ Received:
+undefined
+
+ ❯ m1/12-projections.test.ts:126:54
+    124|     const model = JSON.parse(succeeds(root, "model", "--json").stdout)…
+    125|     for (const name of mounted) {
+    126|       expect(model.mounts?.[name], `mounts.${name}`).toMatchObject({ k…
+       |                                                      ^
+    127|       expect(model.mounts?.[name]?.hash, `mounts.${name}.hash`).toEqua…
+    128|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  m1/12-projections.test.ts > 12 M1.11: acme mounts the model, the api and the server > writes no generated/server when its mount is removed, and still writes the api
+AssertionError: blueprint/projections/model.ts is not in the project: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/12-projections.test.ts:134:125
+    132|   it("writes no generated/server when its mount is removed, and still …
+    133|     const root = fresh();
+    134|     for (const name of mounted) expect(existsSync(join(root, mountPath…
+       |                                                                                                                             ^
+    135|     succeeds(root, "generate");
+    136|     expect(existsSync(join(root, "generated/server/main.ts")), "genera…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 2 passed (7)
+   Start at  07:00:36
+   Duration  2.69s (transform 39ms, setup 0ms, import 54ms, tests 2.53s, environment 0ms)

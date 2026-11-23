@@ -32,6 +32,7 @@ Stop the run. A person's act, or the mission stopping.
 | refusal | exit | code | when |
 |---|---|---|---|
 | RunNotRunning | 60 | RU-900 | the run is in a state stop can't start from; carries `state` |
+| RunNotFound | 4 | RU-901 | nothing has the id in run; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |
 
 ## How to call

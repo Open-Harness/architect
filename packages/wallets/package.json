@@ -1,0 +1,46 @@
+{
+  "name": "@orthograph/wallets",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/feature.d.ts",
+      "default": "./dist/feature.js"
+    },
+    "./server": {
+      "types": "./dist/src/main.d.ts",
+      "default": "./dist/src/main.js"
+    },
+    "./blueprint/*": {
+      "types": "./dist/blueprint/*.d.ts",
+      "default": "./dist/blueprint/*"
+    },
+    "./src/*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./dist/src/*"
+    }
+  },
+  "orthograph": {
+    "kind": "feature",
+    "blueprint": "./dist/blueprint",
+    "src": "./dist/src"
+  },
+  "dependencies": {
+    "@orthograph/chain-evm": "workspace:*",
+    "effect": "4.1.4"
+  },
+  "peerDependencies": {
+    "orthograph": "0.0.0",
+    "@orthograph/language-effect": "0.0.0"
+  },
+  "devDependencies": {
+    "orthograph": "workspace:*",
+    "@orthograph/language-effect": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -9,6 +9,6 @@ The environment holds one live world at a time; a second is refused naming the f
 world past its lifetime, counts each expiry once (a second reap says 0), and stops the environment again if it started
 it. `parseLifetime` and `formatLifetime` read and write `20s`, `30 minutes`, `2 hours`.
 
-Test: `test-worlds.test.ts`, the L2.02 done-when checks, on ports 8970 to 8989 with the real OIDC server in Docker, the
+Test: `test-worlds.test.ts`, the L2.02 done-when checks, on ports 8970 to 8989 with the real OIDC issuer process (@orthograph/services), the
 real logbook and the real test environment: `prove --env test` posts verdicts the logbook reads back and leaves no world
 or row; a run killed with SIGKILL and a 20 s lifetime leaves a world that `worlds reap` removes after expiry.

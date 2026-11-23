@@ -1,0 +1,466 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/14
+# commit 3a99bd92 · 2026-11-19T08:13:34Z · exit 1 (expected 1) · 41.5s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/14-clients.test.ts (23 tests | 16 failed) 39140ms
+     × has sdk, cli and mcp in @orthograph/projections, acme's three mount files, and the SDK's Credential 284ms
+     × is set once on the layer: two layers in one program are two people, and a layer with no credential is anonymous 1999ms
+     × is never a call's: a credential in a call's options does not type-check, and the key, the refusals and the old shapes do 2383ms
+     × sends the key the caller gave, as idempotency-key, and makes a different one for each call that gave none 1577ms
+     × retries a call whose answer was lost with the caller's key, and the call commits once 1755ms
+     × retries with the key it made when the caller gave none, and the call commits once 1621ms
+     × answers a caller's own retry with the first answer when the key is the same, and spends again when it is not 1858ms
+     × is retried by the CLI too, which is built on the SDK: one spend, exit 0, the answer 1707ms
+     × a payload the schema refuses is InvalidPayload, and nothing is sent 1545ms
+     × a server defect is a die, not a typed failure 1529ms
+     × mounts each from @orthograph/projections in its own file 0ms
+     × generates the clients as the fixed renderers did apart from the options, exports all it did, and check passes 100ms
+     × records the three mounts in the model as projections, beside the first three 2389ms
+     × writes no generated/cli when its mount is removed, and still writes the sdk and the mcp 80ms
+     × is a tool for what an agent can reach, not for what a mount narrowed it out of, and never for a client operation 3857ms
+     × keeps the tool of an operation narrowed to ways in that include the agent 140ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/14-clients.test.ts > 14 the surface: what acme needs to mount its clients > has sdk, cli and mcp in @orthograph/projections, acme's three mount files, and the SDK's Credential
+AssertionError: acme's clients cannot be mounted, or carry the SDK contract, until: the export `sdk` of @orthograph/projections, a projection with a render; the export `cli` of @orthograph/projections, a projection with a render; the export `mcp` of @orthograph/projections, a projection with a render; examples/acme/blueprint/projections/sdk.ts; examples/acme/blueprint/projections/cli.ts; examples/acme/blueprint/projections/mcp.ts; `Credential` exported by generated/sdk/src/index.ts (K5 seam 5). This is a tripwire: it fails, it never skips.: expected [ …(7) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "the export `sdk` of @orthograph/projections, a projection with a render",
++   "the export `cli` of @orthograph/projections, a projection with a render",
++   "the export `mcp` of @orthograph/projections, a projection with a render",
++   "examples/acme/blueprint/projections/sdk.ts",
++   "examples/acme/blueprint/projections/cli.ts",
++   "examples/acme/blueprint/projections/mcp.ts",
++   "`Credential` exported by generated/sdk/src/index.ts (K5 seam 5)",
++ ]
+
+ ❯ m1/14-clients.test.ts:83:161
+     81|     const barrel = join(acme, "generated/sdk/src/index.ts");
+     82|     if (!existsSync(barrel) || !/\bCredential\b/.test(readFileSync(bar…
+     83|     expect(missing, `acme's clients cannot be mounted, or carry the SD…
+       |                                                                                                                                                                 ^
+     84|   });
+     85| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: the caller is the client's layer > is set once on the layer: two layers in one program are two people, and a layer with no credential is anonymous
+AssertionError: file://<tmp>/ortho-gate1-1mQVBS/acme/.ortho/clients/callers.ts:15
+const as = (token         ) => Sdk.layer({ url: env.SDK_URL, ...(token ? { credential: Sdk.Credential.session(token) } : {}) });
+                                                                                                      ^
+
+TypeError: Cannot read properties of undefined (reading 'session')
+    at as (file://<tmp>/ortho-gate1-1mQVBS/acme/.ortho/clients/callers.ts:15:103)
+    at file://<tmp>/ortho-gate1-1mQVBS/acme/.ortho/clients/callers.ts:16:132
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5)
+
+Node.js v26.13.1
+: expected [] to match object [ …(4) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "answered": {
+-       "remaining": "400",
+-     },
+-   },
+-   {
+-     "failed": {
+-       "_tag": "NotAllowed",
+-     },
+-   },
+-   {
+-     "failed": {
+-       "_tag": "NotAllowed",
+-     },
+-   },
+-   {
+-     "answered": {
+-       "spent": "100",
+-       "state": "active",
+-     },
+-   },
+- ]
++ []
+
+ ❯ as ../../../../../../../..<tmp>/ortho-gate1-1mQVBS/acme/.ortho/clients/callers.ts:15:103
+ ❯ ../../../../../../../..<tmp>/ortho-gate1-1mQVBS/acme/.ortho/clients/callers.ts:16:132
+ ❯ m1/14-clients.test.ts:221:35
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: the caller is the client's layer > is never a call's: a credential in a call's options does not type-check, and the key, the refusals and the old shapes do
+AssertionError: with the directive in place everything else compiles: expected '../../../../../../../../var/folders/4…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ ../../../../../../../..<tmp>/ortho-gate1-fjTRvH/acme/.ortho/types-14/program.ts(5,32): error TS2345: Argument of type '{ url: string; credential: any; }' is not assignable to parameter of type 'string'.
++ ../../../../../../../..<tmp>/ortho-gate1-fjTRvH/acme/.ortho/types-14/program.ts(5,77): error TS2339: Property 'Credential' does not exist on type 'typeof import("<tmp>/ortho-gate1-fjTRvH/acme/generated/sdk/src/index")'.
++ ../../../../../../../..<tmp>/ortho-gate1-fjTRvH/acme/.ortho/types-14/program.ts(6,36): error TS2345: Argument of type '{ url: string; }' is not assignable to parameter of type 'string'.
++ ../../../../../../../..<tmp>/ortho-gate1-fjTRvH/acme/.ortho/types-14/program.ts(7,51): error TS2554: Expected 1 arguments, but got 2.
++ ../../../../../../../..<tmp>/ortho-gate1-fjTRvH/acme/.ortho/types-14/program.ts(12,19): error TS2345: Argument of type '"InvalidPayload"' is not assignable to parameter of type '"HttpClientError" | "SchemaError" | readonly ["HttpClientError" | "SchemaError", ...("HttpClientError" | "SchemaError")[]]'.
++
+
+ ❯ m1/14-clients.test.ts:256:80
+    254|     };
+    255|     const masked = tsc(source(true));
+    256|     expect(masked.out, "with the directive in place everything else co…
+       |                                                                                ^
+    257|     const unmasked = tsc(source(false));
+    258|     const line = source(false).split("\n").findIndex((l) => l.startsWi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: a retried SDK call commits once > sends the key the caller gave, as idempotency-key, and makes a different one for each call that gave none
+AssertionError: expected undefined to be 'key-given-1' // Object.is equality
+
+- Expected:
+"key-given-1"
+
++ Received:
+undefined
+
+ ❯ m1/14-clients.test.ts:270:21
+    268|     expect(ran.lines, ran.stderr).toHaveLength(3);
+    269|     const keys = px.seen.map((s) => s.key);
+    270|     expect(keys[0]).toBe("key-given-1");
+       |                     ^
+    271|     expect(keys.slice(1).every((key) => typeof key === "string" && key…
+    272|     expect(new Set(keys).size, "three calls, three keys").toBe(3);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: a retried SDK call commits once > retries a call whose answer was lost with the caller's key, and the call commits once
+AssertionError: expected [ { failed: { …(3) } } ] to deeply equal [ { answered: { remaining: '400' } } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "answered": {
+-       "remaining": "400",
++     "failed": {
++       "_tag": "HttpClientError",
++       "reason": {
++         "_tag": "TransportError",
++         "cause": {},
++         "request": {
++           "_id": "HttpClientRequest",
++           "method": "POST",
++           "url": "http://127.0.0.1:59393/allowance/spend",
++         },
++       },
++       "~effect/http/HttpClientError": "~effect/http/HttpClientError",
+      },
+    },
+  ]
+
+ ❯ m1/14-clients.test.ts:279:35
+    277|     const px = await through(lose(1));
+    278|     const ran = await sdk("lost-given", `${today}\nout(await settle(${…
+    279|     expect(ran.lines, ran.stderr).toEqual([{ answered: { remaining: "4…
+       |                                   ^
+    280|     expect(px.seen.length, "the SDK sent it again").toBeGreaterThanOrE…
+    281|     expect(px.seen.map((s) => s.key), "with one key").toEqual(px.seen.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: a retried SDK call commits once > retries with the key it made when the caller gave none, and the call commits once
+AssertionError: expected [ { failed: { …(3) } } ] to deeply equal [ { answered: { remaining: '400' } } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "answered": {
+-       "remaining": "400",
++     "failed": {
++       "_tag": "HttpClientError",
++       "reason": {
++         "_tag": "TransportError",
++         "cause": {},
++         "request": {
++           "_id": "HttpClientRequest",
++           "method": "POST",
++           "url": "http://127.0.0.1:59404/allowance/spend",
++         },
++       },
++       "~effect/http/HttpClientError": "~effect/http/HttpClientError",
+      },
+    },
+  ]
+
+ ❯ m1/14-clients.test.ts:290:35
+    288|     const px = await through(lose(1));
+    289|     const ran = await sdk("lost-made", `${today}\nout(await settle(${p…
+    290|     expect(ran.lines, ran.stderr).toEqual([{ answered: { remaining: "4…
+       |                                   ^
+    291|     const keys = px.seen.map((s) => s.key);
+    292|     expect(keys.length, "the SDK sent it again").toBeGreaterThanOrEqua…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: a retried SDK call commits once > answers a caller's own retry with the first answer when the key is the same, and spends again when it is not
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+@@ -4,14 +4,14 @@
+        "remaining": "400",
+      },
+    },
+    {
+      "answered": {
+-       "remaining": "400",
++       "remaining": "300",
+      },
+    },
+    {
+      "answered": {
+-       "remaining": "300",
++       "remaining": "200",
+      },
+    },
+  ]
+
+ ❯ m1/14-clients.test.ts:304:35
+    302|     const call = (key: string) => `out(await settle(${provided(spend(`…
+    303|     const ran = await sdk("retry", `${today}\n${call("k-same")}\n${cal…
+    304|     expect(ran.lines, ran.stderr).toEqual([{ answered: { remaining: "4…
+       |                                   ^
+    305|     expect(px.seen.length, "the second call did reach the Worker").toB…
+    306|     expect(await commits(px, allowance), "k-same once, k-other once").…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: a retried SDK call commits once > is retried by the CLI too, which is built on the SDK: one spend, exit 0, the answer
+AssertionError: the CLI heard the second answer: expected [ 1, '', …(1) ] to deeply equal [ +0, '{"remaining":"400"}', '' ]
+
+- Expected
++ Received
+
+  [
+-   0,
+-   "{\"remaining\":\"400\"}",
++   1,
+    "",
++   "HttpClientError: {\"reason\":{\"request\":{\"_id\":\"HttpClientRequest\",\"method\":\"POST\",\"url\":\"http://127.0.0.1:59423/allowance/spend\"},\"cause\":{},\"_tag\":\"TransportError\"},\"~effect/http/HttpClientError\":\"~effect/http/HttpClientError\"}",
+  ]
+
+ ❯ m1/14-clients.test.ts:314:91
+    312|     const px = await through(lose(1));
+    313|     const spent = await runCli(copy.root, { ACME_URL: px.url, ACME_TOK…
+    314|     expect([spent.status, spent.stdout, spent.stderr], "the CLI heard …
+       |                                                                                           ^
+    315|     expect(await commits(px, allowance)).toBe(1);
+    316|     expect(await spentOf(allowance)).toBe("100");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: refusals and defects in the error channel > a payload the schema refuses is InvalidPayload, and nothing is sent
+AssertionError: expected [ { failed: { …(3) } } ] to match object [ Array(1) ]
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  [
+    {
+      "failed": {
+-       "_tag": "InvalidPayload",
++       "_tag": "SchemaError",
+      },
+    },
+  ]
+
+ ❯ m1/14-clients.test.ts:325:35
+    323|     const px = await through();
+    324|     const ran = await sdk("invalid", `${today}\nout(await settle(${pro…
+    325|     expect(ran.lines, ran.stderr).toMatchObject([{ failed: { _tag: "In…
+       |                                   ^
+    326|     expect(px.seen, "the call never left the client").toEqual([]);
+    327|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: refusals and defects in the error channel > a server defect is a die, not a typed failure
+AssertionError: expected [ { failed: { …(3) } } ] to match object [ { died: true } ]
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  [
+    {
+-     "died": true,
++     "failed": {
++       "_tag": "HttpClientError",
++       "reason": {
++         "_tag": "DecodeError",
++         "description": "undeclared status code",
++         "request": {
++           "_id": "HttpClientRequest",
++           "method": "POST",
++           "url": "http://127.0.0.1:59445/allowance/spend",
++         },
++         "response": {
++           "_id": "HttpClientResponse",
++           "status": 500,
++         },
++       },
++       "~effect/http/HttpClientError": "~effect/http/HttpClientError",
++     },
+    },
+  ]
+
+ ❯ m1/14-clients.test.ts:333:35
+    331|     const px = await through(() => "answer-500");
+    332|     const ran = await sdk("defect", `${today}\nout(await settle(${prov…
+    333|     expect(ran.lines, ran.stderr).toMatchObject([{ died: true }]);
+       |                                   ^
+    334|     expect(ran.lines[0].failed).toBeUndefined();
+    335|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: acme mounts its clients, and what they make is unchanged apart from the new options > mounts each from @orthograph/projections in its own file
+AssertionError: examples/acme/blueprint/projections/sdk.ts is missing: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/14-clients.test.ts:341:102
+    339|   it("mounts each from @orthograph/projections in its own file", () =>…
+    340|     for (const name of clients) {
+    341|       expect(existsSync(join(acme, mountPath(name))), `examples/acme/$…
+       |                                                                                                      ^
+    342|       const text = readFileSync(join(acme, mountPath(name)), "utf8");
+    343|       expect(text, mountPath(name)).toMatch(new RegExp(`import \\{[^}]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: acme mounts its clients, and what they make is unchanged apart from the new options > generates the clients as the fixed renderers did apart from the options, exports all it did, and check passes
+AssertionError: blueprint/projections/sdk.ts is not in the project: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/14-clients.test.ts:350:125
+    348|   it("generates the clients as the fixed renderers did apart from the …
+    349|     const root = fresh();
+    350|     for (const name of clients) expect(existsSync(join(root, mountPath…
+       |                                                                                                                             ^
+    351|     for (const name of clients) removeAt(root, `generated/${name}`);
+    352|     succeeds(root, "generate");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: acme mounts its clients, and what they make is unchanged apart from the new options > records the three mounts in the model as projections, beside the first three
+AssertionError: mounts.sdk: expected undefined to match object { kind: 'projection', …(2) }
+
+- Expected:
+{
+  "file": "blueprint/projections/sdk.ts",
+  "kind": "projection",
+  "package": "@orthograph/projections",
+}
+
++ Received:
+undefined
+
+ ❯ m1/14-clients.test.ts:371:46
+    369|     const mounts = model(root).mounts ?? {};
+    370|     for (const name of clients) {
+    371|       expect(mounts[name], `mounts.${name}`).toMatchObject({ kind: "pr…
+       |                                              ^
+    372|       expect(mounts[name]?.hash, `mounts.${name}.hash`).toEqual(expect…
+    373|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: acme mounts its clients, and what they make is unchanged apart from the new options > writes no generated/cli when its mount is removed, and still writes the sdk and the mcp
+AssertionError: blueprint/projections/sdk.ts is not in the project: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/14-clients.test.ts:379:125
+    377|   it("writes no generated/cli when its mount is removed, and still wri…
+    378|     const root = fresh();
+    379|     for (const name of clients) expect(existsSync(join(root, mountPath…
+       |                                                                                                                             ^
+    380|     succeeds(root, "generate");
+    381|     expect(existsSync(join(root, "generated/cli/src/main.ts")), "gener…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: which operations are MCP tools follows via, and what runs on the device is none > is a tool for what an agent can reach, not for what a mount narrowed it out of, and never for a client operation
+AssertionError: blueprint/projections/sdk.ts is not in the project: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ withEcho m1/14-clients.test.ts:398:130
+    396|     const made: Copy = project("echo", "device");
+    397|     copies.push(made);
+    398|     for (const name of clients) expect(existsSync(join(made.root, moun…
+       |                                                                                                                                  ^
+    399|     writeMount(made.root, "feature", "device", { pkg: "@fixture/device…
+    400|     mountEcho(made.root, { via: true, imports: [declaration("repeat", …
+ ❯ m1/14-clients.test.ts:406:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  m1/14-clients.test.ts > 14 M1.12: which operations are MCP tools follows via, and what runs on the device is none > keeps the tool of an operation narrowed to ways in that include the agent
+AssertionError: blueprint/projections/sdk.ts is not in the project: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ withEcho m1/14-clients.test.ts:398:130
+    396|     const made: Copy = project("echo", "device");
+    397|     copies.push(made);
+    398|     for (const name of clients) expect(existsSync(join(made.root, moun…
+       |                                                                                                                                  ^
+    399|     writeMount(made.root, "feature", "device", { pkg: "@fixture/device…
+    400|     mountEcho(made.root, { via: true, imports: [declaration("repeat", …
+ ❯ m1/14-clients.test.ts:416:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  16 failed | 7 passed (23)
+   Start at  08:12:53
+   Duration  40.79s (transform 828ms, setup 0ms, import 1.54s, tests 39.14s, environment 0ms)

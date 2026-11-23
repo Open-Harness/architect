@@ -31,30 +31,32 @@ caller is set once on the client, one request key holds across retries, and ever
 generated Worker:
 
 ```ts file=examples/signup/generated/server/main.ts name=sheetCloseServed,sheetOpenServed lines=26-29
-const sheetCloseServed = Handlers.serve({ name: "sheet.close", operation: sheetClose.declaration, handler: sheetCloseHandler, notFrom: "SheetNotOpen" });
+const sheetCloseServed = Handlers.serve({ name: "sheet.close", operation: sheetClose.declaration, handler: sheetCloseHandler, notFrom: "SheetNotOpen", notFound: { sheet: "SheetNotFound" }, codes: Errors.codes });
 const sheetGetServed = Reads.serve({ name: "sheet.get", read: sheetGet.declaration });
-const sheetJoinServed = Handlers.serve({ name: "sheet.join", operation: sheetJoin.declaration, handler: sheetJoinHandler, notFrom: "SheetNotOpen" });
-const sheetOpenServed = Handlers.serve({ name: "sheet.open", operation: sheetOpen.declaration, handler: sheetOpenHandler });
+const sheetJoinServed = Handlers.serve({ name: "sheet.join", operation: sheetJoin.declaration, handler: sheetJoinHandler, notFrom: "SheetNotOpen", notFound: { sheet: "SheetNotFound" }, codes: Errors.codes });
+const sheetOpenServed = Handlers.serve({ name: "sheet.open", operation: sheetOpen.declaration, handler: sheetOpenHandler, codes: Errors.codes });
 ```
 
 The HTTP door is the endpoint, made from the declaration's payload, answer and refusals:
 
-```ts file=examples/signup/generated/api/src/sheet/join.ts name=endpoint lines=7-11
+```ts file=examples/signup/generated/api/src/sheet/join.ts name=endpoint lines=8-14
 export const endpoint = HttpApiEndpoint.post("join", "/sheet/join", {
   payload: declaration.payloadSchema,
-  success: declaration.answerSchema,
-  error: [SheetFull, SheetNotOpen],
+  // What the wire carries: the declared answer, the fields not every caller is shown optional. The server cuts each answer by who is asking.
+  // Typed as the declaration types it: the schema is built from fields known only at run time, which TypeScript cannot follow.
+  success: wireStruct(declaration.answer, { issuing: true }) as unknown as typeof declaration.answerSchema,
+  error: [SheetFull, SheetNotOpen, SheetNotFound, IdempotencyConflict],
 });
 ```
 
 The MCP door is on the same Worker, and calls the same served operations:
 
-```ts file=examples/signup/generated/server/main.ts name=tools lines=104-109
+```ts file=examples/signup/generated/server/main.ts name=tools lines=116-121
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
   served: { "sheet.close": sheetCloseServed, "sheet.get": sheetGetServed, "sheet.join": sheetJoinServed, "sheet.open": sheetOpenServed },
-  refusals: { codes: Errors.codes, declared: Errors.declared },
+  refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 ```
 
@@ -62,16 +64,16 @@ The SDK is one function per operation, and the CLI is built on it:
 
 ```ts file=examples/signup/generated/sdk/src/sheet/join.ts name=join lines=7-9
 /** Take places on a sheet, for yourself and anyone with you. */
-export const join = (payload: PayloadOf<typeof declaration>) =>
-  Effect.flatMap(Signup, (client) => client.sheet.join({ payload }));
+export const join = (payload: PayloadOf<typeof declaration>, options?: CallOptions) =>
+  call(declaration, payload, options, true, Effect.flatMap(Signup, (client) => client.sheet.join({ payload })));
 ```
 
 ```ts file=examples/signup/generated/cli/src/sheet/join.ts name=join lines=9-13
 export const join = Command.make(
   "join",
-  { sheet: Flag.String("sheet"), people: Flag.String("people"), json: Flag.Boolean("json").pipe(Flag.withDefault(false)) },
+  { sheet: Flag.String("sheet").pipe(Flag.withMetavar("id"), Flag.withDescription("Sheet id: an id (sht_...).")), people: Flag.Int("people").pipe(Flag.map(String), Flag.withDescription("A count: a whole number below 2^32.")), json: Flag.Boolean("json").pipe(Flag.withDefault(false)) },
   ({ json, ...flags }) => Schema.decodeUnknownEffect(Declaration.payloadSchema)(flags).pipe(Effect.flatMap(Sdk.sheet.join), Output.answer(json)),
-);
+).pipe(Command.withDescription("Take places on a sheet, for yourself and anyone with you. Moves a sheet from open to open or full."));
 ```
 
 Nothing above was written by hand. `SheetFull` reaches every door with its code because the enforcer refused it, not
@@ -87,36 +89,52 @@ The wrapper runs every call to an Effect operation through the same order (`pack
 2. **role**: may this caller call? (`service.ts:46`);
 3. **span**: the operation's own span opens only once the caller may call (`service.ts:83`);
 4. **replay**: a request key already answered gets the kept answer, and nothing changes (`service.ts:52`);
-5. **machine**: is the thing in a state this move starts from? (`service.ts:57`);
+5. **read and machine**: each thing the payload names by id is read, a missing one refused `<Thing>NotFound` before
+   the handler (K16); then, is the thing in a state this move starts from? (`service.ts:89`);
 6. **handler** and its steps, counted (`service.ts:60`);
 7. **answer check**: an answer outside its declaration is the handler's bug, and dies (`service.ts:64`);
 8. **commit**: the writes, the move's events and the kept answer, all or nothing (`service.ts:71`).
 
 The last four, as code:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=57-73
-        yield* checkFrom(op, notFrom, payload, unit);
-        const chosen = yield* Ref.make<string | undefined>(undefined);
-        const move = (to?: string) => chooseOutcome(name, op, to).pipe(Effect.flatMap((o) => Ref.set(chosen, o)));
-        const answer = yield* busy.counted(handler(payload, { principal, steps, move })).pipe(withRecords, logs.around);
-        // Recorded before the check, so an answer outside its declaration is evidence `prove` can name.
-        yield* Effect.annotateCurrentSpan(answerAttributes(answer, op.answer));
-        // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
-        const wire = yield* check(answer).pipe(
-          Effect.mapError((e) => new Error(`${name} answered outside its declaration: ${e.message}`)),
-          Effect.orDie,
-        );
-        const outcome = yield* Ref.get(chosen);
-        const entries = outcome === undefined ? [] : [yield* applyMove(name, op, payload, answer, outcome, unit)];
-        const request = key === undefined ? {} : { request: { key, answer: JSON.stringify(wire) } };
-        const committed = yield* store.commit({ writes: yield* unit.writes, entries, ...request });
-        if (committed === "conflict") return yield* new Conflict();
-        return answer;
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=114-142
+// What the payload names, read once and handed in; a missing one is refused before the handler, then the from-check.
+const handed = yield* prehandle(op, notFound, payload, unit);
+const from = yield* checkFrom(op, notFrom, handed.subject);
+const chosen = yield* Ref.make<string | undefined>(undefined);
+const move = (to?: string) => chooseOutcome(name, op, to, operationSpan).pipe(Effect.flatMap((o) => Ref.set(chosen, o)));
+const answer = yield* busy.counted(handler(payload, { principal, steps, move, ...handed })).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
+// Recorded before the check, so an answer outside its declaration is evidence `prove` can name.
+yield* Effect.annotateCurrentSpan(answerAttributes(answer, op.answer));
+// An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
+const wire = yield* check(answer).pipe(
+  Effect.mapError((e) => new Error(`${name} answered outside its declaration: ${e.message}`)),
+  Effect.orDie,
+);
+const outcome = yield* Ref.get(chosen);
+const entries = outcome === undefined ? [] : [yield* applyMove(name, op, payload, answer, outcome, unit, handed.id)];
+// The state the subject was in, written once the move is made: a refused call made no move.
+if (from !== undefined && outcome !== undefined) yield* Effect.annotateCurrentSpan({ "move.from": from });
+const request = key === undefined ? {} : { request: { key, answer: JSON.stringify({ payload: sha256(canonical(payload)), answer: wire }) } };
+// Every rule this call's rows could break, after the move and before the commit: the store's own index then catches the race.
+const broken = yield* unit.check;
+if (broken !== undefined) return yield* settleViolation(name, invariants, logs)(broken);
+const writes = yield* unit.writes;
+const committed = yield* store.commit({ writes, entries, ...request }).pipe(
+  Effect.tap((outcome) => Effect.annotateCurrentSpan({
+    "commit.outcome": outcome,
+    // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
+    ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
+  })),
+  spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
 ```
 
 A `conflict` reruns the whole attempt, up to 64 times (`service.ts:21`). For a chain operation the enforcer is the
-contract, with the machine, roles and refusals compiled into it. How an operation maps to a contract function, and
-which functions a client may reach, waits on K7.
+contract, with the machine, roles and refusals compiled into it. K7 decided how an operation maps to a contract: each
+declared operation is exactly one generated entry, and a client may reach every external function in the generated
+`surface.json`, the developer's own included. A hand-written one that changes state should carry a generated role modifier,
+and `ortho check` warns when it has none. The contract alone decides who may act; the SDK only simulates ahead (K7, K25).
+It is built in M6.10 and M6.11.
 
 ### The doors
 
@@ -135,18 +153,27 @@ that is `.notVia(Via.agent)` is never one ([roles](roles.mdx)).
 
 ### The SDK contract
 
-Today the caller's token is set once, on the client's layer, and an SDK function takes only a payload. The Worker
-already keeps an answer under a request key, read from the `idempotency-key` header
-(`examples/signup/generated/server/main.ts:41-42`), but no generated client sends one yet. M1.12 makes the SDK the
-contract every other door builds on:
+The Worker keeps an answer under a request key, read from the `idempotency-key` header
+(`examples/signup/generated/server/main.ts:41-42`), and since M1.12 the generated SDK sends one: it is the contract
+every other door builds on. The `call` each function goes through encodes the payload first (a payload the schema
+refuses is `InvalidPayload`, and nothing is sent), makes a key when the call starts, and tries an `idempotent: "request"`
+operation again, with the same key, when the connection was cut before the answer came:
 
-```ts planned=M1.12 path=examples/signup/caller.ts
-// the caller is the client's, not the call's
-const client = Signup.layer({ url, credential: Credential.session(cookie) });
+```ts file=examples/signup/generated/sdk/src/client.ts name=Credential lines=11
+export type Credential = { readonly kind: "session"; readonly token: string };
+```
 
-// typed refusals in the error channel; one request key across retries
-const joined = yield* Sdk.sheet.join({ sheet, people: 2n }, { requestKey });
-//    Effect<{ left }, SheetFull | SheetNotOpen | InvalidPayload, Signup>
+```ts file=examples/signup/generated/sdk/src/client.ts name=layer lines=84-86
+/** `layer({ url, credential })`, or `layer(url, token)`: the same client, the token being a session's. */
+export const layer = (options: string | Options, token?: string) =>
+  typeof options === "string" ? connect(options, token === undefined || token === "" ? undefined : Credential.session(token)) : connect(options.url, options.credential);
+```
+
+Every function takes the key as its second parameter, and the error channel carries the declared refusals and `InvalidPayload`:
+
+```ts file=examples/signup/generated/sdk/src/sheet/join.ts name=join lines=8-9
+export const join = (payload: PayloadOf<typeof declaration>, options?: CallOptions) =>
+  call(declaration, payload, options, true, Effect.flatMap(Signup, (client) => client.sheet.join({ payload })));
 ```
 
 - **The caller** is set once, on the client's layer: a session, a key, the device flow or an agent's OAuth token.
@@ -154,10 +181,13 @@ const joined = yield* Sdk.sheet.join({ sheet, people: 2n }, { requestKey });
 - **The request key** is the caller's, or the SDK makes one when the call starts and keeps it across its own retries.
   A screen makes one when its form opens, and an agent tool uses its tool call's id. For an operation declared
   `idempotent: "request"`, the same key from the same caller is one call ([operations](operations.mdx)).
+  A call wrapped in your own `Effect.retry` makes a new key on each try unless you pass `requestKey`.
 - **Typed refusals**: every declared error is a class in the error channel, with its refusal code. A defect is a die.
 
-A chain operation's SDK call returns a submission, with its confirmation later, once K7 has settled how a chain call
-reaches its contract.
+A chain operation's SDK call returns a submission, with its confirmation later. K7 settled it: a submission goes
+`simulated`, `submitted`, `included`, `confirmed`, and can end `dropped` or `reverted`, or be `corrected` after it was
+confirmed. `confirmed` means the declared event for that call was seen at the environment's level. The port under it is
+built ([chains-and-wallets](chains-and-wallets.mdx)); the generated client that returns it is M6.14.
 
 ### Actions
 
@@ -224,10 +254,10 @@ the doors a journey checks ([projections](projections.mdx), the replay rule).
 | the HTTP endpoint | `examples/signup/generated/api/src/sheet/join.ts:7` | built |
 | the SDK and its client | `examples/signup/generated/sdk/src/client.ts:10` | built |
 | the CLI, on the SDK | `examples/signup/generated/cli/src/sheet/join.ts:9` | built |
-| the SDK contract | `@orthograph/language-effect` and the sdk projection | planned, M1.12 |
+| the SDK contract | `@orthograph/projections`' sdk | built, M1.12 |
 | `defineAction`, ported | `orthograph`'s `actions` module | planned, M1.23 |
 | the actions projection | `generated/actions/` | planned, M1.22 |
-| a contract as the enforcer | `language-solidity` | waits on K7, then M6.10 |
+| a contract as the enforcer | `language-solidity` | planned, M6.10 and M6.11 (K7) |
 
 ## Status
 
@@ -239,7 +269,7 @@ the doors a journey checks ([projections](projections.mdx), the replay rule).
 | HTTP, SDK, CLI and MCP from the model, all through it | proved | | acme's surfaces, `e2e/layer1/05-the-generated-surfaces.test.ts` |
 | the SDK contract: request key across retries, typed refusals | specified | M1.12 | K5 seam 5 |
 | actions, in agent-native's field names, on the SDK | specified | M1.22, M1.23 | K5 seam 5 |
-| a contract as the enforcer for a chain operation | waits on K7 | M6.10 | |
+| a contract as the enforcer for a chain operation | specified | M6.10 | K7, Q1 |
 
 ## Notes
 
@@ -254,6 +284,7 @@ the one Worker.</Note>
 <Note kind="status" slice="M1.12">Today no generated client sends a request key, so a retry through the SDK or the
 CLI is a second call. The Worker already honours the `idempotency-key` header when one is sent. Ledger: PRJ-45.</Note>
 
-<Note kind="status">Chain operations wait on K7. Q4 (how a declared operation maps to a contract's ABI, and which
-functions clients may reach) is confirmed or changed there, so this page says nothing more about a contract as an
-enforcer.</Note>
+<Note kind="decision" decision="K7">Q4 of K5 (how a declared operation maps to a contract's ABI, and which functions clients
+may reach) is replaced by K7's Q1: one generated entry for each operation, every external function reachable (Aaron's F1),
+and roles generated into the scaffold. A contract is the enforcer for a chain operation, and nothing more is claimed here
+until M6.11 builds it.</Note>

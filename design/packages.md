@@ -9,12 +9,19 @@ version of this page is in [`history/packages-layers-1-2.md`](history/packages-l
 packages/
   orthograph/        orthograph                    the front door: the Blueprint API (Blueprint.thing, machine, event,
                                                    error, role, operation, read, journey, world, environment, value,
-                                                   todo). What projects and their generated code import. Effect only.
+                                                   todo; a plugin's descriptor: feature, adapter, projection, choice,
+                                                   need, call, setting; and the mount, use), with Via, Host, Door,
+                                                   Ships and Stand. Store, workflow, secret, view and agent come with
+                                                   their milestones. What projects and their generated code import.
+                                                   Effect only.
   compiler/          @orthograph/compiler          reads blueprint/ by path and builds the model: every declaration, its
                                                    hash, what it uses; compares two models (versions, stale proofs);
                                                    finds blanks. Bin ortho-model
   generators/        @orthograph/generators        the Nx plugin: scaffold generators write once; sync generators render
                                                    each output and fail `nx sync:check` on drift
+  projections/      @orthograph/projections       the projections Orthograph ships, each a plugin an app mounts in
+                                                   blueprint/projections/: model, api and server (M1.11); sdk, cli, mcp,
+                                                   docs and portal follow (M1.12, M1.13). Build time only (`env:build`)
   language-effect/   @orthograph/language-effect   the Effect language: renders api, server, sdk, cli, mcp, docs; and the
                                                    runtime generated code runs on (handler wrapper, role checks, moves and
                                                    events, locks, outbox, idempotency, steps as spans, Clock, Timers)
@@ -37,6 +44,8 @@ packages/
   web/               @orthograph/web               the browser host and the runtime every generated piece shares
                                                    (K29, ST1.25)
   logbook/           @orthograph/logbook           verdicts and the model, kept per project
+  services/          @orthograph/services          private: the stand-ins tests and gates start as processes, never containers (the OIDC
+                                                   issuer over jose, Verdaccio under Node, and the process owner); tag env:support
 examples/
   acme/              the worked example: the allowance
   work/              the work app (F5)
@@ -46,12 +55,13 @@ e2e/                 the gates: e2e:layer1, e2e:layer2, e2e:m0
 
 Plugins come later, one package each: `@orthograph/auth` and `@orthograph/organizations` (M2), `@orthograph/work` (M3),
 `@orthograph/agent-kit` (M3, the agents projection that writes `generated/agents/`), `@orthograph/agents` (M4),
-`@orthograph/stripe` and `@orthograph/resend` (M5), `@orthograph/wallets` (M6). Goal 17 (K39) adds four features, `@orthograph/superagent`, `@orthograph/intake`, `@orthograph/tickets` and `@orthograph/prompts`, written first inside `examples/superagent/plugins/` and moved here once they work; the `@orthograph/sandbox` adapter (K40 fix 4); and the `@orthograph/github` (M4.25), `@orthograph/slack` and `@orthograph/posthog` adapters, generated from each service's spec (M5.07), with `@orthograph/webhook` for a service with none. Nothing is published to npm before M7; every milestone before it publishes to the local Verdaccio.
+`@orthograph/stripe` and `@orthograph/resend` (M5), `@orthograph/wallets` (built in M1.29, the first: `packages/wallets`, with SIWE linking in M2.13). Goal 17 (K39) adds four features, `@orthograph/superagent`, `@orthograph/intake`, `@orthograph/tickets` and `@orthograph/prompts`, written first inside `examples/superagent/plugins/` and moved here once they work; the `@orthograph/sandbox` adapter (K40 fix 4); and the `@orthograph/github` (M4.25), `@orthograph/slack` and `@orthograph/posthog` adapters, generated from each service's spec (M5.07), with `@orthograph/webhook` for a service with none. Nothing is published to npm before M7; every milestone before it publishes to the local Verdaccio.
 
 ## Rules, held by Nx module boundaries
 
 - `orthograph` (tag `scope:orthograph`) depends on nothing but Effect. Every other package may import it.
-- A project (`scope:project`) depends only on `scope:orthograph`, `scope:language` and `scope:host`.
+- A project (`scope:project`) depends only on `scope:orthograph`, `scope:language`, `scope:host` and `scope:projections`:
+  a blueprint mounts a projection as it mounts any plugin, and nothing it generates imports the package.
 - `env:runtime` packages depend only on `env:runtime` packages; `env:build` packages may use both.
 - Today `portal-ui` is the only package that imports `@heroui-pro/*` (lint, F7); new screens build on UI SDK and HeroUI is phased out
   (K24), after which the lint rule goes with it. `portal-ui` is a leaf that only the portal and faces depend on.
@@ -72,6 +82,7 @@ acme/
     journeys/<journey>.ts
     starting-worlds/<name>.ts
     environments/<name>.ts  clock, secrets, destinations
+    stores/<name>.ts        a place things live besides the default: `Blueprint.store.<kind>()` (K3)
   src/
     <thing>/<verb>.ts       a thing's handlers, mirroring blueprint/things/<thing>/
   generated/

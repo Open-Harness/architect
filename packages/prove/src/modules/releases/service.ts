@@ -19,10 +19,10 @@ const lastRelease = (logbook: string) =>
     }),
   );
 
-const shipping: ReleasesApi["shipping"] = (logbook, model) =>
+const shipping: ReleasesApi["shipping"] = (logbook, model, root) =>
   Effect.gen(function* () {
     const last = yield* lastRelease(logbook);
-    const { stale, proven } = yield* staleness(logbook, model);
+    const { stale, proven } = yield* staleness(logbook, model, root);
     if (last === undefined) return { from: null, version: "1.0.0", bump: null, changes: [], proven, stale } satisfies Shipping;
     const released = Compare.release(yield* modelAt(logbook, last.revision), model);
     const version = Compare.next(last.version, released.bump);

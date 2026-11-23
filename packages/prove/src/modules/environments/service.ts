@@ -7,10 +7,10 @@ import { Collectors, privateKeys } from "#modules/telemetry/service.js";
 import { Sinks } from "#modules/sinks/service.js";
 import { Worlds } from "#modules/world/service.js";
 import type { EnvironmentsApi, Up } from "./types.ts";
-import { collectorName, telemetryDir } from "./internal/collector.ts";
-import { environmentConfig, logbookOf } from "./internal/config.ts";
+import { telemetryDir } from "./internal/collector.ts";
+import { environmentConfig, logbookOf, portalOf } from "./internal/config.ts";
 import { startLogbook } from "./internal/logbook.ts";
-import { choosePort, files, reap, writePort } from "./internal/process.ts";
+import { choosePort, files, launchOnFreePort, reap, writePort } from "./internal/process.ts";
 import { NAME, dirOf, failed, io, status } from "./internal/status.ts";
 import { verify } from "./internal/identity.ts";
 import { ensureSecrets } from "./internal/secrets.ts";
@@ -68,26 +68,27 @@ const up: EnvironmentsApi["up"] = ({ root: given, name, port, revision, policy, 
     if (!existsSync(base)) return yield* failed(`${base} is missing: run nx sync first`);
     const chosen = yield* choosePort(dir, port).pipe(Effect.mapError(failed));
     const otlp = records
-      ? yield* Collectors.launch({ dir: telemetryDir(dir), name: collectorName(dir), strip }).pipe(Effect.mapError((e) => failed(`${name} needs Docker for its collector: ${e.message}`)))
+      ? yield* Collectors.launch({ dir: telemetryDir(dir), strip }).pipe(Effect.mapError((e) => failed(`${name}'s collector didn't start: ${e.message}`)))
       : undefined;
+    const portal = portalOf(built);
     yield* io(`${dir}`, () => {
       ensureSecrets(f.secrets, Object.keys(environment.secrets));
       writeFileSync(f.config, environmentConfig(root, readFileSync(base, "utf8"), {
-        name, revision: built.revision, sha256: built.sha256, main: built.main, ...(otlp ? { otlp } : {}), ...(hosts ? { worlds: true } : {}), ...(logbook ? { logbook } : {}),
+        name, revision: built.revision, sha256: built.sha256, main: built.main, ...(portal === undefined ? {} : { portal }), ...(otlp ? { otlp } : {}), ...(hosts ? { worlds: true } : {}), ...(logbook ? { logbook } : {}),
       }));
       writeFileSync(f.bundle, JSON.stringify({ revision: built.revision, sha256: built.sha256 }) + "\n");
       writePort(dir, chosen);
     });
     // The environment's sinks, read by name now and handed to its process alone: never in its config or its secrets file.
     const sinks = yield* Sinks.resolve({ sinks: environment.telemetry ?? [{ sink: "local" }], env: env ?? {} });
-    const launched = yield* Worlds.launch({
-      config: f.config, state: f.state, port: chosen, log: f.log, pidFile: f.pid, envFile: f.secrets, secretEnv: sinks.secretEnv, ready: "/_ortho/bundle",
-    }).pipe(
+    const launched = yield* launchOnFreePort((at) => Worlds.launch({
+      config: f.config, state: f.state, port: at, log: f.log, pidFile: f.pid, envFile: f.secrets, secretEnv: sinks.secretEnv, ready: "/_ortho/bundle",
+    }), dir, chosen, port !== undefined).pipe(
       Effect.tapError(() => reap(dir)),
       Effect.mapError((e) => failed(`${name} didn't start: ${e.message}`)),
     );
     return {
-      state: "up", name, url: launched.url, port: chosen, pid: launched.pid, revision: built.revision, sha256: built.sha256,
+      state: "up", name, url: launched.url, port: Number(new URL(launched.url).port), pid: launched.pid, revision: built.revision, sha256: built.sha256,
       ...(records ? { telemetry: telemetryDir(dir) } : {}),
       ...(otlp ? { collector: otlp } : {}),
       ...(sinks.notes.length > 0 ? { notes: sinks.notes } : {}),

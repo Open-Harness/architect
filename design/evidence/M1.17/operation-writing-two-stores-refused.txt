@@ -1,0 +1,5 @@
+$ pnpm exec tsx tools/evidence/m1-17.mts refuse
+# commit 892851a · 2026-11-18T22:41:24Z · exit 1 (expected 1) · 0.9s
+
+the blueprint is refused:
+  blueprint/features/vault.ts: @fixture/vault/blueprint/things/line/verbs/add.js: line.add writes to two stores (store vault-ledger by step save (line); the default store by step save (memo)): one call commits to one store, so run work across stores as a workflow

@@ -1,7 +1,7 @@
-import { Effect, type Context } from "effect";
+import { Effect, Metric, type Context } from "effect";
 import { afterEach, describe, expect, it } from "vitest";
 import { Telemetry } from "./service.ts";
-import { fanOut, scrub, sinksOf } from "./internal/exporters.ts";
+import { collectorOf, fanOut, scrub, sinksOf } from "./internal/exporters.ts";
 
 const echo = (request: Request) => Promise.resolve(new Response(request.headers.get("traceparent")));
 const serve = (request: Request) => Telemetry.serve({ url: undefined, service: "test", handler: echo, waitUntil: () => undefined }, request);
@@ -14,6 +14,17 @@ describe("telemetry, in workerd", () => {
     expect(await response.text()).toBe(parent);
   });
 
+  it("with no collector and no sink, the call's own spans still carry the caller's trace", async () => {
+    const parent = "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01";
+    const handler = (_request: Request, context?: Context.Context<never>) =>
+      Effect.runPromise(Effect.provideContext(Effect.withSpan(Effect.currentSpan, "op.step"), context ?? (Effect.runSync(Effect.context<never>()) as Context.Context<never>))).then(
+        (span) => new Response(span.traceId),
+        () => new Response("no span"),
+      );
+    const response = await Telemetry.serve({ url: undefined, service: "test", handler, waitUntil: () => undefined }, new Request("http://w/", { headers: { traceparent: parent } }));
+    expect(await response.text()).toBe("0123456789abcdef0123456789abcdef");
+  });
+
   it("mints a trace when the caller has none, and the handler sees it", async () => {
     const response = await serve(new Request("http://w/"));
     const trace = response.headers.get("x-trace-id")!;
@@ -22,10 +33,16 @@ describe("telemetry, in workerd", () => {
   });
 });
 
-const sinks = JSON.stringify([{
+const legacySink = {
+  id: "legacy",
+  traces: { url: "https://legacy.example/v1/traces", headers: {} },
+  logs: { url: "https://legacy.example/v1/logs", headers: {} },
+};
+const sinks = JSON.stringify([legacySink, {
   id: "axiom",
   traces: { url: "https://sink.example/v1/traces", headers: { authorization: "Bearer not-a-real-token", "x-axiom-dataset": "demo-traces" } },
   logs: { url: "https://sink.example/v1/logs", headers: { authorization: "Bearer not-a-real-token", "x-axiom-dataset": "demo-logs" } },
+  metrics: { url: "https://sink.example/v1/metrics", headers: { authorization: "Bearer not-a-real-token", "x-axiom-metrics-dataset": "demo-metrics" } },
 }]);
 
 describe("sinks beside the collector", () => {
@@ -39,7 +56,12 @@ describe("sinks beside the collector", () => {
       return Promise.resolve(new Response("{}"));
     }) as typeof fetch;
     const pending: Array<Promise<unknown>> = [];
-    const handler = (_: Request, context?: Context.Context<never>) => Effect.runPromise(Effect.withSpan(Effect.log("hello"), "demo.span").pipe(Effect.provideContext(context!), Effect.as(new Response("ok"))));
+    const metric = Metric.counter("demo.calls", { incremental: true });
+    const handler = (_: Request, context?: Context.Context<never>) => Effect.runPromise(
+      Effect.withSpan(Effect.log("hello"), "demo.span").pipe(
+        Effect.andThen(Metric.update(metric, 1)), Effect.provideContext(context!), Effect.as(new Response("ok")),
+      ),
+    );
     await Telemetry.serve({ url: "http://collector.test", sinks, environment: "local", service: "demo", handler, waitUntil: (p) => void pending.push(p) }, new Request("http://w/"));
     await Promise.all(pending);
 
@@ -51,6 +73,16 @@ describe("sinks beside the collector", () => {
     expect(axiom[0]!.headers.get("authorization")).toBe("Bearer not-a-real-token");
     expect(axiom[0]!.headers.get("x-axiom-dataset")).toBe("demo-traces");
     expect(to("https://sink.example/v1/logs")[0]!.headers.get("x-axiom-dataset")).toBe("demo-logs");
+    expect(to("https://legacy.example/v1/traces").length).toBeGreaterThan(0);
+    expect(to("https://legacy.example/v1/logs").length).toBeGreaterThan(0);
+    expect(to("https://legacy.example/v1/metrics")).toEqual([]);
+    const [localMetrics] = to("http://collector.test/v1/metrics");
+    const [sinkMetrics] = to("https://sink.example/v1/metrics");
+    expect(localMetrics?.headers.has("authorization")).toBe(false);
+    expect(sinkMetrics?.headers.get("x-axiom-metrics-dataset")).toBe("demo-metrics");
+    expect(sinkMetrics?.headers.get("authorization")).toBe("Bearer not-a-real-token");
+    expect(localMetrics?.body).toContain("demo.calls");
+    expect(sinkMetrics?.body).toContain("demo.calls");
     for (const s of [...to("http://collector.test/v1/traces"), ...axiom]) {
       expect(s.body).toContain("demo.span");
       expect(s.body).toContain('"deployment.environment"');
@@ -64,6 +96,15 @@ describe("sinks beside the collector", () => {
     const answer = await fanOut([exporter("a", "down.example"), exporter("b", "up.example")], base)("http://otlp.invalid/v1/traces", { method: "POST", body: "x" });
     expect(answer.ok).toBe(true);
     expect(calls).toEqual(["https://down.example/v1/traces", "https://up.example/v1/traces"]);
+  });
+
+  it("keeps the successful metrics response when the first destination returns a server error", () => {
+    const axiom = sinksOf(sinks).find((sink) => sink.id === "axiom")!;
+    const base = ((url: string) => Promise.resolve(new Response("{}", { status: url.includes("collector.test") ? 500 : 200 }))) as typeof fetch;
+    const send = fanOut([collectorOf("http://collector.test"), axiom], base);
+    return send("http://otlp.invalid/v1/metrics", { method: "POST", body: "{}" }).then((response) => {
+      expect(response.status).toBe(200);
+    });
   });
 
   it("leaves no personal detail on anything sent off the machine, and keeps them for the local collector", async () => {
@@ -94,6 +135,7 @@ describe("sinks beside the collector", () => {
   it("treats malformed sinks as no sinks", () => {
     expect(sinksOf("not json")).toEqual([]);
     expect(sinksOf(undefined)).toEqual([]);
-    expect(sinksOf(sinks)).toHaveLength(1);
+    expect(sinksOf(JSON.stringify([legacySink]))).toEqual([legacySink]);
+    expect(sinksOf(sinks)).toHaveLength(2);
   });
 });

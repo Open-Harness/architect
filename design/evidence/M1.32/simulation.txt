@@ -1,0 +1,16 @@
+$ env ORTHO_CHAIN_EVM_ANVIL=1 pnpm exec vitest run --root packages/chain-evm src/modules/tx --reporter=verbose
+# commit 53682bd · 2026-11-18T23:02:50Z · exit 0 (expected 0) · 2.3s
+
+
+ RUN  v4.1.12 ./packages/chain-evm
+
+ ✓ src/modules/tx/tracker.test.ts > a late confirmation remains valid when the checkpoint has already pruned the event 15ms
+ ✓ src/modules/tx/tracker.test.ts > the on-chain intent deadline drops an intent that has no matching event 2ms
+ ✓ src/modules/tx/tracker.test.ts > a stalled optional trace returns the uncoded mined revert 1ms
+ ✓ src/modules/tx/tx.test.ts > cancels a stalled receipt RPC within the tracker budget 297ms
+ ✓ src/modules/tx/anvil.test.ts > transfers ERC20, decodes reverts, and corrects a reorg on Anvil 297ms
+
+ Test Files  3 passed (3)
+      Tests  5 passed (5)
+   Start at  23:02:48
+   Duration  1.70s (transform 740ms, setup 0ms, import 3.50s, tests 617ms, environment 0ms)

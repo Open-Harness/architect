@@ -1,6 +1,6 @@
 // Reading the collector's file exporter: OTLP JSON, one export per line.
 import { existsSync, readFileSync } from "node:fs";
-import type { Log, Span, Trace } from "../types.ts";
+import type { Log, Span, Trace, Wanted } from "../types.ts";
 
 const value = (v: any): unknown =>
   v === undefined ? undefined
@@ -12,7 +12,7 @@ const value = (v: any): unknown =>
   : JSON.stringify(v);
 const attrs = (kvs: ReadonlyArray<any> = []) => Object.fromEntries(kvs.map((kv) => [kv.key, value(kv.value)]));
 
-const spansOf = (doc: any): Array<Span> =>
+export const spansOf = (doc: any): Array<Span> =>
   (doc.resourceSpans ?? []).flatMap((rs: any) =>
     (rs.scopeSpans ?? []).flatMap((ss: any) =>
       (ss.spans ?? []).map((s: any): Span => ({
@@ -21,7 +21,7 @@ const spansOf = (doc: any): Array<Span> =>
         start: Number(BigInt(s.startTimeUnixNano) / 1000n) / 1e3,
       }))));
 
-const logsOf = (doc: any): Array<Log> =>
+export const logsOf = (doc: any): Array<Log> =>
   (doc.resourceLogs ?? []).flatMap((rl: any) =>
     (rl.scopeLogs ?? []).flatMap((sl: any) =>
       (sl.logRecords ?? []).map((l: any): Log => {
@@ -59,3 +59,7 @@ export const looksComplete = (trace: Trace | undefined, parent: string, rooted =
   const linked = trace.spans.some((s) => s.parentSpanId === parent) && trace.spans.every((s) => s.parentSpanId === "" || s.parentSpanId === parent || ids.has(s.parentSpanId));
   return linked && (!rooted || ids.has(parent));
 };
+
+/** Whether what a source holds of a wanted trace is all that will come: complete, or empty when it may be. */
+export const arrived = (trace: Trace | undefined, wanted: Wanted): boolean =>
+  (wanted.mayBeEmpty === true && (trace === undefined || trace.spans.length === 0)) || looksComplete(trace, wanted.parent, wanted.rooted);

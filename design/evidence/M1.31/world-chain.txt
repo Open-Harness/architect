@@ -1,0 +1,14 @@
+$ env ORTHO_CHAIN_EVM_ANVIL=1 pnpm exec vitest run --root packages/prove src/modules/world/world.test.ts -t M1.31 --reporter=verbose
+# commit 704f656 · 2026-11-18T22:52:41Z · exit 0 (expected 0) · 4.8s
+
+
+ RUN  v4.1.12 ./packages/prove
+
+ ↓ src/modules/world/world.test.ts > a local world > serves acme on workerd: the world casts ada, ada founds an organisation and grants olga 500
+ ↓ src/modules/world/world.test.ts > a local world > the generated CLI: spending past the limit exits 41, a revoked allowance 40, an outsider 3; --json prints the answer
+ ✓ src/modules/world/world.test.ts > a local world > M1.31: a world's chain answers eth_chainId beside the Worker and is gone when the world ends 3304ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 2 skipped (3)
+   Start at  22:52:36
+   Duration  4.18s (transform 264ms, setup 0ms, import 764ms, tests 3.30s, environment 0ms)

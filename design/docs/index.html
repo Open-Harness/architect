@@ -509,7 +509,7 @@ refused after the read.</li>
 <li><b><code>request.replayed=true</code></b> is a retry that changed nothing.</li>
 <li><b>Step widths against the operation's <code>budget</code></b> show which step is slow.</li>
 </ul>
-<p>Calls refused before any span, a bad payload or a wrong role, are still counted: <code>ortho.calls</code> and
+<p>A bad payload is refused before any span, and a wrong role in its own <code>&lt;operation&gt;.refused</code> span; both are still counted: <code>ortho.calls</code> and
 <code>ortho.call.duration</code> are metrics for every call. An environment's <code>telemetry</code> list says where
 it all goes: <code>Telemetry.sink.local()</code> (the Collector and the local viewer) or <code>Telemetry.sink.axiom({ group })</code>.</p>
 <div class="today"><b>Today.</b> Operation and step spans, the public-only allowlist and refusals ending OK run on
@@ -519,13 +519,16 @@ counts are decided in <code>design/decisions/O2-trace-gaps.md</code>.</div>
 
 <section class="s" id="plugins">
 <header><h3>Plugins</h3><span class="chip planned">Planned · M1</span></header>
-<p>A <b>plugin</b> is built once, proved in its own CI, and mountable by any project. There are three kinds, and the
-kind is the whole difference between them.</p>
+<p>A <b>plugin</b> is built once, proved in its own CI, and mountable by any project. There are five kinds, and the
+kind is the whole difference between them. Feature, adapter and projection are planned for M1; language and host are
+added by K27 and built in Goal 4.</p>
 <div class="table"><table>
 <tr><th>Kind</th><th>Adds</th><th>Examples</th></tr>
 <tr><td><b>feature</b></td><td>to what the system <i>is</i>: things, operations, handlers, journeys, exports. Your app is the root feature</td><td><code>@orthograph/auth</code>, <code>@orthograph/organizations</code>, <code>@orthograph/agents</code>, <code>@orthograph/work</code>, <code>@orthograph/wallets</code></td></tr>
 <tr><td><b>adapter</b></td><td>something <i>outside</i>: calls out, events in, a <code>service</code> principal, secrets, a stand-in, a conformance test. No things of its own</td><td><code>@orthograph/stripe</code>, <code>@orthograph/resend</code>, <code>@orthograph/anthropic</code>, <code>@orthograph/eip1193</code></td></tr>
-<tr><td><b>projection</b></td><td>what it <i>becomes</i>: renders outputs, replays journeys, says where it runs and how it ships</td><td>server, sdk, react, cli, mcp, docs, portal, builder, agents, solidity, python</td></tr>
+<tr><td><b>projection</b></td><td>what it <i>becomes</i>: renders outputs, replays journeys, says where it runs and how it ships</td><td>server, sdk, react, cli, mcp, docs, portal, builder, agents</td></tr>
+<tr><td><b>language</b></td><td>what code is <i>written in</i>: the generated frame, the scaffold, the refusal codes, the guards. It writes for store kinds and supplies none</td><td><code>@orthograph/language-effect</code>, <code>@orthograph/language-solidity</code></td></tr>
+<tr><td><b>host</b></td><td>where code <i>runs</i>: the place, its store kinds, the wire and the deploy</td><td><code>@orthograph/host-cloudflare</code>, <code>Host.node</code>, <code>Host.chain</code></td></tr>
 </table></div>
 <p>Every plugin has the same layout:</p>
 <pre><code class="txt">@orthograph/auth/
@@ -1008,7 +1011,7 @@ Plugins ship skills of their own: <code>@orthograph/stripe</code> brings "map a 
 <header><h3>Commands</h3><span class="chip part">Renamed in M0</span></header>
 <div class="table"><table>
 <tr><th>Command</th><th>What it does</th><th>Status</th></tr>
-<tr><td><code>npm create orthograph &lt;app&gt;</code> · <code>ortho new</code></td><td>a new app, with auth and organizations mounted</td><td><span class="chip planned">M2</span></td></tr>
+<tr><td><code>npm create orthograph &lt;app&gt;</code> · <code>ortho new</code></td><td>a new app, Plugged In at stage 1, with auth and handles mounted</td><td><span class="chip planned">M2</span></td></tr>
 <tr><td><code>ortho new feature|adapter &lt;name&gt;</code></td><td>a new plugin with its own world and CI; <code>--from-openapi</code>, <code>--from-abi</code>, <code>--from-model</code> for adapters</td><td><span class="chip planned">M2 · M5</span></td></tr>
 <tr><td><code>ortho add feature|adapter|projection &lt;pkg&gt;</code></td><td>pins it, writes the mount, resolves its needs</td><td><span class="chip planned">M1</span></td></tr>
 <tr><td><code>ortho check</code></td><td>compiles the model; types, rules, drift; counts blanks</td><td><span class="chip built">Built</span></td></tr>
@@ -1069,10 +1072,11 @@ Stand.process(…)  Stand.vendor(…)  Stand.none</code></pre>
 <tr><td>blueprint</td><td>what you write: the description, in the <code>blueprint/</code> folder, through the <code>Blueprint.*</code> API</td></tr>
 <tr><td>model</td><td>the compiled blueprint: one JSON, every declaration with its hash, every name written once, every blank counted</td></tr>
 <tr><td>thing · value · machine · event · error</td><td>a noun with a home · a named field type · states and moves · what a move emits · a declared refusal</td></tr>
+<tr><td>invariant · rule · unique</td><td>what stays true among many records of one thing · one named invariant, an export of the thing's <code>invariants.ts</code>, refused by the runtime, with its own error when it names one · the one form built: at most one record holds a key, within the states the rule names</td></tr>
 <tr><td>operation · read · step</td><td>a verb on a thing · an operation that changes nothing · a named span inside one</td></tr>
 <tr><td>role · principal · way in</td><td>who may call · who is calling · how they got in (<code>Via.*</code>)</td></tr>
 <tr><td>store · source · view · data map</td><td>a place Orthograph owns and commits to, of an open kind · a system someone else owns, reached through an adapter · a list kept from events · the generated map of all data</td></tr>
-<tr><td>span · refusal · defect</td><td>one timed piece of a call in a trace, made by the declaration · a declared outcome, ends OK · an undeclared failure, the only red</td></tr>
+<tr><td>span · refusal · defect</td><td>one timed piece of a call in a trace, made by the declaration · a declared outcome, never ends as an error · an undeclared failure, the only red</td></tr>
 <tr><td>blank · handler · scaffold · frame</td><td>what the description leaves open · the code that fills an operation · a file written once into <code>src/</code> · the generated type a handler must fit</td></tr>
 <tr><td>journey · story · starting world · cast</td><td>a story through real operations · its prose form · a setup made by operations · who plays it</td></tr>
 <tr><td>plugin · feature · adapter · projection</td><td>built once, mounted anywhere · adds to what the system is · brings the outside in · what it becomes</td></tr>

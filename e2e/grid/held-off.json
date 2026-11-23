@@ -1,0 +1,15 @@
+{
+  "cells": {
+    "error.cli": "needs the refused call seen through the CLI as data: `prove --through` (S-11, M2.08) and structured evidence or quoted strings (S-20)",
+    "error.mcp": "needs the refused call seen through MCP as data: `prove --through` (S-11, M2.08) and structured evidence (S-20)",
+    "event.api": "not needed while event's audience leaves out the caller (K14 Q3, Aaron has not answered); reopens at M5.05",
+    "event.sdk": "not needed while event's audience leaves out the caller (K14 Q3, Aaron has not answered); reopens at M5.05",
+    "event.cli": "not needed while event's audience leaves out the caller (K14 Q3, Aaron has not answered); reopens at M5.05",
+    "event.mcp": "not needed while event's audience leaves out the caller (K14 Q3, Aaron has not answered); reopens at M5.05",
+    "journey.api": "not needed: journeys run through the clients, never in them (K14 Q2, Aaron has not answered)",
+    "journey.sdk": "not needed: journeys run through the clients, never in them (K14 Q2, Aaron has not answered)",
+    "journey.cli": "not needed: journeys run through the clients, never in them (K14 Q2, Aaron has not answered)",
+    "journey.mcp": "not needed: journeys run through the clients, never in them (K14 Q2, Aaron has not answered)",
+    "invariant.cli": "needs the refused call seen through the CLI as data, as error.cli does: `prove --through` (S-11, M2.08) and structured evidence (S-20); the rule's refusal is `[code] Tag` and the refusal's exit, which only a call through the CLI shows"
+  }
+}

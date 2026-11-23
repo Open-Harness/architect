@@ -1,20 +1,19 @@
 // The done-when check for L2.03 (D3 #8, #15.2): the real logbook worker on local workerd, behind wrangler, and a real
-// OIDC server (mock-oauth2-server, pinned by digest) in Docker.
+// OIDC issuer (an `@orthograph/services` process), each on a free port.
 import { freePorts } from "../../../test/ports.ts";
 import { createSign, generateKeyPairSync } from "node:crypto";
-import { spawnSync } from "node:child_process";
 import { mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect, Exit, Scope } from "effect";
+import { Issuer, type IssuerConfig } from "@orthograph/services";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Logbook } from "./service.ts";
 
-const IMAGE = "ghcr.io/navikt/mock-oauth2-server:6.1.4@sha256:647dd8c78a54f0e6fcd58d79c884e612f8f998a0662276f3e1db22e464a50192";
 const REPO = "acme/acme";
 const PORTS = freePorts("logbook", "issuer", "rogue");
-const names = [`logbook-test-issuer-${process.pid}`, `logbook-test-rogue-${process.pid}`];
+const services = Effect.runSync(Scope.make());
 
 /** One client id per scenario: the claims a GitHub Actions job would carry (D3 #8). */
 const scenario = (client: string, o: { aud?: string; ref?: string; event?: string; repository?: string; workflow?: string }) => {
@@ -30,8 +29,7 @@ const scenario = (client: string, o: { aud?: string; ref?: string; event?: strin
     },
   };
 };
-const config = JSON.stringify({
-  interactiveLogin: false,
+const config: IssuerConfig = {
   tokenCallbacks: [{ issuerId: "ortho", tokenExpiry: 600, requestMappings: [
     scenario("ci-main", {}),
     scenario("ci-pr", { ref: "refs/pull/7/merge", event: "pull_request" }),
@@ -41,20 +39,9 @@ const config = JSON.stringify({
     scenario("ci-other-workflow", { workflow: "release" }),
     scenario("ci-wrong-aud", { aud: "other" }),
   ] }],
-});
-
-const docker = (...args: string[]) => spawnSync("docker", args, { encoding: "utf8" });
-const startIssuer = async (name: string, port: number) => {
-  docker("rm", "-f", name);
-  const started = docker("run", "-d", "--name", name, "-p", `127.0.0.1:${port}:8080`, "-e", `JSON_CONFIG=${config}`, IMAGE);
-  expect(started.status, started.stderr).toBe(0);
-  const url = `http://127.0.0.1:${port}/ortho`;
-  for (let i = 0; i < 300; i++) {
-    if (await fetch(`${url}/.well-known/openid-configuration`).then((r) => r.ok, () => false)) return url;
-    await new Promise((r) => setTimeout(r, 200));
-  }
-  throw new Error(`issuer ${url} never answered`);
 };
+
+const startIssuer = (port: number) => Effect.runPromise(Issuer.start({ config, port }).pipe(Scope.provide(services))).then((issuing) => issuing.url);
 const mint = async (issuer: string, client = "ci-main") => {
   const r = await fetch(`${issuer}/token`, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ grant_type: "client_credentials", client_id: client, client_secret: "unused" }) });
@@ -89,12 +76,12 @@ const read = (path: string) => fetch(`${base}${path}`).then((r) => r.json() as P
 let stop: (() => Promise<void>) | undefined;
 beforeAll(async () => {
   dir = mkdtempSync(join(tmpdir(), "logbook-test-"));
-  [issuer, rogue] = await Promise.all([startIssuer(names[0]!, PORTS.issuer), startIssuer(names[1]!, PORTS.rogue)]);
+  [issuer, rogue] = await Promise.all([startIssuer(PORTS.issuer), startIssuer(PORTS.rogue)]);
   stop = await start();
 }, 180_000);
 afterAll(async () => {
   await stop?.();
-  for (const name of names) docker("rm", "-f", name);
+  await Effect.runPromise(Scope.close(services, Exit.void));
   rmSync(dir, { recursive: true, force: true });
 }, 60_000);
 

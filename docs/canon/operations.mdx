@@ -12,7 +12,7 @@ status: specified
 milestone: M1
 slices: [M1.20, M1.26, M3.16]
 decisions: [K5, O2, N1]
-links: [machines, roles, handlers, doors, traces]
+links: [machines, invariants, roles, handlers, doors, traces]
 ---
 
 ## The idea
@@ -116,7 +116,7 @@ sent: it is the handler's bug, so the call dies (see `handlers`).
 
 A refusal is an answer the operation was built to give: the caller asked, and the system said no, on purpose. Every
 refusal has a name, a code and an exit code. Every door shows the name and the code, and the CLI exits with the exit
-code. A refusal can come from three places.
+code. A refusal can come from four places: the handler, the machine, the runtime's own checks and the thing's rules.
 
 **Declared errors** depend on the data, and only the handler can know them. They live in the thing's `errors.ts`, each
 with the fields it carries and its exit code:
@@ -142,37 +142,53 @@ the same `NotAllowed` for an id that doesn't exist, so a read never tells an out
 stranger refused: every one of its operations allows `Blueprint.anyone`. Acme's `allowance.spend` is the example
 there, where only the grantee may spend (see `roles`).
 
+**A rule's refusal** is made for you too. A rule says what must stay true among many records of one thing, such as
+one holder per name. When a call breaks it, the runtime refuses with the rule's own error, after the move and before
+the commit. The rule owns the error, so the operation never lists it in `errors` and its handler never raises it. Plugged
+In's `handle.claim` lists none, and still refuses `HandleTaken`, as this journey shows (rules are on
+[invariants](invariants.mdx)):
+
+<Scenario journey="examples/plugged-in/journeys/a-name-is-claimed-once.ts" step="a taken name is refused" />
+
+So the four places differ in who decides, and in when:
+
+| Place | Who decides | Refused as | When |
+|---|---|---|---|
+| the thing's rules | the runtime, from what the rules say about many records | the rule's own error (`HandleTaken`) | after the move, before the commit |
+| the machine | the runtime, from one record's state | `<Thing>Not<State>` | before the handler |
+| the runtime's own checks | who may call, whether the record exists, a request key reused | `NotAllowed`, `<Thing>NotFound`, `IdempotencyConflict` | before the handler |
+| the handler | only the handler can know | a declared error | inside the handler |
+
 **Codes.** The compiler numbers every refusal, and the model records the number, so no generator works one out:
 
-```ts file=packages/compiler/src/modules/model/internal/codes.ts name=MACHINE_NUMBER,RUNTIME_CODES lines=7-11
+```ts file=packages/compiler/src/modules/model/internal/codes.ts name=MACHINE_NUMBER,RUNTIME_CODES lines=8-15
 /** The refusal of a machine's move that starts from the wrong state. */
 export const MACHINE_NUMBER = 900;
 
-/** Refusals the runtime makes for every thing: who may call, before any handler runs. */
-export const RUNTIME_CODES = { NotAllowed: "AR-001" } as const;
+/** The runtime's refusal for a request key reused with another payload: its name, written once. */
+export const IDEMPOTENCY_CONFLICT = "IdempotencyConflict";
+
+/** Refusals the runtime makes for every thing, numbered in the order it gained them: who may call (before any handler runs), then a request key reused with another payload. */
+export const RUNTIME_CODES = { NotAllowed: "AR-001", [IDEMPOTENCY_CONFLICT]: "AR-002" } as const;
 ```
 
-A code is the thing's prefix and a number. Declared errors are 1, 2, 3 in the order `errors.ts` declares them, the
-machine's is always 900, and the runtime's take `AR`. So signup's refusals are `SH-001` for `SheetFull`, `SH-900` for
-`SheetNotOpen` and `AR-001` for `NotAllowed`. The generated code carries each one's exit code and its code:
+A code is the thing's prefix and a number. Declared errors, a rule's among them, are 1, 2, 3 in the order `errors.ts` declares them, the
+machine's is always 900, a missing instance's (`<Thing>NotFound`, which the runtime refuses before the handler) is 901,
+and the runtime's own take `AR`. So signup's refusals are `SH-001` for `SheetFull`, `SH-900` for `SheetNotOpen`, `SH-901`
+for `SheetNotFound`, `AR-001` for `NotAllowed` and `AR-002` for `IdempotencyConflict` (a request key reused with another payload, on operations that keep an answer by key). The generated code keeps each one's code, its exit code and its HTTP
+status in one table, which the CLI, HTTP and MCP all read:
 
-```ts file=examples/signup/generated/api/src/errors.ts name=exits lines=12-16
-export const exits = {
-  SheetFull: 71,
-  SheetNotOpen: 70,
-  NotAllowed: 3,
+```ts file=examples/signup/generated/api/src/errors.ts name=refusals lines=7-13
+export const refusals = {
+  SheetFull: { code: "SH-001", exit: 71, status: 422 },
+  SheetNotOpen: { code: "SH-900", exit: 70, status: 409 },
+  SheetNotFound: { code: "SH-901", exit: 4, status: 404 },
+  NotAllowed: { code: "AR-001", exit: 3, status: 403 },
+  IdempotencyConflict: { code: "AR-002", exit: 120, status: 409 },
 } as const;
 ```
 
-```ts file=examples/signup/generated/api/src/errors.ts name=codes lines=19-23
-export const codes = {
-  SheetFull: "SH-001",
-  SheetNotOpen: "SH-900",
-  NotAllowed: "AR-001",
-} as const;
-```
-
-A refusal is not a failure. The call worked, and the span ends OK (see `traces`, which owns the difference between a
+A refusal is not a failure. The call worked, and the span does not end as an error (see `traces`, which owns the difference between a
 refusal and a defect in a trace).
 
 ### Steps
@@ -187,29 +203,30 @@ Three rules decide what a step is (K5, seam 3):
 - **A step is a span inside one attempt.** It is not durable work, and nothing resumes it. Durable work is a workflow.
 - **The handler chooses which steps run.** The declaration names the parts; the handler's own code takes the path.
 - **A rerun runs them again.** When the commit loses a race with another call, the whole attempt is run again, steps
-  and all, up to a fixed number of times:
+  and all, up to a fixed number of times. The call is named once, before its first attempt, and each attempt's span carries that name
+  as `call.id`:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=91-99
-const loop = (left: number): Effect.Effect<object, unknown, unknown> =>
-  attempt(payload, principal, key).pipe(
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=169-177
+const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
+  attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
       !(e instanceof Conflict) ? Effect.fail(e)
-      : left > 1 ? loop(left - 1)
+      : number < ATTEMPTS ? loop(number + 1, callId)
       : Effect.die(new Error(`${name} lost its version race ${ATTEMPTS} times in a row`)),
     ),
   );
-return loop(ATTEMPTS);
+return Effect.flatMap(newCallId, (callId) => loop(1, callId));
 ```
 
 An operation may declare no steps at all (`packages/orthograph/src/modules/operations/types.ts:46`). A step's kind says
 what does the work. `database` is the store's, `wait` is a timer's. The kinds are an open list: `sync`, `check` and
 `prove` are named for languages that run on a chain or a client (N1), and nothing matches on all of them
-(`packages/orthograph/src/modules/operations/types.ts:19`). Every chain detail waits on K7.
+(`packages/orthograph/src/modules/operations/types.ts:19`). K7 added no step kind for a chain. A call into a contract we didn't write is a declared step with one declared refusal (K7 Q2), and on Aztec the "sync first" step is the SDK's job, never a handler's ([chains-and-wallets](chains-and-wallets.mdx)).
 
-**Every declared step must run, in order.** Eval 6 checks it on every answered call:
+**Every required step must run, in order.** Eval 6 checks it on every answered call; an `optional` step may be absent:
 
-```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=114-126
-/** 6. Every declared step of an answered call ran in its own span, in the order the operation declares them. */
+```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=139-152
+/** 6. Every required step of an answered call ran in its own span; all observed steps ran in declared order. */
 export const steps: PerOperation = (op, evidence) =>
   verdict("steps", op.name, evidence.flatMap((e) => {
     if (!answered(e) || replayed(e)) return [];
@@ -218,7 +235,8 @@ export const steps: PerOperation = (op, evidence) =>
       const span = e.trace.spans.find((x) => x.name === s.name);
       return span ? [{ name: s.name, start: span.start }] : [];
     });
-    const missing = declared.filter((s) => !ran.some((r) => r.name === s.name)).map((s) => `${where(e)}: declared step ${s.name} ran no span`);
+    const missing = declared.filter((s) => !("optional" in s && s.optional === true) && !ran.some((r) => r.name === s.name))
+      .map((s) => `${where(e)}: declared step ${s.name} ran no span`);
     const late = ran.slice(1).flatMap((r, i) => (r.start < ran[i]!.start ? [`${where(e)}: step ${r.name} ran before ${ran[i]!.name}, which is declared first`] : []));
     return [...missing, ...late];
   }));
@@ -285,20 +303,24 @@ A client that retries after a timeout doesn't know if the first call landed. `id
 answers what it answered the first time and changes nothing. No step runs, no event is written, and the span says
 `request.replayed`:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=51-56
-// The same request key from the same caller is one call: answer what was answered, and change nothing.
-const kept = key === undefined ? undefined : yield* store.answered(key);
-if (kept !== undefined) {
-  yield* Effect.annotateCurrentSpan({ "request.replayed": true });
-  return yield* decodeAnswer(JSON.parse(kept)).pipe(Effect.orDie);
-}
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=105-113
+        // The same request key from the same caller is one call: answer what was answered, and change nothing.
+        const kept = key === undefined ? undefined : yield* store.answered(key);
+        if (kept !== undefined) {
+          // The kept answer is bound to the payload it was made for: the same key with another payload is another request.
+          const { payload: madeFor, answer } = JSON.parse(kept) as { readonly payload: string; readonly answer: unknown };
+          if (madeFor !== sha256(canonical(payload))) return yield* new IdempotencyConflict();
+          yield* Effect.annotateCurrentSpan({ "request.replayed": true });
+          return yield* decodeAnswer(answer).pipe(Effect.orDie);
+        }
 ```
 
 The key is the operation, the caller and the request together, so one caller's key never answers another's call:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=88-90
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=163-166
 // Keyed by operation and caller as well, so one caller's key never answers another's call.
-const who = principal.kind === "person" ? principal.person : "anonymous";
+// Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
+const who = "person" in principal ? `${principal.kind}:${principal.person}` : principal.kind === "service" ? `service:${principal.mount}` : principal.kind;
 const key = op.idempotent === "request" && request !== undefined ? `${name}|${who}|${request}` : undefined;
 ```
 
@@ -314,7 +336,7 @@ Without a key, or without `idempotent`, every call is its own call.
 
 A budget is how fast the operation should answer, as a p95. It is a target for review, never a failure:
 
-```ts file=packages/orthograph/src/modules/operations/types.ts name=Budget lines=28-31
+```ts file=packages/orthograph/src/modules/operations/types.ts name=Budget lines=37-40
 export interface Budget {
   /** A target for review, never a failure. */
   readonly p95: Duration.Input;
@@ -353,12 +375,13 @@ The short references are in `packages/prove/src/modules/evals/internal/calls.ts`
 - and in one line: `sheet.join 9 evals ✔ p50 3ms p95 4ms budget p95 150ms`
 
 The run ends with the whole project's coverage, `coverage ✔ moves 3/3 · outcomes 3/3 · refusals 1/1 · runtime
-refusals 2/2`, and `prove ✔`. The end-to-end test holds signup to exactly that:
+refusals 2/4` (no journey yet names a sheet that isn't there, so the generated `SheetNotFound` is never reached; K16),
+and `prove ✔`. The end-to-end test holds signup to exactly that (`coverageLine` builds the expected line from the model: once an idempotent operation lists `IdempotencyConflict`, which no journey can cause, the line adds `(not counted: IdempotencyConflict, …)` after the totals, and the test requires it exactly then):
 
-```ts file=e2e/layer1/08-signup-proves.test.ts name="ortho prove --env local on signup, the canon's example" lines=14-17
+```ts file=e2e/layer1/08-signup-proves.test.ts name="ortho prove --env local on signup, the canon's example" lines=17-20
 expect(lines.filter((l) => /^journey .* ✔ \d+\/\d+ steps$/.test(l))).toHaveLength(4);
 expect(lines.filter((l) => / 9 evals ✔ /.test(l))).toHaveLength(4);
-expect(lines).toContain("coverage ✔ moves 3/3 · outcomes 3/3 · refusals 1/1 · runtime refusals 2/2");
+expect(lines).toContain(coverageLine("moves 3/3 · outcomes 3/3 · refusals 1/1 · runtime refusals 2/4", model));
 expect(lines.at(-1)).toBe("prove ✔");
 ```
 
@@ -389,11 +412,12 @@ checked the same way whichever door it came through. The action sits beside the 
 
 If the answer is fields the thing holds, make it a read. A read you didn't have to write can't have a bug in it.
 
-### A declared error or the machine's refusal
+### A declared error, the machine's refusal or a rule
 
 If the answer depends only on the instance's state, let the machine refuse: you write nothing, and it is checked
-before the handler runs. Declare an error only when it depends on data the handler reads, like people against the
-places left.
+before the handler runs. If it depends only on whether another record of the same thing already holds a key, such as
+a name, declare a rule and let the runtime refuse ([invariants](invariants.mdx)). Declare an error only when it
+depends on data the handler reads, like people against the places left.
 
 ### A required step or an optional one
 
@@ -418,6 +442,7 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
   makes. See `handlers`.
 - **Not the move.** A move is a machine's step from one state to another, with its event. An operation names the
   move it makes; the machine owns it. See `machines`.
+- **Not a rule.** A rule says what stays true among many records, and owns its refusal. See `invariants`.
 - **Not the role.** `allowed` names roles; what a role is and how it is checked is on `roles`.
 - **Not a span.** A step makes a span, but the span, its attributes and how a refusal looks in a trace are on
   `traces`.
@@ -434,11 +459,12 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
 | A read's shape | `packages/orthograph/src/modules/operations/types.ts:102` | built |
 | Refusal codes, numbered by the compiler | `packages/compiler/src/modules/model/internal/codes.ts:18` | built |
 | The payload decoded, `InvalidPayload` | `packages/language-effect/src/modules/handler/service.ts:105` | built |
+| A rule's refusal, after the move and before the commit | `packages/language-effect/src/modules/handler/internal/invariants.ts:14` | built |
 | The machine's refusal, before the handler | `packages/language-effect/src/modules/handler/internal/move.ts:39` | built |
 | The request key and the replay | `packages/language-effect/src/modules/handler/service.ts:90` | built |
 | A rerun after a conflict | `packages/language-effect/src/modules/handler/service.ts:91` | built |
 | The nine evals | `packages/prove/src/modules/evals/service.ts:7` | built |
-| Each refusal's code and exit code in every door | `packages/generators/src/modules/render/internal/api.ts:56` | built |
+| Each refusal's code and exit code in every door | `packages/projections/src/modules/api/internal/api.ts:56` | built |
 | Optional steps, eval 6 and the unused-step warning | `packages/prove/src/modules/evals/internal/calls.ts:114` and `ortho check` | planned, M1.26 |
 | An operation's own event | `packages/language-effect/src/modules/handler/service.ts:69` | planned, M3.16 |
 | A bad payload counted as a refusal | `packages/language-effect/src/modules/handler/` | planned, M1.20 |
@@ -453,6 +479,7 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
 | Undeclared errors don't compile | proved | layer 2 | `packages/generators/src/modules/render/handler-type.test.ts:40` |
 | Refusal codes, stable and unique | proved | layer 2 | `packages/compiler/src/modules/model/refusal-codes.test.ts:61`, `packages/prove/src/modules/evals/evals.test.ts:42` |
 | The machine's refusal before the handler | proved | layer 2 | `packages/language-effect/src/modules/handler/handler.test.ts:260`, signup's `fill a sheet` |
+| A rule's refusal, made by the runtime and listed on each operation that can break it | proved | ST1.16 | `e2e/m1/25-unique-fields.test.ts:73`, Plugged In's `a name is claimed once` |
 | One call per request key | proved | layer 2 | `packages/language-effect/src/modules/records/reads-and-requests.test.ts:42`, signup's `join twice with one request` |
 | The nine evals on every operation | proved | layer 2 | `e2e/layer1/08-signup-proves.test.ts:15` |
 | The budget, reviewed and never failed | proved | layer 2 | `packages/prove/src/modules/evals/evals.test.ts:31` |
@@ -496,7 +523,7 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
   The comment that explains codes gives `[AL-002] AllowanceExceeded { limit: 500 }`
   (`packages/compiler/src/modules/model/internal/codes.ts:1`), and every generated `errors.ts` repeats `[AL-002]`,
   signup's included (`examples/signup/generated/api/src/errors.ts:18`), from
-  `packages/generators/src/modules/render/internal/api.ts:56`. In acme, `AllowanceExceeded` is `AL-001` and carries
+  `packages/projections/src/modules/api/internal/api.ts:56`. In acme, `AllowanceExceeded` is `AL-001` and carries
   `remaining`, not `limit`. The design docs also show `Blueprint.error("AllowanceExceeded", …)` with a name string
   (`design/docs/index.html:373`); the code takes no name, because names come from paths and identifiers. Both should
   match the code. Ledger: OPS-06.

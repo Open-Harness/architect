@@ -315,7 +315,7 @@ opens its trace in the drawer. It replaces the Spans tab.
 | Caller kind: anyone, signed-in | derived from `principal.kind` or the presence of `principal.person`, never the id | carried (derived) |
 | Caller kind: a role, an agent | the role the caller held; an agent principal | **not carried**: role is a hole; agents arrive with M2.03 and ST1.05 |
 | Environment | the span's `environment` attribute | **red**: check 17 (`e2e/m1/17-telemetry-model.test.ts:267-281`), M1.36. Each environment's portal reads only its own sink, so in the product this filter is the environment switcher |
-| Request key | the call's idempotency key | **not carried**: no span or label has it (only `request.replayed`); no slice. A hole |
+| Request key | the call's idempotency key | `request.key` on the operation's span (M1.12a, check 38): the key as the caller sent it, on every attempt, on a replay and on `<op>.refused`; none on a call made without one. A key is chosen by the caller and is shown in the portal and in traces, so it must never carry a secret. Read into `TelemetryCall.requestKey` (`null` when none): the key any of the call's attempt spans carries, so a source that kept only the first or only the retry's span still gives it (check 38 B). Shown as `none` for a keyless call in a window that has keys, `not yet` where no call in the window has one |
 
 A call refused at the door (`NotAllowed`, a bad payload) opens no span, so it is never a row: it is counted in the
 tiles and named in the table's footer. The full delta for this table is in "Calls table vs spans", below.
@@ -1015,7 +1015,7 @@ Drawn and fine: no state distributions, no row counts (`reference.tsx` Machines 
 
 1. **People's names as "who" everywhere** (fixed in round 4: the drawing shows caller kind only; journey cast names and note authors stay, as fixtures and as the portal's own data): `live.ts:44-53` (`aaron`, `bob`, `stranger`), `trace.ts:32,38`, `ref-live.tsx:37-56` (`carol`, `dana`, `erin`), rail "last calls" (`rail.tsx:40`), Spans header chip `{t.who}` (`op-tabs.tsx:51`), Spans "Recent calls" (`op-tabs.tsx:67`), the three "Recent ..." reference tables (`ref-live.tsx:25-35`). In product the only per-call identity on a span is `principal.person` (`AT:17-18`), which is exactly what M1.13's no-leak check plants and requires not to render (`MS:205`), and the Collector already deletes `user.*` and `organization.id` (`packages/prove/src/modules/telemetry/README.md`, L2.O paragraph). Locally the journey's cast name might label a caller (`PM:273`); the mechanism that would carry a cast name onto a span is **unverified**. Show caller kind only.
 2. **Events "from the journal"** (fixed in round 4) (`reference.tsx` Events description): the journal is rows in the app's own store (`LV:27-31`); `LiveEvent.subject` is a record id (`LV:53-57`). A windowed count must come from `event.name` on spans (M1.36), not a journal scan.
-3. **Issues "first seen / last seen"** (`monitor.tsx`): needs state that outlives the window (`K18:41`); K18 names no store. Either issue records are stored (the app's or the portal's own) or the sink's retention is queried. Not a population of app data, but unspecified state.
+3. **Issues "first seen / last seen"** (`monitor.tsx`): needs state that outlives the window (`K18:41`); K18 names no store. Either issue records are stored (the app's or the portal's own) or the sink's retention is queried. Not a population of app data, but unspecified state. **Built, memory-only until the binding lands (M1.49, 21 November 2026; the binding is snag #438): the portal's own issue book, in the ledger the Worker hands it (`PortalContext.ledger`; a key-value binding `PORTAL_LEDGER`, else the isolate's memory); see the addendum of `decisions/K18-monitoring-falls-out.md`, "Where M1.49 keeps issues".**
 4. **Notes `by` and `when`** (`overlay.ts:46-49`): author names stored in the portal's own `note` thing (`PM:211`, M3.21). Not the app's data; people appear by design there.
 5. **Access page "link.owner != caller"** (removed in round 4) (`ref-live.tsx:46,48`): reveals whose record failed; no span exists for a role refusal (`HS:60`), so this text cannot be sourced and should not be.
 6. (removed in round 4) **Values page "Recent payloads refused ... longer than 30"** with the value in view (`ref-live.tsx:57-59`): a rejected payload is non-public input; no telemetry carries it and `payload.*` attributes exist only for public fields on spans that opened (`AT:14-15`, `HS:64`).
@@ -1039,8 +1039,8 @@ Row = one call. A "call" on m1 is the operation span(s) in one trace: one per at
 | caller kind: role | no | what is recorded is the operation's declared `allowed` (`T:89`), not the role the caller held; M1.35's `Audience` holds roles for visibility only (`MS:222`) | **HOLE** (derivable: signed-in + `allowed` of kind role + answered implies the role held) |
 | who (principal) | span has `principal.person` | `AT:17-18` | must not render (no-leak, `MS:205`); show kind only; **no per-person view without breaking M1.13's check** |
 | environment | resource attribute yes; per-call span attribute no | `deployment.environment` on the resource (`host-cloudflare/src/modules/telemetry/service.ts:9`); sources filter on it (`axiom-source.ts:93`); span attribute `environment` is M1.36 and red | see check 17 below; also each environment's portal reads only its own sink (`PM:463-464`), so the column is constant and a filter is a switcher |
-| request key | **no** | only `request.replayed: true` (`HS:68`); the key lives in the store as `<op>|<who>|<request>` (`HS:109`) and in the SDK's `idempotency-key` header (M1.12, `MS:203`); no attribute, no label; free text is untraced by default (M1.19, `MS:210`) | **HOLE** (no slice) |
-| request key filter | no | same | **HOLE** |
+| request key | **yes since M1.12a**: `request.key` on the operation span | (was: only `request.replayed: true` (`HS:68`); the key lives in the store as `<op>|<who>|<request>` (`HS:109`) and in the SDK's `idempotency-key` header (M1.12, `MS:203`); no attribute, no label; free text is untraced by default (M1.19, `MS:210`); the key is an id, so traced) | **filled** (M1.12a) |
+| request key filter | yes since M1.12a | the calls table filters on `TelemetryCall.requestKey`; it is available when the window's calls carry a key, `not yet` otherwise | **filled** (M1.12a) |
 | time filter | yes | `TraceSource.window(since, now)` `TS:68` | ok, within 15 s lag and 50k spans |
 | filters generally | only inside the window, client-side | `TraceSource` has no query-by-attribute (`TS:51-69`); the Axiom window is a fixed APL (`axiom-source.ts:89-95`) | any filter beyond the window or the 50k cap: **HOLE** |
 
@@ -1050,7 +1050,7 @@ The environment assertion is at `e2e/m1/17-telemetry-model.test.ts:267-281` ("wr
 
 ### Holes (no slice)
 
-1. Request key per call (column and filter): not on any span or label; no slice puts it in telemetry (M1.19 keeps free text out by default).
+1. Request key per call (column and filter): filled by M1.12a, no longer a hole. `request.key` is on the operation's span (an id, so M1.19's free-text rule does not apply), the calls table shows it and filters by part of it; check 38 judges it.
 2. Metrics reader: `ortho.calls` and `ortho.call.duration` have producers (M1.20) but no portal-side reader; `TraceSource` is spans only. Rail numbers, per-minute bars, door-refusal counts, refusal-by-code counts and every "trend" cell rest on it. The 28-day latency objective and error budget need history far beyond `window` (M7.14 is sink-side, after the cloud pass).
 3. Per-eval verdicts (nine evals x environment on the Proof tab): the logbook stores one aggregate verdict (`WS:8`); no slice records per-eval results. The drawing's "review" state is not a `ProofState`.
 4. Step-level journey verdicts and failure details ("fails at step 5", "links[0].title was GitHub"): the logbook stores a pass/fail per (operation, journey), repeated calls sharing one (`M1-verdicts.md:3-6`).
@@ -1061,6 +1061,8 @@ The environment assertion is at `e2e/m1/17-telemetry-model.test.ts:267-281` ("wr
 9. Project description and "stage 1" label: no field on `Model`.
 10. Free-text hints on a blank operation ("Probably linkOwner, like order and remove"): no model field (a note, M3.21, is the nearest).
 11. Event listeners ("listened to by (on:)"): no `on` field in `ThingModel` on m1 (**unverified** which slice adds it).
+
+**Owners (19 November 2026, the M1 lead).** Each hole now has a slice: 1 in M1.12 (`request.key` on the operation span); 2 in M1.13 (a local metrics reader), with history past the window in M7.14 (`PRJ-54`); 7 in M1.49 (first and last seen kept past the window, the error's tag on the defect span). The rest are in `ledger.md`: 3 and 4 with M3.20 (`PRJ-46`, `PRJ-47`); 5, 6 and 8 with M2.03 (`PRJ-48` to `PRJ-50`); 9 with M2.09 (`PRJ-51`); 10 with M3.21 (`PRJ-52`); 11 with M3.08 (`PRJ-53`). Until then the portal says "not yet" where they would be.
 
 ## Component inventory (round 3 review, 19 November 2026)
 

@@ -1,0 +1,18 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/00-controls
+# commit b39b30d · 2026-11-18T20:19:40Z · exit 0 (expected 0) · 26.6s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ✓ m1/00-controls.test.ts > 00 controls: the fixture plugins are real packages > echo is built, packed and installed with the layout of M1-plugins section 1 2008ms
+ ✓ m1/00-controls.test.ts > 00 controls: the fixture plugins are real packages > the project's package.json carries the dependency, and the package is the one that was packed 160ms
+ ✓ m1/00-controls.test.ts > 00 controls: the fixture plugins are real packages > the pure entries import no runtime entry, and the handlers import no declaration they should not 81ms
+ ✓ m1/00-controls.test.ts > 00 controls: the fixture plugins are real packages > greet, the plain library and the three adapters install too, each of the kind it says 4851ms
+ ✓ m1/00-controls.test.ts > 00 controls: the fixture plugins are real packages > a variant is a real package too: an empty handler and a missing handler module are built, not hand-edited 2726ms
+ ✓ m1/00-controls.test.ts > 00 controls: a project that mounts nothing is untouched by an installed plugin > keeps its model and its generated/ byte for byte, and `ortho check` still passes 5728ms
+ ✓ m1/00-controls.test.ts > 00 controls: a project that mounts nothing is untouched by an installed plugin > proves with every operation's nine evals and coverage as without it 10213ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  20:19:14
+   Duration  25.98s (transform 44ms, setup 0ms, import 61ms, tests 25.81s, environment 0ms)

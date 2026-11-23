@@ -70,7 +70,7 @@ export const Secret = Blueprint.visibility.secret(Blueprint.text({ max: 512 }));
 A value is a schema with a name and a visibility. Orthograph gives you five makers, and `Blueprint.value` names
 anything else, such as an Effect `Schema.Literals`:
 
-```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=23-35
+```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=31-52
 export interface ValuesApi {
   /** Name a type: `export const Amount = Blueprint.value(Blueprint.uint(128))`. */
   readonly value: <S extends Schema.Constraint>(schema: S | Value<S>) => Value<S>;
@@ -81,6 +81,15 @@ export interface ValuesApi {
   readonly uint: (bits: number) => Value<Schema.BigIntFromString>;
   /** Text, never empty, at most `max` characters (default 200). */
   readonly text: (options?: { readonly max?: number }) => Value<Schema.String>;
+  /** A moment: stored as a UTC instant, written on the wire, in answers, events and reads as ISO 8601 with milliseconds (`"2027-01-10T09:00:00.000Z"`). A move made by time anchors on a field of this type (M8-checks, call 1). */
+  readonly instant: () => Value<Schema.String>;
+  /** A reference carrying a thing’s declaration name and the id of one instance. */
+  readonly refAny: () => Value<Schema.Struct<{ readonly declaration: Schema.String; readonly id: Schema.String }>>;
+  /**
+   * Say what a value or a thing's field is for: `title: Blueprint.described(Blueprint.text({ max: 120 }), "The words a link shows.")`.
+   * Gives back the same kind, so it goes wherever the original went; a field made from it keeps the sentence.
+   */
+  readonly described: <const X extends Value | Field>(x: X, description: string) => X;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
 }
@@ -90,8 +99,8 @@ Values are named for three reasons:
 
 - **One meaning everywhere.** The model records each field's value and its name (`named: "Count"`). So every output
   reads the same type: a `bigint` in Effect, a decimal string on the wire. `places` and `taken` are both a `Count`, so
-  they can never drift apart, and changing `Count` once changes both. A value's type in a chain language waits on K7
-  (ledger `THI-01`).
+  they can never drift apart, and changing `Count` once changes both. A value's type on a chain is worked out from the value, not
+  written by hand (K25 item 5: `uint(bits)` is `uint<bits>`, `account()` is `address`; ledger `THI-01`, built in M6.10).
 - **One mark everywhere.** Visibility rides on the value. acme's `Password` is marked secret once, and every payload
   field made of it, in `sign-up` and `sign-in`, is secret with no further word.
 - **A name a reader can say.** `places: Count` says what the field is. `places: Blueprint.uint(32)` only says how big
@@ -117,17 +126,26 @@ yield* steps.insert(records.insert(Sheet, { id: sheet, title, places, taken: 0n 
 
 A field is a value that belongs to a thing, under a key. It knows its thing, its key and what it was made from:
 
-```ts file=packages/orthograph/src/modules/things/types.ts name=Field lines=5-15
+```ts file=packages/orthograph/src/modules/things/types.ts name=Field lines=6-25
 /** A field of one thing, which another thing or a payload can reuse: `Organization.fields.id`. */
-export interface Field<V extends Value = Value> {
+export interface Field<V extends Value = Value, K extends string = string, F extends FieldsInput = FieldsInput> {
   readonly kind: "field";
   readonly of: Thing;
-  readonly key: string;
+  /** The field's own key; its type too, so a rule can tell `name` from `owner` (G5). */
+  readonly key: K;
+  /** Type only, never present: the thing's fields, so a rule can tell one thing's field from another's (G5). */
+  readonly "~thing"?: F;
   readonly value: V;
   /** The field it was taken from, when declared as another thing's field: the model's edge. */
   readonly from: Field | undefined;
   /** Who may see this field's value: its own mark, or that of the value or field it was made from. */
   readonly visibility: Visibility;
+  /** What the field is for, in a sentence a caller reads: its own, or that of the value or field it was made from (M1.42). */
+  readonly description?: string;
+  /** Explicit opt-in to tracing a public text field, inherited from its declaration. */
+  readonly traced?: true;
+  /** A secret answer field handed to its caller once (`Blueprint.issued`); the compiler refuses it on a thing's own field. */
+  readonly issued?: true;
 }
 ```
 
@@ -160,11 +178,13 @@ as a string, is on [blueprint](blueprint.mdx).
 
 There are three visibilities. Public is the default:
 
-```ts file=packages/orthograph/src/modules/visibility/types.ts name=Visibility,VisibilityApi lines=14-29
+```ts file=packages/orthograph/src/modules/visibility/types.ts name=Visibility,VisibilityApi lines=14-39
 /** `public`; `secret` (a password, token, key or session: nobody's, recorded nowhere); or private to some roles. */
 export type Visibility = "public" | "secret" | PrivateTo;
 
 export interface VisibilityApi {
+  /** Allow a public text value or field to appear in traces. Preserves its visibility and schema. */
+  readonly traced: <const X extends Value | Field>(x: X) => X;
   readonly visibility: {
     /**
      * Mark a value, or one field of a thing, as secret: `Blueprint.visibility.secret(Blueprint.text({ max: 128 }))`.
@@ -176,10 +196,19 @@ export interface VisibilityApi {
     /** Public again: the default, said out loud. */
     readonly public: <const X extends Value | Field>(x: X) => X;
   };
+  /**
+   * Mark a secret answer value as handed to its caller once: `answer: { token: Blueprint.issued(Token) }`, where `Token`
+   * is a secret value or a secret field. The answer of the call that issued it carries it, to that call's own caller, over
+   * HTTP, the SDK and the CLI; it never leaves in a refusal, a read, MCP, telemetry, the journal or a generated file.
+   * Gives back the same kind, so it goes wherever the original went. It is only a mark: the compiler refuses it on
+   * anything but a secret value in an operation's answer.
+   */
+  readonly issued: <const X extends Value | Field>(x: X) => X;
 }
 ```
 
-- **public**: anyone the operation answers may see it, and it may be written anywhere. This is the default.
+- **public**: anyone the operation answers may see it. This is the default. A public text field needs a separate mark
+  to appear in telemetry.
 - **secret**: a password, a token, a key. It goes to the caller who asked for it and nowhere else.
 - **private to roles**: a value only some roles may see, such as a balance an admin may read.
 
@@ -187,9 +216,10 @@ A mark gives back a copy of the same kind, so a marked value goes wherever the o
 as `Password` is, or one use of a field. acme's `sign-in` answers the session's own id, marked secret for this one
 answer, without touching the session thing's field:
 
-```ts file=examples/acme/blueprint/things/session/verbs/sign-in.ts name=default lines=9-10
+```ts file=examples/acme/blueprint/things/session/verbs/sign-in.ts name=default lines=9-11
 payload: { email: Person.fields.email, password: Password },
-answer: { session: Blueprint.visibility.secret(Session.fields.id), token: Secret },
+// The caller is handed both once, in this answer: `issued` lets a secret leave there and nowhere else.
+answer: { session: Blueprint.issued(Blueprint.visibility.secret(Session.fields.id)), token: Blueprint.issued(Secret) },
 ```
 
 No example has a private field yet. This is the test that proves the mark, with a role made for it:
@@ -221,8 +251,8 @@ This is what each mark does today, place by place:
 
 Where each row is decided:
 
-- **The answer over MCP** goes through one test of what a caller has seen
-  (`packages/language-effect/src/modules/mcp/internal/shown.ts:9`). The roles the caller holds are asked only when
+- **The answer over MCP** goes through the one visibility rule, for the agent audience
+  (`packages/language-effect/src/modules/visibility/internal/rule.ts:10`). The roles the caller holds are asked only when
   some field is private, the way the role check decides them (D3 #125). A field the declaration doesn't name is never
   shown. This is why acme's `session.sign-in` can't be called through MCP: a password never passes through an agent.
   Every door and what it reaches is [doors](doors.mdx).
@@ -231,18 +261,15 @@ Where each row is decided:
   `packages/language-effect/src/modules/handler/internal/attributes.ts:39`). The journal is a record anyone who
   reads it can see. So a journey can check a secret field of an event only through the answer, never through the
   event. How events reach the journal is [machines](machines.mdx).
-- **Spans** take an allowlist: only a declared public field becomes `payload.<field>` or `answer.<field>`
-  (`packages/language-effect/src/modules/handler/internal/attributes.ts:10`). A field the declaration doesn't name is
-  left out too, so it fails closed. Logs your handler writes are yours, but `ortho prove` checks that no secret value
-  it sent or was answered appears in any span or log of the call. What a span says is [traces](traces.mdx).
+- **Spans** take `payload.<field>` and `answer.<field>` from declared public fields. Public text needs
+  `Blueprint.traced(...)` (`packages/language-effect/src/modules/handler/internal/attributes.ts:10`). `ortho prove`
+  checks spans and logs for secret, private and untraced text values. What a span says is [traces](traces.mdx).
 - **The model** leaves public out, writes `"secret"`, or names the roles. A private field whose role isn't exported
   from a `roles.ts` is a problem `ortho check` reports
   (`packages/compiler/src/modules/model/internal/describe.ts:29`).
 
-Free text is the one public value that is still traced. The sheet's `title` ("Saturday clean-up") is a public `text`,
-so today it is written on every `sheet.open` span as `payload.title`. M1.19 stops that: a public `Blueprint.text()`
-stays in answers and events, but is never a span attribute unless it is marked. A title is something a person types,
-so it stays unmarked; a short code you search by would be marked:
+The sheet's public `title` stays in answers and events. Its `Blueprint.text()` declaration keeps it out of the
+operation's span. A short code you search by can opt in with `Blueprint.traced(...)`:
 
 ```ts planned=M1.19 path=blueprint/values/codes.ts
 export const Ref = Blueprint.traced(Blueprint.value(Blueprint.text({ max: 12 })));
@@ -255,7 +282,7 @@ export const Ref = Blueprint.traced(Blueprint.value(Blueprint.text({ max: 12 }))
 | | public | secret | private to roles |
 |---|---|---|---|
 | Use it for | ids, counts, states, names you search by | passwords, tokens, keys, a session handed over once | a value some roles may read and others may not |
-| You can find it in a trace | yes (free text from M1.19 only if marked) | no | no |
+| You can find it in a trace | yes, with `Blueprint.traced` required for free text | no | no |
 | It is in the event, so a view or a journey's `emits` can read it | yes | no | no |
 | An agent can send it or read it over MCP | yes | no | only an agent acting for someone who holds the role |
 
@@ -302,7 +329,7 @@ is [data](data.mdx), and in depth [stores](stores.mdx).
 | Visibility in the model | `packages/compiler/src/modules/model/internal/describe.ts:29` | built |
 | The span allowlist | `packages/language-effect/src/modules/handler/internal/attributes.ts:10` | built |
 | The journal keeping public event fields only | `packages/language-effect/src/modules/handler/internal/move.ts:70` | built |
-| What an MCP caller is shown | `packages/language-effect/src/modules/mcp/internal/shown.ts:9` | built |
+| What an MCP caller is shown | `packages/language-effect/src/modules/visibility/internal/rule.ts:10` | built |
 | New ids | `packages/language-effect/src/modules/ids/types.ts:5` | built |
 | `Blueprint.traced`, free text untraced | `packages/language-effect/src/modules/handler/internal/attributes.ts` | planned, M1.19 |
 
@@ -357,7 +384,7 @@ secret field at rest. Everything else on it is proved or specified.
 <Note kind="question" id="secret-at-rest">
   What does secret mean for a thing's own field, at rest? The mark keeps it out of telemetry, the journal and MCP. But
   the store keeps every field as it came: D1 gets a `TEXT` column for each one
-  (`packages/generators/src/modules/render/internal/worker-config.ts:62`). acme avoids this by never storing its
+  (`packages/projections/src/modules/server/internal/worker-config.ts:62`). acme avoids this by never storing its
   secrets (Better Auth keeps only a hash). Nothing refuses, hashes or encrypts a secret field on a thing. No ledger
   row or slice owns it yet.
 </Note>
@@ -370,14 +397,16 @@ secret field at rest. Everything else on it is proved or specified.
 
 <Note kind="question" id="visibility-on-a-store" slice="M1.17">
   What each visibility means in each kind of store is open, above all for private state on a chain (ledger `G-04`).
-  Chain store kinds wait on K7. That question belongs to [stores](stores.mdx), as its note `visibility-per-kind`.
+  K7 and K25 decided the chain kinds: a public chain store refuses a secret or private field, and Aztec's `private` is a
+  capability of its own kind (ledger `G-04`). That question belongs to [stores](stores.mdx), as its note `visibility-per-kind`.
 </Note>
 
 <Note kind="question" id="lives-closed-list" slice="M1.17">
   Ledger `X-17` and `STO-26`. A thing's store is still a closed list in code: `"database"` or `"actor"`
   (`packages/orthograph/src/modules/things/types.ts:32`, and again in `packages/compiler/src/modules/model/types.ts:41`).
   K3 says a thing lives in a store of an open kind, and K5 makes a chain a host whose store kind is `chain`. What a
-  thing declares to live on a chain waits on K7. The change is in [stores](stores.mdx).
+  thing declares to live on a chain is K25's: it lives in a chain store, a file saying `Blueprint.store.chain.evm()`, built in
+  M6.10. The change is in [stores](stores.mdx).
 </Note>
 
 <Note kind="question" id="file-as-field">

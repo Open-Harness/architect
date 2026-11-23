@@ -1,0 +1,54 @@
+$ tools/demo/m1-wallet.sh
+# commit 3f762331 · 2026-11-19T07:33:02Z · exit 0 (expected 0) · 25.3s
+
+
+$ ortho add feature @orthograph/wallets
+wrote blueprint/features/wallets.ts
+pinned @orthograph/wallets 0.0.0 (local: no registry release to age)
+needs none
+next ortho generate, then ortho check
+
+$ ortho generate
+generated: the wallet's five operations are in the SDK, the CLI, the docs and the portal
+
+$ ortho check
+blanks left 0
+types ✔
+rules ✔
+drift ✔
+ratchets 0
+check ✔
+
+$ anvil --silent --host 127.0.0.1 --port <free> --chain-id 31337 --accounts 0
+eth_chainId 0x7a69
+
+$ acme wallet create --signer node --label demo --json
+{"wallet":"wal_dcfeba2f9a9da3f7","account":"eip155:31337:0xdcFebA2f9A9DA3F71181d23142d82e4f1bB7b397"}
+
+$ acme wallet create --signer node --label payee --json
+{"wallet":"wal_262bcf2e01f555db","account":"eip155:31337:0x262BCF2E01f555Db2eEb4Bf842cFa5FA7CE2B796"}
+
+the keystore holds encrypted files, no plain key:
+demo.json
+payee.json
+
+$ acme wallet keys --signer node
+{"count":"2","accounts":"eip155:31337:0xdcFebA2f9A9DA3F71181d23142d82e4f1bB7b397,eip155:31337:0x262BCF2E01f555Db2eEb4Bf842cFa5FA7CE2B796"}
+payee balance before: 0 wei
+
+$ acme wallet send --signer node --label demo --to <payee> --value 1000000000000000 --json
+{"transaction":"0x5e14a58a9c0a84fa0914bf7c68f235fec0fb1c1ea798db7e6ea4c0d521b29ff2","level":"confirmed","nonce":"0"}
+payee balance after:  1000000000000000 wei
+
+$ acme wallet send --signer node --label demo --to <payee> --value 1000000000000000000000000000000   (expected exit 63)
+[07:32:59.010] INFO (#2): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+SimulationReverted
+exit 63
+
+$ acme wallet send --signer node --label demo --to <payee> --value 2000 --json   (the second nonce, 1)
+{"transaction":"0xbcd5a1ad3a0f988a8f0f4dbc2377b400ad4588d03c82a0d9ea0684af32dde509","level":"confirmed","nonce":"1"}
+
+$ acme wallet sign --signer node --label demo --message hello   (no passphrase, expected exit 61)
+[07:33:02.681] INFO (#2): the keystore is locked: no passphrase was given (ORTHO_WALLET_PASSPHRASE)
+KeyLocked
+exit 61

@@ -1,5 +1,6 @@
 import { AddRefused, type AddApi } from "./types.ts";
 import { isThingName, kebab } from "./internal/names.ts";
+import { journeysOf } from "./internal/journeys.ts";
 import { journeyFile, operationFile, readFile, thingFiles } from "./internal/templates.ts";
 
 const verbName = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
@@ -22,4 +23,5 @@ export const Add: AddApi = {
     const there = planned.filter((f) => exists(f.path));
     return there.length > 0 ? new AddRefused({ message: `already there, so nothing was written: ${there.map((f) => f.path).join(", ")}` }) : planned;
   },
+  journeys: journeysOf,
 };

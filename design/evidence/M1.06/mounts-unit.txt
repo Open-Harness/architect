@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/compiler mounts
+# commit 8872b84 · 2026-11-18T20:50:56Z · exit 0 (expected 0) · 1.0s
+
+
+ RUN  v4.1.12 ./packages/compiler
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  20:50:55
+   Duration  397ms (transform 102ms, setup 0ms, import 297ms, tests 5ms, environment 0ms)

@@ -1,6 +1,6 @@
 // The package rules hold: each planted fixture breaks one, and lint names the rule.
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -38,6 +38,28 @@ describe("module boundaries", { timeout: 30_000 }, () => {
     const { exit, output } = lint(file);
     expect(exit).toBe(1);
     expect(output).toContain(rule);
+  });
+
+  it("refuses static, dynamic and type viem imports outside chain-evm", { timeout: 60_000 }, () => {
+    const { exit, output } = lint("packages/lint/test/fixtures/boundaries/imports-viem.ts");
+    expect(exit).toBe(1);
+    expect(output.match(/Import EVM functionality from @orthograph\/chain-evm instead of viem/g)).toHaveLength(4);
+    expect(lint("packages/chain-evm/src/main.ts").exit).toBe(0);
+  });
+
+  it("refuses HeroUI Pro outside portal-ui, naming @orthograph/portal-ui in the GitHub reporter too (F7)", { timeout: 60_000 }, () => {
+    // Pro's scope in pieces, and the fixture written here: check 15 allows the name only in portal-ui and the design.
+    const pro = "@heroui" + "-pro/react";
+    const file = "tmp/lint-pro/imports-pro.ts";
+    mkdirSync(join(root, "tmp/lint-pro"), { recursive: true });
+    writeFileSync(join(root, file), `import { Button } from "${pro}";\nexport { Chart } from "${pro}/chart";\nexport type Sheet = import("${pro}").Sheet;\nexport const planted = Button;\n`);
+    const config = fixturesConfig();
+    const run = spawnSync(join(root, "node_modules/.bin/oxlint"), ["-c", config, "--no-ignore", "--format", "github", file], { cwd: root, encoding: "utf8" });
+    rmSync(join(root, "tmp/lint-pro"), { recursive: true, force: true });
+    expect(run.status).toBe(1);
+    const lines = run.stdout.split("\n").filter((l) => l.includes("ortho(no-pro-outside-portal-ui)"));
+    expect(lines).toHaveLength(3);
+    for (const line of lines) expect(line).toContain("import the component from @orthograph/portal-ui");
   });
 
   it("passes when blueprint imports Effect", () => {

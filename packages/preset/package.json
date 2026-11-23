@@ -14,7 +14,8 @@
     "@orthograph/compiler": "workspace:*",
     "@orthograph/generators": "workspace:*",
     "orthograph": "workspace:*",
-    "@nx/devkit": "24.0.3"
+    "@nx/devkit": "24.0.3",
+    "effect": "4.1.4"
   },
   "devDependencies": {
     "nx": "24.0.3"

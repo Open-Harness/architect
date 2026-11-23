@@ -1,0 +1,23 @@
+// Scaffolded from blueprint/things/allowance/errors.ts. Yours from now on.
+import { Blueprint, noEvents, refuses } from "orthograph";
+import { grantee } from "../things/allowance/roles.ts";
+import { AllowanceExceeded } from "../things/allowance/errors.ts";
+import spend from "../things/allowance/verbs/spend.ts";
+
+/**
+ * One refusal of allowance.spend, from blueprint/things/allowance/errors.ts:
+ *   AllowanceExceeded (exit 41, AL-001), carrying remaining
+ * Refused: the grantee of the allowance calls allowance.spend with a payload that triggers it, and nothing changes.
+ */
+export default Blueprint.journey("allowance.spend: refused AllowanceExceeded", {
+  cast: { grantee },
+  starts: Blueprint.todo("a starting world where allowance.spend can be refused AllowanceExceeded"),
+  steps: (s) => [
+    s.step(
+      "the grantee calls allowance.spend",
+      s.grantee.run(spend, Blueprint.todo("allowance.spend's payload that triggers AllowanceExceeded: allowance, amount, memo")),
+      refuses(AllowanceExceeded, Blueprint.todo("AllowanceExceeded's fields: remaining")),
+      noEvents(),
+    ),
+  ],
+});

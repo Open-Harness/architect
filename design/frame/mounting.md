@@ -9,13 +9,15 @@ your project. The plugin's declarations, handlers and journeys stay in its packa
 
 ```ts
 // blueprint/features/wallets.ts: the mount is called `wallets`, after its file
-import { Blueprint } from "orthograph";
+import { Blueprint, Via } from "orthograph";
 import wallets from "@orthograph/wallets";
+import list from "@orthograph/wallets/blueprint/things/wallet/verbs/list.js";
+import importKey from "@orthograph/wallets/blueprint/things/wallet/verbs/import.js";
 
 export default Blueprint.use(wallets, (w) => [
-  w.signer.browser.injected,                                        // choose: a signer wallets has proved
-  w.narrow(w.operations.list, { via: [w.via.session, w.via.device] }), // narrow: fewer ways in
-  w.omit(w.operations.import),                                      // omit: acme doesn't import keys
+  w.choose(w.choices.signer.browser.injected),           // choose: a signer wallets has proved
+  w.narrow(list, { via: [Via.session, Via.device] }),    // narrow: fewer ways in
+  w.omit(importKey),                                     // omit: acme doesn't import keys
 ]);
 ```
 
@@ -126,7 +128,7 @@ outputs: { server: true, sdk: "@acme/sdk", cli: "acme", mcp: true },   // one of
 | Reversibility | ✅ | ✅ | ✅ |
 | Blast radius | ⚠️ generators, environments | ⚠️ generators, environments | ✅ generators only |
 | Correctness | ⚠️ array entries have no names | ✅ names from paths, one per mount | ✅ |
-| Fit | ⚠️ a second way to add a plugin | ✅ one way for all three kinds; no loose file | ❌ projections stay special |
+| Fit | ⚠️ a second way to add a plugin | ✅ one way for every kind; no loose file | ❌ projections stay special |
 
 **Recommendation: B.** One verb for every plugin (`ortho add <kind> <package> [--as <name>]`), one file per mount,
 names from paths, and no loose config file. The question "what does this app become?" is answered by
@@ -186,5 +188,7 @@ own things, as D2 #61 decided.
 
 - Whether a feature's journeys run with the feature's own starting worlds, the app's, or both. The proposal: a feature
   brings starting-world fragments (a person with a linked wallet), and the app's starting worlds may include them.
-- Whether `narrow` should also allow tightening by the app's own roles. K1 left it to `via` and `omit` so it is provably
-  tighter; revisit if apps keep needing it.
+- Narrowing by the app's own roles is not offered: K1 left it to `via` and `omit` so it is provably tighter
+  ([`../decisions/M1-plugins.md`](../decisions/M1-plugins.md) section 3).
+
+The exact descriptor, mount and verb surface is [`../decisions/M1-plugins.md`](../decisions/M1-plugins.md).

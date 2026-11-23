@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url";
 import { Effect, Schedule } from "effect";
 import { Collectors } from "#modules/telemetry/service.js";
 import { Worlds } from "#modules/world/service.js";
-import { collectorName } from "./collector.ts";
+import type { Launched, WorldFailed } from "#modules/world/types.js";
+import { telemetryDir } from "./collector.ts";
 
 export const files = (dir: string) => ({
   config: join(dir, "wrangler.jsonc"),
@@ -82,7 +83,7 @@ export const reap = (dir: string) =>
   Effect.gen(function* () {
     const pid = readPid(dir);
     if (pid !== undefined && (yield* groupAlive(pid)) && isWrangler(pid, dir)) yield* stopGroup(pid, dir);
-    yield* Collectors.stop(collectorName(dir));
+    yield* Collectors.stop(telemetryDir(dir));
     forget(dir);
   });
 
@@ -106,3 +107,18 @@ export const spawnDetached = (run: { readonly command: string; readonly args: Re
     writeFileSync(pidFile, `${child.pid}\n`);
     return child;
   });
+
+/**
+ * Launch on `first`. A port that was free when it was chosen can be taken before wrangler binds it (the collector and the
+ * migrations come between), and wrangler then exits for a taken address: unless the caller named the port, launch again
+ * on a fresh one, remembered in the port file, up to `times` more.
+ */
+export const launchOnFreePort = (
+  launch: (port: number) => Effect.Effect<Launched, WorldFailed>, dir: string, first: number, named: boolean, times = 3,
+): Effect.Effect<Launched, WorldFailed> =>
+  launch(first).pipe(
+    Effect.catchTag("WorldFailed", (e) =>
+      e.taken !== true || named || times === 0
+        ? Effect.fail(e)
+        : Worlds.anyPort.pipe(Effect.flatMap((fresh) => Effect.sync(() => writePort(dir, fresh)).pipe(Effect.andThen(launchOnFreePort(launch, dir, fresh, named, times - 1)))))),
+  );

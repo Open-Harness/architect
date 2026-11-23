@@ -31,6 +31,7 @@ Not sure yet: turn the question into a spike task on its subject.
 | refusal | exit | code | when |
 |---|---|---|---|
 | QuestionNotAsked | 53 | QU-900 | the question is in a state spike can't start from; carries `state` |
+| QuestionNotFound | 4 | QU-901 | nothing has the id in question; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |
 
 ## How to call

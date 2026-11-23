@@ -1,33 +1,24 @@
-# Generated totals for the e2e suites
+# Totals for the e2e suites, printed and never committed
 
-A suite's README used to hold its test counts as a sentence somebody kept by hand, and every pull request that added a
-test changed it, so the same line was edited again and again. Now the counts are written from facts.
+A suite's README used to hold its test counts as a sentence, and then as a generated block, and every pull request that added or took off
+a test rewrote the same lines, so whichever landed first conflicted with every other (G9, `design/decisions/G9-ratchet-per-check.md`). Now the
+counts are printed from facts and kept nowhere.
 
 ## What it does
 
-`nx run e2e:totals` finds every `e2e/<suite>/README.md` that holds `<!-- totals:start -->` and `<!-- totals:end -->`,
-and rewrites what is between them:
+`nx run e2e:totals` (`node e2e/totals/totals.mjs`) prints, to stdout, for every `e2e/<suite>/` that has an `expected-failing/` folder:
 
 - the number of tests in each file of the suite, from `vitest list --json` (nothing runs; it uses
   `e2e/vitest.<suite>.config.ts` if there is one, else `e2e/vitest.config.ts`);
-- when `e2e/<suite>/expected-failing.txt` exists, how many of each file's tests are on that list. A listed line that
-  matches no test is counted too, so a stale entry shows. Lines for a hook or a file that errored are not tests and are
-  not counted.
+- how many of each file's tests are on the suite's list, the `*.txt` files of `e2e/<suite>/expected-failing/`. A listed line that
+  matches no test is counted too, so a stale entry shows. Lines for a hook or a file that errored are not tests and are not counted.
 
-The block is a sentence (`N tests in all; P pass; R expected to fail, listed in expected-failing.txt`) and a table
-of file, tests and expected to fail. Everything outside the markers is yours.
-
-`e2e:lint` runs `totals.mjs --check` after oxlint, so CI fails when a block differs from what would be written, and
-prints the fix: `pnpm nx run e2e:totals`.
-
-## How to adopt it
-
-1. Put the two markers in the suite's README where the totals go, with nothing between them.
-2. Run `pnpm nx run e2e:totals`, and commit the README.
-3. From then on, nobody edits the block by hand. Add a test, run the target, commit the new block.
+The output is a markdown heading, a sentence (`N tests in all; P pass; R expected to fail, listed in expected-failing/`) and a table of
+file, tests and expected to fail. `--suite <name>` (repeatable) names a suite with no list. CI appends the output to the e2e-m1 job's step
+summary. Nothing is written to a README, and no check compares one with it.
 
 ## Its own test
 
-`nx run e2e:test` (so CI's `check` job) runs `test-totals.mjs` on the small suites in `fixture/`: it writes the totals, checks them,
-changes a test and checks again. The fixture's tests are red on purpose and are not in any real run: `e2e/vitest.config.ts`
+`nx run e2e:test` (so CI's `check` job) runs `test-totals.mjs` on the small suites in `fixture/`: it prints the totals, names a suite with
+no list, and changes a test and prints again. The fixture's tests are red on purpose and are not in any real run: `e2e/vitest.config.ts`
 excludes `totals/**`, and the other configs name their own folders.

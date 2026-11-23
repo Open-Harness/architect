@@ -26,3 +26,13 @@ gates serializing external D1 awaits.
 The index is an additive startup upgrade. An old registry containing overlapping live leases fails closed with
 the database error; it never chooses a winner or deletes data to repair itself. `world.test.ts` runs this case,
 concurrent admission, overlapping teardown and admission/ending handover against real workerd and D1.
+
+## Declared stores (K3)
+
+`toWorld({ …, stores: [{ db, tables }] })`: the facts door reads a table from the database it is in and a trace's journal
+from the default and each store. The lease registry above marks and resets the default database only; a declared store's
+rows survive a world's end (open, K3 "What M1.17 built").
+
+## Reset (ST1.24)
+
+`POST /_world/reset` (a world without leases only) empties every table of the default database and of each declared store, and keeps the cast: the Durable Object answers who is in it, and the Worker deletes everything but those people's `auth_user` and `auth_account` rows (`internal/reset.ts`). It is how a warm world (`ortho dev`) starts a prove run with none of the last run's records. Not reset: actor storage.

@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/generators src/modules/render/stores.test.ts src/modules/render/render.test.ts
+# commit 892851a · 2026-11-18T22:41:02Z · exit 0 (expected 0) · 2.3s
+
+
+ RUN  v4.1.12 ./packages/generators
+
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  22:41:01
+   Duration  1.44s (transform 1.06s, setup 0ms, import 1.51s, tests 746ms, environment 0ms)

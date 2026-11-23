@@ -106,7 +106,7 @@ The app's `profile.create` answers `handles.events.HandleClaimed` through `on:` 
 `/claim` makes both calls in a row. This is the canon's first example: the same lesson as the tickets' `event.claim`
 (a refusal that depends on the data, idempotent by request), now in the app everything else grows from.
 
-**Needs:** M1 and M2 (the gate's slices), plus the stage slices ST1.01 to ST1.08 in `milestones.md`. Until
+**Needs:** M1 and M2 (the gate's slices), plus the stage slices ST1.01 to ST1.08 in `milestones.md`. (Superseded by G10, 20 November 2026.) Until
 M2.07, stage 1 signs in through auth copied from the starter, as acme does. M2 swaps that copy for the mount, and the
 handlers don't change.
 
@@ -390,6 +390,8 @@ By the recommendation Aaron let stand, the stages are the order:
 
 1. **After Gate M2 (stage 1),** stage 2 comes next.
 2. **Then stage 3,** which pulls in workflows from M3 and agents from M4.
+   (Superseded in part by K26, 20 November 2026: the on-chain slices of stages 2 and 3 are pulled forward, Aaron's
+   exception; their gates still run here.)
 3. **Then stage 4.**
 4. **Then the release.**
 

@@ -1,0 +1,41 @@
+{
+  "name": "@orthograph/projections",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "orthograph": "workspace:*",
+    "@orthograph/compiler": "workspace:*",
+    "effect": "4.1.4"
+  },
+  "orthograph": {
+    "kind": "projection"
+  },
+  "imports": {
+    "#modules/*.js": "./src/modules/*.ts"
+  },
+  "exports": {
+    ".": "./src/main.ts",
+    "./shared": "./src/shared.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/main.d.ts",
+        "default": "./dist/main.js"
+      },
+      "./shared": {
+        "types": "./dist/shared.d.ts",
+        "default": "./dist/shared.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "imports": {
+      "#modules/*.js": "./dist/modules/*.js"
+    }
+  }
+}

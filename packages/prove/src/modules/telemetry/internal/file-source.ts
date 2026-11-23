@@ -1,7 +1,7 @@
 // The TraceSource over the collector's files: what prove reads, and what `ortho telemetry trace` reads.
 import { Clock, Effect, Schedule } from "effect";
 import type { FileSourceApi, Trace, TraceSource, Wanted } from "../types.ts";
-import { looksComplete, readAll } from "./otlp.ts";
+import { arrived, readAll } from "./otlp.ts";
 
 /** Nothing new for this long after every trace looks complete: the spike's rule C. */
 const QUIET_MS = 250;
@@ -19,7 +19,7 @@ const traces = (dirs: ReadonlyArray<string>): TraceSource["traces"] => (wanted: 
       const now = readAll(dirs);
       quietMs = now.size === last.size ? quietMs + POLL_MS : 0;
       last = now;
-      return quietMs >= QUIET_MS && wanted.every((w) => looksComplete(now.byTrace.get(w.trace), w.parent, w.rooted));
+      return quietMs >= QUIET_MS && wanted.every((w) => arrived(now.byTrace.get(w.trace), w));
     });
     yield* settled.pipe(
       Effect.repeat({ schedule: Schedule.spaced(`${POLL_MS} millis`), until: (done) => done }),

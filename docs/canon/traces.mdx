@@ -47,8 +47,8 @@ The compiler has already worked out each span's name. This is rendered from acme
 
 <Model project="examples/acme" operation="allowance.spend" show="steps" />
 
-From that, one call leaves this trace. The two steps are the two children, named `<operation>.<step>`, and the
-attributes come from the payload, the answer and the caller:
+From that, one call leaves this trace. The two declared steps and the commit are children of the operation. The
+attributes include the caller, attempt number, and traceable payload and answer fields.
 
 ```text planned=M1.18
 allowance.spend          principal.person=per_olga  payload.allowance=alw_1  payload.amount=120  answer.remaining=380  attempt=1
@@ -57,8 +57,7 @@ allowance.spend          principal.person=per_olga  payload.allowance=alw_1  pay
 └─ allowance.spend.commit  step.kind=commit  commit.writes=1  commit.entries=1  commit.outcome=committed
 ```
 
-The last line, `attempt`, and the missing `payload.memo` are the designed trace (M1.18 and M1.19). Today the commit
-has no span of its own, and `payload.memo=train` is written.
+The memo stays in the `AllowanceSpent` event. The trace uses the amount and allowance id.
 
 Journeys assert on spans by name, so a trace is checked, not just looked at. When the spend is refused, the
 `record` step never ran, and the journey says so:
@@ -72,41 +71,47 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
 <Scene name="handler-lifecycle" caption="Watch where each refusal leaves: two before the operation's span opens, the rest inside it, ending OK." />
 
 1. **The payload is decoded.** A payload that doesn't fit is refused as `InvalidPayload` before anything else runs,
-   so it leaves no span (`packages/language-effect/src/modules/handler/service.ts:104`).
+   so it leaves no span (`packages/language-effect/src/modules/handler/service.ts:116`).
 2. **The role is checked.** A caller the role refuses gets `NotAllowed`, still before the operation's span opens, so a
-   stranger never looks like work (`service.ts:46`).
-3. **The operation's span opens**, named after the operation, with the caller on it:
+   stranger never looks like work (`service.ts:52`).
+3. **The operation's span opens**, named after the operation, with the caller on it and the call's name, `call.id`, which every attempt of one call shares (O3):
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=83
-   spanned(name, { operation: name, ...principalAttributes(principal) }),
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=158
+   spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
    ```
 
-4. **The payload is written on it**, public fields only (`service.ts:50`).
+4. **Traceable payload fields are written on it** (`service.ts:56`).
 5. **Each step is its own span**, marked with its kind:
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=30-36
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=67-75
    const steps = Object.fromEntries(
      // Each step is its own span, marked with its kind: a `database` step's work is the store's, a `wait` step's a timer's.
      Object.entries(op.steps).map(([key, step]) => [
        key,
-       <A, E, R>(work: Effect.Effect<A, E, R>) => spanned(`${name}.${key}`, { "step.kind": step.type })(work),
+       step.type === "call"
+         ? callStep(`${name}.${key}`, Calls.runner({ label: `${name}.${key}`, step: step as CallStep, wiring: calls?.[key] }))
+         : <A, E, R>(work: Effect.Effect<A, E, R>) => spanned(`${name}.${key}`, { "step.kind": step.type })(signalled(`${name}.${key}`)(work)),
      ]),
    );
    ```
 
-6. **The answer is written on it** before it is checked, so an answer outside its declaration is evidence `prove` can
-   name (`service.ts:62`).
-7. **The commit runs.** Today it runs inside the operation's span but not as a span of its own (gap 1, below).
-8. **The outcome is written on the span.** A defect gets `defect`; a refusal gets `refusal` and, when the handler
-   logged something just before refusing, `refusal.log`:
+6. **Traceable answer fields are written on it** before the answer is checked, so an answer outside its declaration
+   is evidence `prove` can name (`service.ts:68`).
+7. **The commit runs** in its own child span (`service.ts:78`).
+8. **The outcome is written on the span.** A defect gets `defect`; a refusal gets `refusal`, its model code as
+   `refusal.code` (`AL-001`, or the machine's `AL-900`), and, when the handler logged something just before refusing,
+   `refusal.log`:
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=77-82
-   Effect.tapCause((cause) =>
-     Cause.hasDies(cause)
-       ? Effect.annotateCurrentSpan({ defect: Cause.pretty(cause).split("\n")[0] ?? "" })
-       : logs.last.pipe(Effect.flatMap((log) =>
-           Effect.annotateCurrentSpan({ refusal: tagOf(Cause.squash(cause)), ...(log === undefined ? {} : { "refusal.log": log }) }))),
-   ),
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=149-157
+   Effect.tapCause((cause) => {
+     if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
+     const refusal = Cause.squash(cause);
+     if (refusal instanceof Conflict) return Effect.void;
+     const tag = tagOf(refusal);
+     const code = codes?.[tag];
+     return logs.last.pipe(Effect.flatMap((log) =>
+       Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }), ...(log === undefined ? {} : { "refusal.log": log }) })));
+   }),
    ```
 
 ### Refusal and defect
@@ -116,9 +121,11 @@ wrong state, a role that said no. A defect is a failure nothing declared: a bug,
 broke its own declaration. Effect would end a span in error for both, so every span goes through `spanned`, which ends
 it OK for a typed failure and in error only when the work dies:
 
-```ts file=packages/language-effect/src/modules/handler/internal/span.ts name=spanned lines=10-15
+```ts file=packages/language-effect/src/modules/handler/internal/span.ts name=spanned lines=11-18
 export const spanned = (name: string, attributes: Record<string, unknown>) => <A, E, R>(work: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
   work.pipe(
+    // A span a defect passes through carries its tag (M1.49): the attempt's own failure is told from a step that died and was recovered by the same tag.
+    Effect.tapCause((cause) => (Cause.hasDies(cause) ? Effect.annotateCurrentSpan(defectTag(cause)) : Effect.void)),
     Effect.result,
     Effect.withSpan(name, { attributes }),
     Effect.flatMap((outcome) => (Result.isFailure(outcome) ? Effect.fail(outcome.failure) : Effect.succeed(outcome.success))),
@@ -136,12 +143,13 @@ The failure still leaves the span unchanged, so the caller gets its typed refusa
 
 ### What a span may say
 
-What a span says is an allowlist built from the declaration. A field's value is written only when the declaration
-names the field and makes it public:
+The declaration provides the allowlist. A field must be declared and public. Free text also needs `Blueprint.traced`.
 
-```ts file=packages/language-effect/src/modules/handler/internal/attributes.ts name=publicOnly lines=10-11
-export const publicOnly = (values: object, fields: FieldsInput): Array<[string, unknown]> =>
-  Object.entries(values).filter(([k]) => Object.hasOwn(fields, k) && fields[k]!.visibility === "public");
+```ts file=packages/language-effect/src/modules/handler/internal/attributes.ts name=canTrace,tracedEntries lines=8-11
+const canTrace = (key: string, fields: FieldsInput): boolean => Object.hasOwn(fields, key) && Visibility.sees(Audience.telemetry, fields[key]!);
+
+const tracedEntries = (values: object, fields: FieldsInput): Array<[string, unknown]> =>
+  Object.entries(values).filter(([k]) => canTrace(k, fields));
 ```
 
 A secret or private field is never written, and neither is anything the declaration doesn't name, so a new kind of
@@ -150,19 +158,20 @@ field fails closed. The caller is written as `principal.person`, or `principal.k
 
 ### What to look for
 
-<Scene name="trace-waterfall" caption="A real allowance.grant trace from prove, building span by span: the role check's read before the operation's span, then the step, then the commit's batch." />
+<Scene name="trace-waterfall" caption="An earlier recorded allowance.grant trace from prove, building span by span through the operation, its steps and D1's commit batch." />
 
 - **Red is a defect, and only a defect.** Refusals are tagged, not red.
 - **A missing child shows where the call stopped.** `spend.load` without `spend.record` means it was refused after
   the read.
 - **`attempt` above 1**, after a commit with `commit.outcome=conflict`, is a version race. Many of them mean
   contention on one thing (see `stores`).
-- **`request.replayed=true`** is a retry with the same request key that changed nothing (`service.ts:54`).
+- **`request.key`** is the idempotency key the call was made with, as the caller sent it, on the operation's span (and on `<operation>.refused`)
+  of an operation that honours one. It is an id, so it is traced. The portal's calls table shows it and filters by it.
+- **`request.replayed=true`** is a retry with the same request key that changed nothing (`service.ts:60`).
 - **Each step's width against the budget** shows which step is slow. `spend` must answer within `p95: "150 millis"`.
 
 To read one trace, `ortho telemetry trace <id>` prints it as a tree from the Collector's files, a refusal marked
-`refused` and a defect marked `✘ defect`. It needs no viewer and works over SSH. `ortho telemetry view` starts the
-local viewer.
+`refused` and a defect marked `✘ defect`. It needs no viewer and works over SSH.
 
 ### Where it goes
 
@@ -178,72 +187,76 @@ export interface TelemetryApi {
 }
 ```
 
-`Telemetry.sink.local()` is the Collector that `prove` and `env up` start, and the viewer when it runs. It needs no
-credential. `Telemetry.sink.axiom({ group })` sends to the `<group>-traces` and `<group>-logs` datasets.
+`Telemetry.sink.local()` is the Collector that `prove` and `env up` start, as a process of their own. It needs no
+credential. `Telemetry.sink.axiom({ group })` sends to the `<group>-traces`, `<group>-logs` and `<group>-metrics`
+datasets.
 
-## The three gaps, and how each is fixed
+## Commit spans, public text and call metrics
 
-Found while reading the handler wrapper (O2). Each is one slice of M1, and each ends in the check named.
+O2 records the three changes and their proof.
 
-### Gap 1: the commit has no span (M1.18)
+### Commit spans (M1.18)
 
-**Today.** `store.commit(…)` runs inside the operation's span but not as a span of its own:
+`store.commit(…)` runs inside the `<operation>.commit` span.
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=71-72
-const committed = yield* store.commit({ writes: yield* unit.writes, entries, ...request });
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=135-144
+const writes = yield* unit.writes;
+const committed = yield* store.commit({ writes, entries, ...request }).pipe(
+  Effect.tap((outcome) => Effect.annotateCurrentSpan({
+    "commit.outcome": outcome,
+    // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
+    ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
+  })),
+  spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
+);
 if (committed === "conflict") return yield* new Conflict();
 ```
 
-A slow D1 write, or a commit that lost its version race, shows only as a longer `spend`. In the real trace above, the
-commit appears only as D1's own `BATCH` span, with nothing naming it. A rerun after `conflict` shows as a second
-`spend` span beside the first, with nothing saying why.
-
-**The fix.** The commit becomes `<operation>.commit`, tagged `step.kind: "commit"`, with `commit.writes` and
-`commit.entries` as counts (never values) and `commit.outcome` as `committed` or `conflict`. The operation's span
-carries `attempt`, from 1 to 64.
+The commit's `step.kind` is `commit`. The span records the write count, entry count and outcome. A version race
+produces a `conflict` outcome and another operation span with the next `attempt` number, up to 64.
 
 **Proved by** a handler test that forces one conflict and asserts both spans and both attributes, and a journey that
 asserts `spans({ present: ["allowance.spend.commit"] })`.
 
-### Gap 2: free text is traced by default (M1.19)
+### Public text (M1.19)
 
-**Today.** Visibility is public by default
-(`packages/orthograph/src/modules/visibility/types.ts:1`), and public fields become attributes. Acme's memo is free text:
+Acme's memo is unmarked public text.
 
 ```ts file=examples/acme/blueprint/values/money.ts name=Memo lines=5-6
 /** What a spend was for, in a few words. */
 export const Memo = Blueprint.value(Blueprint.text());
 ```
 
-So "lunch" and "hotel" are written to every trace, and so is anything a person types into a text field. That is where
-personal details turn up.
-
-**The fix.** Free text is not traced unless it is marked. A public `Blueprint.text()` value is still answered to
-callers and kept in events; it is never written as a span attribute or a log annotation. To trace one, mark it:
+To trace a public text field that holds a reference code, mark it with `Blueprint.traced`.
 
 ```ts planned=M1.19 path=blueprint/values/reference.ts
 export const Reference = Blueprint.traced(Blueprint.value(Blueprint.text({ max: 32 })));
 ```
 
-Ids, amounts, enums, booleans and times stay traced when public: they are what you search traces by, and they don't
-carry what people type. No journey changes, because events keep the field.
+Public ids, amounts, enums, booleans and times are traceable by default.
 
 **Proved by** the attributes test (`internal/attributes.test.ts`) asserting `payload.memo` is absent and a traced text
 field is present, and the built-in "leaks nothing" eval asserting no untraced text in any span.
 
-### Gap 3: a call refused before its span leaves no count (M1.20)
+### What the model adds to a span (M1.36)
 
-**Today.** A bad payload and a caller the role refuses leave no span. That is deliberate: a refused caller must never
-look like work. But nobody can see that `spend` refused 400 strangers in an hour.
+Beside `move.name` and `move.to`, the operation's span carries what the model knows about the call: `move.from`, the
+state the subject was in when the move ran (not the declared list, and absent from a call that made no move);
+`environment`, the world's (`local` unless told otherwise); and `store`, the kind of store the thing lives in. The
+commit span carries `event.name`, the event the move emitted, only when that attempt committed. The portal reads these.
 
-**The fix.** Every call is counted as a metric, whether or not a span opened:
+### Call metrics (M1.20)
+
+Every call is counted, including a bad payload and a caller the role refuses. A caller the role refuses leaves no operation span, since the operation did no work, but its refusal is traced in a span named `<operation>.refused`, tagged `refusal`, `refusal.code` and `principal.kind`.
 
 - `ortho.calls`, a counter tagged `operation`, `outcome` (`answered`, `refused` or `defect`), `refusal` and
   `principal.kind`. No payload values, and no person.
-- `ortho.call.duration`, a histogram per operation, to compare against the declared budget.
+- `ortho.call.duration`, a histogram in milliseconds per operation, to compare against the declared budget.
+- `ortho.budget.breaches` (M1.36), a counter tagged `operation` alone: one for every call that took longer than the
+  operation's declared `budget.p95`. An operation with no budget never counts. A target for review, never a failure.
 
-Both go through Effect's `Metric` to OpenTelemetry, into the `<project>-<env>-metrics` dataset O1 reserved. Locally
-they go through the Collector, which gains a metrics pipeline.
+Both go through Effect's `Metric` to OpenTelemetry, into the `<project>-<env>-metrics` dataset O1 reserved. The local
+Collector writes `metrics.jsonl`.
 
 **Proved by** a world test that sends one bad payload and one stranger, then reads `ortho.calls` from the Collector:
 two refusals and no spans.
@@ -265,9 +278,9 @@ Mark text traced only when it is a code you search by. If a person typed it, lea
 
 | | `Telemetry.sink.local()` | `Telemetry.sink.axiom({ group })` |
 |---|---|---|
-| Needs | Docker for the viewer; nothing for the files | a token, read from the keychain or CI, never written in the blueprint |
+| Needs | the pinned Collector binary, fetched once; no credential | a token, read from the keychain or CI, never written in the blueprint |
 | Use it for | worlds, `prove`, `ortho dev` | staging and production |
-| Read with | `ortho telemetry trace`, the local viewer | Axiom's trace view; `ortho watch` |
+| Read with | `ortho telemetry trace` | Axiom's trace view; `ortho watch` |
 
 ## What it is not
 
@@ -283,17 +296,17 @@ Mark text traced only when it is a code you search by. If a person typed it, lea
 
 | What | Where | |
 |---|---|---|
-| The operation's span, opened after the role check | `packages/language-effect/src/modules/handler/service.ts:83` | built |
-| One span per step | `packages/language-effect/src/modules/handler/service.ts:34` | built |
-| Refusal and defect written on the span | `packages/language-effect/src/modules/handler/service.ts:77` | built |
-| Refusals end OK, defects in error | `packages/language-effect/src/modules/handler/internal/span.ts:10` | built |
-| The public-only allowlist | `packages/language-effect/src/modules/handler/internal/attributes.ts:10` | built |
+| The operation's span, opened after the role check | `packages/language-effect/src/modules/handler/service.ts:94` | built |
+| One span per step | `packages/language-effect/src/modules/handler/service.ts:40` | built |
+| Refusal and defect written on the span | `packages/language-effect/src/modules/handler/service.ts:87` | built |
+| Refusals never end as errors, defects do | `packages/language-effect/src/modules/handler/internal/span.ts:10` | built |
+| The attribute allowlist | `packages/language-effect/src/modules/handler/internal/attributes.ts:8` | built |
 | `spans({ present, absent })` in journeys | `packages/orthograph/src/modules/journeys/types.ts:119` | built |
 | Sinks | `packages/orthograph/src/modules/telemetry/types.ts:23` | built |
-| `ortho telemetry trace` | `packages/cli/src/modules/telemetry/types.ts:23` | built |
-| The commit span and `attempt` | `packages/language-effect/src/modules/handler/service.ts:71` | planned, M1.18 |
-| `Blueprint.traced` | `packages/orthograph/src/modules/visibility/` | planned, M1.19 |
-| `ortho.calls`, `ortho.call.duration` | `packages/language-effect/src/modules/handler/` | planned, M1.20 |
+| `ortho telemetry trace` | `packages/cli/src/modules/telemetry/types.ts:17` | built |
+| The commit span and `attempt` | `packages/language-effect/src/modules/handler/service.ts:78` | built, M1.18 |
+| `Blueprint.traced` | `packages/orthograph/src/modules/visibility/` | built, M1.19 |
+| `ortho.calls`, `ortho.call.duration` | `packages/language-effect/src/modules/handler/internal/call-metrics.ts` | built, M1.20 |
 
 ## Status
 
@@ -302,18 +315,18 @@ Mark text traced only when it is a code you search by. If a person typed it, lea
 | Part | Status | Slice | Proved by |
 |---|---|---|---|
 | Operation and step spans, made from the declaration | proved | layer 2 | the `spans(…)` assertions in acme's journeys |
-| Refusals end OK, defects in error | proved | layer 2 | `packages/language-effect/src/modules/handler/handler.test.ts:169` |
+| Refusals never end as errors, defects do | proved | layer 2 | `packages/language-effect/src/modules/handler/handler.test.ts:169` |
 | Public fields only | proved | layer 2 | `packages/language-effect/src/modules/handler/internal/attributes.test.ts` |
 | Local and Axiom sinks, `ortho telemetry trace` | proved | layer 2 | `packages/prove/src/modules/sinks/sinks.test.ts`, `packages/cli/src/modules/telemetry/telemetry.test.ts` |
-| The commit span and `attempt` | specified | M1.18 | a forced conflict shows both spans and both attributes |
-| Free text untraced unless marked | specified | M1.19 | `payload.memo` absent from `spend`'s span |
-| Every call counted | specified | M1.20 | a bad payload and a stranger: two refusals, no spans |
+| The commit span and `attempt` | proved | M1.18 | a forced conflict shows both spans and both attributes |
+| Free text untraced unless marked | proved | M1.19 | `payload.memo` absent from `spend`'s span |
+| Every call counted | proved | M1.20 | a bad payload and a stranger: two refusals, no spans |
 
 ## Notes
 
 <Note kind="decision" decision="O1">
-  The core speaks only OpenTelemetry. A sink is a destination named in the environment; Axiom, PostHog and the local
-  viewer are sinks, never code in the core.
+  The core speaks only OpenTelemetry. A sink is a destination named in the environment; Axiom and PostHog are sinks,
+  never code in the core.
 </Note>
 
 <Note kind="decision" decision="O2">
@@ -329,11 +342,6 @@ Mark text traced only when it is a code you search by. If a person typed it, lea
 <Note kind="question" id="traced-text-in-events" slice="M1.19">
   Untraced text is still kept in events, and views are built from events. Does a view that a projection renders (the
   portal, MCP) need the same rule, or is that the visibility of the view's own fields?
-</Note>
-
-<Note kind="status" slice="M1.18">
-  Today the commit shows only as D1's own `BATCH` span, and a version race shows as two operation spans with nothing
-  saying why.
 </Note>
 
 <Note kind="question" id="answers-are-not-redacted">

@@ -81,3 +81,46 @@ acceptable, the fallback (decision 5) replaces `portal-ui`'s insides and nothing
 M1.34 (new, ∥, before M1.13): the package, its exports, the lint rule and the CI install. M1.13's pages, M1.24's
 shell and chat parts, M3.17's board and M4.23's Factory face import only from it. A face's sandboxed frame (F8) loads
 `portal-ui` and Pro from the deployed portal's own build, so no face bundles Pro either.
+
+## Built (M1.34, 19 November 2026)
+
+The builder's calls, where the decision left the shape open.
+
+1. **A plain install holds no Pro code, and every job but one runs without it.** `portal-ui` lists Pro as a peer
+   dependency (`>=1.0.0-beta.11 <2.0.0`) and as an exact dev dependency (`1.0.0-beta.11`), so the lockfile pins it. The
+   registry package is an empty shell whose `postinstall` downloads the licensed build with `HEROUI_AUTH_TOKEN` or a
+   login; `pnpm-workspace.yaml` sets its `allowBuilds` to `false`, so no install anywhere runs it (nothing reads a
+   keyring or a token by surprise). The shell has no `types` and no `exports`.
+2. **What needs Pro is gated, not faked.** `nx build portal-ui` works on the shell: the sources are only
+   `export { A as B } from "<Pro subpath>"` lines, and the build (`tsc`, `isolatedDeclarations`, `noCheck`) emits their
+   declarations from the syntax without reading Pro. `nx typecheck portal-ui` is the one target that needs the real
+   build: `tools/pro.mjs ... gate` runs `tsc` where the real build is installed, prints that it skipped where it is not,
+   and fails when `ORTHO_REQUIRE_PRO=1` (the CI job). It is uncached, so a skip is never replayed on a licensed machine.
+   Types for Pro were not declared locally: a local `declare module` would hide every rename Pro makes. Typechecking
+   against the real build (a local login install, 1.0.0-beta.11) found Pro's root export lacks most components
+   (`KPI`, the charts, `CodeBlock`, `Markdown`, `RichTextEditor`, `ChatTool`, and more), so every part is imported from its
+   own subpath, as the spikes do, and `moduleResolution: "bundler"` is set for this package (Pro's declarations use
+   extensionless imports, which `nodenext` refuses).
+3. **The CI job is `portal-ui` in `.github/workflows/ci.yml`.** Its `if` is false for a fork's `pull_request` and true for
+   a push and a same-repository pull request. The secret is in the `env` of one step only. A cache (`actions/cache`, key
+   `heroui-pro-<os>-<hash of pnpm-lock.yaml>`, path `.cache/heroui-pro`) is restored before `pnpm install`; on a miss the
+   job runs Pro's own installer through `tools/pro.mjs ... fetch` (which first copies the package out of pnpm's store, so
+   the download never reaches it) and saves the licensed build to the cache folder; on a hit it copies it back. It then
+   lints, typechecks, tests and builds `portal-ui` against the real Pro, lists what `npm pack` would publish, and runs check
+   15. The other M1 jobs install the shell and skip nothing silently: the typecheck prints that it skipped.
+4. **The lint rule holds in generated code and is off under spikes by override, not by ignore.** `no-restricted-imports`
+   (patterns `@heroui-pro/*` and `@heroui-pro/**`, message naming `@orthograph/portal-ui`) is an error everywhere, and off
+   in `packages/portal-ui/**` and `spikes/**`. To make it reach `generated/`, `**/generated/**` left `ignorePatterns` and
+   became an override that turns the three ortho and Nx rules and the two rules generated code trips (`no-useless-spread`,
+   `no-unused-vars`) off, so a generated file is judged by this rule alone, as it was by none before. `spikes/**` left
+   `ignorePatterns` the same way, because oxlint exits 1 on a file it ignores and check 15 expects a planted spike file to
+   pass; no Nx project lints a spike, so nothing else changes. Nx's module boundaries give `scope:portal-ui` no workspace
+   dependency and only the Pro subpaths as external imports.
+5. **Check 15's dist half cannot pass with a valid manifest** (reported to the lead): `proInside` flags the peer
+   dependency's own name in the packed `package.json` as "a mention that is not an import". The CI job runs check 15 as a
+   report-only step until the author fixes it. *Fixed by the author before the merge (`m1-author-15b`, 2e3ee8f6): a
+   name under `peerDependencies` or `devDependencies` is no Pro code. The lead removed the report-only flag in the same
+   merge, so check 15 blocks the `portal-ui` job.*
+6. **The package's licence is MIT** for its own files (nothing in the repository chose one; reversible), with a line that
+   Pro is not covered. *The lead holds this open for Aaron: the repository has no licence, and the npm preview after Gate
+   M1 needs his choice for every package that publishes, not only this one.*

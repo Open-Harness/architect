@@ -1,0 +1,17 @@
+{
+  "name": "@orthograph/services",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "effect": "4.1.4",
+    "jose": "6.2.15",
+    "verdaccio": "6.11.1"
+  },
+  "imports": {
+    "#modules/*.js": "./src/modules/*.ts"
+  }
+}

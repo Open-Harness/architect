@@ -71,23 +71,36 @@ Three kinds of line carry the declaration: the declared steps (`steps.load`, `st
 
 The frame is one type, made from the operation:
 
-```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=29-30
+```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=65-66
 /** What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out. */
-export type Handler<O, R = never> = (payload: PayloadOf<O>, context: HandlerContext<O>) => Effect.Effect<AnswerOf<O>, ErrorOf<O>, R>;
+export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O>, R>;
 ```
 
 - **The payload**, already decoded against the declaration. `people` is a `bigint` here, never a string.
-- **The context**: the caller as a `principal`, one runner per declared step, and `move`:
+- **The context**: the caller as a `principal`, one runner per declared step, `move`, and what the runtime read or
+  made before the handler ran (K16): the `subject`, each thing the payload names in `refs`, and a creating move's `id`:
 
-  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=17-25
-  export interface HandlerContext<O> {
+  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=25-45
+  export interface HandlerContext<O, C = {}> {
     readonly principal: Principal;
-    readonly steps: StepRunners<StepsOf<O>>;
+    readonly steps: StepRunners<StepsOf<O>, C>;
     /**
      * Make the operation's move, ending in `to` (or its only outcome). Applied once the handler answers: the instance's
      * state is set and the move's event journalled. A handler that never calls it makes no move and emits nothing.
      */
     readonly move: (to?: MoveTo<O>) => Effect.Effect<void>;
+    /**
+     * The instance this call is about, read before the handler ran (the from-check and the commit's version guard read the
+     * same one), so a handler never reads it again. Undefined when the payload names none, and for a creating move.
+     */
+    readonly subject: InstanceOf<ThingOf<O>> | undefined;
+    /**
+     * Each thing a payload field names by its id, read before the handler ran and keyed by that field (`refs.member`). A
+     * missing one never reaches the handler: it is refused `<Thing>NotFound`, or `NotAllowed` when a role check reads it.
+     */
+    readonly refs: { readonly [K in RefKeys<O>]?: Instance };
+    /** A creating move's new id, minted before the handler ran: answer with it (`allowance: id`). Undefined otherwise. */
+    readonly id: CreatedId<O>;
   }
   ```
 
@@ -98,7 +111,7 @@ refuses a handler that fails with an error its operation doesn't list
 (`packages/generators/src/modules/render/handler-type.test.ts:40`). At run time, an answer outside its declaration
 is never sent. It dies as the handler's bug:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=63-67
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=122-126
 // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
 const wire = yield* check(answer).pipe(
   Effect.mapError((e) => new Error(`${name} answered outside its declaration: ${e.message}`)),
@@ -144,7 +157,7 @@ Three habits the frame can't enforce, which `ortho brief` asks for:
 
 `ortho generate` writes two kinds of file, and their first line says which:
 
-```ts file=packages/generators/src/modules/render/internal/names.ts name=GENERATED,scaffolded lines=3-4
+```ts file=packages/projections/src/modules/names/internal/names.ts name=GENERATED,scaffolded lines=3-4
 export const GENERATED = "// Generated from the blueprint. Do not edit.";
 export const scaffolded = (from: string) => `// Scaffolded from ${from}. Yours from now on.`;
 ```
@@ -158,7 +171,7 @@ export const scaffolded = (from: string) => `// Scaffolded from ${from}. Yours f
 
 A scaffold is never overwritten, because the sync skips any scaffold that already exists:
 
-```ts file=packages/generators/src/modules/sync/service.ts name=Sync lines=15-19
+```ts file=packages/generators/src/modules/sync/service.ts name=Sync lines=21-25
 for (const f of files) {
   const path = `${root}/${f.path}`;
   if (f.scaffold && tree.exists(path)) continue;
@@ -171,24 +184,25 @@ That is the point: the compiler tells you what to change, and nothing you wrote 
 
 ### What the scaffold writes for you
 
-**Today** the scaffold is one blank with the declaration repeated as comments:
+**The wired scaffold** (K5; built in M1.26, and since K16 and M1.44 a scaffold that explains itself) writes a real
+function, already wired, under a header that cites each part's blueprint file and draws the machine with this call's
+rows marked. The body is sections in order: each declared step, with the declared refusals placed before the first step
+that writes; the move, one `Match.when` per outcome when there is more than one; and the answer. Every hole is a
+`Handlers.blank`, so the file compiles. This is the part of the generator that orders the body:
 
-```ts file=packages/generators/src/modules/render/internal/scaffold.ts name=renderHandlerScaffold lines=24-29
-`/** ${op.description} */`,
-`const ${camel(op.verb)}: Handler = (_payload, _context) =>`,
-"  Effect.gen(function* () {",
-said.map((s) => `    // ${s}`),
-`    return yield* Handlers.blank("this handler is not written yet");`,
-"  });",
+```ts file=packages/projections/src/modules/handlers/internal/body.ts name=body lines=78-86
+/** The body's sections in order, each a list of lines; the scaffold puts an empty line between them. */
+export const body = (model: Model, op: OperationModel, minted: string | undefined): ReadonlyArray<ReadonlyArray<string>> => {
+  const keys = Object.keys(op.steps);
+  const writing = keys.findIndex((k) => (op.steps[k]!.writes?.length ?? 0) > 0);
+  const at = writing >= 0 ? writing : keys.length > 0 ? keys.length - 1 : keys.length;
+  const steps = keys.map((k) => stepBlock(model, op, k));
+  return [...steps.slice(0, at), ...refusalBlocks(model, op), ...steps.slice(at), moveBlock(model, op), answerBlock(model, op, minted)]
+    .filter((s) => s.length > 0);
+};
 ```
 
-For `join` the comments say `Payload: sheet, people.`, `Answer: left.`, `Steps, each its own span: steps.load(...),
-steps.record(...).` and `May refuse with SheetFull.` (`scaffold.ts:9-14`). They give no order, no move and no
-refusal in place.
-
-**The wired scaffold** (K5, decided; built in M1.26) writes a real function, already wired: each declared step in
-declared order, the move when one is declared, and a stub for each declared refusal. Every hole is a
-`Handlers.blank`, so the file compiles. For signup's `join` it will write:
+For signup's `join` it writes:
 
 ```ts planned=M1.26 path=src/sheet/join.ts
 // Scaffolded from blueprint/things/sheet/verbs/join.ts. Yours from now on.
@@ -237,10 +251,10 @@ roles a `roles.ts` exports (F5). Signup has no blank left, so this example is wo
 **A blank in a handler** is `Handlers.blank("…")`, what every fresh scaffold holds. It type-checks as anything, and
 reaching it at run time is a defect that names what is missing:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=113-116
+```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=193-196
 export const Handlers: HandlerApi = {
   serve: serve as unknown as HandlerApi["serve"],
-  blank: (what) => Effect.die(new BlankReached({ what })),
+  blank: ((what: string, kind?: "failure") => (kind === "failure" ? () => new BlankReached({ what }) : Effect.die(new BlankReached({ what })))) as unknown as HandlerApi["blank"],
 };
 ```
 
@@ -270,7 +284,7 @@ A declared step the handler never calls compiles: the frame's type can't tell. T
 Whoever the brief names. `ortho brief <thing>.<verb>` prints everything needed to write one handler: the files to
 read, the one file to write, the files never to touch, and the checks that must pass:
 
-```ts file=packages/cli/src/modules/brief/service.ts name=forbidden lines=3-5
+```ts file=packages/cli/src/modules/brief/service.ts name=forbidden lines=4-6
 const forbidden = [
   "blueprint/**", "blueprint/journeys/**", "blueprint/starting-worlds/**", "journeys/**", "generated/**", "test/**",
 ] as const;
@@ -321,12 +335,12 @@ would be committed for a call that changed nothing (see `operations`).
 | The frame: `Handler` and `HandlerContext` | `packages/language-effect/src/modules/handler/types.ts:30` | built |
 | The wrapper that runs a handler | `packages/language-effect/src/modules/handler/service.ts:41` | built |
 | `Handlers.blank` and `BlankReached` | `packages/language-effect/src/modules/handler/service.ts:115` | built |
-| The scaffold, comments only today | `packages/generators/src/modules/render/internal/scaffold.ts:7` | built |
+| The scaffold, comments only today | `packages/projections/src/modules/handlers/internal/scaffold.ts:7` | built |
 | Scaffolds never overwritten | `packages/generators/src/modules/sync/service.ts:17` | built |
 | `Blueprint.todo` | `packages/orthograph/src/modules/blanks/service.ts:4` | built |
 | `ortho check` naming blanks | `packages/cli/src/modules/check/internal/blanks.ts:7` | built |
 | `ortho brief` | `packages/cli/src/modules/brief/service.ts:10` | built |
-| The wired scaffold, and the unused-step warning | `packages/generators/src/modules/render/internal/scaffold.ts` and `packages/cli/src/modules/check/` | planned, M1.26 |
+| The wired scaffold, and the unused-step warning | `packages/projections/src/modules/handlers/internal/scaffold.ts` and `packages/cli/src/modules/check/` | planned, M1.26 |
 | `ortho prove --empty` | `packages/prove/src/` | planned, M1.16 |
 | Blanks in the model | `packages/compiler/src/modules/model/internal/describe.ts:45` | planned, M1.03 |
 
@@ -382,7 +396,7 @@ would be committed for a call that changed nothing (see `operations`).
 
 <Note kind="question" id="raw-sql-in-a-handler" slice="M1.17">
   The frame offers `SqlClient` beside `Records`: the generated `Handler` type allows `Records | SqlClient.SqlClient | Auth`
-  (`packages/generators/src/modules/render/internal/api.ts:97`), signup's `join` included. A handler that writes
+  (`packages/projections/src/modules/api/internal/api.ts:97`), signup's `join` included. A handler that writes
   through `SqlClient` writes outside the commit, so its write isn't all-or-nothing with the move and its event, and
   won't work for a thing in another kind of store. Should the frame offer `Records` only, with raw SQL as a declared
   step kind? Ledger: HAN-01, high.

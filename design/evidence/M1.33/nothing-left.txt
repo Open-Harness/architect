@@ -1,0 +1,6 @@
+$ bash -c echo "run folder of the unit-test run (ORTHO_RUN_DIR): $(ls -A /tmp/ortho-m133-runs/final2 | wc -l | tr -d " ") markers left"; echo "processes of ours (otelcol-contrib, verdaccio, services/src/main.ts) still running: $(pgrep -f "otelcol-contrib|verdaccio|packages/services/src/main.ts" | wc -l | tr -d " ")"; echo "the gates assert the same at their end through their teardowns (layer1.txt, layer2.txt end green)"
+# commit 2cbb81aa · 2026-11-19T08:46:45Z · exit 0 (expected 0) · 0.1s
+
+run folder of the unit-test run (ORTHO_RUN_DIR): 0 markers left
+processes of ours (otelcol-contrib, verdaccio, services/src/main.ts) still running: 0
+the gates assert the same at their end through their teardowns (layer1.txt, layer2.txt end green)

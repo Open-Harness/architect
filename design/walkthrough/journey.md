@@ -1442,7 +1442,7 @@ harness can.
 }
 ```
 
-The cloud pass for staging is M7.01 (the dedicated `orthograph-staging` account, a cost estimate, and Aaron's
+The cloud pass for staging is M7.01 (the Cloudflare account Aaron uses for every environment for now, every resource prefixed, a cost estimate, and Aaron's
 written yes per credential), then M7.03 and M7.04 (the infra projection, deploy and destroy). They can start after
 Gate M2. Publishing the app's SDK and CLI for real (npm, Homebrew, GitHub) is M7.06; Orthograph's own first npm
 release is M7.02. Nothing in this walkthrough touched a cloud.
@@ -1599,9 +1599,9 @@ nothing"). K17 names this a gap "to close or to state openly".
 
 ### What a plugin is
 
-A **plugin** is a package you mount with one file. There are three kinds: a **feature** (things and operations,
+A **plugin** is a package you mount with one file. Three kinds work today: a **feature** (things and operations,
 like wallets), an **adapter** (someone else's service, called as a step), and a **projection** (an output, like the
-SDK). 🟢 **Works today**: `ortho add feature|adapter|projection` writes the mount and pins the version (M1.10, as you
+SDK). K27 adds a **language** and a **host**, below. 🟢 **Works today**: `ortho add feature|adapter|projection` writes the mount and pins the version (M1.10, as you
 saw with wallets). Mounts can choose, include, narrow and omit (M1.07).
 
 ### Auth as a plugin
@@ -1703,25 +1703,18 @@ error ProposalNotOpen(State state);     // PR-900 (Absent = "never opened")
 error NotAllowed();                     // AR-001
 ```
 
-### What K17 proposes
+### What K27 decided
 
-🔵 **Decided, not yet built** (K17, decided 1A 2A 3A 4A on 19 November 2026). A **target** is a place plus a language,
-and becomes a plugin: one interface. `language-effect` implements it twice, as `effect-server` and `effect-device`;
-`language-solidity` is next.
+🔵 **Decided, not yet built** (K27, 20 November 2026, replacing K17's "target"). Four questions, four words: what code
+is written in is its **language**; where it runs once deployed is its **host**; which copy of that place is the
+**environment**; how people reach it is a **projection**. The first, second and fourth are plugin kinds.
+`language-effect` is the first language, served by `host-cloudflare` and `Host.node`; `language-solidity` on
+`Host.chain` is next. A host supplies the store kinds of its place; a language writes for them.
 
 ```ts
-// packages/orthograph (proposed): what every target implements
-export interface TargetSpec {
-  readonly name: string;                                  // "effect", "solidity", "noir", "anchor"
-  readonly hosts: ReadonlyArray<Host>;                    // worker | node | browser | world | chain:evm | chain:aztec | chain:solana
-  readonly takes: (op: OperationModel) => boolean;        // runs: "server" → effect-server; runs: "client" → effect-device; an evm store → solidity
-  readonly frame: (op: OperationModel) => Output[];       // generated, "Do not edit": the wrapper that runs the guards
-  readonly scaffold: (op: OperationModel) => Output[];    // "Yours from now on": K16's header and blanks, in its language
-  readonly guards: Record<Guard, "enforced" | "pre-checked" | "not-applicable">;   // see the guard table
-  readonly wire: "http" | "device" | "chain";            // how the one SDK reaches it
-  readonly refusal: (code: RefusalCode) => WireIdentity; // K7's refusals.lock: a code becomes a selector, a number, an assert text
-  readonly surface?: (model: Model) => Output;           // chain targets: generated/<language>/surface.json (K7:155-161)
-}
+// packages/orthograph (proposed, K27)
+Blueprint.language({ frame, scaffold, surface, refusal, guards, writesFor });   // what code is written in
+Blueprint.host({ supplies, wire, deploy });   // where it runs, how it's reached and deployed
 ```
 
 For Plugged In, the handle could one day live on a chain: a contract with a `claim` function, its role check as a
@@ -1729,14 +1722,14 @@ generated modifier, its machine compiled into the contract, `HandleClaimed` as a
 `PluggedIn.handle.claim` calling it. The SDK, CLI, MCP, docs and portal come from the model, never from the
 contract's ABI.
 
-Each operation is taken by exactly one target, and the SDK reaches it on that target's wire, so a device operation
-still calls `Device.serve` and never goes over HTTP. The four questions are decided: one grid per target (Q1), the
-interface now in M1 (Q2), a private field on a public chain refused (Q3), and chains and adapters declared in the
+Each operation is taken by exactly one language on one host, and the SDK reaches it on that host's wire, so a device operation
+still calls `Device.serve` and never goes over HTTP. The four questions are decided: one grid per language (Q1), the
+language and host seam first (Q2, reshaped by K27), a private field on a public chain refused (Q3), and chains and adapters declared in the
 environment file (Q4).
 
 ### When
 
-The Solidity target is M6 (M6.01 starts from K7). Stage 3 (the vault) needs the budgets module generated by
+The Solidity language is M6 (M6.01 starts from K7). Stage 3 (the vault) needs the budgets module generated by
 `language-solidity` (ST3.05). Stage 4 (the club) brings Noir on Aztec (ST4.01 to ST4.08). Solana is later.
 
 ---
@@ -1785,7 +1778,7 @@ The Solidity target is M6 (M6.01 starts from K7). Stage 3 (the vault) needs the 
 | 10 | the web pieces and three screens | 🔵 ST1.25, ST1.04, ST1.06 |
 | 10 | `ortho new feature` | 🔵 M2.10 |
 | 10 | workflows | 🔵 M3.01 to M3.03 |
-| 11 | Solidity and the target interface | 🔵 K7, K17 (not decided), M6 |
+| 11 | Solidity, a language on `Host.chain` | 🔵 K7, K17, K27, M6 |
 
 ## How this was made
 

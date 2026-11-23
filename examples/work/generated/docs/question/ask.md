@@ -39,6 +39,7 @@ Ask the mission's owner about one gap in the blueprint, with lettered answers.
 |---|---|---|---|
 | MissionNotInIntake | 53 | MS-003 | the question is in a state ask can't start from; carries `state` |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |
+| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
 ## How to call
 

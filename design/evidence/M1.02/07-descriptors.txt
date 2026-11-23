@@ -1,0 +1,301 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/07-descriptors
+# commit b39b30d · 2026-11-18T20:21:06Z · exit 1 (expected 1) · 1.7s
+
+
+ RUN  v4.1.12 ./e2e
+
+ × m1/07-descriptors.test.ts > 07 descriptors: what a plugin author writes compiles > a feature, an adapter and a projection descriptor, and the mounts of them, type-check 668ms
+   → ../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(6,34): error TS2339: Property 'adapter' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(10,22): error TS2339: Property 'call' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(11,24): error TS2339: Property 'call' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(15,32): error TS2339: Property 'use' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(15,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(2,21): error TS2305: Module '"orthograph"' has no exported member 'Via'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(4,25): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(5,34): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(7,31): error TS2339: Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(9,24): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(10,32): error TS2339: Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(10,117): error TS2339: Property 'need' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(16,32): error TS2339: Property 'use' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(16,43): error TS7006: Parameter 'p' implicitly has an 'any' type.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/projection-ok.ts(3,21): error TS2305: Module '"orthograph"' has no exported member 'Via'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/projection-ok.ts(5,31): error TS2339: Property 'projection' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+: expected [ …(16) ] to deeply equal []
+ ✓ m1/07-descriptors.test.ts > 07 descriptors: what is wrong does not compile > has a negative case for each: a wrong field, a missing description, another choice's option, a wrong render 2ms
+ × m1/07-descriptors.test.ts > 07 descriptors: what is wrong does not compile > with each directive in place, the cases compile clean (no unused directive, nothing else wrong) 126ms
+   → ../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-masked/feature-other-choice.ts(3,24): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-masked/feature-other-choice.ts(4,26): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-masked/feature-other-choice.ts(5,32): error TS2339: Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-masked/feature-other-choice.ts(6,33): error TS2339: Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+: expected [ { …(4) }, { …(4) }, { …(4) }, …(1) ] to deeply equal []
+ × m1/07-descriptors.test.ts > 07 descriptors: what is wrong does not compile > with each directive removed, tsc reports an error on the line it covered, in its own file 126ms
+   → expected [ { …(4) }, { …(4) }, { …(4) }, …(7) ] to deeply equal []
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/07-descriptors.test.ts > 07 descriptors: what a plugin author writes compiles > a feature, an adapter and a projection descriptor, and the mounts of them, type-check
+AssertionError: ../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(6,34): error TS2339: Property 'adapter' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(10,22): error TS2339: Property 'call' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(11,24): error TS2339: Property 'call' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(15,32): error TS2339: Property 'use' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/adapter-ok.ts(15,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(2,21): error TS2305: Module '"orthograph"' has no exported member 'Via'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(4,25): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(5,34): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(7,31): error TS2339: Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(9,24): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(10,32): error TS2339: Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(10,117): error TS2339: Property 'need' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(16,32): error TS2339: Property 'use' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/feature-ok.ts(16,43): error TS7006: Parameter 'p' implicitly has an 'any' type.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/projection-ok.ts(3,21): error TS2305: Module '"orthograph"' has no exported member 'Via'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-ok/projection-ok.ts(5,31): error TS2339: Property 'projection' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+: expected [ …(16) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "code": "TS2339",
++     "file": "adapter-ok.ts",
++     "line": 6,
++     "message": "Property 'adapter' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "adapter-ok.ts",
++     "line": 10,
++     "message": "Property 'call' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "adapter-ok.ts",
++     "line": 11,
++     "message": "Property 'call' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "adapter-ok.ts",
++     "line": 15,
++     "message": "Property 'use' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS7006",
++     "file": "adapter-ok.ts",
++     "line": 15,
++     "message": "Parameter 'p' implicitly has an 'any' type.",
++   },
++   {
++     "code": "TS2305",
++     "file": "feature-ok.ts",
++     "line": 2,
++     "message": "Module '\"orthograph\"' has no exported member 'Via'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-ok.ts",
++     "line": 4,
++     "message": "Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-ok.ts",
++     "line": 5,
++     "message": "Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-ok.ts",
++     "line": 7,
++     "message": "Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-ok.ts",
++     "line": 9,
++     "message": "Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-ok.ts",
++     "line": 10,
++     "message": "Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-ok.ts",
++     "line": 10,
++     "message": "Property 'need' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-ok.ts",
++     "line": 16,
++     "message": "Property 'use' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS7006",
++     "file": "feature-ok.ts",
++     "line": 16,
++     "message": "Parameter 'p' implicitly has an 'any' type.",
++   },
++   {
++     "code": "TS2305",
++     "file": "projection-ok.ts",
++     "line": 3,
++     "message": "Module '\"orthograph\"' has no exported member 'Via'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "projection-ok.ts",
++     "line": 5,
++     "message": "Property 'projection' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++ ]
+
+ ❯ m1/07-descriptors.test.ts:43:39
+     41|     for (const name of positives) cpSync(join(source, name), join(copy…
+     42|     const result = tsc("descriptors-ok", positives);
+     43|     expect(result.errors, result.out).toEqual([]);
+       |                                       ^
+     44|     expect(result.status, result.out).toBe(0);
+     45|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  m1/07-descriptors.test.ts > 07 descriptors: what is wrong does not compile > with each directive in place, the cases compile clean (no unused directive, nothing else wrong)
+AssertionError: ../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-masked/feature-other-choice.ts(3,24): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-masked/feature-other-choice.ts(4,26): error TS2339: Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-masked/feature-other-choice.ts(5,32): error TS2339: Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+../../../../../../../..<tmp>/ortho-gate1-X3UyAs/acme/.ortho/descriptors-masked/feature-other-choice.ts(6,33): error TS2339: Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.
+: expected [ { …(4) }, { …(4) }, { …(4) }, …(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 3,
++     "message": "Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 4,
++     "message": "Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 5,
++     "message": "Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 6,
++     "message": "Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++ ]
+
+ ❯ m1/07-descriptors.test.ts:57:39
+     55|     for (const name of negatives) put("descriptors-masked", name, read…
+     56|     const result = tsc("descriptors-masked", negatives);
+     57|     expect(result.errors, result.out).toEqual([]);
+       |                                       ^
+     58|     expect(result.status, result.out).toBe(0);
+     59|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  m1/07-descriptors.test.ts > 07 descriptors: what is wrong does not compile > with each directive removed, tsc reports an error on the line it covered, in its own file
+AssertionError: expected [ { …(4) }, { …(4) }, { …(4) }, …(7) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "code": "TS2339",
++     "file": "adapter-wrong-mode.ts",
++     "line": 3,
++     "message": "Property 'call' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-missing-description.ts",
++     "line": 3,
++     "message": "Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 3,
++     "message": "Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 4,
++     "message": "Property 'choice' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 5,
++     "message": "Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 6,
++     "message": "Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-other-choice.ts",
++     "line": 8,
++     "message": "Property 'use' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "feature-wrong-field.ts",
++     "line": 3,
++     "message": "Property 'feature' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "projection-wrong-field.ts",
++     "line": 4,
++     "message": "Property 'projection' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++   {
++     "code": "TS2339",
++     "file": "projection-wrong-render.ts",
++     "line": 3,
++     "message": "Property 'projection' does not exist on type 'Readonly<{ secret: { readonly generated: () => Secret; readonly stored: () => Secret; }; environment: (spec: EnvironmentSpec) => Environment; role: <T extends Thing>(thing: T, spec: { ...; }) => Role<...>; ... 19 more ...; todo: <T = never>(what: string) => T; }>'.",
++   },
++ ]
+
+ ❯ m1/07-descriptors.test.ts:78:141
+     76|     }
+     77|     // Never because of a name that does not exist: the surface must b…
+     78|     expect(result.errors.filter((error) => /Property '(?:feature|adapt…
+       |                                                                                                                                             ^
+     79|   });
+     80| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  20:21:05
+   Duration  1.15s (transform 33ms, setup 0ms, import 90ms, tests 947ms, environment 0ms)

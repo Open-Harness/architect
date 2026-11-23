@@ -84,6 +84,15 @@ export const project = () => {
 export const install = (root: string, fixture: string, to: string) =>
   cpSync(join(acme, "test/fixtures/layer2", fixture), join(root, to));
 
+/** Declare `allowance.spend`'s p95 budget in the copy's blueprint, in milliseconds: the one line `budget: { p95: "<n> millis" }` changes. */
+export const declareSpendBudget = (root: string, millis: number) => {
+  const file = join(root, "blueprint/things/allowance/verbs/spend.ts");
+  const text = readFileSync(file, "utf8");
+  const declared = text.replace(/p95: "\d+ millis"/, `p95: "${millis} millis"`);
+  expect(declared, "spend.ts declares a p95 budget in millis").not.toBe(text);
+  writeFileSync(file, declared);
+};
+
 /** Every operation and read in the project's compiled model, by name (`allowance.spend`). */
 export const operations = (root: string): ReadonlyArray<string> =>
   Object.keys((JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8")) as { operations: Record<string, unknown> }).operations);

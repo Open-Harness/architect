@@ -1,0 +1,241 @@
+$ pnpm nx run-many -t lint,typecheck --outputStyle=static
+# commit 7bcc81b0 · 2026-11-19T07:46:39Z · exit 0 (expected 0) · 10.6s
+
+
+ NX   Running targets lint, typecheck for 19 projects:
+
+- language-solidity
+- host-cloudflare
+- language-effect
+- generators
+- orthograph
+- chain-evm
+- compiler
+- logbook
+- starter
+- wallets
+- portal
+- preset
+- signup
+- prove
+- acme
+- lint
+- work
+- cli
+- e2e
+
+
+
+> nx run orthograph:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/orthograph
+
+
+> nx run orthograph:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/orthograph/tsconfig.json
+
+
+> nx run language-effect:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/language-effect
+
+packages/language-effect/src/modules/handler/internal/decided.ts:26:9: warning unicorn(no-useless-length-check): Found a useless array length check help: The non-empty check is useless as `Array#some()` returns `false` for an empty array.
+
+> nx run logbook:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/logbook
+
+packages/logbook/src/modules/local/local.test.ts:85:156: warning unicorn(no-invalid-fetch-options): "body" is not allowed when method is "GET"
+
+> nx run language-effect:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/language-effect/tsconfig.json
+
+
+> nx run logbook:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/logbook/tsconfig.json
+
+
+> nx run portal:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/portal
+
+
+> nx run portal:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/portal/tsconfig.json
+
+
+> nx run compiler:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/compiler
+
+
+> nx run compiler:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/compiler/tsconfig.json
+
+
+> nx run generators:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/generators
+
+
+> nx run chain-evm:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/chain-evm/tsconfig.json
+
+
+> nx run chain-evm:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/chain-evm
+
+
+> nx run host-cloudflare:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/host-cloudflare
+
+
+> nx run host-cloudflare:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/host-cloudflare/tsconfig.json
+
+
+> nx run generators:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/generators/tsconfig.json
+
+
+> nx run signup:lint  [existing outputs match the cache, left as is]
+
+> oxlint examples/signup
+
+
+> nx run lint:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/lint
+
+
+> nx run signup:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p examples/signup/tsconfig.json
+
+
+> nx run lint:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/lint/tsconfig.json
+
+
+> nx run cli:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/cli
+
+
+> nx run work:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p examples/work/tsconfig.json
+
+
+> nx run acme:lint  [existing outputs match the cache, left as is]
+
+> oxlint examples/acme
+
+
+> nx run starter:lint  [existing outputs match the cache, left as is]
+
+> oxlint examples/starter
+
+
+> nx run acme:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p examples/acme/tsconfig.json
+
+
+> nx run work:lint  [existing outputs match the cache, left as is]
+
+> oxlint examples/work
+
+
+> nx run preset:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/preset
+
+
+> nx run language-solidity:lint  [existing outputs match the cache, left as is]
+
+> oxlint packages/language-solidity
+
+
+> nx run cli:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/cli/tsconfig.json
+
+
+> nx run starter:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p examples/starter/tsconfig.json
+
+
+> nx run preset:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/preset/tsconfig.json
+
+
+> nx run language-solidity:typecheck  [existing outputs match the cache, left as is]
+
+> tsc -p packages/language-solidity/tsconfig.json
+
+
+> nx run prove:typecheck
+
+> tsc -p packages/prove/tsconfig.json
+
+
+> nx run wallets:lint
+
+> oxlint packages/wallets
+
+
+> nx run prove:lint
+
+> oxlint packages/prove
+
+packages/prove/src/modules/world/device-sign-in.test.ts:3:33: warning eslint(no-unused-vars): Type 'ChildProcess' is imported but never used. help: Consider removing this import.
+
+> nx run e2e:lint
+
+> oxlint e2e
+
+e2e/m1/05-graph.test.ts:12:10: warning eslint(no-unused-vars): Identifier 'digest' is imported but never used. help: Consider removing this import.
+e2e/m1/07-descriptors.test.ts:31:25: warning eslint(no-control-regex): Unexpected control character help: Avoid matching control characters in regular expressions. If intentional, disable this rule for the expression.
+e2e/layer1/04-agent-writes-a-handler.test.ts:13:23: warning eslint(no-unused-vars): Identifier 'cli' is imported but never used. help: Consider removing this import.
+
+> nx run wallets:typecheck
+
+> tsc -p packages/wallets/tsconfig.json
+
+
+> nx run e2e:typecheck
+
+> tsc -p e2e/tsconfig.json
+
+
+
+
+ NX   Successfully ran targets lint, typecheck for 19 projects
+
+Nx read the output from the cache instead of running the command for 32 out of 38 tasks.
+
+
+ NX   Nx detected a flaky task
+
+  cli:typecheck
+
+Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+
+  Run duration:      6.6s
+  Cache:             32/38 hit (84%)
+  Critical path:     2.9s (1 task)
+  Recoverable time:  2.9s (43% of the run)

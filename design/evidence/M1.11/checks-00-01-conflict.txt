@@ -1,0 +1,112 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/00 m1/01
+# commit 15491548 · 2026-11-19T07:39:55Z · exit 1 (expected 1) · 141.2s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/00-controls.test.ts (7 tests | 1 failed) 58911ms
+     × keeps its model and its generated/ byte for byte, and `ortho check` still passes 4901ms
+ ❯ m1/01-mounting.test.ts (16 tests | 2 failed) 80196ms
+     × records the mount, section 7: kind, file, package, version, integrity, choices and hash 3696ms
+     × renamed, the mount prefixes each thing: fixture-echo, FixtureEcho, fixture-echo.repeat 1639ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/00-controls.test.ts > 00 controls: a project that mounts nothing is untouched by an installed plugin > keeps its model and its generated/ byte for byte, and `ortho check` still passes
+AssertionError: expected { …(3) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "api": {
+    "chosen": {},
+    "file": "blueprint/projections/api.ts",
+    "hash": "b12620c3b456db98",
+    "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+    "kind": "projection",
+    "package": "@orthograph/projections",
+    "version": "0.0.0",
+  },
+  "model": {
+    "chosen": {},
+    "file": "blueprint/projections/model.ts",
+    "hash": "b12620c3b456db98",
+    "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+    "kind": "projection",
+    "package": "@orthograph/projections",
+    "version": "0.0.0",
+  },
+  "server": {
+    "chosen": {},
+    "file": "blueprint/projections/server.ts",
+    "hash": "b12620c3b456db98",
+    "integrity": "sha256-Z1w7go4q/pfnMf7ONn7Hsazz9Y7XIm5uTrdaRzJqeCA=",
+    "kind": "projection",
+    "package": "@orthograph/projections",
+    "version": "0.0.0",
+  },
+}
+
+ ❯ m1/00-controls.test.ts:90:45
+     88|     const before = succeeds(bare.root, "model", "--json").stdout;
+     89|     expect(succeeds(withFixtures.root, "model", "--json").stdout).toBe…
+     90|     expect(model(withFixtures.root).mounts).toBeUndefined();
+       |                                             ^
+     91|     const generated = digest(bare.root, "generated");
+     92|     expect(Object.keys(generated).length).toBeGreaterThan(40);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > records the mount, section 7: kind, file, package, version, integrity, choices and hash
+AssertionError: expected [ 'api', 'echo', 'model', 'server' ] to deeply equal [ 'echo' ]
+
+- Expected
++ Received
+
+  [
++   "api",
+    "echo",
++   "model",
++   "server",
+  ]
+
+ ❯ m1/01-mounting.test.ts:54:51
+     52|     expect(mount?.integrity).toMatch(/^sha256-/);
+     53|     expect(mount?.hash).toMatch(/\S/);
+     54|     expect(Object.keys(model(root).mounts ?? {})).toEqual(["echo"]);
+       |                                                   ^
+     55|   });
+     56|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > renamed, the mount prefixes each thing: fixture-echo, FixtureEcho, fixture-echo.repeat
+AssertionError: expected [ 'api', 'fixture', 'model', 'server' ] to deeply equal [ 'fixture' ]
+
+- Expected
++ Received
+
+  [
++   "api",
+    "fixture",
++   "model",
++   "server",
+  ]
+
+ ❯ m1/01-mounting.test.ts:87:43
+     85|     expect(got.things["fixture-echo"]!.from).toEqual(from);
+     86|     expect(got.operations["fixture-echo.repeat"]!.from).toEqual(from);
+     87|     expect(Object.keys(got.mounts ?? {})).toEqual(["fixture"]);
+       |                                           ^
+     88|     succeeds(root, "generate");
+     89|     for (const path of ["generated/api/src/fixture-echo/repeat.ts", "g…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 20 passed (23)
+   Start at  07:37:35
+   Duration  139.69s (transform 106ms, setup 0ms, import 163ms, tests 139.11s, environment 0ms)

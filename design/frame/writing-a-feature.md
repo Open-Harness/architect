@@ -1,495 +1,235 @@
 # Writing a feature: wallets, step by step
 
-Everything here is **proposed**. It walks through writing one feature, `wallets`, from an empty folder to an app that
-mounts it, using the words in [`README.md`](README.md). The package scope `@blueprint` is a placeholder: the npm scope
-is still open (`decisions/K1-kits.md`, Q2).
+This walks through writing one feature, `wallets`, from an empty folder to an app that mounts it, using the words in
+[`README.md`](README.md). It is written from what M1.29 built, in `packages/wallets` (the device half: `create`, `import`,
+`keys`, `sign` and `send`). The one part that is still design, the linked half (Sign-In with Ethereum, M2.13), is marked
+**proposed** where it comes. The npm scope is `@orthograph` (`design/decisions/K6-orthograph.md`). The canon's page on the
+same code is [`docs/canon/chains-and-wallets.mdx`](../../docs/canon/chains-and-wallets.mdx).
 
-**What wallets is.** Keys, held on a person's device or in a server's key store, and a link between a key and a person's
-account, proved by signing the server's challenge (Sign-In with Ethereum). Where a key lives is the app's choice. The
-old rule that the server never holds a key was dropped by Aaron on 18 November 2026 (K7). Linking is the part
-`spikes/authenticated-siwe-link/` proved for real (26 checks, workerd and D1, a concurrent replay and a restart).
+**What wallets is.** Keys, held where their signer keeps them (a person's machine, their browser's wallet, a server's key
+store, or a world), and the operations to make, bring in, list, sign with and send from them. Where a key lives is the
+app's choice and each wallet declares it: the old rule that the server never holds a key was dropped by Aaron on 18
+November 2026 (K7 F5). Linking a key to a person's account, proved by signing the server's challenge, is the linked half,
+and it comes after auth (M2.13). Its design is the part of the SIWE spike `spikes/authenticated-siwe-link/` proved for real
+(26 checks, workerd and D1, a concurrent replay and a restart).
 
-**Five rules this walkthrough follows** (`decisions/K1-kits.md` section 3.6, carried into the frame):
+**Five rules this walkthrough follows** (`decisions/K1-kits.md` section 3.6, carried into the frame, and K7):
 
-1. A feature's operations use only the feature's own roles and the roles of the features it needs.
-2. Agents never link a wallet: linking binds a key to an account.
-3. `wallet.link` is a client operation over two server operations, `challenge` and `complete`.
-4. Wallets needs auth, not chain. Sign-In with Ethereum needs a chain id, not a chain client.
-5. Behaviour that runs on a device is written per host (`Host.node`, `Host.browser`, `Host.world`), not per environment.
+1. A feature's operations use only the feature's own roles and the roles of the features it needs. Built wallets needs
+   nothing, and every operation is `anyone`: a key is the caller's own, on the caller's own device.
+2. Agents never link a wallet: linking binds a key to an account (M2.13: `notVia(Agent)`).
+3. `wallet.link` will be a client operation over two server operations, `challenge` and `complete` (M2.13).
+4. The wallet has two halves. The device half needs a chain adapter and no auth. The linked half needs auth and no chain
+   client (K7, "The wallet plugin").
+5. Behaviour that runs on a device is written per host (`node`, `browser`, `world`), not per environment.
 
 ## Step 1: make the package
 
-```bash
-ortho new feature wallets
-```
+`ortho new feature wallets` writes a feature with one placeholder operation and one journey. M1.29 shipped
+`packages/wallets` by hand, in the same shape, and its descriptor is the whole of `feature.ts`:
 
-It writes a feature with one placeholder operation, one journey and an example app, all of which pass `blueprint
-prove` before you change anything. That proves the mechanism before you write any wallet.
+```ts
+// packages/wallets/feature.ts
+import { Blueprint } from "orthograph";
+
+export default Blueprint.feature({
+  description: "Keys on a device or in a server's key store: make, import, list, sign and send.",
+  needs: [],
+});
+```
 
 ```text
-wallets/
-  package.json
-  feature.ts                     the descriptor: what it needs, offers and lets you choose
+packages/wallets/
+  package.json                   exports: the descriptor, ./server, ./blueprint/*, ./src/*; "orthograph": { "kind": "feature" }
+  feature.ts                     the descriptor: what it needs (nothing yet)
   blueprint/
-    things/                      the feature's own things, as in any app
-    exports/                     what it offers handlers in the apps that mount it
-    choices.ts                   what an app may pick when it mounts it
-    journeys/                    written by a different agent from the builder
-    starting-worlds/             fragments an app's worlds can include
-  src/                           behaviour: per thing, and per host where it runs on a device
-  example/                       a tiny app that mounts this feature, so it is proved on its own
-  README.md                      what it gives, its choices, what each projection gets
+    things/wallet/               the thing, its errors, five operations
+    journeys/                    ten journeys, written by a different agent from the builder
+  src/
+    wallet/<verb>.{node,browser,world}.ts   one line per operation per host
+    modules/                     the behaviour, in six-slot modules
+    main.ts                      the server entry: Server.keystore
 ```
 
-```jsonc
-// wallets/package.json: one entry per host, as the kit-package-exports spike found
-{
-  "name": "@orthograph/wallets",
-  "type": "module",
-  "exports": {
-    ".": "./dist/feature.js",              // the descriptor: pure, no runtime code
-    "./blueprint": "./dist/blueprint.js",  // the declarations: pure, what the SDK and API import
-    "./worker": "./dist/worker.js",        // server behaviour, for the worker host
-    "./node": "./dist/node.js",            // device behaviour, for the CLI and Node SDK
-    "./browser": "./dist/browser.js"       // device behaviour, for the browser SDK
-  },
-  "peerDependencies": { "orthograph": "1.0.0", "@orthograph/auth": "1.0.0" }
-}
-```
-
-The spike showed this shape holds. The API and SDK bundles took only `dist/blueprint.js`. The Worker took no Node
-entry. A client entry that crossed into `/node` was caught by a closure guard (`spikes/kit-package-exports/README.md`,
-findings 3 to 5). Generated code imports a feature's `/blueprint` entry, plus the runtime entry for the host it runs
-on, and nothing else.
+The package builds with `tsc` to JavaScript (`nx build wallets`), the shape every plugin ships. Its one runtime
+dependency besides Effect is `@orthograph/chain-evm`, the chain adapter (M1.30).
 
 ## Step 2: declare
 
-### Values and the thing
+### The thing, and values
 
 ```ts
-// wallets/blueprint/values/chain.ts
+// packages/wallets/blueprint/things/wallet/thing.ts
 import { Blueprint } from "orthograph";
-
-export const Address = Blueprint.value.hex({ bytes: 20, checksum: true, description: "An Ethereum account address." });
-export const ChainId = Blueprint.value.int({ min: 1, description: "An EIP-155 chain id." });
-export const Signature = Blueprint.value.hex({ bytes: 65, description: "An EIP-191 personal signature." });
-```
-
-```ts
-// wallets/blueprint/things/wallet/thing.ts
-import { Blueprint } from "orthograph";
-import { Person } from "@orthograph/auth/blueprint";
-import { Address, ChainId } from "../../values/chain.ts";
 
 export const Wallet = Blueprint.thing({
-  description: "A key, on a device or in a server's key store as the wallet declares, linked to an account.",
-  fields: { id: Blueprint.id("wal"), person: Person.fields.id, address: Address, chain: ChainId },
-  unique: [["address", "chain"]], // one account per address on a chain (spike finding 5)
+  description: "A key, kept where its signer keeps it (browser, node, keystore or world), named by its CAIP-10 account.",
+  fields: { id: Blueprint.id("wal") },
+  code: "WL",
 });
 ```
 
-```ts
-// wallets/blueprint/things/challenge/thing.ts
-export const Challenge = Blueprint.thing({
-  description: "The exact ERC-4361 message the server asked one session to sign.",
-  fields: {
-    id: Blueprint.id("chl"), person: Person.fields.id, session: Session.fields.id,
-    address: Address, chain: ChainId, message: Blueprint.value.text(), expires: Blueprint.value.instant(),
-  },
-});
-```
+The wallet holds no secret field and no machine: the key never reaches the server, so it is not state the server owns. A
+wallet is named by a **CAIP-10 account**, `eip155:<chain>:<address>`, never a bare address, and its chain is a CAIP-2 id.
+Only the `eip155` namespace is built; a Solana or Aztec account parses as nothing and slots in later without reshaping
+the thing (K7, "The wallet plugin", item 1). The account is text on the wire, and `modules/account` reads and writes it.
+`wal_` plus sixteen characters of the address is the wallet's id, so the same key has the same id on every signer.
 
-The key itself is not a thing. It never reaches the server, so it is not state the server owns.
-
-### Machines, events and errors
+### Errors
 
 ```ts
-// wallets/blueprint/things/wallet/machine.ts
-export const machine = Blueprint.machine(Wallet, {
-  states: ["linked", "unlinked"],
-  moves: {
-    link: { from: [], to: "linked", emits: Events.WalletLinked },
-    unlink: { from: ["linked"], to: "unlinked", emits: Events.WalletUnlinked },
-  },
-  notFrom: { exit: 40 }, // generates WalletNotLinked
-});
-
-// wallets/blueprint/things/challenge/machine.ts
-export const machine = Blueprint.machine(Challenge, {
-  states: ["issued", "used"],
-  moves: {
-    issue: { from: [], to: "issued", emits: Events.ChallengeIssued },
-    use: { from: ["issued"], to: "used", emits: Events.ChallengeUsed }, // a second completion is ChallengeNotIssued
-  },
-  notFrom: { exit: 41 },
-});
-```
-
-```ts
-// wallets/blueprint/things/wallet/errors.ts
-// Named by their exported classes, as acme's errors.ts files are; refusal codes come from the thing's prefix (D3 #84)
-export class SignatureInvalid extends Blueprint.error({}, { exit: 42 }) {}
-export class AddressTaken extends Blueprint.error({ chain: ChainId }, { exit: 43 }) {}
-export class KeyLocked extends Blueprint.error({}, { exit: 44 }) {}  // the device refused to sign
-export class NoSuchKey extends Blueprint.error({}, { exit: 45 }) {}
-// wallets/blueprint/things/challenge/errors.ts
-export class ChallengeExpired extends Blueprint.error({}, { exit: 46 }) {}
-```
-
-### Roles
-
-```ts
-// wallets/blueprint/things/wallet/roles.ts
-import { Blueprint } from "orthograph";
-import { signedIn } from "@orthograph/auth/blueprint";
-import { Via } from "orthograph";
-import { Wallet } from "./thing.ts";
-
-/** The person whose wallet it is. */
-export const holder = Blueprint.role(Wallet, { rule: (wallet, principal) => wallet.person === principal.person });
-
-/** Someone binding a key to their own account: a person, never an agent acting for them (rule 2). */
-export const linker = signedIn.notVia(Via.agent);
+// packages/wallets/blueprint/things/wallet/errors.ts
+/** The signer refused to sign: the keystore is locked, or the person turned the request down. */
+export class KeyLocked extends Blueprint.error({}, { exit: 61 }) {}
+/** No key of this label on this signer. */
+export class NoSuchKey extends Blueprint.error({}, { exit: 62 }) {}
+/** The chain's simulation of the send reverted (or could not pay), so nothing was signed or sent. */
+export class SimulationReverted extends Blueprint.error({}, { exit: 63 }) {}
 ```
 
 ### Operations
 
-There are eight. This walkthrough covers device wallets; a server key store signs through a server operation instead
-(K7, M1.29). Three run on the device and touch only keys there. Four run on the server. One, `link`, runs on the
-device and calls two of the server's.
+There are five, all `allowed: [Blueprint.anyone]` and `runs: "client"` (M1.27), so each runs on the caller's device with
+no server call and its spans leave from there. `anyone` is safe because nothing leaves the device: the caller's own machine
+is the boundary. `signer` in every payload says where the key lives, and `label` names a key on a signer.
 
-| Operation | `runs` | `allowed` | What it does |
-|---|---|---|---|
-| `wallet.create` | client | `anyone` | make a key on this device, return its address |
-| `wallet.import` | client | `anyone` | import a key onto this device |
-| `wallet.keys` | client | `anyone` | list the addresses of keys on this device |
-| `wallet.link` | client | `linker` | challenge, sign here, complete |
-| `wallet.challenge` | server | `linker` | issue the exact message for this session to sign |
-| `wallet.complete` | server | `linker` | verify, use the challenge, link the address |
-| `wallet.unlink` | server | `holder.notVia(Via.agent)` | unlink one of your wallets |
-| `wallet.list` | server (read) | `signedIn` | your linked wallets, by any way in |
-
-`anyone` is safe on the device operations because nothing leaves the device: the caller's own machine is the boundary.
+| Operation | What it does |
+|---|---|
+| `wallet.create` | make a key under a label, answer its account |
+| `wallet.import` | bring a key in under a label (`source` is a secret key, or for a browser the account its wallet holds) |
+| `wallet.keys` | list the accounts of the keys this signer keeps |
+| `wallet.sign` | an EIP-191 signature of a message, by the key of a label |
+| `wallet.send` | simulate, sign, send and follow a transfer until it is confirmed |
 
 ```ts
-// wallets/blueprint/things/wallet/verbs/link.ts: a client operation over two server operations
-import { Blueprint } from "orthograph";
-import { Wallet } from "../thing.ts";
-import { linker } from "../roles.ts";
-import { KeyLocked, NoSuchKey } from "../errors.ts";
-import { Signer } from "../../../exports/signer.ts";
-import { Address } from "../../../values/chain.ts";
-import challenge from "./challenge.ts";
-import complete from "./complete.ts";
-
+// packages/wallets/blueprint/things/wallet/verbs/send.ts
 export default Blueprint.operation(Wallet, {
-  description: "Link a key on this device to your account, by signing the server's challenge.",
+  description: "Simulate, sign, send and follow a transfer until it is confirmed.",
+  payload: { signer: Blueprint.traced(Blueprint.text({ max: 16 })), label: Blueprint.traced(Blueprint.text({ max: 32 })), to: Blueprint.text({ max: 128 }), value: Blueprint.uint(256) },
+  // A transaction hash and its level are public: the chain's own spans name the hash too.
+  answer: { transaction: Blueprint.traced(Blueprint.text({ max: 128 })), level: Blueprint.traced(Blueprint.text({ max: 16 })), nonce: Blueprint.uint(64) },
+  errors: [SimulationReverted, KeyLocked, NoSuchKey],
+  allowed: [Blueprint.anyone],
   runs: "client",
-  payload: { address: Address },
-  answer: { wallet: Wallet.fields.id },
-  errors: [KeyLocked, NoSuchKey],               // plus whatever challenge and complete declare, carried through
-  allowed: [linker],
-  steps: {
-    challenge: Blueprint.step.call(challenge),  // over the server's door, with the caller's own credential
-    sign: Blueprint.step.use(Signer.sign),      // here, on the device
-    complete: Blueprint.step.call(complete),
-  },
-  budget: { p95: "800 millis" },                // the signer's own wait (a person clicking) is a wait, not counted
 });
 ```
 
-```ts
-// wallets/blueprint/things/wallet/verbs/complete.ts
-export default Blueprint.operation(Wallet, {
-  description: "Verify a signed challenge and link its address to the caller's account.",
-  payload: { challenge: Challenge.fields.id, signature: Signature },
-  answer: { wallet: Wallet.fields.id },
-  move: machine.moves.link,
-  errors: [SignatureInvalid, AddressTaken, ChallengeExpired],
-  allowed: [linker],
-  steps: { verify: Blueprint.step.compute(), claim: Blueprint.step.database(), link: Blueprint.step.database() },
-  idempotent: "request",
-});
-```
-
-`challenge`, `unlink`, `list`, `create`, `import` and `keys` have the same shape. A compiler check keeps rule 1 true:
-`allowed` may name only `wallets`' own roles and the roles of what it needs (`auth`'s `signedIn`, `anyone`).
+`import`'s `source` is `Blueprint.visibility.secret`: a secret key travels through it and is recorded nowhere, not in a
+span, a log or a journal. `signer`, `label`, the hash and the level are `Blueprint.traced`, so the secrets eval does not
+read a journey's `node` or the chain's own `confirmed` as a leak.
 
 ## Step 3: what it needs, offers and lets you choose
 
-### Needs
+**Needs.** Nothing. The device half needs no auth and no adapter: `send` reaches the chain through
+`@orthograph/chain-evm/device` as a library, so the port's own spans are the receipt spans. The browser's wallet (MetaMask
+and the like, spoken to through EIP-1193) is an outside system, but it is reached inside the browser signer; the
+`eip1193` adapter and a `Blueprint.need` for it are not built (ledger `ADA-12`).
 
-```ts
-// wallets/feature.ts: the descriptor, the package's root export
-import { Blueprint } from "orthograph";
-import auth from "@orthograph/auth";
-import eip1193 from "@orthograph/eip1193";
-import * as Choices from "./blueprint/choices.ts";
-import * as Settings from "./blueprint/settings.ts";
-import * as Exports from "./blueprint/exports/index.ts";
+**The four signers.** A signer is chosen by the payload's `signer`, not by a mount choice, because a payload can name
+where the key lives and the host decides which signers it has:
 
-export default Blueprint.feature({
-  description: "Keys on a device or in a server's key store, linked to an account by Sign-In with Ethereum.",
-  needs: [
-    auth,                                                       // sessions, signedIn, the person
-    Blueprint.need(eip1193, { when: Choices.signer.browser.injected }), // only if an app picks the injected browser signer
-  ],
-  choices: Choices,
-  settings: Settings,
-  exports: Exports,
-});
-```
+| `signer` | Where the key lives | On which host |
+|---|---|---|
+| `node` | an encrypted keystore file (Web3 Secret Storage v3) in `ORTHO_WALLET_HOME`, locked with `ORTHO_WALLET_PASSPHRASE` | the CLI, and the SDK run from Node |
+| `browser` | the wallet the page was given as `window.ethereum` (EIP-1193); the signer keeps only labels | a browser |
+| `keystore` | a server's key store; in M1 only a key the world generated (`Server.keystore`), real secrets are M2.04 | a server operation, and a world |
+| `world` | the world's test wallets, in memory | a world |
 
-The browser's wallet extension (MetaMask and the like, spoken to through EIP-1193) is an outside system, so it is an
-adapter. Wallets needs it but never contains it. The app mounts `eip1193` once, and anything else in the app that talks
-to the extension shares that mount.
+A host that has no such signer refuses as `KeyLocked`, saying why in a log first. **The Node signer is an encrypted
+keystore file, not the OS keychain.** The file format is ours, so the same code runs on macOS, Linux and CI with no
+keychain daemon, and the passphrase is never a Blueprint secret: the description never holds anything a person keeps in
+their head. The keychain could arrive later as a second signer backed by an adapter. **Passkeys are not offered.** A
+passkey signs with P-256, so it needs a smart account checked with ERC-1271, and only plain keys are proved.
 
-### Choices
+**Settings.** Nothing in a payload names a chain, so the chain is a setting of the host, never a choice (a value that
+differs by environment is a setting, `decisions/M1-plugins.md` section 5):
 
-```ts
-// wallets/blueprint/choices.ts
-import { Blueprint } from "orthograph";
-export const signer = {
-  /** How a key is kept on a Node device (the CLI, a Node SDK). */
-  node: Blueprint.choice({ keystore: "an encrypted keystore file in the user's config folder" }),
-  /** How the browser signs. */
-  browser: Blueprint.choice({ injected: "the extension the person already uses, through EIP-1193" }),
-};
-```
+| Variable | Meaning | Default |
+|---|---|---|
+| `ORTHO_WALLET_CHAIN` | the chain accounts are on, CAIP-2 | `eip155:1` |
+| `ORTHO_WALLET_RPC_URL` | where to send; without it a wallet makes keys and signs but a send is a defect | none |
+| `ORTHO_WALLET_DEPTH` | the blocks that count before a send is `confirmed` (M1.38, K7 F2); only chain 31337 has one without it (1) | none |
+| `ORTHO_WALLET_HOME`, `ORTHO_WALLET_PASSPHRASE` | the `node` signer's folder and what locks it | `~/.orthograph/wallets`, none |
 
-```ts
-// wallets/blueprint/settings.ts: values each environment gives, not choices (a choice never varies by environment)
-import { Blueprint } from "orthograph";
-import { ChainId } from "./values/chain.ts";
+A browser has no process environment: it sets `globalThis.ORTHOGRAPH_WALLET`. A world gives the chain it stood, with its
+own `chain.depth`.
 
-/** Which chains a link is for: local is Anvil's 31337, production is mainnet and Base. */
-export const chains = Blueprint.setting.list(ChainId, { min: 1 });
-```
+**Exports.** The signer is internal to the package today (`modules/signer`); a `Blueprint.export` for app code (a
+`Signer.sign` an app's own client code could call, a `Verify.linked` for server handlers) is not built (ledger `FEA-07`).
 
-**The Node signer is an encrypted keystore file (Web3 Secret Storage v3), not the OS keychain.** The file format is
-ours, so the same code runs on macOS, Linux and CI with no keychain daemon. The passphrase is typed by the person at a
-prompt and is never a Blueprint secret: the description never holds anything a person keeps in their head. The keychain
-could arrive later as a second choice backed by a `keychain` adapter, since the keychain is an outside system.
-
-**Passkeys are not offered.** A passkey signs with P-256, so it needs a smart account checked with ERC-1271. The spike
-proved only plain keys (EOAs). Each choice is something the feature has proved, so there are no others until they are
-proved.
-
-### Exports
-
-```ts
-// wallets/blueprint/exports/signer.ts: used inside the feature by link, and offered to the app's own client code
-import { Blueprint } from "orthograph";
-import { Address, Signature } from "../values/chain.ts";
-import { KeyLocked, NoSuchKey } from "../things/wallet/errors.ts";
-import { Host } from "orthograph";
-
-export const Signer = Blueprint.export({
-  description: "Sign a message with a key on this device.",
-  runs: "client",
-  methods: {
-    sign: { payload: { address: Address, message: Blueprint.value.text() }, answer: { signature: Signature }, errors: [KeyLocked, NoSuchKey] },
-  },
-  hosts: [Host.node, Host.browser, Host.world], // implementations found by path, one per host and choice
-});
-```
-
-```ts
-// wallets/blueprint/exports/verify.ts: for the app's server handlers
-export const Verify = Blueprint.export({
-  description: "Check a message was signed by one of this person's linked wallets.",
-  runs: "server",
-  methods: { linked: { payload: { person: Person.fields.id, message: Blueprint.value.text(), signature: Signature }, answer: { address: Address } } },
-  errors: [SignatureInvalid, WalletNotLinked],
-});
-```
-
-An app's handler that needs "this person approved it with their wallet" declares `Blueprint.step.use(Verify.linked)`
-and gets a span and the two declared errors for free.
-
-### Secrets: none
-
-Wallets declares no secret. The challenge is stored with the session (the spike's design), so the server never signs
-anything and needs no key of its own. Nonces are random and live in D1. Sessions belong to `auth`, which declares
-`AUTH_SECRET` itself. A feature declares only the secrets it reads, in its own `blueprint/secrets.ts`
-([`secrets.md`](secrets.md)). Wallets has no such file.
+**Secrets: none.** The wallet declares no secret. A key is generated or typed on the device, held where its signer holds
+it, and never put in a binding, a commit or a log (K7 F5). A server's key reaches `Server.keystore` as a `Redacted`
+binding, read once and never answered.
 
 ## Step 4: until there are no blanks, then scaffold
 
 ```bash
 ortho check --ready
-```
-
-```text
-✘ blueprint/things/wallet/verbs/unlink.ts:9   a blank: Blueprint.todo("who may unlink: the holder only, or an org admin too?")
-✘ blueprint/exports/signer.ts                 hosts.browser: no implementation at src/exports/signer/browser-injected.ts
-2 to go. Nothing is scaffolded until a declaration has none.
-```
-
-Each blank is a question (it shows in the portal's plan). Once it is answered:
-
-```bash
-ortho check --ready     # exit 0
 ortho generate          # scaffolds each handler once, with its brief; never overwrites one
 ```
 
-```text
-src/
-  wallet/challenge.ts  wallet/complete.ts  wallet/unlink.ts      worker host
-  wallet/create.ts  wallet/import.ts  wallet/keys.ts             client: shared logic over Keystore
-  wallet/link.ts                                                 client: the three steps in order
-  exports/signer/node-keystore.ts  browser-injected.ts  world.ts one per host and choice
-  exports/verify.ts
-```
-
-Three of them filled:
+For a client operation the scaffold is one file per host. M1.29 wrote each as one line over `modules/operations`; the host
+decides which signers it has:
 
 ```ts
-// wallets/src/wallet/complete.ts. Scaffolded from blueprint/things/wallet/verbs/complete.ts. Yours from now on.
-import { Effect } from "effect";
-import { verifyMessage } from "viem";
-import type { Handler } from "../../generated/api/src/wallet/complete.handler.ts";
-import { Records } from "@orthograph/language-effect";
-import { Challenge } from "../../blueprint/things/challenge/thing.ts";
-import { Wallet } from "../../blueprint/things/wallet/thing.ts";
-import { SignatureInvalid, AddressTaken } from "../../blueprint/things/wallet/errors.ts";
-import { ChallengeExpired } from "../../blueprint/things/challenge/errors.ts";
-
-const complete: Handler = ({ challenge, signature }, { steps, move, principal, now }) =>
-  Effect.gen(function* () {
-    const records = yield* Records;
-    const found = yield* steps.claim(records.claim(Challenge, challenge, { person: principal.person, session: principal.session }));
-    if (found.expires <= now) return yield* new ChallengeExpired();
-    const ok = yield* steps.verify(Effect.promise(() => verifyMessage({ address: found.address, message: found.message, signature })));
-    if (!ok) return yield* new SignatureInvalid();
-    const linked = yield* steps.link(records.insertUnique(Wallet, { person: principal.person, address: found.address, chain: found.chain }));
-    if (linked.taken) return yield* new AddressTaken({ chain: found.chain });
-    yield* move("linked");
-    return { wallet: linked.id };
-  });
-
-export default complete;
+// packages/wallets/src/wallet/send.node.ts
+const handler: Handler<typeof declaration> = (payload) => Operations.on(NodeHost.signer).send(payload);
 ```
 
-`records.claim` is the spike's conditional update: one completion wins and a concurrent second gets nothing. The
-challenge's `use` move is made by the claim in the same batch.
+`send.browser.ts` is the same over `BrowserHost.signer`, and `send.world.ts` over `WorldHost.signer`, which prove runs in
+place of a device. The behaviour sits in six-slot modules under `src/modules/`: `account` (CAIP-10), `chain` (the setting
+and the port), `keystore` and `keyfile` (the v3 file), `signer` (one `Signer` per place a key lives), `submit` (the send's
+lifecycle), `operations`, `node-host`, `browser-host`, `world` and `server`.
+
+A send is `chain-evm`'s lifecycle, and the wallet never skips a step of it: prepare, simulate, sign, submit, then follow
+until the transfer is as deep as the chain's depth asks.
 
 ```ts
-// wallets/src/wallet/link.ts. Scaffolded from blueprint/things/wallet/verbs/link.ts. Yours from now on.
-const link: Handler = ({ address }, { steps }) =>
-  Effect.gen(function* () {
-    const issued = yield* steps.challenge({ address });
-    const { signature } = yield* steps.sign({ address, message: issued.message });
-    return yield* steps.complete({ challenge: issued.challenge, signature });
-  });
+// packages/wallets/src/modules/submit/internal/flow.ts: the depth is asked for first, then the port tracks it
+const states = yield* port.track(submission, { depth }).pipe(
+  Stream.tap((state) => (state._tag === "Deepened" ? levelSpan(depth, state.blocks) : Effect.void)),
+  Stream.runCollect,
+  Effect.catch(refused),
+);
 ```
 
-The handler is three lines because the steps carry the work. Each `steps.*` is a span. The two `call` steps go to
-the server with the caller's own credential, so the server checks `linker` again. A client operation cannot widen what
-the server allows.
-
-```ts
-// wallets/src/exports/signer/world.ts: test keys, for prove's worlds
-import { Effect } from "effect";
-import { privateKeyToAccount } from "viem/accounts";
-import { CastKeys } from "@orthograph/prove/world";
-
-/** Each cast member has a key made from the world's seed and their name: the same in every run of that world. */
-export default Signer.implement(({ address, message }) =>
-  Effect.gen(function* () {
-    const key = yield* CastKeys.forAddress(address);
-    return { signature: yield* Effect.promise(() => privateKeyToAccount(key).signMessage({ message })) };
-  }));
-```
+A transfer whose simulation fails is `SimulationReverted` with nothing signed or sent and its nonce handed back, so the next
+send takes the nonce this one would have had.
 
 ## Step 5: journeys, written by a different agent
 
-The ✍️ author reads the declarations and writes the journeys before the 🔨 builder starts. The journeys fail on the
-empty scaffolds (`ortho prove --unbuilt` exits 0 only if every failure is an unwritten handler). The builder's
-brief forbids `blueprint/journeys/`.
+The author reads the declarations and writes the journeys before the builder starts; the journeys fail on the empty
+handlers, and the builder never edits `blueprint/journeys/`. There are ten: a story for each of the four signers, one of
+refusals for each (`KeyLocked` on `import`, `NoSuchKey` on `sign` and `send`), one for a signer the wallet does not have,
+and one for a send at depth three (M1.38).
 
 ```ts
-// wallets/blueprint/journeys/create-and-link.ts
-export default Blueprint.journey("make a key and link it", {
-  cast: { olga: signedIn },
-  starts: worlds.signedIn,   // always one starting world; it may include fragments
-  steps: (s) => [
-    s.step("olga makes a key on her device", s.olga.run(create, {}), expect((a) => a.address).toMatch(/^0x/)),
-    s.step("and links it", s.olga.run(link, { address: s.last.address }),
-      emits(WalletLinked, { address: s.last.address }), spans({ present: ["wallet.link.challenge", "wallet.link.sign", "wallet.link.complete"] })),
-    // spans() takes strings today, as acme's journeys do; it becomes typed names generated from the model later
-    s.step("it is listed", s.olga.run(list, {}), expect((a) => a.wallets).toHaveLength(1)),
-  ],
-});
+// packages/wallets/blueprint/journeys/world.ts: the world signer's story, from the author
+s.step(
+  "a send whose simulation reverts is refused before anything is sent",
+  s.holder.run(send, { signer: "world", label: "funded", to: s.world.chain.payee, value: 1_000_000_000_000_000_000_000_000_000_000n }),
+  refuses(SimulationReverted),
+  noEvents(),
+),
 ```
 
-```ts
-// wallets/blueprint/journeys/an-agent-cannot-link.ts
-export default Blueprint.journey("an agent cannot link a wallet", {
-  cast: { olga: signedIn },
-  starts: worlds.linked,
-  steps: (s) => [
-    s.step("olga's agent asks for a challenge", s.olga.via(Via.agent).run(challenge, { address: s.world.address }), refuses(NotAllowed), noEvents()),
-    s.step("olga's agent has no such tools", s.olga.via(Via.agent).tools(), lacks(challenge, complete, link, unlink)),
-    s.step("but it can list her wallets", s.olga.via(Via.agent).run(list, {}), expect((a) => a.wallets).toHaveLength(1)),
-  ],
-});
-```
-
-A third journey, `an-address-links-once`, covers the spike's replay and `AddressTaken`. A fourth, `unlink-then-link`,
-covers unlinking and linking again.
-
-**One journey, every projection.** A journey names operations, never a way in. `ortho prove` replays it through
-each projection that can reach each step ([`projections.md`](projections.md)):
-
-| Step | api | sdk (node) | react (browser) | cli | mcp |
-|---|---|---|---|---|---|
-| `create`, `link` (client) | · | ✔ local code, world signer | ✔ in a real browser | ✔ the built binary | · |
-| `challenge` (agent refused) | ✔ refusal | ✔ refusal | | ✔ refusal | ✔ absent from the catalogue |
-| `list` | ✔ | ✔ | | ✔ | ✔ |
-
-**The starting-world fragment.** A feature can't know an app's worlds, so it brings fragments the app's worlds include:
-
-```ts
-// wallets/blueprint/starting-worlds/linked.ts
-export default Blueprint.startingWorld.fragment("every cast person has one linked wallet", {
-  after: auth.worlds.signedIn,
-  run: (w) => w.cast.map((person) => [person.run(create, {}), person.run(link, { address: w.last.address })]),
-});
-```
+A journey names operations, never a way in. A world with a chain gives `s.world.chain.keys.<signer>` (a funded key) and
+`s.world.chain.payee`. Prove stands Anvil as a process of the run's scope for every plugin that runs on the device (K7 Q7),
+always `--silent`, with the keys generated by the world.
 
 ## Step 6: the example app proves the feature on its own
 
-```text
-wallets/example/blueprint/
-  features/auth.ts           Blueprint.use(auth, …)
-  features/wallets.ts        Blueprint.use(wallets, (w) => [w.signer.node.keystore, w.signer.browser.injected])
-  adapters/eip1193.ts        Blueprint.use(eip1193, (e) => [e.include(e.calls.personalSign)])
-  projections/server.ts  api.ts  sdk.ts  react.ts  cli.ts  mcp.ts
-  environments/local.ts      settings: [wallets.settings.chains.is([31337])]
-```
+Built: `e2e/fixtures/m1/wallets` is the plugin as its author's stand-in, with every handler empty, and
+`e2e/m1/09-wallet-journeys.test.ts` proves each of the ten journeys fails there, naming its first step. The real handlers
+pass the same ten journeys against a real Anvil in `packages/prove/test/device-journeys.test.ts`, with the nine evals
+judging them (it runs when `ORTHO_CHAIN_EVM_ANVIL=1`, with Foundry's `anvil` on the path). **Proposed:** a browser replay
+in Chromium against Anvil as the EIP-1193 provider, with the `react` projection and the `eip1193` adapter's conformance.
+No slice builds it yet (ledger `G-11`).
+
+## Step 7: release (proposed)
 
 ```bash
-cd example && ortho prove --env local
-```
-
-```text
-journeys   wallets 4 · auth 5
-through    api ✔  sdk ✔  react ✔  cli ✔  mcp ✔
-wallet.complete   9 evals ✔
-wallet.link       9 evals ✔   (sdk, react, cli)
-eip1193           conformance ✔   stand-in: Anvil 1.4.0's JSON-RPC as the provider
-```
-
-**The browser.** The `react` projection replays the client steps in a real headless Chromium (Playwright). The
-`eip1193` adapter's stand-in is a real provider, Anvil's JSON-RPC with its unlocked test accounts, so a real
-`personal_sign` happens. It is not a fake. This runs in the feature's own CI, not in every app that mounts it.
-Whether that gives enough confidence about real extensions is an open risk.
-
-## Step 7: release
-
-```bash
-blueprint version      # compares this model with the last published one
+ortho version      # compares this model with the last published one
 ```
 
 ```text
@@ -498,22 +238,14 @@ blueprint version      # compares this model with the last published one
 ```
 
 The rules are the same as an app's: a new operation is minor, a changed payload or refusal code is major, a budget
-change is a patch. CI publishes only a revision whose example is green. The package carries its compiled model
-(`dist/model.json`) and the digest of its verdict, so an app knows what it is mounting before it runs anything.
+change is a patch. CI publishes only a revision whose example is green.
 
 ## Step 8: mounting it in acme
 
+The mount is built (M1.01 to M1.10); the table is what the generated surfaces give.
+
 ```bash
 ortho add feature @orthograph/wallets
-```
-
-```text
-@orthograph/wallets 1.1.0 needs
-  feature  auth      mounted at blueprint/features/auth.ts ✔
-  adapter  eip1193   for the browser signer: mount it? [Y/n] y
-wrote  blueprint/features/wallets.ts
-wrote  blueprint/adapters/eip1193.ts
-pinned @orthograph/wallets 1.1.0, @orthograph/eip1193 1.0.2 (both published over three days ago)
 ```
 
 ```ts
@@ -522,89 +254,75 @@ import { Blueprint } from "orthograph";
 import wallets from "@orthograph/wallets";
 
 export default Blueprint.use(wallets, (w) => [
-  w.signer.node.keystore,                 // choose, from what wallets has proved
-  w.signer.browser.injected,
-  w.omit(w.operations.import),            // acme won't take imported keys
+  w.omit(importKey),                          // acme won't take imported keys (the plugin's own declaration, imported)
 ]);
 ```
 
-```ts
-// acme/blueprint/environments/production.ts (the lines this adds)
-import wallets from "../features/wallets.ts";
-// …
-  settings: [wallets.settings.chains.is([1, 8453])],
-```
-
-### What acme gains
-
 | | server | sdk | cli | mcp | docs, portal |
 |---|---|---|---|---|---|
-| `wallet.create`, `keys` | · | ✔ local code | ✔ `acme wallet create` | · | ✔ marked "from wallets 1.1.0" |
-| `wallet.link` | · | ✔ local code and two calls | ✔ `acme wallet link` | · | ✔ |
-| `wallet.challenge`, `complete`, `unlink` | ✔ routes | ✔ | ✔ | · (not agent) | ✔ |
-| `wallet.list` | ✔ | ✔ | ✔ | ✔ | ✔ |
-| `wallet.import` | · omitted | · | · | · | listed as omitted |
-| `Verify.linked`, `Signer.sign` | exports for acme's handlers and client code | | | | ✔ |
+| `wallet.create`, `import`, `keys`, `sign`, `send` | · | ✔ local code | ✔ `acme wallet create`, `acme wallet send` | · | ✔ marked "from wallets" |
 
-The model gains the `wallet` and `challenge` things, each marked `from: wallets@1.1.0`. The server's D1 gains their
-tables. `generated/` gains the routes, SDK calls and CLI commands. `src/` gains nothing: the feature's behaviour stays
-in its package.
+```bash
+ORTHO_WALLET_CHAIN=eip155:31337 ORTHO_WALLET_RPC_URL=http://127.0.0.1:8545 \
+ORTHO_WALLET_PASSPHRASE=… acme wallet create --signer node --label demo
+```
 
-### What acme's own journeys can now use
+`wallet import` generates as `import_` and is exported under its own name, because `import` is a reserved word. The model
+gains the `wallet` thing, marked `from: wallets`. `generated/` gains the SDK calls and CLI commands. `src/` gains nothing:
+the feature's behaviour stays in its package.
+
+## The linked half (proposed, M2.13)
+
+Linking binds a key on this device to the caller's account. It is the part the SIWE spike proved, and it adds three things
+to the device half, once auth (M2.05) exists: a `Challenge` thing, server operations `challenge`, `complete`, `unlink` and
+`list`, and `link`, a client operation over two of them.
 
 ```ts
-// acme/blueprint/journeys/approve-a-large-spend.ts
-export default Blueprint.journey("a large spend needs the owner's wallet", {
-  cast: { owen: owner, olga: grantee },
-  starts: worlds.fundedAndLinked,   // one starting world: acme's `funded`, which includes the wallets fragment
-  steps: (s) => [ /* owen signs the approval with his linked wallet; acme's handler checks it with Verify.linked */ ],
+// wallets/blueprint/things/wallet/verbs/link.ts: planned, M2.13. A client operation over two server operations
+export default Blueprint.operation(Wallet, {
+  description: "Link a key on this device to your account, by signing the server's challenge.",
+  runs: "client",
+  allowed: [linker],                             // signedIn.notVia(Via.agent): agents never link (rule 2)
+  steps: {
+    challenge: Blueprint.step.call(challenge),   // over the server's door, with the caller's own credential
+    sign: Blueprint.step.use(Signer.sign),       // here, on the device
+    complete: Blueprint.step.call(complete),
+  },
 });
 ```
 
-Every `wallets` journey also runs in acme's worlds on every `ortho prove`, under acme's own projections, so
-mounting can't quietly break the feature.
-
-### Upgrading
-
-```bash
-ortho upgrade wallets
-```
-
-```text
-@orthograph/wallets 1.1.0 → 2.0.0
-  major  wallet.complete: payload adds `chain`   (your SDK's callers must pass it)
-  acme   1.4.0 → 2.0.0   (a payload in acme's API changed)
-  stale  12 verdicts: wallet.*, and acme's approve-a-large-spend (it uses Verify.linked)
-re-run ortho prove to clear them
-```
-
-An upgrade is a change to the description like any other. It marks exactly what uses the feature as stale and sends
-it round again.
+`complete` verifies the signature against the exact ERC-4361 message the server issued, uses the challenge once (a second
+completion is refused) and links the address, one account per address on a chain (`wallet/invariants.ts`, G5). The two
+`call` steps go to the server with the caller's own credential, so the server checks `linker` again: a client operation
+cannot widen what the server allows. Those operations need `Blueprint.step.call` and `step.use` on the device, which the
+M1.29 build did not need (`decisions/M1-plugins.md` section 8.2), and an `after:` starting-world fragment so a journey can
+begin with a linked wallet (ledger `JOU-10`).
 
 ## Today and proposed
 
-| Piece | Today, on `layer/3` | Here |
+| Piece | Built | Proposed |
 |---|---|---|
-| A feature's package and descriptor | none; `packages/std` is an empty shell | `feature.ts`, the export map from the spike |
-| Mounting | none | `ortho add feature`, one file per mount |
-| `runs: "client"` | the compiler refuses it (`operations/types.ts:49`, D3 #86) | client operations, behaviour per host |
-| `step.call`, `step.use` | `Blueprint.step.database()` and kin only | both |
-| `via`, `.notVia(Via.agent)` | `Principal` is `anonymous | person` | as in K1 section 1 |
-| Linking over SIWE | proved in `spikes/authenticated-siwe-link` | the same design, as `challenge` and `complete` |
-| Journeys through projections | raw HTTP (`world.ts:85`) | replayed through each projection |
-| Starting-world fragments | starting worlds only | `Blueprint.startingWorld.fragment` |
+| A feature's package and descriptor | `packages/wallets`, M1.29 | |
+| Mounting | `ortho add feature`, M1.01 to M1.10 | |
+| `runs: "client"`, with a host entry per host | M1.27 | |
+| Five device operations, four signers | M1.29 | |
+| The chain adapter, Anvil in a world, simulation | `@orthograph/chain-evm`, M1.30 to M1.32 | |
+| Confirmation per chain and environment | M1.38 | |
+| `step.call`, `step.use` on a device | | when an adapter needs them |
+| Linking over SIWE | proved in `spikes/authenticated-siwe-link` | `challenge`, `complete`, `link`, M2.13 |
+| Browser replay, the `eip1193` adapter | | no slice yet |
+| Starting-world fragments | | `Blueprint.startingWorld.fragment` |
 
 ## Open risks
 
 1. **A browser proof against a stand-in isn't proof against MetaMask.** Anvil as the EIP-1193 provider proves our side
    of the protocol, not each extension's quirks.
-2. **Plain keys only.** ERC-1271, ERC-6492 and EIP-7702 verification are unproved (the spike's first open risk). So are
-   passkeys, which wait on them.
-3. **Chain and origin policy.** The spike used one chain (31337) and one origin. The `chains` setting settles which
-   chains, but deploying behind several origins is not decided.
+2. **Plain keys only.** ERC-1271, ERC-6492 and EIP-7702 verification are unproved. So are passkeys, which wait on them.
+3. **Chain and origin policy.** One local chain (31337) is proved. A real chain needs `ORTHO_WALLET_DEPTH`, and deploying
+   behind several origins is not decided.
 4. **Keystore portability.** Encrypted keystores on Linux CI and Node 24 are untested. The spike ran on macOS with
    Node 26.
-5. **Fragments composing.** Two features' fragments that both seed the same cast must order cleanly (`after:`). Only
-   one fragment exists here.
+5. **Fragments composing.** Two features' fragments that both seed the same cast must order cleanly (`after:`). None is
+   built.
 6. **The compiler check for rule 1** (feature operations use only their own roles and their needs' roles) is not
    written.

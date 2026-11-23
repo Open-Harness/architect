@@ -11,7 +11,7 @@ import { Collectors } from "#modules/telemetry/service.js";
 import { TestWorlds } from "#modules/test-worlds/service.js";
 import { Verdicts } from "#modules/verdicts/service.js";
 import { ProveFailed, type ProveApi } from "../types.ts";
-import { closing, exercise, resultsOf } from "./exercise.ts";
+import { closing, exercise } from "./exercise.ts";
 
 const TEST = "test";
 const failed = (e: { readonly message: string }) => new ProveFailed({ message: e.message });
@@ -54,7 +54,7 @@ export const proveInTest = (model: Model, project: Project, options: Parameters<
           const verdict = closing(done);
           yield* say(verdict.line);
 
-          const results = resultsOf(model, done);
+          const results = done.results;
           yield* Environments.verify({ root, name: TEST, pid: environment.pid, revision, sha256: built.sha256 }).pipe(Effect.mapError(failed));
           yield* Build.unchanged(root, built.commit).pipe(Effect.mapError(failed));
           // The portal and `impact` judge a verdict against the model of the revision it proved, so the logbook keeps that model first (D3 #138).

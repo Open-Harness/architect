@@ -20,7 +20,7 @@
   "workable": false
  },
  "M2": {
-  "gate": "nx run e2e:m2: (1) npm create orthograph demo scaffolds an app with auth and organizations mounted and nothing copied, and ortho prove --env local is green; (2) a new notes feature is made with ortho new feature, proved in its own world, published to the local registry, and mounted into acme and work with ortho add, with every journey in all three still green; (3) the sign-up and sign-in journeys pass through the SDK, the CLI and MCP; (4) no environment file names a secret by string; (5) the stage 1 check (K9): the scaffold is links at stage 1, a person signs in, claims aaron and adds a link in headless Chromium, and a second claim is refused with HandleTaken through the SDK, the CLI, MCP, an action and the hook.",
+  "gate": "nx run e2e:m2: (1) npm create orthograph demo scaffolds Plugged In at stage 1 with auth and handles mounted and nothing copied, and ortho prove --env local is green; (2) a new notes feature is made with ortho new feature, proved in its own world, published to the local registry, and mounted into acme and work with ortho add, with every journey in all three still green; (3) the sign-up and sign-in journeys pass through the SDK, the CLI and MCP; (4) no environment file names a secret by string; (5) the stage 1 check (K9): the scaffold is links at stage 1, a person signs in, claims aaron and adds a link in headless Chromium, and a second claim is refused with HandleTaken through the SDK, the CLI, MCP, an action and the hook.",
   "goal": "Auth stops being copied: identity and tenancy are two mounted plugins, every kind of caller exists, secrets come from the plugins that need them, and journeys prove the clients people actually use.",
   "id": "M2",
   "name": "Auth and organizations (workable)",
@@ -65,7 +65,7 @@
   "id": "M6",
   "name": "On chain",
   "order": 7,
-  "ships": "@orthograph/language-solidity, the relayer and follower, one vault per organisation (S27); frame/examples/allowance-on-chain.md.",
+  "ships": "@orthograph/language-solidity, the relayer and follower, one budgets module per network, enabled by each organisation's Safe (S27, K25); frame/examples/allowance-on-chain.md.",
   "summary": "On chain: contracts as the enforcer, chain events in the model and the portal, adapters from a contract's ABI. Wallets and the EVM adapter already moved up into M1.",
   "workable": false
  },
@@ -76,7 +76,7 @@
   "name": "The cloud, then Capxul",
   "order": 8,
   "ships": "",
-  "summary": "The cloud, then Capxul: a dedicated staging account under the $10 a day cap, deploys that leave nothing behind, the release, then Capxul's plugins.",
+  "summary": "The cloud, then Capxul: the shared, prefixed Cloudflare account under the $10 a day cap, deploys that leave nothing behind, the release, then Capxul's plugins.",
   "workable": false
  },
  "ST1": {

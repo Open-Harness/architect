@@ -293,7 +293,7 @@ is no faker than what it replaces. The Grafana viewer goes: the portal's own tra
 | **Aaron's Mac** | workerd, Node, and the services as processes: Collector, Verdaccio, the OIDC issuer, Anvil. `ortho check`, `prove` and `dev` work offline | none |
 | **Sandboxes (E2B)** | the factory's workspaces (section 3); a whole project's `prove` and the gates before a push, many at once, with the laptop shut. The same processes in our template | none |
 | **CI (GitHub Actions)** | the gates, unchanged until the process forms land; then the same processes, so CI, the Mac and the sandbox run one setup | the runner image has Docker preinstalled; after M1.33 no step uses it |
-| **Staging (Cloudflare)** | the deployed Workers, D1, Durable Objects and R2, on a dedicated `orthograph-staging` account; Cloudflare Containers where a service must be a container there; the real OTLP sink. A spike now, then real staging after Gate M2 (round 2) | n/a |
+| **Staging (Cloudflare)** | the deployed Workers, D1, Durable Objects and R2, on a dedicated `orthograph-staging` account; Cloudflare Containers where a service must be a container there; the real OTLP sink. (The dedicated account: superseded by M7-cloud's addendum, 20 November 2026; one prefixed account serves every environment for now.) A spike now, then real staging after Gate M2 (round 2) | n/a |
 
 **The rule holds for stand-ins still to come**: M5's stripe-mock, Mailpit and real MariaDB (M5.08, M5.09, M5.13) are
 each a process, or run in a sandbox, never a local container. The Docker sandbox for agents (A7) is dropped.
@@ -308,6 +308,10 @@ token lives in his keychain, read by name and never printed.
 everywhere. `spikes/workspace-e2b` now also checks that the process forms run in our template. Staging comes first
 in M7: `spikes/staging-pass` any time, then M7.01, M7.03 and M7.04 for staging alone after Gate M2. npm, Homebrew
 and the rest of M7 still wait on the stage 4 gate (_Superseded by K28, 21 November 2026: npm's `latest` tag, Homebrew and the rest of M7 wait on the stage 4 gate; the preview under `next` is M1.51_).
+
+**Built (M1.33, 19 November):** the Collector, Verdaccio and the OIDC issuer are processes, owned by PID and swept by PID, and
+the Grafana viewer is gone; the calls and their evidence are in [`M1-processes.md`](M1-processes.md). Where the table above says a
+service needs Docker, that is how it was before M1.33.
 
 ## 7. The order: floor, spikes, later
 

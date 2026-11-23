@@ -32,6 +32,7 @@ Say not yet, and why. The task stays where its facts put it.
 | refusal | exit | code | when |
 |---|---|---|---|
 | AttentionNotOpen | 55 | AT-900 | the attention is in a state decline can't start from; carries `state` |
+| AttentionNotFound | 4 | AT-901 | nothing has the id in attention; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |
 
 ## How to call

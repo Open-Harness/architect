@@ -40,7 +40,7 @@ export interface ReleasesApi {
   /** The last production release, or undefined when there has been none. */
   readonly last: (logbook: string) => Effect.Effect<{ readonly version: string; readonly revision: string } | undefined, ReleaseFailed>;
   /** The working model against the last production release's model, and the logbook's latest `main` verdicts. */
-  readonly shipping: (logbook: string, model: Model) => Effect.Effect<Shipping, ReleaseFailed>;
+  readonly shipping: (logbook: string, model: Model, root?: string) => Effect.Effect<Shipping, ReleaseFailed>;
   /** `ortho version --next`: the version the working model would release as. */
   readonly next: (logbook: string, model: Model) => Effect.Effect<string, ReleaseFailed>;
   /**

@@ -6,6 +6,8 @@ export interface WorldEnv {
   readonly DB: D1Database;
   /** Better Auth's secret. Made fresh by `ortho dev` for each run; never written to a file. */
   readonly AUTH_SECRET: string;
+  /** Made fresh by `ortho dev`: its health answer says it, and a reset must present it (a record of dev is no one else's world). */
+  readonly ORTHO_WORLD_NONCE?: string;
 }
 
 /**
@@ -21,6 +23,8 @@ export interface WorldHost {
   readonly worlds: DurableObjectNamespace;
   readonly db: D1Database;
   readonly tables: ReadonlyArray<string>;
+  /** The declared database stores (K3): each its own binding, with the tables of the things that live in it. */
+  readonly stores?: ReadonlyArray<{ readonly db: D1Database; readonly tables: ReadonlyArray<string> }>;
   /** This environment hosts worlds with lifetimes (a test environment): `/_world/worlds` is open, and each world is its own Durable Object. */
   readonly leases?: boolean;
 }

@@ -1,0 +1,57 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/09
+# commit 3f762331 · 2026-11-19T07:33:56Z · exit 1 (expected 1) · 15.8s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/09-wallet-journeys.test.ts (5 tests | 2 failed) 13025ms
+     × a control that works today: with an empty server handler per operation, each journey runs to its first step and fails there 9065ms
+     × the stand-in as M1.29 will ship it (client operations, empty node, browser and world entries): each journey fails, naming its step 3870ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/09-wallet-journeys.test.ts > 09 empty handlers: every journey fails, naming its step > a control that works today: with an empty server handler per operation, each journey runs to its first step and fails there
+AssertionError: Docker is not answering. Prove needs its collector container, so this check fails closed. Start Docker yourself: this check never starts it.: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ dockerIsUp m1/09-wallet-journeys.test.ts:48:169
+     46| const dockerIsUp = () => {
+     47|   const docker = spawnSync("docker", ["info"], { encoding: "utf8", tim…
+     48|   expect(docker.status, "Docker is not answering. Prove needs its coll…
+       |                                                                                                                                                                         ^
+     49| };
+     50|
+ ❯ m1/09-wallet-journeys.test.ts:121:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  m1/09-wallet-journeys.test.ts > 09 empty handlers: every journey fails, naming its step > the stand-in as M1.29 will ship it (client operations, empty node, browser and world entries): each journey fails, naming its step
+AssertionError: Docker is not answering. Prove needs its collector container, so this check fails closed. Start Docker yourself: this check never starts it.: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ dockerIsUp m1/09-wallet-journeys.test.ts:48:169
+     46| const dockerIsUp = () => {
+     47|   const docker = spawnSync("docker", ["info"], { encoding: "utf8", tim…
+     48|   expect(docker.status, "Docker is not answering. Prove needs its coll…
+       |                                                                                                                                                                         ^
+     49| };
+     50|
+ ❯ m1/09-wallet-journeys.test.ts:131:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  07:33:41
+   Duration  14.89s (transform 897ms, setup 0ms, import 1.68s, tests 13.02s, environment 0ms)

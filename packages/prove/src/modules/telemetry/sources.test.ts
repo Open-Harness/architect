@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { Effect } from "effect";
 import { afterAll, describe, expect, it } from "vitest";
 import { AxiomSource, FileSource } from "./service.ts";
+import { arrived } from "./internal/otlp.ts";
 
 const dir = mkdtempSync(join(tmpdir(), "sources-"));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
@@ -52,6 +53,35 @@ const rows = [
   ["POST", 9, "UNSET", "2026-11-17T11:59:00.240Z", {}, TRACE, "00000000000000b1", ""],
 ];
 const columns = FIELDS.map((_, i) => rows.map((r) => r[i]));
+
+describe("a call the server refuses before any span opens (O2, gap 3)", () => {
+  const parent = "00000000000000aa";
+  const root = { traceId: "c".repeat(32), spanId: "0000000000000001", parentSpanId: parent, name: "allowance.get", start: 0, end: 1, attrs: {}, events: [], status: "ok" };
+  const orphan = { ...root, spanId: "0000000000000002", parentSpanId: "00000000000000ff" };
+
+  it("arrived: an empty trace is whole only when nothing may come; one with spans is judged as any other", () => {
+    expect(arrived(undefined, { trace: root.traceId, parent })).toBe(false);
+    expect(arrived(undefined, { trace: root.traceId, parent, mayBeEmpty: true })).toBe(true);
+    expect(arrived({ spans: [], logs: [] }, { trace: root.traceId, parent, mayBeEmpty: true })).toBe(true);
+    expect(arrived({ spans: [root as never], logs: [] }, { trace: root.traceId, parent, mayBeEmpty: true })).toBe(true);
+    // The handler ran after all and its spans are still landing: wait for them, so a "span absent" check can see them.
+    expect(arrived({ spans: [orphan as never], logs: [] }, { trace: root.traceId, parent, mayBeEmpty: true })).toBe(false);
+  });
+
+  it("FileSource.traces does not wait ten seconds for a trace that may be empty", { timeout: 15_000 }, async () => {
+    const folder = join(dir, "refused");
+    mkdirSync(folder, { recursive: true });
+    const came = "d".repeat(32);
+    const span = { traceId: came, spanId: "0000000000000003", parentSpanId: parent, name: "allowance.spend", kind: 1, startTimeUnixNano: "1000000", endTimeUnixNano: "6000000", attributes: [], status: { code: 1 } };
+    writeFileSync(join(folder, "traces.jsonl"), JSON.stringify({ resourceSpans: [{ scopeSpans: [{ spans: [span] }] }] }) + "\n");
+    const refused = "e".repeat(32);
+    const started = performance.now();
+    const got = await Effect.runPromise(FileSource.open(folder).traces([{ trace: came, parent }, { trace: refused, parent, mayBeEmpty: true }]));
+    expect(performance.now() - started).toBeLessThan(2_000);
+    expect(got.get(came)!.spans).toHaveLength(1);
+    expect(got.get(refused)).toEqual({ spans: [], logs: [] });
+  });
+});
 
 describe("AxiomSource", () => {
   it("asks APL for the environment's spans in the window, with the query token and the organisation, and reads Axiom's columns back as spans", async () => {

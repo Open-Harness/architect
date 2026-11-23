@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import type { Model } from "@orthograph/compiler";
 import { Build } from "#modules/build/service.js";
 import type { Built } from "#modules/build/types.js";
+import type { Held } from "#modules/verdicts/types.js";
 import { Verdicts } from "#modules/verdicts/service.js";
 import { PromoteFailed, PromoteRefused } from "../types.ts";
 
@@ -27,12 +28,13 @@ export const bundleOf = (root: string, revision: string): Effect.Effect<Built, P
   });
 
 /** Every operation of the model has a passing verdict from `main` for the revision in `environment`, or the refusal says which do not. */
-export const verdictsIn = (logbook: string, model: Model, revision: string, environment: string, sha256: string): Effect.Effect<void, PromoteRefused | PromoteFailed> =>
+export const verdictsIn = (logbook: string, model: Model, revision: string, environment: string, sha256: string): Effect.Effect<ReadonlyArray<Held>, PromoteRefused | PromoteFailed> =>
   Effect.gen(function* () {
     const held = yield* Verdicts.latest({ logbook, revision, environment, ref: MAIN }).pipe(Effect.mapError(failed));
-    const passing = new Set(held.filter((v) => v.verdict === "pass" && v.sha256 === sha256).map((v) => v.operation));
+    const passed = held.filter((v) => v.verdict === "pass" && v.sha256 === sha256);
+    const passing = new Set(passed.map((v) => v.operation));
     const missing = Object.keys(model.operations).filter((op) => !passing.has(op)).sort();
-    if (missing.length === 0) return;
+    if (missing.length === 0) return passed;
     return yield* new PromoteRefused({
       lines: [
         passing.size === 0 ? `refused: ${revision} has no green verdicts in ${environment}` : `refused: ${revision} has no green verdicts in ${environment} for every operation`,

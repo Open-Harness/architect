@@ -7,6 +7,7 @@ import { ApiKey } from "../../blueprint/things/api-key/thing.ts";
 /** Create an API key in an organisation, on its owner's behalf. The key itself is answered once and never kept. */
 const create: Handler = ({ organization, name }, { principal, steps }) =>
   Effect.gen(function* () {
+    // A key is made in person: the declaration says `.via(Via.session, Via.device)`, so neither an agent nor a key reaches here.
     if (principal.kind !== "person") return yield* Effect.die(new Error("reached without a signed-in person"));
     const auth = yield* Auth;
     const records = yield* Records;

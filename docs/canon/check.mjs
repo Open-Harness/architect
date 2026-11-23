@@ -38,7 +38,8 @@ const read = (p) => readFileSync(p, "utf8");
 const at = (p) => resolve(repo, p);
 const lineOf = (text, index) => text.slice(0, index).split("\n").length;
 
-const slices = new Set([...read(at("design/milestones.md")).matchAll(/^\| (M\d+\.\d+)/gm)].map((m) => m[1]));
+// A slice is an M id (a milestone's) or an ST id (Stage 1's, rows of its table): both are real rows of design/milestones.md.
+const slices = new Set([...read(at("design/milestones.md")).matchAll(/^\| ((?:M|ST)\d+\.\d+)/gm)].map((m) => m[1]));
 const decisions = readdirSync(at("design/decisions")).filter((n) => n.endsWith(".md"));
 const decisionExists = (id) => decisions.some((n) => n === `${id}.md` || n.startsWith(`${id}-`));
 const outline = read(join(canon, "outline.md"));

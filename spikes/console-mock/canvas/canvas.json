@@ -170,6 +170,42 @@
       "w": 1440,
       "x": 7600,
       "y": -2500
+    },
+    "RulesHandle.dc.html": {
+      "expand": "fill",
+      "h": 1640,
+      "is_interactive": true,
+      "title": "handle: the Rules section under the lifecycle",
+      "w": 1440,
+      "x": 0,
+      "y": -6400
+    },
+    "RulesProfile.dc.html": {
+      "expand": "fill",
+      "h": 880,
+      "is_interactive": true,
+      "title": "profile: one rule that refuses nothing",
+      "w": 1440,
+      "x": 1520,
+      "y": -6400
+    },
+    "RulesClaim.dc.html": {
+      "expand": "fill",
+      "h": 1540,
+      "is_interactive": true,
+      "title": "handle.claim: refusals read as their rule, and the rules stop",
+      "w": 1440,
+      "x": 0,
+      "y": -4500
+    },
+    "RulesRelease.dc.html": {
+      "expand": "fill",
+      "h": 1160,
+      "is_interactive": true,
+      "title": "handle.release: no rules stop",
+      "w": 1440,
+      "x": 1520,
+      "y": -4500
     }
   },
   "createdOnFiles": {
@@ -181,6 +217,9 @@
     "view": "canvas"
   },
   "noteOrder": [
+    "rowRules",
+    "nRulesThing",
+    "nRulesOp",
     "rowMission",
     "nMission",
     "nPlan",
@@ -378,6 +417,27 @@
       "w": 600,
       "x": 9120,
       "y": -2500
+    },
+    "rowRules": {
+      "kind": "title1",
+      "maxW": 3000,
+      "text": "ST1.22: rules in the portal. Where a rule shows, and how a refusal names it (G5, Aaron's 1A 2A 3A 4A)",
+      "x": 0,
+      "y": -6700
+    },
+    "nRulesThing": {
+      "fill": "blue",
+      "w": 700,
+      "x": 3040,
+      "y": -6400,
+      "text": "Group: a thing's page. Rules sit under the lifecycle, one row per rule (1A). Each row says the rule in one sentence, which fields and states it holds in, and what a caller gets when it breaks.\nhandle has two rules, each owning a refusal. oneNamePerPerson carries its own written sentence, so its row says so (2A, optional description). profile has one rule that refuses nothing: its row says a break is a defect.\nThe lifecycle carries no mark for rules (3A); the Errors list says what decides each refusal: a rule, the machine, or the handler.\nPro: Widget, ItemCardGroup, ItemCard. HeroUI: Tabs, Chip. Hooks: rules, rule, rule-sentence, refusal, refusal-sentence, rule-link, lifecycle, operation-row.\nFacts from examples/plugged-in/generated: docs/handle/index.md and docs/profile/index.md (rules, sentences), api/src/errors.ts (codes, HTTP status, exit), portal/blueprint.json (states, moves)."
+    },
+    "nRulesOp": {
+      "fill": "blue",
+      "w": 700,
+      "x": 3040,
+      "y": -4500,
+      "text": "Group: an operation's page. Every refusal a rule owns reads as the rule's sentence and links to the rule's row on the thing's page (2A). The spine gains a rules stop between the move and the commit, only for an operation that can break a rule (4A).\nclaim can break two rules, so it has the stop. release only leaves claimed, so it has none; the other refusals on both pages have no rule and no link.\nPro: Widget, Timeline, ItemCard. HeroUI: Tabs, Chip. Hooks: refusal, refusal-sentence, rule-link, spine-stop (move, rules, commit).\nFacts from examples/plugged-in/generated: docs/handle/claim.md and release.md (refusals, steps, journeys), api/src/errors.ts, portal/blueprint.json (operations.<op>.invariants)."
     }
   },
   "order": [
@@ -399,7 +459,11 @@
     "Extensions.dc.html",
     "Environments.dc.html",
     "Settings.dc.html",
-    "Deploy.dc.html"
+    "Deploy.dc.html",
+    "RulesHandle.dc.html",
+    "RulesProfile.dc.html",
+    "RulesClaim.dc.html",
+    "RulesRelease.dc.html"
   ],
   "pages": [],
   "title": "Pi Durable Console"

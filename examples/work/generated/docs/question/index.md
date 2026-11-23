@@ -26,6 +26,12 @@ States: asked, answered, spiked. A move from the wrong state is refused Question
 | answer | asked | answered | QuestionAnswered |
 | spike | asked | spiked | QuestionSpiked |
 
+## Events
+
+- `QuestionAnswered`: carries question (question.id), picked (Letter); emitted by the move answer
+- `QuestionAsked`: carries question (question.id), mission (question.mission), asks (question.asks), about (question.about), options (question.options); emitted by the move ask
+- `QuestionSpiked`: carries question (question.id), about (question.about); emitted by the move spike
+
 ## Operations
 
 - [question.answer](answer.md): Answer a question with one of its letters.

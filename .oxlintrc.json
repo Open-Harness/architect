@@ -6,8 +6,6 @@
   ],
   "ignorePatterns": [
     "**/node_modules/**",
-    "**/generated/**",
-    "spikes/**",
     "design/**",
     "tmp/**",
     "**/test/fixtures/**"
@@ -28,6 +26,19 @@
             ]
           },
           {
+            "sourceTag": "scope:portal-ui",
+            "onlyDependOnLibsWithTags": [],
+            "allowedExternalImports": [
+              "@heroui-pro/react",
+              "@heroui-pro/react/*"
+            ]
+          },
+          {
+            "sourceTag": "scope:theme",
+            "onlyDependOnLibsWithTags": [],
+            "allowedExternalImports": []
+          },
+          {
             "sourceTag": "env:runtime",
             "onlyDependOnLibsWithTags": [
               "env:runtime"
@@ -45,7 +56,22 @@
             "onlyDependOnLibsWithTags": [
               "scope:orthograph",
               "scope:language",
-              "scope:host"
+              "scope:host",
+              "scope:projections"
+            ]
+          },
+          {
+            "sourceTag": "env:support",
+            "onlyDependOnLibsWithTags": [
+              "env:support"
+            ]
+          },
+          {
+            "sourceTag": "env:gate",
+            "onlyDependOnLibsWithTags": [
+              "env:build",
+              "env:runtime",
+              "env:support"
             ]
           }
         ],
@@ -53,6 +79,23 @@
       }
     ],
     "ortho/no-old-names": "error",
+    "ortho/no-viem-outside-chain": "error",
+    "ortho/no-pro-outside-portal-ui": "error",
+    "ortho/no-ui-in-worker": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": [
+              "@heroui-pro/*",
+              "@heroui-pro/**"
+            ],
+            "message": "HeroUI Pro is imported only by @orthograph/portal-ui (F7). Import the component from @orthograph/portal-ui instead."
+          }
+        ]
+      }
+    ],
     "ortho/effect-only": [
       "error",
       {
@@ -96,16 +139,34 @@
                 ]
               },
               {
+                "sourceTag": "scope:portal-ui",
+                "onlyDependOnLibsWithTags": [],
+                "allowedExternalImports": [
+                  "@heroui-pro/react",
+                  "@heroui-pro/react/*",
+                  "vitest"
+                ]
+              },
+              {
+                "sourceTag": "scope:theme",
+                "onlyDependOnLibsWithTags": [],
+                "allowedExternalImports": [
+                  "vitest"
+                ]
+              },
+              {
                 "sourceTag": "env:runtime",
                 "onlyDependOnLibsWithTags": [
-                  "env:runtime"
+                  "env:runtime",
+                  "env:support"
                 ]
               },
               {
                 "sourceTag": "env:build",
                 "onlyDependOnLibsWithTags": [
                   "env:build",
-                  "env:runtime"
+                  "env:runtime",
+                  "env:support"
                 ]
               },
               {
@@ -113,7 +174,22 @@
                 "onlyDependOnLibsWithTags": [
                   "scope:orthograph",
                   "scope:language",
-                  "scope:host"
+                  "scope:host",
+                  "scope:projections"
+                ]
+              },
+              {
+                "sourceTag": "env:support",
+                "onlyDependOnLibsWithTags": [
+                  "env:support"
+                ]
+              },
+              {
+                "sourceTag": "env:gate",
+                "onlyDependOnLibsWithTags": [
+                  "env:build",
+                  "env:runtime",
+                  "env:support"
                 ]
               }
             ],
@@ -128,6 +204,57 @@
       ],
       "rules": {
         "ortho/no-old-names": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/portal-ui/**"
+      ],
+      "rules": {
+        "ortho/no-pro-outside-portal-ui": "off",
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": [
+        "**/generated/**",
+        "**/packages/portal/src/**"
+      ],
+      "rules": {
+        "ortho/no-ui-in-worker": "error"
+      }
+    },
+    {
+      "files": [
+        "**/packages/portal/src/main.ts",
+        "**/packages/portal/src/modules/pages/**"
+      ],
+      "rules": {
+        "ortho/no-ui-in-worker": "off"
+      }
+    },
+    {
+      "files": [
+        "**/generated/**"
+      ],
+      "rules": {
+        "@nx/enforce-module-boundaries": "off",
+        "ortho/no-old-names": "off",
+        "ortho/no-viem-outside-chain": "off",
+        "unicorn/no-useless-spread": "off",
+        "no-unused-vars": "off"
+      }
+    },
+    {
+      "files": [
+        "spikes/**"
+      ],
+      "rules": {
+        "@nx/enforce-module-boundaries": "off",
+        "ortho/no-old-names": "off",
+        "ortho/no-viem-outside-chain": "off",
+        "ortho/no-pro-outside-portal-ui": "off",
+        "no-restricted-imports": "off"
       }
     }
   ]

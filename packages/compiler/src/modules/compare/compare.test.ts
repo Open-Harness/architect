@@ -40,4 +40,31 @@ describe("Compare", () => {
     expect(Object.keys(depends)).toEqual(["operation:allowance.grant", "thing:allowance", "thing:organization", "thing:person"]);
     for (const [key, hash] of Object.entries(depends)) expect(Compare.hashOf(model, key)).toBe(hash);
   });
+
+  it("a plugin's operation depends on its mount, which hashOf answers, and the edges say what each mount provides and needs", () => {
+    const mounted = edited((m) => {
+      m.mounts = {
+        echo: { kind: "feature", file: "blueprint/features/echo.ts", package: "@x/echo", version: "1.0.0", integrity: "sha256-a", chosen: {}, hash: "echohash" },
+        greet: { kind: "feature", file: "blueprint/features/greet.ts", package: "@x/greet", version: "1.0.0", integrity: "sha256-b", chosen: {}, needs: ["feature:echo"], hash: "greethash" },
+      };
+      m.operations["echo.repeat"] = { ...m.operations["system.health"], name: "echo.repeat", thing: "system", from: { mount: "echo", package: "@x/echo", version: "1.0.0", thing: "echo" } };
+    });
+    expect(Compare.dependsOn(mounted, "echo.repeat")["feature:echo"]).toBe("echohash");
+    expect(Compare.hashOf(mounted, "feature:echo")).toBe("echohash");
+    expect(Compare.hashOf(mounted, "adapter:echo")).toBeUndefined();
+    expect(Object.keys(Compare.dependsOn(mounted, "allowance.spend")).some((k) => k.startsWith("feature:"))).toBe(false);
+    expect(Compare.edges(mounted)).toEqual(["feature:echo -> echo.repeat  provides", "feature:greet -> feature:echo  needs"]);
+    expect(Compare.edges(model)).toEqual([]);
+  });
+
+  it("an operation that calls an adapter rests on its mount, and the edges say who uses it", () => {
+    const calling = edited((m) => {
+      m.mounts = { pricing: { kind: "adapter", file: "blueprint/adapters/pricing.ts", package: "@x/remote", version: "1.0.0", integrity: "sha256-a", chosen: {}, calls: ["quote"], hash: "pricinghash" } };
+      m.operations["allowance.spend"] = { ...m.operations["allowance.spend"], steps: { price: { name: "allowance.spend.price", type: "call", call: { mount: "pricing", call: "quote", mode: "promise" } } } };
+    });
+    expect(Compare.dependsOn(calling, "allowance.spend")["adapter:pricing"]).toBe("pricinghash");
+    expect(Compare.hashOf(calling, "adapter:pricing")).toBe("pricinghash");
+    expect(Object.keys(Compare.dependsOn(calling, "allowance.grant"))).not.toContain("adapter:pricing");
+    expect(Compare.edges(calling)).toEqual(["adapter:pricing -> allowance.spend  used-by"]);
+  });
 });

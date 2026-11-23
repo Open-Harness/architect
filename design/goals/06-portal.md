@@ -5,11 +5,11 @@ milestone: "Goal 6: the new portal"
 release: beta
 branch: goal/portal
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex | opencode, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | amp | codex | opencode, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-22    # the date it started
 done_check: nx run e2e:portal-next
 owns:
   - packages/theme/
@@ -146,6 +146,7 @@ want this to be able to run in parallel to the other work that's actually runnin
   | `.oxlintrc.json` | the module-boundary tags `scope:theme`, `scope:shell` and `scope:portal-next`, for `packages/theme/`, `packages/shell/` and `packages/portal-next/` |
   | `e2e/served-portal/` | the checks author's `PORTAL_CLIENT=old|next` switch, the old client the default |
   | `e2e/project.json`, `e2e/package.json` | the `portal-next` target and the new packages as workspace dependencies |
+  | `e2e/tsconfig.json` | `portal-next/**` in its `include`, so this goal's checks are typechecked |
   | `.github/workflows/ci.yml` | one job that runs the portal checks against the new client, not yet blocking |
   | `pnpm-lock.yaml` | what `pnpm install` writes for the above |
   | `design/handoff.md`, `STATE.md`, the board, `design/milestones.md` | this goal's own lines |
@@ -315,6 +316,7 @@ started, since it crosses goals.
 | ID | File | Taken by |
 |---|---|---|
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
+| MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
 
 ## The done check
 
@@ -349,3 +351,7 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 4 hours. All: about 36 to 52 hours, with slice 12 waiting on the cut-off.
 
 ## Where it stands
+
+22 November 2026. The theme is built: one shared look on UI SDK, light and dark, taken from today's portal so nothing
+changes in feel, and its check passes in a real browser with no HeroUI key. Next it lands in stage 1 on its own, so
+the UI layer's screens can use it. The map's checks are being written now; the map itself comes after them.

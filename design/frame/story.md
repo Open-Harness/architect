@@ -187,21 +187,19 @@ Then the rule that proves the checks mean something: **they must fail on empty h
 written, the journey author runs them against the scaffolds and every step that needs behaviour must go red.
 
 ```text
-$ ortho prove --env local --only "revoke then spend"
-revoke then spend   (handlers: scaffold)
-  ✘ ada revokes it                 allowance.revoke answered nothing; AllowanceRevoked not emitted
-  ✘ olga can't spend               not refused: the allowance is still active, so the empty spend ran
-  ✔ olga can't revoke it either    refused NotAllowed (the role is checked before any handler)
-2 of 3 steps fail on empty handlers. Step 3 needs no behaviour: it is proved by the role alone.
+$ ortho prove --empty --only "revoke then spend"
+journey revoke then spend ✘ 1/3 steps
+  ✘ "ada revokes it": BlankReached …
+  ✘ "olga can't spend": BlankReached …
+  ✔ "olga can't revoke it either": proved by the description
+prove ✘ 2 failing
 ```
 
 A step that passes on an empty handler is not a bug: it tells you that part is already guaranteed by the description.
 Here the role keeps olga out with no code at all.
 
-> **Today.** Executable journeys and starting worlds are real (`examples/acme/journeys/revoke-then-spend.ts`,
-> `examples/acme/blueprint/starting-worlds/funded.ts`). Running them against empty handlers is a manual check, done
-> per step in the build plan. Journeys call the server over raw HTTP (`prove/.../journeys/internal/world.ts:85`).
-> **Proposed.** `prove --empty` as a standing check run by the journey author; journeys run through each client.
+The starting world runs its declared setup calls with the real handlers. Journey steps then call the scaffolds
+over HTTP, after the same role and machine checks. See [M1 scaffold proof](../decisions/M1-scaffold-proof.md).
 
 ## 5. Compile
 

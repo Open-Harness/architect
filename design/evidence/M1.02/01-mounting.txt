@@ -1,0 +1,670 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/01-mounting
+# commit b39b30d · 2026-11-18T20:20:01Z · exit 1 (expected 1) · 21.7s
+
+
+ RUN  v4.1.12 ./e2e
+
+ × m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > folds the plugin's things and operations into the model, named by their paths, with provenance 3783ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > records the mount, section 7: kind, file, package, version, integrity, choices and hash 811ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > generates the plugin's operations as an app's own, and writes nothing into src/ 1140ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > renamed, the mount prefixes each thing: fixture-echo, FixtureEcho, fixture-echo.repeat 2852ms
+   → can't load blueprint/features/fixture.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > an invalid choice fails naming the mount file, and generates nothing 1017ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > one command writes exactly one mount file with the scaffold header and the default pick, and pins the dependency 976ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > after it, generate and check succeed with no other step, and the model has the mount 782ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > --as names the mount, and so prefixes the things 740ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > a second add of the same mount is refused and leaves the file and package.json byte for byte 1074ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > --dry-run says what it would write and writes nothing 787ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > refuses a package that is not a plugin, and a plugin of another kind, writing nothing 2794ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name ../escape is refused before anything is written 895ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name bad/name is refused before anything is written 727ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name bad:alias is refused before anything is written 760ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name 1starts-with-digit is refused before anything is written 1035ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name Upper_Case is refused before anything is written 788ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > folds the plugin's things and operations into the model, named by their paths, with provenance
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/01-mounting.test.ts:23:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > records the mount, section 7: kind, file, package, version, integrity, choices and hash
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/01-mounting.test.ts:44:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > generates the plugin's operations as an app's own, and writes nothing into src/
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/01-mounting.test.ts:55:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > renamed, the mount prefixes each thing: fixture-echo, FixtureEcho, fixture-echo.repeat
+AssertionError: can't load blueprint/features/fixture.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/01-mounting.test.ts:73:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: a feature mounted by hand (M1.06) > an invalid choice fails naming the mount file, and generates nothing
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/01-mounting.test.ts:95:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > one command writes exactly one mount file with the scaffold header and the default pick, and pins the dependency
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ addFeature m1/support.ts:82:77
+ ❯ m1/01-mounting.test.ts:111:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > after it, generate and check succeed with no other step, and the model has the mount
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ addFeature m1/support.ts:82:77
+ ❯ m1/01-mounting.test.ts:133:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > --as names the mount, and so prefixes the things
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ addFeature m1/support.ts:82:77
+ ❯ m1/01-mounting.test.ts:143:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > a second add of the same mount is refused and leaves the file and package.json byte for byte
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ addFeature m1/support.ts:82:77
+ ❯ m1/01-mounting.test.ts:149:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > --dry-run says what it would write and writes nothing
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ addFeature m1/support.ts:82:77
+ ❯ m1/01-mounting.test.ts:163:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > refuses a package that is not a plugin, and a plugin of another kind, writing nothing
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/01-mounting.test.ts:173:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name ../escape is refused before anything is written
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name bad/name is refused before anything is written
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name bad:alias is refused before anything is written
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name 1starts-with-digit is refused before anything is written
+ FAIL  m1/01-mounting.test.ts > 01 mounting: through one ortho add feature (M1.10) > an invalid mount name Upper_Case is refused before anything is written
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "feature" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/01-mounting.test.ts:186:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  16 failed (16)
+   Start at  20:19:40
+   Duration  21.13s (transform 34ms, setup 0ms, import 48ms, tests 20.98s, environment 0ms)

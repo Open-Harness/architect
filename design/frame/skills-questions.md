@@ -29,7 +29,7 @@ The whole kit is one slice in M3:
 
 ```markdown
 <!-- design/milestones.md:115-119, Gate M2 -->
-**Gate: workable.** `nx run e2e:m2`: (1) `npm create orthograph demo` scaffolds an app with auth and organizations
+**Gate: workable.** `nx run e2e:m2`: (1) `npm create orthograph demo` scaffolds Plugged In at stage 1 with auth and handles
 mounted and nothing copied, and `ortho prove --env local` is green; (2) a new `notes` feature … (3) the sign-up and
 sign-in journeys pass through the SDK, the CLI and MCP; (4) no environment file names a secret by string.
 ```

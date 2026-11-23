@@ -4,6 +4,7 @@ import { owner } from "../blueprint/things/organization/roles.ts";
 import { machine } from "../blueprint/things/allowance/machine.ts";
 import { AllowanceGranted } from "../blueprint/things/allowance/events.ts";
 import { AllowanceLimitTooHigh } from "../blueprint/things/allowance/errors.ts";
+import { Person } from "../blueprint/things/person/thing.ts";
 import grant from "../blueprint/things/allowance/verbs/grant.ts";
 
 export default Blueprint.journey("grant an allowance", {
@@ -32,6 +33,14 @@ export default Blueprint.journey("grant an allowance", {
       refuses(AllowanceLimitTooHigh, { cap: 1000n }),
       noEvents(),
       spans({ present: ["allowance.grant"], absent: ["allowance.grant.insert"] }),
+    ),
+    s.step(
+      // K16 (M1.46): no role check reads the member, so the runtime looks it up, and refuses before the handler runs.
+      "a member who is no one is refused PersonNotFound and the handler never runs",
+      s.ada.run(grant, { organization: s.world.organization, member: "per_nobody" as typeof s.olga.person, limit: 500n }),
+      refuses(Person.notFound, { id: "per_nobody" }),
+      noEvents(),
+      spans({ absent: ["allowance.grant.insert"] }),
     ),
   ],
 });

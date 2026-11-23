@@ -57,3 +57,26 @@ printed or written.
 
 Shipping compiled Pro components inside a published npm package is a licensing question. Nothing is published outside
 the local registry until M7.02, so nothing is distributed before Aaron decides it, with HeroUI's terms in hand.
+
+## How it was built (the builder, 20 November 2026)
+
+The calls the decision left to the build, each with the reason:
+
+- **The Worker answers first, and reads the files through a binding.** The Worker's config binds the client as static assets
+  (`assets.binding` `PORTAL_ASSETS`, `run_worker_first`), and `@orthograph/portal/server` serves `/portal` and under it from that binding:
+  a file is that file, a path with no file type is `index.html` (the single-page fallback, made by the server, since the platform's own
+  fallback looks only at the assets' root), a missing file is a 404. Serving the folder natively would have put `main.js` and its
+  source map in the assets, or needed a `portal/` folder inside the folder the revision keeps; the binding keeps the assets exactly
+  `.ortho/artefacts/<revision>/portal/`, byte for byte what `packages/portal/dist/client` is.
+- **`generated/server/wrangler.jsonc` is not touched.** A run uses a config derived from it (`prove`'s `server-config` module): `main`
+  and the migrations folders as absolute paths, plus the assets when the project's `@orthograph/portal` has a built client. A world
+  writes it to `.ortho/<name>/wrangler.jsonc`, a build beside its scratch folder, an environment as it did before with the assets added
+  (the revision's own `portal/` folder). With no built client the config is the generated one, the Worker says `/portal` has no client,
+  and nothing else changes: a machine without the licence still builds, proves and runs everything.
+- **The client is built by `nx run portal:client` (vite) and nowhere else.** Without the real HeroUI Pro build
+  (`pro.mjs require`) it fails with a message that starts `K19: unavailable`: no stub, no skip. The portal-ui CI job, the only one that reads the
+  token (the way it already does, no new secret), builds it, and uploads `dist/client`
+  as the `portal-client` artifact, and the jobs that read the portal (`e2e-m1`, `e2e-grid`, `e2e-layer2`) download it. `dist/` stays ignored: the
+  built files are never committed.
+- **The lint rule** is `ortho/no-ui-in-worker` (`packages/lint`), on for every `generated/` folder and all of `packages/portal/src`, off for the
+  client half: `src/main.ts` and `src/modules/pages/`. Its diagnostic starts `K19:` and names the module.

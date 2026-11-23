@@ -1,0 +1,12 @@
+# CI: e2e-m1 job on PR #63 (head be2bd40, m1 + the scaffold), https://github.com/AaronAbuUsama/architect/actions/runs/44419934673/job/135209924695
+# Excerpt of the job log: check 02, all nine tests.
+ ✓ m1/02-runtime-and-closures.test.ts (9 tests) 103902ms
+     ✓ the typed SDK and HTTP both answer from the feature's handler; the generated SDK is typed and holds no plugin source  6655ms
+     ✓ a changed pick changes the answer, and the model records it  4965ms
+     ✓ a fresh worker's first call may be MCP: the plugin's mount is provided before anything else warms it  4316ms
+     ✓ prove runs the feature's own journey beside the app's, with every operation's nine evals  27778ms
+     ✓ api and sdk hold the descriptor and blueprint/* of the plugin only; the worker never holds a .node.js or .browser.js entry  1588ms
+     ✓ a client importing the plugin's handler is caught too: src/* is for the host it runs on, and a client is no host  1158ms
+     ✓ the empty-handler variant makes prove fail, naming what happened  28923ms
+     ✓ the defect-handler variant makes prove fail, naming what happened  28439ms
+ ✓ m1/05-graph.test.ts (10 tests) 22827ms

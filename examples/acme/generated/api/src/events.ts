@@ -1,4 +1,4 @@
-// Generated from the blueprint. Do not edit.
+// Generated from blueprint/projections/api.ts. Do not edit.
 import { EventNames } from "orthograph/server";
 import * as Allowance from "../../../blueprint/things/allowance/events.ts";
 import * as Invitation from "../../../blueprint/things/invitation/events.ts";

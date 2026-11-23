@@ -28,6 +28,32 @@ Read one sheet by its id: title, places, taken, state.
 
 (none)
 
+## Worked examples
+
+### a closed sheet takes no one
+
+Starts from the world `opened`.
+
+- **reading it back shows a closed sheet with nobody on it.** `visitor` (anyone) calls and sends id the world's sheet, and gets back [`0`, `closed`].
+
+### fill a sheet
+
+Starts from the world `opened`.
+
+- **reading it back shows both places taken.** `visitor` (anyone) calls and sends id the world's sheet, and gets back [`2`, `2`, `full`].
+
+### join twice with one request
+
+Starts from the world `opened`.
+
+- **only one place was taken.** `visitor` (anyone) calls and sends id the world's sheet, and gets back [`1`, `open`].
+
+### put up a sheet
+
+Starts from an empty world.
+
+- **reading it back shows an open sheet with nobody on it.** `visitor` (anyone) calls and sends id the last call's sheet, and gets back [`Book club`, `3`, `0`, `open`].
+
 ## How to call
 
 ```sh
