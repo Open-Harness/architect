@@ -24,7 +24,7 @@ describe("a creating move the runtime stores", () => {
     const handler: Handler<typeof open> = (_payload, { move, id }) => Effect.as(move(), { purse: id as never });
     const memory = storeMemory([]);
     const served = Handlers.serve({ name: "purse.open", operation: open, handler });
-    const exit = await Effect.runPromiseExit(served.call({ limit: "10" }, { kind: "person", person: "per_ada" }).pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))));
+    const exit = await Effect.runPromiseExit(served.call({ limit: "10" }, { kind: "person", person: "per_ada", via: "session" }).pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))));
     expect(Exit.isSuccess(exit)).toBe(true);
     const purse = Exit.isSuccess(exit) ? (exit.value as { purse: string }).purse : "";
     expect(memory.entries.map((e) => [e.event, e.subject])).toEqual([["Opened", purse]]);

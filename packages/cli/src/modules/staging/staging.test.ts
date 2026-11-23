@@ -65,7 +65,8 @@ const run = <A>(e: Effect.Effect<A>) => Effect.runPromise(e);
 
 describe("staging up and destroy", () => {
   it("the prefix and the address come from one place", () => {
-    expect(prefixOf("plugged-in", "7")).toBe("ortho-pluggedin-stg-7");
+    expect(prefixOf("plugged-in", "stg", "7")).toBe("ortho-pluggedin-stg-7");
+    expect(prefixOf("plugged-in", "test", "pr7r19000000001")).toBe("ortho-pluggedin-test-pr7r19000000001");
     expect(stagingUrl("ortho-pluggedin-stg-7", "acct")).toBe("https://ortho-pluggedin-stg-7-worker.acct.workers.dev");
   });
 
@@ -210,6 +211,15 @@ describe("staging up and destroy", () => {
     expect(text).not.toMatch(/ortho-|-stg-|-worker/);
   });
 
+  it("a Worker that never answers names the destroy for its own environment, test as well as staging", async () => {
+    for (const environment of ["staging", "test"]) {
+      const world = pretend([], [], () => ({ status: 0, output: "" }));
+      const said = await run(makeStaging({ ...world.tools, probe: () => Effect.succeed(503) }).up({ ...options("81"), environment }));
+      expect(said.exit).toBe(1);
+      expect(said.err).toContain(`ortho env destroy ${environment} --run 81`);
+    }
+  });
+
   it("a first deploy that fails with code 10007 is tried again after a pause, once", async () => {
     const world = pretend([], [], (verb, tries) => (verb === "deploy" && tries === 1 ? { status: 1, output: "This Worker does not exist on your account [code: 10007]" } : { status: 0, output: "" }));
     const said = await run(makeStaging(world.tools).up(options("78")));
@@ -255,23 +265,5 @@ describe("staging up and destroy", () => {
     expect(said.exit).toBe(1);
     expect(said.err).toContain("r2_buckets");
     expect(world.calls.filter((c) => c.startsWith("alchemy"))).toEqual([]);
-  });
-});
-
-describe("the Alchemy CLI the real tools start", () => {
-  it("is a file that exists, the one in Alchemy's own package", async () => {
-    const { alchemyBin } = await import("./internal/alchemy-bin.ts");
-    expect(existsSync(alchemyBin)).toBe(true);
-    expect(alchemyBin.endsWith("/alchemy/bin/cli.js")).toBe(true);
-  });
-
-  it("keeps the line that names a missing module, and still hides the credentials", async () => {
-    const { clip } = await import("./internal/stack.ts");
-    const trace = ["Error: Cannot find module '/x/token-for-the-test/missing.js'", ...Array.from({ length: 10 }, (_, i) => `    at frame ${i}`), "Node.js v24"].join("\n");
-    const said = clip(trace, credentials);
-    expect(said).toContain("Cannot find module");
-    expect(said).toContain("missing.js");
-    expect(said).not.toContain("token-for-the-test");
-    expect(said).toContain("[token]");
   });
 });

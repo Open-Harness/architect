@@ -75,8 +75,8 @@ Capxul's plugins on it. Everything below is judged by whether it gets us there s
    a meta-milestone; all four together are v1.0. Each stage is built from reusable pieces (plugins), and the starter
    and every example change to follow it. The 📐 growing-example thread designed it as K9 ([`decisions/K9-growing-example.md`](decisions/K9-growing-example.md), merged in #55), including what the app
    looks like at each stage, the React hooks slice (designed in `frame/projections.md:261`, owned by no slice), and
-   whether generated actions really make us compatible with agent-native apps. Until K9 lands, the sign-up sheet
-   (`examples/signup`) stays the canon's first example and acme the tests' fixture. The earlier mini DAO example
+   whether generated actions really make us compatible with agent-native apps. Plugged In is the canon's one example
+   and acme the tests' fixture (K37). The earlier mini DAO example
    (governance, private membership) is folded into stages 3 and 4 or retired by K9.
 8. **Operations DX (K5):** an operation-level `emits:` lands in the same commit as its writes, only on success, and a
    call that writes nothing emits nothing (Q5 = B; built in M3.16). Steps may be declared optional, and eval 6 still
@@ -204,7 +204,7 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 G9 to G11 (`goal/stage-1`), `M2-auth` (#263, #267), `M6-chain` (#275, #276, #279), `M7-03-infra-projection` (#282). `ST1-25-flakes` is a
 decision file; K29's ST1.25 is a slice id, and the two are unrelated.
 
-**Next free:** D5, E2, F10, G13, H3, K36, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
+**Next free:** D5, E2, F10, G13, H3, K39, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
 before this list existed. `CI-<slug>`, `M<n>-<slug>`, `ST<n>-<slug>` and `Gate<n>` are named by their slug or
 milestone, not numbered; a goal records its own in its brief, not here (K32), and `GOAL<n>-<slug>` names a call that
 belongs to one goal and no milestone.
