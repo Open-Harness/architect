@@ -40,6 +40,7 @@ entry (`catchUp`) and the hop to `trigger.receive` are slice 7's and 9's.
 4. **Held plugins are regenerated** from the committed fixtures with `ortho new adapter`, and GitHub's identity is said again in
    `src/written.ts` (the generated descriptor spreads it last), so no generated file was edited.
 5. **PostHog's door** does not exist: no documented signature (GOAL17-connections, open risks).
+6. **Migration 0001 was edited in place** (the inbox columns), because the superagent has never been deployed; adding a door to a deployed app needs a 0002 migration (`design/later.md`).
 
 ## Not done
 

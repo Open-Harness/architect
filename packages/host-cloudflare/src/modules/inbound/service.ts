@@ -61,8 +61,14 @@ const deliver = (door: Door, options: InboundOptions, request: Request): Effect.
       yield* outcome(door.mount, "ignored");
       return json({ ignored: true });
     }
-    const id = `${door.mount}:${event.id(decoded.value)}`;
-    const settled = yield* accept(options.db, { id, trace: traceOf(request), mount: door.mount, event: name, fields: parsed, actor: event.actor?.(decoded.value) });
+    // A payload the schema allows may still lack what the identity reads: that is a delivery to ignore with a warning, never a 500.
+    const named = yield* Effect.try({ try: () => ({ id: `${door.mount}:${event.id!(decoded.value)}`, actor: event.actor?.(decoded.value) }), catch: (e) => e }).pipe(Effect.option);
+    if (Option.isNone(named)) {
+      yield* Effect.logWarning(`in.${door.mount}: ${name} has no identity to read in this payload`);
+      yield* outcome(door.mount, "ignored");
+      return json({ ignored: true });
+    }
+    const settled = yield* accept(options.db, { id: named.value.id, trace: traceOf(request), mount: door.mount, event: name, fields: parsed, actor: named.value.actor });
     yield* outcome(door.mount, settled);
     return json(settled === "accepted" ? { accepted: true } : { seen: true });
   }).pipe(Effect.withSpan(`in.${door.mount}`));

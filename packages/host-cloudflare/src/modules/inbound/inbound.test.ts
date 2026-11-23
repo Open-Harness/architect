@@ -10,12 +10,14 @@ const note = Blueprint.incoming(Schema.Struct({ id: Schema.Number, text: Schema.
   id: (p) => `note:${p.id}`,
   actor: (p) => ({ id: String(p.sender.id), name: p.sender.login, bot: false }),
 });
+// valid by its schema, but its identity reads a part the schema leaves optional
+const loose = Blueprint.incoming(Schema.Struct({ id: Schema.Number, sender: Schema.optionalKey(Schema.Struct({ id: Schema.Number })) }), { id: (p) => `loose:${p.sender!.id}`, actor: () => undefined });
 const adapter = Blueprint.adapter({
   description: "A sender of notes.",
-  events: { note },
+  events: { note, loose },
   door: { signing: Blueprint.secret.stored(), verify: { header: "x-sig", prefix: "sha256=", signs: "body" }, event: { header: "x-event" } },
 });
-const door: Door = { mount: "notes", adapter, events: ["note"], sources: [], secret: "NOTES_WEBHOOK_SIGNING" };
+const door: Door = { mount: "notes", adapter, events: ["note", "loose"], sources: [], secret: "NOTES_WEBHOOK_SIGNING" };
 
 const sign = (body: string, secret = SECRET) =>
   crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
@@ -45,6 +47,11 @@ describe("inbound doors, in workerd", () => {
       expect(await post(body, { "x-event": "note", ...(sig === "" ? {} : { "x-sig": sig }) })).toEqual({ status: 401, body: { _tag: "BadSignature" } });
     }
     expect(await env.DB.prepare(`SELECT count(*) AS n FROM "_journal" WHERE "id" = 'notes:note:2'`).first<{ n: number }>()).toEqual({ n: 0 });
+  });
+
+  it("ignores, and does not fail, a payload its schema allows but whose identity cannot be read", async () => {
+    const body = JSON.stringify({ id: 4 });
+    expect(await post(body, { "x-event": "loose", "x-sig": await sign(body) })).toEqual({ status: 200, body: { ignored: true } });
   });
 
   it("ignores an event it does not take, answers 404 for another mount and 405 for another method", async () => {
