@@ -18,8 +18,12 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
     const busy = yield* Busy;
     const table = yield* WorldTable;
     const wakes = yield* Effect.serviceOption(TimerWakes);
-    /** Back to work: the sleeper takes its own token again first, and only then does the world let go of the one it held for it. */
-    const resume = (lease: { readonly reclaim: Effect.Effect<void> }, id: number) => Effect.andThen(lease.reclaim, table.cancel(id));
+    /**
+     * Back to work: the sleeper takes its own token again first, and only then does the world let go of the one it held for it. The
+     * cancel runs even when the reclaim is refused (the world is closed while a reset drains): a row left behind would be fired later,
+     * and the token the world holds for it would never be acknowledged.
+     */
+    const resume = (lease: { readonly reclaim: Effect.Effect<void> }, id: number) => Effect.ensuring(lease.reclaim, table.cancel(id));
     const timers = Timers.of({
       // The row and the fiber that owns it are one uninterruptible step: an interrupt while the world is being told waits for it,
       // so a row the world holds always has a waiter to take the token the world holds for it. The waiter gives the row up itself
@@ -28,9 +32,10 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
         Effect.uninterruptibleMask((restore) =>
           Effect.flatMap(Effect.andThen(instantOf(at, `a timer for ${owner} ${name}`), table.add(owner, name, at, owner)), (id) => {
             const run = restore(table.wait(id)).pipe(
-              Effect.onInterrupt(() => table.cancel(id)),
               // The work gets a token of its own (taken before `spawn` returns) before the world lets go of the one it held for the row.
               Effect.andThen(busy.as(owner).spawn(Effect.andThen(table.cancel(id), Effect.ignore(work)))),
+              // Whatever ends the wait or the spawn (an interrupt, a refused token while a reset drains), the row is given up: idempotent.
+              Effect.onError(() => table.cancel(id)),
             );
             return Effect.as(Effect.provideService(Effect.forkDetach(run), BusyBoxRef, undefined), id);
           })),
@@ -41,8 +46,8 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
           // The row is published before the token is lent out, so the world never sees the process idle with no row.
           const id = yield* table.add(owner, "sleep", at, owner);
           const lease = yield* busy.lend;
-          yield* restore(table.wait(id)).pipe(Effect.onInterrupt(() => resume(lease, id)));
-          yield* resume(lease, id);
+          // However the wait ends, the token is taken back and the row given up, once.
+          yield* restore(table.wait(id)).pipe(Effect.ensuring(resume(lease, id)));
         })),
       within: (owner, span, wait) =>
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {

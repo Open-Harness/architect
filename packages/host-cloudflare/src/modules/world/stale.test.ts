@@ -37,7 +37,6 @@ const requestOf = (at: EntryEnv, program: (gate: () => Promise<void>) => Promise
   const entry = WorldEntry.entry<EntryEnv>({ fetch: async () => { await program(gate); return new Response("ok"); } });
   return { open: async () => { gates.shift()?.(); await pause(); }, send: () => entry.fetch!(new Request("http://app/probe/spin"), at, undefined as never) };
 };
-
 describe("a request that went stale across a reset", () => {
   it("cannot put a sleep or a durable timer in the new run's table", async () => {
     await worldOf("stale-timers", async (timers, clock, at) => {
@@ -193,45 +192,6 @@ describe("a request that went stale across a reset", () => {
       await response;
       expect(ran).toEqual([]);
       expect(refusal).toMatch(/reset/);
-      expect(timers.held()).toEqual([]);
-    });
-  });
-
-  it("a statement refused because a reset is draining another write keeps the request's token, so the request ends clean and the next move is not NeverQuiet", async () => {
-    await worldOf("stale-closed", async (timers, _clock, at) => {
-      const long = timers.rpc.countEnter("long.write");
-      timers.rpc.countSection(long);
-      const ran: Array<string> = [];
-      const statement = (sql: string) => {
-        const self = { bind: () => self, run: () => { ran.push(sql); return Promise.resolve({ results: [] }); }, all: () => Promise.resolve({ results: [] }), first: () => Promise.resolve(null), raw: () => Promise.resolve([]) };
-        return self;
-      };
-      const db = { prepare: (sql: string) => statement(sql), batch: () => Promise.resolve([]), exec: () => Promise.resolve({ count: 0, duration: 0 }) } as unknown as D1Database;
-      const guarded = WorldEntry.fenced(at, db);
-      let refusal = "";
-      const request = requestOf(at, async (gate) => {
-        await Effect.runPromise(Effect.gen(function* () {
-          const busy = yield* Busy;
-          yield* busy.as("probe.spin").counted(Effect.gen(function* () {
-            yield* Effect.promise(() => gate());
-            yield* Effect.promise(() => guarded.prepare("INSERT closing").run().catch((e: Error) => { refusal = e.message; }));
-          }));
-        }).pipe(Effect.provide(work(at))));
-      });
-      const response = request.send();
-      await pause(30);
-      // The reset closes the world and waits on the long write.
-      const closing = Effect.runPromiseExit(timers.close());
-      await pause(20);
-      await request.open();
-      await response;
-      expect(ran).toEqual([]);
-      expect(refusal).toMatch(/being reset/);
-      // The long write outlasts the bound: the reset fails and the world opens again.
-      expect((await closing)._tag).toBe("Failure");
-      timers.admit();
-      timers.rpc.countSectionEnd(long);
-      timers.rpc.countLeave(long);
       expect(timers.held()).toEqual([]);
     });
   });

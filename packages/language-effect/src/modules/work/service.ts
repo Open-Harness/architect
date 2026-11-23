@@ -173,7 +173,8 @@ const counting = (world?: Report): BusyShape => {
       // Already inside a box, the fiber is counted (the one that took the token, or a child the runtime told us about): nothing more to take.
       counted: (work) => Effect.flatMap(Effect.service(BusyBoxRef), (current) =>
         current !== undefined ? work : Effect.flatMap(boxOf(fixed), (box) =>
-          Effect.uninterruptibleMask((restore) => Effect.andThen(acquire(box), Effect.ensuring(restore(under(box, work)), release(box)))))),
+          // A refused take (the world is closed while a reset drains) gives the holder back, which `ensuring` below would not reach.
+          Effect.uninterruptibleMask((restore) => Effect.andThen(Effect.onError(acquire(box), () => Effect.ignore(release(box))), Effect.ensuring(restore(under(box, work)), release(box)))))),
       // Its own token, taken before this returns and so before the caller's can end. A request the world no longer holds cannot start one.
       // The fiber is forked outside the parent's box (it is not the parent's work) and runs under its own.
       spawn: (work) => Effect.gen(function* () {
@@ -182,7 +183,7 @@ const counting = (world?: Report): BusyShape => {
         yield* Effect.uninterruptibleMask((restore) =>
           Effect.andThen(acquire(box), Effect.provideService(Effect.forkDetach(Effect.ensuring(restore(under(box, work)), release(box))), BusyBoxRef, undefined)));
       }),
-      enter: Effect.uninterruptible(Effect.flatMap(boxOf(fixed), acquire)),
+      enter: Effect.uninterruptible(Effect.flatMap(boxOf(fixed), (box) => Effect.onError(acquire(box), () => Effect.ignore(release(box))))),
       leave: Effect.uninterruptible(Effect.flatMap(boxOf(fixed), release)),
       lend: Effect.uninterruptible(Effect.flatMap(boxOf(fixed), (box) => Effect.suspend(() => {
         let taken = false;
@@ -216,7 +217,8 @@ const counting = (world?: Report): BusyShape => {
             const id = held ?? (yield* mint(box));
             if (id === undefined) return yield* restore(Effect.interrupt);
             const done = held === undefined ? world.leave(id) : Effect.void;
-            const open = yield* world.section!(id);
+            // A section the world cannot answer must not leave the token it was taken for.
+            const open = yield* Effect.onError(world.section!(id), () => Effect.ignore(done));
             if (open !== true) {
               // `false`: the world no longer holds this request's token, so it belongs to a run that is over, and it writes nothing. `"closed"`:
               // the world holds the token and is draining for a reset: refused, with the id kept so the request's cleanup still releases it.

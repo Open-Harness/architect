@@ -24,13 +24,15 @@ export const section = <A>(env: EntryEnv, f: () => Promise<A>): Promise<A> => {
     // The box's own token when it has one; otherwise one for the length of the statement, which the world closes to like any other.
     const own = held === undefined ? Promise.resolve(keeper.countEnter(`${box.owner}`)) : Promise.resolve(held);
     return own.then((id) => {
+      const release = () => Promise.resolve(held === undefined ? keeper.countLeave(id) : undefined);
       // A token of another generation than the box's first is of a run that came after: the box is stale, and nothing it does is written.
       if (held === undefined && box.gen !== undefined && box.gen !== genOf(id)) {
         box.stale = true;
         return Promise.resolve(keeper.countLeave(id)).then(refused);
       }
       if (box.gen === undefined) box.gen = genOf(id);
-      return Promise.resolve(keeper.countSection(id)).then((open) => {
+      // A section the world cannot answer must not leave the token it was taken for.
+      return Promise.resolve(keeper.countSection(id)).catch((failure: unknown) => release().then(() => Promise.reject(failure))).then((open) => {
       const done = () => Promise.resolve(held === undefined ? keeper.countLeave(id) : undefined);
       if (open !== true) {
         // Stale (the world does not hold the token): the box is of a run that is over. Closed (it does, and a reset is draining): refused, and the
