@@ -1,0 +1,3 @@
+# Wallet send safety (the review on #616): a broadcast that never reached the chain leaves every later send from the account waiting, even once the endpoint is healthy. Waits on the build.
+src/modules/submit/lost-broadcast.test.ts > a send whose broadcast was lost > a cut connection on eth_sendRawTransaction: the next send is mined at the lost send's nonce
+src/modules/submit/lost-broadcast.test.ts > a send whose broadcast was lost > a pending send dropped with anvil_dropTransaction: the next send is mined at the dropped send's nonce
