@@ -4,7 +4,7 @@ This walks through writing one feature, `wallets`, from an empty folder to an ap
 [`README.md`](README.md). It is written from what M1.29 built, in `packages/wallets` (the device half: `create`, `import`,
 `keys`, `sign` and `send`). The one part that is still design, the linked half (Sign-In with Ethereum, M2.13), is marked
 **proposed** where it comes. The npm scope is `@orthograph` (`design/decisions/K6-orthograph.md`). The canon's page on the
-same code is [`docs/canon/chains-and-wallets.mdx`](../../docs/canon/chains-and-wallets.mdx).
+same code is [`docs/canon/chains-and-wallets.mdx`](../../../../docs/canon/chains-and-wallets.mdx).
 
 **What wallets is.** Keys, held where their signer keeps them (a person's machine, their browser's wallet, a server's key
 store, or a world), and the operations to make, bring in, list, sign with and send from them. Where a key lives is the

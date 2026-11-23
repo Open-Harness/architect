@@ -182,6 +182,6 @@ created only with Aaron's written yes.
 - Rotation is not designed. A rotated Stripe key means two valid values for a while; the store would hold both, and the
   layer would try the new one first. Later.
 - `Cloudflare.secrets` means each Worker's own secrets, not the account-level Secrets Store, so destroying a Worker
-  leaves no secret behind ([`decisions/M7-cloud.md`](../decisions/M7-cloud.md)).
+  leaves no secret behind ([`decisions/M7-cloud.md`](../../../decisions/M7-cloud.md)).
 - A feature's journeys that need a real stored secret (a provider with no stand-in) can't run locally; `prove` says so
   per journey, as for an adapter with `Stand.none`.

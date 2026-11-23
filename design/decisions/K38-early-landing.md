@@ -39,7 +39,7 @@ keeps open to all goals (K32's owner-merges rule covers goal branches, not `goal
 there, so the needing goal merges `goal/stage-1` in and builds. The whole goal still lands by one pull request after
 its done check.
 
-**A slice built outside this repository** (Goal 16's M7.11 runs in Capxul's own repository and staging) lands early
+**A slice built outside this repository** (Goal 16's M7.11 runs in Capxul's own repository and staging; superseded by K43, 23 November 2026: Capxul is built here on `goal/capxul` first) lands early
 as its record here: the evidence that its journeys are green in Capxul's staging, its row's ✅ and its decision.
 
 The needing goal says which slice it waits on by an Ask issue in the owning goal's milestone (K32, K33), so the owner

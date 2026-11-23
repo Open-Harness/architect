@@ -1,5 +1,7 @@
 # Orthograph's scope: what is built, what is left, and for which release
 
+Merged into the canon's status page, `docs/canon/status.md`, by K41 (23 November 2026); kept here as a record.
+
 Read from the code on `goal/stage-1` (at `f7d28a42`) and `goal/on-chain`, 21 November 2026, by four read-only passes
 the conductor ran. Status is judged by the code and the tests, never by the ticks in `milestones.md`, which are behind.
 The release lines in section 2 are decided: K28, Aaron, 21 November 2026.
@@ -46,7 +48,7 @@ core everything else uses.
 | Stores (database, actor) | Built | `packages/host-cloudflare/src/modules/{store,actors}` | M1.17 |
 | Generated server, SDK, CLI, docs | Built | checks 14 and 20; `generators/.../docs.ts` | M1.11 to M1.13 |
 | Generated MCP | Partial | tool calls carry no request key (open problem S-16) | M1.12, M1.37 |
-| Request key in traces | None | the portal's calls page says no span carries it | M1.12a |
+| Request key in traces | None (Superseded by K41, 23 November 2026: Built, check 38) | the portal's calls page says no span carries it | M1.12a |
 | Self-explaining scaffold and journey stubs | Built | `projections/.../handlers` | M1.44, M1.45 |
 | Plugins, mounts, adapters as steps, projections as plugins | Built | checks 01 to 08 | M1.05 to M1.14 |
 | `ortho prove`: nine evals, `--changed`, warm world | Built | checks 29, 30 | M1.16, ST1.23, ST1.24 |
@@ -76,7 +78,7 @@ core everything else uses.
 | The handles plugin | None | the code runs inside Plugged In; not extracted | ST1.03 |
 | The web pieces on UI SDK (K29) | None | no `@orthograph/web`, no `generated/web/` | ST1.25, ST1.06 |
 | Plugged In's three screens | None | no `src/web/` | ST1.04 |
-| Staging: deploy, run the story, destroy | Spiked | five clean runs in `spikes/staging-pass`; no `ortho env up staging`, no infra projection | M7.01 (decided), M7.03, M7.04 |
+| Staging: deploy, run the story, destroy | Spiked | five clean runs in `spikes/staging-pass`; no `ortho env up staging`, no infra projection (Superseded by K41, 23 November 2026: the infra projection and `ortho env up` / `destroy` staging are built, checks 37 and 41) | M7.01 (decided), M7.03, M7.04 |
 | Prove against a deployed address | None | no https client, no D1 facts reader; no slice | none |
 
 ### App UI (beta for the screens, then 1.0)

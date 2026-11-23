@@ -1,6 +1,6 @@
 // #466 (Goal 5's ask): an operation declares that a person must say yes before it runs, `needsApproval: true`.
 // The declaration and the model only: the compiler carries it, a wrong value is refused, AR-007 is reserved for ApprovalDeclined.
-// Real copies of acme's blueprint, as model.test.ts does; the scratch folder is this file's own, since model.test.ts removes its own as a whole.
+// Real copies of acme's blueprint, as model.test.ts does; the scratch folder is this file's own, as every file's is.
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { Effect, Exit } from "effect";

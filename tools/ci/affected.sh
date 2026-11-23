@@ -9,7 +9,7 @@
 # reaches another through a process, a file path or the command line must declare it in `implicitDependencies`
 # (none does yet; e2e is the one special case, below). Run everything, without asking Nx, when:
 #   - any changed path belongs to no project, or only to the root project (workflows, the lockfile, root config, tools/ci,
-#     design/ outside design/docs, spikes/);
+#     design/, spikes/);
 #   - the changed list, the project graph or the affected list cannot be read.
 # Test hooks: AFFECTED_GRAPH (a file holding `nx graph` JSON) and AFFECTED_LIST (a file with the affected project names,
 # one per line) stand in for the two nx calls.
