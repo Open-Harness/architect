@@ -1,0 +1,7 @@
+# M2.04 (secrets by declaration, #635) is not built: `Blueprint.layer` does not exist. Clears with M2.04.
+src/modules/secrets/declared.test.ts > M2.04 Blueprint.layer hands a plugin its secrets as Redacted > `settings` is an empty record in M2.04: the signature M2.06 fills needs no change
+src/modules/secrets/declared.test.ts > M2.04 Blueprint.layer hands a plugin its secrets as Redacted > a secret that was not handed fails the Effect, with no value of any other secret in the failure
+src/modules/secrets/declared.test.ts > M2.04 Blueprint.layer hands a plugin its secrets as Redacted > an error the plugin's own code raises with a secret in hand shows nothing of it when the cause is printed
+src/modules/secrets/declared.test.ts > M2.04 Blueprint.layer hands a plugin its secrets as Redacted > each secret is the one handed under its own export name: two are never swapped, and only the declared ones are reachable
+src/modules/secrets/declared.test.ts > M2.04 Blueprint.layer hands a plugin its secrets as Redacted > the factory reads a secret with `yield* secrets.<export>` and gets a Redacted, not a string
+src/modules/secrets/declared.test.ts > M2.04 Blueprint.layer hands a plugin its secrets as Redacted > what it is handed prints, serialises and inspects as <redacted>, and shows no part of the value
