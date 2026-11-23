@@ -17,10 +17,10 @@
 // (carries, absence check, not needed) is derived by `cellRole`, never stored. `notNeededProposal` and
 // `notNeededBecause` are gone: the reason a card is not needed is its block's `audiencesBecause`.
 
-/** The fourteen building blocks (the thirteen of the audit, then invariants, G5), one swim lane each. Stable: the board links threads and history to them. */
+/** The fifteen building blocks (the thirteen of the audit, then invariants, G5, and time, K23), one swim lane each. Stable: the board links threads and history to them. */
 export type BlockId =
   | "thing" | "operation" | "step" | "machine" | "event" | "error" | "roles"
-  | "visibility" | "environment" | "store" | "mount" | "device" | "journey" | "invariant";
+  | "visibility" | "environment" | "store" | "mount" | "device" | "journey" | "invariant" | "time";
 
 /** Who an output is written for. caller: api, sdk, cli, mcp. builder: model, docs (and the scaffold). operator: server,
  * telemetry. The portal serves the builder and the operator. Added by K14. */
@@ -49,7 +49,7 @@ export interface Grid {
   readonly goal: Goal;
   readonly blocks: ReadonlyArray<Block>;   // swim lanes; `order` is the hill-climb order
   readonly outputs: ReadonlyArray<Output>; // card slots in every lane, in `order`
-  readonly cells: ReadonlyArray<Cell>;     // blocks × outputs, all 126; a missing cell is a schema error
+  readonly cells: ReadonlyArray<Cell>;     // blocks × outputs, all 135; a missing cell is a schema error
   readonly story: Story;                   // added by K14
   readonly questions: ReadonlyArray<Question>; // added by K14
 }

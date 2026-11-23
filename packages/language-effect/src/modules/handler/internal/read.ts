@@ -48,13 +48,13 @@ const byList = (read: Read<any, any, any>, payload: ReadPayload) =>
 
 /** Reads are served beside operations: the same role check, the same span, no handler. */
 export const Reads: ReadsApi = {
-  serve: ({ name, read }) => {
+  serve: ({ name, read, mounts }) => {
     const decode = Schema.decodeUnknownEffect(read.payloadSchema as unknown as AnyCodec);
     const check = Schema.encodeEffect(read.answerSchema as unknown as AnyCodec);
     const run = (payload: ReadPayload, principal: Principal) =>
       Effect.flatMap(newCallId, (callId) => Effect.gen(function* () {
         const unit = yield* Unit.make(yield* Store);
-        yield* Access.check({ allowed: read.allowed, payloadFields: read.payload, payload, principal, thing: read.thing }).pipe(
+        yield* Access.check({ allowed: read.allowed, payloadFields: read.payload, payload, principal, thing: read.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
           Effect.provideService(Records, unit.records),
           Effect.withTracerEnabled(false),
         );

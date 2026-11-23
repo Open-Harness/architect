@@ -36,7 +36,7 @@ export const Compiler: CompilerApi = {
   locked,
 };
 
-/** An operation a mount narrowed keeps only the ways in named: `via` on it, in its hash. */
+/** An operation a mount narrowed keeps only the ways in named: `via` on it, in its hash; it is an agent's tool only while `agent` is kept. */
 const narrowed = (model: Model, mounts: Readonly<Record<string, MountModel>>): Model => {
   const operations = { ...model.operations };
   for (const m of Object.values(mounts)) {
@@ -44,7 +44,8 @@ const narrowed = (model: Model, mounts: Readonly<Record<string, MountModel>>): M
       const op = operations[name];
       if (!op) continue;
       const { hash: _, ...entry } = op;
-      operations[name] = { ...entry, via, hash: hashOf({ ...entry, via }) };
+      const agentTool = entry.agentTool && via.includes("agent");
+      operations[name] = { ...entry, agentTool, via, hash: hashOf({ ...entry, agentTool, via }) };
     }
   }
   return { ...model, operations };

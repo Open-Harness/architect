@@ -9,11 +9,14 @@ import { isAttempt, spanKind, type OperationKinds, type OperationSteps } from ".
 
 const text = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
 
-/** The caller's kind, never the person: `principal.person` is a person; `principal.kind` says the rest. */
+/**
+ * The caller's kind, never the person. `principal.kind` is read first: an accepted span of an agent carries `principal.person` too (M2-auth,
+ * "Smaller calls" 2), so the person would show an agent as a person. A span with no kind (an older one) falls back to the person.
+ */
 export const callerOf = (span: WindowSpan): CallerKind | undefined => {
-  if (typeof span.attrs["principal.person"] === "string") return "person";
   const kind = text(span.attrs["principal.kind"]);
-  return kind === "agent" ? "agent" : kind === "anonymous" ? "anyone" : kind === "person" ? "person" : undefined;
+  if (kind !== undefined) return kind === "anonymous" ? "anyone" : kind === "person" || kind === "agent" || kind === "service" || kind === "system" ? kind : undefined;
+  return typeof span.attrs["principal.person"] === "string" ? "person" : undefined;
 };
 
 const round = (n: number) => Math.round(n * 1000) / 1000;

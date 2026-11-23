@@ -1,16 +1,20 @@
 // Turns the layout into the model: every declaration named, every reference resolved, every entry hashed.
 import { Duration } from "effect";
-import type { AnyErrorClass, Allowed, CallStep, Operation, Read, Step, Thing, Value } from "orthograph";
+import type { AnyErrorClass, CallStep, Operation, Read, Step, Thing, Value } from "orthograph";
 import type { AllowedModel, BlankOperationModel, Model, OperationModel, StepModel, ThingModel } from "../types.ts";
+import { admitsAgent } from "orthograph";
 import { Blanks } from "orthograph/server";
-import { EMPTY_LOCK, RefusalLock } from "#modules/lock/service.js";
+import { EMPTY_LOCK } from "#modules/lock/service.js";
 import type { Lock } from "#modules/lock/types.js";
+import { approvalOf } from "./approval.ts";
 import { IDEMPOTENCY_CONFLICT, prefixes, refusalsOf } from "./codes.ts";
 import { foundModel, mintsOf, missedBy } from "./found.ts";
 import { exitClashes, notFoundShapes, operationExitClashes } from "./exits.ts";
 import { unfillable } from "./fillable.ts";
 import { RUNS_NEEDS, deviceProblems } from "./device.ts";
+import { Times } from "#modules/time/service.js";
 import { environmentsOf } from "./environments.ts";
+import { allowedOf } from "./allowed.ts";
 import { storiesOf } from "./journeys.ts";
 import { hashOf } from "./hash.ts";
 import { alertRulesOf } from "./rules.ts";
@@ -57,14 +61,10 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const verbs = [...layout.things.values()].flatMap((t) => [...t.verbs.values()].map(({ file, declaration: d }) => ({ file, errors: d.kind === "operation" ? declaredErrors(d.errors) : [] })));
   const { things, lock } = thingsOf({ layout, before, problems, prefix, missable, verbs, chain: { is: onChain, has: hasChain, storeNames }, names, thingNames, eventNames, errorNames, fieldsModel, fieldModel, blankIn });
 
-  const allowedModel = (a: Allowed, where: string): AllowedModel => {
-    if (a.kind === "anyone") return { kind: "anyone" };
-    if (a.kind === "signed-in") return { kind: "signed-in" };
-    const name = (r: unknown) => roleNames.get(r as never) ?? problem(problems, `${where}: uses a role not exported from a roles.ts`);
-    if (a.kind === "role") return { kind: "role", role: name(a) };
-    return { kind: "role-of", role: name(a.role), path: a.path };
-  };
-
+  const allowedModel = allowedOf(layout, roleNames, problems);
+  const keeperUsed = Times.keeperUsed([...layout.things.values()].flatMap((t) => [...t.verbs.values()].map((v) => v.declaration.allowed)));
+  // With a keeper in the blueprint, even an operation open to anyone refuses it NotAllowed (M8-checks call 4).
+  const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
   const entries = new Map<string, Array<{ readonly file: string; readonly name: string; readonly identifier: string }>>();
@@ -112,6 +112,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
       problems.push(`${file}: ${thing}.${verb}'s errors are a union with two classes tagged ${tag}, so the refusal is ambiguous on the wire: rename one`);
     }
     const allowed = op.allowed.map((a) => allowedModel(a, file));
+    problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "operation", move: op.move, allowed }));
     const found = foundModel(op, (x) => thingNames.get(x), (x) => things[x]?.notFound?.error);
     const steps = Object.fromEntries(Object.entries(op.steps).map(([k, s]) => [k,
       Blanks.isBlank(s) ? { name: `${thing}.${verb}.${k}`, type: "blank" } : stepModel(thing, verb, k, s, op.errors, file)]));
@@ -123,7 +124,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
       ...Object.keys(broken.refusals),
       ...(move && move.from.length > 0 && machine ? [machine.notFrom.error] : []),
       ...new Set(Object.values(found.notFound ?? {}).filter((e) => !errors.includes(e))),
-      ...(allowed.every((a) => a.kind === "anyone") ? [] : ["NotAllowed"]),
+      ...(openToAll(allowed) ? [] : ["NotAllowed"]),
       // An operation that keeps its answer by request key refuses a key reused with another payload (HAN-10, G3).
       ...(op.idempotent === "request" ? [IDEMPOTENCY_CONFLICT] : []),
     ];
@@ -135,10 +136,11 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
     const entry = {
       kind: "operation" as const,
       name: `${thing}.${verb}`, thing, verb, identifier: camel(verb), file, from, description: op.description,
-      payload, answer, move, errors, ...(Object.keys(broken.refusals).length > 0 ? { invariants: broken.refusals } : {}), breaks: broken.breaks, refusals, allowed, ...found, ...(mints !== undefined ? { mints } : {}),
+      payload, answer, move, errors, ...(Object.keys(broken.refusals).length > 0 ? { invariants: broken.refusals } : {}), breaks: broken.breaks, refusals, allowed, agentTool: !onDevice && admitsAgent(op.allowed), ...found, ...(mints !== undefined ? { mints } : {}),
       steps,
       ...(blanks[`${thing}.${verb}`] ? { blanks: blanks[`${thing}.${verb}`]! } : {}),
       idempotent: op.idempotent ?? null,
+      ...approvalOf(op, file, problems),
       runs: (chain ? "chain" : onDevice ? "client" : "server") as OperationModel["runs"], test: op.test,
       budget: op.budget ? { p95Ms: Duration.toMillis(op.budget.p95) } : null,
     };
@@ -178,6 +180,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   /** A read: answered from the thing's records with no handler, so no move, no steps, no declared errors. */
   function readModel(thing: string, verb: string, file: string, from: OperationModel["from"], read: Read): OperationModel {
     const allowed = read.allowed.map((a) => allowedModel(a, file));
+    problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "read", move: undefined, allowed }));
     const list = read.by === "list";
     const t = layout.things.get(thing);
     const chain = onChain(t?.thing);
@@ -196,7 +199,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
         ? `List ${thing}s, ${read.order === "newest" ? "newest first" : "oldest first"}, ${read.page} to a page${read.where.length > 0 ? `, filtered by ${read.where.join(", ")}` : ""}.`
         : `Read one ${thing} by its id: ${read.fields.map(String).join(", ")}.`,
       payload, answer,
-      move: null, errors: [], breaks: [], refusals: allowed.every((a) => a.kind === "anyone") ? [] : ["NotAllowed"], allowed,
+      move: null, errors: [], breaks: [], refusals: openToAll(allowed) ? [] : ["NotAllowed"], allowed, agentTool: admitsAgent(read.allowed),
       steps: {}, idempotent: null, runs: (chain ? "chain" : "server") as OperationModel["runs"], test: "unit" as const,
       budget: read.budget ? { p95Ms: Duration.toMillis(read.budget.p95) } : null,
       ...(list ? { list: { where: [...read.where], order: read.order ?? "newest", page: read.page ?? 0 } } : {}),
@@ -209,7 +212,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const values = Object.fromEntries([...layout.values].sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => [n, metaOf(v.meta, `${layout.valueFiles.get(n) ?? "blueprint/values"}: value ${n}`, undefined, names, problems)]));
   const environments = environmentsOf(layout, problems, tokensUsed(things, operations));
   const stores = storesOf(layout, problems);
-  const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel);
+  const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel, problems);
   const allBlanks = { ...blanks, ...journeyBlanks };
   const alertRules = alertRulesOf({ operations, refusals, things, journeys: stories.journeys, environments });
   return {

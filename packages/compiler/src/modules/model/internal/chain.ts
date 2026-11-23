@@ -24,6 +24,7 @@ const noType = (meta: ValueMeta): string | undefined => {
   switch (meta.type) {
     case "uint": case "money": return widthOk(meta.bits) ? undefined : `a ${meta.type === "uint" ? "uint" : "money"} of ${meta.bits} bits is no Solidity width: uint and int are 8 to 256 bits, in steps of 8`;
     case "id": return meta.prefix.length <= MAX_PREFIX ? undefined : `the id prefix "${meta.prefix}" leaves no room to mint a suffix in 32 bytes (a minted id is the prefix, an underscore and 16 characters): use a prefix of at most ${MAX_PREFIX} characters`;
+    case "instant": return "an instant is ISO text, which a contract can't hold: keep the moment as a uint of seconds";
     case "schema": return "a schema value declares no Solidity type, so a contract can't hold it";
     default: return undefined;
   }

@@ -51,7 +51,7 @@ export interface PortalLive {
 // ---- what is put on the wire ----
 
 /** Derived, never the person's id: a span with `principal.person` is a person; `principal.kind` `agent` an agent; `anonymous` anyone. */
-export type CallerKind = "person" | "agent" | "anyone" | "unknown";
+export type CallerKind = "person" | "agent" | "service" | "system" | "anyone" | "unknown";
 /** `unknown`: attempts without a `call.id` that two or more calls could each have been (O3). Its row says so, and it counts no move. */
 export type Outcome = "answered" | "refused" | "defect" | "unknown";
 

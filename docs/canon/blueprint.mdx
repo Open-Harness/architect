@@ -113,7 +113,7 @@ declaration instead.
 
 The model is the one contract every projection is made from (K5, seam 1). Today it has thirteen parts. This is its type:
 
-```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=274-299
+```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=298-323
 export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;

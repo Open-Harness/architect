@@ -23,7 +23,7 @@ it("counts each run and call once, including a retry, a replay, refusals and a d
     if (amount === 4n) return Effect.fail({ _tag: "Undeclared", detail: "internal diagnostic" } as unknown as TooMuch);
     return Effect.succeed({ remaining: 4n });
   } });
-  const person = { kind: "person", person: "per_olga" } as const;
+  const person = { kind: "person", person: "per_olga", via: "session" } as const;
   return Effect.runPromise(Effect.gen(function* () {
     const store = yield* Store;
     const first = yield* Ref.make(true);

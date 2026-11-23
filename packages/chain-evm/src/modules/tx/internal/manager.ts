@@ -10,6 +10,7 @@ import type { Call, ChainPort, ChainPortOptions, Submission, Transaction, Unsign
 import { estimateFees, replacementTransaction } from "./fees.ts";
 import type { Rpc } from "./rpc.ts";
 import { readSigned, signTransaction } from "./sign.ts";
+import { readCall } from "./read.ts";
 import { simulateCall } from "./simulate.ts";
 
 const unsimulated = () => new ChainFault({ kind: "unsimulated", message: "The transaction was not simulated before it was signed or sent" });
@@ -133,5 +134,7 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
         Option.match({ onNone: () => Effect.void, onSome: nonces.release }),
       ));
 
-    return { prepare, simulate, sign, submit, replace, release, resume, nonces };
+    const read = readCall(rpc, options);
+
+    return { prepare, simulate, read, sign, submit, replace, release, resume, nonces };
   });
