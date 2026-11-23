@@ -79,8 +79,9 @@ export interface AdmissionRow { readonly id: string; readonly label: string; rea
 /** A call's argument and answer. Slice 4's generator types each `Call` with them: today `Call` has `mode` and `errors` only. */
 export type ArgsOf<C extends Call> = C extends Call<any, infer A, any> ? A : never;
 export type ResultOf<C extends Call> = C extends Call<any, any, infer R> ? R : never;
-/** Goal 11's (M5.03) typed event; today an adapter's `events` are `unknown`. */
-export interface AdapterEvent<P> { readonly kind: "event"; readonly payload: P }
+/** Goal 11's (M5.03) typed event; today an adapter's `events` are `unknown`. Its shape is `Blueprint.event`'s, `{ kind, schema }`,
+ *  which slice 3's checks fix as the generated adapter's (`e2e/superagent/README.md`); the payload type is the schema's. */
+export interface AdapterEvent<P> { readonly kind: "event"; readonly schema: Schema.Schema<P> }
 
 /** What one event says about a trigger. Pure data: there is no author here (see Account, below). */
 export interface Mapped<Addr> {
