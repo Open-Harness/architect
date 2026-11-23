@@ -46,29 +46,21 @@ and run it." Nothing else is needed.
   ERPNext uses, with our own screens, and the CRM after them.
 - **Why:** Capxul is what Orthograph is for. Building a real app is the only way to find what the framework is missing,
   including the things nobody thought of.
-- **When it's done, you can:**
-  - run your own Capxul for free;
-  - raise an invoice, get paid by a link, and see the books record it;
-  - run payroll for your people;
-  - pay Capxul to check who your company and people are, and to open a bank account for you through Bridge.
-- **It is:** the software, free and self-hostable, plus the hosted paid services it connects to. Help with
-  incorporating a company is paid too, and comes after.
+- **When it's done, you can:** run your own Capxul for free; raise an invoice, get paid by a link and see the books
+  record it; run payroll; and pay Capxul to check who your company is and to open a bank account through Bridge.
+- **It is:** free, self-hostable software, plus the hosted paid services it connects to (incorporation help comes after).
 - **It isn't:** Frappe or ERPNext running underneath. Their logic is translated, not run.
 - **Done when:** the tests for the books, HR, payroll, the identity checks and the bank account pass in Capxul's own
   test copy on the internet.
 - **Waits on:** Aaron, for the first design conversation and for a lawyer's read on the licence before anything is
   translated.
 - **Words used:**
-  - Capxul: a business app for small companies, being rebuilt here;
-  - Capxul core: its free parts, meaning the books, HR, payroll and the link to Bridge;
-  - the books: accounting, meaning invoices, payments and the ledger;
-  - HR and payroll: the records of a company's people, and paying them;
-  - the CRM: the list of the people and companies a business deals with;
-  - KYC and KYB: checking who a person or a business is;
-  - Bridge: the service that moves money between the chain and banks;
-  - a module: a part someone switches on later, like the CRM;
+  - Capxul: a business app for small companies, being rebuilt here; its core is the free books, HR, payroll and Bridge;
+  - the books: accounting (invoices, payments, the ledger); HR and payroll: a company's people, and paying them;
+  - the CRM: the people and companies a business deals with, a module someone switches on later;
+  - KYC and KYB: checking who a person or a business is; Bridge: moves money between the chain and banks;
   - ERPNext: an open-source business system whose shapes Capxul follows;
-  - the design grill: a conversation where Aaron is asked question after question until a design is settled.
+  - the design grill: Aaron asked question after question until a design is settled.
 
 ## Read first
 
@@ -92,7 +84,7 @@ keep the numbers their issues already have.
 | 4 | Spike: can Orthograph things, machines and journeys be scaffolded from ERPNext's record-type files (Sales Invoice, Payment Entry, GL Entry first)? If so, it becomes a scaffolder in the framework, built under K42's collision rule | — |
 | 5 | Spike: `ortho new adapter --from-openapi` on Bridge's published description; customers, KYC links, virtual accounts and transfers, against a stand-in | — |
 | 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge and the paid services as board items, each at its stage | 1, 3, 4, 5 |
-| 7 to 11 | The books, HR, payroll, the paid services and the CRM, as slice 6 writes them | 6 |
+| 7 to 11 | The books, HR, payroll, the paid services and the CRM, as slice 6 writes them | as the front matter lists |
 
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18

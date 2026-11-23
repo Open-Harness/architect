@@ -61,7 +61,7 @@ meetups, mixers and workshops, "a really undecided thing".
    anything, Aaron gets a lawyer's read. That is outward-facing, so the Capxul goal waits on him for it
    (`needs-aaron`).
 
-## Open, for the Capxul goal's grill (its slice 1)
+## Open, for the Capxul goal's grill (its slice 3)
 
 - Which licence Capxul's software carries.
 - Which ERPNext record types (doctypes) each part takes, and which it drops: several companies, several currencies,

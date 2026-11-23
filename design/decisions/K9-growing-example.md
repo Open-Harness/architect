@@ -430,7 +430,7 @@ The docs canon thread owns `docs/canon/`. These are the changes this record asks
 ## Decided here
 
 1. One app, `links`, in `examples/links`, grows through four stages. Each passing stage is tagged `links/stage-<n>`.
-2. v1.0 is the four stage gates plus M7.01 to M7.04 and M7.06.
+2. v1.0 is the four stage gates plus M7.01 to M7.04 and M7.06. (Superseded by K42, 23 November 2026: 1.0 is Capxul core on Orthograph, K43.)
 3. The pieces:
    - `handles` and `budgets` are new features;
    - `ballots` is K7's governance contract as a feature;

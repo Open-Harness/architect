@@ -27,7 +27,7 @@ Status words: **Built** (in `packages/`, with a check that passes), **Partial** 
 Since K42 (23 November 2026), 1.0 is Capxul core on Orthograph (K43). The stage headings below (stages 2 to 4) are
 Plugged In's, no longer 1.0's; Goal 18's slice 3 rewrites this map as the board's items, each with its stage.
 
-**Where Goal 4 falls.** Goal 4 (on chain, end to end) serves 1.0, not the preview or the beta: its slices 2 and 9 to
+**Where Goal 4 falls.** Goal 4 (on chain, end to end) served 1.0 until K42, not the preview or the beta: its slices 2 and 9 to
 11 are stage 2 work, and slices 1, 3 to 8 and 12 are stage 3. Only slice 1 (the language and host seam) touches the
 core everything else uses.
 
@@ -137,7 +137,7 @@ once planned.
 
 The factory and the work board (M3.04 to M3.21), the bench and the builder's tools (M4.11 to M4.14), workspaces and
 the building agents (M4.17 to M4.25; M4.25 is Goal 17's since K39), Stripe, Resend, adapters from OpenAPI, outbox and
-views (M5.04 to M5.13), and Capxul's hosting slices (M7.07 to M7.09; Capxul core is 1.0, K42). Most are None; the work board and E2B workspaces are
+views (M5.04 to M5.13), and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43). Most are None; the work board and E2B workspaces are
 Spiked.
 
 ## 3. Holes no slice owns

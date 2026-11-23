@@ -48,13 +48,13 @@ The build plan's rules, unchanged except for names:
 Kinds: **decision**, **spike**, **checks**, **build**, **e2e**. ∥ marks a slice that may run beside the one before it.
 Names below are today's, Orthograph's (K6, `naming.md`).
 
-## v1.0: four stages
+## Plugged In's four stages
 
 Aaron, 18 November 2026: one example grows through four stages, "each stage is a meta milestone. All of them is
 v1.0" ([`decisions/K9-growing-example.md`](decisions/K9-growing-example.md)). The app is Plugged In (`plugged-in`), in
 `examples/plugged-in`. The milestones below keep their slices and ids; this section says which slices each stage needs,
 adds the slices no milestone had (ids `ST<stage>.<n>`), and gives each stage its gate. Each passing stage is tagged
-`plugged-in/stage-<n>`.
+`plugged-in/stage-<n>`. (Superseded for 1.0 by K42, 23 November 2026: 1.0 is Capxul core; the stages stay Plugged In's.)
 
 **Renamed by K15** (19 November 2026, Aaron): the example app is **Plugged In** (`plugged-in`), no longer `links`. This file is updated in place: `examples/plugged-in`, the tags `plugged-in/stage-<n>`, the command `plugged-in`.
 Codex's branch `links/stage-1` (#56) keeps its name. [`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md).
@@ -76,7 +76,7 @@ written yes.
 
 **Beside the stages, off v1.0's path:** the factory (M3.04 to M3.14), the builder's tools and the bench (M4.11 to
 M4.14), workspaces, experiments and the building agents (M3.20, M4.17 to M4.25, K10; M4.25 built by Goal 17, K39), views, Stripe, Resend, adapters from OpenAPI, MariaDB and a second app (M5.05 to M5.09, M5.11, M5.13), the
-`examples/workshop` (M6.20, dropped by K9), and Capxul's hosting slices (M7.07 to M7.09); Capxul core is 1.0 (K42, K43). They run when a thread is free; a stage
+`examples/workshop` (M6.20, dropped by K9), and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43). They run when a thread is free; a stage
 never waits on them.
 
 **The gates of M3 to M6 no longer order the work.** Their suites still run, beside, once their slices exist. Where a
@@ -480,7 +480,7 @@ forced reorg is corrected; a pending chain call shows its in-between state (S25)
 the spend under $10 a day; then Capxul's first feature running on Orthograph.
 **Staging first** (K10 section 8, Aaron, 18 November): `spikes/staging-pass` any time (acme up on the shared, prefixed
 Cloudflare account, proved there, destroyed, the account listing nothing of the run's after); then, after Gate M2, M7.01, M7.03,
-M7.04 and M7.08 for staging alone. npm's `latest` tag, Homebrew and the rest of M7 still wait on the stage 4 gate; the preview under `next` is M1.51 (K28).
+M7.04 and M7.08 for staging alone. npm's `latest` tag, Homebrew and the rest of M7 still wait on 1.0 (Capxul core, K42); the preview under `next` is M1.51 (K28).
 **Gate.** `nx run e2e:m7`: acme goes from a pull request to test, staging and production on Cloudflare with a verdict
 in each, Orthograph's packages are released under `@orthograph` on npm, and everything the gate made is destroyed after.
 Capxul's first feature runs in its staging.

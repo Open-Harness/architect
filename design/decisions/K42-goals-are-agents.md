@@ -58,7 +58,7 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
 
 Every item on the board is at one stage:
 
-1. **Provisional.** An app's first pass lists what it needs. Capxul's is K43's slice 4; the superagent's is K39 and
+1. **Provisional.** An app's first pass lists what it needs. Capxul's is Goal 16's slice 6 (K43); the superagent's is K39 and
    K40.
 2. **Spiked.** Each unknown has a spike's answer (`spikes/`, the `spike` skill). An unknown only Aaron can settle is a
    **grill**: a Decision issue labelled `needs-aaron`. His answer becomes a decision record, and the framework goal sends
@@ -189,12 +189,12 @@ Each line is one phrase that sat on one line of a live doc; `tools/ci/supersedes
 - `.agents/skills/kanban/STATE.md`: "**1.0:** the beta, then stages 2 to 4 and the release slices." → "**1.0:** the beta, then Capxul core on Orthograph (K43) and the release slices (K42)."
 - `docs/canon/status.md`: "| **1.0** (stages 2 to 4) |" → "| **1.0** (Capxul core, K42) |"
 - `docs/canon/status.md`: "the canon's one example, the app 1.0 is built as (K9)" → "the canon's one example (K9)"
-- `docs/canon/status.md`: "and Capxul on Orthograph (M7.07 to M7.11)" → "and Capxul's hosting slices (M7.07 to M7.09; Capxul core is 1.0, K42)"
+- `docs/canon/status.md`: "and Capxul on Orthograph (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43)"
 - `docs/canon/README.md`: "in the four stages 1.0 is" → "in the four stages it is"
 - `docs/canon/outline.md`: "the app 1.0 is built as" → "the app the canon is built around"
 - `design/milestones.md`: "the beta plus stages 2 to 4 and the release" → "the beta plus Capxul core (K43) and the release (K42)"
 - `design/milestones.md`: "**v1.0** is the four stage gates on `main`, plus the release" → "**v1.0** is Capxul core on Orthograph (K42, K43), plus the release"
-- `design/milestones.md`: "and Capxul (M7.07 to M7.11)" → "and Capxul's hosting slices (M7.07 to M7.09); Capxul core is 1.0 (K42, K43)"
+- `design/milestones.md`: "and Capxul (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43)"
 
 ## What else it touches
 
