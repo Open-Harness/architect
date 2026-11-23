@@ -593,9 +593,10 @@ the slice's pull request and claimed on the board first, and the lander lands it
 
 **Credentials, each only with Aaron's written yes, in the slice that first needs it:** a GitHub App installed on one
 test repository he names, a Slack app in a workspace he names, all for slice 12's real run, not
-the check. PostHog for real is slice 13's, the same way. Every check runs on stand-ins with no key. Real model runs through VibeProxy, and deploys on the Cloudflare keys already on hand,
-go ahead whenever a slice needs them (Aaron's standing yes, 23 November 2026), within the daily cap and destroyed after;
-E2B, and any new cloud credential, is still its own yes.
+the check. PostHog for real is slice 13's, the same way. Every check runs on stand-ins with no key.
+Real model runs through VibeProxy, and deploys on the Cloudflare keys already on hand, go ahead whenever a slice needs
+them (Aaron's standing yes, 23 November 2026), within the daily cap and destroyed after; E2B, and any new cloud
+credential, is still its own yes.
 
 ## How it runs
 
@@ -616,7 +617,7 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
   every comment an agent posts starts `[goal-17 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" at every slice
   merge. Decisions this goal makes are named `GOAL17-<slug>`.
-- **Limits.** No cloud and no keys. Stop every process you start, by its id, before you report.
+- **Limits.** No new cloud credential without Aaron's written yes; VibeProxy and the Cloudflare keys already on hand are under his standing yes (GOAL17-standing-yes), within the daily cap. Stop every process you start, by its id, before you report.
 
 ## Where it stands
 
