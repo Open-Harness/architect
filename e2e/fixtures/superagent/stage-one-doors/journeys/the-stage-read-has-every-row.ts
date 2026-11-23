@@ -22,8 +22,8 @@ export default Blueprint.journey("the stage read has every row", {
     s.step("the world settles", s.clock.settle()),
     s.step("the ticket whose assignment has no seat: its row", outbox.rows(row)),
     s.step("a ticket whose assignment has no seat is queued", s.ada.run(stage, { id: s.last.rows[0].subject }), expect((a) => [a.stage, a.why, a.label]).toEqual(["working", "queued", "Queued"])),
-    s.step("the executor will hold its first turn open, then report ready", models.script({ for: { kind: "executor" }, turns: [
-      { say: "Working.", hold: "before-reply" }, { call: [{ tool: "ticket.report", args: { kind: "ready", text: "Ready." } }] } ] })),
+    s.step("the executor's first turn holds its report back, then says so", models.script({ for: { kind: "executor" }, turns: [
+      { call: [{ tool: "ticket.report", args: { ticket: "$ticket", kind: "ready", text: "Ready." } }], hold: "before-reply" }, { say: "Reported." } ] })),
     s.step("the seat sweep is let go", outbox.release({ hold: "all" })),
     s.step("the world settles", s.clock.settle()),
     s.step("the running executor: its row", outbox.rows(row)),

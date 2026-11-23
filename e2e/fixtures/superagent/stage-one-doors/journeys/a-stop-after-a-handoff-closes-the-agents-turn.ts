@@ -13,7 +13,7 @@ export default Blueprint.journey("a stop after a handoff closes the agent's turn
     s.step("the main agent is scripted to accept ann's ask", models.script({ for: { kind: "main" }, turns: [
       { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." } ] })),
     s.step("the executor reports the work ready, which hands the ticket to a person", models.script({ for: { kind: "executor" }, turns: [
-      { call: [{ tool: "ticket.report", args: { kind: "ready", text: "Fixed, ready for review." } }] }, { say: "Done." } ] })),
+      { call: [{ tool: "ticket.report", args: { ticket: "$ticket", kind: "ready", text: "Fixed, ready for review." } }] }, { say: "Done." } ] })),
     s.step("the eval pass runs, the ticket is made and the executor runs", s.clock.advance("5 seconds")),
     s.step("the world settles", s.clock.settle()),
     s.step("the assignment ended on the report, before any stop", outbox.rows({ name: "AssignmentEnded", to: "op:superagent.fill", afterSeq: "journey" }), expect((a) => a.rows.length).toBe(1)),

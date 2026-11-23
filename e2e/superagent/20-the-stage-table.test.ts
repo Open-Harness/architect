@@ -67,8 +67,8 @@ const CASES: ReadonlyArray<Case> = [
   c("a running assignment with a progress report is working", open, { assignment: running, report: report("progress") }, "working", "none", "Working"),
   c("a closing assignment does not hide a ready report", open, { assignment: { state: "closing" }, report: report("ready") }, "person", "review", "Awaiting review"),
   c("a closing assignment does not hide a question", open, { assignment: { state: "closing" }, attention: {} }, "person", "answer", "Awaiting answer"),
-  // The one row no record words: only that it says "stopping" and that nobody is being waited for (a person's wait is never a closing seat's).
-  c("an assignment that is closing is named as stopping, and is nobody's wait", open, { assignment: { state: "closing" } }, ["working", "idle"], ["none", "queued"], /^stopping$/i),
+  // GOAL17-stage-one, call 6: a closing assignment is work in motion, named Stopping, and nobody is waited for.
+  c("an assignment that is closing is named as stopping, and is nobody's wait", open, { assignment: { state: "closing" } }, "working", "none", "Stopping"),
 ];
 
 /** What is wrong with a table: one sentence per case it gets wrong. Empty when it is right on every case. */
@@ -120,6 +120,7 @@ describe("20 the stage table: controls", () => {
     ["the waiting report checked before the queued row: it is idle with no seat", (t, f) => (t.state === "open" && f.report?.state === "waiting" && (f.assignment === undefined || f.assignment.state === "pending") ? row("idle", "none", "Waiting for a Trigger") : reference(t, f))],
     ["a person's later message clears a ready report", (t, f) => reference(t, f.report?.state === "ready" && f.person !== undefined ? { ...f, report: undefined } : f)],
     ["a person's later message clears a question", (t, f) => reference(t, f.attention !== undefined && f.person !== undefined ? { ...f, attention: undefined } : f)],
+    ["a closing row that is idle and queued, as call 6 does not say", (t, f) => (t.state === "open" && f.assignment?.state === "closing" && f.report === undefined && f.attention === undefined ? row("idle", "queued", "Stopping") : reference(t, f))],
     ["a closing row above the ready report and the question", (t, f) => (t.state === "open" && f.assignment?.state === "closing" ? row("working", "none", "Stopping") : reference(t, f))],
     ["everything is working", () => row("working", "none", "Working")],
   ];

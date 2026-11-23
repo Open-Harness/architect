@@ -145,7 +145,8 @@ it now says "an inferred accept". The main agent's `decision.route` records an e
 
 - **`decision.route`'s items** are `{ action: "accept" | "attach" | "stop" | "ignore", trigger, title? }`, and the tool call carries the `eval` it answers: `{ eval, items }`
   (the operation's payload, as built). A scripted turn cannot know the eval's id when the script is written, so `ModelTurn`'s `args` may name it as the string `"$eval"`, which
-  the stand-in fills with the id of the eval its request was told: **an addition to GOAL17-check-harness's `ModelTurn`, asked of slice 9's builder.**
+  the stand-in fills with the id of the eval its request was told; and the executor's `ticket.report` and other ticket operations name the ticket as `"$ticket"`, which the stand-in fills from the answering
+  Agent's `about` (`ticket/<id>`, K40 fix 3; the executor's tell carries its Assignment and its input, not the ticket, so the `about` header of the request is the binding): **additions to GOAL17-check-harness's `ModelTurn`, asked of slice 9's builder.**
 - **A ticket's id** is the `subject` of its `TicketCreated` outbox row (`OutboxRow.subject`, "ordered by the ticket"): the journeys read it from `outbox.rows`.
 - **"The Agent's turn is closed"** is `AgentClosed` delivered to `assignment.turn-ended` (`outbox.rows({ name: "AgentClosed", to: "op:assignment.turn-ended" })`), not a row of `agent.close`.
 - **`AssignmentEnded` has two deliveries** (`superagent.fill` and `input.route`), so a journey that counts it names `to: "op:superagent.fill"`.
