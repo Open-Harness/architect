@@ -9,7 +9,6 @@ import { notFromOf } from "./not-from.ts";
 import { doorsOf } from "./doors.ts";
 import { renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 import { actorOptionOf } from "./actors.ts";
-import { notFromOf } from "./refusals.ts";
 import { staleOf, versioned } from "./versioned.ts";
 
 const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
