@@ -397,7 +397,7 @@ By the recommendation Aaron let stand, the stages are the order:
 
 The factory (M3.04 to M3.14) and the builder's agent tools (M4.11 to M4.14) run beside the stages. They are off
 v1.0's path, as the milestones already said ("make that faster but don't gate it"). M5's views, Stripe, Resend,
-MariaDB and second-app adapters, and M7's Capxul slices, are also beside. Capxul's first plugin, the wallet, is stage 2.
+MariaDB and second-app adapters, and M7's Capxul slices, are also beside. Capxul's first plugin, the wallet, is stage 2. (Superseded by M7-capxul, 22 November 2026.)
 
 `milestones.md` keeps every slice id. A new section, "v1.0: four stages", says which slice belongs to which stage and
 gives each stage its gate. The gates of M3 to M6 no longer order the work: where a stage's slice needs one of them,
