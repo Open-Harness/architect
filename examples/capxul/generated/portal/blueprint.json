@@ -4400,48 +4400,6 @@
             ]
           }
         }
-      },
-      "kyc started": {
-        "name": "kyc started",
-        "file": "blueprint/starting-worlds/kyc-started.ts",
-        "from": null,
-        "cast": {
-          "ada": {
-            "kind": "signed-in"
-          }
-        },
-        "sourceHash": "d401fb9be0d571ea26e0747c886b505560a00522564bf1f5864020193403efc5",
-        "makes": [
-          {
-            "actor": "ada",
-            "operation": "bridge-individual.start",
-            "payload": {
-              "fullName": "Ada Wanjiru Kamau",
-              "email": "ada@acme-trading.test"
-            },
-            "request": "ada-kyc"
-          }
-        ],
-        "gives": {
-          "individual": {
-            "ref": [
-              "last",
-              "individual"
-            ]
-          },
-          "kycLink": {
-            "ref": [
-              "last",
-              "kycLink"
-            ]
-          },
-          "tosLink": {
-            "ref": [
-              "last",
-              "tosLink"
-            ]
-          }
-        }
       }
     },
     "environments": {
@@ -5880,5 +5838,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "c197c0fddd14c81680c8c464f20a559bff07582d600d4bac2ac9d19696e59bfe"
+  "digest": "ca5a64c137b56ef0f6897d9b6381e143420b82e4864ddbb99e80a61c2911d965"
 }

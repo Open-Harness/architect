@@ -4396,48 +4396,6 @@
           ]
         }
       }
-    },
-    "kyc started": {
-      "name": "kyc started",
-      "file": "blueprint/starting-worlds/kyc-started.ts",
-      "from": null,
-      "cast": {
-        "ada": {
-          "kind": "signed-in"
-        }
-      },
-      "sourceHash": "d401fb9be0d571ea26e0747c886b505560a00522564bf1f5864020193403efc5",
-      "makes": [
-        {
-          "actor": "ada",
-          "operation": "bridge-individual.start",
-          "payload": {
-            "fullName": "Ada Wanjiru Kamau",
-            "email": "ada@acme-trading.test"
-          },
-          "request": "ada-kyc"
-        }
-      ],
-      "gives": {
-        "individual": {
-          "ref": [
-            "last",
-            "individual"
-          ]
-        },
-        "kycLink": {
-          "ref": [
-            "last",
-            "kycLink"
-          ]
-        },
-        "tosLink": {
-          "ref": [
-            "last",
-            "tosLink"
-          ]
-        }
-      }
     }
   },
   "environments": {
