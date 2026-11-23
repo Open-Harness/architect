@@ -33,7 +33,7 @@ export const groupsStillOurs = (lines: ReadonlyArray<string>): Effect.Effect<Rea
     }),
   );
 
-const keep =(text: string, chunk: Buffer): string => (text.length >= KEPT ? text : text + chunk.toString("utf8").slice(0, KEPT - text.length));
+const keep = (text: string, chunk: Buffer): string => (text.length >= KEPT ? text : text + chunk.toString("utf8").slice(0, KEPT - text.length));
 
 export interface Run {
   readonly sandbox: string;
