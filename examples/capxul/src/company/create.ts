@@ -2,8 +2,8 @@
 import { Effect } from "effect";
 import { acting } from "orthograph";
 import { Records } from "@orthograph/language-effect";
-import { Company } from "../../blueprint/things/company/thing.ts";
 import type { Handler } from "../../generated/api/src/company/create.handler.ts";
+import { Company } from "../../blueprint/things/company/thing.ts";
 
 /**
  * company.create: Set up a company; the person who sets it up runs it.
@@ -45,7 +45,8 @@ const create: Handler = ({ companyName, abbr, country, defaultCurrency }, { prin
     const who = acting(principal);
     if (!who) return yield* Effect.die(new Error("reached without a signed-in person"));
     const records = yield* Records;
-    // Step insert: database, span company.create.insert.
+
+    // Step insert: database, span company.create.insert. The rules on its name and abbreviation are the runtime's.
     yield* steps.insert(records.insert(Company, { id, companyName, abbr, country, defaultCurrency, owner: who.person as never }));
 
     // The move create, to active.

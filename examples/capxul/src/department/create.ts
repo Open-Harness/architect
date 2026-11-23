@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/department/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/department/create.handler.ts";
+import { Department } from "../../blueprint/things/department/thing.ts";
 
 /**
  * department.create: Add a department to a company.
@@ -37,10 +38,12 @@ import type { Handler } from "../../generated/api/src/department/create.handler.
  *   once it answers, it writes DepartmentCreated: department from the answer, company from the payload;
  *   the call is the span department.create, and its commit department.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, departmentName }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span department.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span department.create.insert. A name taken in the company is the runtime's refusal.
+    yield* steps.insert(records.insert(Department, { id, company, departmentName }));
 
     // The move create, to active.
     yield* move();
