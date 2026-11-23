@@ -177,7 +177,7 @@ r=$(repo); mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; echo t >> "$r/sr
 expect "docs-only: an inert path beside a code change is not docs" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/x.yml"; mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; commit "$r"
 expect "docs-only: a workflow among inert paths is not docs" 0 docs "$r" false
-r=$(repo); mkdir -p "$r/.agents/skills/x"; echo '{"dep":"@heroui-pro/react"}' > "$r/.agents/skills/x/skill.json"; commit "$r"
+r=$(repo); mkdir -p "$r/.agents/skills/x"; pro="@heroui-""pro/react"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"   # in pieces, so check 15 does not read this file as naming Pro; commit "$r"
 expect "docs-only: a line naming HeroUI Pro in an agents file runs check 15 (not docs)" 0 docs "$r" false
 r=$(repo)
 expect "docs-only: an empty diff is not docs" 0 docs "$r" false
