@@ -306,8 +306,9 @@ K28 decides the preview merge and the three releases: [`K28-releases.md`](../dec
 - **M1 is on `main`.** The M1 preview ([#602](https://github.com/Open-Harness/orthograph/pull/602)) merged on 23 November with Gate M1 green. Only check 40 is left on M1's list. Check 40 is M1.50, the one `Graph`, which is Goal 6's after its cutover ([`M1-50-after-cutover`](../decisions/M1-50-after-cutover.md)).
 - **M1.51, the npm preview, is built on `goal/stage-1`.** The pieces:
   - checks [#678](https://github.com/Open-Harness/orthograph/pull/678), build [#683](https://github.com/Open-Harness/orthograph/pull/683), and the G12 pair [#702](https://github.com/Open-Harness/orthograph/pull/702);
-  - `node tools/release/preview.mjs --dry-run` lists the 16 public packages with version, tag `next`, licence and files. It refuses any other tag on npmjs, makes no connection and sends nothing;
-  - every public package is Apache-2.0, with a root and a per-package LICENSE ([`L1-apache-2`](../decisions/L1-apache-2.md), Aaron's "Make it all Apache 2.0").
+  - `node tools/release/preview.mjs --dry-run` lists each public package with version, tag `next`, licence and files. It refuses any other tag on npmjs, makes no connection and sends nothing;
+  - the 16 packages M1.51 covered are Apache-2.0, with a root and a per-package LICENSE ([`L1-apache-2`](../decisions/L1-apache-2.md), Aaron's "Make it all Apache 2.0").
+  - **The dry run refuses today.** Goal 6's #697 added a 17th public package, `@orthograph/shell`, licensed MIT, so the preview ends `refused: @orthograph/shell license is "MIT", not Apache-2.0`. The fix is snag [#753](https://github.com/Open-Harness/orthograph/issues/753): Apache-2.0 and a LICENSE in `packages/shell`. It is Goal 6's or Goal 19's, and must land before #707 does.
 
   The licence moved each package's recorded hash, so acme's and Plugged In's `generated/` and the baselines were regenerated and recaptured as a G12 pair.
 - **Stage 1 to `main`: [#707](https://github.com/Open-Harness/orthograph/pull/707)** (`goal-3/stage-1-to-main-m1-51`) carries M1.51 to `main`. Its 🔍 of everything since `0d0c4b31` passed at `ba9c50bc`. **Goal 19, the lander, owns it now**: it merges `goal/stage-1` in, runs a delta 🔍, and lands it. Then Aaron signs in and runs `npm publish` under `next`, and publishing moves to Goal 15 ([#542](https://github.com/Open-Harness/orthograph/issues/542), item 1).
@@ -334,6 +335,7 @@ K28 decides the preview merge and the three releases: [`K28-releases.md`](../dec
 - [#446](https://github.com/Open-Harness/orthograph/issues/446): an agent's key can mint a person's key through `/api/auth`. This is security work, and it belongs with M2.05.
 - [#695](https://github.com/Open-Harness/orthograph/issues/695): secrets hardening from M2.04's review. `promote` reads only the local `secrets.env`, which M2.05 must settle. Also the argv echo, a non-atomic write, and the `then` key.
 - [#660](https://github.com/Open-Harness/orthograph/issues/660): how secret names with digits or runs of capitals split.
+- [#753](https://github.com/Open-Harness/orthograph/issues/753): `@orthograph/shell` says MIT, so the preview's dry run refuses on `goal/stage-1`. This blocks #707.
 - [#688](https://github.com/Open-Harness/orthograph/issues/688): the preview's root LICENSE check reads the repository, not `--root`.
 - [#620](https://github.com/Open-Harness/orthograph/issues/620): the wallet advice from #616.
 - [#503](https://github.com/Open-Harness/orthograph/issues/503): a pull request's token can record a production release.
