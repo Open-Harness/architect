@@ -5,11 +5,11 @@ milestone: "Goal 6: the new portal"
 release: beta
 branch: goal/portal
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: claude      # claude | amp | codex | opencode, set by the lead when it starts
-  model: claude-opus-5-5 # the model id it runs on
-  since: 2026-11-22    # the date it started
+  harness: null        # claude | amp | codex | opencode, set by the lead when it starts
+  model: null          # the model id it runs on
+  since: null          # the date it started
 done_check: nx run e2e:portal-next
 owns:
   - packages/theme/
@@ -358,4 +358,15 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 
 ## Where it stands
 
-23 November 2026. The theme is in stage 1, for the UI layer. The map language, the app projection and the shell are built, reviewed and in this goal's branch, with every one of their checks green, and the generated files of every app without a map are unchanged, byte for byte. Aaron said yes to the four screen questions: the map in its own tab beside the things, the pages as a tree, the worked-out map marked when nobody declared one, and an "As an agent" drawer on every page. The new portal's frame is reviewed and lands next; thirteen of the hundred portal checks it owes already pass. Then the map goes into stage 1, and the pages follow.
+Parked on 23 November 2026, as K42 section 7 says. Nobody leads this goal now; its open slices are items on the board.
+
+**In stage 1.** The theme (slice 1). The checks (slice 2), the map language, the app projection and the shell (slices 3 to 5) landed today in one pull request (#697): a blueprint can now declare its pages, layouts and navigation, and every app without a map generates exactly what it did before, byte for byte. A route parameter can't be money, since an address carries an id or text, never an amount and its asset.
+
+**In this goal's branch, `goal/portal`, only.** The new portal's frame (slice 6, `packages/portal-next`), and with it 52 lines off the parity list: stage 1's list still holds all 100 portal checks, this branch's 48, and those 48 are what slices 7 to 11 owe. Also only here: the parity ratchet's self-test, which now runs the same locally and in CI. The grid's page reader no longer reads text out of a script or a style, which had made seven cells falsely green.
+
+**Left for the board.**
+- Slices 7 to 12 as the table above gives them, each starting from `goal/portal`. Slice 7's Map tab checks are written and wait as a draft (#708). Aaron's screen answers stand for them (MAP-screens): the map in its own tab beside the things, the pages as a tree, the worked-out map marked when nobody declared one, and an "As an agent" drawer on every page.
+- Goal 17's ask (#596): derived reads are `Blueprint.read` with `derive:`, shown like any read. Not yet answered; it belongs to whoever takes slice 7 or 11.
+- The canon's model page still says the model has thirteen parts; it has fourteen with `app`. Filed as a snag for Goal 18 (#738).
+
+Nothing runs and nothing was spent on cloud.
