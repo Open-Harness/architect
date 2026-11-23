@@ -633,6 +633,8 @@ serves it; GOAL17-slice5-forms (calls 1 to 16) and GOAL17-plugin-scope record wh
 slice 6's checks (#686), slice 10's checks (#687, whose branch carries GOAL17-connections) and slice 8's checks. Two snags are open:
 slice 6's journeys need `versions:` served and an `agent.open` handler before they can pass (the snag #685), and the compiler's
 acme tests time out on a slow CI runner, about one run in two.
+Slice 11 (the connections) is built on `goal-17/s11-connections-build` (GOAL17-slice11-build): adapter events carry `id` and `actor`, the GitHub, Slack and PostHog
+mappings and the doors at `/_in/<mount>` (Goal 17's copy of M5.03, to M5's design, K39 call 6 and K42). Check 66 stays red until slice 9's harness surface.
 
 Slice 6's checks are #686 (18 to 23). GOAL17-stage-one made the calls they stopped at: `trigger.receive` carries `actor` and `addressed`; an accept is five
 records in one commit, for an executor opened first; `superagent.create` takes a main agent opened first and no policy; Thread has no `queued` or

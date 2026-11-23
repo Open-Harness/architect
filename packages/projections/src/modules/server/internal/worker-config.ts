@@ -75,6 +75,14 @@ const header = (...extra: ReadonlyArray<string>) => [
   ...extra,
 ];
 
+/** A door-enabled app's journal is also its inbox: each accepted delivery is a row with a unique `id` (`<mount>:<the event's identity>`) and the account that sent it. */
+const INBOX = `-- The inbox (M5-reach-out Q2.3): an accepted delivery is one row, by a unique id, so a delivery that comes twice settles once.
+ALTER TABLE "_journal" ADD COLUMN "id" TEXT;
+ALTER TABLE "_journal" ADD COLUMN "actor" TEXT;
+CREATE UNIQUE INDEX "_journal_id" ON "_journal" ("id");`;
+
+export const hasDoors = (model: Model): boolean => Object.values(model.mounts ?? {}).some((m) => m.door !== undefined);
+
 /** The default database's tables: one per thing that lives in the database and in no declared store. Actors keep their own rows. */
 export const renderMigration = (model: Model): RenderedFile => ({
   path: "generated/server/migrations/0001_things.sql",
@@ -84,6 +92,7 @@ export const renderMigration = (model: Model): RenderedFile => ({
     tablesOf(Object.values(model.things).filter((t) => t.lives === "database" && !t.store)),
     "-- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).",
     JOURNAL,
+    hasDoors(model) ? INBOX : [],
   ),
 });
 

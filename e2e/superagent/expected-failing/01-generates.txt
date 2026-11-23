@@ -1,1 +1,0 @@
-# Written before slice 4 builds `ortho new adapter --from-openapi` (Goal 17). Red until it exists; due before slice 4 merges.

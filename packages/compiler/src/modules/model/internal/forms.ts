@@ -3,7 +3,8 @@ import type { Event, Field, Thing, Value } from "orthograph";
 import type { MountModel, ThingModel } from "../types.ts";
 import { holdsModel } from "./holds.ts";
 import type { Layout } from "./layout.ts";
-import { sourceNameOf, sourcesModel } from "./sources.ts";
+import { refuseConnection } from "./source-refusals.ts";
+import { kindsOf, sourceNameOf, sourcesModel } from "./sources.ts";
 
 export interface FormContext {
   readonly layout: Layout;
@@ -52,6 +53,7 @@ const plain = (ctx: FormContext, file: string, x: unknown): unknown => {
     if (o.kind === "connection") {
       const source = sourceNameOf(ctx.layout, o.source as never);
       if (source === undefined) ctx.problems.push(`${file}: lists a connection of a source that is not a file of a plugin's blueprint/sources/`);
+      refuseConnection(ctx.problems, file, ctx.layout, o.source as never, o.config, kindsOf);
       return { source: source ?? "?", config: plain(ctx, file, o.config) };
     }
     return Object.fromEntries(Object.entries(x).filter(([, v]) => typeof v !== "function").map(([k, v]) => [k, plain(ctx, file, v)]));
