@@ -70,20 +70,20 @@ agents post on GitHub starts with `[goal-4 · <role> · claude · <model>]`.
 ## Where it stands
 
 Rewritten by the lead at every merge into `goal/on-chain` (K32); `.agents/skills/goal-4/STATE.md` has the detail.
-22 November 2026:
+23 November 2026:
 
-- **Landed:** slice 0 (K27); slice 1b, the chain decision ([#275](https://github.com/Open-Harness/orthograph/pull/275)); slice 2, the budgets example, its
-  seven journeys and the `e2e:on-chain` done check ([#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279)); money, M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287));
-  slice 3's checks ([#283](https://github.com/Open-Harness/orthograph/pull/283)); `goal/stage-1` with CI-drafts and Effect 4.1.4 ([#303](https://github.com/Open-Harness/orthograph/pull/303)); two lock calls in M6-chain ([#332](https://github.com/Open-Harness/orthograph/pull/332)).
-- **Open:** slice 3's build ([#331](https://github.com/Open-Harness/orthograph/pull/331), three 🔍 rounds passed), taking `goal/stage-1` in again and fixing a
-  Codex finding; the checks for slice 3b, the ABI codec Goal 12 asked for (#471, straight into `goal/stage-1`); the
-  checks for slices 9 and 10, the relayer and the follower.
+- **Landed:** slices 0, 1b and 2 (K27; [#275](https://github.com/Open-Harness/orthograph/pull/275); [#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279)); money, M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287)); slice 3, M6.10,
+  the chain store, values and money, and the refusals lock ([#283](https://github.com/Open-Harness/orthograph/pull/283), [#331](https://github.com/Open-Harness/orthograph/pull/331)); the relayer and follower decision,
+  M6-chain item 12 ([#518](https://github.com/Open-Harness/orthograph/pull/518)); the checks for the relayer and the follower ([#513](https://github.com/Open-Harness/orthograph/pull/513)); `goal/stage-1` again
+  ([#663](https://github.com/Open-Harness/orthograph/pull/663)), which brought the draft-race fix and the fast gate. On `goal/stage-1` directly: slice 3b, the ABI codec
+  Goal 12 asked for ([#509](https://github.com/Open-Harness/orthograph/pull/509), [#521](https://github.com/Open-Harness/orthograph/pull/521)).
+- **Building:** slice 9, the relayer, and slice 10, the follower, each a Durable Object, one builder each.
 - **Order changed (K38):** the relayer and the follower now come straight after slice 3, before slices 4 to 8, because
   Goal 9 needs M6.09 early (#442) and they need only `chain-evm` and Anvil. M6.09 lands early into `goal/stage-1`.
   The follower hands Goal 11's `Inbox.accept` only what it confirmed: `Confirmed`, and `Corrected` with
   `wasConfirmed: true` (#481, M6-chain item 12).
-- **Waits on:** slice 1 waits for Goal 3's sign-in extraction (M2.05) on `goal/stage-1` (K28), not done on
-  22 November. Snags S-01 to S-12 are open, each naming its slice.
+- **Waits on:** slice 1 waits for Goal 3's sign-in extraction (M2.05) on `goal/stage-1` (K28). Snags S-01 to S-12 are
+  open, each naming its slice. Ask #674 is with Goal 9.
 
 ## The paths Goal 4 owns
 
