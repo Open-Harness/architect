@@ -115,3 +115,63 @@ describe("a timer that sets itself again at the instant it fired at", () => {
     });
   });
 });
+
+describe("a loop reads its input afresh every time round", () => {
+  it("a real world's alarm fires a row that fell due while a wake ran, and returns", async () => {
+    const woke: Array<string> = [];
+    let world: WorldTimersState | undefined;
+    await inWorld("timers-alarm-middle", { kind: "real" }, async (state) => {
+      world = state;
+      state.rpc.timerSet(WorldClock.wall() - 1000, "first", "due", { kind: "keeper", payload: "first" });
+      await Effect.runPromise(state.fireDue());
+      expect(woke).toEqual(["first", "second"]);
+      expect(state.nextAlarm()).toBeUndefined();
+    }, (timer) => Effect.sync(() => {
+      woke.push(timer.owner);
+      if (timer.owner !== "first") return;
+      // Not yet due when this sweep began, due by the time the wake is over.
+      const due = WorldClock.wall() + 5;
+      world!.rpc.timerSet(due, "second", "due", { kind: "keeper", payload: "second" });
+      while (WorldClock.wall() < due + 1) { /* the wake takes a few milliseconds */ }
+    }));
+  });
+
+  it("the stepped controller fires a row a wake set that fell due on the way to the target", async () => {
+    const woke: Array<string> = [];
+    let world: WorldTimersState | undefined;
+    await inWorld("timers-controller-middle", STEPPED, async (state) => {
+      world = state;
+      state.rpc.timerSet(START + DAY, "first", "due", { kind: "keeper", payload: "first" });
+      expect(await settle(state, START + 2 * DAY)).toMatchObject({ _tag: "Success", success: { fired: [{ owner: "first" }, { owner: "second" }] } });
+      expect(woke).toEqual(["first", "second"]);
+      expect(state.rpc.timersDurable()).toEqual([]);
+    }, (timer) => Effect.sync(() => {
+      woke.push(timer.owner);
+      if (timer.owner === "first") world!.rpc.timerSet(START + DAY + 3_600_000, "second", "due", { kind: "keeper", payload: "second" });
+    }));
+  });
+
+  it("a stepped world's alarm does nothing: its rows are the controller's, whatever the wall clock says", async () => {
+    const woke: Array<string> = [];
+    await inWorld("timers-stepped-alarm", STEPPED, async (state) => {
+      state.rpc.timerSet(START, "first", "due", { kind: "keeper", payload: "first" });
+      await Effect.runPromise(state.fireDue());
+      expect(woke).toEqual([]);
+      expect(state.rpc.timersDurable()).toHaveLength(1);
+    }, (timer) => Effect.sync(() => void woke.push(timer.owner)));
+  });
+});
+
+describe("a wait on a row the world let go of", () => {
+  it("does not hang: a row taken back lets its pending wait go, and a row a reset forgot wakes a late waiter", async () => {
+    await inWorld("timers-let-go", STEPPED, async (world) => {
+      const taken = world.rpc.timerAdd("probe.nap", "sleep", START + DAY, "probe.nap");
+      const pending = world.rpc.timerWait(taken);
+      expect(world.rpc.timerCancel(taken)).toBe(true);
+      expect(await pending).toBeUndefined();
+      const forgotten = world.rpc.timerAdd("probe.nap", "sleep", START + DAY, "probe.nap");
+      world.reset();
+      expect(await world.rpc.timerWait(forgotten)).toBeUndefined();
+    });
+  });
+});

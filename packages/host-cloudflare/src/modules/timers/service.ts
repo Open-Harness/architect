@@ -55,8 +55,11 @@ export const WorldTimers = {
       },
       // Until nothing is due: a wake that set a timer already due, or a row that fell due while the wakes ran, is fired on this
       // alarm and not left for a reschedule that may find the world gone quiet.
+      // Only a real world has an alarm for timers: a stepped or scaled one is fired by its controller, at its own instants.
       fireDue: () => {
-        const sweep: Effect.Effect<void> = table.fire(WorldClock.wall(), undefined).pipe(
+        if (!real) return Effect.void;
+        // Suspended, so each sweep reads the wall clock afresh: a row that fell due while the wakes ran is due at this sweep's cutoff.
+        const sweep: Effect.Effect<void> = Effect.suspend(() => table.fire(WorldClock.wall(), undefined)).pipe(
           Effect.match({
             onSuccess: () => void (retryAt = undefined),
             onFailure: () => void (retryAt = WorldClock.wall() + 1_000),

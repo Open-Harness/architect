@@ -109,11 +109,16 @@ export const makeTable = (
     },
     wait: (id) => {
       const gate = waiting.get(id);
-      return gate === undefined ? Effect.never : Deferred.await(gate).pipe(Effect.ensuring(Effect.sync(() => void waiting.delete(id))));
+      // A row the world no longer knows (a reset forgot it) wakes its waiter, uncounted, rather than leaving it hanging.
+      return gate === undefined ? Effect.succeed(undefined) : Deferred.await(gate).pipe(Effect.ensuring(Effect.sync(() => void waiting.delete(id))));
     },
     cancel: (id) => {
+      const gate = waiting.get(id);
       waiting.delete(id);
-      return forget(id);
+      const removed = forget(id);
+      // A wait still pending on a row that was taken back is let go, not left as a promise nobody will settle.
+      if (removed && gate !== undefined) Deferred.doneUnsafe(gate, Effect.succeed(undefined));
+      return removed;
     },
     set: (at, owner, name, wake) => {
       const pending = select("WHERE wake IS NOT NULL AND owner = ? AND name = ?", owner, name)[0];

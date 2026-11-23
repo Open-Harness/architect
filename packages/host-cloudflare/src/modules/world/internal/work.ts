@@ -22,6 +22,16 @@ export const handover = (env: EntryEnv): Effect.Effect<void> =>
     return held === undefined ? Effect.void : call(env, (keeper) => keeper.countLeave(held));
   }));
 
+/**
+ * The one way a request takes up the world's clock after it has been without it: it asks the world for its source now and points its
+ * own cell at it. A request parked at day 0 whose wait ends at day +1 reads day +1, whichever side of the race won. A real world
+ * has no source to ask for.
+ */
+export const resumed = (env: EntryEnv): Effect.Effect<void> =>
+  WorldClock.declared(env).kind === "real"
+    ? Effect.void
+    : call(env, (keeper) => keeper.source()).pipe(Effect.flatMap((source) => Effect.sync(() => void (source !== undefined && WorldClock.refresh(source)))));
+
 export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Timers | DurableTimers> => {
   // A real world has no controller to tell: nobody waits for it to be quiet.
   const counted = WorldClock.declared(env).kind !== "real";
@@ -35,7 +45,8 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
     add: (owner, name, at, holder) => call(env, (keeper) => keeper.timerAdd(owner, name, at, holder)),
     // The wake is the instant the world fired the row at: this request's own clock is pointed at it before the code goes on.
     wait: (id) => call(env, (keeper) => keeper.timerWait(id)).pipe(Effect.flatMap((source) => Effect.sync(() => void (source !== undefined && WorldClock.refresh(source))))),
-    cancel: (id) => call(env, (keeper) => keeper.timerCancel(id)),
+    // Giving a row up is where a request that parked takes its token back: it resumes on the world's clock as it is now.
+    cancel: (id) => call(env, (keeper) => keeper.timerCancel(id)).pipe(Effect.tap(() => resumed(env))),
     sleeping: call(env, (keeper) => keeper.timersSleeping()),
     set: (at, owner, name, wake) => call(env, (keeper) => keeper.timerSet(at, owner, name, wake)),
     clear: (owner, name) => call(env, (keeper) => keeper.timerClear(owner, name)),

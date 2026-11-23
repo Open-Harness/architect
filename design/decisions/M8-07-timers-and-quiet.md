@@ -149,6 +149,45 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     the move fails as `NeverQuiet`, `busy` naming each owner still registering timers due then, and the clock stands where the walk
     reached, as call 11 says (`settled.test.ts`).
 
+    *Class C: a loop or repeat whose input was captured once.* An effect built eagerly inside a loop carries the value it saw when it was
+    built, so the loop's check and the loop's action disagree. Every loop and repeat was traced.
+
+    | Place | Verdict | How |
+    |---|---|---|
+    | the real world's alarm sweep (`fireDue`): `table.fire(wall(), ...)` built once, checked against a fresh wall time | **was open** (the alarm never returned) | `Effect.suspend`, so each sweep reads its own cutoff (`settled.test.ts`: a row that falls due during a wake) |
+    | the controller's walk | already per iteration | `table.fire(at, clock.source())` is built inside the loop body, from this turn's `at` and source; a row a wake sets that falls due on the way is fired in the same move (`settled.test.ts`) |
+    | `table.fire`'s own loop | already per row | each row is looked up and taken out as its own step; rows that fall due during the batch belong to the caller's next turn |
+    | `count.quiet`'s `settled` (re-read after a yield) | already per turn | its body reads the count when it runs |
+    | the Worker's RPC wrappers (`call`) | already lazy | every call is a thunk run when the effect runs, including the ones stored as values (`sleeping`, `durable`) |
+
+    *Class D: resuming without the world's current clock.* A request that gave up its token takes the world's source before it goes on.
+    One helper, `resumed(env)` (`world/internal/work.ts`): ask the world for its source and point this request's cell at it.
+
+    | Place | Verdict | How |
+    |---|---|---|
+    | `Timers.within`, the work wins the race: the deadline row is taken back and the token again | **was open** | `WorldTable.cancel` is `resumed` after the cancel, so every give-up path (`within`, an interrupted `sleep`, an interrupted `at`) resumes on the current clock (`world/work.test.ts`: parked with a two-day deadline, the world advances a day, the request reads day +1) |
+    | `Timers.within`, the deadline wins; `Timers.sleep`; `Timers.at`'s waiter | already refreshed | `wait` points the request at the source the world fired at |
+    | the handover | no gap | it gives a token away and never resumes work |
+    | the wake entry in the world (`inTime` per wake) | already fresh | the source is read when the wake runs |
+    | an entry's first read (`begin`) | fresh by construction | the source comes with the token |
+    | a real world | none | there is no source to take |
+
+    **Self-review of the whole diff** (adversarial, against `origin/goal/time`): tokens, rows, gates, clock sources, the alarm. Found and
+    fixed in this round:
+    - a `timerWait` on a row the world had forgotten (a reset) or no longer knew hung for ever: it now wakes uncounted;
+    - a row taken back by `cancel` left its pending `timerWait` promise unsettled in the world: it is now let go;
+    - a stepped or scaled world's lifetime alarm could fall through to `fireDue` and fire rows against the wall clock: `fireDue` is a real world's only;
+    - every `timerAdd` and `timerSet` in a stepped world re-armed the lifetime alarm for nothing: `changed` is a real world's only.
+
+    Checked and sound: the entry token (taken with `begin`, handed over once, given back on every path including a throw); a handler's token
+    across retries (each attempt is its own counted step); the order of `enter` before `handover` (the world is never at zero between);
+    `reset` while requests are in flight (their later `leave` of an owner the world forgot is ignored); a failed wake and a replaced row;
+    the semaphore around moves (a second move plans after the first ends); the fire bound; the alarm's retry after a failed wake; the
+    Date cell (one per request, replaced only by that request's own resume); `Busy.spawn`'s detached fiber (forked inside the uninterruptible step).
+    **Known limit, not fixed:** if a Worker isolate is killed while a request is parked on a row, nobody cancels it. When the row fires the
+    world counts its holder and nobody gives the token back, so the world is `NeverQuiet` until it is reset or ends. The world cannot tell a
+    parked request from a dead one; a lease on each parked row would, and is not built.
+
 ## Evidence
 
 - `e2e/m8/02` passes in this slice: the year (the server's `Clock`, a time passed to the database and a `Timers` sleep read the

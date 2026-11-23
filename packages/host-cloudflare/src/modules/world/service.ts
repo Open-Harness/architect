@@ -36,7 +36,7 @@ export class World extends DurableObject<WorldEnv> {
     // A due durable row is woken by its kind's code, here in the world's own isolate and in the world's time (fresh source).
     const wakes = kinds === undefined ? undefined : WorldTimers.route(kinds);
     this.timers = WorldTimers.state({
-      sql: ctx.storage.sql, clock: this.clock, env, changed: () => void this.schedule(),
+      sql: ctx.storage.sql, clock: this.clock, env, changed: () => { if (this.clock.kind === "real") void this.schedule(); },
       ...(wakes === undefined ? {} : { wakes: (timer) => Effect.promise(() => this.inTime(() => Effect.runPromise(wakes(timer)))) }),
     });
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS cast (name TEXT PRIMARY KEY, person TEXT, email TEXT NOT NULL, password TEXT NOT NULL)");
