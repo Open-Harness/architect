@@ -44,3 +44,12 @@ for s in runs.values():
 med = {f: S.median(v) for f, v in files.items()}
 print(f"rebalanced by out-of-sample per-file medians: slowest shard median {S.median(res):.1f} min (ideal {sum(med.values())/4/60:.1f}); {len(med)} files, {sum(med.values())/60:.1f} min of test time")
 for f, t in sorted(med.items(), key=lambda x: -x[1])[:5]: print(f"  {t/60:4.1f} min  {f}")
+
+# Queue wait of the shard jobs, 20 to 22 November (jobs.tsv.gz): created to started. It includes waiting on `needs` (portal-ui) and on the runner cap, and is not billed.
+import csv
+q = []
+for j in csv.reader(gzip.open(D + "/jobs.tsv.gz", "rt"), delimiter="\t"):
+    j += [""] * 8
+    if "e2e-m1-shard" in j[1] and j[7] and j[4] and j[5]: q.append(mins(j[4], j[5]))
+q.sort()
+print(f"queue wait of {len(q)} shard jobs, 20 to 22 November: median {S.median(q):.1f}, p90 {q[int(.9*len(q))]:.1f}, max {q[-1]:.0f} min")
