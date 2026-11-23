@@ -27,7 +27,7 @@ Later slices add their checks here, each with its own file in `expected-failing/
 ### Checks 09 to 13 in one paragraph
 
 They read the model (`generated/model/model.json`) and the example's generated SDK, never the action they judge. `projection.ts` holds what they share: the model's expectations, a host as K29 section 3.1 draws it (`client.<thing>.<verb>({ payload })`, made as one signed-in person, under the request key `tool:<toolCallId>`, through `runForAction`), and a sink server that writes down what it is sent. Check 12 starts a real Plugged In world (workerd, no Docker) and reads "writes nothing" from its journal. The projection also has to be mounted in each example (`blueprint/projections/actions.ts`, as `mcp.ts` is), or check 13 finds nothing written.
-A read is what K29 section 3 calls one: no `move` and only `load` steps (so `handle.resolve` and `profile.get`), which is what `readOnly` says. An operation whose payload has no fields (acme's `session.show`, `system.health`) advertises `properties: {}`; "non-empty parameters" is judged for every operation that has fields.
+`readOnly`, non-empty parameters, the client path, the request key, `retrySafe` and the acme limit are fixed in `design/decisions/WEB-actions-projection.md`: a read is an operation with no `move` and only `load` steps (or none), and an operation whose payload has no fields (acme's `session.show`, `system.health`) advertises `properties: {}`.
 
 ## How checks 01 to 03 are built
 

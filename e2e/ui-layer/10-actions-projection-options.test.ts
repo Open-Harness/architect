@@ -1,4 +1,4 @@
-// Check 10 (M1.22): what each generated `options(host)` says and does, for every operation of Plugged In and of acme. Its fields are
+// Check 10 (M1.22; design/decisions/WEB-actions-projection.md calls 1, 2, 4): what each generated `options(host)` says and does, for every operation of Plugged In and of acme. Its fields are
 // agent-native's own names and carry what the model says (name, description, readOnly, needsApproval, agentTool, errors); it has no
 // `retrySafe: true`; its `schema` advertises exactly the operation's payload, through Effect's Standard Schema and Standard JSON Schema,
 // non-empty whenever the payload has fields; and its `run` is one `host.call` that makes the generated SDK's own request, under the
@@ -246,9 +246,9 @@ describe("10 M1.22: the values K29 draws for Plugged In, as written there", () =
       errors: { HandleTaken: "HN-001", HandleAlreadyOwned: "HN-002", NotAllowed: "AR-001", IdempotencyConflict: "AR-002" },
     });
     expect(await read("handle.release")).toEqual({
-      name: "handle.release", description: "Free your name and take its public page offline. Anyone may claim the name afterwards.",
+      name: "handle.release", description: model.operations["handle.release"]!.description,
       readOnly: false, needsApproval: true, agentTool: true,
-      errors: { HandleNotClaimed: "HN-900", NotAllowed: "AR-001" },
+      errors: { HandleNotClaimed: model.refusals["HandleNotClaimed"], NotAllowed: model.refusals["NotAllowed"] },
     });
     expect((await read("profile.get")).readOnly).toBe(true);
     expect((await read("handle.resolve")).readOnly).toBe(true);

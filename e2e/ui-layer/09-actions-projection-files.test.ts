@@ -1,4 +1,4 @@
-// Check 09 (M1.22): what the actions projection writes, as files. One module per operation, in `generated/actions/<thing>/<verb>.ts`, of
+// Check 09 (M1.22; design/decisions/WEB-actions-projection.md): what the actions projection writes, as files. One module per operation, in `generated/actions/<thing>/<verb>.ts`, of
 // Plugged In and of acme: nothing missing, nothing extra, each module headed as generated, exporting `options` and nothing else, calling no
 // `defineAction`, importing nothing of agent-native, and holding none of the code the language's rules keep out of generated files.
 // Written before the projection exists, by an author who builds none of it. Every expected name comes from the model (`generated/model/model.json`).
@@ -61,7 +61,7 @@ for (const example of EXAMPLES) {
         const code = codeOf(source);
         const problems: Array<string> = [];
         if (/\bdefineAction\b/.test(code)) problems.push("names defineAction (the host wraps the options, K29 section 3.1)");
-        if (/\bretrySafe\b/.test(code)) problems.push("names retrySafe (a Worker 500 may have committed: spikes/agent-native-compat finding 5)");
+        if (/\bretrySafe\b/.test(code)) problems.push("names retrySafe (WEB-actions-projection call 5)");
         for (const spec of specifiers(source)) {
           if (/agent-native/.test(spec)) problems.push(`imports ${spec}`);
           else if (!spec.startsWith(".") && !BARE.includes(spec)) problems.push(`imports ${spec}, beyond ${BARE.join(", ")} and the project's own files`);

@@ -11,7 +11,7 @@
 // cast), under the request key `tool:<toolCallId>`, through `runForAction`. "Writes nothing" is read from the world's journal for the call's
 // own trace (an event is written only by a commit), and from the world's answers afterwards, never from what `run` returned.
 //
-// Acme's actions are judged by checks 09 to 11 and 13 (their shape is pinned as syntax, and their requests are read against the SDK's own on a
+// (WEB-actions-projection call 6.) Acme's actions are judged by checks 09 to 11 and 13 (their shape is pinned as syntax, and their requests are read against the SDK's own on a
 // sink); a second world would add minutes, not a new kind of fault.
 //
 // Written before the projection exists: the first test that loads a generated action fails by naming the file.

@@ -123,11 +123,11 @@ describe("13 B M1.22: the actions follow a changed blueprint", () => {
     cleanup.push(() => server.close());
     const flags = async (name: string) => { const o = await optionsOf(root, model.operations[name]!, server.url); return [o.description, o.needsApproval, o.agentTool, o.readOnly]; };
     expect(await flags("handle.claim")).toEqual([SDESC, false, true, false]);
-    expect(await flags("link.remove")).toEqual(["Remove a link from a public page.", true, true, false]);
-    expect(await flags("handle.release")).toEqual(["Free your name and take its public page offline. Anyone may claim the name afterwards.", false, false, false]);
+    expect(await flags("link.remove")).toEqual([model.operations["link.remove"]!.description, true, true, false]);
+    expect(await flags("handle.release")).toEqual([model.operations["handle.release"]!.description, false, false, false]);
     expect(await flags("link.list")).toEqual([model.operations["link.list"]!.description, false, true, true]);
     expect(await flags("link.archive")).toEqual([model.operations["link.archive"]!.description, false, true, true]);
-    expect(await flags("profile.get")).toEqual(["Read a claimed name's public page and its links in display order.", false, true, false]);
+    expect(await flags("profile.get")).toEqual([model.operations["profile.get"]!.description, false, true, false]);
     const errors = async (name: string) => (await optionsOf(root, model.operations[name]!, server.url)).errors;
     expect(await errors("link.remove")).toEqual({ LinkNotListed: model.refusals["LinkNotListed"], LinkAlreadyRemoved: model.refusals["LinkAlreadyRemoved"], NotAllowed: "AR-001" });
   }, 300_000);

@@ -43,8 +43,8 @@ export const verbFile = (op: ModelOp) => /\/verbs\/([^/]+)\.ts$/.exec(op.file)?.
 export const actionFile = (op: ModelOp) => `generated/actions/${op.thing}/${verbFile(op)}.ts`;
 
 /**
- * What K29 section 3.0 calls a read: no `move`, and only `load` steps (so `handle.resolve` and `profile.get` are reads, `link.order` a write).
- * An operation with no steps at all (a `Blueprint.read`, or `system.health`) has nothing that writes.
+ * `readOnly`, by `design/decisions/WEB-actions-projection.md` call 1: no `move`, and every step a `load`; no steps at all counts. The
+ * model's own `move` and step names decide it, not K29 section 3.0's sort. The decision tabulates all 22 operations.
  */
 export const isRead = (op: ModelOp) => op.move === null || op.move === undefined ? Object.keys(op.steps).every((step) => step === "load") : false;
 
