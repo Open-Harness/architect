@@ -42,6 +42,10 @@ export const Values: ValuesApi = {
       declaration: Schema.String.check(Schema.isPattern(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/)),
       id: Schema.String.check(Schema.isMinLength(1)),
     }), { type: "schema", format: "ref-any" }),
+  bool: () => described(Schema.Boolean, { type: "schema", format: "bool" }),
+  oneOf: (options) => described(Schema.Literals(options), { type: "schema", format: "choice", options: [...options] }),
+  list: (item) => described(Schema.Array(item.schema), { type: "schema", format: "list" }),
+  optional: (v) => Object.freeze({ ...v, schema: Schema.optionalKey(v.schema), optional: true as const }),
   email: () => described(Schema.String.check(Schema.isMaxLength(254), Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)), { type: "text", max: 254 }),
 };
 

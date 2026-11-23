@@ -43,6 +43,8 @@ export interface Thing<F extends FieldsInput = FieldsInput> {
   readonly code: string | undefined;
   /** The runtime's refusal when a call names an instance of this thing that isn't there (K16, M1.46): `<Thing>NotFound`. */
   readonly notFound: NotFound;
+  /** A thing with versions (K40 fix 2): one current version per `key`, every save kept, a stale save refused. Absent when it has none. */
+  readonly versions: { readonly key: string } | undefined;
 }
 
 /**
@@ -66,5 +68,7 @@ export interface ThingsApi {
     readonly fields: F;
     readonly lives?: Lives;
     readonly code?: string;
+    /** Keep every save: `versions: { key: "superagent" }` is one current version per superagent. The key is one of the thing's own fields. */
+    readonly versions?: { readonly key: keyof F & string };
   }) => Thing<F>;
 }
