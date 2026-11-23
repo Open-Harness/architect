@@ -22,8 +22,8 @@ concurrency:
 # Branch protection reads the required checks from the latest `ci` run on the head, and the event's payload can be stale:
 # a push made just before `gh pr ready` can deliver `draft: true` after the ready event. So no job trusts the payload.
 # The `ready` job reads the pull request's live draft state, and every other job needs it (CI-drafts-race.md). The
-# required checks (`check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `builder-paths`, and on goal/stage-1 also `portal-ui`,
-# `e2e-m1`, `e2e-climb`, `e2e-grid`, `e2e-stage1`) follow two more rules, which
+# required checks (`check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `builder-paths`, `portal-ui`, `e2e-m1`, `e2e-climb`,
+# `e2e-grid`, and on goal/stage-1 also `e2e-stage1`) follow two more rules, which
 # tools/ci/required-jobs.sh holds in check-static:
 #   1. On a ready run a required job never skips. It runs, and decides in its steps; GitHub counts a skipped required
 #      check as passed.
