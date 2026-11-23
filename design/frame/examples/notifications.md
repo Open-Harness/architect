@@ -95,9 +95,9 @@ export default Blueprint.journey("invite sends one email", {
   starts: "founded",
   steps: (s) => [
     s.step("ada invites olga", s.ada.run(send, { organization: s.world.organization, email: "olga@example.test" }),
-      emits(InvitationSent), s.world.settles(),               // waits until the outbox is quiet
+      emits(InvitationSent),                                  // then s.clock.settle() waits until the outbox is quiet (GOAL17-check-harness)
       inbox("olga@example.test", { count: 1, subject: /invited to/, links: [s.last.invitation] })),
-    s.step("the event is delivered again", s.world.redeliver(InvitationSent),
+    s.step("the event is delivered again", outbox.redeliver({ event: s.world.invitationEvent }),
       inbox("olga@example.test", { count: 1 }), noEvents()),
     s.step("bob can't send it himself", s.bob.run(invite, { invitation: s.world.invitation, to: "x@example.test", cause: "evt_1" }),
       refuses(Blueprint.NotAllowed)),
@@ -105,7 +105,7 @@ export default Blueprint.journey("invite sends one email", {
 });
 ```
 
-`s.world.settles()` is "wait until quiet", which the world already has for time and alarms (build plan L1.15); the
+`s.clock.settle()` is "wait until quiet", which the world already has for time and alarms (build plan L1.15); the
 outbox is one more thing it counts.
 
 ## Blanks and handlers
