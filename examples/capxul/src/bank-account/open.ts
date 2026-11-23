@@ -10,19 +10,22 @@ const { KybNotApproved } = Errors.declared;
 
 /**
  * The deposit instructions Bridge gives a virtual account (`source_deposit_instructions`). Until Capxul mounts the
- * Bridge adapter they are the stand-in's: one bank per currency, and an account number (or IBAN) drawn from the
- * account's own random id, so no two accounts share one (bank-account.oneAccountPerNumber). The routing number passes
- * the ABA checksum and the IBAN its mod-97 check, as Bridge's would.
+ * Bridge adapter they are the stand-in's, and they must never route a real deposit: the USD routing number starts 99,
+ * a prefix the ABA has never assigned, and the IBAN and BIC are in `XX`, which no country holds. They still pass the
+ * ABA checksum and the IBAN's mod-97 check, as Bridge's would. The account number (or IBAN) is drawn from the account's
+ * own random id, 17 or 18 of its digits, so no two accounts almost surely share one (bank-account.oneAccountPerNumber).
  */
 const depositDetails = (id: string, currency: "USD" | "EUR") => {
   // The id's random base-36 part, as a decimal number: 16 characters of it are about 25 digits.
-  const random = [...id.slice(id.indexOf("_") + 1)].reduce((n, c) => n * 36n + BigInt(Number.parseInt(c, 36)), 0n).toString();
+  const random = [...id.slice(id.indexOf("_") + 1)]
+    .reduce((n, c) => n * 36n + BigInt(Number.parseInt(c, 36)), 0n)
+    .toString();
   const lastDigits = (n: number) => random.padStart(n, "0").slice(-n);
-  if (currency === "USD") return { bankName: "Bridge stand-in bank", accountNumber: lastDigits(12), routingNumber: "101019644" };
-  // A German IBAN: DE, two check digits, the bank code of the usual example IBAN, then a ten-digit account number.
-  const bban = `37040044${lastDigits(10)}`;
-  const check = 98n - (BigInt(`${bban}131400`) % 97n);
-  return { bankName: "Bridge stand-in bank (EUR)", accountNumber: `DE${check.toString().padStart(2, "0")}${bban}`, routingNumber: "COBADEFFXXX" };
+  if (currency === "USD") return { bankName: "Bridge stand-in bank", accountNumber: lastDigits(17), routingNumber: "990000000" };
+  // An IBAN: XX, two check digits (mod 97 over the account number, then X = 33, X = 33, 00), then 18 digits.
+  const bban = lastDigits(18);
+  const check = 98n - (BigInt(`${bban}333300`) % 97n);
+  return { bankName: "Bridge stand-in bank", accountNumber: `XX${check.toString().padStart(2, "0")}${bban}`, routingNumber: "STNDXX00" };
 };
 
 /**
