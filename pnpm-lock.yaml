@@ -261,6 +261,9 @@ importers:
       '@orthograph/language-effect':
         specifier: workspace:*
         version: link:../../packages/language-effect
+      '@orthograph/openai':
+        specifier: workspace:*
+        version: link:../../packages/openai
       '@orthograph/portal':
         specifier: workspace:*
         version: link:../../packages/portal
@@ -273,6 +276,9 @@ importers:
       '@orthograph/prompts':
         specifier: workspace:*
         version: link:plugins/prompts
+      '@orthograph/sandbox':
+        specifier: workspace:*
+        version: link:../../packages/sandbox
       '@orthograph/slack':
         specifier: workspace:*
         version: link:plugins/slack
@@ -628,6 +634,18 @@ importers:
       '@orthograph/services':
         specifier: workspace:*
         version: link:../services
+
+  packages/openai:
+    dependencies:
+      '@orthograph/stand-in-model':
+        specifier: workspace:*
+        version: link:../stand-in-model
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
 
   packages/orthograph:
     dependencies:

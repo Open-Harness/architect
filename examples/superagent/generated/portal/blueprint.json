@@ -10220,6 +10220,10 @@
         "file": "blueprint/environments/local.ts",
         "runs": "on this machine",
         "identity": "test-principals",
+        "clock": {
+          "kind": "stepped",
+          "starts": "2026-12-01T09:00:00.000Z"
+        },
         "lifetimeMs": null,
         "cloud": null,
         "database": "d1-local",
@@ -10232,7 +10236,7 @@
         ],
         "deploy": {},
         "publish": {},
-        "hash": "0f14705e03d3bc97"
+        "hash": "3203bdcf48498b69"
       },
       "test": {
         "name": "test",
@@ -14394,6 +14398,19 @@
         "chosen": {},
         "hash": "f47cbc400b9c2b82"
       },
+      "models": {
+        "kind": "adapter",
+        "file": "blueprint/adapters/models.ts",
+        "package": "@orthograph/openai",
+        "version": "0.0.0",
+        "integrity": "sha256-WTHfUp+Uy/3AeHZ/aR0Iz8U0wqjETB3pWUSHMlMEAsM=",
+        "chosen": {},
+        "standIn": {
+          "how": "process",
+          "what": "a model on this machine whose every reply is scripted, speaking OpenAI's chat completions as Pi reads them"
+        },
+        "hash": "a813b0b354556fe0"
+      },
       "posthog": {
         "kind": "adapter",
         "file": "blueprint/adapters/posthog.ts",
@@ -14424,6 +14441,27 @@
         "integrity": "sha256-3yK5qNmq6uddT7Afi8BzQY9jqT/awzjWaEulc1U1kIU=",
         "chosen": {},
         "hash": "16b21e58785b27a0"
+      },
+      "sandbox": {
+        "kind": "adapter",
+        "file": "blueprint/adapters/sandbox.ts",
+        "package": "@orthograph/sandbox",
+        "version": "0.0.0",
+        "integrity": "sha256-A9b68+LwzSkMcaEszKCdVBorFLZrdJDfS7lfrR2kmkA=",
+        "chosen": {},
+        "calls": [
+          "close",
+          "exec",
+          "list",
+          "open",
+          "read",
+          "write"
+        ],
+        "standIn": {
+          "how": "process",
+          "what": "packages/sandbox/src/main.ts"
+        },
+        "hash": "83e7cb58ac9944b0"
       },
       "slack": {
         "kind": "adapter",
@@ -15013,5 +15051,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "133c206062646130b073b379065cf16d712e2f2867209c226148289ce30f6b43"
+  "digest": "deebbcf8b8b644e6a591db4dc789541b7dfe2f6d289af8124bace8bb1c341017"
 }

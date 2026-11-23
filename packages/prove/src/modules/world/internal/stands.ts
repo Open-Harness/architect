@@ -2,7 +2,7 @@
 // address is its first line, `stand-in listening on <url>` (the contract slice 4's stand-ins keep). It leads its own process group so it can be
 // stopped whole, and it belongs to the world's scope, never to the Worker's: a killed runner leaves it running (GOAL17-check-harness, call 2).
 import { spawn } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -35,6 +35,15 @@ export const standProcess = (mount: string, entry: string, cwd: string): Effect.
     return { url, pid: child.pid ?? 0 };
   });
 
+/** The folder of a package, found from where its entry resolves: the nearest package.json above it that names it (a package need not export its own manifest). */
+const packageDir = (entry: string, name: string): string | undefined => {
+  for (let dir = dirname(entry); dir !== dirname(dir); dir = dirname(dir)) {
+    const manifest = join(dir, "package.json");
+    if (existsSync(manifest) && (JSON.parse(readFileSync(manifest, "utf8")) as { readonly name?: unknown }).name === name) return dir;
+  }
+  return undefined;
+};
+
 /** The entry a package names for its stand-in: `orthograph.standIn` in its package.json, relative to the package. */
 const entryOf = (dir: string): string | undefined => {
   const manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as { readonly orthograph?: { readonly standIn?: unknown } };
@@ -50,10 +59,10 @@ export const standsOf = (root: string, model: Model): Readonly<Record<string, Ef
     if (m.standIn?.how !== "process") return [];
     const place = Effect.try({
       try: () => {
-        const dir = dirname(createRequire(join(root, "package.json")).resolve(`${m.package}/package.json`));
-        return { dir, entry: entryOf(dir) };
+        const dir = packageDir(createRequire(join(root, "package.json")).resolve(m.package), m.package);
+        return dir === undefined ? undefined : { dir, entry: entryOf(dir) };
       },
       catch: (e) => new WorldFailed({ message: `the ${mount} stand-in's package ${m.package} cannot be read from ${root}: ${String(e)}` }),
     });
-    return [[mount, Effect.flatMap(place, ({ dir, entry }) => (entry === undefined ? Effect.fail(new WorldFailed({ message: `${m.package}'s package.json names no orthograph.standIn entry` })) : standProcess(mount, join(dir, entry), dir)))] as const];
+    return [[mount, Effect.flatMap(place, (found) => (found === undefined || found.entry === undefined ? Effect.fail(new WorldFailed({ message: `${m.package}'s package.json names no orthograph.standIn entry` })) : standProcess(mount, join(found.dir, found.entry), found.dir)))] as const];
   }));

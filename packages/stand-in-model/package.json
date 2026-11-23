@@ -5,7 +5,8 @@
   "description": "A model on this machine whose every reply is scripted: OpenAI-compatible, no key, and exact, so a check can count what an agent was asked (GOAL17-check-harness, call 1).",
   "type": "module",
   "exports": {
-    "./stand": "./src/stand.ts"
+    "./stand": "./src/stand.ts",
+    "./main": "./src/main.ts"
   },
   "dependencies": {
     "effect": "4.1.4",

@@ -1,0 +1,26 @@
+{
+  "name": "@orthograph/openai",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A model endpoint that speaks OpenAI's chat completions: VibeProxy on this Mac for a real run, the scripted stand-in for a check (GOAL17-model-endpoint).",
+  "type": "module",
+  "orthograph": {
+    "kind": "adapter",
+    "blueprint": "blueprint",
+    "standIn": "src/stand-in/main.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@orthograph/stand-in-model": "workspace:*",
+    "effect": "4.1.4",
+    "orthograph": "workspace:*"
+  },
+  "nx": {
+    "tags": [
+      "scope:plugin",
+      "env:runtime"
+    ]
+  }
+}

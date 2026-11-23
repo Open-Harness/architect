@@ -87,9 +87,26 @@ The scripted OpenAI-compatible model of call 1: `/v1/chat/completions` as SSE, a
 
 `e2e/superagent/agents-support.ts`'s `prove(root)` runs `ortho prove` on a copy that has no `generated/` (its `PARTS` leave it out) and never runs `generate`, so every journey stops at "generated/api/src/index.ts couldn't be loaded" before any of this matters. Check 19's `stage-one.ts` runs `generate` after laying files. With `generate` run first (as I did by hand, in a scratch copy), journeys load and run: `one executor per ticket…` gets through its starting worlds and stops at its first step, on `no stand-in is running for the mount "models"`. **Asked of 40's author:** run `generate` in `withJourneys`. A builder may not edit it.
 
+### 7. The `models` and `sandbox` mounts, and `local.ts` (the coordinator's order (a) and (b))
+
+- `@orthograph/openai` (`packages/openai`): an adapter with no call of its own (Pi talks to the endpoint; an environment says where it is: VibeProxy for a real run, GOAL17-model-endpoint). Its stand-in is `@orthograph/stand-in-model`'s own process (`src/stand-in/main.ts` imports it). The app mounts it as `blueprint/adapters/models.ts`.
+- `blueprint/adapters/sandbox.ts` mounts `@orthograph/sandbox` with its six calls. I changed nothing in `packages/sandbox`.
+- `environments/local.ts` declares `Blueprint.clock.stepped({ starts: "2026-12-01T09:00:00.000Z" })`. The one seat is the starting worlds' (`kit/consts.ts` `POOL`), not the environment's. The world does not serve a clock yet (no `/_world/clock`; #696), so `s.clock.advance`, `moveTo` and `settle` still refuse in prove; **that is the next wall for every journey that waits**, and for most of 41 to 47.
+- `prove` finds a mount's package folder from where its entry resolves (a package need not export its own `package.json`).
+- **Evidence:** `ortho check` passes; with the surface, a scratch copy of slice 8's `one executor per ticket` now starts the model stand-in, runs its starting worlds, and stops at its first `s.clock.settle`.
+- `ticket.accept`'s `account` payload field is `Account.fields.id` (section 6); checks 19 and 21 are in the ratchet run for this head.
+
 ### What is left, in order
 
-1. The app's `models` mount: `@orthograph/openai` as an adapter whose `standIn` is `@orthograph/stand-in-model`, mounted in `blueprint/adapters/models.ts`, and `local.ts` declaring the stepped clock, one seat, and the sandbox and model mounts (the sandbox's descriptors are `packages/sandbox`'s).
+0. (Done above: the `models` mount, `local.ts`.)
+1. (Done: see section 7.)
 2. #705: `proposes` and the wrapper that records a Proposal for an agent caller (the caller now exists), each of the five operations gaining `itsMain` and a `why`.
 3. `Agent` in its actor on Pi Durable, `agent.tell` through the outbox, slots, pause, the reap sweep, the outbox probes' handlers: all on `Timers` and the outbox hop of #696.
 4. The events slice 7 left unemitted.
+
+### #705, designed against the code as it is now (not built)
+
+The agent caller exists, and `superagent.update` reaches its blank handler as the main agent in a scratch run of slice 8's journey, so what blocks it is the wrapper. Three facts the build needs:
+- **A handler cannot make a second thing's move.** `applyMove` journals one entry; `entries` in `handler/service.ts` is `[one]`. A `proposes` wrapper, and slice 7's unemitted events, both need a context call `also(move, { id?, fields })` that inserts or moves another instance and adds its entry to the same commit.
+- **The superagent of a proposal comes from the caller, not the payload:** `settings.save` has no `superagent` field, yet 44 reads `ProposalRecorded { superagent }`; it is the superagent whose `main` is the calling agent (a `Store.list` over `main`).
+- **The answer:** a proposal answers the agent as though nothing changed, so each operation declares what it answers: `proposes: { by: proposalMachine.moves.propose, answer: { revision: 0n } }`. `policy.save` is served by `Versions.handler`, so the diversion belongs in the wrapper (`attempt`, after `Access.check`), not in a handler.
