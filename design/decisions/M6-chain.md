@@ -398,9 +398,15 @@ The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m
   K7 Q6 keeps `wasConfirmed` in the event for any later reader of unconfirmed events, such as the portal's live view.
   This narrows Ask #481's "once per `Corrected`" to the corrections of confirmed events; M6.09's follower hands on
   nothing else.
-- **The checkpoint moves only after the sink has taken the change.** If the sink answers with an error, the follower
-  keeps its checkpoint and hands the same change on again at its next poll. A replay after a restart may call the sink
-  again with an id it has taken; `seen` is harmless, and what may never happen twice is `accepted` for one id.
+- **The checkpoint moves only after the sink has taken the changes, and the changes are kept until it has.** A step
+  reads the chain, stores the new checkpoint together with the entries the sink is to be told (an outbox), and only
+  then hands them on in order; each one the sink takes ("accepted" or "seen") leaves the outbox, and when it is empty
+  the stored checkpoint is the follower's checkpoint. If the sink answers with an error, the committed checkpoint
+  stays where it was and the next step delivers the outbox first, before it reads the chain, so a change the sink took
+  is never forgotten if the chain reorganises before the retry (its take-back is still handed on, 🔍 and Codex on #679,
+  23 November 2026). A replay after a restart may call the sink again with an id it has taken; `seen` is harmless, and
+  what may never happen twice is `accepted` for one id.
+- **A follower configured for another source starts over, and shows its faults.** `configure` keeps the checkpoint when the source is the same (chain, contract, event and starting block) and clears it when the source differs, since that is a new stream; a new `rpcUrl` or `depth` for the same source keeps it. A failed step keeps the checkpoint, and `health()` reports the last fault (its tag and kind, never a URL or key), how many in a row and when, until a step succeeds (🔍 on #679, 23 November 2026).
 
 ## The budgets example, as the journey author will write it
 
