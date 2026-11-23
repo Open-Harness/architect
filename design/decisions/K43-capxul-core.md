@@ -31,7 +31,7 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
    afterwards."
 
 Still open, in his words: the network, meaning other companies and their agents reached through the CRM, plus
-meetups, mixers and workshops, "a really undecided thing".
+meetups, mixers and workshops, "a really undecided thing". (Answered by CX-grill, 23 November 2026: dropped for now.)
 
 ## The decision
 
@@ -48,7 +48,8 @@ meetups, mixers and workshops, "a really undecided thing".
      capability (K42).
    - **Capxul's paid services,** hosted by Capxul and reached from any Capxul through an adapter unlocked by a key:
      KYC and KYB; bank accounts through Bridge, both opening them and keeping them open; and help with incorporation.
-   - **The network:** undecided. It becomes a grill when Capxul reaches the CRM. (Superseded by CX-grill, 23 November 2026: the network is dropped for now.)
+   - **The network:** undecided. It becomes a grill when Capxul reaches the CRM. (Superseded by CX-grill, 23 November
+     2026: the network is dropped for now.)
 3. **The order:** the books, HR, payroll, then the CRM. Bridge and the paid services come alongside the books, because
    money moving between an account and a bank goes through them. The first feature stays Goal 16's (`M7-capxul.md`,
    section 4; its slice 2), read as the books' first slice: a sales invoice with a pay link, the payment that settles it, and the
@@ -58,11 +59,14 @@ meetups, mixers and workshops, "a really undecided thing".
    to Capxul's own repository, as K30's option A planned, once Orthograph is on npm and Capxul's staging run passes.
 5. **Licences:** ERPNext is under GPL version 3 and Frappe CRM under AGPL version 3 (Frappe's licence page,
    https://docs.frappe.io/legal/others/license-and-trademark). Frappe HRMS's licence is still to be read from its
-   repository. (Superseded by CX-grill, 23 November 2026: Frappe HRMS is GPL-3.0.) A close translation likely carries the original's licence. That fits, because all of Capxul's software
-   is free (call 5), but the paid services must contain no translated code. By Aaron's call 7, the Capxul goal
-   translates now and nothing waits on a lawyer; Aaron gets a lawyer's read afterwards.
+   repository. (Superseded by CX-grill, 23 November 2026: Frappe HRMS is GPL-3.0.) A close translation likely carries
+   the original's licence. That fits, because all of Capxul's software is free (call 5), but the paid services must
+   contain no translated code. By Aaron's call 7, the Capxul goal translates now and nothing waits on a lawyer; Aaron
+   gets a lawyer's read afterwards.
 
 ## Open, for the Capxul goal's grill (its slice 3)
+
+All five were answered by CX-grill, 23 November 2026, with Aaron.
 
 - Which licence Capxul's software carries.
 - Which ERPNext record types (doctypes) each part takes, and which it drops: several companies, several currencies,

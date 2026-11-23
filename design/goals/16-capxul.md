@@ -24,11 +24,11 @@ slices:
   - "3 · The grill: core, modules, the paid services and the licence, with Aaron"
   - "4 · Spike: scaffold Orthograph things from ERPNext's record types"
   - "5 · Spike: the Bridge adapter from its published API description"
-  - "6 · The provisional map: books, HR, payroll, CRM, Bridge and the paid services (after 1, 3, 4, 5)"
+  - "6 · The provisional map: books, HR, payroll, CRM and Bridge (after 1, 3, 4, 5)"
   - "7 · The books (after 2)"
   - "8 · HR (after 6)"
   - "9 · Payroll (after 7, 8)"
-  - "10 · The paid services: KYC and KYB, bank accounts through Bridge, incorporation (after 5, 6)"
+  - "10 · Bridge in full: KYC and KYB, bank accounts and incorporation, through Capxul's own Bridge account (after 5, 6)"
   - "11 · The CRM, a module switched on later (after 9)"
 ---
 # Goal 16: Capxul core, rebuilt on Orthograph
@@ -53,8 +53,8 @@ and run it." Nothing else is needed.
 - **It isn't:** Frappe or ERPNext running underneath. Their logic is translated, not run.
 - **Done when:** the tests for the books, HR, payroll, the identity checks and the bank account pass in Capxul's own
   test copy on the internet.
-- **Waits on:** Aaron, for the first design conversation. A lawyer's read on the licence comes afterwards and holds
-  nothing up.
+- **Waits on:** nobody: slice 3's grill is decided (CX-grill). A lawyer's read on the licence comes afterwards and
+  holds nothing up.
 - **Words used:**
   - Capxul: a business app for small companies, being rebuilt here; its core is the free books, HR, payroll and Bridge;
   - the books: accounting (invoices, payments, the ledger); HR and payroll: a company's people, and paying them;
@@ -126,6 +126,6 @@ two apps (K42, section 3); organisations are separate, and Capxul's companies ar
 
 23 November 2026: rewritten under K43. Slice 1 lands with #487. Slices 4 and 5 are running. Slice 3 is decided
 (`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
-customers, built in full now, with what's paid sorted out later; the network dropped for now.
-The lead first merges `main` into `goal/capxul`, so this brief replaces the branch's old one. The lead rewrites this
-section at every slice merge.
+customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged
+into `goal/capxul` at the restart (#745), so this brief replaced the branch's old one. The lead rewrites this section
+at every slice merge.
