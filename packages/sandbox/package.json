@@ -1,0 +1,27 @@
+{
+  "name": "@orthograph/sandbox",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A folder and a shell for an agent to work in, served over a socket (pi-env), with a bridge on this Mac as its stand-in (K40 fixes 4 and 6).",
+  "type": "module",
+  "orthograph": {
+    "kind": "adapter",
+    "blueprint": "blueprint",
+    "standIn": "src/main.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@earendil-works/pi-env": "1.5.0",
+    "@orthograph/language-effect": "workspace:*",
+    "effect": "4.1.4",
+    "orthograph": "workspace:*"
+  },
+  "nx": {
+    "tags": [
+      "scope:plugin",
+      "env:runtime"
+    ]
+  }
+}

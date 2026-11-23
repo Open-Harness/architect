@@ -10,6 +10,10 @@ allowBuilds:
   "@heroui-pro/react": false
   # heroui-pro's keyring helper; its native build only serves a login on a person's own machine.
   "@zowe/secrets-for-zowe-sdk": false
+  # Pi Durable's model-provider SDKs (it arrives with `@earendil-works/pi-env`, GOAL17-slice9-sandbox call 2). Their install scripts are
+  # not needed: nothing here calls a provider from a script, and pi-env's daemon is a prebuilt binary in its package.
+  "@google/genai": false
+  protobufjs: false
   esbuild: true
   nx: true
   workerd: true

@@ -1,0 +1,11 @@
+{
+  "name": "sandbox",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/sandbox/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {},
+    "typecheck": {},
+    "test": {}
+  }
+}
