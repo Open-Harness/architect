@@ -91,7 +91,7 @@ agreed on #707.
 
 - **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`. That carried everything stage 1 built, with
   #690 (secrets by declaration), #697 (the map), #696 (Goal 9's timers), #754 (the parity ratchet's fix) and #737 (Goal 3
-  parked). It also fixed the shell's licence (#753). All ten required checks were green, and `e2e-portal-next` too.
+  parked). It also fixed the shell's licence (issue #753). All ten required checks were green, and `e2e-portal-next` too.
 - **`goal/stage-1` is retired.** `main` requires all ten of its checks: `e2e-stage1` was added after #729 ran it green
   on `main`, as CI-main-stage1 says. Its threads, admins, no-force-push and no-deletion rules already matched. No pull
   request targets `goal/stage-1`. The branch is locked read-only, with its protections kept. To undo, PUT its protection

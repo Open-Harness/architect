@@ -13,8 +13,8 @@ judged by the code and the checks, never by the ticks in [`milestones.md`](../..
 Where a tick and a check disagree, the check wins (K41, clash 7).
 
 Status words: **Built** (in `packages/`, with a check that passes), **Partial** (built, with a named piece missing),
-**Spiked** (only throwaway code in `spikes/` proves it), **None** (nothing yet). Most of what is built is on
-`goal/stage-1` and reaches `main` when that branch lands.
+**Spiked** (only throwaway code in `spikes/` proves it), **None** (nothing yet). What stage 1 built is on `main`
+since `goal/stage-1` landed there on 23 November 2026 (#707).
 
 ## 1. The releases (K28)
 
