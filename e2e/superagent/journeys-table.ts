@@ -18,7 +18,7 @@ export const JOURNEYS: ReadonlyArray<{ readonly file: string; readonly name: str
   { file: "a-stopped-ticket-does-not-get-a-seat-back", name: "a stopped ticket does not get a seat back", steps: 11 },
   { file: "a-stopped-tickets-opening-tell-is-refused", name: "a stopped ticket's opening tell is refused", steps: 12 },
   { file: "a-write-outside-the-sandbox-is-refused", name: "a write outside the sandbox is refused", steps: 8 },
-  { file: "no-credential-among-the-execution-variables", name: "no credential among the execution variables", steps: 12 },
+  { file: "no-credential-among-the-execution-variables", name: "no credential among the execution variables", steps: 13 },
   { file: "one-chatty-tickets-writes-stay-within-budget", name: "one chatty ticket's writes stay within budget", steps: 8 },
   { file: "one-executor-per-ticket", name: "one executor per ticket, found again after a restart", steps: 11 },
   { file: "pause-holds-processing-while-triggers-keep-arriving", name: "pause holds processing while triggers keep arriving", steps: 19 },

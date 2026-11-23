@@ -12,7 +12,7 @@ export default {
   steps: {
     "#1": { answer: { settings: "set_1", revision: 1n } },
     "#5": { answer: seen() }, "#6": { answer: seen() }, "#7": { answer: seen() }, "#8": { answer: seen() },
-    "#11": { answer: seen(ENV, "closed") }, "#12": { answer: { folders: [], processes: [] } },
+    "#12": { answer: seen(ENV, "closed") }, "#13": { answer: { folders: [], processes: [] } },
   },
   plants: [
     { name: "a token is among the variables", step: "#5", with: () => ({ answer: seen([...ENV, v("GITHUB_TOKEN", "source")]) }) },
@@ -27,8 +27,8 @@ export default {
     { name: "the blocked list is not what settings say", step: "#6", with: () => ({ answer: seen(swap("SUPERAGENT_BLOCKED_COMMANDS", v("SUPERAGENT_BLOCKED_COMMANDS", "built-in", "sudo"))) }) },
     { name: "the canary is in a value", step: "#7", with: () => ({ answer: seen(swap("REGION", v("REGION", "settings", "ortho-canary-github-key"))) }) },
     { name: "the sandbox was already closed before the retire, so the retire did nothing", step: "#8", with: () => ({ answer: seen(ENV, "closed") }) },
-    { name: "the sandbox is still open after the retire", step: "#11", with: () => ({ answer: seen(ENV, "open") }) },
-    { name: "a folder is left", step: "#12", with: () => ({ answer: { folders: ["/tmp/sbx_1"], processes: [] } }) },
-    { name: "a process is left", step: "#12", with: () => ({ answer: { folders: [], processes: [{ pid: 9, sandbox: "sbx_1", command: "sleep" }] } }) },
+    { name: "the sandbox is still open after the retire", step: "#12", with: () => ({ answer: seen(ENV, "open") }) },
+    { name: "a folder is left", step: "#13", with: () => ({ answer: { folders: ["/tmp/sbx_1"], processes: [] } }) },
+    { name: "a process is left", step: "#13", with: () => ({ answer: { folders: [], processes: [{ pid: 9, sandbox: "sbx_1", command: "sleep" }] } }) },
   ],
 };
