@@ -23,7 +23,7 @@ concurrency:
 # a push made just before `gh pr ready` can deliver `draft: true` after the ready event. So no job trusts the payload.
 # The `ready` job reads the pull request's live draft state, and every other job needs it (CI-drafts-race.md). The
 # required checks (`check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `builder-paths`, `portal-ui`, `e2e-m1`, `e2e-climb`,
-# `e2e-grid`, and on goal/stage-1 also `e2e-stage1`) follow two more rules, which
+# `e2e-grid`, `e2e-stage1`) follow two more rules, which
 # tools/ci/required-jobs.sh holds in check-static:
 #   1. On a ready run a required job never skips. It runs, and decides in its steps; GitHub counts a skipped required
 #      check as passed.
@@ -702,7 +702,8 @@ jobs:
         run: pnpm nx run e2e:climb --outputStyle=static
 
   # Goal 3's done check, begun (`e2e/stage1/README.md`): Plugged In's seven journeys green in `--env local` and `--env test`, through the
-  # ratchet. Only for the goal's own branch: pull requests into goal/stage-1 and pushes to it. On any other pull request or push, and on a docs-only
+  # ratchet. For main and goal/stage-1: pull requests into either and pushes to either (main since the lander's slice 1, K42 open risks,
+  # CI-main-stage1.md). On any other pull request or push, and on a docs-only
   # pull request, the job runs and passes without its steps: a required job never skips (CI-drafts-race.md, CI-docs-fast-path.md).
   # Should `changes` itself fail, the steps run. No secret and no `id-token` permission: the test half
   # signs its verdicts with the local OIDC issuer of e2e/layer2/services.ts. About 1 minute on a Mac, so one runner and one job (CI-speed.md).
@@ -713,7 +714,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SKIP: ${{ !((github.event_name == 'pull_request' && github.base_ref == 'goal/stage-1') || github.ref == 'refs/heads/goal/stage-1') || (needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
+      SKIP: ${{ !((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/stage-1')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/stage-1') || (needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
     steps:
       - if: env.SKIP == 'true'
         run: echo "A docs-only pull request, or one that is not for this gate, where this job passes without its steps (design/decisions/CI-drafts-race.md, CI-docs-fast-path.md, CI-integration.md)."

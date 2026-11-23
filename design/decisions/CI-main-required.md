@@ -14,6 +14,9 @@ pull request could break Gate M1 on `main` and still land. `goal/stage-1` alread
 
 `main` requires nine checks, `goal/stage-1`'s ten without `e2e-stage1`:
 
+> Superseded by CI-main-stage1, 23 November 2026: `main` also runs and requires `e2e-stage1`, so it requires
+> `goal/stage-1`'s ten ([`CI-main-stage1.md`](CI-main-stage1.md)).
+
 ```json
 ["check","e2e-layer1","e2e-layer2","e2e-m0","builder-paths","portal-ui","e2e-m1","e2e-climb","e2e-grid"]
 ```
