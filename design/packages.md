@@ -60,8 +60,11 @@ Plugins come later, one package each: `@orthograph/auth` and `@orthograph/organi
 ## Rules, held by Nx module boundaries
 
 - `orthograph` (tag `scope:orthograph`) depends on nothing but Effect. Every other package may import it.
-- A project (`scope:project`) depends only on `scope:orthograph`, `scope:language`, `scope:host` and `scope:projections`:
-  a blueprint mounts a projection as it mounts any plugin, and nothing it generates imports the package.
+- A project (`scope:project`) depends only on `scope:orthograph`, `scope:language`, `scope:host`, `scope:projections` and `scope:plugin`:
+  a blueprint mounts a projection or a plugin as it mounts any plugin, and nothing it generates imports the package.
+- A plugin written inside an app (`scope:plugin`, set in its `package.json` as `"nx": { "tags": ["scope:plugin"] }`, GOAL17-plugin-scope)
+  depends only on `scope:orthograph`, `scope:language` and other `scope:plugin` packages: a feature needs the roles, events and
+  things of the plugins it builds on, and nothing of the host or the generators.
 - `env:runtime` packages depend only on `env:runtime` packages; `env:build` packages may use both.
 - Today `portal-ui` is the only package that imports `@heroui-pro/*` (lint, F7); new screens build on UI SDK and HeroUI is phased out
   (K24), after which the lint rule goes with it. `portal-ui` is a leaf that only the portal and faces depend on.

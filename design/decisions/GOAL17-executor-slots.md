@@ -86,6 +86,8 @@ export const oneLivePerExecutor = Blueprint.invariant.unique(
 
 // the executor's declaration (brief :388) says which thing holds its seats, and where the size is
 export default Blueprint.agent({ /* … */ slots: { size: superagent.slots, reserve: 1, held: Assignment } });
+// Superseded by GOAL17-slice5-forms, call 15, 23 November 2026: `@orthograph/superagent` declares `held: Blueprint.id("asg")`, the id the
+// Assignment owns, so the plugin imports nothing of `tickets`; the compiler resolves the prefix to the one thing that owns it.
 ```
 
 These forms exist today: a composite `unique` with `while` (`packages/orthograph/src/modules/invariants/types.ts:26-30`,
@@ -461,6 +463,8 @@ const s = Blueprint.journey("a full pool keeps its slot for a person", { world: 
     expect((a) => seatsOf(a.running), [1n, 2n, 255n]))
   .step("a duplicate start is refused", call(assignment.start, { id: s.world.first }), refuses(machine.notFrom));   // Superseded by GOAL17-names, 23 November 2026: `assignment.started`
 ```
+
+Superseded by GOAL17-check-harness, 23 November 2026: the sketch's `{ world, size }`, `stand.finishTurn` and `world.restart` do not exist; the journey is written with `starts`, `models.release` and `s.runner.restart()` (calls 0 to 2 there).
 
 What proves it, each from a place a journey already reads (`journeys/types.ts:57-66`): the machine's state
 (`machine.isIn`, `machines/types.ts:53`), the events with their fields (`emits`), and the unique rule's refusal
