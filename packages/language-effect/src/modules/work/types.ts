@@ -65,6 +65,8 @@ export class WorldCount extends Context.Service<WorldCount, {
   readonly enter: (owner: string) => Effect.Effect<string>;
   /** Release exactly that token. An id of an older generation, or one already released, does nothing. */
   readonly leave: (id: string) => Effect.Effect<void>;
+  /** Is this token still held by the world? A box whose id the world no longer knows (a reset) takes a fresh token. */
+  readonly valid?: (id: string) => Effect.Effect<boolean>;
   /** A request's token was taken at its entry under the entry's name; the operation names it when it begins. */
   readonly name?: (id: string, owner: string) => Effect.Effect<void>;
   /** The box of the request this fiber runs in, when the entry took a token for it. */

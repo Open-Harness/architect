@@ -47,6 +47,8 @@ export type Unsettled =
   | { readonly _tag: "NeverQuiet"; readonly busy: ReadonlyArray<string> }
   | { readonly _tag: "WakeFailed"; readonly owner: string; readonly name: string; readonly message: string }
   /** The move itself was refused when it came to be planned (a real clock, a bad span, a move back). */
+  /** A reset ended the run the move belonged to: nothing was moved after it. */
+  | { readonly _tag: "WorldReset" }
   | { readonly _tag: "Refused"; readonly status: 400 | 409; readonly body: { readonly _tag: string; readonly message: string } };
 
 /**

@@ -16,6 +16,7 @@ const makeWorld = (slowAdd?: Deferred.Deferred<void>) => {
   const durable: Array<DurableTimer> = [];
   const tokens = new Map<string, string>();
   const events: Array<string> = [];
+  const forgotten = new Set<number>();
   let next = 1;
   let ids = 0;
   const enter = (owner: string, who = "") => {
@@ -35,7 +36,8 @@ const makeWorld = (slowAdd?: Deferred.Deferred<void>) => {
       rows.push(row);
       return row.id;
     })),
-    wait: (id) => Deferred.await(rows.find((r) => r.id === id)!.woken),
+    // A row a reset forgot ends its sleeper: the request belongs to a run that is over.
+    wait: (id) => Deferred.await(rows.find((r) => r.id === id)!.woken).pipe(Effect.flatMap(() => (forgotten.has(id) ? Effect.interrupt : Effect.void))),
     // The sleeper is back or gave up: the row goes if it had not fired, and the token the world held for it goes back.
     cancel: (id) => Effect.sync(() => {
       const at = rows.findIndex((r) => r.id === id);
@@ -63,7 +65,12 @@ const makeWorld = (slowAdd?: Deferred.Deferred<void>) => {
     row.token = enter(row.holder, "world");
     yield* Deferred.succeed(row.woken, undefined);
   });
-  return { events, held: () => [...tokens.values()].sort(), rows, durable, fire, layer: TimersWorld.pipe(Layer.provide(table), Layer.provideMerge(BusyReporting.pipe(Layer.provide(count))), Layer.provideMerge(TestClock.layer())) };
+  /** A reset: the row's sleeper is told it was forgotten. */
+  const forget = (id: number) => Effect.suspend(() => {
+    forgotten.add(id);
+    return Deferred.succeed(rows.find((r) => r.id === id)!.woken, undefined);
+  });
+  return { forget, events, held: () => [...tokens.values()].sort(), rows, durable, fire, layer: TimersWorld.pipe(Layer.provide(table), Layer.provideMerge(BusyReporting.pipe(Layer.provide(count))), Layer.provideMerge(TestClock.layer())) };
 };
 
 const wakes = Layer.succeed(TimerWakes, TimerWakes.of({ wake: () => Effect.void }));
@@ -89,6 +96,24 @@ describe("Timers on the world's table", () => {
       // The token is lent out before the world can look; the world holds one for the sleeper from the firing; the sleeper takes its own
       // before the world lets go of that one; the work then ends and gives its token back.
       expect(world.events).toEqual(["+probe.nap", "-probe.nap", "world+probe.nap", "+probe.nap", "world-probe.nap", "-probe.nap"]);
+    }));
+  });
+
+  it("a sleeper whose row a reset forgot is interrupted: what follows the sleep (a commit) never runs, and nothing is left counted", async () => {
+    const world = makeWorld();
+    let committed = false;
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const timers = yield* Timers;
+      const fiber = yield* Effect.forkChild(busy.as("probe.nap").counted(Effect.andThen(timers.sleep("probe.nap", "1 day"), Effect.sync(() => { committed = true; }))));
+      yield* Effect.yieldNow;
+      yield* Effect.yieldNow;
+      yield* world.forget(1);
+      const exit = yield* Fiber.await(fiber);
+      expect(exit._tag).toBe("Failure");
+      expect(committed).toBe(false);
+      for (let i = 0; i < 5; i++) yield* Effect.yieldNow;
+      expect([world.rows, world.held(), yield* busy.count]).toEqual([[], [], 0]);
     }));
   });
 

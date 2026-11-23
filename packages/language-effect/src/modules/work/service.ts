@@ -5,6 +5,7 @@ type Report = {
   readonly enter: (owner: string) => Effect.Effect<string>;
   readonly leave: (id: string) => Effect.Effect<void>;
   readonly name?: ((id: string, owner: string) => Effect.Effect<void>) | undefined;
+  readonly valid?: ((id: string) => Effect.Effect<boolean>) | undefined;
   readonly request?: Effect.Effect<BusyBox | undefined> | undefined;
 };
 
@@ -35,6 +36,11 @@ const counting = (world?: Report): BusyShape => {
       if (world === undefined) return Effect.void;
       const want = box.holders > box.lent || (box.pinned && box.holders === 0 && box.lent === 0);
       if (want && box.id === undefined) return Effect.map(world.enter(box.owner), (id) => void (box.id = id));
+      // The box holds an id: the world must still know it. After a reset it does not, and the request would run unseen.
+      if (want && world.valid !== undefined) {
+        const held = box.id!;
+        return Effect.flatMap(world.valid(held), (known) => (known ? Effect.void : Effect.map(world.enter(box.owner), (id) => void (box.id = id))));
+      }
       if (!want && box.id !== undefined) {
         const id = box.id;
         box.id = undefined;

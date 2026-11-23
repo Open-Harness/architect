@@ -28,10 +28,14 @@ export const makeController = ({ clock, table, count, limit, fireLimit }: Contro
       const planned = plan();
       if (!planned.ok) return yield* Effect.fail({ _tag: "Refused" as const, status: planned.status, body: planned.body });
       const target = planned.target;
+      // The walk belongs to the generation it began in: a reset ends it, and it must not move the clock the reset just put back.
+      const born = count.generation();
+      const reset = Effect.suspend(() => (count.generation() === born ? Effect.void : Effect.fail({ _tag: "WorldReset" as const })));
       const fired: Array<ClockTimer> = [];
       // How many have fired at the instant the walk is at: past the bound, something keeps registering timers due at it.
       let here = { at: Number.NaN, fired: 0 };
       yield* count.quiet(limit);
+      yield* reset;
       // Settled means quiet and nothing due at the target, both at once: a request that registers an already-due timer while a
       // quiet wait is under way (a zero-length sleep at the new instant) is seen on the next turn, so the walk goes on until a
       // quiet wait ends with nothing due and the clock at the target.
@@ -40,9 +44,11 @@ export const makeController = ({ clock, table, count, limit, fireLimit }: Contro
         if (next === undefined && clock.now() >= target) break;
         // A timer already past due fires where the world stands: the clock never goes back.
         const at = next === undefined ? target : Math.max(next, clock.now());
+        yield* reset;
         clock.moveTo(iso(at));
         if (next !== undefined) {
           const batch = yield* table.fire(at, clock.source());
+          yield* reset;
           for (const row of batch) {
             if (row.durable) fired.push({ due: iso(row.at), owner: row.owner, name: row.name });
           }
@@ -54,6 +60,7 @@ export const makeController = ({ clock, table, count, limit, fireLimit }: Contro
           }
         }
         yield* count.quiet(limit);
+        yield* reset;
       }
       return { now: iso(clock.now()), fired };
     })),

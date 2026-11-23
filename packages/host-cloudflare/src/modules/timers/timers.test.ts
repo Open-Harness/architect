@@ -25,7 +25,7 @@ const settle = (world: WorldTimersState, target: number) => Effect.runPromise(Ef
 /** What a Worker does with a sleeper: wait on its row, note the instant it woke at, and give its token back. */
 const sleeper = (world: WorldTimersState, owner: string, at: number, woke: Array<string>) => {
   const id = world.rpc.timerAdd(owner, "sleep", at, owner);
-  return world.rpc.timerWait(id).then((source) => {
+  return world.rpc.timerWait(id).then(({ source }) => {
     woke.push(`${owner}@${(source as Extract<ClockSource, { kind: "stepped" }>).instant}`);
     // Back at work with its own token: the world lets go of the one it held for the sleeper.
     world.rpc.timerCancel(id);
@@ -205,12 +205,12 @@ describe("the wake route", () => {
 });
 
 describe("a reset", () => {
-  it("wakes a sleeper still waiting on a row, rather than leaving it hanging", async () => {
+  it("ends a sleeper still parked on a row: it is told it was forgotten, so it never resumes into the new run", async () => {
     await inWorld("timers-reset", STEPPED, async (world) => {
       const id = world.rpc.timerAdd("probe.nap", "sleep", START + DAY, "probe.nap");
       const waiting = world.rpc.timerWait(id);
       world.reset();
-      expect(await waiting).toBeUndefined();
+      expect(await waiting).toEqual({ source: undefined, forgotten: true });
       expect(world.controller.timers()).toEqual([]);
     });
   });

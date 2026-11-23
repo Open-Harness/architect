@@ -30,11 +30,15 @@ export interface WorldTimersRpc {
   countLeave(id: string): void;
   /** Name a token again: the operation names its request's token, which the entry named by its path. */
   countName(id: string, owner: string): void;
-  timerAdd(owner: string, name: string, at: number, holder: string): number;
-  timerWait(id: number): Promise<ClockSource | undefined>;
+  /** Is this token held by the world now? False after a reset, a restart, or its release. */
+  countHas(id: string): boolean;
+  /** `token` is the caller's own, when it has one: a call that carries a token the world no longer holds is from a run that is over, and is refused. */
+  timerAdd(owner: string, name: string, at: number, holder: string, token?: string): number;
+  /** Resolves when the world fires the row, or, with `forgotten`, when a reset ended the run the row belonged to. */
+  timerWait(id: number): Promise<{ readonly source: ClockSource | undefined; readonly forgotten: boolean }>;
   /** The sleeper is back or gave up: take the row back if it has not fired, release the token the world held for it. Idempotent. */
   timerCancel(id: number): void;
-  timerSet(at: number, owner: string, name: string, wake: Wake): number;
+  timerSet(at: number, owner: string, name: string, wake: Wake, token?: string): number;
   timerClear(owner: string, name: string): boolean;
   timersSleeping(): ReadonlyArray<TimerRow>;
   timersDurable(): ReadonlyArray<DurableTimer>;

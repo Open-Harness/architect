@@ -164,15 +164,16 @@ describe("a loop reads its input afresh every time round", () => {
 });
 
 describe("a wait on a row the world let go of", () => {
-  it("does not hang: a row taken back lets its pending wait go, and a row a reset forgot wakes a late waiter", async () => {
+  it("does not hang: a row taken back lets its pending wait go, and a row a reset forgot tells a late waiter it was forgotten", async () => {
     await inWorld("timers-let-go", STEPPED, async (world) => {
       const taken = world.rpc.timerAdd("probe.nap", "sleep", START + DAY, "probe.nap");
       const pending = world.rpc.timerWait(taken);
       world.rpc.timerCancel(taken);
-      expect(await pending).toBeUndefined();
+      expect(await pending).toEqual({ source: undefined, forgotten: false });
       const forgotten = world.rpc.timerAdd("probe.nap", "sleep", START + DAY, "probe.nap");
       world.reset();
-      expect(await world.rpc.timerWait(forgotten)).toBeUndefined();
+      // A late waiter on a row a reset forgot is told so as well.
+      expect(await world.rpc.timerWait(forgotten)).toEqual({ source: undefined, forgotten: true });
     });
   });
 });

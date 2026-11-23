@@ -61,7 +61,11 @@ export class World extends DurableObject<WorldEnv> {
     const clock = WorldClock.door(this.clock, request, this.timers.controller);
     if (clock) return clock;
     // The cast signs up and in through Better Auth, which reads `Date`: at the world's instant, not the machine's.
-    const answered = this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)));
+    // The cast, the credentials and the other front-door routes run Better Auth, which reads `Date`: each is counted work for its whole life,
+    // so a move does not pass one that is in flight (a real world counts nothing).
+    const token = this.clock.kind === "real" ? undefined : this.timers.rpc.countEnter(`world:${pathname.replace("/_world/", "")}`);
+    const answered = this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)))
+      .finally(() => { if (token !== undefined) this.timers.rpc.countLeave(token); });
     // The warm reset between runs (ST1.24) is the one way back: the clock returns to its declared start, a scaled one re-anchored now.
     // Only the reset the world itself accepted (its nonce matched) does it.
     return pathname === "/_world/reset" && request.method === "POST" ? answered.then((response) => { if (response.ok) { this.clock.reset(); this.timers.reset(); } return response; }) : answered;
@@ -125,6 +129,7 @@ export class World extends DurableObject<WorldEnv> {
   countEnter(owner: string): string { return this.timers.rpc.countEnter(owner); }
   countLeave(id: string): void { return this.timers.rpc.countLeave(id); }
   countName(id: string, owner: string): void { return this.timers.rpc.countName(id, owner); }
+  countHas(id: string): boolean { return this.timers.rpc.countHas(id); }
   timerAdd(...args: Parameters<WorldTimersRpc["timerAdd"]>): number { return this.timers.rpc.timerAdd(...args); }
   timerWait(id: number): ReturnType<WorldTimersRpc["timerWait"]> { return this.timers.rpc.timerWait(id); }
   timerCancel(id: number): void { return this.timers.rpc.timerCancel(id); }

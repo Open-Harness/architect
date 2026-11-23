@@ -59,8 +59,9 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
    the world's instant (`begin`), named `entry:<path>`, and holds it in the request's box (`BusyBox`, in the request's `AsyncLocalStorage`
    cell) until the entry's promise settles, however it settles. Work inside the request (`Busy.counted`) runs under that same box: a
    handler's retries, its authorization reads and its commit are inside the one token; the operation renames it to its own name the
-   first time it counts (`countName`), so `NeverQuiet` says `probe.spin`. A token is a string id `<generation>.<n>` the world made, and
-   `leave(id)` releases exactly that token: an id of an older generation, or one already released, does nothing. The world's count keeps
+   first time it counts (`countName`), so `NeverQuiet` says `probe.spin`. A token is a string id `<epoch>.<generation>.<n>` the world made (the epoch is this incarnation of the count, random, so a restart or
+   another world never reuses an id; the generation moves on at each reset), and `leave(id)` releases exactly that token: an id of another
+   incarnation or an older generation, or one already released, does nothing. The world's count keeps
    owner names only to say who is busy. A **sleep lends** the box's token out and takes a new one back (call 2, and `resumed`: every
    resume also takes the world's current clock source); the token goes back only when every fiber of the box is lent (`lent ===
    holders`), so two fibers of one request cannot lend it out from under a third that is running. A **`spawn` gets a box of its own**,
@@ -131,7 +132,7 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
 
     1. **I1.** Every piece of work that can read the clock (request, retry, authorization, commit, wake, spawn, alarm sweep) is counted from
        start to end under its own token.
-    2. **I2.** A reset fences by generation. Tokens and rows from an earlier generation can never release, fire or settle anything in the new one.
+    2. **I2.** A reset fences by generation. Tokens and rows from an earlier generation can never release, fire or settle anything in the new one; and nothing of the old run (a parked sleeper, a running wake, a move, a call that carries an old token) carries on into the new one.
     3. **I3.** A timer row has exactly one owner through each state (pending, firing, gone or pending again), and every transition is a single SQL step.
     4. **I4.** Every wait the controller does is bounded in real time, and when the bound is hit, nothing is lost and nothing is still counted.
     5. **I5.** Resuming after a lent token always reads the world's current clock source.
@@ -153,7 +154,8 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | A durable wake | `take` (pending to firing) and `count.enter(owner)` in one uninterruptible step; released after the row is deleted or restored, or after the wake is abandoned at the bound |
     | The real world's alarm sweep | a real world has no controller and nobody waits for it to be quiet, so it counts nothing (the alarm fires rows by the wall clock and nothing else can be waiting on quiet) |
     | The controller's walk | a move waits quiet, fires, waits quiet, and goes round until a quiet wait ends with nothing due and the clock at the target |
-    | A reset | the generation moves on: tokens, rows, waiters and the count are cleared in one step; every id and row id of the old generation is then a no-op |
+    | A reset | the generation moves on: tokens, rows, waiters and the count are cleared in one step; every id and row id of the old generation is then a no-op; sleepers parked on a row are told it was forgotten and are interrupted; wakes still running are interrupted; a move in progress fails `WorldReset` without moving; a call carrying an old token is refused; a box that holds an old id takes a fresh token |
+    | The front door's routes (`cast`, `credential`, `facts`, `reset`, ...) | each takes a token named `world:<route>` when it starts and gives it back when it answers (a real world counts nothing); the reset's own token is of the generation it clears, so its release is a no-op |
 
     **Every site, against each invariant.** ✓ holds, with how; n/a does not apply there.
 
@@ -179,17 +181,28 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | controller: first quiet wait, after each firing, final wait | n/a | ✓ a reset ends waits | n/a | ✓ `count.quiet(limit)` | n/a |
     | controller: second move while the first runs | n/a | n/a | n/a | ✓ the first is bounded, so the lock frees | n/a |
     | controller: self re-registering timer | n/a | n/a | n/a | ✓ `ORTHO_FIRE_LIMIT` per instant | n/a |
-    | alarm sweep (real world) | n/a (counts nothing, as above) | n/a | ✓ fires until nothing is due, one cutoff per sweep (`Effect.suspend`) | ✓ wakes bounded by the same limit | n/a |
+    | alarm sweep (real world) | n/a (counts nothing, as above) | n/a | ✓ fires until nothing is due, one cutoff per sweep (`Effect.suspend`); a failed row stays pending and the rows after it still fire | ✓ at most `ORTHO_FIRE_LIMIT` rows a sweep; no wake is timed out (a wake abandoned in a real world could not be aborted and would run twice) | n/a |
     | stepped or scaled alarm | n/a | n/a | n/a | n/a | n/a: there is none |
     | warm reset | ✓ count cleared, waiters released | ✓ generation + 1 | ✓ rows deleted | n/a | n/a |
-    | reset while a request is in flight | ✓ its later release is ignored (stale id) | ✓ | n/a | n/a | ✓ its next resume reads the new clock |
+    | reset while a request is in flight | ✓ its later release is ignored (stale id); its box, holding an id the world no longer knows, takes a fresh token (`valid`) | ✓ | n/a | n/a | ✓ its next resume reads the new clock |
+    | reset: sleepers parked on a row | ✓ the waiter is interrupted; its cleanup reclaims and acknowledges, so nothing is left counted | ✓ told `forgotten`; never resumes to commit into what the reset is wiping | ✓ rows deleted | n/a | n/a |
+    | reset: a wake that is running | ✓ interrupted; its token is released | ✓ cannot set a row of the old run into the new table | ✓ row deleted with the table | ✓ | n/a |
+    | reset: a move in progress | ✓ its quiet waiter is released | ✓ fails `WorldReset` before any move: the clock stays where the reset put it | n/a | ✓ | n/a |
+    | a call carrying a token of the old run (`timerAdd`, `timerSet`) | n/a | ✓ refused | n/a | n/a | n/a |
+    | a DO rebuilt on the same storage, or another world | ✓ | ✓ ids carry the incarnation's epoch: an old id is not held | ✓ `firing` recovered | n/a | n/a |
+    | front door: `cast`, `credential`, `facts`, `reset` | ✓ `world:<route>` for its whole life | ✓ | n/a | n/a | n/a |
+    | a durable row whose wake fails, with rows due after it | ✓ | ✓ | ✓ stays pending with its retry; the rows after it fire in order | ✓ | n/a |
+    | limits (`ORTHO_QUIET_MS`, `ORTHO_FIRE_LIMIT`) | n/a | n/a | n/a | ✓ whole numbers above nought, no longer than 2^31-2 ms (a longer timer would fire at once) | n/a |
     | instants and payloads into SQL | n/a | n/a | ✓ refused before SQL (finite, within a Date's range, JSON) | n/a | n/a |
 
     **What a violation would look like, and where it is tested.** I1: `world/entry.test.ts` (a request held before its handler, a retry's gap, a
     spawn that outlives the response, a throwing callback), `work/world-count.test.ts` (the pinned token is never released between attempts; a
-    sleep lends it out and reclaims). I2: `timers/generation.test.ts` (a stale-generation `leave`), `timers/settled.test.ts` (a reset forgets the
-    count). I3: `timers/crash.test.ts` (a firing survives a rebuild; replacement wins; success leaves no record), `timers/settled.test.ts` (a wake
-    that clears its sibling; a replacement set during a failing wake). I4: `timers/settled.test.ts` (a wake that never acknowledges fails
+    sleep lends it out and reclaims). I2: `timers/generation.test.ts` (a stale-generation `leave`), `timers/reset.test.ts` (two counts never share an id; a rebuilt DO does not honour
+    the old object's ids; a reset during a move fails `WorldReset` and the clock stays at the reset start; a reset during a running wake leaves no
+    row of the old run; a call with an old token is refused), `timers/timers.test.ts` and `timers/settled.test.ts` (a reset tells parked
+    sleepers they were forgotten), `world/work.test.ts` and `timers/world.test.ts` (the forgotten sleeper is interrupted and commits nothing),
+    `work/world-count.test.ts` (a box with a stale id takes a fresh token), `world/front-door.test.ts` (the front door is counted). I3: `timers/reset.test.ts` (a failing head row does not starve the rows after it), `timers/crash.test.ts` (a firing survives a rebuild; replacement wins; success leaves no record), `timers/settled.test.ts` (a wake
+    that clears its sibling; a replacement set during a failing wake). I4: `timers/reset.test.ts` (a real-world wake slower than the quiet bound fires once; the alarm sweep is bounded; the limits), `timers/settled.test.ts` (a wake that never acknowledges fails
     `NeverQuiet` within the bound, its row recoverable and nothing counted; the lock frees; a self re-registering timer is bounded). I5:
     `world/work.test.ts` (parked with a two-day deadline, the world advances a day, the request reads day +1), `world/entry.test.ts` (a sleeping request wakes on the instant the world moved to).
 

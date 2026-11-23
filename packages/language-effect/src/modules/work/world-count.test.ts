@@ -8,6 +8,8 @@ import { BusyLive, BusyReporting } from "./service.ts";
 /** A world's count, in memory: ids carry a generation; `leave` of a stale or released id does nothing. */
 const makeWorld = (options: { readonly request?: BusyBox; readonly slowEnter?: Deferred.Deferred<void> } = {}) => {
   const tokens = new Map<string, string>();
+  // The request's own token, taken at its entry, is the world's too.
+  if (options.request?.id !== undefined) tokens.set(options.request.id, options.request.owner);
   const events: Array<string> = [];
   let generation = 0;
   let next = 0;
@@ -23,6 +25,7 @@ const makeWorld = (options: { readonly request?: BusyBox; readonly slowEnter?: D
       if (tokens.delete(id)) events.push(`-${owner}`);
     }),
     name: (id, owner) => Effect.sync(() => void (tokens.has(id) && tokens.set(id, owner))),
+    valid: (id) => Effect.sync(() => tokens.has(id)),
     ...(options.request === undefined ? {} : { request: Effect.succeed(options.request) }),
   }));
   return { events, held: () => [...tokens.values()].sort(), reset: () => { generation += 1; tokens.clear(); }, layer: BusyReporting.pipe(Layer.provide(layer)) };
@@ -95,6 +98,19 @@ describe("BusyReporting: one token per box", () => {
     }), world.layer);
   });
 
+  it("a box that holds an id the world no longer knows (a reset since) takes a fresh token", async () => {
+    const entry = makeBox("entry:/probe/spin", { id: "0.100", pinned: true });
+    const world = makeWorld({ request: entry });
+    await run(Effect.gen(function* () {
+      const busy = yield* Busy;
+      world.reset();
+      expect(world.held()).toEqual([]);
+      yield* busy.as("probe.spin").counted(Effect.sync(() => expect(world.held()).toEqual(["probe.spin"])));
+      expect(entry.id).not.toBe("0.100");
+      expect(world.held()).toEqual(["probe.spin"]);
+    }), world.layer);
+  });
+
   it("a request's token is lent out by a sleep that is not inside counted work too, and taken back on reclaim", async () => {
     const entry = makeBox("entry:/agents/start", { pinned: true });
     const world = makeWorld({ request: entry });
@@ -117,12 +133,12 @@ describe("BusyReporting: one token per box", () => {
     await run(Effect.gen(function* () {
       const busy = yield* Busy;
       yield* busy.as("probe.spin").counted(busy.as("agents/run/run_1").spawn(Deferred.await(gate)));
-      // The parent's work has ended; the detached work still holds its own token.
-      expect(world.held()).toEqual(["agents/run/run_1"]);
+      // The parent's work has ended (the request still holds its own, pinned); the detached work holds one of its own.
+      expect(world.held()).toEqual(["agents/run/run_1", "probe.spin"]);
       yield* Deferred.succeed(gate, undefined);
       yield* busy.quiet;
       for (let i = 0; i < 5; i++) yield* Effect.yieldNow;
-      expect(world.held()).toEqual([]);
+      expect(world.held()).toEqual(["probe.spin"]);
     }), world.layer);
   });
 });

@@ -16,6 +16,8 @@ const refusal = (moved: Extract<Moved, { readonly ok: false }>): Response => jso
 const unsettled = (why: Unsettled, now: string): Response =>
   why._tag === "Refused"
     ? json(why.body, why.status)
+    : why._tag === "WorldReset"
+    ? json({ _tag: "WorldReset", now, message: "the world was reset while this move was running: nothing was moved after it" }, 409)
     : why._tag === "NeverQuiet"
     ? json({ _tag: "NeverQuiet", busy: why.busy, now, message: `the world is never quiet: still busy ${why.busy.join(", ")}` }, 409)
     : json({ _tag: "WakeFailed", owner: why.owner, name: why.name, now, message: `the timer ${why.owner} ${why.name} failed to wake: ${why.message}` }, 500);

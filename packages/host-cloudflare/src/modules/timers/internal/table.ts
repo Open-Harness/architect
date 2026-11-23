@@ -17,10 +17,16 @@ export interface Row {
 /** A durable timer's wake failed: its row is back in the table, and the step that fired it fails, naming it. */
 export class WakeFailed extends Data.TaggedError("WakeFailed")<{ readonly owner: string; readonly name: string; readonly message: string }> {}
 
+/** What a sleeper learns when its row ends: the instant it fired at, or that the world forgot it (a reset ended the run it belonged to). */
+export interface Woken {
+  readonly source: ClockSource | undefined;
+  readonly forgotten: boolean;
+}
+
 export interface Table {
   readonly add: (owner: string, name: string, at: number, holder: string) => number;
   /** Resolves when the row fires, with the source of the instant it fired at; the world holds a token for the sleeper by then. */
-  readonly wait: (id: number) => Effect.Effect<ClockSource | undefined>;
+  readonly wait: (id: number) => Effect.Effect<Woken>;
   /** The sleeper is back or gave up: the row is taken back if it has not fired, and the token the world held for it is released. Idempotent. */
   readonly cancel: (id: number) => void;
   readonly set: (at: number, owner: string, name: string, wake: Wake) => number;
@@ -33,7 +39,7 @@ export interface Table {
   readonly earliest: (target?: number) => number | undefined;
   /** Fire every row due at or before `at`, in order. A durable row goes to `wakes`; with none, its firing fails. */
   readonly fire: (at: number, source: ClockSource | undefined) => Effect.Effect<ReadonlyArray<Row & { readonly durable: boolean }>, WakeFailed | NeverQuiet>;
-  /** Forget every row: the warm reset between runs. */
+  /** Forget every row, end the wakes still running, and tell every parked sleeper it was forgotten: the warm reset between runs. */
   readonly reset: () => void;
 }
 
@@ -76,7 +82,9 @@ export const makeTable = (
   sql.exec("UPDATE timers SET firing = 0 WHERE firing = 1 AND NOT EXISTS (SELECT 1 FROM timers p WHERE p.firing = 0 AND p.wake IS NOT NULL AND p.owner = timers.owner AND p.name = timers.name)");
   sql.exec("DELETE FROM timers WHERE firing = 1");
   sql.exec("DELETE FROM timers WHERE wake IS NOT NULL AND firing = 0 AND id < (SELECT MAX(t.id) FROM timers t WHERE t.wake IS NOT NULL AND t.firing = 0 AND t.owner = timers.owner AND t.name = timers.name)");
-  const waiting = new Map<number, Deferred.Deferred<ClockSource | undefined>>();
+  const waiting = new Map<number, Deferred.Deferred<Woken>>();
+  /** The wakes running now, so a reset can end them: one from the run being wiped must not carry on into the next. */
+  const running = new Set<Fiber.Fiber<unknown, unknown>>();
   /** The token the world holds for a sleeper from its row firing until the sleeper acknowledges (`cancel`). */
   const woken = new Map<number, string>();
   /** The pending rows (not firing) that meet `where`, in firing order. */
@@ -118,7 +126,7 @@ export const makeTable = (
         const gate = waiting.get(r.id);
         if (gate !== undefined) {
           if (counting) woken.set(r.id, count.enter(r.holder ?? r.owner));
-          Deferred.doneUnsafe(gate, Effect.succeed(source));
+          Deferred.doneUnsafe(gate, Effect.succeed({ source, forgotten: false }));
         }
         return Effect.succeed(true);
       }
@@ -130,12 +138,13 @@ export const makeTable = (
       const token = counting ? count.enter(r.owner) : undefined;
       return Effect.gen(function* () {
         const wake = yield* Effect.forkDetach(restoreInterrupt(wakes(timer)));
+        running.add(wake);
         // Abandoned: the row goes back to pending now, and the wake, which may never return, is told to stop without waiting for it.
         const abandon = Effect.suspend(() => {
           restore(r);
           return Effect.asVoid(Effect.forkDetach(Fiber.interrupt(wake)));
         });
-        const ended = yield* restoreInterrupt(bounded(Fiber.await(wake))).pipe(Effect.onInterrupt(() => abandon));
+        const ended = yield* restoreInterrupt(bounded(Fiber.await(wake))).pipe(Effect.onInterrupt(() => abandon), Effect.ensuring(Effect.sync(() => void running.delete(wake))));
         if (Option.isNone(ended)) {
           yield* abandon;
           return yield* Effect.fail(new NeverQuiet({ busy: [r.owner] }));
@@ -152,13 +161,13 @@ export const makeTable = (
   return {
     add: (owner, name, at, holder) => {
       const id = insert({ at: instantOf(at, `a sleep for ${owner} ${name}`), owner, name, holder, wake: null });
-      waiting.set(id, Deferred.makeUnsafe<ClockSource | undefined>());
+      waiting.set(id, Deferred.makeUnsafe<Woken>());
       return id;
     },
-    // A row the world no longer knows (a reset forgot it) wakes its waiter rather than leaving it hanging.
+    // A row the world no longer knows (a reset forgot it) tells its waiter so: it was part of a run that is over.
     wait: (id) => {
       const gate = waiting.get(id);
-      return gate === undefined ? Effect.succeed(undefined) : Deferred.await(gate);
+      return gate === undefined ? Effect.succeed({ source: undefined, forgotten: true }) : Deferred.await(gate);
     },
     cancel: (id) => {
       const gate = waiting.get(id);
@@ -168,7 +177,7 @@ export const makeTable = (
       give(woken.get(id));
       woken.delete(id);
       // A wait still pending on a row that was taken back is let go, not left as a promise nobody will settle.
-      if (gate !== undefined) Deferred.doneUnsafe(gate, Effect.succeed(undefined));
+      if (gate !== undefined) Deferred.doneUnsafe(gate, Effect.succeed({ source: undefined, forgotten: false }));
     },
     set: (at, owner, name, wake) => {
       const pending = select("WHERE wake IS NOT NULL AND owner = ? AND name = ?", owner, name)[0];
@@ -190,17 +199,30 @@ export const makeTable = (
         const fired: Array<Row & { readonly durable: boolean }> = [];
         // Each row leaves the table only as its own firing begins, so a firing that fails leaves the rest pending; and one an
         // earlier wake in this walk cleared or cancelled is gone by then, so it never fires (the rule `TimersMemory.fire` follows).
+        let failure: WakeFailed | NeverQuiet | undefined;
         for (const r of select("WHERE at <= ?", at)) {
-          if (yield* fireOne(r, source)) fired.push({ ...rowOf(r), durable: r.wake !== null });
+          // A row whose wake fails stays pending, with its retry; the rows due after it still fire, in order. A wake that ran out of time
+          // ends the sweep: the bound is per walk, and the next move or alarm retries.
+          const result = yield* Effect.result(fireOne(r, source));
+          if (result._tag === "Success") {
+            if (result.success) fired.push({ ...rowOf(r), durable: r.wake !== null });
+          } else {
+            failure ??= result.failure;
+            if (result.failure._tag === "NeverQuiet") break;
+          }
         }
+        if (failure !== undefined) return yield* Effect.fail(failure);
         return fired;
       }),
     reset: () => {
       sql.exec("DELETE FROM timers");
-      // A sleeper still waiting on a row is woken, uncounted (the count is the world's and starts again), not left hanging.
-      for (const gate of waiting.values()) Deferred.doneUnsafe(gate, Effect.succeed(undefined));
+      // A sleeper still parked on a row is told it was forgotten, so it ends instead of carrying on into the new run; a wake still running
+      // is ended too, so it cannot set a row of the old run into the new table.
+      for (const gate of waiting.values()) Deferred.doneUnsafe(gate, Effect.succeed({ source: undefined, forgotten: true }));
       waiting.clear();
       woken.clear();
+      for (const wake of running) wake.interruptUnsafe();
+      running.clear();
     },
   };
 };

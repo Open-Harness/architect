@@ -71,6 +71,7 @@ const stubOf = (clock: ReturnType<typeof WorldClock.state>, timers: ReturnType<t
   countEnter: (owner: string) => timers.rpc.countEnter(owner),
   countLeave: (id: string) => timers.rpc.countLeave(id),
   countName: (id: string, owner: string) => timers.rpc.countName(id, owner),
+  countHas: (id: string) => timers.rpc.countHas(id),
   timerAdd: (...args: Parameters<typeof timers.rpc.timerAdd>) => timers.rpc.timerAdd(...args),
   timerWait: (id: number) => timers.rpc.timerWait(id),
   timerCancel: (id: number) => timers.rpc.timerCancel(id),

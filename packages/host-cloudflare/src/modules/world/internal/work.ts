@@ -30,17 +30,23 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
     enter: (owner) => (counted ? call(env, (keeper) => keeper.countEnter(owner)) : Effect.succeed("real")),
     leave: (id) => (counted ? call(env, (keeper) => keeper.countLeave(id)) : Effect.void),
     name: (id, owner) => (counted ? call(env, (keeper) => keeper.countName(id, owner)) : Effect.void),
+    // A box that holds an id the world no longer knows (a reset since) takes a fresh token.
+    valid: (id) => (counted ? call(env, (keeper) => keeper.countHas(id)) : Effect.succeed(true)),
     // The box of the request this fiber runs in, taken at its entry: the work counts under it instead of taking another token.
     request: Effect.sync(() => WorldClock.box()),
   }));
   const table = Layer.succeed(WorldTable, WorldTable.of({
-    add: (owner, name, at, holder) => call(env, (keeper) => keeper.timerAdd(owner, name, at, holder)),
+    // A call carries the request's own token: one the world no longer holds is from a run a reset ended, and is refused.
+    add: (owner, name, at, holder) => call(env, (keeper) => keeper.timerAdd(owner, name, at, holder, WorldClock.box()?.id)),
     // The wake is the instant the world fired the row at: this request's own clock is pointed at it before the code goes on.
-    wait: (id) => call(env, (keeper) => keeper.timerWait(id)).pipe(Effect.flatMap((source) => Effect.sync(() => void (source !== undefined && WorldClock.refresh(source))))),
+    // A row a reset forgot ends its sleeper: the request belongs to a run that is over, so it is interrupted, never resumed to commit into
+    // what the reset is wiping. The sleep's own cleanup (reclaim, acknowledge) still runs.
+    wait: (id) => call(env, (keeper) => keeper.timerWait(id)).pipe(Effect.flatMap(({ source, forgotten }) =>
+      forgotten ? Effect.interrupt : Effect.sync(() => void (source !== undefined && WorldClock.refresh(source))))),
     // Giving a row up is where a request that parked takes its token back: it resumes on the world's clock as it is now.
     cancel: (id) => call(env, (keeper) => keeper.timerCancel(id)).pipe(Effect.tap(() => resumed(env))),
     sleeping: call(env, (keeper) => keeper.timersSleeping()),
-    set: (at, owner, name, wake) => call(env, (keeper) => keeper.timerSet(at, owner, name, wake)),
+    set: (at, owner, name, wake) => call(env, (keeper) => keeper.timerSet(at, owner, name, wake, WorldClock.box()?.id)),
     clear: (owner, name) => call(env, (keeper) => keeper.timerClear(owner, name)),
     durable: call(env, (keeper) => keeper.timersDurable()),
   }));
