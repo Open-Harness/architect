@@ -14,20 +14,44 @@ import * as portal from "../portal/main.ts";
 import { catalog } from "../mcp/src/index.ts";
 import * as companyCreate from "../api/src/company/create.ts";
 import * as companyGet from "../api/src/company/get.ts";
+import * as departmentCreate from "../api/src/department/create.ts";
+import * as departmentGet from "../api/src/department/get.ts";
+import * as designationCreate from "../api/src/designation/create.ts";
+import * as designationGet from "../api/src/designation/get.ts";
+import * as employeeGet from "../api/src/employee/get.ts";
+import * as employeeHire from "../api/src/employee/hire.ts";
+import * as employeeRelieve from "../api/src/employee/relieve.ts";
 import companyCreateHandler from "../../src/company/create.ts";
+import departmentCreateHandler from "../../src/department/create.ts";
+import designationCreateHandler from "../../src/designation/create.ts";
+import employeeHireHandler from "../../src/employee/hire.ts";
+import employeeRelieveHandler from "../../src/employee/relieve.ts";
 import * as companyThing from "../../blueprint/things/company/thing.ts";
+import * as departmentThing from "../../blueprint/things/department/thing.ts";
+import * as designationThing from "../../blueprint/things/designation/thing.ts";
+import * as employeeThing from "../../blueprint/things/employee/thing.ts";
 import * as companyInvariants from "../../blueprint/things/company/invariants.ts";
+import * as departmentInvariants from "../../blueprint/things/department/invariants.ts";
+import * as designationInvariants from "../../blueprint/things/designation/invariants.ts";
+import * as employeeInvariants from "../../blueprint/things/employee/invariants.ts";
 
 export { World } from "@orthograph/host-cloudflare";
 
 const companyCreateServed = Handlers.serve({ name: "company.create", operation: companyCreate.declaration, handler: companyCreateHandler, invariants: { CompanyAbbrTaken: "company.oneAbbrPerOwner", CompanyNameTaken: "company.oneNamePerOwner" }, codes: Errors.codes });
 const companyGetServed = Reads.serve({ name: "company.get", read: companyGet.declaration });
+const departmentCreateServed = Handlers.serve({ name: "department.create", operation: departmentCreate.declaration, handler: departmentCreateHandler, invariants: { DepartmentNameTaken: "department.oneNamePerCompany" }, codes: Errors.codes });
+const departmentGetServed = Reads.serve({ name: "department.get", read: departmentGet.declaration });
+const designationCreateServed = Handlers.serve({ name: "designation.create", operation: designationCreate.declaration, handler: designationCreateHandler, invariants: { DesignationNameTaken: "designation.oneNamePerCompany" }, codes: Errors.codes });
+const designationGetServed = Reads.serve({ name: "designation.get", read: designationGet.declaration });
+const employeeGetServed = Reads.serve({ name: "employee.get", read: employeeGet.declaration });
+const employeeHireServed = Handlers.serve({ name: "employee.hire", operation: employeeHire.declaration, handler: employeeHireHandler, notFound: { department: "DepartmentNotFound", designation: "DesignationNotFound" }, invariants: { EmployeeAlreadyHired: "employee.onePlacePerPerson" }, codes: Errors.codes });
+const employeeRelieveServed = Handlers.serve({ name: "employee.relieve", operation: employeeRelieve.declaration, handler: employeeRelieveHandler, notFrom: "EmployeeNotActive", codes: Errors.codes });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(companyThing), "company"]] as const;
+const tables = [[thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("company", companyInvariants)] as const;
+const rules = [...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
@@ -52,6 +76,28 @@ const CompanyLive = HttpApiBuilder.group(CallApi, "company", Effect.fn(function*
       .handle("create", ({ payload, request }) => call(companyCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(companyGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
+const DepartmentLive = HttpApiBuilder.group(CallApi, "department", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(departmentCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(departmentGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const DesignationLive = HttpApiBuilder.group(CallApi, "designation", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(designationCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(designationGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const EmployeeLive = HttpApiBuilder.group(CallApi, "employee", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("get", ({ payload, request }) => call(employeeGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("hire", ({ payload, request }) => call(employeeHireServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("relieve", ({ payload, request }) => call(employeeRelieveServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
 
 export interface Env {
   readonly DB: D1Database;
@@ -75,6 +121,10 @@ export interface Env {
 /** Which steps each operation runs, by the operation's name: the server's own record, never in the API package (the caller's contract names no step, K14). */
 export const steps = {
   "company.create": ["company.create.insert"],
+  "department.create": ["department.create.insert"],
+  "designation.create": ["designation.create.insert"],
+  "employee.hire": ["employee.hire.load", "employee.hire.insert"],
+  "employee.relieve": ["employee.relieve.load", "employee.relieve.update"],
 } as const;
 
 // Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the
@@ -85,7 +135,7 @@ const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
-      Layer.provide([CompanyLive]),
+      Layer.provide([CompanyLive, DepartmentLive, DesignationLive, EmployeeLive]),
       Layer.provideMerge(CallTelemetry.layer),
       Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
       Layer.provideMerge(Database.d1(env.DB)),
@@ -110,7 +160,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "company.create": companyCreateServed, "company.get": companyGetServed },
+  served: { "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 

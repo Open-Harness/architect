@@ -1,5 +1,30 @@
 [
   {
+    "from": "department.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "designation.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee.department",
+    "to": "department.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee.designation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
     "from": "company.create",
     "to": "company",
     "kind": "acts-on"
@@ -16,6 +41,101 @@
   },
   {
     "from": "company.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "department.create",
+    "to": "department",
+    "kind": "acts-on"
+  },
+  {
+    "from": "department.create",
+    "to": "department.DepartmentCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "department.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "department.get",
+    "to": "department",
+    "kind": "reads"
+  },
+  {
+    "from": "department.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "designation.create",
+    "to": "designation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "designation.create",
+    "to": "designation.DesignationCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "designation.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "designation.get",
+    "to": "designation",
+    "kind": "reads"
+  },
+  {
+    "from": "designation.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee.get",
+    "to": "employee",
+    "kind": "reads"
+  },
+  {
+    "from": "employee.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee.hire",
+    "to": "employee",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee.hire",
+    "to": "employee.EmployeeHired",
+    "kind": "emits"
+  },
+  {
+    "from": "employee.hire",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee.relieve",
+    "to": "employee",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee.relieve",
+    "to": "employee.EmployeeRelieved",
+    "kind": "emits"
+  },
+  {
+    "from": "employee.relieve",
     "to": "company.owner",
     "kind": "allowed-by"
   }
