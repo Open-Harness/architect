@@ -620,3 +620,5 @@ What slice 5's and slice 8's authors take from slice 2's last review, beyond the
 - Slice 8 adds "a stop on a full pool starts nothing until `AgentClosed`, and `fill` does not loop".
 - `ticket.stop` picks `cancelled` or `interrupted` from the state it reads under the row's version. `stageOf` names
   `closing`, as stopping. `promoted` is skipped when `why` is already `person`, and leaves a launch's `why` alone.
+- `reap`'s grace needs memory: an `idleSeenAt` it writes, cleared when the Agent goes `working`. It resends a close only
+  for a `closing` row older than one sweep.
