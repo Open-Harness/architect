@@ -1,0 +1,133 @@
+{
+  "generated": "Generated from blueprint/. Append-only. Do not edit.",
+  "lockVersion": 1,
+  "refusals": {
+    "AR-001": {
+      "name": "NotAllowed",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotAllowed"
+        }
+      },
+      "earlier": []
+    },
+    "AR-002": {
+      "name": "IdempotencyConflict",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "IdempotencyConflict"
+        }
+      },
+      "earlier": []
+    },
+    "HN-001": {
+      "name": "HandleTaken",
+      "owner": "handle",
+      "from": "blueprint/things/handle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "HandleTaken"
+        }
+      },
+      "earlier": []
+    },
+    "HN-002": {
+      "name": "HandleAlreadyOwned",
+      "owner": "handle",
+      "from": "blueprint/things/handle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "HandleAlreadyOwned"
+        }
+      },
+      "earlier": []
+    },
+    "HN-003": {
+      "name": "HandleNotFound",
+      "owner": "handle",
+      "from": "blueprint/things/handle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "HandleNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "HN-900": {
+      "name": "HandleNotClaimed",
+      "owner": "handle",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HandleNotClaimed"
+        }
+      },
+      "earlier": []
+    },
+    "LN-001": {
+      "name": "LinkNeedsHandle",
+      "owner": "link",
+      "from": "blueprint/things/link/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LinkNeedsHandle"
+        }
+      },
+      "earlier": []
+    },
+    "LN-002": {
+      "name": "LinkAlreadyRemoved",
+      "owner": "link",
+      "from": "blueprint/things/link/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LinkAlreadyRemoved"
+        }
+      },
+      "earlier": []
+    },
+    "LN-900": {
+      "name": "LinkNotListed",
+      "owner": "link",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LinkNotListed"
+        }
+      },
+      "earlier": []
+    },
+    "PR-001": {
+      "name": "ProfileNotFound",
+      "owner": "profile",
+      "from": "blueprint/things/profile/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ProfileNotFound"
+        }
+      },
+      "earlier": []
+    }
+  },
+  "retired": {}
+}

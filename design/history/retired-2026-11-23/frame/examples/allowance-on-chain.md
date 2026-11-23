@@ -34,9 +34,11 @@ export default Blueprint.store.chain.evm();
 // blueprint/things/allowance/thing.ts
 import budgets from "../../stores/budgets.ts";
 import { Safe } from "@orthograph/safe";   // sketch: the safe adapter (K9 stage 3); its package is set when it is built
+const token = Blueprint.account();          // the token contract that is paid
 export const Allowance = Blueprint.thing({
   description: "Money a member may spend from their organisation's Safe, up to a limit each month.",
-  fields: { id: Blueprint.id("alw"), safe: Safe.fields.account, member: Blueprint.account(), limit: Amount, spent: Amount },
+  fields: { id: Blueprint.id("alw"), safe: Safe.fields.account, member: Blueprint.account(), token,
+            limit: Blueprint.money.of(token), spent: Blueprint.money.of(token) },
   lives: budgets,   // was: the database
 });
 ```
@@ -46,8 +48,8 @@ The allowance names the Safe it spends from, not the organisation: the organisat
 its Safe with an ordinary field (K25).
 
 ```ts
-// blueprint/values/money.ts: a value says what it is in every language
-export const Amount = Blueprint.value(Blueprint.uint(128));   // bigint in Effect, uint128 in Solidity
+// an amount names its asset, and says what it is in every language (design/decisions/M6-money.md)
+limit: Blueprint.money.of(token),   // base units of the row's token: bigint in Effect, uint128 in Solidity (M6-money)
 ```
 
 `ortho impact` sees what the change means before anything is built:

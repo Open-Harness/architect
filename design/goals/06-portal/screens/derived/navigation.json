@@ -1,0 +1,24 @@
+{
+  "layout": "sidebar",
+  "home": "home",
+  "groups": [
+    {
+      "title": "Things",
+      "folded": false,
+      "pages": [
+        {
+          "page": "handle",
+          "path": "/things/handle"
+        },
+        {
+          "page": "link",
+          "path": "/things/link"
+        },
+        {
+          "page": "profile",
+          "path": "/things/profile"
+        }
+      ]
+    }
+  ]
+}

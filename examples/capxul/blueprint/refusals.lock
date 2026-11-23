@@ -1,0 +1,79 @@
+{
+  "generated": "Generated from blueprint/. Append-only. Do not edit.",
+  "lockVersion": 1,
+  "refusals": {
+    "AR-001": {
+      "name": "NotAllowed",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotAllowed"
+        }
+      },
+      "earlier": []
+    },
+    "AR-002": {
+      "name": "IdempotencyConflict",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "IdempotencyConflict"
+        }
+      },
+      "earlier": []
+    },
+    "CO-001": {
+      "name": "CompanyNameTaken",
+      "owner": "company",
+      "from": "blueprint/things/company/errors.ts",
+      "fields": {
+        "companyName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CO-002": {
+      "name": "CompanyAbbrTaken",
+      "owner": "company",
+      "from": "blueprint/things/company/errors.ts",
+      "fields": {
+        "abbr": {
+          "value": "text",
+          "max": 10
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyAbbrTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CO-900": {
+      "name": "CompanyNotActive",
+      "owner": "company",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyNotActive"
+        }
+      },
+      "earlier": []
+    }
+  },
+  "retired": {}
+}

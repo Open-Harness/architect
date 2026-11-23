@@ -68,4 +68,20 @@ describe("Compare.next", () => {
     expect(Compare.next("1.4.2", "major")).toBe("2.0.0");
     expect(Compare.next("1.4.2-next.3", "patch")).toBeUndefined();
   });
+
+  it("a changed asset that a money field counts is major, and says what changed", () => {
+    const eur = { name: "eur", file: "blueprint/assets/eur.ts", kind: "currency", code: "EUR", decimals: 2 };
+    const withAsset = (asset: object, counted: boolean) => edited((m) => {
+      m.assets = { eur: asset };
+      m.things = { ...m.things, till: { fields: { cash: { value: { type: "money", bits: 64, signed: false, asset: counted ? { currency: "eur" } : { currency: "other" } } } } } };
+    });
+    const before = withAsset(eur, true);
+    const after = withAsset({ ...eur, code: "JPY", decimals: 0 }, true);
+    expect(Compare.release(before, after).changes.find((c) => c.what === "asset:eur")).toEqual({ kind: "changed", what: "asset:eur", detail: 'code "EUR" to "JPY", decimals 2 to 0', bump: "major" });
+    expect(Compare.release(before, after).bump).toBe("major");
+    expect(Compare.release(before, { ...after, assets: {} } as Model).changes.find((c) => c.what === "asset:eur")).toMatchObject({ kind: "removed", bump: "major" });
+    const unused = withAsset(eur, false);
+    expect(Compare.release(unused, withAsset({ ...eur, code: "JPY" }, false)).bump).toBe("patch");
+    expect(Compare.release(unused, { ...unused, assets: { ...unused.assets, usd: { ...eur, name: "usd", code: "USD" } } } as Model).changes).toEqual([{ kind: "added", what: "asset:usd", bump: "patch" }]);
+  });
 });
