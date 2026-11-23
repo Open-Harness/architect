@@ -5,7 +5,7 @@ import type { AllowedModel, BlankOperationModel, FieldModel, FieldsModel, Model,
 import { admitsAgent } from "orthograph";
 import { Blanks } from "orthograph/server";
 import { approvalOf } from "./approval.ts";
-import { IDEMPOTENCY_CONFLICT, MACHINE_NUMBER, READ_NOT_SERVED, READ_NOT_SERVED_CODE, codeOf, inDeclarationOrder, prefixes, refusalsOf } from "./codes.ts";
+import { IDEMPOTENCY_CONFLICT, MACHINE_NUMBER, codeOf, inDeclarationOrder, prefixes, refusalsOf } from "./codes.ts";
 import { foundModel, mintsOf, missedBy, notFoundOf } from "./found.ts";
 import { exitClashes, notFoundShapes, operationExitClashes } from "./exits.ts";
 import { unfillable } from "./fillable.ts";
@@ -21,20 +21,9 @@ import { breakersOf, declaredErrors, invariantsOf } from "./invariants.ts";
 import { camel, pascal, type Layout } from "./layout.ts";
 import { deriveModel } from "./derive.ts";
 import { formsOf } from "./forms.ts";
+import { roleRuleOf, withReadNotServed } from "./bits.ts";
 import { readModelOf, type ReadContext } from "./reads.ts";
 import type { MountModel } from "../types.ts";
-
-/** What a role's rule is in the model: its function's text, or the words of an `actor:` or `agent:` role. */
-const roleRuleOf = (r: Role): string =>
-  r.actor ? `actor(${r.actor.mount.key}, ${r.actor.id.key}) within ${r.actor.within?.key ?? "nothing"} while [${r.actor.while.map((s) => s.key).join(", ")}]`
-  : r.agent ? `agent(${r.agent.key})`
-  : r.rule.toString();
-
-/** The refusal of a read not served yet is in the model only when some read can make it, so other blueprints are unchanged. */
-const withReadNotServed = (refusals: Readonly<Record<string, string>>, operations: Readonly<Record<string, OperationModel>>): Readonly<Record<string, string>> =>
-  Object.values(operations).some((o) => o.refusals.includes(READ_NOT_SERVED))
-    ? Object.fromEntries(Object.entries({ ...refusals, [READ_NOT_SERVED]: READ_NOT_SERVED_CODE }).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))
-    : refusals;
 
 /** A module's exports in name order: a namespace's own order differs between loaders, and the model must not. */
 const byName = <V>(m: ReadonlyMap<string, V>) => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
