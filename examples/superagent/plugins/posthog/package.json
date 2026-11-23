@@ -19,7 +19,8 @@
   },
   "nx": {
     "tags": [
-      "scope:plugin"
+      "scope:plugin",
+      "env:runtime"
     ]
   }
 }
