@@ -3,7 +3,7 @@
 # e2e-layer2) pass without running their steps, since a required job never skips (CI-drafts-race.md), prove-tests skips
 # through a job-level `if:`, and the `check` gate accepts the skipped shards only on this flag
 # (design/decisions/CI-docs-fast-path.md, CI-speed.md).
-# check-static and `e2e-m0` always run: they lint the docs, run canon:check over the design docs
+# check-static and `e2e-m0` always run: they lint the docs, total the e2e READMEs, run canon:check over the design docs
 # and the supersedes guard.
 #   tools/ci/docs-only.sh <base> <head>
 # Prints `docs_only=true` or `docs_only=false` (append it to $GITHUB_OUTPUT) and exits 0; any git failure exits non-zero,
@@ -11,7 +11,7 @@
 # Docs-only: every changed path is under design/ (but not design/grid/, which e2e/grid reads), or is a *.md file outside
 # packages/, e2e/ and examples/, or is a path no gated suite reads (spikes/, .agents/, .claude/, .codex/, .pi/, issue and pull-request
 # templates, skills-lock.json, .mcp.json; design/decisions/CI-docs-inert.md) (a module's
-# README.md is one of its six slots, and an e2e README is part of the checks). An empty diff is not docs-only.
+# README.md is one of its six slots, and the e2e READMEs carry generated totals). An empty diff is not docs-only.
 set -euo pipefail
 
 base="${1:?usage: docs-only.sh <base> <head>}"
