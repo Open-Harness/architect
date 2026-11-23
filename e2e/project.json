@@ -180,7 +180,7 @@
     },
     "superagent": {
       "metadata": {
-        "description": "Goal 17's done check. So far only slice 3's checks, adapters from a spec (e2e/superagent/README.md); the coding and triage halves are added by slices 6, 8, 10 and 12."
+        "description": "Goal 17's done check. So far slice 3's checks, adapters from a spec, and slice 5's, stage one's blueprint: ortho check passes on examples/superagent, its generated docs, CLI and MCP list every operation, and the other examples generate byte for byte as before (e2e/superagent/README.md); the coding and triage halves are added by slices 6, 8, 10 and 12."
       },
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:superagent-checks" },

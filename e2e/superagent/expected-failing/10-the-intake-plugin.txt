@@ -1,0 +1,14 @@
+# Written before slice 5. Red until slice 5 builds @orthograph/intake and the forms it uses (versions, actor, Source.from); due before slice 5 merges.
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > Policy has versions, keyed by superagent (K39: one per superagent; K40's example keyed it by repository)
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > an Account is unique by (superagent, source, id) (GOAL17-source-from; GOAL17-executor-slots, 'Two writers, one guard')
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > an Eval's activeAtStart and timeoutMs are uint(64) milliseconds on the world's clock (GOAL17-pause)
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > the Account's `listed` role is a role of the Account (K40 fix 1: the `actor:` form)
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > the Source's failures count and its failAfter are whole numbers (GOAL17-derived-reads)
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > each event is declared by its thing, with the fields the design lists; each error is a refusal the model knows
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > each machine has exactly the states the design names, and each move it spells out
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > each of its things is in the model, and comes from this package
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > each operation and read it names is in the model, on its thing, and comes from this package
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > each thing has the fields the design names
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > the docs list every thing, operation, event and error: a page for each, linked from its thing's index
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > the generated CLI lists every operation: `<cli> <thing> --help` names each verb
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > the generated MCP catalog has a tool for every operation
