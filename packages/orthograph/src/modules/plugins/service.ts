@@ -1,3 +1,4 @@
+import { Events } from "#modules/events/service.js";
 import type { Mount, Option, PluginsApi, StandApi, Verb } from "./types.ts";
 import { firstOption, picked } from "./internal/picked.ts";
 
@@ -47,6 +48,7 @@ export const Plugins: PluginsApi = {
       include: (...items: ReadonlyArray<unknown>) => verb({ verb: "include", items }),
       narrow: (operation: never, spec: { readonly via: ReadonlyArray<never> }) => verb({ verb: "narrow", operation, via: Object.freeze([...spec.via]) }),
       omit: (operation: never) => verb({ verb: "omit", operation }),
+      on: (event: never, operation: never, map: never, options?: never) => verb({ verb: "on", operation, hop: Events.on(event, map, options) }),
     };
     return Object.freeze({ kind: "mount", plugin, verbs: Object.freeze([...(verbs ? verbs(view as never) : [])]), calls: calls ?? {} }) as Mount<typeof plugin>;
   },

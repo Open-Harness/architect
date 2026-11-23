@@ -1,6 +1,6 @@
 // Turns the layout into the model: every declaration named, every reference resolved, every entry hashed.
 import { Duration } from "effect";
-import type { AnyErrorClass, CallStep, Field, FieldsInput, Operation, Read, Step, Thing, Value, Visibility } from "orthograph";
+import type { AnyErrorClass, CallStep, Field, FieldsInput, Operation, Read, Role, Step, Thing, Value, Visibility } from "orthograph";
 import type { AllowedModel, BlankOperationModel, FieldModel, FieldsModel, Model, OperationModel, StepModel, ThingModel, VisibilityModel } from "../types.ts";
 import { admitsAgent } from "orthograph";
 import { Blanks } from "orthograph/server";
@@ -19,16 +19,30 @@ import { alertRulesOf } from "./rules.ts";
 import { crossStore, storesOf } from "./stores.ts";
 import { breakersOf, declaredErrors, invariantsOf } from "./invariants.ts";
 import { camel, pascal, type Layout } from "./layout.ts";
+import { deriveModel } from "./derive.ts";
+import { agentsModel, declaredModel, problemsModel } from "./forms.ts";
+import { holdsModel } from "./holds.ts";
+import { sourcesModel } from "./sources.ts";
+import type { MountModel } from "../types.ts";
+
+/** What a role's rule is in the model: its function's text, or the words of an `actor:` or `agent:` role. */
+const roleRuleOf = (r: Role): string =>
+  r.actor ? `actor(${r.actor.mount.key}, ${r.actor.id.key}) within ${r.actor.within?.key ?? "nothing"} while [${r.actor.while.map((s) => s.key).join(", ")}]`
+  : r.agent ? `agent(${r.agent.key})`
+  : r.rule.toString();
 
 /** A module's exports in name order: a namespace's own order differs between loaders, and the model must not. */
 const byName = <V>(m: ReadonlyMap<string, V>) => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 
-export const describe = (layout: Layout): { model: Model; problems: Array<string> } => {
+export const describe = (layout: Layout, mounts: Readonly<Record<string, MountModel>> = {}): { model: Model; problems: Array<string> } => {
   const problems = [...layout.problems];
   const valueNames = new Map<Value, string>([...layout.values].map(([n, v]) => [v, n]));
   const schemaNames = new Map([...layout.values].map(([n, v]) => [v.schema, n]));
   const thingNames = new Map([...layout.things].flatMap(([n, t]) => (t.thing ? [[t.thing, n] as const] : [])));
   const eventNames = new Map([...layout.things.values()].flatMap((t) => [...t.events].map(([n, e]) => [e, n] as const)));
+  const eventThing = new Map([...layout.things].flatMap(([n, t]) => [...t.events.values()].map((e) => [e, n] as const)));
+  const opNames = new Map([...layout.things].flatMap(([n, t]) => [...t.verbs].map(([verb, v]) => [v.declaration as unknown, `${n}.${verb}`] as const)));
+  const opName = (declaration: unknown) => opNames.get(declaration);
   const errorNames = new Map([...layout.things.values()].flatMap((t) => [...t.errors].map(([n, e]) => [e, n] as const)));
   const roleNames = new Map(
     [...layout.things.values()].flatMap((t) => [...t.roles].map(([n, r]) => [r, `${t.name}.${n}`] as const)),
@@ -58,7 +72,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
     if (input.kind === "field" && !ref) problems.push(`${where}: uses a field of a thing that isn't in the blueprint`);
     const visibility = visibilityModel(input.visibility, where);
     const issued = issuedIn(input, where, place);
-    return { value: value.meta, ...(named ? { named } : {}), ...(ref ? { ref } : {}), ...(input.description === undefined ? {} : { description: input.description }), ...(visibility ? { visibility } : {}), ...(issued ? { issued: true as const } : {}) };
+    return { value: value.meta, ...(value.optional === true ? { optional: true as const } : {}), ...(named ? { named } : {}), ...(ref ? { ref } : {}), ...(input.description === undefined ? {} : { description: input.description }), ...(visibility ? { visibility } : {}), ...(issued ? { issued: true as const } : {}) };
   };
   const fieldsModel = (fields: FieldsInput, where: string, place: Place): FieldsModel =>
     Object.fromEntries(Object.entries(fields).map(([k, f]) => [k, fieldModel(f, `${where} field ${k}`, place)]));
@@ -82,6 +96,9 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   // G4's `unique:` key is retired (S-30): a thing still carrying it is refused, by thing name only (never a field name).
   for (const [n, t] of layout.things) if (t.thing && "unique" in t.thing) problems.push(`thing ${n} declares unique, which is retired: declare it with Blueprint.invariant.unique in blueprint/things/${n}/invariants.ts`);
   const prefix = prefixes(layout.things, problems);
+  // The id prefixes some thing owns: its own `id` field's. A field that names another prefix names nothing.
+  // `per` is the identity's own: the people who sign in are a thing of Better Auth's, which a blueprint refers to without declaring.
+  const owned = new Set(["per", ...[...layout.things.values()].flatMap((t) => { const m = t.thing?.fields["id"]?.value.meta; return m?.type === "id" ? [m.prefix] : []; })]);
   // A thing some operation's payload names where no role check reads it gets a `<Thing>NotFound` (K16, M1.46).
   const missable = new Set([...layout.things.values()].flatMap((t) => [...t.verbs.values()].flatMap(({ declaration: d }) => missedBy(d, Blanks.isBlank))));
   const things: Record<string, ThingModel> = {};
@@ -110,13 +127,18 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
       : null;
     if (m && m.thing !== t.thing) problems.push(`${where}/machine.ts: is a machine of another thing`);
     const invariants = invariantsOf(t, { thingNames, errorNames, verbs }, problems);
+    if (t.thing.versions !== undefined && !(t.thing.versions.key in t.thing.fields)) problems.push(`${where}/thing.ts: versions key ${t.thing.versions.key} is not a field of ${name}`);
+    for (const [k, f] of Object.entries(t.thing.fields)) {
+      const meta = f.value.meta;
+      if (k !== "id" && meta.type === "id" && !owned.has(meta.prefix)) problems.push(`${where}/thing.ts field ${k}: the id prefix "${meta.prefix}" is no thing's own id: name a prefix some thing owns`);
+    }
     const errors = Object.fromEntries(inDeclarationOrder(t.errors).map(([n, e], i) => [n, { fields: fieldsModel(e.fields, `${where}/errors.ts ${n}`, "an error"), exit: e.exit, code: codeOf(prefix.get(name) ?? "??", i + 1) }]));
     const entry = {
-      name, identifier: pascal(name), code: prefix.get(name) ?? "??", description: Blanks.isBlank(t.thing.description) ? "" : t.thing.description, fields, lives: (t.thing.lives ?? "database") as ThingModel["lives"], ...storeOf(t.thing.store, where), ...(invariants ? { invariants } : {}), machine,
+      name, identifier: pascal(name), code: prefix.get(name) ?? "??", description: Blanks.isBlank(t.thing.description) ? "" : t.thing.description, fields, ...(t.thing.versions ? { versions: { key: t.thing.versions.key } } : {}), lives: (t.thing.lives ?? "database") as ThingModel["lives"], ...storeOf(t.thing.store, where), ...(invariants ? { invariants } : {}), machine,
       events: Object.fromEntries(byName(t.events).map(([n, e]) => [n, fieldsModel(e.fields, `${where}/events.ts ${n}`, "an event")])),
       errors, ...(missable.has(t.thing) ? { notFound: notFoundOf(pascal(name), prefix.get(name) ?? "??", errors) } : {}),
       roles: [...t.roles.keys()].sort(),
-      roleRules: Object.fromEntries(byName(t.roles).map(([role, { rule }]) => [role, Blanks.isBlank(rule) ? null : rule.toString()])),
+      roleRules: Object.fromEntries(byName(t.roles).map(([role, r]) => [role, Blanks.isBlank(r.rule) ? null : roleRuleOf(r)])),
       from: t.from,
     };
     things[name] = { ...entry, hash: hashOf(entry) };
@@ -129,7 +151,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
   for (const [thing, t] of [...layout.things].sort(([a], [b]) => a.localeCompare(b))) {
-    for (const [verb, { file, declaration: op }] of [...t.verbs].sort(([a], [b]) => a.localeCompare(b))) {
+    for (const [verb, { file, declaration: op, from: verbFrom }] of [...t.verbs].sort(([a], [b]) => a.localeCompare(b))) {
       const parts = op.kind === "read"
         ? { [op.by === "list" ? "where" : "fields"]: op.by === "list" ? op.where : op.fields, allowed: op.allowed }
         : { description: op.description, payload: op.payload, answer: op.answer, allowed: op.allowed, errors: op.errors, steps: op.steps, move: op.move };
@@ -144,7 +166,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
         };
         continue;
       }
-      const model = operationModel(thing, verb, file, t.from, op);
+      const model = operationModel(thing, verb, file, verbFrom ?? t.from, op);
       operations[name] = model;
     }
   }
@@ -168,6 +190,12 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
     }
     const allowed = op.allowed.map((a) => allowedModel(a, file));
     problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "operation", move: op.move, allowed }));
+    for (const a of op.allowed) {
+      const role = (a.kind === "narrowed" ? a.entry : a);
+      const r = role.kind === "role" ? role : role.kind === "role-of" ? role.role : undefined;
+      const within = r?.actor?.within;
+      if (within !== undefined && !(within.key in op.payload)) problems.push(`${file}: ${thing}.${verb} uses a role that compares the call's ${within.key} with the account's, and its payload has no ${within.key} to compare`);
+    }
     const found = foundModel(op, (x) => thingNames.get(x), (x) => things[x]?.notFound?.error);
     const steps = Object.fromEntries(Object.entries(op.steps).map(([k, s]) => [k,
       Blanks.isBlank(s) ? { name: `${thing}.${verb}.${k}`, type: "blank" } : stepModel(thing, verb, k, s, op.errors, file)]));
@@ -189,7 +217,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
     const entry = {
       kind: "operation" as const,
       name: `${thing}.${verb}`, thing, verb, identifier: camel(verb), file, from, description: op.description,
-      payload, answer, move, errors, ...(Object.keys(broken.refusals).length > 0 ? { invariants: broken.refusals } : {}), breaks: broken.breaks, refusals, allowed, agentTool: !onDevice && admitsAgent(op.allowed), ...found, ...(mints !== undefined ? { mints } : {}),
+      payload, answer, move, errors, ...(op.on.length > 0 ? { on: op.on.map((h) => ({ event: eventNames.get(h.event) ?? problem(problems, `${file}: is delivered an event that is not exported from an events.ts`), thing: eventThing.get(h.event) ?? "?" })) } : {}), ...(Object.keys(broken.refusals).length > 0 ? { invariants: broken.refusals } : {}), breaks: broken.breaks, refusals, allowed, agentTool: !onDevice && admitsAgent(op.allowed), ...found, ...(mints !== undefined ? { mints } : {}),
       steps,
       ...(blanks[`${thing}.${verb}`] ? { blanks: blanks[`${thing}.${verb}`]! } : {}),
       idempotent: op.idempotent ?? null,
@@ -236,6 +264,11 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
     if (list && read.where.includes("state") && !t?.machine) problems.push(`${file}: where "state" needs ${thing} to have a machine`);
     if (list && (!Number.isInteger(read.page) || (read.page ?? 0) < 1 || (read.page ?? 0) > 1000)) problems.push(`${file}: page must be a whole number from 1 to 1000`);
     const payload = Object.fromEntries(Object.entries(fieldsModel(read.payload, `${file} payload`, "a payload")).map(([k, f]) => [k, read.optional.includes(k) ? { ...f, optional: true as const } : f]));
+    const adds = read.derive === undefined ? undefined : fieldsModel(read.derive.adds, `${file} derive adds`, "answer");
+    const derive = read.derive === undefined ? undefined : deriveModel(read.derive, file, adds!, { thingNames, problems });
+    for (const n of read.where) if (!(n in (t?.thing?.fields ?? {})) && n !== "state" && !(n in (read.derive?.adds ?? {}))) problems.push(`${file}: where names ${n}, which is neither a stored field of ${thing} nor one a derive adds`);
+    for (const n of Object.keys(read.only ?? {})) if (!(n in (t?.thing?.fields ?? {})) && n !== "state" && !(n in (read.derive?.adds ?? {}))) problems.push(`${file}: only pins ${n}, which is neither a stored field of ${thing} nor one a derive adds`);
+    const pinned = Object.keys(read.only ?? {});
     const entry = {
       kind: "read" as const,
       name: `${thing}.${verb}`, thing, verb, identifier: camel(verb), file, from,
@@ -246,7 +279,9 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
       move: null, errors: [], breaks: [], refusals: openToAll(allowed) ? [] : ["NotAllowed"], allowed, agentTool: admitsAgent(read.allowed),
       steps: {}, idempotent: null, runs: "server" as const, test: "unit" as const,
       budget: read.budget ? { p95Ms: Duration.toMillis(read.budget.p95) } : null,
-      ...(list ? { list: { where: [...read.where], order: read.order ?? "newest", page: read.page ?? 0 } } : {}),
+      ...(list ? { list: { where: read.where.filter((n) => !pinned.includes(n)), order: read.order ?? "newest", page: read.page ?? 0 } } : {}),
+      ...(read.only === undefined ? {} : { only: read.only }),
+      ...(derive === undefined ? {} : { derive }),
     };
     return { ...entry, hash: hashOf(entry) };
   }
@@ -259,8 +294,14 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel, problems);
   const allBlanks = { ...blanks, ...journeyBlanks };
   const alertRules = alertRulesOf({ operations, refusals, things, journeys: stories.journeys, environments });
+  const form = { layout, thingNames, problems };
+  const agents = agentsModel(form);
+  const sources = sourcesModel({ layout, mounts, problems });
+  const holds = holdsModel({ layout, things, thingNames, eventNames, opName, problems });
+  const problemList = problemsModel(form);
+  const declared = declaredModel(form);
   return {
-    model: { refusals, values, things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
+    model: { ...(Object.keys(agents).length > 0 ? { agents } : {}), ...(Object.keys(sources).length > 0 ? { sources } : {}), ...(Object.keys(holds).length > 0 ? { holds } : {}), ...(problemList.length > 0 ? { problems: problemList } : {}), ...(Object.keys(declared).length > 0 ? { declared } : {}), refusals, values, things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
     problems,
   };
 };

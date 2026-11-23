@@ -15,7 +15,18 @@ export const Compiler: CompilerApi = {
     const layout = readLayout(files);
     // Each mount's plugin, folded in: its things beside the project's own, under the names the mount gives them.
     const folded = yield* Mounts.fold(layout);
-    for (const [name, t] of folded.things) layout.things.set(name, t);
+    // An app folder of verbs with no thing.ts adds operations to a plugin's thing: they join it, and are the app's.
+    for (const [name, t] of folded.things) {
+      const own = layout.things.get(name);
+      if (own && !own.thing) {
+        for (const [verb, v] of own.verbs) t.verbs.set(verb, { ...v, from: { kind: "app" } });
+        const at = layout.problems.indexOf(`${own.base}: has no thing.ts`);
+        if (at >= 0) layout.problems.splice(at, 1);
+      }
+      layout.things.set(name, t);
+    }
+    for (const [n, a] of folded.agents) layout.agents.set(n, a);
+    for (const [n, s] of folded.sources) layout.sources.set(n, s);
     for (const [call, reach] of folded.calls) layout.calls.set(call, reach);
     for (const [file, journey] of folded.journeys) layout.journeys.set(file, journey);
     for (const [name, s] of folded.stores) layout.stores.set(name, s);
@@ -23,7 +34,7 @@ export const Compiler: CompilerApi = {
     // Errors take their names from their exports; stamping them here lets the loaded classes be used by name.
     for (const t of layout.things.values()) for (const [name, cls] of t.errors) ErrorNames.name(cls, name);
     for (const t of layout.things.values()) for (const [name, event] of t.events) EventNames.name(event, name);
-    const { model, problems } = describe(layout);
+    const { model, problems } = describe(layout, folded.mounts);
     if (problems.length > 0) return yield* new BlueprintInvalid({ problems: Mounts.attributed(problems, folded.mounts) });
     return Object.keys(folded.mounts).length > 0 ? { ...narrowed(model, folded.mounts), mounts: folded.mounts } : model;
   }),

@@ -1,5 +1,5 @@
 // Reads the blueprint's layout: which file holds what, and the name each declaration takes from its path or export.
-import type { AnyErrorClass, Environment, Event, Journey, Machine, Mount, Operation, Read, Role, StartingWorld, Store, Thing, Unique, Value } from "orthograph";
+import type { Agent, AnyErrorClass, Declared, Environment, Event, Held, Hold, Journey, Machine, Mount, Operation, Problem, Read, Role, SourceKind, StartingWorld, Store, Thing, Unique, Value } from "orthograph";
 import type { LoadedFile } from "#modules/source/types.js";
 import type { CallReach } from "#modules/mounts/types.js";
 
@@ -33,7 +33,11 @@ export interface ThingFiles {
   readonly roles: Map<string, Role>;
   /** Its rules (G5), by the name each export gives them: `handle.oneHolderPerName` is `oneHolderPerName`. */
   readonly invariants: Map<string, Unique>;
-  readonly verbs: Map<string, { readonly file: string; readonly declaration: Operation | Read }>;
+  readonly verbs: Map<string, { readonly file: string; readonly declaration: Operation | Read; /** Set on an operation the app adds to a plugin's thing. */ readonly from?: FromModel }>;
+  /** What can fail, beside the thing (`problem.ts`). */
+  problem?: { readonly file: string; readonly declaration: Problem };
+  /** The switches it declares (`holds.ts`), by the name each export gives them. */
+  readonly holds: Map<string, { readonly file: string; readonly declaration: Hold }>;
 }
 
 interface StoryFile<D> {
@@ -55,6 +59,14 @@ export interface Layout {
   readonly mounts: Map<string, MountFile>;
   /** What each mounted adapter's call is, by the call object a step holds (filled in when the mounts are folded). */
   readonly calls: Map<unknown, CallReach>;
+  /** `blueprint/agents/<name>.ts`: an agent kind, by the file's name. */
+  readonly agents: Map<string, { readonly file: string; readonly declaration: Agent; /** The mount that brought it; absent for the app's own. */ readonly mount?: string }>;
+  /** `blueprint/agents/<name>.ts` that declare an instance of a thing (`Superagent.declare`). */
+  readonly declared: Map<string, { readonly file: string; readonly declaration: Declared }>;
+  /** `blueprint/sources/<name>.ts`: a source kind, by the file's name. */
+  readonly sources: Map<string, { readonly file: string; readonly declaration: SourceKind<any>; /** The name it is exported under: what a message says to add. */ readonly exportName: string; readonly mount?: string; readonly package?: string }>;
+  /** What a mount file says a hold holds (`export const pausable = processing.holds({...})`), with the file. */
+  readonly holdLists: Array<{ readonly file: string; readonly name: string; readonly declaration: Held }>;
   readonly problems: Array<string>;
 }
 
@@ -78,11 +90,11 @@ export const NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
  * `blueprint/<path>`; a plugin's are its package specifier, `@x/y/blueprint/<path>`, and only its `things/` are read.
  */
 export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) => string = (path) => path.startsWith("../") ? path.slice(3) : `blueprint/${path}`): Layout => {
-  const layout: Layout = { values: new Map(), environments: new Map(), stores: new Map(), things: new Map(), mounts: new Map(), calls: new Map(), journeys: new Map(), startingWorlds: new Map(), problems: [] };
+  const layout: Layout = { values: new Map(), environments: new Map(), stores: new Map(), things: new Map(), mounts: new Map(), calls: new Map(), agents: new Map(), declared: new Map(), sources: new Map(), holdLists: [], journeys: new Map(), startingWorlds: new Map(), problems: [] };
   const thingFiles = (name: string): ThingFiles => {
     const found = layout.things.get(name);
     if (found) return found;
-    const fresh: ThingFiles = { name, base: at(`things/${name}`), from: { kind: "app" }, events: new Map(), errors: new Map(), roles: new Map(), invariants: new Map(), verbs: new Map() };
+    const fresh: ThingFiles = { name, base: at(`things/${name}`), from: { kind: "app" }, events: new Map(), errors: new Map(), roles: new Map(), invariants: new Map(), verbs: new Map(), holds: new Map() };
     layout.things.set(name, fresh);
     return fresh;
   };
@@ -109,6 +121,23 @@ export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) 
       const d = exports["default"];
       if (kindOf(d) !== "mount") layout.problems.push(`${at(path)}: the default export must be a Blueprint.use(…) of a ${MOUNT_FOLDERS[folder]}`);
       else layout.mounts.set(name, { name, kind: MOUNT_FOLDERS[folder], file: at(path), mount: d as Mount });
+      for (const [k, v] of Object.entries(exports)) if (kindOf(v) === "holds") layout.holdLists.push({ file: at(path), name: k, declaration: v as Held });
+      continue;
+    }
+    if (parts[0] === "agents" && parts.length === 2) {
+      const name = parts[1]!;
+      if (!NAME.test(name)) layout.problems.push(`${at(path)}: agent "${name}" must be lowercase words joined by dashes`);
+      const d = exports["default"];
+      if (kindOf(d) === "agent") layout.agents.set(name, { file: at(path), declaration: d as Agent });
+      else if (kindOf(d) === "declared") layout.declared.set(name, { file: at(path), declaration: d as Declared });
+      else layout.problems.push(`${at(path)}: the default export must be a Blueprint.agent or a Blueprint.declare`);
+      continue;
+    }
+    if (parts[0] === "sources" && parts.length === 2) {
+      const name = parts[1]!;
+      const kinds = Object.entries(exports).filter(([, v]) => typeof v === "function" && kindOf(v) === "source-kind");
+      if (kinds.length !== 1) layout.problems.push(`${at(path)}: must export exactly one Source.from or Source.timer`);
+      else layout.sources.set(name, { file: at(path), declaration: kinds[0]![1] as SourceKind<any>, exportName: kinds[0]![0] });
       continue;
     }
     if (parts[0] === "values" && parts.length === 2) {
@@ -154,6 +183,14 @@ export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) 
       for (const [k, v] of Object.entries(exports)) if (isErrorClass(v)) t.errors.set(k, v);
     } else if (file === "roles") {
       for (const [k, v] of each("role")) t.roles.set(k, v as Role);
+    } else if (file === "problem") {
+      const d = exports["default"];
+      if (kindOf(d) !== "problem") layout.problems.push(`${at(path)}: the default export must be a Blueprint.problem`);
+      else t.problem = { file: at(path), declaration: d as Problem };
+    } else if (file === "holds") {
+      for (const [k, v] of each("hold")) t.holds.set(k, { file: at(path), declaration: v as Hold });
+    } else if (file === "derive") {
+      // A derive is read through the reads that name it; the file only holds it.
     } else if (file === "invariants") {
       for (const [k, v] of each("invariant")) t.invariants.set(k, v as Unique);
     } else if (parts[2] === "verbs" && parts.length === 4) {

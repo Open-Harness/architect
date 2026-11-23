@@ -2,6 +2,7 @@
 // file in a project that says "use this plugin here, like this" (decisions/M1-plugins.md).
 import type { Effect, Schema } from "effect";
 import type { AnyErrorClass } from "#modules/errors/types.js";
+import type { Event, On } from "#modules/events/types.js";
 import type { Operation, Read } from "#modules/operations/types.js";
 import type { Value } from "#modules/values/types.js";
 
@@ -179,7 +180,8 @@ export type Verb =
   | { readonly kind: "verb"; readonly verb: "choose"; readonly option: Option<any> }
   | { readonly kind: "verb"; readonly verb: "include"; readonly items: ReadonlyArray<unknown> }
   | { readonly kind: "verb"; readonly verb: "narrow"; readonly operation: Operation | Read; readonly via: ReadonlyArray<Via> }
-  | { readonly kind: "verb"; readonly verb: "omit"; readonly operation: Operation | Read };
+  | { readonly kind: "verb"; readonly verb: "omit"; readonly operation: Operation | Read }
+  | { readonly kind: "verb"; readonly verb: "on"; readonly operation: Operation | Read; readonly hop: On };
 
 /** What a mount's callback is given: the plugin's choices and the verbs its kind allows, bound to it. */
 export type ViewOf<P> =
@@ -188,6 +190,8 @@ export type ViewOf<P> =
     readonly choose: (option: OptionsIn<C>) => Verb;
     readonly narrow: (operation: Operation | Read, spec: { readonly via: ReadonlyArray<Via> }) => Verb;
     readonly omit: (operation: Operation | Read) => Verb;
+    /** Deliver an event of any plugin to one of this plugin's own operations, as an outbox hop (`Blueprint.on`'s form, wired by the app). */
+    readonly on: <E extends Event>(event: E, operation: Operation | Read, map: (event: { readonly [K in keyof E["fields"]]: E["fields"][K] extends { readonly schema: { readonly Type: infer T } } ? T : unknown }) => unknown, options?: { readonly onRefused?: { readonly error: AnyErrorClass; readonly then: unknown } }) => Verb;
   }
   : P extends Adapter<infer C, infer Ca, infer Ev> ? {
     readonly choices: C;

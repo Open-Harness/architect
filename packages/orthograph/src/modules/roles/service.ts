@@ -29,7 +29,7 @@ export const admitsAgent = (allowed: ReadonlyArray<Allowed>): boolean =>
   allowed.some((a) => {
     const entry = a.kind === "narrowed" ? a.entry : a;
     if (entry.kind === "anyone") return true;
-    if (entry.kind === "system" || entry.kind === "keeper" || (entry.kind === "role" && entry.service !== undefined) || (entry.kind === "role-of" && entry.role.service !== undefined)) return false;
+    if (entry.kind === "system" || entry.kind === "keeper" || (entry.kind === "role" && (entry.service !== undefined || entry.actor !== undefined)) || (entry.kind === "role-of" && (entry.role.service !== undefined || entry.role.actor !== undefined))) return false;
     return a.kind !== "narrowed" || a.via.includes("agent");
   });
 

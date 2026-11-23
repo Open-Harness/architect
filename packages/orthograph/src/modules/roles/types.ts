@@ -68,6 +68,8 @@ export interface ServiceRole<T extends Thing = Thing> {
   readonly thing: T;
   readonly rule: (instance: InstanceOf<T>, principal: Acting) => boolean;
   readonly service: Mount;
+  readonly actor?: undefined;
+  readonly agent?: undefined;
   readonly of: <const P extends string>(path: P) => RoleOf<T, P>;
 }
 
