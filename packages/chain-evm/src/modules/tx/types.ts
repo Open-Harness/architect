@@ -64,6 +64,17 @@ export type TxState<TEvent extends DecodedEvent = DecodedEvent> =
   | { readonly _tag: "Confirmed"; readonly event: TEvent }
   | { readonly _tag: "Corrected"; readonly event: TEvent; readonly wasConfirmed: boolean };
 
+/** What the chain says about one submission right now (`ChainPort.probe`): one read, no waiting. */
+export type Standing =
+  | { readonly _tag: "Held" }
+  /** Mined. When the same call was sent again at a higher fee and that one was mined, the receipt is its (`receipt.transactionHash`). */
+  | { readonly _tag: "Included"; readonly receipt: TransactionReceipt }
+  | { readonly _tag: "Reverted"; readonly receipt: TransactionReceipt }
+  /** A different call from the sender used the nonce: nothing can send this one at that nonce again. */
+  | { readonly _tag: "Replaced"; readonly hash: Hash }
+  /** No receipt, the node no longer holds it, and the nonce is unused: it can be sent again. */
+  | { readonly _tag: "Dropped" };
+
 export interface ChainPort {
   readonly prepare: (call: Call) => Effect.Effect<Unsigned, ChainError>;
   /** An `eth_call` of the prepared transaction. `sign` and `submit` refuse a transaction that has not passed it. On failure, `release` it. */
@@ -81,6 +92,14 @@ export interface ChainPort {
   ) => EventFollower<TEvent>;
   readonly replace: (tx: Signed, signer: Signer, policy: ReplacementPolicy) => Effect.Effect<Signed, ChainFault>;
   readonly release: (tx: Unsigned) => Effect.Effect<void>;
+  /** Where a submission stands on the chain now. A single read: it never waits for a receipt (`track` does). */
+  readonly probe: (submission: Submission) => Effect.Effect<Standing, ChainFault>;
+  /**
+   * Take back a transaction this sender signed and broadcast before the process restarted, from its signed bytes: the nonce is
+   * reserved again and the result can be replaced like any other. Nothing is sent and nothing is simulated. Resume in nonce
+   * order; a nonce already reserved, or bytes that are not a transaction this port can send, fail.
+   */
+  readonly resume: (serialized: Hex, fromBlock: bigint) => Effect.Effect<Signed, ChainFault>;
 }
 
 export interface ReplacementPolicy {

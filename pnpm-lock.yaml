@@ -406,6 +406,9 @@ importers:
       '@effect/sql-d1':
         specifier: 4.1.4
         version: 4.1.4(effect@4.1.4)
+      '@orthograph/chain-evm':
+        specifier: workspace:*
+        version: link:../chain-evm
       '@orthograph/language-effect':
         specifier: workspace:*
         version: link:../language-effect

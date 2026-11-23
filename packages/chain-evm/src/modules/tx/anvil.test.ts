@@ -206,3 +206,44 @@ test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("transfers ERC20, deco
       _tag: "Corrected", event: expect.objectContaining({ args }), wasConfirmed: true,
     }));
   }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 15_000);
+
+test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("probes a submission, and a port that never saw it takes it back from its signed bytes and replaces it", () =>
+  Effect.runPromise(Effect.gen(function* () {
+    const { chain, rpcUrl, transport } = yield* withAnvil;
+    const account = yield* Effect.sync(() => privateKeyToAccount(generatePrivateKey()));
+    const recipient = yield* Effect.sync(() => privateKeyToAccount(generatePrivateKey()).address);
+    const testClient = createTestClient({ chain, transport, mode: "anvil" });
+    yield* fixtureRpc(() => testClient.setBalance({ address: account.address, value: 10n ** 18n }));
+    const signer = {
+      address: account.address,
+      signTransaction: (transaction: Parameters<typeof account.signTransaction>[0]) =>
+        Effect.tryPromise({ try: () => account.signTransaction(transaction), catch: () => new Error("Anvil fixture signing failed") }).pipe(Effect.orDie),
+    };
+    const open = makeChainPort({ chainId: chain.id, rpcUrl });
+    const first = yield* open;
+    yield* fixtureRpc(() => testClient.setAutomine(false));
+    const unsigned = yield* first.prepare({ from: account.address, to: recipient, value: 1n });
+    yield* first.simulate(unsigned);
+    const signed = yield* first.sign(unsigned, signer);
+    const submission = yield* first.submit(signed);
+    expect((yield* first.probe(submission))._tag).toBe("Held");
+    yield* fixtureRpc(() => testClient.dropTransaction({ hash: signed.hash }));
+    expect((yield* first.probe(submission))._tag).toBe("Dropped");
+
+    // A restart: a new port has no memory of the transaction, and takes it back from the bytes kept.
+    const second = yield* open;
+    const back = yield* second.resume(signed.serialized, submission.fromBlock);
+    expect(back.hash).toBe(signed.hash);
+    expect(back.prepared.transaction).toMatchObject({ nonce: unsigned.transaction.nonce, to: recipient.toLowerCase(), value: 1n });
+    expect(yield* second.resume(signed.serialized, submission.fromBlock).pipe(Effect.flip)).toMatchObject({ _tag: "ChainFault", kind: "nonce" });
+    const next = yield* second.replace(back, signer, { strategy: "speedup", maxFeePerGas: 10n ** 12n });
+    const again = yield* second.submit(next);
+    expect(next.hash).not.toBe(signed.hash);
+    expect((yield* second.probe(again))._tag).toBe("Held");
+    yield* fixtureRpc(() => testClient.setAutomine(true));
+    yield* fixtureRpc(() => testClient.mine({ blocks: 1 }));
+    expect(yield* second.probe(again)).toMatchObject({ _tag: "Included", receipt: { transactionHash: next.hash, status: "success" } });
+    // The first hash was never mined, and the same call took its nonce under the new hash: it reads as included under that hash.
+    expect(yield* second.probe(submission)).toMatchObject({ _tag: "Included", receipt: { transactionHash: next.hash } });
+    expect(yield* second.resume("0x1234", 0n).pipe(Effect.flip)).toMatchObject({ _tag: "ChainFault", kind: "signing" });
+  }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 30_000);

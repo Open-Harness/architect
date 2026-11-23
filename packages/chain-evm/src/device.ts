@@ -3,7 +3,7 @@
 export { makeChainPort } from "./modules/tx/service.ts";
 export type {
   Call, ChainPort, ChainPortOptions, ConfirmationLevel, Intent, ReplacementPolicy,
-  Signed, Signer, Submission, Transaction, TxState, Unsigned,
+  Signed, Signer, Standing, Submission, Transaction, TxState, Unsigned,
 } from "./modules/tx/types.ts";
 export { decodeRevert, mapRpcError } from "./modules/faults/service.ts";
 export { ChainFault, ChainRefusal, type ChainError, type FaultKind, type RefusalLockEntry } from "./modules/faults/types.ts";

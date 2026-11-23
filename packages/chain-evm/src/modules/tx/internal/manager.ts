@@ -1,6 +1,6 @@
 // Adapted from @prb/effect-evm@5.0.3 src/tx/{manager,tracker,replacement}.ts. See LICENSE-prb-effect-evm.
 import { Effect, Option, Semaphore } from "effect";
-import type { Hash, TransactionSerialized } from "viem";
+import { keccak256, type Hash, type TransactionSerialized } from "viem";
 import { hasMessage, isDefiniteRejection, isPendingReceipt, rpcFaultKind } from "../../faults/internal/viem-mapper.ts";
 import { mapRpcError, rpcFault } from "../../faults/service.ts";
 import { ChainFault, type ChainError } from "../../faults/types.ts";
@@ -9,7 +9,7 @@ import type { NonceReservation } from "../../nonce/types.ts";
 import type { Call, ChainPort, ChainPortOptions, Submission, Transaction, Unsigned, Signed } from "../types.ts";
 import { estimateFees, replacementTransaction } from "./fees.ts";
 import type { Rpc } from "./rpc.ts";
-import { signTransaction } from "./sign.ts";
+import { readSigned, signTransaction } from "./sign.ts";
 import { simulateCall } from "./simulate.ts";
 
 const unsimulated = () => new ChainFault({ kind: "unsimulated", message: "The transaction was not simulated before it was signed or sent" });
@@ -112,10 +112,26 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
       return next;
     }).pipe(Effect.withSpan("chain.evm.replace", { attributes: { hash: signed.hash, strategy: policy.strategy } }));
 
+    const resume: ChainPort["resume"] = (serialized, fromBlock) => Effect.gen(function* () {
+      const { transaction, from } = yield* readSigned(serialized, options.chainId);
+      const reservation = yield* nonces.reserveNext(from, transaction.nonce);
+      if (reservation.nonce !== transaction.nonce) {
+        yield* nonces.release(reservation);
+        return yield* new ChainFault({ kind: "nonce", message: "The nonce of a resumed transaction is already reserved" });
+      }
+      const prepared: Unsigned = Object.freeze({ from, transaction });
+      const signed: Signed = Object.freeze({ prepared, serialized, hash: keccak256(serialized) });
+      reservations.set(prepared, { nonce: reservation, send: Semaphore.makeUnsafe(1) });
+      simulated.add(prepared);
+      signedTransactions.set(signed, { transaction });
+      yield* nonces.beginBroadcast(reservation, { hash: signed.hash, fromBlock });
+      return signed;
+    }).pipe(Effect.withSpan("chain.evm.resume", { attributes: { chainId: options.chainId } }));
+
     const release: ChainPort["release"] = (prepared) =>
       Effect.suspend(() => Option.fromUndefinedOr(reservations.get(prepared)?.nonce).pipe(
         Option.match({ onNone: () => Effect.void, onSome: nonces.release }),
       ));
 
-    return { prepare, simulate, sign, submit, replace, release, nonces };
+    return { prepare, simulate, sign, submit, replace, release, resume, nonces };
   });
