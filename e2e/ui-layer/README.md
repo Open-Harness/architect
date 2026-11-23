@@ -11,13 +11,18 @@ hook error. The list shrinks only. CI runs it as the job `e2e-ui-layer`, on pull
 | `01-actions-refusals` | M1.23 (Goal 5, slice 1) | a call the role check refuses writes nothing and rejects as the typed `ActionRefusal` (every member agent-native reads); a failure that is not a declared refusal is a plain error with nothing of the defect on it; an aborted signal ends the call |
 | `02-actions-approvals` | M1.23 | `needsApproval` waits for a yes in the `defineAction` wrapper, once per call and before anything is written; with approval already given by the host `run` runs once and nothing is asked; a no runs nothing; `run` itself never waits |
 | `03-actions-registry` | M1.23 | `list` returns every registered action once, in order, with its flags and a non-empty JSON input schema; optional fields advertised as accepted (never `anyOf` null), nullable ones as nullable; duplicate names refused |
+| `04-a-name-is-claimed-once-through-web` | ST1.26 (Goal 5, slice 2) | `ortho prove --only "a name is claimed once" --through web` replays the journey through the generated pieces in a real browser and gives the HTTP run's verdicts, step for step; a copy with the claim piece broken passes no claim step |
+| `05-a-taken-name-is-refused-under-the-field` | ST1.26 | each declared refusal of `handle.claim` shows its own name and code under the Name field, for a person and for an agent's step, writes nothing and never calls `onDone`; the longest name is sent whole; a retry clears the refusal |
+| `06-a-release-waits-for-a-persons-yes` | ST1.26 | `handle.release` (declares `needsApproval`) asks through the bridge once, before anything is sent: a yes releases once, a no and "nobody to ask" send nothing, a person's own press asks nobody, the dialog's other buttons release nothing |
+| `07-a-read-loads-again-after-a-write-on-its-thing` | ST1.26 | `ProfileGet` loads once, then once more after `link.add` finishes (person or agent) with no page reload, and shows what `profile.get` answers; a refused write shows the declared refusal |
+| `08-the-pending-state-is-seen-before-the-answer` | ST1.26 | with the request held in the browser, a move and a read are pending, show no answer and no refusal, send nothing twice, and the agent's step has not finished; then the answer or refusal replaces the pending state |
 | `09-actions-projection-files` | M1.22 (Goal 5, slice 3) | one module per operation of Plugged In and of acme in `generated/actions/<thing>/<verb>.ts`, none left over; each headed as generated, exporting `options` and nothing else, never naming `defineAction`, agent-native or `retrySafe`, and free of what the rules keep out of generated code |
 | `10-actions-projection-options` | M1.22 | each `options(host)` has agent-native's field names carrying the model's name, description, `readOnly`, `needsApproval`, `agentTool` and refusal codes; no `retrySafe: true`; the schema is the payload's own through Standard Schema and Standard JSON Schema, non-empty when the payload has fields; `run` is one `host.call` making the generated SDK's own request under the host's request key and credential |
 | `11-actions-projection-types` | M1.22 | the type test: every `options(host)` against agent-native 0.228.2's recorded field list and context, and `ActionRefusal` against the recorded no-write error's members (`agent-native-0.228.2.ts`), with no agent-native package installed |
 | `12-actions-projection-runs` | M1.22 | Plugged In's generated actions run against a real world through the generated SDK: a role refusal is the SDK's own refusal as the typed no-write `ActionRefusal`, a declared refusal keeps its code, a defect is redacted, the request key reaches the Worker, an aborted signal ends the call, and `needsApproval` makes the wrapper ask once before anything is sent |
 | `13-actions-projection-follows-model` | M1.22 | a fresh `ortho generate` writes `generated/actions/` as checked in; and a changed blueprint (a description, `needsApproval` added and removed, `.notVia(Via.agent)`, a list read with optional fields) changes the actions to match, optional fields as `optionalKey` |
 
-Later slices add their checks here (the web projection's, ST1.26; the browser checks), each with its own file in `expected-failing/`.
+Later slices add their checks here, each with its own file in `expected-failing/`.
 
 ### Checks 09 to 13 in one paragraph
 
@@ -43,3 +48,16 @@ A read is what K29 section 3 calls one: no `move` and only `load` steps (so `han
 
 As `e2e/ratchet/README.md` says: when the builder's pull request makes a test pass, CI prints `newly passing, take it off the list`, and that
 pull request deletes the line (and the file when its last line goes). A builder never adds a line.
+
+## How checks 04 to 08 are built (ST1.26)
+
+- **`web-support.ts` is what they share:** the model they judge against, the pieces' files, a world of Plugged In on real workerd and D1, a page of check code
+  (`page/*.tsx`) that mounts generated pieces, and headless Chromium through Playwright. No jsdom.
+- **The one seam to the builder's runtime is `page/boot.tsx`:** `WebHost.make({ client, ask })`. It is fixed by `design/decisions/WEB-host-seam.md`: `client` is the SDK layer with the person's credential in it, and the host has no `session`.
+- **The contract the checks add to K29 (K29 names the states, not the DOM):**
+  - *Pending* is `aria-busy="true"` on a piece's root, or a `data-pending` attribute that is absent (or `"false"`) when idle. UI SDK prints it only when true.
+  - *The refusal* is text holding the refusal's declared name and code, in one element below the field it belongs to.
+  - *The confirming control* is the one control inside the opened `alertdialog` carrying `data-agent-confirm`, whose value is the operation's description in the model, and no other element of the page carries it.
+  - *The dialog in the agent's snapshot* is found by UI SDK's own naming: the entry whose component name matches `/dialog/i` (UI SDK's `AlertDialog`), else the entry labelled with "release". A builder who wraps the dialog under another name asks the checks author.
+- **Red only on the missing projection.** Each file stops at `needPieces`, which names the files K29 section 3 says the projection writes.
+- **Expected values come from the model or from a recording** (the SDK from Node, the world's journal), never from what the page shows.
