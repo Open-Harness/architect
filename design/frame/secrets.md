@@ -149,7 +149,7 @@ NPM_TOKEN               stored     release   in CI
 ```
 
 ```bash
-ortho secrets set stripe.apiKey --env production   # prompts without echo, or reads stdin; writes to the store
+printf %s "$VALUE" | ortho secrets set STRIPE_API_KEY --env production   # reads stdin only, never an argument; the local pass writes .ortho/environments/production/secrets.env (0600)
 ```
 
 It never prints a value, never takes one as an argument (where `ps` and shell history would see it), and never writes
@@ -175,7 +175,7 @@ created only with Aaron's written yes.
 | Who reads | nothing but auth's built-in `AUTH_SECRET` | only the declaring plugin's layer, as `Redacted` |
 | Kinds | one | runtime, release, builder |
 | Local values | generated for every name | generated, or the declared test value |
-| Setting a value | not designed (cloud pass) | `ortho secrets set`, no echo, straight to the store |
+| Setting a value | not designed (cloud pass) | `ortho secrets set <NAME>`, from stdin, into the environment's `secrets.env` (0600) in the local pass, the store in the cloud pass |
 
 ## Open questions and risks
 

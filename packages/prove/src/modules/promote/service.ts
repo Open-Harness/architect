@@ -8,9 +8,10 @@ import type { Up } from "#modules/environments/types.js";
 import { Build } from "#modules/build/service.js";
 import { Prove } from "#modules/prove/service.js";
 import { Releases } from "#modules/releases/service.js";
+import { Secrets } from "#modules/secrets/service.js";
 import type { Env, Held } from "#modules/verdicts/types.js";
 import { Verdicts } from "#modules/verdicts/service.js";
-import { PromoteFailed, type PromoteApi, type Promoted, type Target } from "./types.ts";
+import { PromoteFailed, PromoteRefused, type PromoteApi, type Promoted, type Target } from "./types.ts";
 import { runningOn } from "./internal/environment.ts";
 import { bundleOf, verdictsIn } from "./internal/gate.ts";
 import { productionRelease, stagingPrerelease } from "./internal/publishing.ts";
@@ -54,6 +55,11 @@ const to: PromoteApi["to"] = ({ root, env, target, say }) =>
     if (!environment) return yield* new PromoteFailed({ message: `no environment "${target}" in blueprint/environments/` });
 
     // Refusals first: nothing is started for a promotion the rules turn away.
+    // A stored runtime secret with no value in the target would start a place that can't use it: each is named (M2.04).
+    const unset = yield* Secrets.missing({ root, target, model });
+    if (unset.length > 0) {
+      return yield* new PromoteRefused({ lines: [`refused: ${target} has stored runtime secrets with no value`, ...unset.map((name) => `missing: ${name} has no value in ${target}: ortho secrets set ${name} --env ${target}`)] });
+    }
     const revision = yield* Build.revision(root).pipe(Effect.mapError(failed));
     const built = yield* bundleOf(root, revision);
     yield* Build.unchanged(root, built.commit).pipe(Effect.mapError(failed));

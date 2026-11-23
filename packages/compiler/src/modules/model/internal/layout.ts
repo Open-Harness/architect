@@ -1,5 +1,5 @@
 // Reads the blueprint's layout: which file holds what, and the name each declaration takes from its path or export.
-import type { AnyErrorClass, Asset, Environment, Event, Journey, Machine, Mount, Operation, Read, Role, StartingWorld, Store, Thing, Unique, Value } from "orthograph";
+import type { AnyErrorClass, Asset, Environment, Event, Journey, Machine, Mount, Operation, Read, Role, SecretDeclaration, StartingWorld, Store, Thing, Unique, Value } from "orthograph";
 import type { LoadedFile } from "#modules/source/types.js";
 import type { CallReach } from "#modules/mounts/types.js";
 
@@ -42,6 +42,23 @@ interface StoryFile<D> {
   readonly sourceHash?: string;
 }
 
+/** A secret declared in a `secrets.ts`: its export's name, and the file that exports it. */
+export interface SecretFile {
+  readonly export: string;
+  readonly file: string;
+  readonly declaration: SecretDeclaration;
+}
+
+/** A mount's secret: which mount brought it, so its name can be derived from the mount and the export. */
+export interface MountSecret extends SecretFile {
+  readonly mount: string;
+  readonly kind: "feature" | "adapter" | "projection";
+  /** The mount's own file, `blueprint/features/auth.ts`. */
+  readonly mountFile: string;
+  readonly package: string;
+  readonly version: string;
+}
+
 export interface Layout {
   readonly journeys: Map<string, StoryFile<Journey>>;
   readonly startingWorlds: Map<string, StoryFile<StartingWorld>>;
@@ -59,6 +76,10 @@ export interface Layout {
   readonly mounts: Map<string, MountFile>;
   /** What each mounted adapter's call is, by the call object a step holds (filled in when the mounts are folded). */
   readonly calls: Map<unknown, CallReach>;
+  /** The secrets of this blueprint's own `secrets.ts`, by export. */
+  readonly secrets: Map<string, SecretFile>;
+  /** The secrets of the mounted plugins (filled in when the mounts are folded). */
+  readonly mountSecrets: Array<MountSecret>;
   readonly problems: Array<string>;
 }
 
@@ -82,7 +103,7 @@ export const NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
  * `blueprint/<path>`; a plugin's are its package specifier, `@x/y/blueprint/<path>`, and only its `things/` are read.
  */
 export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) => string = (path) => path.startsWith("../") ? path.slice(3) : `blueprint/${path}`): Layout => {
-  const layout: Layout = { values: new Map(), valueFiles: new Map(), assets: new Map(), environments: new Map(), stores: new Map(), things: new Map(), mounts: new Map(), calls: new Map(), journeys: new Map(), startingWorlds: new Map(), problems: [] };
+  const layout: Layout = { values: new Map(), valueFiles: new Map(), assets: new Map(), environments: new Map(), stores: new Map(), things: new Map(), mounts: new Map(), calls: new Map(), secrets: new Map(), mountSecrets: [], journeys: new Map(), startingWorlds: new Map(), problems: [] };
   const thingFiles = (name: string): ThingFiles => {
     const found = layout.things.get(name);
     if (found) return found;
@@ -115,6 +136,13 @@ export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) 
       else layout.mounts.set(name, { name, kind: MOUNT_FOLDERS[folder], file: at(path), mount: d as Mount });
       continue;
     }
+    if (parts[0] === "secrets" && parts.length === 1) {
+      for (const [k, v] of Object.entries(exports)) {
+        if (kindOf(v) === "secret") layout.secrets.set(k, { export: k, file: at(path), declaration: v as SecretDeclaration });
+        else layout.problems.push(`${at(path)}: export "${k}" must be a Blueprint.secret.generated(…) or Blueprint.secret.stored(…)`);
+      }
+      continue;
+    }
     if (parts[0] === "values" && parts.length === 2) {
       for (const [k, v] of Object.entries(exports)) if (kindOf(v) === "value") { layout.values.set(k, v as Value); layout.valueFiles.set(k, at(path)); }
       continue;
@@ -144,7 +172,7 @@ export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) 
       continue;
     }
     if (parts[0] !== "things" || parts.length < 3) {
-      layout.problems.push(`${at(path)}: not a place the blueprint reads (values/<file>.ts, assets/<name>.ts, environments/<name>.ts, stores/<name>.ts, things/<thing>/..., or a mount in features/, adapters/ or projections/)`);
+      layout.problems.push(`${at(path)}: not a place the blueprint reads (secrets.ts, values/<file>.ts, assets/<name>.ts, environments/<name>.ts, stores/<name>.ts, things/<thing>/..., or a mount in features/, adapters/ or projections/)`);
       continue;
     }
     const name = parts[1]!;

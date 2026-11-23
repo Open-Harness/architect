@@ -250,6 +250,22 @@ export interface StoreFromModel {
   readonly store: string;
 }
 
+/** Where a secret was declared: the app's own `blueprint/secrets.ts`, or the plugin a mount brought in. */
+export type SecretFromModel =
+  | { readonly kind: "app" }
+  | { readonly kind: "feature" | "adapter" | "projection"; readonly mount: string; readonly package: string; readonly version: string };
+
+/** A declared secret, by the name derived from its mount and export: how it gets a value and who holds it. Never a value. */
+export interface SecretModel {
+  readonly how: "generated" | "stored";
+  /** `runtime` (a running place holds it), `release` (CI's) or `builder` (a developer's machine's). */
+  readonly kind: "runtime" | "release" | "builder";
+  /** The export's name in the declaring `secrets.ts`: what the plugin's layer reads it by. */
+  readonly export: string;
+  readonly from: SecretFromModel;
+  readonly describe?: string;
+}
+
 /** A store, named by its file (`blueprint/stores/ledger.ts` is `ledger`), or by its mount and path (`echo-ledger`). */
 export interface StoreModel {
   readonly name: string;
@@ -317,6 +333,8 @@ export interface Model {
   readonly blanks?: Readonly<Record<string, ReadonlyArray<string>>>;
   /** Where the application runs, by name: present only when the blueprint has an `environments/` folder. */
   readonly environments?: Readonly<Record<string, EnvironmentModel>>;
+  /** The declared secrets by derived name (`STRIPE_API_KEY`): present only when the app or a mount declares any. */
+  readonly secrets?: Readonly<Record<string, SecretModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
   /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */

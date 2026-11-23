@@ -1,7 +1,7 @@
 // Reads the environments into the model: the name comes from the file, never from a string inside it.
 import { Duration, Option } from "effect";
 import type { ChainNetwork, Database, Publication, Sink } from "orthograph";
-import type { EnvironmentModel, PublicationModel, SinkModel } from "../types.ts";
+import type { EnvironmentModel, PublicationModel, SecretModel, SinkModel } from "../types.ts";
 import { Times } from "#modules/time/service.js";
 import { hashOf } from "./hash.ts";
 import type { Layout } from "./layout.ts";
@@ -16,6 +16,10 @@ const sinkOf = (s: Sink): SinkModel => (s.which === "local" ? { sink: "local" } 
 const publication =(p: Publication): PublicationModel =>
   p.how === "npm" ? { how: "npm", tag: p.tag } : p.how === "homebrew" ? { how: "homebrew", tap: p.tap } : { how: "binaries", on: p.on };
 
+/** Every runtime secret of the mounts and the app, in every environment: a release or builder secret never reaches a running place. */
+const runtimeOf = (secrets: Readonly<Record<string, SecretModel>>): ReadonlyArray<readonly [string, SecretModel["how"]]> =>
+  Object.entries(secrets).flatMap(([name, s]) => (s.kind === "runtime" ? [[name, s.how] as const] : []));
+
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 
 /** What an environment binds a store to: a database, or (for a chain store) a network. */
@@ -26,14 +30,17 @@ const bindingOf = (b: Database | ChainNetwork): "d1" | "d1-local" | { readonly c
  * `tokens` is each chain store's fixed token assets (the ones its things count); an environment that runs the store
  * must bind each to a contract (M6-money item 2).
  */
-export const environmentsOf = (layout: Layout, problems: Array<string>, tokens: ReadonlyMap<string, ReadonlySet<string>> = new Map()): Readonly<Record<string, EnvironmentModel>> =>
+export const environmentsOf = (layout: Layout, problems: Array<string>, tokens: ReadonlyMap<string, ReadonlySet<string>> = new Map(), secrets: Readonly<Record<string, SecretModel>> = {}): Readonly<Record<string, EnvironmentModel>> =>
   Object.fromEntries(byKey([...layout.environments]).map(([name, { file, declaration: e }]) => {
     const lifetime = e.lifetime === undefined ? Option.none() : Duration.fromInput(e.lifetime);
     if (e.lifetime !== undefined && Option.isNone(lifetime)) problems.push(`${file}: lifetime isn't a duration`);
     if (e.promotesFrom !== undefined && (e.promotesFrom === name || !layout.environments.has(e.promotesFrom))) {
       problems.push(`${file}: promotesFrom "${e.promotesFrom}" isn't another environment in blueprint/environments/`);
     }
-    for (const secret of Object.keys(e.secrets ?? {})) if (!SECRET.test(secret)) problems.push(`${file}: secret "${secret}" must be UPPER_SNAKE_CASE`);
+    for (const secret of Object.keys(e.secrets ?? {})) {
+      if (!SECRET.test(secret)) problems.push(`${file}: secret "${secret}" must be UPPER_SNAKE_CASE`);
+      if (secrets[secret]) problems.push(`${file}: secret "${secret}" is declared by a secrets.ts, so an environment doesn't name it too`);
+    }
     if ((e.deploy !== undefined || e.publish !== undefined) && e.cloud === undefined) problems.push(`${file}: deploys or publishes, so it needs a cloud`);
     for (const [bound, to] of Object.entries(e.stores ?? {})) {
       const declared = layout.stores.get(bound);
@@ -73,7 +80,7 @@ export const environmentsOf = (layout: Layout, problems: Array<string>, tokens: 
       database: e.database?.which ?? null,
       ...(e.stores && Object.keys(e.stores).length > 0 ? { stores: Object.fromEntries(byKey(Object.entries(e.stores)).map(([k, d]) => [k, bindingOf(d)])) } : {}),
       ...(e.assets && Object.keys(e.assets).length > 0 ? { assets: Object.fromEntries(byKey(Object.entries(e.assets)).map(([a, per]) => [a, Object.fromEntries(byKey(Object.entries(per)).map(([store, t]) => [store, { chain: t.of, address: t.address }]))])) } : {}),
-      secrets: Object.fromEntries(byKey(Object.entries(e.secrets ?? {})).map(([k, s]) => [k, s.how])),
+      secrets: Object.fromEntries(byKey([...Object.entries(e.secrets ?? {}).map(([k, s]) => [k, s.how] as const), ...runtimeOf(secrets)])),
       promotesFrom: e.promotesFrom ?? null,
       ...(e.telemetry === undefined ? {} : { telemetry: sinks.map(sinkOf) }),
       deploy: Object.fromEntries(byKey(Object.entries(e.deploy ?? {})).map(([k, d]) => [k, { how: d.how, domain: d.domain }])),
