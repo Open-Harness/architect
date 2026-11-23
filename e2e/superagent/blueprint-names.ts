@@ -74,8 +74,8 @@ export const intake: PluginNames = {
     trigger: { ops: ["receive", "requeue", "reevaluate"] },
     thread: { states: ["idle", "queued", "evaluating"], ops: ["bind", "closed", "unsubscribe"] },
     correlation: { ops: [] },
-    // Eval row (states) and GOAL17-pause (activeAtStart, timeoutMs). `due` is in CONFLICTS.
-    eval: { states: ["queued", "delivered", "decided", "unavailable"], fields: ["activeAtStart", "timeoutMs"], ops: ["delivered", "context", "read", "decide"] },
+    // Eval row (states) and GOAL17-pause (activeAtStart, timeoutMs). `due` is GOAL17-names call 1.
+    eval: { states: ["queued", "delivered", "decided", "unavailable"], fields: ["activeAtStart", "timeoutMs"], ops: ["due", "delivered", "context", "read", "decide"] },
     decision: { ops: ["route", "dismiss"] },
     // Policy row: a thing with versions; K40 fix 2 (save, get, history, restore) plus sync
     policy: { ops: ["save", "get", "history", "restore", "sync"] },
@@ -105,7 +105,7 @@ export const tickets: PluginNames = {
       ops: ["accept", "attach", "note", "request-status", "stop", "retry", "end", "resume", "policy-changed", "report", "ack", "stage", "waiting"],
     },
     subscription: { ops: [] },
-    // GOAL17-executor-slots "The declaration a blueprint writes". `start`/`started` and `promote`/`promoted` are in CONFLICTS.
+    // GOAL17-executor-slots "The declaration a blueprint writes". The operations are its moves (GOAL17-names call 2).
     assignment: {
       states: ["pending", "running", "closing", "ended"],
       moves: {
@@ -113,11 +113,11 @@ export const tickets: PluginNames = {
         promoted: { from: ["pending"], to: ["pending"], emits: "AssignmentPromoted" },
         started: { from: ["pending"], to: ["running"], emits: "AssignmentStarted" },
         cancelled: { from: ["pending"], to: ["ended"], emits: "AssignmentEnded" },
-        interrupted: { to: ["closing"], emits: "AssignmentInterrupted" },   // `from` omitted: see CONFLICTS (the record says ["running"], then "pending or running")
+        interrupted: { from: ["running"], to: ["closing"], emits: "AssignmentInterrupted" },   // GOAL17-names call 4: running only; a pending one is cancelled
         turnEnded: { from: ["running", "closing"], to: ["ended"], emits: "AssignmentEnded" },
       },
       fields: ["id", "superagent", "ticket", "agent", "input", "why", "seat"],
-      ops: ["queued", "cancelled", "interrupted", "turn-ended"],
+      ops: ["queued", "promoted", "started", "cancelled", "interrupted", "turn-ended", "waiting"],   // GOAL17-names calls 2 and 3
     },
     // Input row; GOAL17-executor-slots section 5 (the moves) and "How an executor's input reaches the pool" (retryAt, refusals)
     input: {
@@ -198,12 +198,5 @@ export const app = {
 export const PLUGINS = { superagent, intake, tickets, prompts, agents } as const;
 
 // ---- what no check judges yet -------------------------------------------------------------------------------------
-export const CONFLICTS: ReadonlyArray<string> = [
-  // each is reported to the lead; none is picked
-  "eval.due vs evals.due: 17-superagent.md's Eval row, 'One ask' step 3 and the Source/Trigger table say `evals.due`; its Superagent field comment (`eval.due` bumps it) and GOAL17-pause's lists (`eval.operations.due`) say `eval.due`",
-  "assignment.start vs started, assignment.promote vs promoted: 17-superagent.md's Assignment row names the operations `started` and `promoted`; GOAL17-executor-slots names `assignment.start` (verbs/start.ts, `move: machine.moves.started`) and `assignment.promote`",
-  "assignment.list vs assignment.waiting: GOAL17-executor-slots section 4 says tickets offers `assignment.list`; its section 9 journey reads `assignment.waiting`",
-  "GOAL17-executor-slots, Assignment's `interrupted` move: `from: [\"running\"]` in the move table, `from pending or running` in the 'Two writers, one guard' table",
-  "slack and posthog call names: GOAL17-source-from writes `slack.calls.chat.postMessage`, `conversations.replies`, `usergroups.users.list` and `posthog.calls.errorTracking.issues.retrieve` (nested); slice 3's naming rule (e2e/superagent/README.md item 2) makes them flat: `chatPostMessage`, `conversationsReplies`, `errorTrackingIssuesRetrieve`; `usergroups.users.list` and `repos.listCollaborators` are in no mount list",
-  "posthog events: GOAL17-source-from's posthogSource maps `errorAlert` and `errorResolved`; slice 3's needs.ts says posthog has no events",
-];
+// Empty since GOAL17-names (23 November 2026) settled the six the checks author found; a new one goes here, and no check judges it.
+export const CONFLICTS: ReadonlyArray<string> = [];

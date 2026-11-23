@@ -132,7 +132,7 @@ generated docs, the generated CLI and the generated MCP catalog, on a copy of th
 | `17-nothing-else-moves` | acme, plugged-in, signup, starter and work, regenerated, are the checked-in `generated/` byte for byte; the comparison is shown to see a changed, a missing and a new file | `ortho generate` |
 
 `blueprint-names.ts` holds every list the design names, each entry with the section it comes from, and `CONFLICTS`: names two
-documents spell differently. No check judges a name in `CONFLICTS`; when the design settles one, the name moves into the lists in
+documents spell differently, empty since GOAL17-names settled the first six. No check judges a name in `CONFLICTS`; when the design settles one, the name moves into the lists in
 the same change (an author's change, since a builder never edits these).
 
 ## What the builder must make, and where the checks read it (slice 5)
@@ -189,9 +189,9 @@ changed stops and asks its author.
    | an id prefix no thing owns | the prefix |
 
 5. **Two notes from the throwaway.** A thing named `eval` makes the generated CLI unloadable (`const eval = ...` is a syntax error in
-   strict mode): the generator must name a thing's command so it can't be a reserved word; check 13 starts the CLI. And two pairs of
-   things collide on refusal codes (`proposal` and `prompt-set` on `PR-`, `superagent` and `subscription` on `SU-`): give one of each
-   a `code` of its own.
+   strict mode): the generator must make a reserved word a safe identifier and keep the operation's name `eval.due` (GOAL17-names call 1); check 13 starts the CLI. And two pairs of
+   things collide on refusal codes (`proposal` and `prompt-set` on `PR-`, `superagent` and `subscription` on `SU-`): Proposal and
+   Subscription take an explicit `code` (GOAL17-names).
 6. **`SUPERAGENT_APP=<folder>`** points the checks at another app. It is for an author's fairness proof, never CI.
 7. **The held, sources and actor refusals edit the design's own text.** Check 15 edits a copy of `blueprint/features/superagent.ts`
    (the `held:` and `unheld:` lists, rows written `{ event: tickets.events.X, to: input.operations.route }`),

@@ -115,10 +115,10 @@ describe("14 the framework forms: each is accepted, and in the model as its reco
 
   describe("Blueprint.hold (GOAL17-pause)", () => {
     const pair = (d: any) => `${d.event}>${d.to}`;
-    // the deliveries GOAL17-pause lists; its two `eval.due` rows are left out (CONFLICTS in blueprint-names.ts)
+    // the deliveries GOAL17-pause lists
     const HELD = ["EvalStarted>eval.delivered", "EvalDelivered>agent.tell", "InputRouted>agent.tell", "AssignmentQueued>superagent.fill", "AssignmentEnded>superagent.fill", "AssignmentEnded>input.route",
       "AssignmentPromoted>superagent.fill", "AssignmentStarted>agent.tell", "AssignmentStarted>input.route", "ReplyQueued>outgoing-message.send"];
-    const UNHELD = ["InputStored>input.route", "AgentIdled>assignment.turn-ended", "AgentClosed>assignment.turn-ended", "AssignmentInterrupted>agent.close", "TriggerReceived>input.store", "SuperagentResumed>superagent.fill"];
+    const UNHELD = ["InputStored>input.route", "AgentIdled>assignment.turn-ended", "AgentClosed>assignment.turn-ended", "AssignmentInterrupted>agent.close", "TriggerReceived>input.store", "SuperagentResumed>superagent.fill", "SuperagentCreated>eval.due", "SuperagentResumed>eval.due"];
     const processing = () => built().model["holds"]?.["processing"];
 
     it("one switch, named `processing`: the Superagent's own id, held while it is paused", () => {
