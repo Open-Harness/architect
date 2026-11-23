@@ -53,6 +53,19 @@ describe("href", () => {
   });
 });
 
+describe("a parameter's bytes", () => {
+  const roundTrip = (handle: string) => router.match(router.href("profile", { handle }) ?? "");
+  it("a leading byte-order mark and a literal U+FFFD are values, and round-trip through href", () => {
+    expect(roundTrip("﻿aaron")).toEqual({ page: "profile", params: { handle: "﻿aaron" } });
+    expect(roundTrip("a�b")).toEqual({ page: "profile", params: { handle: "a�b" } });
+    expect(roundTrip("�")).toEqual({ page: "profile", params: { handle: "�" } });
+  });
+
+  it("bytes that are not UTF-8 are no route, never a throw", () => {
+    for (const path of ["/@%FF", "/@a%C3", "/@%C0%AF", "/@%ED%A0%80"]) expect(router.match(path), path).toBeUndefined();
+  });
+});
+
 describe("chain", () => {
   it("is the parents, home first and the page last", () => {
     expect(router.chain("edit")).toEqual(["home", "profile", "edit"]);

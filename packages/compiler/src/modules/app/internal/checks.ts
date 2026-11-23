@@ -29,6 +29,8 @@ const tagged = (file: string, tag: string, words: string) => `${file}: [${tag}] 
 /** A segment is literal text with at most one parameter that ends it (`@:handle`, `:name`): what the shell's router reads. */
 const SEGMENT = /^[^:]*(:[A-Za-z_][A-Za-z0-9_]*)?$/;
 const badSegments = (path: string): ReadonlyArray<string> => path.split("/").filter((s) => !SEGMENT.test(s));
+/** The root is `/`; any other route has no empty segment, since the router drops them (`/account/` would be `/account`). */
+const emptySegments = (path: string): boolean => path !== "/" && path.startsWith("/") && path.split("/").slice(1).some((s) => s === "");
 
 /** The path and its parameters agree; each shown read gets what its payload needs; each parameter is used by one. */
 export const routeProblems = (page: PageFacts, model: Model): ReadonlyArray<string> => {
@@ -36,6 +38,7 @@ export const routeProblems = (page: PageFacts, model: Model): ReadonlyArray<stri
   const typed = Object.keys(page.params);
   const out: Array<string> = [];
   if (!page.path.startsWith("/")) out.push(tagged(page.file, "app-route-param", `the route "${page.path}" must start with /`));
+  if (emptySegments(page.path)) out.push(tagged(page.file, "app-route-param", `the route "${page.path}" has an empty segment (a trailing or doubled slash): the router drops it, so it would be the address of another page`));
   for (const s of badSegments(page.path)) out.push(tagged(page.file, "app-route-param", `the segment "${s}" of the route "${page.path}" is not literal text with at most one :name at its end`));
   for (const p of named.filter((n) => !typed.includes(n))) out.push(tagged(page.file, "app-route-param", `the route "${page.path}" has :${p}, which route.params doesn't type`));
   for (const p of typed.filter((n) => !named.includes(n))) out.push(tagged(page.file, "app-route-param", `route.params types ${p}, which the route "${page.path}" doesn't have`));

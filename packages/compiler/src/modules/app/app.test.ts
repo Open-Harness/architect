@@ -113,6 +113,14 @@ describe("app", () => {
     }
   });
 
+  it("a route with a trailing slash or an empty segment is refused, and the root `/` is not", () => {
+    expect(routeProblems(page({ path: "/" }), model)).toEqual([]);
+    for (const path of ["/account/", "/a//b", "//"]) {
+      const out = routeProblems(page({ path }), model);
+      expect(out.some((l) => l.includes("[app-route-param]") && l.includes("empty segment")), path).toBe(true);
+    }
+  });
+
   it("a role for an outside service never opens a page: plain, scoped, and narrowed then scoped", () => {
     const service = { kind: "role", service: {} };
     const scoped = { kind: "role-of", role: service, path: "id" };

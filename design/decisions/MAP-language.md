@@ -86,3 +86,9 @@ A `narrowed` entry is the entry it narrows, since a page has no ways in of its o
   match them. `@:handle` stays allowed, not only a whole-segment `:name`, since `/@:handle` is K31's own example and the router reads it.
 - **A scoped service role is still a service role.** `serviceRole.of("id")` is a `role-of`, so the refusal checks the role it
   scopes, narrowed or not.
+
+## Empty segments (after Codex's review of the map landing)
+
+A route other than `/` may not have an empty segment: `/account/` and `/a//b` are refused as `[app-route-param]`, naming the page's
+file, because the shell's router drops empty segments and the page would answer at another page's address. So no two routes the
+compiler accepts can collide after the router normalizes them, and the duplicate check needs no normalizing of its own.
