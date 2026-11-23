@@ -1,4 +1,4 @@
-import { NotAllowed, type Allowed, type Assertion, type Call, type ClockCall, type FieldsInput, type Thing } from "orthograph";
+import { NotAllowed, type Allowed, type AnyCall, type Assertion, type FieldsInput, type Thing } from "orthograph";
 import { Blanks, ErrorNames, EventNames, Scripting } from "orthograph/server";
 import type { AllowedModel, JourneyModel, OperationModel, StartingWorldModel } from "../types.ts";
 import type { Layout } from "./layout.ts";
@@ -25,8 +25,8 @@ const blanksIn = (value: unknown): ReadonlyArray<string> => {
 };
 
 /** A step's blanks: in its call's payload and due instant (the keeper's) and in each check (the check itself, its fields, its id or its value). */
-export const stepBlanks = (step: { readonly call: Call | ClockCall; readonly checks: ReadonlyArray<Assertion> }) => [
-  ...(step.call.kind === "call" ? [...blanksIn(step.call.payload), ...blanksIn(step.call.due)] : []),
+export const stepBlanks = (step: { readonly call: AnyCall; readonly checks: ReadonlyArray<Assertion> }) => [
+  ...(step.call.kind === "clock-call" ? [] : [...blanksIn(step.call.payload), ..."due" in step.call ? blanksIn(step.call.due) : []]),
   ...step.checks.flatMap((c) => (Blanks.isBlank(c) ? [(c as { readonly what: string }).what]
     : c.kind === "emits" || c.kind === "refuses" ? blanksIn(c.fields) : c.kind === "is-in" ? blanksIn(c.id) : c.kind === "expect-equal" ? blanksIn(c.value) : [])),
 ];
@@ -51,9 +51,11 @@ export const storiesOf = (
   const castOf = (cast: Readonly<Record<string, Allowed>>, file: string) =>
     Object.fromEntries(Object.entries(cast).map(([name, role]) => [name, allowed(role, file)]));
 
-  const callOf = (call: Call | ClockCall) => {
+  const callOf = (call: AnyCall) => {
     // A step that moves the world's clock has no operation: the model leaves it out until time is built (M8.07).
     if (call.kind === "clock-call") return undefined;
+    // The tools list runs no operation: it is told as a step that is not in the model's operations.
+    if (call.operation === undefined) return undefined;
     const operation = names.get(call.operation);
     if (operation === undefined) return undefined;
     // A blank operation has no model to read visibility from, but its payload fields are declared: redact by declaration.
@@ -65,6 +67,7 @@ export const storiesOf = (
       actor: call.actor, operation, payload: publicData(call.payload, secret),
       ...(call.request === undefined ? {} : { request: call.request }),
       ...(typeof call.due === "string" ? { due: call.due } : {}),
+      ...(call.via === undefined ? {} : { via: call.via }),
     };
   };
 
@@ -89,6 +92,8 @@ export const storiesOf = (
         };
       }
       case "is-in": return { kind: check.kind, thing: things.get(check.thing as Thing), id: data(check.id), state: check.state };
+      case "lacks":
+      case "has": return { kind: check.kind, operations: check.operations.map((op) => names.get(op) ?? "an undeclared operation") };
       default: return check;
     }
   };
@@ -107,7 +112,7 @@ export const storiesOf = (
     const steps = declared.map((step) => {
       const call = callOf(step.call);
       return call === undefined
-        ? { title: step.title, skipped: step.call.kind === "clock-call" ? "time is not built yet: M8.07" : "operation is outside the model" }
+        ? { title: step.title, skipped: step.call.kind === "clock-call" ? "time is not built yet: M8.07" : step.call.operation === undefined ? "the tools list is not an operation" : "operation is outside the model" }
         : { title: step.title, call, checks: step.checks.filter((c) => !Blanks.isBlank(c)).map(checkOf) };
     });
     const starts = Blanks.isBlank(j.starts) ? null : j.starts ?? null;

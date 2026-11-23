@@ -7,6 +7,7 @@ import type { NotFrom } from "#modules/machines/types.js";
 import type { Operation, PayloadOf, Read } from "#modules/operations/types.js";
 import type { Span } from "#modules/time/types.js";
 import type { NotFound } from "#modules/things/types.js";
+import type { Via } from "#modules/plugins/types.js";
 
 /**
  * A value known only once the world runs: `s.world.organization`, `s.olga.person`, `s.last.allowance`. Its path is
@@ -24,6 +25,8 @@ export interface Call {
   readonly payload: { readonly [field: string]: unknown };
   /** The request key, for an operation declared `idempotent: "request"`: the same key twice is one call. */
   readonly request: string | undefined;
+  /** The way in this call is made by, when the script said (`s.ada.via(Via.key)`): absent, a person's own session. */
+  readonly via?: Via | undefined;
   /** The keeper's call only: the instant the move made by time was due, which with the thing and the move is the request key (K23 section 3). */
   readonly due?: string;
 }
@@ -33,6 +36,23 @@ export interface ClockCall {
   readonly kind: "clock-call";
   readonly move: { readonly advance: string } | { readonly moveTo: string };
 }
+
+/**
+ * The tools an agent is shown at the MCP door, listed with a cast member's own credential (`s.olga.via(Via.agent).tools()`). It runs no
+ * operation, so it has no trace of its own: its answer is `{ tools }`, the wire names the door lists.
+ */
+export interface ToolsCall {
+  readonly kind: "call";
+  readonly actor: string;
+  readonly tools: true;
+  readonly via?: Via | undefined;
+  readonly operation?: undefined;
+  readonly payload?: undefined;
+  readonly request?: undefined;
+}
+
+/** A call a step makes: an operation or read, or the tools list. */
+export type AnyCall = Call | ToolsCall | ClockCall;
 
 /**
  * What a refusal check names: a declared error class, a machine's own refusal (`machine.notFrom`), a thing's missing
@@ -48,12 +68,14 @@ export type Assertion =
   | { readonly kind: "no-events" }
   | { readonly kind: "refuses"; readonly error: Refusal; readonly fields: { readonly [field: string]: unknown } }
   | { readonly kind: "spans"; readonly present: ReadonlyArray<string>; readonly absent: ReadonlyArray<string> }
-  | { readonly kind: "is-in"; readonly thing: unknown; readonly id: unknown; readonly state: string };
+  | { readonly kind: "is-in"; readonly thing: unknown; readonly id: unknown; readonly state: string }
+  | { readonly kind: "lacks"; readonly operations: ReadonlyArray<Operation | Read> }
+  | { readonly kind: "has"; readonly operations: ReadonlyArray<Operation | Read> };
 
 export interface Step {
   readonly kind: "step";
   readonly title: string;
-  readonly call: Call | ClockCall;
+  readonly call: AnyCall;
   readonly checks: ReadonlyArray<Assertion>;
 }
 
@@ -74,6 +96,10 @@ export interface Actor {
     /** A read: one instance by its id, or a page of them by the filters it names. */
     <R extends Read<any, any, any>>(read: R, payload: { readonly [K in keyof PayloadOf<R>]: PayloadOf<R>[K] | Ref }): Call;
   };
+  /** The same cast member, called with the credential the world mints for this way in: a key, or an agent's key. Default: their session. */
+  readonly via: (way: Via) => Actor;
+  /** The MCP door's tool list, asked with this cast member's credential: answers `{ tools }`. Check it with `lacks` and `has`. */
+  readonly tools: () => ToolsCall;
 }
 
 export type Cast = { readonly [name: string]: Allowed };
@@ -88,7 +114,7 @@ export type Script<C extends Cast> = { readonly [K in keyof C]: Actor } & {
     readonly advance: (span: Span) => ClockCall;
     readonly moveTo: (instant: string) => ClockCall;
   };
-  readonly step: (title: string, call: Call | ClockCall, ...checks: ReadonlyArray<Assertion>) => Step;
+  readonly step: (title: string, call: AnyCall, ...checks: ReadonlyArray<Assertion>) => Step;
 };
 
 export interface Journey<C extends Cast = Cast> {
@@ -135,6 +161,10 @@ export interface ChecksApi {
   readonly noEvents: () => Assertion;
   readonly refuses: (error: Refusal, fields?: { readonly [field: string]: unknown }) => Assertion;
   readonly spans: (spec: { readonly present?: ReadonlyArray<string>; readonly absent?: ReadonlyArray<string> }) => Assertion;
+  /** On a `.tools()` call: none of these operations is a tool. It fails when the call listed no tools, or names an operation the project does not declare. */
+  readonly lacks: (...operations: ReadonlyArray<Operation | Read>) => Assertion;
+  /** On a `.tools()` call: every one of these operations is a tool. */
+  readonly has: (...operations: ReadonlyArray<Operation | Read>) => Assertion;
 }
 
 /** What `prove` uses to run a script: the refs in it, read against what the world has said so far. */

@@ -1,0 +1,22 @@
+{
+  "name": "@orthograph/theme",
+  "version": "0.0.0",
+  "description": "The Orthograph look: one stylesheet on UI SDK's --ui-* tokens, light and dark, with the type scale and spacing.",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./theme.css": {
+      "default": "./dist/theme.css"
+    },
+    "./package.json": {
+      "default": "./package.json"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

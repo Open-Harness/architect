@@ -30,6 +30,7 @@ export const environmentsOf = (layout: Layout, problems: Array<string>): Readonl
       if (!declared) problems.push(`${file}: stores binds "${bound}", which isn't a declared store (${layout.stores.size > 0 ? `the stores are ${[...layout.stores.keys()].join(", ")}` : "the blueprint declares none"})`);
       else if (declared.store.of !== "database") problems.push(`${file}: stores binds "${bound}", a ${declared.store.of} store, to a database: only a database store is bound this way`);
     }
+    if (e.issues !== undefined && e.issues.length === 0) problems.push(`${file}: issues names no way in: leave it out to issue every way in`);
     const sinks = e.telemetry ?? [];
     for (const s of sinks) if (s.which === "axiom" && !GROUP.test(s.group)) problems.push(`${file}: the Axiom group "${s.group}" isn't a dataset group name (letters, digits, - _ .)`);
     const named = sinks.map((s) => JSON.stringify(sinkOf(s)));
@@ -37,7 +38,8 @@ export const environmentsOf = (layout: Layout, problems: Array<string>): Readonl
     const clock = e.clock === undefined ? undefined : Times.clock({ file, clock: e.clock });
     problems.push(...(clock?.problems ?? []));
     const entry = {
-      name, file, runs: e.runs, identity: e.identity.which,
+      name, file, runs: e.runs, ...(e.identity === undefined ? {} : { identity: e.identity.which }),
+      ...(e.issues === undefined ? {} : { issues: [...new Set(e.issues)].sort() }),
       ...(clock?.clock === undefined ? {} : { clock: clock.clock }),
       lifetimeMs: Option.isSome(lifetime) ? Duration.toMillis(lifetime.value) : null,
       cloud: e.cloud ? { provider: e.cloud.provider, database: e.cloud.database.which } : null,

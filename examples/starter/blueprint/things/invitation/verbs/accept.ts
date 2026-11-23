@@ -1,4 +1,4 @@
-import { Blueprint } from "orthograph";
+import { Blueprint, Via } from "orthograph";
 import { Invitation } from "../thing.ts";
 import { machine } from "../machine.ts";
 import { invitee } from "../roles.ts";
@@ -9,7 +9,8 @@ export default Blueprint.operation(Invitation, {
   payload: { invitation: Invitation.fields.id },
   answer: { organization: Invitation.fields.organization, membership: Membership.fields.id },
   move: machine.moves.accept,
-  allowed: [invitee],
+  // An agent cannot consent for a person (M2.03, `.notVia` keeps session, key and device).
+  allowed: [invitee.notVia(Via.agent)],
   steps: { join: Blueprint.step.database() },
   budget: { p95: "200 millis" },
 });

@@ -69,7 +69,8 @@ describe("ortho prove --env local", () => {
     expect(report.lines).toContain("journey grant an allowance ✔ 4/4 steps");
     // acme is the starter plus the allowance (L1.51): the starter's five journeys run beside acme's own six.
     for (const j of ["an outsider cannot revoke", "read an allowance", "revoke then spend", "spend twice with one request", "spend within an allowance",
-      "an invitation is used once", "an owner makes an api key", "health is up", "invite and accept", "sign up and sign in"]) {
+      "an invitation is used once", "an owner makes an api key", "health is up", "invite and accept", "sign up and sign in",
+      "a key and a session are the same person", "an agent passes the owner rule", "an agent cannot consent for a person", "the system is nobody signed in"]) {
       expect(report.lines.some((l) => l.startsWith(`journey ${j} ✔`))).toBe(true);
     }
     for (const op of ["allowance.get", "allowance.grant", "allowance.revoke", "allowance.spend", "organization.create", "organization.get",
@@ -78,7 +79,7 @@ describe("ortho prove --env local", () => {
       expect(report.lines.some((l) => l.startsWith(`${op} 9 evals ✔ p50 `))).toBe(true);
     }
     expect(report.lines.some((l) => l.startsWith("allowance.grant performance ✔ p50 "))).toBe(true);
-    expect(report.lines).toContain(coverageLine("moves 7/7 · outcomes 7/7 · refusals 4/4 · runtime refusals 14/17", JSON.parse(readFileSync(join(own.root, "generated/model/model.json"), "utf8"))));
+    expect(report.lines).toContain(coverageLine("moves 7/7 · outcomes 7/7 · refusals 4/4 · runtime refusals 15/17", JSON.parse(readFileSync(join(own.root, "generated/model/model.json"), "utf8"))));
     expect(report.lines.at(-1)).toBe("prove ✔");
     expect(report.passed).toBe(true);
     nothingRunning();

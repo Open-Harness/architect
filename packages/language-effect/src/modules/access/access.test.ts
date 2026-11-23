@@ -12,8 +12,8 @@ const records = recordsMemory([
   [Organization, { id: "org_1", owner: "per_ada" }],
   [Allowance, { id: "alw_1", organization: "org_1" }],
 ]);
-const ada: Principal = { kind: "person", person: "per_ada" };
-const bob: Principal = { kind: "person", person: "per_bob" };
+const ada: Principal = { kind: "person", person: "per_ada", via: "session" };
+const bob: Principal = { kind: "person", person: "per_bob", via: "session" };
 
 const check = (allowed: ReadonlyArray<never>, payloadFields: object, payload: object, principal: Principal) =>
   Effect.runPromiseExit(Access.check({ allowed, payloadFields: payloadFields as never, payload, principal }).pipe(Effect.provide(records)));
@@ -46,5 +46,57 @@ describe("Access", () => {
   it("signedIn refuses the anonymous; anyone allows them", async () => {
     expect(Exit.isFailure(await check([Blueprint.signedIn] as never, {}, {}, { kind: "anonymous" }))).toBe(true);
     expect(Exit.isSuccess(await check([Blueprint.anyone] as never, {}, {}, { kind: "anonymous" }))).toBe(true);
+  });
+});
+
+const adasKey: Principal = { kind: "person", person: "per_ada", via: "key" };
+const adasAgent: Principal = { kind: "agent", person: "per_ada", via: "agent" };
+const system: Principal = { kind: "system" };
+const pricing: Principal = { kind: "service", mount: "pricing" };
+const ledger: Principal = { kind: "service", mount: "ledger" };
+const pricingMount = { kind: "mount" };
+const priced = Blueprint.role(Organization, { service: pricingMount as never });
+const mounts = new Map<unknown, string>([[pricingMount, "pricing"]]);
+const checkWith = (allowed: ReadonlyArray<unknown>, principal: Principal) =>
+  Effect.runPromiseExit(Access.check({ allowed: allowed as never, payloadFields: {}, payload: {}, principal, mounts }).pipe(Effect.provide(records)));
+const passes = async (allowed: ReadonlyArray<unknown>, principal: Principal) => Exit.isSuccess(await checkWith(allowed, principal));
+
+describe("Access: the five kinds", () => {
+  it("an agent holds a person's roles; a narrowing keeps only the ways it names", async () => {
+    const fields = { organization: Allowance.fields.organization };
+    const only = (allowed: ReadonlyArray<unknown>, principal: Principal) =>
+      Effect.runPromiseExit(Access.check({ allowed: allowed as never, payloadFields: fields, payload: { organization: "org_1" }, principal }).pipe(Effect.provide(records))).then(Exit.isSuccess);
+    expect(await only([owner.of("organization")], adasAgent)).toBe(true);
+    expect(await only([owner.of("organization").via("session", "device")], ada)).toBe(true);
+    expect(await only([owner.of("organization").via("session", "device")], adasKey)).toBe(false);
+    expect(await only([owner.of("organization").via("session", "device")], adasAgent)).toBe(false);
+    expect(await only([owner.of("organization").notVia("agent")], adasKey)).toBe(true);
+    expect(await only([owner.of("organization").notVia("agent")], adasAgent)).toBe(false);
+  });
+
+  it("signedIn admits a person and an agent, and refuses a service and the system; a narrowing applies to it", async () => {
+    expect([await passes([Blueprint.signedIn], ada), await passes([Blueprint.signedIn], adasAgent)]).toEqual([true, true]);
+    expect([await passes([Blueprint.signedIn], pricing), await passes([Blueprint.signedIn], system)]).toEqual([false, false]);
+    expect(await passes([Blueprint.signedIn.notVia("agent")], adasAgent)).toBe(false);
+    expect(await passes([Blueprint.signedIn.notVia("agent")], adasKey)).toBe(true);
+  });
+
+  it("anyone admits every kind", async () => {
+    for (const principal of [{ kind: "anonymous" } as Principal, ada, adasAgent, pricing, system]) expect(await passes([Blueprint.anyone], principal)).toBe(true);
+  });
+
+  it("the system role admits the system and nobody else", async () => {
+    expect(await passes([Blueprint.system], system)).toBe(true);
+    for (const principal of [{ kind: "anonymous" } as Principal, ada, adasAgent, pricing]) expect(await passes([Blueprint.system], principal)).toBe(false);
+  });
+
+  it("a service role admits the service of its own mount and nobody else", async () => {
+    expect(await passes([priced], pricing)).toBe(true);
+    for (const principal of [{ kind: "anonymous" } as Principal, ada, adasAgent, system, ledger]) expect(await passes([priced], principal)).toBe(false);
+  });
+
+  it("a rule role refuses the system and a service", async () => {
+    expect(await passes([owner], system)).toBe(false);
+    expect(await passes([owner.of("organization")], pricing)).toBe(false);
   });
 });
