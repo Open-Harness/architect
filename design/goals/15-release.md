@@ -14,6 +14,7 @@ done_check: nx run e2e:m7
 owns:
   - tools/release/
   - .github/workflows/release.yml
+  - .github/workflows/test-worlds.yml
   - e2e/m7/
   - design/decisions/M7-release.md
   - design/goals/15-release.md
@@ -111,6 +112,6 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 23 November 2026, parked under K42 (section 7). The lead stopped before updating this, so Goal 18 updated it from
 `goal/release`. Nothing was in review. Aaron granted the release credentials on 22 November; that record,
-`design/decisions/M7-release.md`, stays on `goal/release`. Slice 4's checks (test worlds and signed verdicts, #500) and
+`design/decisions/M7-release.md`, lands in `main` with the rest of `goal/release` (#789). Slice 4's checks (test worlds and signed verdicts, #500) and
 slices 2 and 3's checks (the npm release and the install, #527) landed there, red until built. Every slice still to build becomes an
 item for Goal 18, which also owns publishing after the first preview (#542).

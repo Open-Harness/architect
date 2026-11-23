@@ -241,6 +241,28 @@
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m8-checks" },
       "cache": false
+    },
+    "m7-checks": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.m7.config.ts m7" },
+      "cache": false
+    },
+    "m7-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/m7-report.json tmp/m7-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/m7-errors.json vitest run --root e2e --config vitest.m7-ratchet.config.ts m7 --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/m7-report.json; node e2e/ratchet/check.ts tmp/m7-report.json e2e/m7/expected-failing tmp/m7-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "m7": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:m7-checks" },
+      "cache": false
     }
   }
 }
