@@ -177,8 +177,16 @@ r=$(repo); mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; echo t >> "$r/sr
 expect "docs-only: an inert path beside a code change is not docs" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/x.yml"; mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; commit "$r"
 expect "docs-only: a workflow among inert paths is not docs" 0 docs "$r" false
-r=$(repo); mkdir -p "$r/.agents/skills/x"; pro="@heroui-""pro/react"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"   # in pieces, so check 15 does not read this file as naming Pro; commit "$r"
+# the Pro name is written in pieces, so check 15 does not read this file as naming Pro
+pro="@heroui-""pro/react"
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"; commit "$r"
 expect "docs-only: a line naming HeroUI Pro in an agents file runs check 15 (not docs)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"; echo d > "$r/.agents/skills/x/SKILL.md"; commit "$r"
+expect "docs-only: the same line beside a markdown file still runs check 15" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "see $pro" > "$r/.agents/skills/x/SKILL.md"; commit "$r"
+expect "docs-only: a markdown page naming Pro is a doc (check 15 exempts *.md)" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x"; echo "const x = 1" > "$r/spikes/x/a.ts"; commit "$r"
+expect "docs-only: an inert file that does not name Pro is docs" 0 docs "$r" true
 r=$(repo)
 expect "docs-only: an empty diff is not docs" 0 docs "$r" false
 r=$(repo); echo d > "$r/README.md"; commit "$r"
