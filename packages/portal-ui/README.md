@@ -48,4 +48,4 @@ Never commit Pro, a copy of it or its token.
 
 ## Licence
 
-MIT for the files of this package (`LICENSE`). HeroUI Pro is not covered by it.
+Apache-2.0 for the files of this package (`LICENSE`). HeroUI Pro is not covered by it.
