@@ -85,23 +85,20 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-23 November 2026, 18:30 UTC. The lead is the Amp lander loop, which runs a round every 30 minutes for Aaron (the
-thread in `lead:`). A second lead in Claude Code started this goal and owns #707, which it is working. The Amp lead's
-comment on #707 (18:22) gives each pull request one owner. If #707 goes a round with no activity from its lead, the Amp
-lead takes it over and says so there. The Claude Code lead hasn't replied yet.
+23 November 2026, about 19:40 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
+every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
+agreed on #707.
 
-- **Slice 1, `goal/stage-1` into `main`: under way.** #690 (secrets by declaration) and #697 (the map) are in
-  `goal/stage-1`, at f6462537. #707 (owned by the Claude Code lead) has merged both and `main` at 7f87cc28, and is
-  ready, in CI.
-- **`e2e-portal-next` would turn `main` red.** It is green on `main` and red on `goal/stage-1` since #697. The parity
-  self-test expects `ERROR:` where GitHub Actions prints `::error::`, and 39 monitor checks now pass but are still on
-  the parity list. The fix is #754 into `goal/stage-1` (the lander's, as a draft, 🔍 running). Once it merges,
-  `goal/stage-1` is merged into #707 again. The job isn't required.
-- **Protections.** `e2e-stage1` runs its steps and is green on `main`'s push runs (7f87cc28, 727bc47a). Adding it to
-  `main`'s required checks waits on Aaron's written yes (CI-main-stage1 has the command; the token gets 403).
-- **#696 (Goal 9, timers) may still make it.** Goal 9 pushed 56d17af3 at 18:27 and resolved both Codex P1s. Its 🔍
-  passed at 18:28, and Codex was clean at 18:30. Its CI is pending, and `e2e-m0` was last red at ce83e6d4. If it merges
-  into `goal/stage-1` before #707 lands, it comes along. If not, it is retargeted to `main` once `goal/stage-1` retires.
-  #737 (Goal 3 parks) is open into `goal/stage-1`.
-- **Next:** land #754, then #707. Ask Aaron to retire `goal/stage-1`, then tell every goal to base on `main`. Slice 2
-  starts with `goal/time`.
+- **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`. That carried everything stage 1 built, with
+  #690 (secrets by declaration), #697 (the map), #696 (Goal 9's timers), #754 (the parity ratchet's fix) and #737 (Goal 3
+  parked). It also fixed the shell's licence (issue #753). All ten required checks were green, and `e2e-portal-next` too.
+- **`goal/stage-1` is retired.** `main` requires all ten of its checks: `e2e-stage1` was added after #729 ran it green
+  on `main`, as CI-main-stage1 says. Its threads, admins, no-force-push and no-deletion rules already matched. No pull
+  request targets `goal/stage-1`. The branch is locked read-only, with its protections kept. To undo, PUT its protection
+  again with `lock_branch: false`. It is not deleted.
+- **Every goal bases on `main`.** `AGENTS.md`, the `threads` skill and Goal 16's base say so (CI-stage-1-retired). Goal 17 changes its
+  own brief's base at its next slice start. Each goal merges `main` into its branch there, never by rebasing.
+- **Codex's two findings on #707** are Snags for the board: #765 (a thing's prefix change moves its generated refusal
+  codes) and #766 (a route value of `.` or `..`).
+- **Next, slice 2:** the parked goals' finished work. It starts with #294 (Goal 7's spike, for the record, which Goal 18
+  asked for) and `goal/time`. Then the landing loop for the superagent and Capxul.

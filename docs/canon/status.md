@@ -13,14 +13,14 @@ judged by the code and the checks, never by the ticks in [`milestones.md`](../..
 Where a tick and a check disagree, the check wins (K41, clash 7).
 
 Status words: **Built** (in `packages/`, with a check that passes), **Partial** (built, with a named piece missing),
-**Spiked** (only throwaway code in `spikes/` proves it), **None** (nothing yet). Most of what is built is on
-`goal/stage-1` and reaches `main` when that branch lands.
+**Spiked** (only throwaway code in `spikes/` proves it), **None** (nothing yet). Since 23 November 2026, what is built
+is on `main`: `goal/stage-1` landed there (#707) and is retired.
 
 ## 1. The releases (K28)
 
 | Release | A person outside can… | Done when | Left to build |
 |---|---|---|---|
-| **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last piece, the machine graphs (M1.50, check 40 still red); the npm preview itself (publish refuses npmjs today); Goal 3's branch landing on `main` |
+| **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last piece, the machine graphs (M1.50, check 40 still red); the npm publish under `next` itself, which Aaron runs (M1.51's dry run passes, #683) |
 | **Beta** (the framework the superagent proves, K42) | build an always-on agent app on Orthograph from npm: things with versions, events in and the outbox, agents that live for weeks, secrets and lent tokens, signed webhook doors, the pages on UI SDK | every framework piece the superagent pulled, extracted into Orthograph's packages and published, with the superagent running on that published framework | the superagent's slices 6 to 14 and what they pull; its launch is its own milestone, not the beta's |
 | **1.0** (Capxul core, K42) | build a business app on Orthograph from npm: everything Capxul core needed for its books, HR, payroll, identity checks and bank accounts through Bridge | every framework piece Capxul core pulled, extracted into Orthograph's packages and published, with Capxul core running on it in its staging, plus M7.01 to M7.04, M7.06 and M7.13 | what Capxul core pulls (K43), and the real release |
 
@@ -104,14 +104,14 @@ once planned.
 | EVM adapter and Anvil per world | Built | `packages/chain-evm` | M1.30, M1.31 |
 | Confirmation depth per environment | Built | check 18 | M1.38 |
 | Browser wallet signer | Partial | only against a stub; never in Chromium | M1.29, ST2.03 |
-| Relayer, follower | Partial | library pieces only; no actors | M6.07, M6.09 |
+| Relayer, follower | Partial | the follower actor is on `main` (`Follower` in `packages/host-cloudflare`, #679); the relayer actor is on `goal/on-chain` (#677), not yet on `main` | M6.07, M6.09 |
 | Link a wallet with SIWE | Spiked | 26 checks in a spike; in no goal | M2.13 |
 | Pay by handle | None | | ST2.04 to ST2.06 |
 | Webhooks and `on:` events | None | no decision, nothing scheduled | M5.01, M5.03 |
 | Language and host plugin kinds | None | design only | K27, Goal 4 slice 1 |
 | Chain store, Solidity output, Foundry tests and fuzz | Spiked | `language-solidity` is empty; shape proved in `spikes/chain-languages` | M6.10 to M6.13 |
 | Contract client and signing | Spiked | | M6.01, M6.14, M6.15 |
-| Safe, Hats and the budgets module | None | no spike yet | ST3.01 to ST3.08, M6.16 |
+| Safe, Hats and the budgets module | Spiked | `spikes/safe-hats-module` (#294); the budgets design is the spike's recommendation in `design/decisions/ST3-budgets.md`, decided when an app pulls budgets | ST3.01 to ST3.08, M6.16 |
 
 ### Workflows, agents, time (1.0, stage 3)
 
@@ -129,7 +129,7 @@ once planned.
 
 | Capability | Status | Evidence, or what is missing | Slices |
 |---|---|---|---|
-| Private club on Aztec | Spiked | `spikes/noir-private-core`; `spikes/aztec-club` doesn't exist | ST4.01 to ST4.08 |
+| Private club on Aztec | Spiked | `spikes/noir-private-core` and `spikes/aztec-club` (#504) | ST4.01 to ST4.08 |
 | Real npm, Homebrew, GitHub releases | Partial | local tap and binary only | M7.02, M7.06, M7.13 |
 | CI-signed verdicts | Spiked | `spikes/ci-oidc` | M7.05 |
 
@@ -149,7 +149,6 @@ Spiked.
 5. Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike.
 6. The journey language's open problems: one world per journey, comparing one answer with the last, and sending
    malformed payloads.
-7. Stage 3's Safe and Hats spike and stage 4's Aztec club spike don't exist, though both stages start from them.
 
 ## 4. The framework map
 

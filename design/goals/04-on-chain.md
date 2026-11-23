@@ -5,7 +5,7 @@ milestone: "Goal 4: on chain, end to end"
 release: 1.0
 branch: goal/on-chain
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude
   model: claude-opus-5-5
@@ -69,21 +69,31 @@ agents post on GitHub starts with `[goal-4 · <role> · claude · <model>]`.
 
 ## Where it stands
 
-Rewritten by the lead at every merge into `goal/on-chain` (K32); `.agents/skills/goal-4/STATE.md` has the detail.
-23 November 2026:
+Parked on 23 November 2026 under K42 (`design/decisions/K42-goals-are-agents.md`, section 7). The lead finished the
+pull requests K42 named, then stopped. The open slices go back to the board at their stage. `.agents/skills/goal-4/STATE.md` has the detail.
 
-- **Landed:** slices 0, 1b and 2 (K27; [#275](https://github.com/Open-Harness/orthograph/pull/275); [#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279)); money, M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287)); slice 3, M6.10,
-  the chain store, values and money, and the refusals lock ([#283](https://github.com/Open-Harness/orthograph/pull/283), [#331](https://github.com/Open-Harness/orthograph/pull/331)); the relayer and follower decision,
-  M6-chain item 12 ([#518](https://github.com/Open-Harness/orthograph/pull/518)); the checks for the relayer and the follower ([#513](https://github.com/Open-Harness/orthograph/pull/513)); `goal/stage-1` again
-  ([#663](https://github.com/Open-Harness/orthograph/pull/663)), which brought the draft-race fix and the fast gate. On `goal/stage-1` directly: slice 3b, the ABI codec
-  Goal 12 asked for ([#509](https://github.com/Open-Harness/orthograph/pull/509), [#521](https://github.com/Open-Harness/orthograph/pull/521)).
-- **Building:** slice 9, the relayer, and slice 10, the follower, each a Durable Object, one builder each.
-- **Order changed (K38):** the relayer and the follower now come straight after slice 3, before slices 4 to 8, because
-  Goal 9 needs M6.09 early (#442) and they need only `chain-evm` and Anvil. M6.09 lands early into `goal/stage-1`.
-  The follower hands Goal 11's `Inbox.accept` only what it confirmed: `Confirmed`, and `Corrected` with
-  `wasConfirmed: true` (#481, M6-chain item 12).
-- **Waits on:** slice 1 waits for Goal 3's sign-in extraction (M2.05) on `goal/stage-1` (K28). Snags S-01 to S-12 are
-  open, each naming its slice. Ask #674 is with Goal 9.
+- **Landed on `goal/on-chain`:**
+  - Slices 0, 1b and 2 (K27; [#275](https://github.com/Open-Harness/orthograph/pull/275); [#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279)).
+  - Money, M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287)).
+  - Slice 3, M6.10: the chain store, values and money, and the refusals lock ([#283](https://github.com/Open-Harness/orthograph/pull/283), [#331](https://github.com/Open-Harness/orthograph/pull/331)).
+  - The relayer and follower decision, M6-chain item 12 ([#518](https://github.com/Open-Harness/orthograph/pull/518)), and their checks ([#513](https://github.com/Open-Harness/orthograph/pull/513)).
+  - `goal/stage-1` again ([#663](https://github.com/Open-Harness/orthograph/pull/663)).
+  - Slice 10, M6.09, the follower ([#679](https://github.com/Open-Harness/orthograph/pull/679), `22eff2cf`). It has an outbox, so a change the sink took is never
+    forgotten across a reorg.
+  - Slice 9, M6.07, the relayer ([#677](https://github.com/Open-Harness/orthograph/pull/677), `a6bf2701`). Fee-bump replacement was cut to `design/later.md` after five
+    review rounds (`decisions/M6-relayer-rebroadcast.md`). A dropped transaction is sent again byte for byte, and
+    `health()` names a stuck nonce. The cost is snag #700. Its two replacement checks stay on the ratchet.
+- **Landed on `goal/stage-1` (K38):**
+  - Slice 3b, the ABI codec, for Goal 12 ([#509](https://github.com/Open-Harness/orthograph/pull/509), [#521](https://github.com/Open-Harness/orthograph/pull/521)).
+  - Everything above up to the follower, for Goal 9: [#701](https://github.com/Open-Harness/orthograph/pull/701), `42b3b155`, which closed Ask #442. The relayer is on
+    `goal/on-chain` only.
+- **Open, for the board:**
+  - Slice 1 waits for M2.05 (K28).
+  - Slices 4 to 8 (M6.11 to M6.14 and the Safe adapter), 11 (M6.15) and 12 (M6.16 to M6.18) have not started.
+  - Snags S-01 to S-12 and #700 are open. Ask #674 is with Goal 9.
+  - Before the goal lands, a checks author extends `e2e/on-chain/03-snags.test.ts` to read the Snag issues.
+- **Newly passing, not yet off the ratchet:** two `05-m6-11-lock-chain-wire` cases pass in the local ratchet run; confirm in CI before taking them off. A builder
+  takes their lines off `e2e/on-chain/expected-failing/`.
 
 ## The paths Goal 4 owns
 
@@ -275,7 +285,7 @@ say where they collide.
 
 | # | Slice | Done when |
 |---|---|---|
-| 9 | **M6.07, the relayer actor.** Not written from scratch: a Durable Object that holds the relayer key and wraps `chain-evm`'s nonce allocator, transaction manager, replacement and tracker (adapted from `@prb/effect-evm`) | M6.07's check |
+| 9 | **M6.07, the relayer actor.** Not written from scratch: a Durable Object that holds the relayer key and wraps `chain-evm`'s nonce allocator, transaction manager, rebroadcast and tracker (adapted from `@prb/effect-evm`) | M6.07's check |
 | 10 | **M6.09, the follower actor.** A Durable Object around `chain-evm`'s reliable event stream (backfill, cursor, decoder), storing its checkpoint | M6.09's check |
 | 11 | **M6.15, the signing flow**, the in-between state and the submission lifecycle, through the relayer | M6.15's check, and an SDK spend is confirmed by the follower |
 | 12 | **M6.16, M6.17 and M6.18: worlds with a chain, redeploy on new bytecode only, and key hygiene.** `ortho prove --env local` runs every budgets journey on Anvil | M6.16's, M6.17's and M6.18's checks |

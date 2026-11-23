@@ -52,7 +52,7 @@ title: the new portal, on our own components and the app's map
 milestone: "Goal 6: the new portal"
 release: beta                 # preview | beta | 1.0
 branch: goal/portal
-base: goal/stage-1
+base: main
 status: running               # ready | running | landing | done | parked
 lead:
   harness: amp                # claude | amp | codex | opencode
