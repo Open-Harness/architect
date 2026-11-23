@@ -310,6 +310,9 @@ importers:
       '@orthograph/language-effect':
         specifier: workspace:*
         version: link:../../../../packages/language-effect
+      '@orthograph/posthog':
+        specifier: workspace:*
+        version: link:../posthog
       '@orthograph/slack':
         specifier: workspace:*
         version: link:../slack

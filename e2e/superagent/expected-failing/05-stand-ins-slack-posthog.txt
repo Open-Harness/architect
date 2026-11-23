@@ -1,3 +1,0 @@
-# Written before slice 4. Red until the Slack and PostHog stand-ins exist (slice 4); due before it merges.
-# Slice 10: the Slack stand-in serves no user group and the held plugin has no `usergroupsUsersList` until slice 11.
-superagent/05-stand-ins-slack-posthog.test.ts > 05 slack: the calls pass against the stand-in > lists a user group's members (the policy's sync): user ids Slack gives, one each; a group that isn't there fails as Slack does

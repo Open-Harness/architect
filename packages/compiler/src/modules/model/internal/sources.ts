@@ -3,6 +3,7 @@
 import type { SourceKind } from "orthograph";
 import type { MountModel } from "../types.ts";
 import type { Layout } from "./layout.ts";
+import { refuseSpec } from "./source-refusals.ts";
 
 export interface SourceContext {
   readonly layout: Layout;
@@ -52,6 +53,7 @@ export const sourcesModel = (ctx: SourceContext) => {
       if (reach === undefined) ctx.problems.push(`${file}: ${exportName} uses a call that is not one of ${mount}'s calls`);
       else if (!reach.included) ctx.problems.push(`${reach.file}: ${mount} does not include calls.${reach.call}, which ${exportName} uses: add p.include(p.calls.${reach.call})`);
     }
+    refuseSpec(ctx.problems, file, exportName, spec, (call) => ctx.layout.calls.get(call as never)?.call);
     const prefix = `${name.toUpperCase().replaceAll("-", "_")}_`;
     for (const v of Object.keys(spec.environment.variables)) {
       if (!/^[A-Z][A-Z0-9_]*$/.test(v)) ctx.problems.push(`${file}: variable ${v} must be capitals, digits and underscores`);
@@ -59,7 +61,7 @@ export const sourcesModel = (ctx: SourceContext) => {
       if (!v.startsWith(prefix)) ctx.problems.push(`${file}: variable ${v} does not start with its source's own prefix ${prefix}`);
     }
     out[name] = {
-      mount, events: used, calls: sorted(calls.flatMap((c) => (c === undefined ? [] : [c.call]))),
+      mount, file, export: exportName, events: used, calls: sorted(calls.flatMap((c) => (c === undefined ? [] : [c.call]))),
       variables: spec.environment.variables, kinds: kindsOf(spec.on ?? {}),
     };
   }

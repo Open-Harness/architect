@@ -229,3 +229,7 @@ CREATE TABLE "_requests" (
   "key" TEXT PRIMARY KEY,
   "answer" TEXT NOT NULL
 );
+-- The inbox (M5-reach-out Q2.3): an accepted delivery is one row, by a unique id, so a delivery that comes twice settles once.
+ALTER TABLE "_journal" ADD COLUMN "id" TEXT;
+ALTER TABLE "_journal" ADD COLUMN "actor" TEXT;
+CREATE UNIQUE INDEX "_journal_id" ON "_journal" ("id");

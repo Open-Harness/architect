@@ -15,6 +15,8 @@
   "sources": {
     "github": {
       "mount": "github",
+      "file": "@orthograph/intake/blueprint/sources/github.ts",
+      "export": "githubSource",
       "events": [
         "checkRun",
         "issueComment",
@@ -25,7 +27,8 @@
       ],
       "calls": [
         "issues.createComment",
-        "issues.listComments"
+        "issues.listComments",
+        "repos.listCollaborators"
       ],
       "variables": {
         "GITHUB_REPOSITORY": "owner/name of the repository the ticket started on",
@@ -38,15 +41,37 @@
         "review"
       ]
     },
+    "posthog": {
+      "mount": "posthog",
+      "file": "@orthograph/intake/blueprint/sources/posthog.ts",
+      "export": "posthogSource",
+      "events": [
+        "errorAlert",
+        "errorResolved"
+      ],
+      "calls": [
+        "errorTrackingIssuesRetrieve"
+      ],
+      "variables": {
+        "POSTHOG_PROJECT": "the PostHog project the error is in",
+        "POSTHOG_ISSUE": "the id of the error tracking issue"
+      },
+      "kinds": [
+        "errorIssue"
+      ]
+    },
     "slack": {
       "mount": "slack",
+      "file": "@orthograph/intake/blueprint/sources/slack.ts",
+      "export": "slackSource",
       "events": [
         "appMention",
         "message"
       ],
       "calls": [
         "chatPostMessage",
-        "conversationsReplies"
+        "conversationsReplies",
+        "usergroupsUsersList"
       ],
       "variables": {
         "SLACK_CHANNEL": "the channel the ticket started in",
@@ -54,7 +79,6 @@
       },
       "kinds": [
         "direct",
-        "im",
         "mention",
         "message"
       ]
@@ -1371,13 +1395,6 @@
             "type": "uint",
             "bits": 64
           }
-        },
-        "deliveredAt": {
-          "value": {
-            "type": "uint",
-            "bits": 64
-          },
-          "optional": true
         }
       },
       "lives": "database",
@@ -1504,7 +1521,7 @@
         "version": "0.0.0",
         "thing": "eval"
       },
-      "hash": "cb2bdb98ee308abb"
+      "hash": "cd99cfd16e5d49a7"
     },
     "input": {
       "name": "input",
@@ -2123,12 +2140,6 @@
           "value": {
             "type": "schema"
           }
-        },
-        "saved": {
-          "value": {
-            "type": "schema"
-          },
-          "optional": true
         }
       },
       "versions": {
@@ -2148,7 +2159,9 @@
             "emits": "PolicyChanged"
           },
           "restore": {
-            "from": [],
+            "from": [
+              "current"
+            ],
             "to": [
               "current"
             ],
@@ -2189,7 +2202,7 @@
         "version": "0.0.0",
         "thing": "policy"
       },
-      "hash": "50086b6544bda7ae"
+      "hash": "db67566f8ec86ff3"
     },
     "prompt-set": {
       "name": "prompt-set",
@@ -2229,12 +2242,6 @@
           "value": {
             "type": "schema"
           }
-        },
-        "saved": {
-          "value": {
-            "type": "schema"
-          },
-          "optional": true
         }
       },
       "versions": {
@@ -2253,7 +2260,7 @@
         "version": "0.0.0",
         "thing": "prompt-set"
       },
-      "hash": "d7b2381ea8e2a70d"
+      "hash": "e48b3fb742a57ad8"
     },
     "proposal": {
       "name": "proposal",
@@ -2517,12 +2524,6 @@
           "value": {
             "type": "schema"
           }
-        },
-        "saved": {
-          "value": {
-            "type": "schema"
-          },
-          "optional": true
         }
       },
       "versions": {
@@ -2572,7 +2573,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "08ba1eecd7aaaa6e"
+      "hash": "47ef41013560609b"
     },
     "source": {
       "name": "source",
@@ -2996,12 +2997,6 @@
             "type": "uint",
             "bits": 32
           }
-        },
-        "saved": {
-          "value": {
-            "type": "schema"
-          },
-          "optional": true
         }
       },
       "versions": {
@@ -3192,7 +3187,7 @@
         "version": "0.0.0",
         "thing": "superagent"
       },
-      "hash": "7239711b73e83825"
+      "hash": "e55ebb477c1aa89e"
     },
     "thread": {
       "name": "thread",
@@ -3231,19 +3226,11 @@
         }
       },
       "lives": "database",
-      "invariants": {
-        "oneThreadPerKey": {
-          "kind": "unique",
-          "fields": [
-            "superagent",
-            "source",
-            "key"
-          ]
-        }
-      },
       "machine": {
         "states": [
-          "idle"
+          "idle",
+          "queued",
+          "evaluating"
         ],
         "moves": {
           "bind": {
@@ -3255,7 +3242,9 @@
           },
           "closed": {
             "from": [
-              "idle"
+              "idle",
+              "queued",
+              "evaluating"
             ],
             "to": [
               "idle"
@@ -3264,12 +3253,41 @@
           },
           "unsubscribe": {
             "from": [
-              "idle"
+              "idle",
+              "queued",
+              "evaluating"
             ],
             "to": [
               "idle"
             ],
             "emits": "ThreadUnsubscribed"
+          },
+          "queue": {
+            "from": [
+              "idle"
+            ],
+            "to": [
+              "queued"
+            ],
+            "emits": "ThreadQueued"
+          },
+          "evaluate": {
+            "from": [
+              "queued"
+            ],
+            "to": [
+              "evaluating"
+            ],
+            "emits": "ThreadEvaluating"
+          },
+          "release": {
+            "from": [
+              "evaluating"
+            ],
+            "to": [
+              "idle"
+            ],
+            "emits": "ThreadReleased"
           }
         },
         "notFrom": {
@@ -3280,6 +3298,33 @@
       },
       "events": {
         "ThreadClosed": {
+          "thread": {
+            "value": {
+              "type": "id",
+              "prefix": "thr"
+            },
+            "ref": "thread.id"
+          }
+        },
+        "ThreadEvaluating": {
+          "thread": {
+            "value": {
+              "type": "id",
+              "prefix": "thr"
+            },
+            "ref": "thread.id"
+          }
+        },
+        "ThreadQueued": {
+          "thread": {
+            "value": {
+              "type": "id",
+              "prefix": "thr"
+            },
+            "ref": "thread.id"
+          }
+        },
+        "ThreadReleased": {
           "thread": {
             "value": {
               "type": "id",
@@ -3336,7 +3381,7 @@
         "version": "0.0.0",
         "thing": "thread"
       },
-      "hash": "605b68a909d28291"
+      "hash": "7a740b7cd00bdaa7"
     },
     "ticket": {
       "name": "ticket",
@@ -3582,16 +3627,6 @@
         }
       },
       "lives": "database",
-      "invariants": {
-        "oneTriggerPerEvent": {
-          "kind": "unique",
-          "fields": [
-            "superagent",
-            "source",
-            "event"
-          ]
-        }
-      },
       "machine": {
         "states": [
           "stored"
@@ -3683,7 +3718,7 @@
         "version": "0.0.0",
         "thing": "trigger"
       },
-      "hash": "11d0bc1aa3c79f78"
+      "hash": "5e75dc64966f7450"
     }
   },
   "operations": {
@@ -4730,7 +4765,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -4753,7 +4789,7 @@
       "only": {
         "state": "pending"
       },
-      "hash": "e5dee96c1e703657"
+      "hash": "d580e8fa00869c6f"
     },
     "decision.dismiss": {
       "kind": "operation",
@@ -4830,7 +4866,7 @@
         "version": "0.0.0",
         "thing": "decision"
       },
-      "description": "Route an eval's items: one to twenty, each accept, attach, stop or ignore. An explicit request makes its ticket in every mode; in observe an inferred accept is only recorded as one it would make.",
+      "description": "Route an eval's items: one to twenty, each accept, attach, stop or ignore. In observe an accept is only recorded as one it would make.",
       "payload": {
         "superagent": {
           "value": {
@@ -4889,7 +4925,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "ac441b2f522969a7"
+      "hash": "a24f0e2beeb3d2ca"
     },
     "eval.context": {
       "kind": "operation",
@@ -5176,67 +5212,6 @@
       "test": "unit",
       "budget": null,
       "hash": "1bbf1f0796b4d583"
-    },
-    "eval.expire": {
-      "kind": "operation",
-      "name": "eval.expire",
-      "thing": "eval",
-      "verb": "expire",
-      "identifier": "expire",
-      "file": "@orthograph/intake/blueprint/things/eval/verbs/expire.ts",
-      "from": {
-        "kind": "feature",
-        "mount": "intake",
-        "package": "@orthograph/intake",
-        "version": "0.0.0",
-        "thing": "eval"
-      },
-      "description": "Give up on an eval that ran out of time: it is unavailable, and its triggers wait for another.",
-      "payload": {
-        "eval": {
-          "value": {
-            "type": "id",
-            "prefix": "evl"
-          },
-          "ref": "eval.id"
-        }
-      },
-      "answer": {},
-      "move": {
-        "key": "expired",
-        "from": [
-          "delivered"
-        ],
-        "to": [
-          "unavailable"
-        ],
-        "emits": "EvalExpired"
-      },
-      "errors": [],
-      "breaks": [],
-      "refusals": [
-        "EvalNotQueued",
-        "EvalNotFound",
-        "NotAllowed"
-      ],
-      "allowed": [
-        {
-          "kind": "system"
-        }
-      ],
-      "agentTool": false,
-      "refs": {
-        "eval": "eval"
-      },
-      "notFound": {
-        "eval": "EvalNotFound"
-      },
-      "steps": {},
-      "idempotent": null,
-      "runs": "server",
-      "test": "unit",
-      "budget": null,
-      "hash": "34fb4eb71fe4941c"
     },
     "eval.read": {
       "kind": "operation",
@@ -6432,7 +6407,9 @@
       },
       "move": {
         "key": "restore",
-        "from": [],
+        "from": [
+          "current"
+        ],
         "to": [
           "current"
         ],
@@ -6444,6 +6421,7 @@
       "breaks": [],
       "refusals": [
         "StaleRevision",
+        "PolicyNotCurrent",
         "NotAllowed"
       ],
       "allowed": [
@@ -6457,7 +6435,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "17e481c2831dfca6"
+      "hash": "4672082ab8ee4dee"
     },
     "policy.save": {
       "kind": "operation",
@@ -7132,7 +7110,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -7160,7 +7139,7 @@
       "only": {
         "state": "waiting"
       },
-      "hash": "921ac4d518271d25"
+      "hash": "71bb29fd20c8b76e"
     },
     "settings.save": {
       "kind": "operation",
@@ -8423,9 +8402,7 @@
         "emits": "ThreadSubscribed"
       },
       "errors": [],
-      "breaks": [
-        "thread.oneThreadPerKey"
-      ],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -8441,7 +8418,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "0235ab53239f5c0e"
+      "hash": "a74ba0bd4c1759d4"
     },
     "thread.closed": {
       "kind": "operation",
@@ -8471,7 +8448,9 @@
       "move": {
         "key": "closed",
         "from": [
-          "idle"
+          "idle",
+          "queued",
+          "evaluating"
         ],
         "to": [
           "idle"
@@ -8479,9 +8458,7 @@
         "emits": "ThreadClosed"
       },
       "errors": [],
-      "breaks": [
-        "thread.oneThreadPerKey"
-      ],
+      "breaks": [],
       "refusals": [
         "ThreadNotIdle",
         "ThreadNotFound",
@@ -8504,7 +8481,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "6c001463703bf110"
+      "hash": "c26312f0d1d905da"
     },
     "thread.follow": {
       "kind": "operation",
@@ -8679,7 +8656,9 @@
       "move": {
         "key": "unsubscribe",
         "from": [
-          "idle"
+          "idle",
+          "queued",
+          "evaluating"
         ],
         "to": [
           "idle"
@@ -8687,9 +8666,7 @@
         "emits": "ThreadUnsubscribed"
       },
       "errors": [],
-      "breaks": [
-        "thread.oneThreadPerKey"
-      ],
+      "breaks": [],
       "refusals": [
         "ThreadNotIdle",
         "ThreadNotFound",
@@ -8717,7 +8694,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "7f9e95b4cbd6e9c8"
+      "hash": "aab90b2a0c6b7739"
     },
     "ticket.accept": {
       "kind": "operation",
@@ -9509,7 +9486,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -9604,9 +9582,9 @@
             }
           }
         },
-        "hash": "99e71d604a813db7"
+        "hash": "bb99b754f041580a"
       },
-      "hash": "6d74660c97146385"
+      "hash": "aab2805c64688435"
     },
     "ticket.stop": {
       "kind": "operation",
@@ -9652,17 +9630,8 @@
         "emits": "TicketStopped"
       },
       "errors": [],
-      "invariants": {
-        "SeatTaken": "assignment.oneHolderPerSeat",
-        "ExecutorAlreadyQueued": "assignment.oneLivePerExecutor"
-      },
-      "breaks": [
-        "assignment.oneHolderPerSeat",
-        "assignment.oneLivePerExecutor"
-      ],
+      "breaks": [],
       "refusals": [
-        "SeatTaken",
-        "ExecutorAlreadyQueued",
         "TicketNotOpen",
         "TicketNotFound",
         "NotAllowed"
@@ -9684,22 +9653,12 @@
       "notFound": {
         "ticket": "TicketNotFound"
       },
-      "steps": {
-        "write": {
-          "name": "ticket.stop.write",
-          "type": "database",
-          "writes": [
-            "ticket",
-            "mandate",
-            "assignment"
-          ]
-        }
-      },
+      "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "3f773ba3fee96889"
+      "hash": "ee2a2ab0f1de6087"
     },
     "ticket.waiting": {
       "kind": "read",
@@ -9749,7 +9708,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -9852,9 +9812,9 @@
             }
           }
         },
-        "hash": "99e71d604a813db7"
+        "hash": "bb99b754f041580a"
       },
-      "hash": "f03d0f0a2cf0c4ff"
+      "hash": "7cffbbbab73c5d62"
     },
     "trigger.handback": {
       "kind": "operation",
@@ -9983,22 +9943,13 @@
           "optional": true,
           "ref": "trigger.url"
         },
-        "addressed": {
+        "author": {
           "value": {
-            "type": "schema",
-            "format": "choice",
-            "options": [
-              "mention",
-              "direct"
-            ]
+            "type": "text",
+            "max": 120
           },
-          "optional": true
-        },
-        "actor": {
-          "value": {
-            "type": "schema"
-          },
-          "optional": true
+          "optional": true,
+          "ref": "trigger.author"
         },
         "channel": {
           "value": {
@@ -10013,7 +9964,7 @@
             "type": "id",
             "prefix": "trg"
           },
-          "optional": true
+          "ref": "trigger.id"
         },
         "outcome": {
           "value": {
@@ -10036,9 +9987,7 @@
         "emits": "TriggerReceived"
       },
       "errors": [],
-      "breaks": [
-        "trigger.oneTriggerPerEvent"
-      ],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -10048,12 +9997,13 @@
         }
       ],
       "agentTool": false,
+      "mints": "trigger",
       "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "5f87abd8e682d3cd"
+      "hash": "6f3d6859900d2060"
     },
     "trigger.reevaluate": {
       "kind": "operation",
@@ -10149,9 +10099,7 @@
         "emits": "TriggerRequeued"
       },
       "errors": [],
-      "breaks": [
-        "trigger.oneTriggerPerEvent"
-      ],
+      "breaks": [],
       "refusals": [
         "TriggerNotStored",
         "TriggerNotFound",
@@ -10176,7 +10124,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "788e6c271e3025f1"
+      "hash": "7fb955183e33e46c"
     }
   },
   "journeys": {},
@@ -11456,48 +11404,6 @@
         "operation": "eval.due",
         "severity": "page",
         "owner": "@orthograph/intake/blueprint/things/eval/verbs/due.ts"
-      },
-      "target": 0.999,
-      "windowDays": 28,
-      "minCalls": 20,
-      "alerts": [
-        {
-          "name": "fast",
-          "burn": 14.4,
-          "windowsMs": [
-            3600000,
-            300000
-          ],
-          "severity": "page"
-        },
-        {
-          "name": "slow",
-          "burn": 6,
-          "windowsMs": [
-            21600000,
-            1800000
-          ],
-          "severity": "page"
-        },
-        {
-          "name": "ticket",
-          "burn": 1,
-          "windowsMs": [
-            259200000,
-            21600000
-          ],
-          "severity": "ticket"
-        }
-      ]
-    },
-    {
-      "id": "defect:eval.expire",
-      "kind": "defect",
-      "labels": {
-        "environment": "*",
-        "operation": "eval.expire",
-        "severity": "page",
-        "owner": "@orthograph/intake/blueprint/things/eval/verbs/expire.ts"
       },
       "target": 0.999,
       "windowDays": 28,
@@ -14313,16 +14219,16 @@
       "file": "blueprint/features/agents.ts",
       "package": "@orthograph/agents",
       "version": "0.0.0",
-      "integrity": "sha256-EGyb2YiamN0KyeslAuFTqUdoegkF+BTOCikuJ7xTiHo=",
+      "integrity": "sha256-DEWsMF1M3ArhEI34NebeQcPrnaJnaZGToj2VBVMnL0A=",
       "chosen": {},
-      "hash": "295eae320672a7aa"
+      "hash": "cd00fef3ef7d1a43"
     },
     "github": {
       "kind": "adapter",
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-+QfhY3BLjzDhN6TqngzRoEjSzKIeXsoa57cgNm4Kw0E=",
+      "integrity": "sha256-CAUnDeUqjBpnYub4fXTsDFmVCSblbezu1as5rGcQwC8=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -14332,7 +14238,8 @@
         "pulls.createReviewComment",
         "pulls.get",
         "pulls.listReviewComments",
-        "pulls.listReviews"
+        "pulls.listReviews",
+        "repos.listCollaborators"
       ],
       "events": [
         "checkRun",
@@ -14346,54 +14253,62 @@
         "how": "process",
         "what": "a bare git repository served by git http-backend, with a small server for GitHub's REST API over it"
       },
-      "hash": "8a6f135b591e3864"
+      "door": {
+        "secret": "GITHUB_WEBHOOK_SIGNING"
+      },
+      "hash": "e8baeb91fc9464a7"
     },
     "intake": {
       "kind": "feature",
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-VM0U55ZlzPGHcIocPR5AOw6AN+LklhxgKRinVfahMX0=",
+      "integrity": "sha256-RbCkPMbTs5KuG/1Y6ztry3A4lJTQB7249IJ+qDpJDtc=",
       "chosen": {},
-      "hash": "fa25ea9db0629c24"
+      "hash": "556ff9cc33185967"
     },
     "posthog": {
       "kind": "adapter",
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-2BIrFP+ilUntYsgklqNdvBHkCHuF4MpNj27GMV4JAug=",
+      "integrity": "sha256-f4GWwLntJhjpCWQOE37qqkVNMQM3BXVbJeErsxyVOoA=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
         "errorTrackingIssuesPartialUpdate",
         "errorTrackingIssuesRetrieve"
       ],
+      "events": [
+        "errorAlert",
+        "errorResolved"
+      ],
       "standIn": {
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "78f7cfc1e1296a86"
+      "hash": "f0d93648359426f7"
     },
     "prompts": {
       "kind": "feature",
       "file": "blueprint/features/prompts.ts",
       "package": "@orthograph/prompts",
       "version": "0.0.0",
-      "integrity": "sha256-3yK5qNmq6uddT7Afi8BzQY9jqT/awzjWaEulc1U1kIU=",
+      "integrity": "sha256-jrHu0OsSPcdnCGbvUeXhlZNRpLOiH+UpRS3q0DMOCGY=",
       "chosen": {},
-      "hash": "16b21e58785b27a0"
+      "hash": "c6854e473f6011f4"
     },
     "slack": {
       "kind": "adapter",
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-cgYvochHojf+Y0SfD1jGexHVKhCU9eWvYssJDbYbGYw=",
+      "integrity": "sha256-A81tsrSDlCfTfvb1eoiw4qh6jHWvCskP67AfhTtQtQA=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
-        "conversationsReplies"
+        "conversationsReplies",
+        "usergroupsUsersList"
       ],
       "events": [
         "appMention",
@@ -14403,25 +14318,28 @@
         "how": "process",
         "what": "a small server over channel C024BE91L that answers Slack's Web API as Slack does"
       },
-      "hash": "5167dd11573985b8"
+      "door": {
+        "secret": "SLACK_WEBHOOK_SIGNING"
+      },
+      "hash": "e30078e58778c834"
     },
     "superagent": {
       "kind": "feature",
       "file": "blueprint/features/superagent.ts",
       "package": "@orthograph/superagent",
       "version": "0.0.0",
-      "integrity": "sha256-KC1OF0wPw5jOYNIuRHQEfE+ZzjsETyckxAquI7AkpSw=",
+      "integrity": "sha256-FpwTCQHlxdWqbnlyjbkzluaEo/rkjHQcFHpnbabimg4=",
       "chosen": {},
-      "hash": "7f91db8fbcdaf2a4"
+      "hash": "f3df96b0f94e21f2"
     },
     "tickets": {
       "kind": "feature",
       "file": "blueprint/features/tickets.ts",
       "package": "@orthograph/tickets",
       "version": "0.0.0",
-      "integrity": "sha256-MYJy9LmLJKpiOplj7W1+Fwm1YJPQ1Gb8KSYqPWrKQL4=",
+      "integrity": "sha256-KjX/vUQXYPIVy+J0IpKhBNQV5xzLliEAJ5ARK+JmM2U=",
       "chosen": {},
-      "hash": "39d4a5fdcd36efac"
+      "hash": "5eb1a2c3b6e384c0"
     }
   }
 }

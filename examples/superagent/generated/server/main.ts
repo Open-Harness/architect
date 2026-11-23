@@ -6,8 +6,8 @@ import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
-import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
-import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, Mount, Principals, Reads, Store, Versions, Wire, invariantsIn, thingIn } from "@orthograph/language-effect";
+import { AuthD1, Database, Inbound, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
+import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, Mount, Principals, Reads, Store, Wire, invariantsIn, thingIn } from "@orthograph/language-effect";
 import { Mcp, type McpResult, type ShownOperation } from "@orthograph/language-effect";
 import { Api, Errors } from "../api/src/index.ts";
 import * as portal from "../portal/main.ts";
@@ -32,7 +32,6 @@ import * as evalContext from "../api/src/eval/context.ts";
 import * as evalDecide from "../api/src/eval/decide.ts";
 import * as evalDelivered from "../api/src/eval/delivered.ts";
 import * as evalDue from "../api/src/eval/due.ts";
-import * as evalExpire from "../api/src/eval/expire.ts";
 import * as evalRead from "../api/src/eval/read.ts";
 import * as evalStart from "../api/src/eval/start.ts";
 import * as inputDelivered from "../api/src/input/delivered.ts";
@@ -116,7 +115,6 @@ import evalContextHandler from "@orthograph/intake/src/eval/context.js";
 import evalDecideHandler from "@orthograph/intake/src/eval/decide.js";
 import evalDeliveredHandler from "@orthograph/intake/src/eval/delivered.js";
 import evalDueHandler from "@orthograph/intake/src/eval/due.js";
-import evalExpireHandler from "@orthograph/intake/src/eval/expire.js";
 import evalReadHandler from "@orthograph/intake/src/eval/read.js";
 import evalStartHandler from "@orthograph/intake/src/eval/start.js";
 import inputDeliveredHandler from "@orthograph/tickets/src/input/delivered.js";
@@ -130,9 +128,15 @@ import outgoingMessageReplyHandler from "@orthograph/tickets/src/outgoing-messag
 import outgoingMessageRetryHandler from "@orthograph/tickets/src/outgoing-message/retry.js";
 import outgoingMessageSendHandler from "@orthograph/tickets/src/outgoing-message/send.js";
 import outgoingMessageWithdrawHandler from "@orthograph/tickets/src/outgoing-message/withdraw.js";
+import policyGetHandler from "@orthograph/intake/src/policy/get.js";
+import policyHistoryHandler from "@orthograph/intake/src/policy/history.js";
+import policyRestoreHandler from "@orthograph/intake/src/policy/restore.js";
+import policySaveHandler from "@orthograph/intake/src/policy/save.js";
 import policySyncHandler from "@orthograph/intake/src/policy/sync.js";
 import promptSetComposeHandler from "@orthograph/prompts/src/prompt-set/compose.js";
+import promptSetHistoryHandler from "@orthograph/prompts/src/prompt-set/history.js";
 import promptSetPreviewHandler from "@orthograph/prompts/src/prompt-set/preview.js";
+import promptSetSaveHandler from "@orthograph/prompts/src/prompt-set/save.js";
 import proposalApproveHandler from "@orthograph/superagent/src/proposal/approve.js";
 import proposalProposeHandler from "@orthograph/superagent/src/proposal/propose.js";
 import proposalRejectHandler from "@orthograph/superagent/src/proposal/reject.js";
@@ -176,6 +180,10 @@ import agentsMount from "../../blueprint/features/agents.ts";
 import ticketsMount from "../../blueprint/features/tickets.ts";
 import promptsMount from "../../blueprint/features/prompts.ts";
 import superagentMount from "../../blueprint/features/superagent.ts";
+import githubMount from "../../blueprint/adapters/github.ts";
+import slackMount from "../../blueprint/adapters/slack.ts";
+import { githubSource } from "@orthograph/intake/blueprint/sources/github.js";
+import { slackSource } from "@orthograph/intake/blueprint/sources/slack.js";
 import * as accountThing from "@orthograph/intake/blueprint/things/account/thing.js";
 import * as agentThing from "@orthograph/agents/blueprint/things/agent/thing.js";
 import * as assignmentThing from "@orthograph/tickets/blueprint/things/assignment/thing.js";
@@ -200,8 +208,6 @@ import * as triggerThing from "@orthograph/intake/blueprint/things/trigger/thing
 import * as accountInvariants from "@orthograph/intake/blueprint/things/account/invariants.js";
 import * as assignmentInvariants from "@orthograph/tickets/blueprint/things/assignment/invariants.js";
 import * as subscriptionInvariants from "@orthograph/tickets/blueprint/things/subscription/invariants.js";
-import * as threadInvariants from "@orthograph/intake/blueprint/things/thread/invariants.js";
-import * as triggerInvariants from "@orthograph/intake/blueprint/things/trigger/invariants.js";
 
 export { Actor, World } from "@orthograph/host-cloudflare";
 
@@ -225,7 +231,6 @@ const evalContextServed = Handlers.serve({ name: "eval.context", operation: eval
 const evalDecideServed = Handlers.serve({ name: "eval.decide", operation: evalDecide.declaration, handler: Mount.serving(intakeMount, evalDecideHandler), notFrom: "EvalNotQueued", notFound: { eval: "EvalNotFound" }, codes: Errors.codes });
 const evalDeliveredServed = Handlers.serve({ name: "eval.delivered", operation: evalDelivered.declaration, handler: Mount.serving(intakeMount, evalDeliveredHandler), notFrom: "EvalNotQueued", notFound: { eval: "EvalNotFound" }, codes: Errors.codes });
 const evalDueServed = Handlers.serve({ name: "eval.due", operation: evalDue.declaration, handler: Mount.serving(intakeMount, evalDueHandler), codes: Errors.codes });
-const evalExpireServed = Handlers.serve({ name: "eval.expire", operation: evalExpire.declaration, handler: Mount.serving(intakeMount, evalExpireHandler), notFrom: "EvalNotQueued", notFound: { eval: "EvalNotFound" }, codes: Errors.codes });
 const evalReadServed = Handlers.serve({ name: "eval.read", operation: evalRead.declaration, handler: Mount.serving(intakeMount, evalReadHandler), notFound: { eval: "EvalNotFound" }, codes: Errors.codes });
 const evalStartServed = Handlers.serve({ name: "eval.start", operation: evalStart.declaration, handler: Mount.serving(intakeMount, evalStartHandler), codes: Errors.codes });
 const inputDeliveredServed = Handlers.serve({ name: "input.delivered", operation: inputDelivered.declaration, handler: Mount.serving(ticketsMount, inputDeliveredHandler), notFrom: "InputNotWaiting", notFound: { input: "InputNotFound" }, codes: Errors.codes });
@@ -239,15 +244,15 @@ const outgoingMessageReplyServed = Handlers.serve({ name: "outgoing-message.repl
 const outgoingMessageRetryServed = Handlers.serve({ name: "outgoing-message.retry", operation: outgoingMessageRetry.declaration, handler: Mount.serving(ticketsMount, outgoingMessageRetryHandler), notFrom: "OutgoingMessageNotPending", notFound: { message: "OutgoingMessageNotFound" }, codes: Errors.codes });
 const outgoingMessageSendServed = Handlers.serve({ name: "outgoing-message.send", operation: outgoingMessageSend.declaration, handler: Mount.serving(ticketsMount, outgoingMessageSendHandler), notFrom: "OutgoingMessageNotPending", notFound: { message: "OutgoingMessageNotFound" }, codes: Errors.codes });
 const outgoingMessageWithdrawServed = Handlers.serve({ name: "outgoing-message.withdraw", operation: outgoingMessageWithdraw.declaration, handler: Mount.serving(ticketsMount, outgoingMessageWithdrawHandler), notFrom: "OutgoingMessageNotPending", notFound: { ticket: "TicketNotFound" }, codes: Errors.codes });
-const policyGetServed = Handlers.serve({ name: "policy.get", operation: policyGet.declaration, handler: Versions.handler("get", thingIn(policyThing), undefined, false), codes: Errors.codes });
-const policyHistoryServed = Handlers.serve({ name: "policy.history", operation: policyHistory.declaration, handler: Versions.handler("history", thingIn(policyThing), undefined, false), codes: Errors.codes });
-const policyRestoreServed = Handlers.serve({ name: "policy.restore", operation: policyRestore.declaration, handler: Versions.handler("restore", thingIn(policyThing), Errors.declared.StaleRevision), codes: Errors.codes });
-const policySaveServed = Handlers.serve({ name: "policy.save", operation: policySave.declaration, handler: Versions.handler("save", thingIn(policyThing), Errors.declared.StaleRevision), codes: Errors.codes });
+const policyGetServed = Handlers.serve({ name: "policy.get", operation: policyGet.declaration, handler: Mount.serving(intakeMount, policyGetHandler), codes: Errors.codes });
+const policyHistoryServed = Handlers.serve({ name: "policy.history", operation: policyHistory.declaration, handler: Mount.serving(intakeMount, policyHistoryHandler), codes: Errors.codes });
+const policyRestoreServed = Handlers.serve({ name: "policy.restore", operation: policyRestore.declaration, handler: Mount.serving(intakeMount, policyRestoreHandler), notFrom: "PolicyNotCurrent", codes: Errors.codes });
+const policySaveServed = Handlers.serve({ name: "policy.save", operation: policySave.declaration, handler: Mount.serving(intakeMount, policySaveHandler), codes: Errors.codes });
 const policySyncServed = Handlers.serve({ name: "policy.sync", operation: policySync.declaration, handler: Mount.serving(intakeMount, policySyncHandler), codes: Errors.codes });
 const promptSetComposeServed = Handlers.serve({ name: "prompt-set.compose", operation: promptSetCompose.declaration, handler: Mount.serving(promptsMount, promptSetComposeHandler), codes: Errors.codes });
-const promptSetHistoryServed = Handlers.serve({ name: "prompt-set.history", operation: promptSetHistory.declaration, handler: Versions.handler("history", thingIn(promptSetThing), undefined, false), codes: Errors.codes });
+const promptSetHistoryServed = Handlers.serve({ name: "prompt-set.history", operation: promptSetHistory.declaration, handler: Mount.serving(promptsMount, promptSetHistoryHandler), codes: Errors.codes });
 const promptSetPreviewServed = Handlers.serve({ name: "prompt-set.preview", operation: promptSetPreview.declaration, handler: Mount.serving(promptsMount, promptSetPreviewHandler), codes: Errors.codes });
-const promptSetSaveServed = Handlers.serve({ name: "prompt-set.save", operation: promptSetSave.declaration, handler: Versions.handler("save", thingIn(promptSetThing), Errors.declared.StaleRevision, false), codes: Errors.codes });
+const promptSetSaveServed = Handlers.serve({ name: "prompt-set.save", operation: promptSetSave.declaration, handler: Mount.serving(promptsMount, promptSetSaveHandler), codes: Errors.codes });
 const proposalApproveServed = Handlers.serve({ name: "proposal.approve", operation: proposalApprove.declaration, handler: Mount.serving(superagentMount, proposalApproveHandler), notFrom: "ProposalNotWaiting", notFound: { proposal: "ProposalNotFound" }, codes: Errors.codes });
 const proposalProposeServed = Handlers.serve({ name: "proposal.propose", operation: proposalPropose.declaration, handler: Mount.serving(superagentMount, proposalProposeHandler), codes: Errors.codes });
 const proposalRejectServed = Handlers.serve({ name: "proposal.reject", operation: proposalReject.declaration, handler: Mount.serving(superagentMount, proposalRejectHandler), notFrom: "ProposalNotWaiting", notFound: { proposal: "ProposalNotFound" }, codes: Errors.codes });
@@ -284,7 +289,7 @@ const ticketRequestStatusServed = Handlers.serve({ name: "ticket.request-status"
 const ticketResumeServed = Handlers.serve({ name: "ticket.resume", operation: ticketResume.declaration, handler: Mount.serving(ticketsMount, ticketResumeHandler), notFrom: "TicketNotOpen", notFound: { ticket: "TicketNotFound" }, codes: Errors.codes });
 const ticketRetryServed = Handlers.serve({ name: "ticket.retry", operation: ticketRetry.declaration, handler: Mount.serving(ticketsMount, ticketRetryHandler), notFound: { ticket: "TicketNotFound" }, codes: Errors.codes });
 const ticketStageServed = Reads.serve({ name: "ticket.stage", read: ticketStage.declaration });
-const ticketStopServed = Handlers.serve({ name: "ticket.stop", operation: ticketStop.declaration, handler: Mount.serving(ticketsMount, ticketStopHandler), notFrom: "TicketNotOpen", notFound: { ticket: "TicketNotFound" }, invariants: { SeatTaken: "assignment.oneHolderPerSeat", ExecutorAlreadyQueued: "assignment.oneLivePerExecutor" }, codes: Errors.codes });
+const ticketStopServed = Handlers.serve({ name: "ticket.stop", operation: ticketStop.declaration, handler: Mount.serving(ticketsMount, ticketStopHandler), notFrom: "TicketNotOpen", notFound: { ticket: "TicketNotFound" }, codes: Errors.codes });
 const ticketWaitingServed = Reads.serve({ name: "ticket.waiting", read: ticketWaiting.declaration });
 const triggerHandbackServed = Handlers.serve({ name: "trigger.handback", operation: triggerHandback.declaration, handler: Mount.serving(ticketsMount, triggerHandbackHandler), notFound: { trigger: "TriggerNotFound" }, codes: Errors.codes });
 const triggerReceiveServed = Handlers.serve({ name: "trigger.receive", operation: triggerReceive.declaration, handler: Mount.serving(intakeMount, triggerReceiveHandler), codes: Errors.codes });
@@ -295,7 +300,10 @@ const triggerRequeueServed = Handlers.serve({ name: "trigger.requeue", operation
 const tables = [[thingIn(accountThing), "account"], [thingIn(agentThing), "agent"], [thingIn(assignmentThing), "assignment"], [thingIn(attentionThing), "attention"], [thingIn(correlationThing), "correlation"], [thingIn(decisionThing), "decision"], [thingIn(evalThing), "eval"], [thingIn(inputThing), "input"], [thingIn(mandateThing), "mandate"], [thingIn(outgoingMessageThing), "outgoing-message"], [thingIn(policyThing), "policy"], [thingIn(promptSetThing), "prompt-set"], [thingIn(proposalThing), "proposal"], [thingIn(reportThing), "report"], [thingIn(settingsThing), "settings"], [thingIn(sourceThing), "source"], [thingIn(subscriptionThing), "subscription"], [thingIn(superagentThing), "superagent"], [thingIn(threadThing), "thread"], [thingIn(ticketThing), "ticket"], [thingIn(triggerThing), "trigger"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("account", accountInvariants), ...invariantsIn("assignment", assignmentInvariants), ...invariantsIn("subscription", subscriptionInvariants), ...invariantsIn("thread", threadInvariants), ...invariantsIn("trigger", triggerInvariants)] as const;
+const rules = [...invariantsIn("account", accountInvariants), ...invariantsIn("assignment", assignmentInvariants), ...invariantsIn("subscription", subscriptionInvariants)] as const;
+
+/** Each door: the adapter that says how its sender signs, the events the mount includes, the sources that map them, and the binding of its signing secret. */
+const doors = [{ mount: "github", adapter: githubMount.plugin, events: ["checkRun","issueComment","issues","pullRequest","pullRequestReview","pullRequestReviewComment"], sources: [githubSource], secret: "GITHUB_WEBHOOK_SIGNING" }, { mount: "slack", adapter: slackMount.plugin, events: ["appMention","message"], sources: [slackSource], secret: "SLACK_WEBHOOK_SIGNING" }];
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
@@ -357,7 +365,6 @@ const EvalLive = HttpApiBuilder.group(CallApi, "eval", Effect.fn(function* (hand
       .handle("decide", ({ payload, request }) => call(evalDecideServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("delivered", ({ payload, request }) => call(evalDeliveredServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("due", ({ payload, request }) => call(evalDueServed, payload, request.headers).pipe(Effect.provideContext(services)))
-      .handle("expire", ({ payload, request }) => call(evalExpireServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("read", ({ payload, request }) => call(evalReadServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("start", ({ payload, request }) => call(evalStartServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
@@ -490,6 +497,10 @@ export interface Env {
   readonly ACTORS: DurableObjectNamespace;
   /** Better Auth's secret, at least 32 characters: fresh per local world, a named secret per environment. */
   readonly AUTH_SECRET: string;
+  /** The signing secret of a door: set by whoever runs the Worker, never written in a file. */
+  readonly GITHUB_WEBHOOK_SIGNING?: string;
+  /** The signing secret of a door: set by whoever runs the Worker, never written in a file. */
+  readonly SLACK_WEBHOOK_SIGNING?: string;
   readonly OTLP_URL?: string;
   /** The environment's telemetry sinks beside the collector, as JSON: each one's OTLP endpoints and headers. A secret. */
   readonly OTLP_SINKS?: string;
@@ -511,7 +522,6 @@ export const steps = {
   "ticket.accept": ["ticket.accept.write"],
   "ticket.ack": ["ticket.ack.write"],
   "ticket.report": ["ticket.report.write"],
-  "ticket.stop": ["ticket.stop.write"],
 } as const;
 
 // Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the
@@ -547,7 +557,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "account.list": accountListServed, "account.seen": accountSeenServed, "account.sync": accountSyncServed, "account.unlist": accountUnlistServed, "agent.close": agentCloseServed, "agent.open": agentOpenServed, "agent.tell": agentTellServed, "assignment.cancelled": assignmentCancelledServed, "assignment.interrupted": assignmentInterruptedServed, "assignment.promoted": assignmentPromotedServed, "assignment.queued": assignmentQueuedServed, "assignment.started": assignmentStartedServed, "assignment.turn-ended": assignmentTurnEndedServed, "assignment.waiting": assignmentWaitingServed, "decision.dismiss": decisionDismissServed, "decision.route": decisionRouteServed, "eval.context": evalContextServed, "eval.decide": evalDecideServed, "eval.delivered": evalDeliveredServed, "eval.due": evalDueServed, "eval.expire": evalExpireServed, "eval.read": evalReadServed, "eval.start": evalStartServed, "input.delivered": inputDeliveredServed, "input.delivery-failed": inputDeliveryFailedServed, "input.read": inputReadServed, "input.requeue": inputRequeueServed, "input.route": inputRouteServed, "input.store": inputStoreServed, "mandate.revalidate": mandateRevalidateServed, "outgoing-message.reply": outgoingMessageReplyServed, "outgoing-message.retry": outgoingMessageRetryServed, "outgoing-message.send": outgoingMessageSendServed, "outgoing-message.withdraw": outgoingMessageWithdrawServed, "policy.get": policyGetServed, "policy.history": policyHistoryServed, "policy.restore": policyRestoreServed, "policy.save": policySaveServed, "policy.sync": policySyncServed, "prompt-set.compose": promptSetComposeServed, "prompt-set.history": promptSetHistoryServed, "prompt-set.preview": promptSetPreviewServed, "prompt-set.save": promptSetSaveServed, "proposal.approve": proposalApproveServed, "proposal.propose": proposalProposeServed, "proposal.reject": proposalRejectServed, "proposal.waiting": proposalWaitingServed, "settings.save": settingsSaveServed, "source.disable": sourceDisableServed, "source.enable": sourceEnableServed, "source.position-advanced": sourcePositionAdvancedServed, "source.problem": sourceProblemServed, "source.save": sourceSaveServed, "superagent.boot": superagentBootServed, "superagent.create": superagentCreateServed, "superagent.fill": superagentFillServed, "superagent.go-live": superagentGoLiveServed, "superagent.health": superagentHealthServed, "superagent.pause": superagentPauseServed, "superagent.reap": superagentReapServed, "superagent.resume": superagentResumeServed, "superagent.retire": superagentRetireServed, "superagent.update": superagentUpdateServed, "thread.bind": threadBindServed, "thread.closed": threadClosedServed, "thread.follow": threadFollowServed, "thread.unrelated": threadUnrelatedServed, "thread.unsubscribe": threadUnsubscribeServed, "ticket.accept": ticketAcceptServed, "ticket.ack": ticketAckServed, "ticket.attach": ticketAttachServed, "ticket.end": ticketEndServed, "ticket.note": ticketNoteServed, "ticket.policy-changed": ticketPolicyChangedServed, "ticket.report": ticketReportServed, "ticket.request-status": ticketRequestStatusServed, "ticket.resume": ticketResumeServed, "ticket.retry": ticketRetryServed, "ticket.stage": ticketStageServed, "ticket.stop": ticketStopServed, "ticket.waiting": ticketWaitingServed, "trigger.handback": triggerHandbackServed, "trigger.receive": triggerReceiveServed, "trigger.reevaluate": triggerReevaluateServed, "trigger.requeue": triggerRequeueServed },
+  served: { "account.list": accountListServed, "account.seen": accountSeenServed, "account.sync": accountSyncServed, "account.unlist": accountUnlistServed, "agent.close": agentCloseServed, "agent.open": agentOpenServed, "agent.tell": agentTellServed, "assignment.cancelled": assignmentCancelledServed, "assignment.interrupted": assignmentInterruptedServed, "assignment.promoted": assignmentPromotedServed, "assignment.queued": assignmentQueuedServed, "assignment.started": assignmentStartedServed, "assignment.turn-ended": assignmentTurnEndedServed, "assignment.waiting": assignmentWaitingServed, "decision.dismiss": decisionDismissServed, "decision.route": decisionRouteServed, "eval.context": evalContextServed, "eval.decide": evalDecideServed, "eval.delivered": evalDeliveredServed, "eval.due": evalDueServed, "eval.read": evalReadServed, "eval.start": evalStartServed, "input.delivered": inputDeliveredServed, "input.delivery-failed": inputDeliveryFailedServed, "input.read": inputReadServed, "input.requeue": inputRequeueServed, "input.route": inputRouteServed, "input.store": inputStoreServed, "mandate.revalidate": mandateRevalidateServed, "outgoing-message.reply": outgoingMessageReplyServed, "outgoing-message.retry": outgoingMessageRetryServed, "outgoing-message.send": outgoingMessageSendServed, "outgoing-message.withdraw": outgoingMessageWithdrawServed, "policy.get": policyGetServed, "policy.history": policyHistoryServed, "policy.restore": policyRestoreServed, "policy.save": policySaveServed, "policy.sync": policySyncServed, "prompt-set.compose": promptSetComposeServed, "prompt-set.history": promptSetHistoryServed, "prompt-set.preview": promptSetPreviewServed, "prompt-set.save": promptSetSaveServed, "proposal.approve": proposalApproveServed, "proposal.propose": proposalProposeServed, "proposal.reject": proposalRejectServed, "proposal.waiting": proposalWaitingServed, "settings.save": settingsSaveServed, "source.disable": sourceDisableServed, "source.enable": sourceEnableServed, "source.position-advanced": sourcePositionAdvancedServed, "source.problem": sourceProblemServed, "source.save": sourceSaveServed, "superagent.boot": superagentBootServed, "superagent.create": superagentCreateServed, "superagent.fill": superagentFillServed, "superagent.go-live": superagentGoLiveServed, "superagent.health": superagentHealthServed, "superagent.pause": superagentPauseServed, "superagent.reap": superagentReapServed, "superagent.resume": superagentResumeServed, "superagent.retire": superagentRetireServed, "superagent.update": superagentUpdateServed, "thread.bind": threadBindServed, "thread.closed": threadClosedServed, "thread.follow": threadFollowServed, "thread.unrelated": threadUnrelatedServed, "thread.unsubscribe": threadUnsubscribeServed, "ticket.accept": ticketAcceptServed, "ticket.ack": ticketAckServed, "ticket.attach": ticketAttachServed, "ticket.end": ticketEndServed, "ticket.note": ticketNoteServed, "ticket.policy-changed": ticketPolicyChangedServed, "ticket.report": ticketReportServed, "ticket.request-status": ticketRequestStatusServed, "ticket.resume": ticketResumeServed, "ticket.retry": ticketRetryServed, "ticket.stage": ticketStageServed, "ticket.stop": ticketStopServed, "ticket.waiting": ticketWaitingServed, "trigger.handback": triggerHandbackServed, "trigger.receive": triggerReceiveServed, "trigger.reevaluate": triggerReevaluateServed, "trigger.requeue": triggerRequeueServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 
@@ -589,12 +599,15 @@ export default {
     // Closed before anything reads it: outside worlds there is no door to cast, to read facts, or to register a world.
     if (new URL(request.url).pathname.startsWith("/_world/") && !hostsWorlds(env)) return Promise.resolve(Response.json({ error: "not found" }, { status: 404 }));
     if (new URL(request.url).pathname.startsWith("/_world/")) {
-      return toWorld({ worlds: env.WORLD, db: env.DB, tables: tables.map(([, table]) => table), actors: env.ACTORS, actorTables: ["agent"], leases: env.ORTHO_WORLDS === "1" }, request);
+      return toWorld({ worlds: env.WORLD, db: env.DB, tables: tables.map(([, table]) => table), leases: env.ORTHO_WORLDS === "1" }, request);
     }
     if (new URL(request.url).pathname === "/_ortho/bundle") {
       return env.ORTHO_REVISION && env.ORTHO_BUNDLE_SHA256
         ? Promise.resolve(Response.json({ revision: env.ORTHO_REVISION, sha256: env.ORTHO_BUNDLE_SHA256 }))
         : Promise.resolve(Response.json({ _tag: "NotAnEnvironment" }, { status: 404 }));
+    }
+    if (new URL(request.url).pathname.startsWith("/_in/")) {
+      return Telemetry.serve({ url: env.OTLP_URL || undefined, sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT, service: "superagent", handler: (req, context) => Inbound.handle({ doors, db: env.DB, secrets: env as unknown as Record<string, unknown> }, req, context), waitUntil: (p) => ctx.waitUntil(p) }, request);
     }
     if (portal.owns(new URL(request.url).pathname)) return portal.serve(request, env);
     if (new URL(request.url).pathname.startsWith("/api/auth/")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));

@@ -213,3 +213,4 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
 - **A nonce lane shared across processes** (`decisions/W1-wallet-send-lanes.md`, Open). Today one process keeps one lock
   per account and chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
   key from more than one process or Worker, or a journey sends from one account in two processes at once.
+- **A door added to an already-deployed app needs a 0002 migration.** The inbox columns (`id`, `actor`, the unique index) are written into `0001_things.sql` by `renderMigration` (`packages/projections/src/modules/server/internal/worker-config.ts`), which is only safe while the app was never deployed (the superagent). **Trigger:** an app that has been deployed gains a door, or Goal 17's doors reach another app.

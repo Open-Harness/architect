@@ -1,6 +1,6 @@
 // Generated from PostHog API 1.0.0. Do not edit.
 import { Blueprint } from "orthograph";
-import { events as written, standIn } from "./written.ts";
+import { door, events as written, standIn } from "./written.ts";
 
 export default Blueprint.adapter({
   description: "PostHog API 1.0.0: every call and event its published description lists.",
@@ -16,4 +16,5 @@ export default Blueprint.adapter({
     ...written,
   },
   standIn,
+  ...(door === undefined ? {} : { door }),
 });

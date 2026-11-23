@@ -2,6 +2,9 @@
 // file in a project that says "use this plugin here, like this" (decisions/M1-plugins.md).
 import type { Effect, Schema } from "effect";
 import type { AnyErrorClass } from "#modules/errors/types.js";
+import type { AdapterDoor, EventActor } from "./door-types.ts";
+
+export type { AdapterDoor, EventActor };
 import type { Event, On } from "#modules/events/types.js";
 import type { Operation, Read } from "#modules/operations/types.js";
 import type { Value } from "#modules/values/types.js";
@@ -78,6 +81,16 @@ export interface CallTree {
 export interface AdapterEvent<P = unknown> {
   readonly kind: "event";
   readonly schema: Schema.Schema<P>;
+  /** The identity of one change to what the event is about: the same from a door and from a poll, so one change settles once (GOAL17-connections A, B, D). */
+  readonly id?: (payload: P) => string;
+  /** The outside account that sent it, or `undefined` for none (K40 fix 1). */
+  readonly actor?: (payload: P) => EventActor | undefined;
+}
+
+/** What `Blueprint.incoming` is given beside the schema: both are pure functions of the decoded payload. */
+export interface EventIdentity<P> {
+  readonly id: (payload: P) => string;
+  readonly actor: (payload: P) => EventActor | undefined;
 }
 
 /** What an adapter's `calls` answers for a name it has no call by (dotted, inside a group): a mount's `include` and a step name it, and the compiler refuses. */
@@ -117,6 +130,8 @@ export interface AdapterSpec<C extends Choices = Choices, Ca extends CallTree = 
   readonly needs?: ReadonlyArray<Need>;
   readonly settings?: Readonly<Record<string, Setting>>;
   readonly standIn?: StandIn;
+  /** How its door receives events; an adapter that sends none has no door. */
+  readonly door?: AdapterDoor;
 }
 
 /** An operation as a projection sees it in the model: enough to decide whether it takes it. */
@@ -229,7 +244,7 @@ export interface PluginsApi {
   readonly choice: <const O extends Readonly<Record<string, string>>>(options: O) => Choice<keyof O & string>;
   readonly need: (plugin: Feature<any> | Adapter<any, any, any>, spec?: { readonly when?: Option<any> }) => NeedWhen;
   /** An event an adapter's door receives: the Effect schema of its payload. */
-  readonly incoming: <P>(schema: Schema.Schema<P>) => AdapterEvent<P>;
+  readonly incoming: <P>(schema: Schema.Schema<P>, identity?: EventIdentity<P>) => AdapterEvent<P>;
   readonly call: <const M extends "promise" | "effect" = "promise">(spec?: { readonly mode?: M; readonly errors?: ReadonlyArray<AnyErrorClass> }) => Call<M>;
   readonly setting: {
     readonly one: (value: Value) => Setting;

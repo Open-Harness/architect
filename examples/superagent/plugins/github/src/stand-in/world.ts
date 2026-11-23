@@ -108,6 +108,15 @@ export const createWorld = (context: Context) => {
     return write ? lineComment(p, given) : { status: 200, body: paged(lines.filter((l) => l.pull === number), request.query).map(line) };
   };
 
+  /** The people who may be listed as accounts (the policy's `sync`): ann, who opened issue 1, and the bot that comments. */
+  const collaborators = (request: Request): Reply | undefined => {
+    const found = /^\/repos\/([^/]+)\/([^/]+)\/collaborators$/.exec(request.path);
+    if (found === null || request.method !== "GET") return undefined;
+    if (found[1] !== "acme" || found[2] !== "widgets") return fail(404, "Not Found");
+    const person = (login: string, id: number, type: string) => made("collaborator", { login, id, type, html_url: `${context.origin()}/${login}`, url: `${context.origin()}/users/${login}`, role_name: "write" });
+    return { status: 200, body: paged([person("ann", 3, "User"), person("coder-bot", 7, "Bot")], request.query) };
+  };
+
   /** A pull request by number, for `GET /repos/acme/widgets/pulls/<n>`. */
   const read = (request: Request): Reply | undefined => {
     const found = /^\/repos\/acme\/widgets\/pulls\/(\d+)$/.exec(request.path);
@@ -116,5 +125,5 @@ export const createWorld = (context: Context) => {
     return p === undefined ? fail(404, "Not Found") : { status: 200, body: pull(p) };
   };
 
-  return { handle: (request: Request): Reply => read(request) ?? handle(request) };
+  return { handle: (request: Request): Reply => read(request) ?? collaborators(request) ?? handle(request) };
 };

@@ -354,7 +354,7 @@ declared event. The operations are named here; their payloads follow the prototy
 | Input | thing, tickets; `seq`, the ticket's count when it was made (GOAL17-derived-reads); `waiting ⇄ routed → delivered`, `failed → waiting` | `store` (system, person), `route` (system: to a running executor, or it queues an Assignment), `requeue` (system: a tell that finds no seat, or a retry), `delivered`, `read`, `deliveryFailed` (system) |
 | Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped; each with `seq`, the ticket's count when it was made (GOAL17-derived-reads) | `ticket.report`, `ticket.ack`, `trigger.handback` (executor); `dropped` ends the ticket with no message |
 | Attention | thing, tickets | made by a report's question; answered by a person's next trigger |
-| Outgoing message | thing, tickets; `pending → sent`, `dropped`; `failures` counts sends failed in a row and a sent one zeroes it; `notBefore` is when a failed one may go again (GOAL17-derived-reads) | `reply` (main, executor, by purpose); `withdraw` (system); `send` (system, a held hop: a failed call is counted and the message queued again after 5 s doubling to 300 s through `Timers`, and the outbox sees a success); the head of a ticket's conversation holds the rest back, so order holds |
+| Outgoing message | thing, tickets; `pending → sent`, `dropped`; `failures` counts sends failed in a row and a sent one zeroes it; `notBefore` is when a failed one may go again (GOAL17-derived-reads) | `reply` (main, by purpose; the executor speaks through `ticket.ack`); `withdraw` (system); `send` (system, a held hop: a failed call is counted and the message queued again after 5 s doubling to 300 s through `Timers`, and the outbox sees a success); the head of a ticket's conversation holds the rest back, so order holds |
 | PromptSet | thing with versions, prompts | `save` (person; main proposes); `preview`, `history` (person); `compose(role)` (system, every model request) |
 | Settings | thing with versions, the app; `variables` (each a name, value and description, never a credential) and `blocked` (command names), GOAL17-check-harness | `save` (person; main proposes); no pause of its own: the Superagent's `pause` and `resume` are the one switch (GOAL17-pause) |
 | Proposal | thing, superagent; `waiting → approved`, `rejected` | made when a main agent calls a configuration change; `approve`, `reject` (person); `proposal.waiting` (a read of those waiting, GOAL17-derived-reads) |
@@ -633,6 +633,8 @@ serves it; GOAL17-slice5-forms (calls 1 to 16) and GOAL17-plugin-scope record wh
 slice 6's checks (#686), slice 10's checks (#687, whose branch carries GOAL17-connections) and slice 8's checks. Two snags are open:
 slice 6's journeys need `versions:` served and an `agent.open` handler before they can pass (the snag #685), and the compiler's
 acme tests time out on a slow CI runner, about one run in two.
+Slice 11 (the connections) is built on `goal-17/s11-connections-build` (GOAL17-slice11-build): adapter events carry `id` and `actor`, the GitHub, Slack and PostHog
+mappings and the doors at `/_in/<mount>` (Goal 17's copy of M5.03, to M5's design, K39 call 6 and K42). Check 66 stays red until slice 9's harness surface.
 
 Slice 6's checks are #686 (18 to 23). GOAL17-stage-one made the calls they stopped at: `trigger.receive` carries `actor` and `addressed`; an accept is five
 records in one commit, for an executor opened first; `superagent.create` takes a main agent opened first and no policy; Thread has no `queued` or

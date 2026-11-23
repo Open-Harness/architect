@@ -22,6 +22,8 @@ export interface MountModel {
   readonly calls?: ReadonlyArray<string>;
   /** An adapter's events this mount includes, by the adapter's name for each: the only ones its door accepts. */
   readonly events?: ReadonlyArray<string>;
+  /** An adapter whose door receives events this mount includes: the name of its signing secret in an environment, `<MOUNT>_WEBHOOK_SIGNING`. The Worker serves `/_in/<mount>` for it. */
+  readonly door?: { readonly secret: string };
   /** An adapter that ships a `layer.js`: the services its calls need, provided to its calls and to nothing else. */
   readonly layer?: true;
   /** What stands in for an adapter's outside system in a world, as the adapter declared it. */
