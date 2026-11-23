@@ -14,5 +14,5 @@ const slots = data["slots"] === false ? {} : { header: paint("slot-header"), swi
 
 (window as unknown as { __shell: unknown; __loads: number }).__loads = 1;
 (window as unknown as { __shell: unknown }).__shell = mountShell(document.getElementById("root") as HTMLElement, {
-  routes: data["routes"], navigation: data["navigation"], palette: data["palette"], map: data["map"], caller: data["caller"], pages, slots,
+  routes: data["routes"], navigation: data["navigation"], palette: data["palette"], map: data["map"], caller: data["caller"], roles: data["roles"], pages, slots,
 });

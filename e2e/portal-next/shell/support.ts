@@ -26,7 +26,7 @@ const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".j
 export interface Fixture {
   readonly url: string;
   readonly data: Record<string, any>;
-  readonly open: (path: string, options?: { readonly layout?: Layout; readonly caller?: Caller; readonly slots?: boolean }) => Promise<Page>;
+  readonly open: (path: string, options?: { readonly layout?: Layout; readonly caller?: Caller; readonly roles?: ReadonlyArray<string>; readonly slots?: boolean }) => Promise<Page>;
   readonly close: () => Promise<void>;
 }
 
@@ -67,7 +67,7 @@ export const serveFixture = async (stylesOf: () => ReadonlyArray<string>): Promi
     open: async (path, options = {}) => {
       const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 }, colorScheme: "light" })).newPage();
       const layout = options.layout ?? data.navigation.layout;
-      await page.addInitScript(`globalThis.__DATA__ = ${JSON.stringify({ ...data, navigation: { ...data.navigation, layout }, map: { ...data.map, layout }, caller: options.caller ?? "person", slots: options.slots ?? true })};`);
+      await page.addInitScript(`globalThis.__DATA__ = ${JSON.stringify({ ...data, navigation: { ...data.navigation, layout }, map: { ...data.map, layout }, caller: options.caller ?? "person", roles: options.roles ?? [], slots: options.slots ?? true })};`);
       await page.goto(`${url}${path}`);
       await page.waitForSelector('[data-shell="root"]', { timeout: 15_000 });
       return page;
