@@ -1,3 +1,17 @@
+---
+goal: 7
+title: Safe, Hats and budgets
+milestone: "Goal 7: Safe, Hats and budgets"
+branch: goal/safe-hats
+base: main
+status: done           # ready | running | landing | done | parked
+done_check: the safe-hats-module spike's README and the draft ST3-budgets recommendation, landed in main (K42, section 7)
+owns:
+  - spikes/safe-hats-module/
+  - design/decisions/ST3-budgets.md
+  - design/goals/07-safe-hats.md
+  - design/goals/07-snags.md
+---
 # Goal 7: Safe, Hats and budgets
 
 `design/goals/07-safe-hats.md`, on `goal/safe-hats`, cut from `origin/main` at `1e0a989a` on 21 November 2026. The

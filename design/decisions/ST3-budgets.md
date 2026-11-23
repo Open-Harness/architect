@@ -1,6 +1,10 @@
-# ST3-budgets: the Safe owns the budget and Hats decides who can spend
+# ST3-budgets, not decided: the spike's recommendation that the Safe owns the budget and Hats decides who can spend
 
-Draft, 21 November 2026, from the safe-hats-module spike; for the lead's review.
+**Not a decision.** This is the safe-hats-module spike's recommendation, written 21 November 2026 as a draft for Goal 7's
+lead and landed in `main` on 23 November 2026 for the record. Nobody has decided it. Under K42 a piece is decided and
+built when the first app needs it, and Capxul (K43, Goal 16) is the app expected to need budgets first. The decision
+that settles ST3.02 is made then, with this page as its evidence. Read "The recommendation" below as what the spike
+found and proposes, not as what holds.
 
 ## The problem
 
@@ -15,7 +19,7 @@ an overspend, and ran a Safe transaction with two owner signatures.
 `spikes/safe-hats-module/evidence/budget-anvil.txt:18`,
 `spikes/safe-hats-module/evidence/safe-signatures.txt:6`
 
-## The call
+## The recommendation
 
 Use one budgets module per network. Key each budget by the paying Safe and
 the hat. The same hat had separate rows in two Safes in the Anvil run. The
