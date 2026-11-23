@@ -2,7 +2,7 @@
 // scaled time flows at its speed from the real instant the row was last written; real time is the wall clock and has no row.
 import { DateTime, Option } from "effect";
 import { Spans } from "orthograph/server";
-import type { ClockDeclaration, ClockState, Moved } from "../types.ts";
+import type { ClockDeclaration, ClockState, Moved, Planned } from "../types.ts";
 import { wall } from "./date.ts";
 
 const UNIT_MS = { second: 1_000, minute: 60_000, hour: 3_600_000, day: 86_400_000, week: 604_800_000 } as const;
@@ -10,7 +10,7 @@ const UNIT_MS = { second: 1_000, minute: 60_000, hour: 3_600_000, day: 86_400_00
 /** The furthest instant a `Date` can hold, in milliseconds from the epoch. */
 const MAX_INSTANT = 8.64e15;
 
-const refused = (status: 400 | 409, _tag: "ClockNotMovable" | "BadMove", message: string): Moved => ({ ok: false, status, body: { _tag, message } });
+const refused = (status: 400 | 409, _tag: "ClockNotMovable" | "BadMove", message: string): Extract<Moved, { readonly ok: false }> => ({ ok: false, status, body: { _tag, message } });
 
 /** `from` plus a span in words: seconds to weeks are fixed lengths; months and years go by the calendar, in UTC. */
 export const plus = (from: number, span: string): number | undefined => {
@@ -34,7 +34,7 @@ const SCHEMA = "CREATE TABLE IF NOT EXISTS clock (one INTEGER PRIMARY KEY CHECK 
 export const stateOf = (sql: SqlStorage, declaration: ClockDeclaration): ClockState => {
   if (declaration.kind === "real") {
     const no = () => refused(409, "ClockNotMovable", "this world runs on the real clock, which nothing can move");
-    return { kind: "real", now: wall, source: () => undefined, reset: () => undefined, advance: no, moveTo: no };
+    return { kind: "real", now: wall, source: () => undefined, reset: () => undefined, plan: no, advance: no, moveTo: no };
   }
   sql.exec(SCHEMA);
   const speed = declaration.kind === "scaled" ? declaration.speed : 0;
@@ -51,9 +51,24 @@ export const stateOf = (sql: SqlStorage, declaration: ClockDeclaration): ClockSt
     sql.exec("UPDATE clock SET instant = ?, anchor = ? WHERE one = 1", to, wall());
     return { ok: true, now: to };
   };
+  const fits = (target: number): Planned =>
+    !Number.isFinite(target) || Math.abs(target) > MAX_INSTANT
+      ? refused(400, "BadMove", "that is further than any instant can be: the world's clock stays where it is")
+      : { ok: true, target };
+  const planSpan = (span: string): Planned => {
+    const target = plus(now(), span);
+    return target === undefined ? refused(400, "BadMove", `"${span}" isn't a span: a whole number of seconds, minutes, hours, days, weeks, months or years, like "1 month"`) : fits(target);
+  };
+  const planTo = (to: string): Planned => {
+    const at = DateTime.make(to);
+    if (Option.isNone(at)) return refused(400, "BadMove", `"${to}" isn't an instant (ISO 8601, like 2027-01-10T09:00:00Z)`);
+    const target = DateTime.toEpochMillis(at.value);
+    return target < now() ? refused(400, "BadMove", `the world's clock never goes back: it is at ${new Date(now()).toISOString()}`) : fits(target);
+  };
   return {
     kind: declaration.kind,
     now,
+    plan: (move) => ("span" in move ? planSpan(move.span) : planTo(move.to)),
     reset: () => void sql.exec("UPDATE clock SET instant = ?, anchor = ? WHERE one = 1", starts, wall()),
     source: () => {
       const r = row();

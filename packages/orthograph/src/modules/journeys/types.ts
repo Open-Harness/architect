@@ -113,6 +113,8 @@ export type Script<C extends Cast> = { readonly [K in keyof C]: Actor } & {
   readonly clock: {
     readonly advance: (span: Span) => ClockCall;
     readonly moveTo: (instant: string) => ClockCall;
+    /** The world's instant now, as ISO 8601 with milliseconds: read at the start of the journey and after each step that moves the clock. */
+    readonly now: any;
   };
   readonly step: (title: string, call: AnyCall, ...checks: ReadonlyArray<Assertion>) => Step;
 };

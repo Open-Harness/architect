@@ -27,6 +27,8 @@ export interface CallRecord {
   readonly stored?: string | undefined;
   /** The call listed the MCP door's tools (`.tools()`): it ran no operation, so no span of its own comes, and `body` is `{ tools }`. */
   readonly tools?: true;
+  /** The step moved the world's clock (`s.clock.advance`, `.moveTo`): no operation ran and no span comes; `body` is the door's `{ now, fired }` or its refusal. */
+  readonly clock?: true;
 }
 
 export type { D1Access } from "./internal/d1-facts.ts";

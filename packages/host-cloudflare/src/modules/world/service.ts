@@ -6,11 +6,14 @@ import { AuthD1 } from "#modules/auth/service.js";
 import type { AuthInstance } from "#modules/auth/types.js";
 import { WorldClock } from "#modules/clock/service.js";
 import type { ClockSource, ClockState } from "#modules/clock/types.js";
+import { WorldTimers } from "#modules/timers/service.js";
+import type { WorldTimersRpc, WorldTimersState, WorldWakes } from "#modules/timers/types.js";
 import { entry, within, withinNow } from "./internal/entry.ts";
 import { facts } from "./internal/facts.ts";
 import { end, live } from "./internal/leases.ts";
 import { resetDatabases } from "./internal/reset.ts";
 import { worldsDoor } from "./internal/worlds.ts";
+import { work } from "./internal/work.ts";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
@@ -23,12 +26,33 @@ export class World extends DurableObject<WorldEnv> {
   private readonly auth: AuthInstance;
   /** The world's instant (M8.06): the wall clock, or the one it keeps in its own storage. */
   private readonly clock: ClockState;
+  /** The world's timer table and count of work in flight (M8.07). */
+  private readonly timers: WorldTimersState;
 
   constructor(ctx: DurableObjectState, env: WorldEnv) {
     super(ctx, env);
     this.clock = WorldClock.state(ctx.storage.sql, WorldClock.declared(env));
+    const kinds = this.wakeKinds();
+    // A due durable row is woken by its kind's code, here in the world's own isolate and in the world's time (fresh source).
+    const wakes = kinds === undefined ? undefined : WorldTimers.route(kinds);
+    this.timers = WorldTimers.state({
+      sql: ctx.storage.sql, clock: this.clock, env, changed: () => { if (this.clock.kind === "real") void this.schedule(); },
+      // The wake runs in a runtime of its own (`runPromise`), so the abort must cross: interrupting this fiber (a reset, the bound) aborts
+      // `signal`, which interrupts the inner one, and a wake that was ended performs no write afterwards.
+      ...(wakes === undefined ? {} : { wakes: (timer) => Effect.promise((signal) => this.inTime(() => Effect.runPromise(wakes(timer), { signal }))) }),
+    });
+    // A wake the world died in the middle of is pending again (the table recovers it); a real world sets its alarm for it.
+    if (this.clock.kind === "real") void this.schedule();
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS cast (name TEXT PRIMARY KEY, person TEXT, email TEXT NOT NULL, password TEXT NOT NULL)");
     this.auth = AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: true });
+  }
+
+  /**
+   * Which code wakes each kind of durable timer (M8.07). The generated Worker for a blueprint with a stepped or scaled clock
+   * extends this class and answers its wake map, empty until a feature registers a kind; no map, no route, and a due row fails.
+   */
+  protected wakeKinds(): WorldWakes | undefined {
+    return undefined;
   }
 
   override fetch(request: Request): Promise<Response> {
@@ -36,18 +60,27 @@ export class World extends DurableObject<WorldEnv> {
     if (pathname === "/_world/arm" || pathname === "/_world/end") {
       return request.json().then((body) => (pathname === "/_world/arm" ? this.arm(body as { id: string; expires: number }) : this.finish(body as { id: string; reason: "destroyed" | "expired" })));
     }
-    const clock = WorldClock.door(this.clock, request);
+    const clock = WorldClock.door(this.clock, request, this.timers.controller);
     if (clock) return clock;
     // The cast signs up and in through Better Auth, which reads `Date`: at the world's instant, not the machine's.
-    const answered = this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)));
+    // The cast, the credentials and the other front-door routes run Better Auth, which reads `Date`: each is counted work for its whole life,
+    // so a move does not pass one that is in flight (a real world counts nothing).
+    const token = this.clock.kind === "real" ? undefined : this.timers.rpc.countEnter(`world:${pathname.replace("/_world/", "")}`);
+    const answered = this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)))
+      .finally(() => { if (token !== undefined) this.timers.rpc.countLeave(token); });
     // The warm reset between runs (ST1.24) is the one way back: the clock returns to its declared start, a scaled one re-anchored now.
     // Only the reset the world itself accepted (its nonce matched) does it.
-    return pathname === "/_world/reset" && request.method === "POST" ? answered.then((response) => { if (response.ok) this.clock.reset(); return response; }) : answered;
+    return pathname === "/_world/reset" && request.method === "POST" ? answered.then((response) => { if (response.ok) { this.clock.reset(); this.timers.reset(); } return response; }) : answered;
   }
 
   /** The world's instant now. */
   now(): number {
     return this.clock.now();
+  }
+
+  /** An entry begins (M8.07): the world takes a token for it under `owner` (`entry:<path>`) and answers it with the source its request reads time from. */
+  begin(owner: string): { readonly source: ClockSource | undefined; readonly token: string | undefined } {
+    return { source: this.clock.source(), token: this.clock.kind === "real" ? undefined : this.timers.rpc.countEnter(owner) };
   }
 
   /** What to read the world's time from. Every other entry (the Worker, the actors) asks this over RPC, once, to run in this world's time. */
@@ -62,7 +95,18 @@ export class World extends DurableObject<WorldEnv> {
 
   /** Remember the world's id and wake at its expiry. */
   private arm({ id, expires }: { readonly id: string; readonly expires: number }): Promise<Response> {
-    return this.ctx.storage.put("world", id).then(() => this.ctx.storage.setAlarm(expires)).then(() => json({ armed: id }));
+    return this.ctx.storage.put({ world: id, expires }).then(() => this.schedule()).then(() => json({ armed: id }));
+  }
+
+  /**
+   * The one alarm a Durable Object has: the world's lifetime, or in a real world the earliest timer, whichever is first.
+   * A stepped or scaled world sets no alarm for timers: its controller fires them (M8.07).
+   */
+  private schedule(): Promise<void> {
+    return this.ctx.storage.get<number>("expires").then((expires) => {
+      const next = [expires, this.timers.nextAlarm()].filter((at): at is number => at !== undefined);
+      return next.length === 0 ? undefined : this.ctx.storage.setAlarm(Math.min(...next));
+    });
   }
 
   /** Delete what the world made, then everything the world itself holds, alarm included. */
@@ -73,8 +117,28 @@ export class World extends DurableObject<WorldEnv> {
 
   /** The world's own lifetime: real time, never the world's (K23 section 1), so it is the one entry that is not wrapped. */
   override alarm(): Promise<void> {
-    return this.ctx.storage.get<string>("world").then((id) => (id === undefined ? undefined : this.finish({ id, reason: "expired" }).then(() => undefined)));
+    return this.ctx.storage.get<string | number>(["world", "expires"]).then((kept) => {
+      const id = kept.get("world") as string | undefined;
+      const expires = kept.get("expires") as number | undefined;
+      // A world armed before the expiry was kept ends at its alarm, as it always did; otherwise the alarm is a timer's.
+      if (id !== undefined && (expires === undefined || WorldClock.wall() >= expires)) return this.finish({ id, reason: "expired" }).then(() => undefined);
+      // The timer alarm runs app code, so it wraps itself in its world's time (a real world's `inTime` is a plain call).
+      return this.inTime(() => Effect.runPromise(this.timers.fireDue())).then(() => this.schedule());
+    });
   }
+
+  // What the Worker and every other process call on the world (M8.07): the count of work in flight and the timer table.
+  countEnter(owner: string): string { return this.timers.rpc.countEnter(owner); }
+  countLeave(id: string): void { return this.timers.rpc.countLeave(id); }
+  countName(id: string, owner: string): void { return this.timers.rpc.countName(id, owner); }
+  countHas(id: string): boolean { return this.timers.rpc.countHas(id); }
+  timerAdd(...args: Parameters<WorldTimersRpc["timerAdd"]>): number { return this.timers.rpc.timerAdd(...args); }
+  timerWait(id: number): ReturnType<WorldTimersRpc["timerWait"]> { return this.timers.rpc.timerWait(id); }
+  timerCancel(id: number): void { return this.timers.rpc.timerCancel(id); }
+  timerSet(...args: Parameters<WorldTimersRpc["timerSet"]>): number { return this.timers.rpc.timerSet(...args); }
+  timerClear(...args: Parameters<WorldTimersRpc["timerClear"]>): boolean { return this.timers.rpc.timerClear(...args); }
+  timersSleeping(): ReturnType<WorldTimersRpc["timersSleeping"]> { return this.timers.rpc.timersSleeping(); }
+  timersDurable(): ReturnType<WorldTimersRpc["timersDurable"]> { return this.timers.rpc.timersDurable(); }
 }
 
 /**
@@ -82,7 +146,8 @@ export class World extends DurableObject<WorldEnv> {
  * and `queue`; `within` wraps any other promise-returning entry (a Workflows step), and `withinNow` an RPC method that
  * answers at once. A real world runs each as it is.
  */
-export const WorldEntry = { entry, within, withinNow };
+export const WorldEntry = { entry, within, withinNow, work };
+export type { WorldWakes };
 
 /**
  * A `/_world/*` request. Facts come straight from the database. `/_world/worlds` is the environment's registry of worlds,

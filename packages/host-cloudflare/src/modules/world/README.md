@@ -3,8 +3,11 @@
 `World`, the Durable Object that is one running world, and `toWorld`, which routes `/_world/*` to it. Stage one's
 world keeps the cast (`POST /_world/cast` with `{ names }` gives each a person id, made once and kept in the world's
 own SQLite storage, and a token signed with the run's secret) and answers `/_world/health`. It holds the world's clock
-(M8.06; the `clock` module): `GET /_world/clock`, `POST /_world/clock/advance` and `/move-to`, and `now()` over RPC. The
-timers table (M8.07) and the registry of things join it later.
+(M8.06; the `clock` module): `GET /_world/clock`, `POST /_world/clock/advance` and `/move-to`, and `now()` over RPC. It
+also holds the world's timer table and its count of work in flight (M8.07; the `timers` module), which every other process
+reaches over the object's RPC (`countEnter`, `countLeave`, `timerAdd`, `timerWait`, `timerCancel`, `timerSet`, `timerClear`,
+`timersSleeping`, `timersDurable`); its `alarm` is the world's lifetime or, in a real world, the earliest timer. The registry
+of things joins it later.
 
 ## Every entry wraps itself (M8.06)
 
@@ -13,6 +16,11 @@ that returns a promise (a Workflows step); `WorldEntry.withinNow(env, f)` an RPC
 reads its world's instant from the world's Durable Object and runs inside `WorldClock.within`, so `Date` and Effect's
 `Clock` read it. A real world skips all of it. The world's `alarm`, `/_world/worlds` and `/_world/arm` and `/_world/end` keep
 real time: they are the world's lifetime. Decision: `design/decisions/M8-06-world-holds-the-clock.md`.
+
+Each entry also takes a token in the world's count, `entry:<path>`, from the moment it begins; the work hands it over to its own
+(M8.07). `WorldEntry.work(env, wakes)` is the Worker's counted work and timers (M8.07): a layer of `Busy`, `Timers` and `DurableTimers` whose
+tokens and rows are the world's, kept in its Durable Object. The generated Worker uses it, only for a blueprint with a stepped
+or scaled clock. Decision: `design/decisions/M8-07-timers-and-quiet.md`.
 
 ## Worlds in a long-lived environment (D3 #50)
 

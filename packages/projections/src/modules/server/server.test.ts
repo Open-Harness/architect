@@ -41,12 +41,21 @@ describe("server", () => {
     const plain = await rendered(model);
     for (const same of [withClock(), withClock({ kind: "real" })]) expect(await rendered(same)).toEqual(plain);
     expect(file(plain, "main.ts")).not.toContain("WorldEntry");
+    expect(file(plain, "main.ts")).toContain("BusyLive");
+    expect(file(plain, "main.ts")).not.toContain("Timers");
     expect(file(plain, "wrangler.jsonc")).not.toContain("ORTHO_CLOCKS");
 
     const stepped = await rendered(withClock({ kind: "stepped", starts: "2027-01-10T09:00:00.000Z" }));
     expect(file(stepped, "main.ts")).toContain("export default WorldEntry.entry<Env>({");
     expect(file(stepped, "main.ts")).toContain("import { AuthD1, Database, JournalD1, StoreD1, Telemetry, WorldEntry, toWorld }");
     expect(file(stepped, "wrangler.jsonc")).toContain(`"ORTHO_CLOCKS": "{\\"local\\":{\\"kind\\":\\"stepped\\",\\"starts\\":\\"2027-01-10T09:00:00.000Z\\"}}"`);
+    // Its work is the world's (M8.07): counted and timed through the world's Durable Object, and handlers are given Timers.
+    expect(file(stepped, "main.ts")).toContain("WorldEntry.work(env, wakes)");
+    expect(file(stepped, "main.ts")).toContain("export class World extends WorldHost");
+    expect(file(stepped, "main.ts")).toContain("const wakes: WorldWakes = {};");
+    expect(file(plain, "main.ts")).toContain("export { World } from");
+    expect(file(stepped, "main.ts")).not.toContain("BusyLive");
+    expect(file(stepped, "main.ts")).toContain("Auth, Timers, DurableTimers)");
     // Only those two files differ.
     expect(stepped.filter((f) => f.content !== plain.find((p) => p.path === f.path)?.content).map((f) => f.path).sort()).toEqual(["main.ts", "wrangler.jsonc"]);
   });

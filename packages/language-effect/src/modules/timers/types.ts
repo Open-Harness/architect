@@ -63,3 +63,30 @@ export class DurableTimers extends Context.Service<DurableTimers, {
 export class TimerWakes extends Context.Service<TimerWakes, {
   readonly wake: (timer: DurableTimer) => Effect.Effect<void>;
 }>()("@orthograph/language-effect/TimerWakes") {}
+
+/**
+ * The world's timer table as another process sees it (M8.07): rows kept in the world's Durable Object, which fires them
+ * when its clock reaches them. A sleeping row lives as long as the process that parked it; a durable row outlives it.
+ * The host provides this (host-cloudflare, over the world's RPC); `TimersWorld` is `Timers` and `DurableTimers` on it.
+ */
+export class WorldTable extends Context.Service<WorldTable, {
+  /**
+   * Park a row for a sleeper: `at` on the world's clock. `holder` names the token the world holds for the sleeper once the
+   * row fires. Returns its id.
+   */
+  readonly add: (owner: string, name: string, at: number, holder: string) => Effect.Effect<number>;
+  /**
+   * Resolve when the world fires the row. The world holds a token of its own for the sleeper from the firing, and the host has
+   * put this request on the world's instant at the firing, so the caller reads the instant it woke at.
+   */
+  readonly wait: (id: number) => Effect.Effect<void>;
+  /**
+   * The sleeper is back (it holds its own token again) or gave up: take the row back if it has not fired, and let go of the
+   * token the world held for it if it has. Idempotent; a row the world no longer knows is a no-op.
+   */
+  readonly cancel: (id: number) => Effect.Effect<void>;
+  readonly sleeping: Effect.Effect<ReadonlyArray<Timer>>;
+  readonly set: (at: number, owner: string, name: string, wake: Wake) => Effect.Effect<number>;
+  readonly clear: (owner: string, name: string) => Effect.Effect<boolean>;
+  readonly durable: Effect.Effect<ReadonlyArray<DurableTimer>>;
+}>()("@orthograph/language-effect/WorldTable") {}
