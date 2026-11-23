@@ -124,7 +124,7 @@ two apps (K42, section 3); organisations are separate, and Capxul's companies ar
 
 ## Where it stands
 
-23 November 2026: rewritten under K43. Slice 1 lands with #487. Slices 4 and 5 are running. Slice 3 is decided
+23 November 2026: rewritten under K43. Slice 1 lands with #487. Slice 5 is done: the Bridge spike landed in `main` by #744 (727bc47a). Slice 4 is in review (#743). Slice 3 is decided
 (`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
 customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged
 into `goal/capxul` at the restart (#745), so this brief replaced the branch's old one. The lead rewrites this section
