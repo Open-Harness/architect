@@ -7,6 +7,7 @@ import type { AdapterDoor, EventActor } from "./door-types.ts";
 export type { AdapterDoor, EventActor };
 import type { Event, On } from "#modules/events/types.js";
 import type { Operation, Read } from "#modules/operations/types.js";
+import type { StandCall, WorldCall } from "#modules/journeys/types.js";
 import type { Value } from "#modules/values/types.js";
 
 /** The ways a caller signs in (K1): only removed by a mount, never added. MCP is `agent`. */
@@ -260,4 +261,23 @@ export interface StandApi {
   readonly vendor: (what: string) => StandIn;
   /** Nothing stands in locally: its journeys run only in the cloud pass. */
   readonly none: StandIn;
+  /** A command of a stand-in's own `/_stand/<name>` routes, as a journey step: `const hold = Stand.command<Args, Answer>("github", "hold")`; `hold(args)` is the step's call. A descriptor: a mount, a name and two types. */
+  readonly command: <Args = unknown, A = unknown>(mount: string, name: string) => (args: Args) => StandCall<A>;
+  /** The commands every stand-in answers (GOAL17-check-harness, call 1): seen, hold, held, release, fail and reset. */
+  readonly common: (mount: string) => CommonCommands;
+}
+
+export interface CommonCommands {
+  readonly seen: (args: unknown) => StandCall;
+  readonly hold: (args: unknown) => StandCall;
+  readonly held: (args: unknown) => StandCall;
+  readonly release: (args: unknown) => StandCall;
+  readonly fail: (args: unknown) => StandCall;
+  readonly reset: (args: unknown) => StandCall;
+}
+
+/** A route of the world, answered under `/_world/`, only in a world that serves probes (never production, GOAL17-check-harness call 5). */
+export interface ProbeApi {
+  readonly read: <Args = unknown, A = unknown>(route: string) => (args: Args) => WorldCall<A>;
+  readonly send: <Args = unknown, A = unknown>(route: string) => (args: Args) => WorldCall<A>;
 }

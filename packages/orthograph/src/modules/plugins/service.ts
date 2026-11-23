@@ -1,5 +1,5 @@
 import { Events } from "#modules/events/service.js";
-import type { Mount, Option, PluginsApi, StandApi, Verb } from "./types.ts";
+import type { Mount, Option, PluginsApi, ProbeApi, StandApi, Verb } from "./types.ts";
 import { firstOption, picked } from "./internal/picked.ts";
 
 const isGroup = (x: unknown): x is object => typeof x === "object" && x !== null && (x as { readonly kind?: unknown }).kind !== "call";
@@ -58,6 +58,17 @@ export const Stand: StandApi = {
   process: (what) => Object.freeze({ kind: "stand-in", how: "process", what }),
   vendor: (what) => Object.freeze({ kind: "stand-in", how: "vendor", what }),
   none: Object.freeze({ kind: "stand-in", how: "none" }),
+  command: (mount, command) => (args) => Object.freeze({ kind: "stand-call", mount, command, args }),
+  common: (mount) => {
+    const of = (command: string) => (args: unknown) => Object.freeze({ kind: "stand-call" as const, mount, command, args });
+    return Object.freeze({ seen: of("seen"), hold: of("hold"), held: of("held"), release: of("release"), fail: of("fail"), reset: of("reset") });
+  },
+};
+
+/** The world's own probe routes, as descriptors (GOAL17-check-harness, calls 3 and 5). A journey imports these; the handlers are in the world's entry only. */
+export const Probe: ProbeApi = {
+  read: (route) => (args) => Object.freeze({ kind: "world-call", route, method: "GET", args }),
+  send: (route) => (args) => Object.freeze({ kind: "world-call", route, method: "POST", args }),
 };
 
 /** For the runtime and the compiler: what a mount picked, by identity. */

@@ -26,18 +26,27 @@ const blanksIn = (value: unknown): ReadonlyArray<string> => {
 
 /** A step's blanks: in its call's payload and due instant (the keeper's) and in each check (the check itself, its fields, its id or its value). */
 export const stepBlanks = (step: { readonly call: AnyCall; readonly checks: ReadonlyArray<Assertion> }) => [
-  ...(step.call.kind === "clock-call" ? [] : [...blanksIn(step.call.payload), ..."due" in step.call ? blanksIn(step.call.due) : []]),
+  ...(step.call.kind === "call" ? [...blanksIn(step.call.payload), ..."due" in step.call ? blanksIn(step.call.due) : []] : step.call.kind === "stand-call" || step.call.kind === "world-call" ? blanksIn(step.call.args) : []),
   ...step.checks.flatMap((c) => (Blanks.isBlank(c) ? [(c as { readonly what: string }).what]
     : c.kind === "emits" || c.kind === "refuses" ? blanksIn(c.fields) : c.kind === "is-in" ? blanksIn(c.id) : c.kind === "expect-equal" ? blanksIn(c.value) : [])),
 ];
 
 /** The script's own words, which a cast member may not take: `s.world`, `s.last` and `s.step` are the script's. (`s.clock` is shared: a member may be named it.) */
-const SCRIPT_WORDS: Readonly<Record<string, string>> = { world: "what the starting world gave", last: "the last answer", step: "its steps" };
+const SCRIPT_WORDS: Readonly<Record<string, string>> = { world: "what the starting world gave", last: "the last answer", step: "its steps", runner: "the process serving the world", together: "calls made at one instant" };
 
 /** The cast members whose names the script already uses, each refused with a plain message naming where it is cast. */
 export const castClashes = (cast: Readonly<Record<string, unknown>>, file: string, who: string): ReadonlyArray<string> =>
   Object.keys(cast).filter((name) => Object.hasOwn(SCRIPT_WORDS, name)).map((name) =>
     `${file}: ${who} casts a member \`${name}\`, which takes a name the script already uses for ${SCRIPT_WORDS[name]}; rename it`);
+
+/** Why a step is not in the model: it is a door of the harness or the clock, not an operation the model describes. */
+const skippedWhy = (call: AnyCall): string =>
+  call.kind === "clock-call" ? "a step that moves the world's clock is not an operation"
+  : call.kind === "runner-call" ? "a step on the runner is not an operation"
+  : call.kind === "stand-call" ? "a command to a stand-in is not an operation"
+  : call.kind === "world-call" ? "a probe is not an operation"
+  : call.kind === "together-call" ? "a step of several calls at once is not told one by one"
+  : call.operation === undefined ? "the tools list is not an operation" : "operation is outside the model";
 
 export const storiesOf = (
   layout: Layout,
@@ -52,8 +61,8 @@ export const storiesOf = (
     Object.fromEntries(Object.entries(cast).map(([name, role]) => [name, allowed(role, file)]));
 
   const callOf = (call: AnyCall) => {
-    // A step that moves the world's clock has no operation: the model leaves it out until time is built (M8.07).
-    if (call.kind === "clock-call") return undefined;
+    // A step that moves the clock, kills the runner, commands a stand-in, reads a probe or calls together has no operation: the model leaves it out.
+    if (call.kind !== "call") return undefined;
     // The tools list runs no operation: it is told as a step that is not in the model's operations.
     if (call.operation === undefined) return undefined;
     const operation = names.get(call.operation);
@@ -112,7 +121,7 @@ export const storiesOf = (
     const steps = declared.map((step) => {
       const call = callOf(step.call);
       return call === undefined
-        ? { title: step.title, skipped: step.call.kind === "clock-call" ? "time is not built yet: M8.07" : step.call.operation === undefined ? "the tools list is not an operation" : "operation is outside the model" }
+        ? { title: step.title, skipped: skippedWhy(step.call) }
         : { title: step.title, call, checks: step.checks.filter((c) => !Blanks.isBlank(c)).map(checkOf) };
     });
     const starts = Blanks.isBlank(j.starts) ? null : j.starts ?? null;

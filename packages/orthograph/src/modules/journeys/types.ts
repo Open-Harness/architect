@@ -51,8 +51,42 @@ export interface ToolsCall {
   readonly request?: undefined;
 }
 
-/** A call a step makes: an operation or read, or the tools list. */
-export type AnyCall = Call | ToolsCall | ClockCall;
+type Json = unknown;
+
+/** A step that stops, starts or restarts the process group serving the world (GOAL17-check-harness, call 2). A world prove did not start has no runner, and refuses it. */
+export interface RunnerCall {
+  readonly kind: "runner-call";
+  readonly move: "kill" | "start" | "restart";
+  readonly signal?: "SIGKILL" | "SIGTERM";
+}
+
+/** One command to a stand-in's own control routes, `POST <its url>/_stand/<command>`. `mount` is the mount's name in the app (`models`, `sandbox`, `github`). */
+export interface StandCall<A = unknown> {
+  readonly kind: "stand-call";
+  readonly mount: string;
+  readonly command: string;
+  readonly args: Json;
+  /** Type only: what the command answers. */
+  readonly answers?: A;
+}
+
+/** One call to a route under `/_world/`, answered only where the server hosts worlds, with the world's token. */
+export interface WorldCall<A = unknown> {
+  readonly kind: "world-call";
+  readonly route: string;
+  readonly method: "GET" | "POST";
+  readonly args: Json;
+  readonly answers?: A;
+}
+
+/** Several calls started at the same instant and judged together. Its answer is `{ answers }`, each the call's answer or its refusal `{ status, body }`; `emits` judges the union of their journals. */
+export interface TogetherCall {
+  readonly kind: "together-call";
+  readonly calls: ReadonlyArray<Call>;
+}
+
+/** A call a step makes: an operation or read, the tools list, a move of the clock, or one of the harness's doors. */
+export type AnyCall = Call | ToolsCall | ClockCall | RunnerCall | StandCall | WorldCall | TogetherCall;
 
 /**
  * What a refusal check names: a declared error class, a machine's own refusal (`machine.notFrom`), a thing's missing
@@ -113,7 +147,17 @@ export type Script<C extends Cast> = { readonly [K in keyof C]: Actor } & {
   readonly clock: {
     readonly advance: (span: Span) => ClockCall;
     readonly moveTo: (instant: string) => ClockCall;
+    /** `advance("0 seconds")`: move nothing, fire only what is due now, and answer once the world is quiet. */
+    readonly settle: () => ClockCall;
   };
+  /** The process group serving the world: kill it (SIGKILL unless said), start it again on the same state, or both. */
+  readonly runner: {
+    readonly kill: (signal?: "SIGKILL" | "SIGTERM") => RunnerCall;
+    readonly start: () => RunnerCall;
+    readonly restart: () => RunnerCall;
+  };
+  /** These calls, started at the same instant and judged together. */
+  readonly together: (...calls: ReadonlyArray<Call>) => TogetherCall;
   readonly step: (title: string, call: AnyCall, ...checks: ReadonlyArray<Assertion>) => Step;
 };
 

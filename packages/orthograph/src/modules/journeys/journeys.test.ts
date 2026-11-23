@@ -6,6 +6,8 @@ import { Operations } from "#modules/operations/service.js";
 import { Events } from "#modules/events/service.js";
 import { Machines } from "#modules/machines/service.js";
 import { Checks, Journeys, Scripting } from "./service.ts";
+import { Probe, Stand } from "#modules/plugins/service.js";
+import { outbox } from "#modules/plugins/probes.js";
 
 const Box = Things.thing({ description: "A box.", fields: { id: Values.id("box"), size: Values.uint(8) } });
 const Packed = Events.event({ box: Box.fields.id });
@@ -51,5 +53,33 @@ describe("journeys", () => {
   it("refs are not thenables", () => {
     const s = Scripting.script({}) as any;
     want(s.world.then).toBeUndefined();
+  });
+});
+
+describe("the harness's doors (GOAL17-check-harness, call 0)", () => {
+  const s = Scripting.script({ ann: Roles.signedIn }) as any;
+
+  it("the runner's three moves are plain descriptions", () => {
+    want(s.runner.kill()).toEqual({ kind: "runner-call", move: "kill" });
+    want(s.runner.kill("SIGTERM")).toEqual({ kind: "runner-call", move: "kill", signal: "SIGTERM" });
+    want(s.runner.start()).toEqual({ kind: "runner-call", move: "start" });
+    want(s.runner.restart()).toEqual({ kind: "runner-call", move: "restart" });
+  });
+
+  it("settle is a move of zero, and together holds its calls", () => {
+    want(s.clock.settle()).toEqual({ kind: "clock-call", move: { advance: "0 seconds" } });
+    const one = s.ann.run(pack, { size: 1n });
+    const two = s.ann.run(pack, { size: 2n });
+    const together = s.together(one, two);
+    want(together.kind).toBe("together-call");
+    want(together.calls).toEqual([one, two]);
+  });
+
+  it("a stand-in command and a probe are a route and its arguments", () => {
+    want(Stand.command("models", "script")({ turns: [] })).toEqual({ kind: "stand-call", mount: "models", command: "script", args: { turns: [] } });
+    const common = Stand.common("github");
+    want(common.held({ count: 1 })).toEqual({ kind: "stand-call", mount: "github", command: "held", args: { count: 1 } });
+    want(Probe.read("outbox")({})).toEqual({ kind: "world-call", route: "outbox", method: "GET", args: {} });
+    want(outbox.release({ hold: "all" })).toEqual({ kind: "world-call", route: "outbox/release", method: "POST", args: { hold: "all" } });
   });
 });

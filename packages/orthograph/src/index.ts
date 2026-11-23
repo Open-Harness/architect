@@ -19,7 +19,7 @@ import { NotAllowed } from "#modules/errors/types.js";
 import { Invariants } from "#modules/invariants/service.js";
 import { Machines } from "#modules/machines/service.js";
 import { Operations } from "#modules/operations/service.js";
-import { Plugins, Stand } from "#modules/plugins/service.js";
+import { Plugins, Probe, Stand } from "#modules/plugins/service.js";
 import { Roles } from "#modules/roles/service.js";
 import { Stores } from "#modules/stores/service.js";
 import { Things } from "#modules/things/service.js";
@@ -56,7 +56,8 @@ export const Blueprint = Object.freeze({
 export { Schema } from "effect";
 /** `Source.from(adapter, mapping)` and `Source.timer` (GOAL17-source-from). */
 export const Source = Sources;
-export { Auth, Telemetry, Cloud, Deploy, Identity, Stand };
+export { Auth, Telemetry, Cloud, Deploy, Identity, Stand, Probe };
+export { outbox, type OutboxRow } from "#modules/plugins/probes.js";
 export { Via, Host, Door, Ships } from "#modules/plugins/types.js";
 export const { expect, emits, noEvents, refuses, spans, lacks, has } = Checks;
 export { NotAllowed } from "#modules/errors/types.js";
@@ -73,7 +74,7 @@ export { admitsAgent } from "#modules/roles/service.js";
 export type { Role, RoleOf, ServiceRole, SignedIn, System, Narrowed, Allowed, Principal, Acting, Way, InstanceOf } from "#modules/roles/types.js";
 export type { Operation, Read, ReadAnswer, Order, Page, ListPayload, ListItem, Steps, OperationSpec, Step, CallStep, StepKind, Runs, TestKind, Budget, PayloadOf, AnswerOf, ErrorOf, StepsOf } from "#modules/operations/types.js";
 export type { Blank } from "#modules/blanks/types.js";
-export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, ToolsCall, AnyCall, Ref, Refusal, ClockCall } from "#modules/journeys/types.js";
+export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, ToolsCall, AnyCall, Ref, Refusal, ClockCall, RunnerCall, StandCall, WorldCall, TogetherCall } from "#modules/journeys/types.js";
 export type { Environment, EnvironmentSpec } from "#modules/environments/types.js";
 export type { Span, TimeBy, OnCalendar, Weekday, Clock } from "#modules/time/types.js";
 export type { Secret } from "#modules/secrets/types.js";
