@@ -6,7 +6,7 @@ import { ComparePage, EnvironmentPage } from "./env.tsx";
 import { Home } from "./home.tsx";
 import { JourneysPage, WorldsPage } from "./journeys.tsx";
 import { load } from "./load.ts";
-import { MonitorPage } from "./monitor.tsx";
+import { AlertsPage, IssuesPage, MonitorPage } from "./monitor.tsx";
 import { OperationPage } from "./operation.tsx";
 import { Page } from "./parts.tsx";
 import { PluginsPage } from "./plugins.tsx";
@@ -37,6 +37,8 @@ const Drawn = ({ route, loaded }: { readonly route: Route; readonly loaded: Load
     case "reference": return <ReferencePage data={data} kind={route.kind} />;
     case "trace": return <TracePage data={data} id={route.id} />;
     case "monitor": return <MonitorPage data={data} />;
+    case "alerts": return <AlertsPage data={data} />;
+    case "issues": return <IssuesPage data={data} />;
     case "missing": return <NotFound />;
   }
 };

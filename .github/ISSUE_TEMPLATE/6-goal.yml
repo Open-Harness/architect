@@ -1,0 +1,37 @@
+name: Goal
+description: A new goal. Write its brief first (design/goals/<nn>-<name>.md, with front matter); tools/github/sync.mjs then makes this issue and its milestone for you.
+title: "Goal <n>: <what it proves>"
+type: Goal
+labels: ["kind:goal"]
+body:
+  - type: markdown
+    attributes:
+      value: Prefer the sync. Use this form only to propose a goal before its brief exists; these fields are the brief's plain goal card (no ids, no file paths, no unexplained terms). Once the brief lands with `goal:` in its front matter, the sync makes the real goal issue, and this one is closed in its favour.
+  - type: textarea
+    id: sentence
+    attributes: { label: "In one sentence", description: "What the goal does, for someone who has read nothing else" }
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes: { label: "Why", description: "What is wrong or missing today" }
+    validations: { required: true }
+  - type: textarea
+    id: can
+    attributes: { label: "When it's done, you can", description: "What a person can do then that they can't now" }
+    validations: { required: true }
+  - type: textarea
+    id: is
+    attributes: { label: "It is", description: "What is inside the goal" }
+    validations: { required: true }
+  - type: textarea
+    id: isnt
+    attributes: { label: "It isn't", description: "What a reader might expect that is not in it, and where it is instead" }
+    validations: { required: true }
+  - type: textarea
+    id: done
+    attributes: { label: "Done when", description: "The one check that says it's finished, in plain words" }
+    validations: { required: true }
+  - type: textarea
+    id: waits
+    attributes: { label: "Waits on", description: "What it needs from other goals or from Aaron; \"nothing to start\" is an answer" }
+    validations: { required: false }

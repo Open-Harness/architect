@@ -29,12 +29,16 @@ conductor integrates; it is not the switchboard.
    and `design/goals/<nn>-<name>.md`, and run it."
 2. **State lives in the goal's own files, on its branch.** The lead rewrites the brief's "Where it stands" section at
    every merge into its branch: what landed, what is open, what it waits on. Its own snags go in
-   `design/goals/<nn>-snags.md`. Anyone, Aaron included, reads those files to know where the goal is.
+   `design/goals/<nn>-snags.md`. Anyone, Aaron included, reads those files to know where the goal is. Superseded by
+   K33, 21 November 2026: a goal's new snags are Snag issues in its milestone; the snag files keep what came before.
 3. **GitHub is the live surface.**
    - **A label per goal**, `goal-<n>`, on every pull request and issue of that goal.
    - **A milestone per release** (K28): `Preview`, `Beta` and `1.0`. Every goal pull request carries its release's
-     milestone, so the milestone page shows what each release still waits on.
-   - **A cross-goal ask is an issue** labelled with the goal that must act, naming the asker's goal and what done looks
+     milestone, so the milestone page shows what each release still waits on. Superseded by K33, 21 November 2026: a
+     milestone per goal, and the release as a `release:<name>` label.
+   - Superseded by K42, 23 November 2026: a gap goes by K42's collision rule; an ask is only for overlapping claims.
+     **A cross-goal ask is an issue** labelled with the goal that must act (superseded by K33, 21 November 2026: an
+     Ask issue in the milestone of the goal that must act), naming the asker's goal and what done looks
      like, or a pull request into the owner's branch that only the owner's lead merges (a line in its snag log, a
      freeze line in its brief). A goal never pushes to another goal's branch; the owner acts, and its merge or comment
      is the answer. Each lead reads its label's open issues at every slice start and closes them with the
@@ -57,7 +61,8 @@ conductor integrates; it is not the switchboard.
 
 Options weighed. A coordination service (an Orthograph app holding the board) is the Foreman's future
 (`design/foreman/`), not something to wait for. GitHub Projects adds a second board beside the repository's own kanban
-data with no gain. Files alone can't carry an ask across branches, since a goal can't write another goal's branch, so
+data with no gain (superseded by K33, 21 November 2026: one Project, "Orthograph", laid over the milestones and labels,
+is where every goal's progress is seen). Files alone can't carry an ask across branches, since a goal can't write another goal's branch, so
 issues carry asks and files carry state.
 
 ## What follows

@@ -48,6 +48,6 @@ export const up = (tools: Tools, credentials: Credentials, root: string, plan: P
       if (tried > 0) yield* tools.pause(BETWEEN);
       good = (yield* tools.probe(`${url}/_ortho/bundle`)) === 200 ? good + 1 : 0;
     }
-    if (good < GOOD) return yield* new StagingFailed({ message: `the Worker at ${url} did not answer ${GOOD} times running; \`ortho env destroy staging --run ${plan.run}\` removes it` });
+    if (good < GOOD) return yield* new StagingFailed({ message: `the Worker at ${url} did not answer ${GOOD} times running; \`ortho env destroy ${plan.environment} --run ${plan.run}\` removes it` });
     return url;
   });

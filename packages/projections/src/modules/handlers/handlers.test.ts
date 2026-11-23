@@ -164,3 +164,25 @@ describe("K16: one journey stub per path through a thing's machine (M1.45)", () 
     }
   });
 });
+
+describe("M8.09: a move made by time's journey stubs cast the keeper", () => {
+  // acme's revoke, declared as the keeper's alone: the keeper is refused by every other operation, and no one else may call it.
+  const timed: Model = { ...model, operations: { ...model.operations, "allowance.revoke": { ...model.operations["allowance.revoke"]!, allowed: [{ kind: "keeper" }] } } };
+
+  it("casts the keeper and calls through s.keeper.run with the due instant left a blank, and refuses someone who is not the keeper", () => {
+    const stubs = k16.renderJourneyStubs!(timed, "allowance").filter((s) => s.path.includes("-revoke-"));
+    const allowed = stubs.find((s) => s.path.endsWith("revoke-active-to-revoked.ts"))!.content;
+    expect(allowed).toContain("cast: { keeper: Blueprint.keeper },");
+    expect(allowed).toContain(`s.keeper.run(revoke, Blueprint.todo("allowance.revoke's payload: allowance"), { due: Blueprint.todo("the instant allowance.revoke was due") }),`);
+    expect(allowed).not.toContain("someone");
+    const refused = stubs.find((s) => s.path.endsWith("revoke-refused-not-the-keeper.ts"))!.content;
+    expect(refused).toContain("cast: { someone: Blueprint.anyone },");
+    expect(refused).toContain("refuses(Blueprint.NotAllowed)");
+    expect(stubs.some((s) => s.path.endsWith("revoke-refused-not-.ts"))).toBe(false);
+  });
+
+  it("leaves an operation without the keeper byte for byte as it was", () => {
+    const only = (m: Model) => k16.renderJourneyStubs!(m, "allowance").filter((s) => s.path.includes("-grant-") || s.path.includes("-spend-"));
+    expect(only(timed)).toEqual(only(model));
+  });
+});

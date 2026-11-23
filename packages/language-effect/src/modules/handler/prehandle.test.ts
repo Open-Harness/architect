@@ -48,7 +48,7 @@ const open = Blueprint.operation(Purse, {
   move: machine.moves.open, allowed: [Blueprint.signedIn],
 });
 
-const ada = { kind: "person", person: "per_ada" } as const;
+const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 const notFound = { purse: "PurseNotFound", member: "PersonNotFound" };
 const world = () => storeMemory([[Purse, { id: "pur_1", member: "per_ada", limit: 500n, spent: 100n, state: "active" }], [Person, { id: "per_ada" }]]);
 const run = <A>(effect: Effect.Effect<A, unknown, never>) => Effect.runPromiseExit(effect);
