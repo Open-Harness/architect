@@ -1,3 +1,4 @@
+// The identity's people as the generated server names them: which thing the identity keeps, and in which table.
 import type { Model } from "@orthograph/compiler";
 import { camel } from "#modules/names/service.js";
 
