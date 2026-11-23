@@ -85,20 +85,28 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-23 November 2026, about 19:40 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
+23 November 2026, about 23:45 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
 every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
 agreed on #707.
 
-- **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`. That carried everything stage 1 built, with
-  #690 (secrets by declaration), #697 (the map), #696 (Goal 9's timers), #754 (the parity ratchet's fix) and #737 (Goal 3
-  parked). It also fixed the shell's licence (issue #753). All ten required checks were green, and `e2e-portal-next` too.
-- **`goal/stage-1` is retired.** `main` requires all ten of its checks: `e2e-stage1` was added after #729 ran it green
-  on `main`, as CI-main-stage1 says. Its threads, admins, no-force-push and no-deletion rules already matched. No pull
-  request targets `goal/stage-1`. The branch is locked read-only, with its protections kept. To undo, PUT its protection
-  again with `lock_branch: false`. It is not deleted.
-- **Every goal bases on `main`.** `AGENTS.md`, the `threads` skill and Goal 16's base say so (CI-stage-1-retired). Goal 17 changes its
-  own brief's base at its next slice start. Each goal merges `main` into its branch there, never by rebasing.
-- **Codex's two findings on #707** are Snags for the board: #765 (a thing's prefix change moves its generated refusal
-  codes) and #766 (a route value of `.` or `..`).
-- **Next, slice 2:** the parked goals' finished work. It starts with #294 (Goal 7's spike, for the record, which Goal 18
-  asked for) and `goal/time`. Then the landing loop for the superagent and Capxul.
+- **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`, with all ten required checks green.
+  `goal/stage-1` is retired: it is locked read-only with its protections kept, and not deleted. `main` requires all ten
+  checks, `e2e-stage1` among them (CI-main-stage1). Every goal bases on `main` and merges it in, never by rebasing
+  (CI-stage-1-retired). Codex's two findings on #707 are Snags #765 and #766.
+- **Slice 2 is done.** Every parked goal's finished work is in `main`, and each of their branches is 0 commits ahead of
+  it. `goal/time` came in with #707, through #696. Then, in order: #294 (Goal 7's spike, for the record), #777
+  (workflows, wallets and club), #774 (portal), #778 (on-chain), #785 (ui-layer, which also runs `e2e-ui-layer` on
+  `main`, not required: CI-main-ui-layer), #789 (release), #793 (agents) and #794 (events). #793 and #794 applied K40's
+  fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
+  sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
+  drafts (#490, #498, #497 and #708) stay on their branches.
+- **Slice 3, the landing loop, has started.** #832 lands `goal/capxul` through #786. Its 🔍 passed, after checking a
+  recorded 🔍 pass and green CI for each of its ten slices, and it is in CI. #887 lands `goal/superagent` through #790
+  and stays a draft. Its merge, ratchet and checks hold, but 18 of its 26 pull requests have no 🔍 pass recorded on
+  GitHub. Goal 17 is asked on #563 to link them. The lander's 🔍 is reviewing the `packages/` diffs of the three builds
+  that change framework code (#670, #756 and #747). Both landings have `main` merged in at `dfcd6760`. #787 (Capxul's
+  Bridge build) and #781 (the superagent's agents build) are still open on their branches and land in a later round.
+- **Snags filed for Goal 18:** #762 (a flaky port check in `portal.test.ts`), #788 (`examples/budgets` imports
+  `receipts`, which `orthograph` does not export) and #898 (the board sync takes over closed Asks).
+- **Next:** merge #832 once CI is green. Land #887 once every slice in it has a 🔍 pass. Tell every running goal after
+  each landing. From then on, each round lands what the app branches have merged since.
