@@ -1,5 +1,5 @@
 // Reads the blueprint's layout: which file holds what, and the name each declaration takes from its path or export.
-import type { AnyErrorClass, Environment, Event, Journey, Machine, Mount, Operation, Read, Role, SecretDeclaration, StartingWorld, Store, Thing, Unique, Value } from "orthograph";
+import type { AnyErrorClass, Asset, Environment, Event, Journey, Machine, Mount, Operation, Read, Role, SecretDeclaration, StartingWorld, Store, Thing, Unique, Value } from "orthograph";
 import type { LoadedFile } from "#modules/source/types.js";
 import type { CallReach } from "#modules/mounts/types.js";
 
@@ -63,6 +63,10 @@ export interface Layout {
   readonly journeys: Map<string, StoryFile<Journey>>;
   readonly startingWorlds: Map<string, StoryFile<StartingWorld>>;
   readonly values: Map<string, Value>;
+  /** The file each named value is declared in, by the value's name: where a message about it points. */
+  readonly valueFiles: Map<string, string>;
+  /** Assets by the name their file gives them: `assets/usdc.ts` is `usdc` (M6-money item 2). */
+  readonly assets: Map<string, { readonly file: string; readonly asset: Asset }>;
   /** Environments by the name their file gives them: `environments/staging.ts` is `staging`. */
   readonly environments: Map<string, { readonly file: string; readonly declaration: Environment }>;
   /** Stores by the name their file gives them: `stores/ledger.ts` is `ledger`. */
@@ -99,7 +103,7 @@ export const NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
  * `blueprint/<path>`; a plugin's are its package specifier, `@x/y/blueprint/<path>`, and only its `things/` are read.
  */
 export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) => string = (path) => path.startsWith("../") ? path.slice(3) : `blueprint/${path}`): Layout => {
-  const layout: Layout = { values: new Map(), environments: new Map(), stores: new Map(), things: new Map(), mounts: new Map(), calls: new Map(), secrets: new Map(), mountSecrets: [], journeys: new Map(), startingWorlds: new Map(), problems: [] };
+  const layout: Layout = { values: new Map(), valueFiles: new Map(), assets: new Map(), environments: new Map(), stores: new Map(), things: new Map(), mounts: new Map(), calls: new Map(), secrets: new Map(), mountSecrets: [], journeys: new Map(), startingWorlds: new Map(), problems: [] };
   const thingFiles = (name: string): ThingFiles => {
     const found = layout.things.get(name);
     if (found) return found;
@@ -140,7 +144,15 @@ export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) 
       continue;
     }
     if (parts[0] === "values" && parts.length === 2) {
-      for (const [k, v] of Object.entries(exports)) if (kindOf(v) === "value") layout.values.set(k, v as Value);
+      for (const [k, v] of Object.entries(exports)) if (kindOf(v) === "value") { layout.values.set(k, v as Value); layout.valueFiles.set(k, at(path)); }
+      continue;
+    }
+    if (parts[0] === "assets" && parts.length === 2) {
+      const name = parts[1]!;
+      if (!NAME.test(name)) layout.problems.push(`${at(path)}: asset "${name}" must be lowercase words joined by dashes`);
+      const d = exports["default"];
+      if (kindOf(d) !== "asset") layout.problems.push(`${at(path)}: the default export must be a Blueprint.asset.token(…) or Blueprint.asset.currency(…)`);
+      else layout.assets.set(name, { file: at(path), asset: d as Asset });
       continue;
     }
     if (parts[0] === "stores" && parts.length === 2) {
@@ -160,7 +172,7 @@ export const readLayout = (files: ReadonlyArray<LoadedFile>, at: (path: string) 
       continue;
     }
     if (parts[0] !== "things" || parts.length < 3) {
-      layout.problems.push(`${at(path)}: not a place the blueprint reads (secrets.ts, values/<file>.ts, environments/<name>.ts, stores/<name>.ts, things/<thing>/..., or a mount in features/, adapters/ or projections/)`);
+      layout.problems.push(`${at(path)}: not a place the blueprint reads (secrets.ts, values/<file>.ts, assets/<name>.ts, environments/<name>.ts, stores/<name>.ts, things/<thing>/..., or a mount in features/, adapters/ or projections/)`);
       continue;
     }
     const name = parts[1]!;

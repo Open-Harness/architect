@@ -118,6 +118,25 @@
       "options": { "command": "nx run e2e:stage1-ratchet" },
       "cache": false
     },
+    "on-chain-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "mkdir -p tmp && rm -f tmp/on-chain-report.json tmp/on-chain-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/on-chain-errors.json vitest run --root e2e --config vitest.on-chain.config.ts on-chain --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/on-chain-report.json; node e2e/ratchet/check.ts tmp/on-chain-report.json e2e/on-chain/expected-failing tmp/on-chain-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "on-chain": {
+      "metadata": {
+        "description": "The done check of Goal 4 (design/goals/04-on-chain.md): the ratchet over e2e/on-chain, then red while e2e/on-chain/expected-failing/ holds any file, then red while a check listed in e2e/on-chain/slices.json (slices 3 to 12) is missing. Today it holds the budgets journeys (01) and the snag log (03); each slice's checks author adds its check as NN-<slice>.test.ts. Still needs, per e2e/on-chain/README.md: every slice's check (the signer of each step is checked in 01 from today, and waits on S-11)."
+      },
+      "executor": "nx:run-commands",
+      "options": { "parallel": false, "commands": ["nx run e2e:on-chain-ratchet", "node e2e/on-chain/empty-list.mjs; a=$?; node e2e/on-chain/presence.mjs; b=$?; exit $((a || b))"] },
+      "cache": false
+    },
     "m1": {
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m1-checks" },

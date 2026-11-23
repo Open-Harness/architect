@@ -25,6 +25,10 @@ repo() { # a fresh repository with a base commit; prints its path
     "$dir/packages/prove/src/modules/evals" "$dir/packages/prove/src/modules/journeys" "$dir/src"
   printf 'm1/a.test.ts > a\nm1/a.test.ts > a2\n' > "$dir/e2e/m1/expected-failing/a.txt"
   printf 'm1/b.test.ts > b\n' > "$dir/e2e/m1/expected-failing/b.txt"
+  mkdir -p "$dir/e2e/on-chain/expected-failing"
+  printf 'on-chain/01-a.test.ts > a\non-chain/01-a.test.ts > a2\n' > "$dir/e2e/on-chain/expected-failing/01-a.txt"
+  printf 'on-chain/03-b.test.ts > b\n' > "$dir/e2e/on-chain/expected-failing/03-b.txt"
+  echo c > "$dir/e2e/on-chain/01-a.test.ts"
   mkdir -p "$dir/e2e/ui-layer/expected-failing"
   printf 'ui-layer/01.test.ts > u1\nui-layer/01.test.ts > u2\n' > "$dir/e2e/ui-layer/expected-failing/01.txt"
   echo t > "$dir/e2e/ui-layer/01.test.ts"
@@ -102,6 +106,18 @@ r=$(repo); printf 'm1/a.test.ts > a\nm1/a.test.ts > swapped\n' > "$r/e2e/m1/expe
 expect "swapping a ratchet line fails" 1 guard "$r"
 r=$(repo); printf '' > "$r/e2e/m1/expected-failing/c.txt"; commit "$r"
 expect "adding an empty ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'on-chain/01-a.test.ts > a\n' > "$r/e2e/on-chain/expected-failing/01-a.txt"; commit "$r"
+expect "deleting a line from an on-chain ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/on-chain/expected-failing/03-b.txt; commit "$r"
+expect "deleting an on-chain ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'on-chain/01-a.test.ts > a\non-chain/01-a.test.ts > a2\non-chain/01-a.test.ts > a3\n' > "$r/e2e/on-chain/expected-failing/01-a.txt"; commit "$r"
+expect "adding a line to an on-chain ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'on-chain/05-c.test.ts > c\n' > "$r/e2e/on-chain/expected-failing/05-c.txt"; commit "$r"
+expect "adding an on-chain ratchet file fails" 1 guard "$r"
+r=$(repo); git -C "$r" mv e2e/on-chain/expected-failing/01-a.txt e2e/on-chain/expected-failing/01-renamed.txt; commit "$r"
+expect "renaming an on-chain ratchet file fails" 1 guard "$r"
+r=$(repo); echo t >> "$r/e2e/on-chain/01-a.test.ts"; commit "$r"
+expect "editing an on-chain check file fails" 1 guard "$r"
 r=$(repo); printf 'ui-layer/01.test.ts > u1\n' > "$r/e2e/ui-layer/expected-failing/01.txt"; commit "$r"
 expect "deleting a line from another suite's ratchet file passes" 0 guard "$r"
 r=$(repo); git -C "$r" rm -q e2e/ui-layer/expected-failing/01.txt; commit "$r"
@@ -457,6 +473,54 @@ r=$(aff_repo packages/cli/a)
 expect "affected: an unreadable graph runs everything" 0 bash -c "cd '$r' && echo nonsense > '$scratch/bad.json' && AFFECTED_GRAPH='$scratch/bad.json' AFFECTED_LIST=/dev/null '$here/affected.sh' base x-build e2e prove 2>/dev/null | tr '\n' ' ' | grep -qx 'affected_e2e=true affected_prove=true '"
 expect "affected: a base that does not exist runs everything" 0 bash -c "cd '$r' && AFFECTED_GRAPH='$scratch/graph.json' AFFECTED_LIST=/dev/null '$here/affected.sh' no-such-base x-build e2e prove 2>/dev/null | tr '\n' ' ' | grep -qx 'affected_e2e=true affected_prove=true '"
 expect "affected: no projects is a usage error" 2 "$here/affected.sh" base x-build
+
+# watch-required: a fake `gh` on the PATH answers from files in $W, so no case reaches GitHub.
+W="$scratch/watch"; mkdir -p "$W/bin"
+cat > "$W/bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$1 $2" in
+  "pr view") cat "$W/pr" ;;
+  "run list") n=$(cat "$W/polls" 2>/dev/null || echo 0); echo $((n + 1)) > "$W/polls"
+    if [ "$n" -lt "$(cat "$W/pending_polls" 2>/dev/null || echo 0)" ]; then echo '[{"status":"in_progress","conclusion":""}]'; else cat "$W/run"; fi ;;
+  "run view") cat "$W/jobs" ;;
+  "pr checks") c=$(cat "$W/check_calls" 2>/dev/null || echo 0); echo $((c + 1)) > "$W/check_calls"
+    if [ "$c" -lt "$(cat "$W/partial_calls" 2>/dev/null || echo 0)" ]; then echo '[{"name":"check","state":"SUCCESS"}]'; else cat "$W/checks"; fi ;;
+  api*) [ -f "$W/required" ] && { cat "$W/required"; exit 0; }; cat "$W/api_err" >&2; exit 1 ;;
+  *) echo "fake gh: $*" >&2; exit 9 ;;
+esac
+GH
+chmod +x "$W/bin/gh"
+watch() { # <pr json> <run json> <checks json> <required json or ""> [api error] [pending polls]
+  rm -f "$W/polls" "$W/required" "$W/check_calls"; printf '%s' "${PARTIAL:-0}" > "$W/partial_calls"; printf '%s' "$1" > "$W/pr"; printf '%s' "$2" > "$W/run"; printf '%s' "$3" > "$W/checks"
+  [ -n "$4" ] && printf '%s' "$4" > "$W/required"; printf '%s' "${5:-gh: Branch not protected (HTTP 404)}" > "$W/api_err"
+  printf '%s' "${6:-0}" > "$W/pending_polls"; printf '%s' "${JOBS:-$ready_jobs}" > "$W/jobs"
+  W="$W" PATH="$W/bin:$PATH" WATCH_MAX_SECONDS="${MAXS:-60}" "$here/watch-required.sh" 7 0
+}
+ready_jobs='{"jobs":[{"name":"check"}]}'
+watch_late() { PARTIAL=2 watch "$@"; }
+open='{"state":"OPEN","isDraft":false,"headRefOid":"abc","baseRefName":"main"}'
+done_ok='[{"status":"completed","conclusion":"success"}]'
+req='{"contexts":["check","e2e-m1"]}'
+expect "watch: every required check passed" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SUCCESS"}]' "$req"
+expect "watch: waits while the run is in progress, then reads the checks" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SKIPPED"}]' "$req" "" 3
+MAXS=0 expect "watch: a required check still missing at the deadline is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"}]' "$req"
+expect "watch: a required check missing after the run completed is waited on (a draft run on the same commit)" 0 watch_late "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SUCCESS"}]' "$req"
+expect "watch: a merged pull request with no ci run cannot be watched" 2 watch '{"state":"MERGED","isDraft":false,"headRefOid":"abc","baseRefName":"main"}' '[]' '[]' "$req"
+expect "watch: a failed required check is reported at once, while another is still missing" 1 watch "$open" "$done_ok" '[{"name":"check","state":"FAILURE"}]' "$req"
+expect "watch: a cancelled required check is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED"}]' "$req"
+expect "watch: the newest row decides when an older run listed the same name" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED","startedAt":"2026-11-23T01:00:00Z"},{"name":"e2e-m1","state":"SUCCESS","startedAt":"2026-11-23T02:00:00Z"}]' "$req"
+expect "watch: an unprotected base goes by the run's conclusion (success)" 0 watch "$open" "$done_ok" '[]' ""
+expect "watch: an unprotected base goes by the run's conclusion (failure)" 1 watch "$open" '[{"status":"completed","conclusion":"failure"}]' '[]' ""
+MAXS=0 JOBS='{"jobs":[{"name":"check (draft)"}]}' expect "watch: an unprotected base never trusts a draft run's success" 3 watch "$open" "$done_ok" '[]' ""
+expect "watch: the newest run by id decides when two share a second (#658)" 0 watch "$open" '[{"databaseId":2,"status":"completed","conclusion":"success"},{"databaseId":1,"status":"completed","conclusion":"cancelled"}]' '[]' ""
+expect "watch: the newest run by id decides, whatever order gh lists them in" 0 watch "$open" '[{"databaseId":1,"status":"completed","conclusion":"cancelled"},{"databaseId":2,"status":"completed","conclusion":"success"}]' '[]' ""
+expect "watch: a cancelled newest run with no newer one is not green (unprotected)" 1 watch "$open" '[{"databaseId":1,"status":"completed","conclusion":"cancelled"}]' '[]' ""
+expect "watch: a skipped newest run is not green, though its required checks read SKIPPED (#513)" 1 watch "$open" '[{"databaseId":2,"status":"completed","conclusion":"skipped"},{"databaseId":1,"status":"completed","conclusion":"cancelled"}]' '[{"name":"check","state":"SKIPPED"},{"name":"e2e-m1","state":"SKIPPED"}]' "$req"
+expect "watch: gh failing on the protection is not read as unprotected" 2 watch "$open" "$done_ok" '[]' "" "gh: HTTP 502"
+expect "watch: a draft cannot be watched" 2 watch '{"state":"OPEN","isDraft":true,"headRefOid":"abc","baseRefName":"main"}' "$done_ok" '[]' "$req"
+expect "watch: a closed pull request cannot be watched" 2 watch '{"state":"CLOSED","isDraft":false,"headRefOid":"abc","baseRefName":"main"}' "$done_ok" '[]' "$req"
+MAXS=0 expect "watch: a run that never finishes ends at the deadline" 3 watch "$open" '[{"status":"queued","conclusion":""}]' '[]' "$req"
+expect "watch: no pull request number is a usage error" 2 "$here/watch-required.sh"
 
 if [ "$failures" -gt 0 ]; then echo "$failures case(s) failed"; exit 1; fi
 echo "all tools/ci cases pass"
