@@ -1,0 +1,7 @@
+# Written before slice 4. Red until the generator and the held plugins exist (slice 4); due before it merges.
+superagent/07-whole-specs.test.ts > 07 github: the whole spec > generates a plugin of exactly its operations and events
+superagent/07-whole-specs.test.ts > 07 github: the whole spec > is what the app holds: each generated file of the held plugin is what the generator makes of this spec
+superagent/07-whole-specs.test.ts > 07 posthog: the whole spec > generates a plugin of exactly its operations and events
+superagent/07-whole-specs.test.ts > 07 posthog: the whole spec > is what the app holds: each generated file of the held plugin is what the generator makes of this spec
+superagent/07-whole-specs.test.ts > 07 slack: the whole spec > generates a plugin of exactly its operations and events
+superagent/07-whole-specs.test.ts > 07 slack: the whole spec > is what the app holds: each generated file of the held plugin is what the generator makes of this spec

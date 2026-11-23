@@ -1,0 +1,67 @@
+# Written before slice 4. Red until the held plugins' clients exist in examples/superagent/plugins (slice 4); due before it merges.
+superagent/03-calls.test.ts > 03 github: each included call > issues.createComment: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > issues.createComment: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > issues.createComment: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > issues.createComment: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > issues.createComment: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 github: each included call > issues.listComments: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > issues.listComments: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > issues.listComments: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > issues.listComments: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > issues.listComments: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 github: each included call > pulls.create: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > pulls.create: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > pulls.create: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > pulls.create: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > pulls.create: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReview: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReview: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReview: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReview: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReview: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReviewComment: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReviewComment: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReviewComment: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReviewComment: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > pulls.createReviewComment: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 github: each included call > pulls.get: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > pulls.get: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > pulls.get: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > pulls.get: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > pulls.get: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviewComments: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviewComments: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviewComments: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviewComments: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviewComments: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviews: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviews: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviews: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviews: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > pulls.listReviews: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesList: fails with what the server said
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesList: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesList: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesList: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesList: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesPartialUpdate: fails with what the server said
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesPartialUpdate: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesPartialUpdate: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesPartialUpdate: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesPartialUpdate: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesRetrieve: fails with what the server said
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesRetrieve: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesRetrieve: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesRetrieve: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesRetrieve: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: fails with what the server said
+superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 slack: each included call > conversationsReplies: a ts the spec types as a number may be the string Slack gives, and is sent as written; nothing else is
+superagent/03-calls.test.ts > 03 slack: each included call > conversationsReplies: fails with what the server said
+superagent/03-calls.test.ts > 03 slack: each included call > conversationsReplies: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 slack: each included call > conversationsReplies: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 slack: each included call > conversationsReplies: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 slack: each included call > conversationsReplies: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
