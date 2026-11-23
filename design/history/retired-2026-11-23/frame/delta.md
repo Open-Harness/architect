@@ -35,7 +35,7 @@ version answers each, and for the gap between today and the goal. This is that l
 | The logbook keeps one pass or fail per run | logbook schema | One verdict per operation per journey, so `promote` and the manager agent can name what is missing |
 | Journeys call HTTP directly and skip the SDK, CLI and MCP | `prove/.../journeys/internal/world.ts:85` | Journeys run through a projection's client, so each shipped client is proved, not only the server |
 | `prove` traces are headless; payload attributes are recorded before the allowlist; loss is silent when the Collector is down | L2.P, telemetry records | Every run, prove included, traces under model names; the allowlist runs first; a lost span is counted and reported |
-| The commit has no span; free text is traced; refusals before the span leave no count | `service.ts:71`, `visibility/types.ts:1`, `service.ts:46,104` | A commit span with its outcome and the attempt; text untraced unless marked; every call counted as a metric ([`../decisions/O2-trace-gaps.md`](../decisions/O2-trace-gaps.md)) |
+| The commit has no span; free text is traced; refusals before the span leave no count | `service.ts:71`, `visibility/types.ts:1`, `service.ts:46,104` | A commit span with its outcome and the attempt; text untraced unless marked; every call counted as a metric ([`../decisions/O2-trace-gaps.md`](../../../decisions/O2-trace-gaps.md)) |
 
 ### Plugins and outputs
 
@@ -59,7 +59,7 @@ version answers each, and for the gap between today and the goal. This is that l
 | Weakness | Evidence | The answer |
 |---|---|---|
 | A principal is only `anonymous` or `person` | `roles/types.ts:6-8` | Add `agent`, `service` (an adapter's door) and `system` (the keeper) |
-| Two role models disagree (`holds` and `owner.of`) | design records | One role model: a role is a `rule`, or declared with `who` or `holds`, and `.of(...)` works on each ([K20](../decisions/K20-roles-across-things.md)); the new principals are M2.01's |
+| Two role models disagree (`holds` and `owner.of`) | design records | One role model: a role is a `rule`, or declared with `who` or `holds`, and `.of(...)` works on each ([K20](../../../decisions/K20-roles-across-things.md)); the new principals are M2.01's |
 
 ### Data
 
@@ -67,7 +67,7 @@ version answers each, and for the gap between today and the goal. This is that l
 |---|---|---|
 | A list read over things that live as actors is impossible | F5 | Views: read models built from events, declared, kept by the system (the data question, open) |
 | No idempotency by request on actors | F5 | Every operation call carries a request id; the actor keeps the answers it gave |
-| A thing picks from a closed list of homes, and an environment binds one database | `things/types.ts:32`, `environments/local.ts:6` | Stores of open kinds, supplied by hosts and languages; a thing lives in a declared store or the default; environments bind only what differs ([`../decisions/K3-stores-and-sources.md`](../decisions/K3-stores-and-sources.md)) |
+| A thing picks from a closed list of homes, and an environment binds one database | `things/types.ts:32`, `environments/local.ts:6` | Stores of open kinds, supplied by hosts and languages; a thing lives in a declared store or the default; environments bind only what differs ([`../decisions/K3-stores-and-sources.md`](../../../decisions/K3-stores-and-sources.md)) |
 | A system we don't own (Capxul's bench on MariaDB) has nowhere to go | Aaron, 18 November | A source, reached through an adapter: typed calls as steps, real MariaDB as its stand-in, conformance, never migrated (K3) |
 | One owner per call | F5 | Cross-actor work runs as a workflow, not as one call |
 | No migration when a thing's states change | deferred in `decisions.md` | Migrations generated from the model diff, ordered per environment ([`deployment.md`](deployment.md)) |
@@ -115,8 +115,8 @@ version answers each, and for the gap between today and the goal. This is that l
 
 ## Still open
 
-Nothing. Every question is decided ([`../decisions/K2-forman-frame.md`](../decisions/K2-forman-frame.md)).
+Nothing. Every question is decided ([`../decisions/K2-forman-frame.md`](../../../decisions/K2-forman-frame.md)).
 
 ## The order to close the gap
 
-Recut as milestones M0 to M7 in [`../milestones.md`](../milestones.md).
+Recut as milestones M0 to M7 in [`../milestones.md`](../../../milestones.md).

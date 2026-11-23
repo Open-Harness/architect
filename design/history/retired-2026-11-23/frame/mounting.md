@@ -189,6 +189,6 @@ own things, as D2 #61 decided.
 - Whether a feature's journeys run with the feature's own starting worlds, the app's, or both. The proposal: a feature
   brings starting-world fragments (a person with a linked wallet), and the app's starting worlds may include them.
 - Narrowing by the app's own roles is not offered: K1 left it to `via` and `omit` so it is provably tighter
-  ([`../decisions/M1-plugins.md`](../decisions/M1-plugins.md) section 3).
+  ([`../decisions/M1-plugins.md`](../../../decisions/M1-plugins.md) section 3).
 
-The exact descriptor, mount and verb surface is [`../decisions/M1-plugins.md`](../decisions/M1-plugins.md).
+The exact descriptor, mount and verb surface is [`../decisions/M1-plugins.md`](../../../decisions/M1-plugins.md).

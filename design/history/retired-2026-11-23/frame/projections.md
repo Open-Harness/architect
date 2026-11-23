@@ -262,7 +262,7 @@ export const sdk = Blueprint.projection({
 The web projection gives a web app one generated piece per operation, on UI SDK: a framework-free primitive bound to
 the operation's generated action, with its React parts beside it (React only in the beta). A read loads, a move or a
 write is a form or a button, and a refusal, a pending call and an agent's limits come with it
-([`../decisions/K29-ui-layer.md`](../decisions/K29-ui-layer.md)).
+([`../decisions/K29-ui-layer.md`](../../../decisions/K29-ui-layer.md)).
 
 ```ts
 export const web = Blueprint.projection({

@@ -1,7 +1,7 @@
 # Skills: questions for Aaron
 
 One batched round, 18 November 2026, for [`skills.md`](skills.md). Everything else in that design was the building
-agent's call (recorded in [`../decisions/K4-agent-skills.md`](../decisions/K4-agent-skills.md)). These four are yours,
+agent's call (recorded in [`../decisions/K4-agent-skills.md`](../../../decisions/K4-agent-skills.md)). These four are yours,
 because each one decides what "workable" means, how much an agent may do without you, how you work day to day, or
 something outward-facing.
 

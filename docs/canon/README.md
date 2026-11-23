@@ -20,8 +20,9 @@ tests and gates run on.
 The map behind this plan, drawn for Aaron's review, is the canon board (a convenience: the link dies with the account,
 and `outline.md` and K37 are the record): https://claude.ai/code/artifact/1ec0cf04-7096-44f5-a182-7c42b55ee37b.
 
-`design/docs/index.html` stays the single source until the canon covers what it covers. Then the canon replaces it,
-and the decisions record the switch.
+The canon replaced the old one-page docs, `design/docs/index.html`, on 23 November 2026 (K41). That page is a record now,
+in `design/history/retired-2026-11-23/docs/`, and the canon's check took over its link check. What is built, what is
+left and the package map are on the status page, [`status.md`](status.md), which the check reads like this README.
 
 ## How a page earns its place
 

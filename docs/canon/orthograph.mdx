@@ -10,7 +10,7 @@ questions:
 status: specified
 milestone: M3
 slices: [M1.22, ST1.25, ST3.07, M3.09, M6.11, M7.04, M7.13, M8.09]
-decisions: [K5, K2, K7, K9, K23, K29, K37]
+decisions: [K5, K2, K7, K9, K14, K23, K29, K30, K37, K41]
 links: [blueprint, languages-and-hosts, plugins, data, doors, things, machines, invariants, operations, handlers, journeys, proof, traces, projections, ui, portal, environments, time, agents, chains-and-wallets, factory]
 ---
 
@@ -141,6 +141,58 @@ A change moves through seven steps. Each has its own page.
 Where each operation runs is the language's and host's business ([languages-and-hosts](languages-and-hosts.mdx)): an
 operation written in Effect is enforced by a wrapper on a Cloudflare Worker, and one on a chain by its contract (K7).
 Where its data lives is [data](data.mdx). Every way in, and why none holds authority, is [doors](doors.mdx).
+
+What flows down that line is the description; what flows back up is evidence. Four kinds come back. **Drift**:
+`ortho check` fails when a generated file differs from what the model renders. **Evidence**: every call leaves spans,
+events and refusals named from the model, and journeys assert on them. **Staleness**: a full prove records what each
+passing operation rested on, so `ortho impact` names what a change made stale and `ortho prove --changed` reruns only
+that. **The scaffold growing**: `ortho check` warns when a declared refusal, state or step has no place in a handler
+you already wrote.
+
+## How to think in it
+
+Merged here from the model draft of 20 and 21 November 2026 by K41; the draft, with a file and line for every claim,
+is kept as a record in `design/history/retired-2026-11-23/model/README.md`, and its five calls are K30's.
+
+**The ideas you think in.** A [thing](things.mdx) is a noun with an id and fields; a value is a named field type that
+says what it is in every language. A [machine](machines.mdx) holds a thing's states and moves, and refuses a move
+from the wrong state for you. An [operation](operations.mdx) is a verb on a thing: payload, answer, refusals, move,
+who may call, steps and budget; a read changes nothing and has no handler. A refusal is a declared error with a stable
+code; an event is what a move records. A role says who may call; a rule ([invariants](invariants.mdx)) says what must
+hold across records, and owns its refusal. A [journey](journeys.mdx) is a story through real operations that is the
+spec; a starting world is a setup made only by running operations; an [environment](environments.mdx) says where the
+app runs; a mount says "use this plugin here, like this" ([plugins](plugins.mdx)).
+
+**Five habits.**
+
+1. **Declare what you know**, and nothing you don't know yet.
+2. **Leave blanks for the agent.** A gap is `Blueprint.todo("what goes here")`: it compiles, and `ortho check` names
+   every one until it is filled.
+3. **Journeys are the spec.** A different agent from the builder writes them, and they fail on empty handlers before
+   anyone builds. Building is climbing: prove, fix the handler, prove again, until every journey is green.
+4. **The grid is the guardrail.** Every building block in every output is an eval (K14). The climb proves the app
+   works; the grid proves every output carries every block.
+5. **Outputs fall out.** You never write the SDK, the CLI, MCP or the docs; a change to the blueprint changes them all.
+
+**Three loops.**
+
+- **Ideation, from an idea to a demo.** Name the idea in one sentence ("claim `@name`; a public page of links").
+  `ortho add thing` and `ortho add operation` declare the things and verbs, each gap a blank; fill in the machine and
+  the rules you know; `ortho add journeys` writes a stub for every path through the machine, every role and every
+  refusal, and a journey author fills them in. Then check, generate, prove and climb, and look at it in the portal.
+  K30 makes `ortho add thing` take the states and verbs you already know, so it writes blanks only for the rest.
+- **Development: edit, check, prove, see what's stale.** Edit a handler or a declaration; `ortho generate` re-renders
+  and scaffolds anything new; `ortho check` finds blanks, types, rules and drift; `ortho prove` runs every journey in a
+  world, or `--only` one, or `--changed`; `ortho impact` says what the change made stale; the portal shows the calls.
+- **Extraction, from app code to a plugin.** Build a thing once inside an app, climb it green, then extract it (K30):
+  find the seam, make the package with `ortho new feature` (M2.10), move the declarations, handlers and journeys in
+  unchanged, write its one-file descriptor, prove it alone, publish it, mount it with one file, and delete the copy.
+  The first candidates are the starter's people and organisations (`@orthograph/auth`, `@orthograph/organizations`,
+  M2.05 and M2.07) and Plugged In's handle (`@orthograph/handles`, ST1.03). Mounting is built; the loop has never run
+  end to end.
+
+Where each part stands, release by release, and how the packages divide into the core and the standard library, is
+the canon's status page, [`status.md`](status.md).
 
 ## Choices
 

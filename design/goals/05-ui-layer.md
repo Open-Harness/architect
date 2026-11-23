@@ -101,7 +101,7 @@ A blueprint gives a web app its interface the way it gives the CLI and MCP their
 > - `AGENTS.md`, and this file word for word;
 > - `design/decisions/K29-ui-layer.md` (the whole shape, with sketches), K31 (the app's map), K32 and K33 (how goals
 >   coordinate, and how the work lives on GitHub: the `github` skill), K24, K13 and K28;
-> - `design/frame/projections.md` 3.4 (the web projection) and the M1.22, M1.23, ST1.25, ST1.26 and ST1.04 rows of
+> - `design/history/retired-2026-11-23/frame/projections.md` 3.4 (retired by K41; the canon's `ui` page replaces it) (the web projection) and the M1.22, M1.23, ST1.25, ST1.26 and ST1.04 rows of
 >   `design/milestones.md`;
 > - `spikes/ui-sdk-real-world/` (#222) and `spikes/ui-sdk-verb-primitive/` (#215), their READMEs first;
 > - the `ui-sdk`, `reviewer`, `author`, `threads` and `kanban` skills.

@@ -2,7 +2,7 @@
 
 Part of the frame ([`README.md`](README.md)). Proposed, 18 November 2026. The skills, workflows and tools that agents
 use to build a Orthograph project, from an idea to a proved, watched operation. The calls made here are recorded in
-[`../decisions/K4-agent-skills.md`](../decisions/K4-agent-skills.md); the ones that are Aaron's are in
+[`../decisions/K4-agent-skills.md`](../../../decisions/K4-agent-skills.md); the ones that are Aaron's are in
 [`skills-questions.md`](skills-questions.md).
 
 The short version. **Skills are core; agents are not.** A skill is a plain `SKILL.md` folder that says how to do one
