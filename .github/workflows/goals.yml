@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: 24
       - run: git fetch --no-tags origin '+refs/heads/goal/*:refs/remotes/origin/goal/*'
-      - run: node --test tools/github/
+      - run: node --test tools/github/*.test.mjs
       # The Project is Aaron's, and this workflow's own token can't reach a user's Project. With a token holding the
       # project scope saved as ORTHOGRAPH_PROJECT_TOKEN (only on Aaron's yes: AGENTS.md), the run keeps the Project
       # too; without one it keeps the issues and the goal pages, and the Project is kept by a local
