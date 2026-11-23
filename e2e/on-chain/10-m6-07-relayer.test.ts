@@ -136,7 +136,8 @@ describe("the relayer actor: a Durable Object that holds one key and sends every
     const onNode = await until(async () => { const hash = await pooled(url, w.relayer, first); return hash === sent.hash ? undefined : hash; }, (hash) => hash !== undefined, 30_000);
     expect(onNode, "the node holds a new transaction from the relayer at that nonce within 30 s, with nobody having asked the relayer for anything").toBeDefined();
     expect(onNode, "under a new hash").not.toBe(sent.hash);
-    const seen = await status(w, sent.id);
+    // The node has shown the alarm acted; status may take a moment to hold the new hash, so it is polled (100 ms, up to 5 s) until it reports the node's hash.
+    const seen = await until(() => status(w, sent.id), (s) => s.hash === onNode, 5_000);
     expect(seen, "the relayer's status agrees with the node: replaced once").toMatchObject({ id: sent.id, nonce: first, hash: onNode, state: "submitted", replaces: [sent.hash] });
     const replacement = await txOf(url, seen.hash);
     expect(replacement, "the node holds the replacement").not.toBeNull();
