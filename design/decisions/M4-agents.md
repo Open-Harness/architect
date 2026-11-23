@@ -19,6 +19,9 @@ server stands in for a provider, or what "no second model call" promises.
 
 ### 1. The Run is a thing of `@orthograph/agents`, a feature plugin
 
+> Superseded by K40, 22 November 2026 (fix 3): an agent is its own thing, `Agent`, living in its own actor and fed
+> through the outbox by `agent.tell`. A run is one input and its answer inside the agent's Pi conversation, not a row.
+
 `packages/agents` is `@orthograph/agents`, a `Blueprint.feature` (`packages/orthograph/src/modules/plugins/README.md`).
 It declares `Run` with the machine of `frame/examples/agents.md:53-64` (`working`, `waiting`, `done`, `failed`,
 `cancelled`), `Agent` as a thing read from the app's `Blueprint.agent` declarations (K10 section 1), and the operations
@@ -29,7 +32,9 @@ It declares `Run` with the machine of `frame/examples/agents.md:53-64` (`working
 
 Only a person starts a run, through `Via.session` or `Via.key`, unless the app's mount allows agents (S15,
 `frame/examples/agents.md:300-305`). A run's tools call as `agent for` its starter, so the server's roles decide what it
-may do; an agent is a caller like any other.
+may do; an agent is a caller like any other. _(Superseded by K40, 22 November 2026: "only a person starts a run" no
+longer exists as a rule; any operation allowed to create an `Agent` makes one, under its own roles, and the agent acts as
+itself.)_
 
 **The row** (agent, model, brief, budget, spent, state, starter) lives in the database, so runs list and filter. **The
 transcript**, checkpoints, tool outputs and usage live in Pi's storage, one SQLite store per run (call 2). Pi owns the
@@ -37,6 +42,9 @@ transcript; the machine owns the lifecycle; the loop calls `wait`, `wake`, `fini
 ends a phase, so the two never disagree for longer than one call (H1 section 11).
 
 ### 2. Where Pi runs: one SQLite Durable Object per run, one SQLite file per run on Node
+
+> Superseded by K40, 22 November 2026 (fix 3): Pi's harness and conversation live in the agent's own actor, its SQLite
+> beside the actor's tables, one per agent rather than one per run.
 
 The loop is Pi Durable behind an Effect seam (H1.1, H1.2), with the six packages H1.1 names (`pi-durable`, `pi-ai`, `chord`, `pi-codemode`,
 `pi-schema`, `pi-telemetry`, under `@earendil-works/`) pinned at **1.5.0** exactly; the spike measured the first three at

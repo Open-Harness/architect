@@ -119,31 +119,21 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-**Parked on 22 November 2026** by the conductor's word (Aaron: "Narrow to the path"). It resumes when the conductor
-says so; the lead was claude (claude-opus-5-5).
+23 November 2026, parked under K42 (section 7). The lead stopped before updating this after K42, so the lander updated
+it at the `goal/agents` landing (#793). Its open slices are board items at their stage; no lead holds them.
 
-**Landed:** `goal/agents` merged `goal/stage-1` in (#460). Slice 1 is decided in `design/decisions/M4-agents.md`:
-- The Run is a thing of the `@orthograph/agents` feature.
-- Pi Durable 1.5.0 runs in one SQLite Durable Object per run, or one SQLite file per run on Node.
-- "No second model call" covers committed steps. It is proved by an eviction in the tool phase, with a separate check
-  for a request cut in flight.
-- Time is the world's. Goal 9's `DurableTimers` (#464) is agreed.
-- The packages are `@orthograph/anthropic`, `@orthograph/openai` and `@orthograph/stand-in-model`. The stand-in is
-  llama.cpp b12503 serving Qwen3 0.6B, pinned by checksum.
-- Goal 10 builds the journeys' world doors, in a new `prove` module, `agent-world`.
-- M4.10 now needs M4.08.
-
-**Open:**
-- Slice 2's journeys are a draft (#490). Its review passed after three blockers: two are fixed in the decision, and the
-  request-key journey is still to fix (the same key with another payload or another caller). Its proofs 2 and 3 wait on
-  M4.10 (Snag #489).
-- Slices 3 and 4's checks are part-written and unreviewed, saved as WIP on `goal-10/s3-runner-check` and
-  `goal-10/s4-durable-check` (no pull requests). On resume, their authors pick them up from there.
-- The `e2e/agents/` scaffolding (`goal-10/e2e-scaffold`) rides in with #490.
-- Ask to Goal 3, #473 (builders may shrink every `e2e/<area>/expected-failing/`), is open.
-
-**Next, on resume:**
-1. Merge `goal/stage-1` in.
-2. Fix #490's request-key blocker and land it.
-3. Write slices 3 and 4's checks, then build slice 3 (the run record, the scorer, the first runner).
-4. Slice 6 needs a 640 MB model and llama.cpp downloaded into a cache: ask before downloading.
+- **Landed in `main`** with #793: the sync with stage 1 (#460) and slice 1, `design/decisions/M4-agents.md` (#469).
+  K40 (22 November) has since changed M4-agents calls 1 and 2. An agent is its own thing, `Agent`, living in its own
+  actor and fed through the outbox, not a run that only a person starts. The M4.10 row now reads that way, and Ask
+  #535 is answered by those edits.
+- **Open, as board items:**
+  - Slice 2's journeys, #490 (draft). Its review passed after three blockers. Two are fixed in the decision, and the
+    request-key journey is still to fix (the same key with another payload or another caller). Its proofs 2 and 3 wait
+    on M4.10 (Snag #489). They also need rewriting to K40's `Agent` shape.
+  - Slices 3 and 4's checks, part-written and unreviewed, saved as WIP on `goal-10/s3-runner-check` and
+    `goal-10/s4-durable-check` (no pull requests). The `e2e/agents/` scaffolding (`goal-10/e2e-scaffold`) rides in
+    with #490.
+  - Slice 6 needs a 640 MB model and llama.cpp downloaded into a cache. Ask before downloading.
+- **Who picks it up.** Under K42 the superagent (Goal 17) takes agents first, since it pulls them for its
+  Tickets-and-agents and main-agent slices (K40). A goal that resumes this work bases on `main`, not `goal/stage-1`,
+  which is retired.

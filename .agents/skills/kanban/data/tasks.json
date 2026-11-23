@@ -3001,7 +3001,7 @@
   "title": "@orthograph/agents",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "@orthograph/agents: Run, its machine, start, steer, cancel, the system's moves, Blueprint.agent; Agent as a thing read from the declarations; run.start taking key, the caller's request key; runFinished.outcome closed (pushed, reviewed, answered, blocked) and runFailed.reason closed with transient (K10 section 5); RunPoolFull"
+  "what": "@orthograph/agents under K40 fixes 3 and 4: Agent is a thing living in its own actor (machine idle ⇄ working, and stopped), its Pi Durable conversation in that actor's SQLite; agent.tell, with on:, fed through the outbox with the delivering event's id as Pi's requestId (whenBusy: \"steer\"); any operation allowed to create an Agent makes one, under its own roles; the agent acts as itself; Blueprint.agent({ env }) names its ExecutionEnv; a run is one input and its answer inside the conversation, read from Pi, not a row"
  },
  "M4-11": {
   "doneWhen": "a builder script lists blanks and runs one journey through bp",
