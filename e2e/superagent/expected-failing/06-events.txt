@@ -1,5 +1,1 @@
 # Written before slice 4. Red until the held plugins' events and Slack's hand-written ones exist (slice 4); due before it merges.
-superagent/06-events.test.ts > 06 github: the events it listens to > an action the spec doesn't list for the event is refused, and so is another event's payload
-superagent/06-events.test.ts > 06 github: the events it listens to > every action of every event decodes its own example whole, and refuses each wrong one
-superagent/06-events.test.ts > 06 slack: the events it listens to, written by hand > an app mention, a message, a reply in a thread and a bot's message decode whole
-superagent/06-events.test.ts > 06 slack: the events it listens to, written by hand > each wrong payload is refused: a part left out, a part of another type, a different event, an unknown kind

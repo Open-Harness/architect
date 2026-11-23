@@ -35,7 +35,7 @@ export const callsOf = (file: string, pkg: string, mountName: string, mount: Mou
       else if (knownEvents.some(([, event]) => event === item)) namedEvents.add(item);
       else if (kindOf(item) === "missing-call") problems.push(`${file}: includes the call ${(item as { name: string }).name}, which ${pkg} doesn't have (its calls: ${said})`);
       else if (kindOf(item) === "missing-event") problems.push(`${file}: includes the event ${(item as { name: string }).name}, which ${pkg} doesn't have (its events: ${saidEvents})`);
-      else problems.push(`${file}: include takes one of ${pkg}'s calls or events, written p.calls.<call> or p.events.<event> (${said}); it was given ${JSON.stringify(item) ?? String(item)}`);
+      else problems.push(`${file}: include takes one of ${pkg}'s calls, written p.calls.<call> (${said}), or one of its events, written p.events.<event> (${saidEvents}); it was given ${JSON.stringify(item) ?? String(item)}`);
     }
   }
   const reach = known.map(([call, value]): readonly [AdapterCall, CallReach] => [value, { mount: mountName, file, package: pkg, call, included: named.has(value) }]);

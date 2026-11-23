@@ -37,7 +37,7 @@ export const createWorld = (context: Context) => {
   const bot = () => made("simple-user", { login: "coder-bot", id: 7, type: "Bot", html_url: `${context.origin()}/coder-bot`, url: `${context.origin()}/users/coder-bot` });
 
   const comment = (c: Comment) => made("issue-comment", { id: c.id, body: c.body, user: bot(), created_at: c.at, updated_at: c.at, url: `${base()}/issues/comments/${c.id}`, html_url: `${web()}/issues/${c.issue}#issuecomment-${c.id}`, issue_url: `${base()}/issues/${c.issue}` });
-  const side = (b: { ref: string; sha: string }) => ({ label: `acme:${b.ref}`, ref: b.ref, sha: b.sha, user: bot(), repo: null });
+  const side = (b: { ref: string; sha: string }) => ({ label: `acme:${b.ref}`, ref: b.ref, sha: b.sha, user: bot(), repo: made("repository", { id: 1, name: "widgets", full_name: "acme/widgets", private: false, html_url: web(), url: base() }) });
   const pull = (p: Pull) => made("pull-request", {
     number: p.number, id: 2000 + p.number, state: "open", locked: false, title: p.title, body: p.body, user: bot(), merged: false, merged_at: null, merged_by: null, closed_at: null,
     created_at: p.at, updated_at: p.at, url: `${base()}/pulls/${p.number}`, html_url: `${web()}/pull/${p.number}`, head: side(p.head), base: side(p.base), draft: false,

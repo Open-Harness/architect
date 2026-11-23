@@ -1,9 +1,1 @@
 # Written before slice 4. Red until the Slack and PostHog stand-ins exist (slice 4); due before it merges.
-superagent/05-stand-ins-slack-posthog.test.ts > 05 posthog: the calls pass against the stand-in > an issue that isn't there, or a project that isn't, is a 404
-superagent/05-stand-ins-slack-posthog.test.ts > 05 posthog: the calls pass against the stand-in > lists the three issues, a page at a time, and reads each one back the same
-superagent/05-stand-ins-slack-posthog.test.ts > 05 posthog: the calls pass against the stand-in > resolving one issue changes that issue only, and a status the spec doesn't allow is refused
-superagent/05-stand-ins-slack-posthog.test.ts > 05 posthog: the calls pass against the stand-in > stops when told, by its id, leaving nothing running and no folder
-superagent/05-stand-ins-slack-posthog.test.ts > 05 slack: the calls pass against the stand-in > a message posts once, with the time Slack gives it, and times only go up
-superagent/05-stand-ins-slack-posthog.test.ts > 05 slack: the calls pass against the stand-in > a reply in a thread comes back with its thread, in the order sent, and a thread holds only its own
-superagent/05-stand-ins-slack-posthog.test.ts > 05 slack: the calls pass against the stand-in > fails as Slack does, in a 200 with ok false: no channel, no text, no such thread, no token
-superagent/05-stand-ins-slack-posthog.test.ts > 05 slack: the calls pass against the stand-in > stops when told, by its id, leaving nothing running and no folder
