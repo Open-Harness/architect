@@ -16,7 +16,7 @@ export default defineConfig({
           /\/examples\//,
           /\/tools\/fixtures\//,
           /\/\.ortho\//,
-          /\/test\/(?:tmp|fixtures)\//,
+          /\/test\/(?:tmp[^/]*|fixtures)\//,
         ],
       },
     },
