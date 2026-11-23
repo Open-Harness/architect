@@ -71,10 +71,13 @@ export const Mounts: MountsApi = {
         problems.push(...own.problems.filter((p) => !added.some((n) => p === `${plugin.name}/blueprint/things/${n}: has no thing.ts`)));
         for (const [path, journey] of own.journeys) journeys.set(path, journey);
         for (const [n, a] of own.agents) {
-          if (agents.has(n)) problems.push(`${file}: ${plugin.name} brings agent ${n}, and ${agents.get(n)!.mount} brings one by that name`);
+          if (agents.has(n)) problems.push(`${file}: ${plugin.name} brings agent ${n} (${a.file}), and ${agents.get(n)!.mount} brings one by that name`);
           else agents.set(n, { ...a, file: `blueprint/agents/${n}.ts`, mount: name });
         }
-        for (const [n, s] of own.sources) sources.set(n, { ...s, mount: name, package: plugin.name });
+        for (const [n, s] of own.sources) {
+          if (sources.has(n)) problems.push(`${file}: ${plugin.name} brings source ${n} (${s.file}), and ${sources.get(n)!.file} brings one by that name: a source is named by its file`);
+          else sources.set(n, { ...s, mount: name, package: plugin.name });
+        }
         // Each thing gets its own verbs map, so an omit changes only this mount's copy.
         const mine = renamed(own, name, plugin.name, plugin.version).map((t) => ({ ...t, verbs: new Map(t.verbs) }));
         const applied = applyVerbs(file, plugin.name, mount, mine, layout);
@@ -113,7 +116,12 @@ export const Mounts: MountsApi = {
     for (const { file, plugin, t } of extensions) {
       const target = things.get(t.name) ?? layout.things.get(t.name);
       if (!target?.thing) { problems.push(`${file}: ${plugin} adds operations to thing ${t.name}, which no mounted plugin or the app brings`); continue; }
-      for (const [verb, v] of t.verbs) target.verbs.set(verb, { ...v, from: t.from });
+      for (const [verb, v] of t.verbs) {
+        const taken = target.verbs.get(verb);
+        // One operation has one declaration: an added verb may not be one the thing already has, nor one another folder adds.
+        if (taken) problems.push(`${file}: ${plugin} adds ${t.name}.${verb} (${v.file}), which ${t.name} already has (${taken.file}): name the operation another verb`);
+        else target.verbs.set(verb, { ...v, from: t.from });
+      }
     }
     return { things, stores, journeys, mounts, calls, agents, sources, problems };
   }),

@@ -30,8 +30,8 @@ at `goal-17/s5-blueprint-build`.
    `_TOKEN`, `_KEY`, `_SECRET` or `_PASSWORD`, and must start with `<SOURCE>_`.
 6. **`StaleRevision { current }` is declared in `@orthograph/superagent`**, the plugin every other depends on, and `policy`,
    `prompt-set`, `superagent.update` and `settings.save` all refuse it.
-7. **`policy.history` and `prompt-set.history` answer one list for each of `revision`, `at`, `by` and `from`, in step**, newest
-   first. Check 14 reads the four names in the answer, and an answer of one list of rows would not show them.
+7. **`policy.history` and `prompt-set.history` answer one list of `{ revision, at, by, from }` rows**, newest first, as K40 writes it.
+   A list of structs says its rows' field names in the model (`fields`), so a reader of the model, and check 14, sees them.
 8. **The eight events GOAL17-pause leaves to slice 5 each have one delivery**, so each is in one list: `TicketCreated` to
    `outgoing-message.reply` and `TicketResumed` to `mandate.revalidate` (held); `TriggerRequeued`, `DecisionRecorded` and
    `ThreadUnsubscribed` to `eval.due` (held); `ThreadSubscribed` to `eval.due`, `TicketEnded` to `outgoing-message.withdraw` and
@@ -46,6 +46,13 @@ at `goal-17/s5-blueprint-build`.
     the reserved words, and the CLI's per-thing command uses the same safe name. The operation stays `eval.due`.
 12. **A field of `Blueprint.id(prefix)` must name a prefix some thing owns as its own `id`** (GOAL17-executor-slots), except `per`,
     the identity's people, which a blueprint refers to without declaring.
+
+13. **A read with `only` or `derive` fails closed until slice 7.** `Reads.serve` in `packages/language-effect` refuses such a read
+    with `ReadNotServed` ("derived and pinned reads are served from slice 7"), after the role check, and never serves it as a
+    plain read. Slice 7 serves `looks`, `is`, `adds` and `only` in `Reads.serve`.
+14. **A name two files claim is refused, naming both.** An added verb the thing already has, or another folder adds; a source or an
+    agent of one name from two plugins, or from a plugin and the app; a hold two things export under one name. When a plugin ships
+    both `x.ts` and `x.js`, only the `.js` is loaded.
 
 ## What the checks cannot reach, found while building
 

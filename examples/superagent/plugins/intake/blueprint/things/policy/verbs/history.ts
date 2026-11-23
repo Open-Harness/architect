@@ -1,16 +1,13 @@
-import { Blueprint } from "orthograph";
+import { Blueprint, Schema } from "orthograph";
 import { Policy } from "../thing.ts";
 
 export default Blueprint.operation(Policy, {
-  description: "Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.",
+  description: "Every saved version, newest first, each row its number, when, by whom, and the one it was made from.",
   payload: {
     superagent: Policy.fields.superagent,
   },
   answer: {
-    revision: Blueprint.list(Blueprint.uint(32)),
-    at: Blueprint.list(Blueprint.uint(64)),
-    by: Blueprint.list(Blueprint.text({ max: 120 })),
-    from: Blueprint.list(Blueprint.uint(32)),
+    entries: Blueprint.list(Blueprint.value(Schema.Struct({ revision: Schema.Number, at: Schema.Number, by: Schema.String, from: Schema.Number }))),
   },
   allowed: [Blueprint.signedIn],
 });

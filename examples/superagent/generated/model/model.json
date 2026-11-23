@@ -6262,7 +6262,7 @@
         "version": "0.0.0",
         "thing": "policy"
       },
-      "description": "Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.",
+      "description": "Every saved version, newest first, each row its number, when, by whom, and the one it was made from.",
       "payload": {
         "superagent": {
           "value": {
@@ -6273,28 +6273,16 @@
         }
       },
       "answer": {
-        "revision": {
+        "entries": {
           "value": {
             "type": "schema",
-            "format": "list"
-          }
-        },
-        "at": {
-          "value": {
-            "type": "schema",
-            "format": "list"
-          }
-        },
-        "by": {
-          "value": {
-            "type": "schema",
-            "format": "list"
-          }
-        },
-        "from": {
-          "value": {
-            "type": "schema",
-            "format": "list"
+            "format": "list",
+            "fields": [
+              "revision",
+              "at",
+              "by",
+              "from"
+            ]
           }
         }
       },
@@ -6315,7 +6303,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "f4fc662f7f7929d3"
+      "hash": "a32071ae7f0ccc3c"
     },
     "policy.restore": {
       "kind": "operation",
@@ -6622,7 +6610,7 @@
         "version": "0.0.0",
         "thing": "prompt-set"
       },
-      "description": "Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.",
+      "description": "Every saved version, newest first, each row its number, when, by whom, and the one it was made from.",
       "payload": {
         "superagent": {
           "value": {
@@ -6633,28 +6621,16 @@
         }
       },
       "answer": {
-        "revision": {
+        "entries": {
           "value": {
             "type": "schema",
-            "format": "list"
-          }
-        },
-        "at": {
-          "value": {
-            "type": "schema",
-            "format": "list"
-          }
-        },
-        "by": {
-          "value": {
-            "type": "schema",
-            "format": "list"
-          }
-        },
-        "from": {
-          "value": {
-            "type": "schema",
-            "format": "list"
+            "format": "list",
+            "fields": [
+              "revision",
+              "at",
+              "by",
+              "from"
+            ]
           }
         }
       },
@@ -6675,7 +6651,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "7bf93ba987355118"
+      "hash": "ec90de3ba343d7d1"
     },
     "prompt-set.preview": {
       "kind": "operation",
@@ -7853,7 +7829,13 @@
         "problems": {
           "value": {
             "type": "schema",
-            "format": "list"
+            "format": "list",
+            "fields": [
+              "kind",
+              "id",
+              "name",
+              "failures"
+            ]
           }
         },
         "more": {
@@ -7896,7 +7878,13 @@
           "problems": {
             "value": {
               "type": "schema",
-              "format": "list"
+              "format": "list",
+              "fields": [
+                "kind",
+                "id",
+                "name",
+                "failures"
+              ]
             }
           },
           "more": {
@@ -7908,7 +7896,7 @@
         },
         "hash": "f76ac2e55763a3de"
       },
-      "hash": "5993ddff10e07477"
+      "hash": "0e876de5e242e384"
     },
     "superagent.pause": {
       "kind": "operation",
@@ -14203,9 +14191,9 @@
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-/BvGnTSQi6cyNkNORp+YpuhzOGh2u69hOKkMQuAe8V8=",
+      "integrity": "sha256-VCIPYVdowBw6zabAqWJgu1iiICVxlgnPhbOKIeLjC/Q=",
       "chosen": {},
-      "hash": "6cf64b4a86b8e1f0"
+      "hash": "8388d2d61cedaf09"
     },
     "posthog": {
       "kind": "adapter",
@@ -14230,9 +14218,9 @@
       "file": "blueprint/features/prompts.ts",
       "package": "@orthograph/prompts",
       "version": "0.0.0",
-      "integrity": "sha256-kwjZG67sU6Lih5BoxeUsaDh+Y0R9PdD2JHnMV4GJG38=",
+      "integrity": "sha256-5IIUREd6yfHmMT9E04PMECovkW9EcLERP/pMnOw09r0=",
       "chosen": {},
-      "hash": "3c152adc0fad05ef"
+      "hash": "a5fac4f21bb6f57c"
     },
     "slack": {
       "kind": "adapter",

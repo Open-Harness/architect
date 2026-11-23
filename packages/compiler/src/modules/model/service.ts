@@ -19,14 +19,27 @@ export const Compiler: CompilerApi = {
     for (const [name, t] of folded.things) {
       const own = layout.things.get(name);
       if (own && !own.thing) {
-        for (const [verb, v] of own.verbs) t.verbs.set(verb, { ...v, from: { kind: "app" } });
+        for (const [verb, v] of own.verbs) {
+          const taken = t.verbs.get(verb);
+          // One operation has one declaration: the app may not add a verb the thing already has, from its plugin or another folder.
+          if (taken) layout.problems.push(`${v.file}: adds ${name}.${verb}, which ${name} already has (${taken.file}): name the operation another verb`);
+          else t.verbs.set(verb, { ...v, from: { kind: "app" } });
+        }
         const at = layout.problems.indexOf(`${own.base}: has no thing.ts`);
         if (at >= 0) layout.problems.splice(at, 1);
       }
       layout.things.set(name, t);
     }
-    for (const [n, a] of folded.agents) layout.agents.set(n, a);
-    for (const [n, s] of folded.sources) layout.sources.set(n, s);
+    for (const [n, a] of folded.agents) {
+      const mine = layout.agents.get(n);
+      if (mine) layout.problems.push(`${mine.file}: the app's agent ${n} has the name of the one ${a.mount} brings (${a.file}): an agent is named by its file`);
+      else layout.agents.set(n, a);
+    }
+    for (const [n, s] of folded.sources) {
+      const mine = layout.sources.get(n);
+      if (mine) layout.problems.push(`${mine.file}: the app's source ${n} has the name of the one ${s.mount} brings (${s.file}): a source is named by its file`);
+      else layout.sources.set(n, s);
+    }
     for (const [call, reach] of folded.calls) layout.calls.set(call, reach);
     for (const [file, journey] of folded.journeys) layout.journeys.set(file, journey);
     for (const [name, s] of folded.stores) layout.stores.set(name, s);

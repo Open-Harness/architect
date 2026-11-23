@@ -1,7 +1,7 @@
 <!-- Generated from the blueprint. Do not edit. -->
 # prompt-set.history
 
-Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.
+Every saved version, newest first, each row its number, when, by whom, and the one it was made from.
 
 **Who may call:** anyone signed in.
 
@@ -15,10 +15,7 @@ Every saved version, newest first: its number, when, by whom, and the one it was
 
 | field | value |
 |---|---|
-| revision | schema |
-| at | schema |
-| by | schema |
-| from | schema |
+| entries | schema |
 
 ## Refusals
 

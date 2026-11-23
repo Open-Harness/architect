@@ -8,7 +8,7 @@ export type { McpEntry, McpRefusals, McpResult, McpServed, McpTool } from "#modu
 export { Calls } from "#modules/calls/service.js";
 export type { CallRunner, CallWiring, Callable } from "#modules/calls/types.js";
 export { Device, Environment, Handlers, Reads } from "#modules/handler/service.js";
-export { BlankReached, DeviceWorld, IdempotencyConflict, InvalidPayload, NotFound, NotFrom } from "#modules/handler/types.js";
+export { BlankReached, DeviceWorld, IdempotencyConflict, InvalidPayload, NotFound, NotFrom, ReadNotServed } from "#modules/handler/types.js";
 export type { Device as DeviceOf, DeviceWhere, DeviceWorldOf, Handler, HandlerContext, ReadAnswer, ReadPayload, Served, ServedRead, StepRunners } from "#modules/handler/types.js";
 export { journalOf } from "#modules/journal/service.js";
 export { Journal, type Entry } from "#modules/journal/types.js";

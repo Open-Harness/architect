@@ -6266,7 +6266,7 @@
           "version": "0.0.0",
           "thing": "policy"
         },
-        "description": "Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.",
+        "description": "Every saved version, newest first, each row its number, when, by whom, and the one it was made from.",
         "payload": {
           "superagent": {
             "value": {
@@ -6277,28 +6277,16 @@
           }
         },
         "answer": {
-          "revision": {
+          "entries": {
             "value": {
               "type": "schema",
-              "format": "list"
-            }
-          },
-          "at": {
-            "value": {
-              "type": "schema",
-              "format": "list"
-            }
-          },
-          "by": {
-            "value": {
-              "type": "schema",
-              "format": "list"
-            }
-          },
-          "from": {
-            "value": {
-              "type": "schema",
-              "format": "list"
+              "format": "list",
+              "fields": [
+                "revision",
+                "at",
+                "by",
+                "from"
+              ]
             }
           }
         },
@@ -6319,7 +6307,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "f4fc662f7f7929d3"
+        "hash": "a32071ae7f0ccc3c"
       },
       "policy.restore": {
         "kind": "operation",
@@ -6626,7 +6614,7 @@
           "version": "0.0.0",
           "thing": "prompt-set"
         },
-        "description": "Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.",
+        "description": "Every saved version, newest first, each row its number, when, by whom, and the one it was made from.",
         "payload": {
           "superagent": {
             "value": {
@@ -6637,28 +6625,16 @@
           }
         },
         "answer": {
-          "revision": {
+          "entries": {
             "value": {
               "type": "schema",
-              "format": "list"
-            }
-          },
-          "at": {
-            "value": {
-              "type": "schema",
-              "format": "list"
-            }
-          },
-          "by": {
-            "value": {
-              "type": "schema",
-              "format": "list"
-            }
-          },
-          "from": {
-            "value": {
-              "type": "schema",
-              "format": "list"
+              "format": "list",
+              "fields": [
+                "revision",
+                "at",
+                "by",
+                "from"
+              ]
             }
           }
         },
@@ -6679,7 +6655,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "7bf93ba987355118"
+        "hash": "ec90de3ba343d7d1"
       },
       "prompt-set.preview": {
         "kind": "operation",
@@ -7857,7 +7833,13 @@
           "problems": {
             "value": {
               "type": "schema",
-              "format": "list"
+              "format": "list",
+              "fields": [
+                "kind",
+                "id",
+                "name",
+                "failures"
+              ]
             }
           },
           "more": {
@@ -7900,7 +7882,13 @@
             "problems": {
               "value": {
                 "type": "schema",
-                "format": "list"
+                "format": "list",
+                "fields": [
+                  "kind",
+                  "id",
+                  "name",
+                  "failures"
+                ]
               }
             },
             "more": {
@@ -7912,7 +7900,7 @@
           },
           "hash": "f76ac2e55763a3de"
         },
-        "hash": "5993ddff10e07477"
+        "hash": "0e876de5e242e384"
       },
       "superagent.pause": {
         "kind": "operation",
@@ -14207,9 +14195,9 @@
         "file": "blueprint/features/intake.ts",
         "package": "@orthograph/intake",
         "version": "0.0.0",
-        "integrity": "sha256-/BvGnTSQi6cyNkNORp+YpuhzOGh2u69hOKkMQuAe8V8=",
+        "integrity": "sha256-VCIPYVdowBw6zabAqWJgu1iiICVxlgnPhbOKIeLjC/Q=",
         "chosen": {},
-        "hash": "6cf64b4a86b8e1f0"
+        "hash": "8388d2d61cedaf09"
       },
       "posthog": {
         "kind": "adapter",
@@ -14234,9 +14222,9 @@
         "file": "blueprint/features/prompts.ts",
         "package": "@orthograph/prompts",
         "version": "0.0.0",
-        "integrity": "sha256-kwjZG67sU6Lih5BoxeUsaDh+Y0R9PdD2JHnMV4GJG38=",
+        "integrity": "sha256-5IIUREd6yfHmMT9E04PMECovkW9EcLERP/pMnOw09r0=",
         "chosen": {},
-        "hash": "3c152adc0fad05ef"
+        "hash": "a5fac4f21bb6f57c"
       },
       "slack": {
         "kind": "adapter",
@@ -14456,7 +14444,7 @@
       "thing:superagent": "e55ebb477c1aa89e"
     },
     "policy.history": {
-      "operation:policy.history": "f4fc662f7f7929d3",
+      "operation:policy.history": "a32071ae7f0ccc3c",
       "thing:policy": "db67566f8ec86ff3"
     },
     "policy.restore": {
@@ -14476,7 +14464,7 @@
       "thing:prompt-set": "e48b3fb742a57ad8"
     },
     "prompt-set.history": {
-      "operation:prompt-set.history": "7bf93ba987355118",
+      "operation:prompt-set.history": "ec90de3ba343d7d1",
       "thing:prompt-set": "e48b3fb742a57ad8"
     },
     "prompt-set.preview": {
@@ -14552,7 +14540,7 @@
       "thing:superagent": "e55ebb477c1aa89e"
     },
     "superagent.health": {
-      "operation:superagent.health": "5993ddff10e07477",
+      "operation:superagent.health": "0e876de5e242e384",
       "thing:agent": "a369aaa882ce59e7",
       "thing:superagent": "e55ebb477c1aa89e"
     },
@@ -14741,14 +14729,14 @@
     "outgoing-message/send.md": "<!-- Generated from the blueprint. Do not edit. -->\n# outgoing-message.send\n\nSend a conversation's head through its connection. A failed call is counted and queued again; the outbox always sees a success.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| message | outgoing-message.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| sent | schema |\n\n## Move\n\n`settled`: from pending to pending or sent or dropped, emitting ReplySettled.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OutgoingMessageNotPending | 101 | OU-900 | the outgoing-message is in a state settled can't start from; carries `state` |\n| OutgoingMessageNotFound | 4 | OU-901 | nothing has the id in message; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent outgoing-message send --message <message>\n```\n\nHTTP: `POST /outgoing-message/send` with the payload as JSON. SDK: `Sdk.outgoing-message.send(payload)`.\n",
     "outgoing-message/withdraw.md": "<!-- Generated from the blueprint. Do not edit. -->\n# outgoing-message.withdraw\n\nDrop a ticket's pending replies: it ended, or its superagent retired.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| ticket | outgoing-message.ticket |\n\n## Answer\n\n| field | value |\n|---|---|\n| message | outgoing-message.id |\n\n## Move\n\n`withdrawn`: from pending to dropped, emitting ReplyWithdrawn.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OutgoingMessageNotPending | 101 | OU-900 | the outgoing-message is in a state withdrawn can't start from; carries `state` |\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent outgoing-message withdraw --ticket <ticket>\n```\n\nHTTP: `POST /outgoing-message/withdraw` with the payload as JSON. SDK: `Sdk.outgoing-message.withdraw(payload)`.\n",
     "policy/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.get\n\nRead the policy: the current version, or the one named.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n| revision (optional) | uint |\n\n## Answer\n\n| field | value |\n|---|---|\n| revision | policy.revision |\n| mode | policy.mode |\n| allowed | policy.allowed |\n| bots | policy.bots |\n| admission | policy.admission |\n| rules | policy.rules |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy get --superagent <superagent> [--revision <revision>]\n```\n\nHTTP: `POST /policy/get` with the payload as JSON. SDK: `Sdk.policy.get(payload)`.\n",
-    "policy/history.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.history\n\nEvery saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n\n## Answer\n\n| field | value |\n|---|---|\n| revision | schema |\n| at | schema |\n| by | schema |\n| from | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy history --superagent <superagent>\n```\n\nHTTP: `POST /policy/history` with the payload as JSON. SDK: `Sdk.policy.history(payload)`.\n",
-    "policy/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy\n\nA superagent's rules: who may ask, how, and what it may accept. One current version, every save kept.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| revision | uint |\n| mode | schema |\n| allowed | schema |\n| bots | schema |\n| admission | schema |\n| rules | schema |\n\n## Machine\n\nStates: current. A move from the wrong state is refused PolicyNotCurrent (exit 87).\n\n| move | from | to | emits |\n|---|---|---|---|\n| save | (creates) | current | PolicyChanged |\n| restore | current | current | PolicyChanged |\n\n## Events\n\n- `PolicyChanged`: carries superagent (policy.superagent), revision (policy.revision); emitted by the move save, restore\n\n## Operations\n\n- [policy.get](get.md): Read the policy: the current version, or the one named.\n- [policy.history](history.md): Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.\n- [policy.restore](restore.md): Save an earlier version again, as a new one.\n- [policy.save](save.md): Save a new version of the policy. A save made from an older version is refused, with the current one.\n- [policy.sync](sync.md): List the accounts a connection's roster names.\n",
+    "policy/history.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.history\n\nEvery saved version, newest first, each row its number, when, by whom, and the one it was made from.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n\n## Answer\n\n| field | value |\n|---|---|\n| entries | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy history --superagent <superagent>\n```\n\nHTTP: `POST /policy/history` with the payload as JSON. SDK: `Sdk.policy.history(payload)`.\n",
+    "policy/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy\n\nA superagent's rules: who may ask, how, and what it may accept. One current version, every save kept.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| revision | uint |\n| mode | schema |\n| allowed | schema |\n| bots | schema |\n| admission | schema |\n| rules | schema |\n\n## Machine\n\nStates: current. A move from the wrong state is refused PolicyNotCurrent (exit 87).\n\n| move | from | to | emits |\n|---|---|---|---|\n| save | (creates) | current | PolicyChanged |\n| restore | current | current | PolicyChanged |\n\n## Events\n\n- `PolicyChanged`: carries superagent (policy.superagent), revision (policy.revision); emitted by the move save, restore\n\n## Operations\n\n- [policy.get](get.md): Read the policy: the current version, or the one named.\n- [policy.history](history.md): Every saved version, newest first, each row its number, when, by whom, and the one it was made from.\n- [policy.restore](restore.md): Save an earlier version again, as a new one.\n- [policy.save](save.md): Save a new version of the policy. A save made from an older version is refused, with the current one.\n- [policy.sync](sync.md): List the accounts a connection's roster names.\n",
     "policy/restore.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.restore\n\nSave an earlier version again, as a new one.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n| revision | policy.revision |\n| base | uint |\n\n## Answer\n\n| field | value |\n|---|---|\n| revision | policy.revision |\n\n## Move\n\n`restore`: from current to current, emitting PolicyChanged.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleRevision | 87 | SU-002 | the policy is in a state restore can't start from; carries `state` |\n| PolicyNotCurrent | 87 | PO-900 | the policy is in a state restore can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy restore --superagent <superagent> --revision <revision> --base <base>\n```\n\nHTTP: `POST /policy/restore` with the payload as JSON. SDK: `Sdk.policy.restore(payload)`.\n",
     "policy/save.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.save\n\nSave a new version of the policy. A save made from an older version is refused, with the current one.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n| base | uint |\n| mode | policy.mode |\n| allowed | policy.allowed |\n| bots | policy.bots |\n| admission | policy.admission |\n| rules | policy.rules |\n\n## Answer\n\n| field | value |\n|---|---|\n| revision | policy.revision |\n\n## Move\n\n`save`: from nothing (it creates) to current, emitting PolicyChanged.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleRevision | 87 | SU-002 | the policy is in a state save can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy save --superagent <superagent> --base <base> --mode <mode> --allowed <allowed> --bots <bots> --admission <admission> --rules <rules>\n```\n\nHTTP: `POST /policy/save` with the payload as JSON. SDK: `Sdk.policy.save(payload)`.\n",
     "policy/sync.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.sync\n\nList the accounts a connection's roster names.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n| source | text |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy sync --superagent <superagent> --source <source>\n```\n\nHTTP: `POST /policy/sync` with the payload as JSON. SDK: `Sdk.policy.sync(payload)`.\n",
     "prompt-set/compose.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set.compose\n\nMake the prompt for one agent's model request, from the current version.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | prompt-set.superagent |\n| role | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| text | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent prompt-set compose --superagent <superagent> --role <role>\n```\n\nHTTP: `POST /prompt-set/compose` with the payload as JSON. SDK: `Sdk.prompt-set.compose(payload)`.\n",
-    "prompt-set/history.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set.history\n\nEvery saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | prompt-set.superagent |\n\n## Answer\n\n| field | value |\n|---|---|\n| revision | schema |\n| at | schema |\n| by | schema |\n| from | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent prompt-set history --superagent <superagent>\n```\n\nHTTP: `POST /prompt-set/history` with the payload as JSON. SDK: `Sdk.prompt-set.history(payload)`.\n",
-    "prompt-set/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set\n\nWhat a team writes into its agents' prompts: sections, skills and overrides. One current version, every save kept.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| revision | uint |\n| sections | schema |\n| skills | schema |\n| overrides | schema |\n\n## Operations\n\n- [prompt-set.compose](compose.md): Make the prompt for one agent's model request, from the current version.\n- [prompt-set.history](history.md): Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.\n- [prompt-set.preview](preview.md): Show the prompt an agent of one kind would get, with a draft applied.\n- [prompt-set.save](save.md): Save a new version of the prompts. A save made from an older version is refused, with the current one.\n",
+    "prompt-set/history.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set.history\n\nEvery saved version, newest first, each row its number, when, by whom, and the one it was made from.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | prompt-set.superagent |\n\n## Answer\n\n| field | value |\n|---|---|\n| entries | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent prompt-set history --superagent <superagent>\n```\n\nHTTP: `POST /prompt-set/history` with the payload as JSON. SDK: `Sdk.prompt-set.history(payload)`.\n",
+    "prompt-set/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set\n\nWhat a team writes into its agents' prompts: sections, skills and overrides. One current version, every save kept.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| revision | uint |\n| sections | schema |\n| skills | schema |\n| overrides | schema |\n\n## Operations\n\n- [prompt-set.compose](compose.md): Make the prompt for one agent's model request, from the current version.\n- [prompt-set.history](history.md): Every saved version, newest first, each row its number, when, by whom, and the one it was made from.\n- [prompt-set.preview](preview.md): Show the prompt an agent of one kind would get, with a draft applied.\n- [prompt-set.save](save.md): Save a new version of the prompts. A save made from an older version is refused, with the current one.\n",
     "prompt-set/preview.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set.preview\n\nShow the prompt an agent of one kind would get, with a draft applied.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | prompt-set.superagent |\n| role | text |\n| sections | prompt-set.sections |\n\n## Answer\n\n| field | value |\n|---|---|\n| text | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent prompt-set preview --superagent <superagent> --role <role> --sections <sections>\n```\n\nHTTP: `POST /prompt-set/preview` with the payload as JSON. SDK: `Sdk.prompt-set.preview(payload)`.\n",
     "prompt-set/save.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set.save\n\nSave a new version of the prompts. A save made from an older version is refused, with the current one.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | prompt-set.superagent |\n| base | uint |\n| sections | prompt-set.sections |\n| skills | prompt-set.skills |\n| overrides | prompt-set.overrides |\n\n## Answer\n\n| field | value |\n|---|---|\n| revision | prompt-set.revision |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleRevision | ? | SU-002 | the prompt-set is in a state this can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent prompt-set save --superagent <superagent> --base <base> --sections <sections> --skills <skills> --overrides <overrides>\n```\n\nHTTP: `POST /prompt-set/save` with the payload as JSON. SDK: `Sdk.prompt-set.save(payload)`.\n",
     "proposal/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# proposal.approve\n\nApply a proposal. Only a signed-in person, through a session: text that reached a model is never an approval.\n\n**Who may call:** anyone signed in by session.\n\n## Payload\n\n| field | value |\n|---|---|\n| proposal | proposal.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`approve`: from waiting to approved, emitting ProposalApproved.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ProposalNotWaiting | 70 | PP-900 | the proposal is in a state approve can't start from; carries `state` |\n| ProposalNotFound | 4 | PP-901 | nothing has the id in proposal; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in by session; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent proposal approve --proposal <proposal>\n```\n\nHTTP: `POST /proposal/approve` with the payload as JSON. SDK: `Sdk.proposal.approve(payload)`.\n",
@@ -14817,5 +14805,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "63c3e99d984262da6693c36b36c29cf05d1066d198dd7bf5cdc87fc9a96ed521"
+  "digest": "dabea5db559a7734867cca051c2824e96f435a04178e8dfc29e6f0d2dc994cbc"
 }

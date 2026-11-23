@@ -38,6 +38,7 @@ const placeOf = (t: ThingModel | undefined) => (t === undefined ? "?" : t.store 
 
 export const holdsModel = (ctx: HoldContext) => {
   const out: Record<string, unknown> = {};
+  const declaredIn = new Map<string, string>();
   const deliveries = deliveriesOf(ctx.layout);
   const eventOwner = new Map<Event, string>(
     [...ctx.layout.things].flatMap(([n, t]) => [...t.events.values()].map((e) => [e, n] as const)),
@@ -69,6 +70,10 @@ export const holdsModel = (ctx: HoldContext) => {
           break;
         }
       }
+      // A hold is named by its export, for the whole project: two things may not export one name.
+      const first = declaredIn.get(name);
+      if (first !== undefined) { ctx.problems.push(`${t.holds.get(name)!.file}: the hold ${name} is already declared in ${first}: a hold is named for the whole project, so give one another name`); continue; }
+      declaredIn.set(name, t.holds.get(name)!.file);
       out[name] = {
         thing: thingName, key: hold.key.key, while: hold.while.map((s) => s.key),
         held: held.sort((a, b) => row(a).localeCompare(row(b))), unheld: unheld.sort((a, b) => row(a).localeCompare(row(b))),

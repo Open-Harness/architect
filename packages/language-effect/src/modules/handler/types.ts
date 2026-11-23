@@ -9,6 +9,8 @@ import type { Busy } from "#modules/work/types.js";
 
 /** A request key used again with a payload other than the one it was first used with: refused, never answered with the kept answer. It carries no field: the key is never shown. */
 export class IdempotencyConflict extends Data.TaggedError("IdempotencyConflict")<{}> {}
+/** A read that works its answer out from other records (`derive`) or pins a field (`only`) is served from slice 7 of Goal 17: until then it refuses, by name, and never answers as if it had no `only`. */
+export class ReadNotServed extends Data.TaggedError("ReadNotServed")<{ readonly read: string; readonly message: string }> {}
 /** The payload didn't match the operation's declaration. Refused before the handler runs. */
 export class InvalidPayload extends Data.TaggedError("InvalidPayload")<{ readonly issues: string }> {}
 
@@ -169,9 +171,9 @@ export interface ServedRead {
   /** The declaration this serves. */
   readonly operation: Read<any, any, any>;
   /** From the outside: the payload decoded first. */
-  readonly call: (payload: unknown, principal: Principal) => Effect.Effect<ReadAnswer, NotAllowed | Schema.SchemaError, Store>;
+  readonly call: (payload: unknown, principal: Principal) => Effect.Effect<ReadAnswer, NotAllowed | ReadNotServed | Schema.SchemaError, Store>;
   /** From a server that already decoded the payload. */
-  readonly run: (payload: ReadPayload, principal: Principal) => Effect.Effect<ReadAnswer, NotAllowed, Store>;
+  readonly run: (payload: ReadPayload, principal: Principal) => Effect.Effect<ReadAnswer, NotAllowed | ReadNotServed, Store>;
 }
 
 export interface ReadsApi {

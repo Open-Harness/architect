@@ -34,7 +34,7 @@ States: current. A move from the wrong state is refused PolicyNotCurrent (exit 8
 ## Operations
 
 - [policy.get](get.md): Read the policy: the current version, or the one named.
-- [policy.history](history.md): Every saved version, newest first: its number, when, by whom, and the one it was made from. One list for each, in step.
+- [policy.history](history.md): Every saved version, newest first, each row its number, when, by whom, and the one it was made from.
 - [policy.restore](restore.md): Save an earlier version again, as a new one.
 - [policy.save](save.md): Save a new version of the policy. A save made from an older version is refused, with the current one.
 - [policy.sync](sync.md): List the accounts a connection's roster names.
