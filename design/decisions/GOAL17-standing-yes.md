@@ -14,6 +14,13 @@ be able to do that if you need to").
 - **Keys:** never print or commit a key.
 - **New credentials:** the yes covers only keys already on hand. Each new credential still waits for Aaron's written yes: a GitHub App, a Slack app, a new cloud token, E2B.
 
+## Qualified, not superseded
+
+Goal 17's brief keeps its **Limits** line, "No cloud and no keys.", and adds the exception after it: "No cloud and no keys, except
+what Aaron's standing yes covers (GOAL17-standing-yes): VibeProxy and the Cloudflare keys already on hand, within the daily cap. A new
+credential still waits for his written yes." The old words still stand, so they are not listed under Supersedes. The same sentence is
+the rule in Goals 8 to 15's briefs, which this call does not change, and a Supersedes line for it would flag each of them.
+
 ## Supersedes
 
 - `design/goals/17-superagent.md`: "are written first, and nothing in it goes live without Aaron's yes." → "are written first; its deploys use the Cloudflare keys already on hand (Aaron's standing yes, 23 November 2026), and a new credential still waits for his yes."
