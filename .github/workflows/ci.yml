@@ -605,6 +605,26 @@ jobs:
           key: otelcol-contrib-0.164.0-${{ runner.os }}-${{ runner.arch }}
       - run: pnpm nx run e2e:stage1 --outputStyle=static
 
+  # Goal 6's done check, begun (`design/goals/06-portal.md`): the new portal's checks, starting with the theme's. Not a required
+  # check yet, so a red run does not block; slice 2 puts the rest of the portal checks behind it. Skipped on a docs-only pull
+  # request, where a skip counts as passed. Should `changes` itself fail, this runs.
+  e2e-portal-next:
+    needs: changes
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Chromium plus the system libraries it needs on this image, as `e2e-grid` has it (K19).
+      - run: pnpm --filter @orthograph/e2e exec playwright install --with-deps chromium
+      - run: pnpm nx run e2e:portal-next --outputStyle=static
+
   # Goal 3's grid runner (`e2e/grid/README.md`): its unit tests, then `ortho prove` and every switched-on cell, with the ratchet of
   # `design/decisions/G7-grid-ratchet.md`: a red pair not on `e2e/grid/expected-red.json` fails, and so does a listed pair that is green.
   e2e-grid:

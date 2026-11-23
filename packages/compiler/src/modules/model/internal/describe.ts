@@ -4,6 +4,7 @@ import type { AnyErrorClass, CallStep, Field, FieldsInput, Operation, Read, Step
 import type { BlankOperationModel, FieldModel, FieldsModel, Model, OperationModel, StepModel, ThingModel, VisibilityModel } from "../types.ts";
 import { admitsAgent } from "orthograph";
 import { Blanks } from "orthograph/server";
+import { approvalOf } from "./approval.ts";
 import { IDEMPOTENCY_CONFLICT, MACHINE_NUMBER, codeOf, inDeclarationOrder, prefixes, refusalsOf } from "./codes.ts";
 import { foundModel, mintsOf, missedBy, notFoundOf } from "./found.ts";
 import { exitClashes, notFoundShapes, operationExitClashes } from "./exits.ts";
@@ -187,6 +188,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
       steps,
       ...(blanks[`${thing}.${verb}`] ? { blanks: blanks[`${thing}.${verb}`]! } : {}),
       idempotent: op.idempotent ?? null,
+      ...approvalOf(op, file, problems),
       runs: (onDevice ? "client" : "server") as "server" | "client", test: op.test,
       budget: op.budget ? { p95Ms: Duration.toMillis(op.budget.p95) } : null,
     };

@@ -57,6 +57,8 @@ export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E e
   readonly allowed: readonly [AllowedFor<P>, ...Array<AllowedFor<P>>];
   readonly steps?: St;
   readonly idempotent?: "request";
+  /** A person must say yes before it runs. `true` is the only value: leave it out for an operation that asks nobody (#466). */
+  readonly needsApproval?: true;
   readonly budget?: Budget;
   /** Where it runs. Only `server` is accepted until a target supports another (N1). */
   readonly runs?: Runs;
@@ -85,6 +87,8 @@ export interface Operation<
   readonly allowed: ReadonlyArray<Allowed>;
   readonly steps: St;
   readonly idempotent: "request" | undefined;
+  /** Present only when declared; the compiler refuses any value but `true`. */
+  readonly needsApproval?: true;
   readonly budget: Budget | undefined;
   readonly runs: Runs;
   readonly test: TestKind;
