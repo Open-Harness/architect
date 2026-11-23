@@ -336,7 +336,7 @@
         "starts": null,
         "steps": [
           {
-            "title": "Ada sets up Acme Trading and runs it",
+            "title": "Ada sets up a company and runs it",
             "call": {
               "actor": "ada",
               "operation": "company.create",
@@ -452,7 +452,7 @@
             ]
           }
         ],
-        "sourceHash": "86142ffd16a5692faa780fd69d88d67b5ea942a71b8a6b14d49a15c0fb370ba0"
+        "sourceHash": "393f7d35ebda9f19854e388206910feb2d39886a4bdb1235b8a78a8d1e23e825"
       }
     },
     "startingWorlds": {
@@ -734,7 +734,7 @@
     }
   },
   "docs": {
-    "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up Acme Trading and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
+    "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
     "company/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.get\n\nRead one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n\n**Who may call:** the owner of the company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | company.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| companyName | company.companyName |  |\n| abbr | company.abbr |  |\n| country | company.country |  |\n| defaultCurrency | company.defaultCurrency |  |\n| owner | company.owner | The person who set the company up, and runs it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the company; the handler never runs |\n\n## Worked examples\n\n### set up a company\n\nStarts from an empty world.\n\n- **Bo can't read a company he doesn't run.** `bo` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, with her as its owner.** `ada` (signed in) calls and sends id the last call's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n\n## How to call\n\n```sh\ncapxul company get --id <id>\n```\n\nHTTP: `POST /company/get` with the payload as JSON. SDK: `Sdk.company.get(payload)`.\n",
     "company/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company\n\nA business that keeps its books, people and payroll in Capxul.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| companyName | Name |  |\n| abbr | Abbr |  |\n| country | Country |  |\n| defaultCurrency | CurrencyCode |  |\n| owner | id | The person who set the company up, and runs it. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused CompanyNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | CompanyCreated |\n\n## Invariants\n\n- `company.oneAbbr`: another company holds this abbr. Unique on abbr, in every state; refuses nothing, a break is a defect.\n- `company.oneName`: another company holds this company name. Unique on companyName, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `CompanyCreated`: carries company (company.id), owner (company.owner: The person who set the company up, and runs it.); emitted by the move create\n\n## Roles\n\n- owner\n\n## Operations\n\n- [company.create](create.md): Set up a company; the person who sets it up runs it.\n- [company.get](get.md): Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n"
   },
@@ -752,5 +752,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "4a006319e31f3b136efe80574af96e3854df547adcd02ac5907a24cae6c96f53"
+  "digest": "1d99cef5f501056e55c99e087534259a646ac14dcc8745c65a894a640419d9b3"
 }

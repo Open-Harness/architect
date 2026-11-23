@@ -45,7 +45,7 @@ Set up a company; the person who sets it up runs it.
 
 Starts from an empty world.
 
-- **Ada sets up Acme Trading and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.
+- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.
 
 ## How to call
 

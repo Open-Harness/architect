@@ -332,7 +332,7 @@
       "starts": null,
       "steps": [
         {
-          "title": "Ada sets up Acme Trading and runs it",
+          "title": "Ada sets up a company and runs it",
           "call": {
             "actor": "ada",
             "operation": "company.create",
@@ -448,7 +448,7 @@
           ]
         }
       ],
-      "sourceHash": "86142ffd16a5692faa780fd69d88d67b5ea942a71b8a6b14d49a15c0fb370ba0"
+      "sourceHash": "393f7d35ebda9f19854e388206910feb2d39886a4bdb1235b8a78a8d1e23e825"
     }
   },
   "startingWorlds": {
