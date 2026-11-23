@@ -1,0 +1,2 @@
+# Wallet send safety (the review on #616, gap 2): Chain.shared caches the first failure for good, so a signer whose chain was unreachable once never sends again. Waits on the build.
+src/modules/submit/first-failure.test.ts > a signer whose chain was unreachable on its first send > sends once the chain is there: the first failure does not stick
