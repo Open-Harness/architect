@@ -10,9 +10,9 @@ const Amount = Blueprint.value(Blueprint.uint(128));
 const Person = Blueprint.thing({ description: "Someone.", fields: { id: Blueprint.id("per") } });
 const Purse = Blueprint.thing({ description: "Money.", fields: { id: Blueprint.id("pur"), member: Person.fields.id, spent: Amount } });
 const self = Blueprint.role(Person, { rule: (p, who) => p.id === who.person });
-type Who = { readonly kind: "person"; readonly person: string };
-const olga: Who = { kind: "person", person: "per_olga" };
-const bob: Who = { kind: "person", person: "per_bob" };
+type Who = { readonly kind: "person"; readonly person: string; readonly via: "session" };
+const olga: Who = { kind: "person", person: "per_olga", via: "session" };
+const bob: Who = { kind: "person", person: "per_bob", via: "session" };
 
 const purses = ["pur_1", "pur_2", "pur_3", "pur_4", "pur_5"].map(
   (id, i) => [Purse, { id, member: i === 2 ? "per_bob" : "per_olga", spent: BigInt(i), state: i === 4 ? "closed" : "active" }] as const,

@@ -10,6 +10,8 @@ export type { ChangedDependency, PortalProof, PortalSnapshot, ProofState } from 
 export { Live } from "#modules/live/service.js";
 export type { JournalRow, LiveApi, LiveCall, LiveCommit, LiveEvent, LiveLog, LiveRead, LiveSource, LiveSpan, LiveStep } from "#modules/live/types.js";
 export { PortalServer } from "#modules/server/service.js";
-export type { PortalAssets, PortalContext, PortalEnv } from "#modules/server/types.js";
+export type { PortalAssets, PortalContext, PortalEnv, PortalLedgerBinding } from "#modules/server/types.js";
 export { Telemetry } from "#modules/telemetry/service.js";
 export type { CallerKind, CallsView, CountsView, MetricPoint, MetricsWindow, OperationCounts, Outcome, PortalLive, PortalTelemetry, RefusalCounts, TelemetryCall, TraceSpanView, TraceView, TraceWindow, WindowFailure, WindowLog, WindowSpan, WindowTrace } from "#modules/telemetry/types.js";
+export { Monitor } from "#modules/monitor/service.js";
+export type { AlertRow, IssueRow, MonitorApi, MonitorLedger, MonitorView, Seen, WindowCount } from "#modules/monitor/types.js";

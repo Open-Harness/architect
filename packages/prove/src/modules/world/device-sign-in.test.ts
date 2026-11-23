@@ -77,7 +77,8 @@ describe("device sign-in", () => {
       expect(JSON.parse(stored)).toMatchObject({ staging: { url } });
 
       const shown = spawnSync(process.execPath, [cli, "session", "show", "--env", "staging", "--json"], { encoding: "utf8", env });
-      expect([shown.status, JSON.parse(shown.stdout)]).toEqual([0, { person: ada.person, email: ada.email }]);
+      // The device flow makes an ordinary session until M2.06 marks its row `device`, so it says `session`.
+      expect([shown.status, JSON.parse(shown.stdout)]).toEqual([0, { person: ada.person, email: ada.email, via: "session" }]);
       const plain = spawnSync(process.execPath, [cli, "session", "show", "--env", "staging"], { encoding: "utf8", env });
       expect(plain.stdout, "the token is never printed").not.toContain(ada.token);
 
