@@ -55,8 +55,11 @@ while :; do
       echo "#$pr: the newest ci run on $head was ${newest#completed } and ran no CI; push a new commit (an empty one will do)" >&2
       exit 1
     fi
-  elif [ "$(jq -r '.[0].status // "none"' <<<"$run")" = "completed" ]; then
+  else
     stale=0
+  fi
+  if [ "$newest" != "completed skipped" ] && [ "$newest" != "completed cancelled" ] &&
+    [ "$(jq -r '.[0].status // "none"' <<<"$run")" = "completed" ]; then
     # A draft's run completes with its jobs named "<id> (draft)" and their steps skipped (CI-drafts-race), so only a
     # run with no such job tells an unprotected base anything; a draft run here is the one before the ready run starts.
     drafted=$(gh run view "$(jq -r '.[0].databaseId' <<<"$run")" -R "$repo" --json jobs 2>/dev/null |

@@ -25,7 +25,7 @@ requires by name, taking its newest row (an older cancelled run can list the sam
 | 3 | `WATCH_MAX_SECONDS` (default three hours) ran out before the run finished. Read 1, 2 and 3 alike as "not green" |
 
 The newest run is the highest run id among the head's `ci` runs: two can share a creation second (#658, a draft-race run
-cancelled and the ready run green), and `gh run list` does not then list the newer first. 
+cancelled and the ready run green), and `gh run list` does not then list the newer first.
 A newest run that completed skipped or cancelled ran no CI (#513: a push and `gh pr ready` in the same second; the ready
 run was cancelled by the push run, which skipped every job on a stale draft payload, and on a branch whose `ci.yml`
 predates CI-drafts-race those skipped jobs carry the plain required names, which GitHub counts as passed). The watcher
