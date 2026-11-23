@@ -174,6 +174,37 @@ describe("lend: a credential for one call", () => {
   });
 });
 
+describe("a link made from inside does not lead out", () => {
+  it("a dangling symbolic link made by exec cannot be written through, and the file it points at is never made", async () => {
+    const { sandbox, root } = await open("ticket/link");
+    const outside = join(dir, "outside-new");
+    await run(api.exec({ sandbox, command: ["ln", "-s", outside, "link"] }));
+    expect(await result(api.write({ sandbox, path: "link", content: "x" }))).toMatchObject({ failure: { _tag: "OutsideSandbox", path: "link", root } });
+    expect(await result(api.read({ sandbox, path: "link" }))).toMatchObject({ failure: { _tag: "OutsideSandbox" } });
+    expect(await result(api.exec({ sandbox, command: ["pwd"], cwd: "link" }))).toMatchObject({ failure: { _tag: "OutsideSandbox" } });
+    expect(existsSync(outside)).toBe(false);
+    await run(api.exec({ sandbox, command: ["ln", "-s", "loop-b", "loop-a"] }));
+    await run(api.exec({ sandbox, command: ["ln", "-s", "loop-a", "loop-b"] }));
+    expect(await result(api.write({ sandbox, path: "loop-a", content: "x" }))).toMatchObject({ failure: { _tag: "OutsideSandbox" } });
+    await run(api.close(sandbox));
+  });
+});
+
+describe("an exec cannot start after its sandbox is closed", () => {
+  it("closing while execs are being started leaves none running and none started later", { timeout: 30_000 }, async () => {
+    for (let round = 0; round < 5; round++) {
+      const { sandbox } = await open(`ticket/race-${round}`);
+      const execs = Array.from({ length: 6 }, () => result(api.exec({ sandbox, command: ["sleep", "29"], timeoutSeconds: 40 })));
+      const closed = run(api.close(sandbox));
+      await Promise.all(execs);
+      await closed;
+      expect((await run(api.left)).processes.filter((p) => p.sandbox === sandbox)).toEqual([]);
+      expect(execFileSync("ps", ["-A", "-o", "command="], { encoding: "utf8" }).split("\n").filter((c) => c.endsWith("sleep 29"))).toEqual([]);
+    }
+    expect(await result(api.exec({ sandbox: "sbx_never", command: ["sleep", "29"] }))).toMatchObject({ failure: { _tag: "SandboxGone" } });
+  });
+});
+
 describe("nothing is left after a retire", () => {
   it("kills a running command by group when its sandbox closes, stops the daemon, and removes both folders", async () => {
     const { sandbox, root } = await open("ticket/close");

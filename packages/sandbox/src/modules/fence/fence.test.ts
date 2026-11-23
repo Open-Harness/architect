@@ -1,5 +1,5 @@
 // Journey step: "a write outside the sandbox is refused" (a-write-outside-the-sandbox-is-refused), the rule itself, on a real disk.
-import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect } from "effect";
@@ -37,6 +37,22 @@ describe("fence", () => {
 
   it("refuses a symbolic link out, even to a file that does not exist yet", async () => {
     expect(await check("out/new.txt")).toMatchObject({ _tag: "Failure", failure: { _tag: "OutsideSandbox", resolved: join(base, "elsewhere/new.txt") } });
+  });
+
+  it("refuses a dangling symbolic link and a looping one, which a write would create through, and a path below one", async () => {
+    symlinkSync(join(base, "elsewhere/not-yet"), join(root, "dangling"));
+    symlinkSync(join(root, "loop-b"), join(root, "loop-a"));
+    symlinkSync(join(root, "loop-a"), join(root, "loop-b"));
+    for (const target of ["dangling", "loop-a", "dangling/below", "loop-b/x/y"]) {
+      expect(await check(target), target).toMatchObject({ _tag: "Failure", failure: { _tag: "OutsideSandbox", path: target } });
+    }
+    expect(existsSync(join(base, "elsewhere/not-yet"))).toBe(false);
+  });
+
+  it("lets a symbolic link that resolves inside the root through", async () => {
+    mkdirSync(join(root, "real-inside"), { recursive: true });
+    symlinkSync(join(root, "real-inside"), join(root, "inside-link"));
+    expect(await check("inside-link/file.txt")).toMatchObject({ _tag: "Success" });
   });
 
   it("compares case-folded, so a differently cased spelling of the root is still inside and of a stranger still outside", async () => {

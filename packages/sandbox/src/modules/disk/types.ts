@@ -6,6 +6,8 @@ export class DiskFailed extends Data.TaggedError("DiskFailed")<{ readonly path: 
 export interface Disk {
   /** The real path of an existing path (symbolic links followed), or null when nothing is there. */
   readonly realpath: (path: string) => Effect.Effect<string | null>;
+  /** Whether a symbolic link is at this path itself, resolving or not (a dangling or looping one is still a link). */
+  readonly isLink: (path: string) => Effect.Effect<boolean>;
   /** Make a folder and the missing ones above it. */
   readonly makeDir: (path: string) => Effect.Effect<void, DiskFailed>;
   /** Write a file, making its folder; `mode` is a permission such as 0o755. Answers the bytes written. */

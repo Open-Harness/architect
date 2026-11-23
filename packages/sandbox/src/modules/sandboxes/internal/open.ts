@@ -34,9 +34,9 @@ export const openSandbox = (shared: Shared, input: OpenInput): Effect.Effect<Ope
       const fence = yield* Fence.of(disk, root);
       const processEnv = Environment.processEnv(env, { root, shims, systemPath: config.systemPath });
       const relay = yield* Relay.start({
-        binary: config.daemon, cwd: root, env: processEnv, token: config.ids.token(), fence,
+        binary: config.daemon, cwd: root, env: processEnv, token: config.ids.token(), blocked: input.blocked, fence,
         observe: {
-          refused: (r) => Effect.sync(() => { if (refusals.at(-1)?.detail !== r.detail) refusals.push(r); }),
+          refused: (r) => Effect.sync(() => { if (r.name === "BlockedCommand" || refusals.at(-1)?.detail !== r.detail) refusals.push(r); }),
           started: (words) => Effect.sync(() => execs.push({ command: words, exit: null, lent: [] }) - 1),
           exited: (handle, exit) => Effect.sync(() => { const e = execs[handle]; if (e !== undefined) e.exit = exit; }),
         },

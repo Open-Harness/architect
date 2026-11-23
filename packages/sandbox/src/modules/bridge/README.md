@@ -11,6 +11,7 @@ it decodes a request, calls `sandboxes`, and says how it went.
 | `POST /_stand/reset` | close every sandbox and remove any folder; the stand-in's `reset` |
 | `GET /_stand/health` | `{ ok: true, service: "sandbox" }` |
 
+Every route needs the bridge's secret as `x-bridge-secret`, or answers 401 `Unauthorized`: `main.ts` makes it at start and writes it to `<dir>/bridge.secret` (0600).
 An answer is `{ ok: true, answer }`. A declared refusal is `{ ok: false, error: { name, ...fields } }` with status 200, by the
 name the adapter declares (`OutsideSandbox`, `BlockedCommand`, `SandboxGone`, `SandboxLimit`, and the open-time refusals
 `CredentialLikeVariable`, `BadVariableName`, `InvalidBlocked`, `LoanExpired`, `BadLoanName`, `DaemonFailed`, `DiskFailed`); a request that

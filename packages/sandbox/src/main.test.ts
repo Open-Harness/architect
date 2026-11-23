@@ -3,7 +3,7 @@
 // own report), against `main.ts` started as `ortho dev` starts it. Journey steps these stand for: a-write-outside-the-sandbox-is-refused,
 // a-blocked-command-fails-by-name, no-credential-among-the-execution-variables.
 import { execFileSync, spawn, type ChildProcess } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, realpathSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,7 +24,7 @@ const start = (): Promise<Bridge> => new Promise((resolve, reject) => {
   child.stdout?.on("data", (chunk: Buffer) => {
     out += chunk.toString("utf8");
     const url = /stand-in listening on (http:\/\/127\.0\.0\.1:\d+)/.exec(out)?.[1];
-    if (url !== undefined) resolve({ child, url, exited, call: (path, body) => fetch(url + path, { method: "POST", body: JSON.stringify(body ?? {}) }).then((r) => r.json()) });
+    if (url !== undefined) resolve({ child, url, exited, call: (path, body) => fetch(url + path, { method: "POST", headers: { "x-bridge-secret": readFileSync(join(dir, "bridge.secret"), "utf8") }, body: JSON.stringify(body ?? {}) }).then((r) => r.json()) });
   });
   child.once("error", reject);
   child.once("exit", (code) => reject(new Error(`the bridge exited ${code} before it listened: ${out}`)));
@@ -93,15 +93,52 @@ describe("the bridge process", () => {
 
   it("when the bridge is killed hard its daemons still die (their stdin ends), and the next bridge on that folder sweeps what it left", { timeout: 60_000 }, async () => {
     const bridge = await start();
-    await bridge.call("/call/open", { owner: "coder", tag: "x", variables: [], blocked: [] });
+    const { sandbox } = (await bridge.call("/call/open", { owner: "coder", tag: "x", variables: [], blocked: [] })).answer;
+    const running = bridge.call("/call/exec", { sandbox, command: ["sleep", "31"] }).catch(() => undefined);
+    const sleeper = async () => { for (let i = 0; i < 100; i++) { const p = table().find((q) => q.ppid === bridge.child.pid && q.command.endsWith("sleep 31")); if (p) return p; await new Promise((r) => setTimeout(r, 50)); } return undefined; };
+    const sleeping = (await sleeper())!;
     const daemon = table().find((p) => p.ppid === bridge.child.pid && p.command.includes("serve --token"))!;
     bridge.child.kill("SIGKILL");
     await bridge.exited;
+    await running;
     expect(await gone(daemon.pid)).toBe(true);
+    // The daemon dies with its stdin, but a command the bridge started is detached: it, and the folders, wait for the next bridge.
+    expect(table().some((p) => p.pid === sleeping.pid)).toBe(true);
     expect(sandboxFolders()).toHaveLength(1);
     const next = await start();
+    expect(await gone(sleeping.pid)).toBe(true);
     expect([sandboxFolders(), (await next.call("/_stand/left")).answer]).toEqual([[], { folders: [], processes: [] }]);
     next.child.kill("SIGTERM");
     expect(await next.exited).toBe(0);
+  });
+
+  it("closes every sandbox on SIGHUP as on SIGTERM, and removes its secret file", { timeout: 60_000 }, async () => {
+    const bridge = await start();
+    await bridge.call("/call/open", { owner: "coder", tag: "hup", variables: [], blocked: [] });
+    expect(sandboxFolders()).toHaveLength(1);
+    expect(existsSync(join(dir, "bridge.secret"))).toBe(true);
+    bridge.child.kill("SIGHUP");
+    expect(await bridge.exited).toBe(0);
+    expect([sandboxFolders(), leftovers(), existsSync(join(dir, "bridge.secret"))]).toEqual([[], [], false]);
+  });
+
+  it("serves nothing without its secret: made at start, 0600, in the state folder, never printed, and every route refuses a caller without it", { timeout: 60_000 }, async () => {
+    const bridge = await start();
+    const file = join(dir, "bridge.secret");
+    expect(statSync(file).mode & 0o777).toBe(0o600);
+    const secret = readFileSync(file, "utf8");
+    expect(secret).toMatch(/^[0-9a-f]{64}$/);
+    const printed = await new Promise<string>((done) => { let all = ""; bridge.child.stdout?.on("data", (c: Buffer) => { all += c.toString("utf8"); }); bridge.child.stderr?.on("data", (c: Buffer) => { all += c.toString("utf8"); }); setTimeout(() => done(all), 200); });
+    expect(printed).not.toContain(secret);
+    const open = await bridge.call("/call/open", { owner: "coder", tag: "locked", variables: [], blocked: [] });
+    for (const [method, path] of [["POST", "/call/exec"], ["POST", "/call/list"], ["POST", "/_stand/seen"], ["POST", "/_stand/left"], ["POST", "/_stand/reset"], ["GET", "/_stand/health"]] as const) {
+      for (const headers of [{}, { "x-bridge-secret": "nope" }, { "x-bridge-secret": secret.slice(1) }]) {
+        const answer = await fetch(bridge.url + path, { method, headers, ...(method === "POST" ? { body: JSON.stringify({ sandbox: open.answer.sandbox, command: ["echo", "x"] }) } : {}) });
+        expect([path, answer.status]).toEqual([path, 401]);
+      }
+    }
+    expect(sandboxFolders()).toEqual([open.answer.sandbox]);
+    bridge.child.kill("SIGTERM");
+    expect(await bridge.exited).toBe(0);
   });
 });

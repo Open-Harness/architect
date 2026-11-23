@@ -33,7 +33,7 @@ const build = (id: number, json: object, payload: Buffer<ArrayBufferLike> = Buff
 /** A client that has read the sync line: `ask` sends a request and answers its frames up to the result or error. */
 const attach = (address: string) => new Promise<{ socket: Socket; token: string; ask: (id: number, json: object, payload?: Buffer) => Promise<ReadonlyArray<Frame>> }>((resolve) => {
   const url = new URL(address);
-  const socket = connect(Number(url.port), "127.0.0.1");
+  const socket = connect(Number(url.port), "127.0.0.1", () => socket.write(`${url.hash.slice(1)}\n`));
   let bytes: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   let synced = false;
   const seen: Array<Frame> = [];
@@ -73,7 +73,7 @@ beforeAll(async () => {
   const relay = await Effect.runPromise(Effect.gen(function* () {
     const fence = yield* Fence.of(nodeDisk, root);
     return yield* Relay.start({
-      binary: localDaemon(), cwd: root, token: "cafe0123", fence,
+      binary: localDaemon(), cwd: root, token: "cafe0123", blocked: ["sudo"], fence,
       env: { PATH: `${shims}:/usr/bin:/bin`, HOME: root, SUPERAGENT_DIR: root },
       observe: {
         refused: (r) => Effect.sync(() => void refused.push(r)),
@@ -135,18 +135,82 @@ describe("relay", () => {
     expect(Buffer.concat(blocked.filter((f) => f.type === 4).map((f) => f.payload)).toString("utf8")).toContain("BlockedCommand: sudo");
     expect(started.slice(-3)).toEqual([["echo", "fine"], ["echo", "sudo"], ["sudo", "ls"]]);
     expect(exits.slice(-3).map(([, exit]) => exit)).toEqual([0, 0, 126]);
+    expect(Commands.hitsFrom(readFileSync(Commands.hitsFile(join(base, "shims/sbx_one")), "utf8"))).toEqual([]);
+    client.socket.destroy();
+  });
+
+  it("answers a blocked first word itself, even by path or in a shell, and a shim catches a blocked name run inside a shell", async () => {
+    const client = await attach(address);
+    const run = (id: number, json: object) => client.ask(id, { op: "exec", cwd: root, env: {}, inheritEnv: true, ...json });
+    const before = refused.length;
+    expect((await run(30, { argv: ["/usr/bin/sudo", "ls"] })).at(-1)).toMatchObject({ type: 2, json: { exitCode: 126 } });
+    expect(refused.slice(before).map((r) => r.name)).toEqual(["BlockedCommand"]);
+    expect((await run(31, { command: "sudo -n true" })).at(-1)).toMatchObject({ type: 2, json: { exitCode: 126 } });
+    expect(refused.slice(before).map((r) => r.detail)).toEqual(["BlockedCommand: sudo", "BlockedCommand: sudo"]);
+    const inShell = await run(32, { argv: ["sh", "-c", "sudo ls"] });
+    expect(inShell.at(-1)).toMatchObject({ type: 2, json: { exitCode: 126 } });
     expect(Commands.hitsFrom(readFileSync(Commands.hitsFile(join(base, "shims/sbx_one")), "utf8"))).toEqual(["sudo"]);
     client.socket.destroy();
   });
 
-  it("serves one client at a time", async () => {
-    const first = await attach(address);
+  it("serves one client at a time, and a socket that has not proved the token never takes the slot", async () => {
     const url = new URL(address);
-    const second = connect(Number(url.port), "127.0.0.1");
-    const closed = await new Promise<boolean>((done) => { second.on("close", () => done(true)); second.on("error", () => done(true)); });
-    expect(closed).toBe(true);
+    const silent = connect(Number(url.port), "127.0.0.1");
+    const wrong = connect(Number(url.port), "127.0.0.1", () => wrong.write("not-the-token\n"));
+    const heard: Array<Buffer> = [];
+    silent.on("data", (c) => heard.push(c));
+    wrong.on("data", (c) => heard.push(c));
+    expect(await new Promise<boolean>((done) => { wrong.on("close", () => done(true)); wrong.on("error", () => done(true)); })).toBe(true);
+    const first = await attach(address);
     expect((await first.ask(20, { op: "hello", protocol: 1 })).at(-1)).toMatchObject({ type: 2 });
+    const second = connect(Number(url.port), "127.0.0.1", () => second.write(`${url.hash.slice(1)}\n`));
+    expect(await new Promise<boolean>((done) => { second.on("close", () => done(true)); second.on("error", () => done(true)); })).toBe(true);
+    expect((await first.ask(21, { op: "hello", protocol: 1 })).at(-1)).toMatchObject({ type: 2 });
+    silent.destroy();
+    expect(Buffer.concat(heard).toString("utf8")).toBe("");
     first.socket.destroy();
+  });
+
+  it("a client that sends frames without the token gets nothing and runs nothing", { timeout: 15_000 }, async () => {
+    const url = new URL(address);
+    const raw = connect(Number(url.port), "127.0.0.1", () => raw.write(build(1, { op: "write", path: join(root, "unauthenticated.txt"), append: false }, Buffer.from("x"))));
+    const heard: Array<Buffer> = [];
+    raw.on("data", (c) => heard.push(c));
+    await new Promise<void>((done) => { raw.on("close", () => done()); raw.on("error", () => done()); raw.setTimeout(8_000, () => raw.destroy()); });
+    expect(Buffer.concat(heard).length).toBe(0);
+    expect(existsSync(join(root, "unauthenticated.txt"))).toBe(false);
+  });
+
+  it("a partial frame left by one client is not glued onto the next client's first frame", async () => {
+    const url = new URL(address);
+    const half = connect(Number(url.port), "127.0.0.1", () => half.write(`${url.hash.slice(1)}\n`));
+    await new Promise<void>((done) => half.once("data", () => done()));
+    half.write(build(40, { op: "hello", protocol: 1 }).subarray(0, 7));
+    await new Promise((r) => setTimeout(r, 100));
+    half.destroy();
+    await new Promise((r) => setTimeout(r, 100));
+    const next = await attach(address);
+    expect((await next.ask(41, { op: "hello", protocol: 1 })).at(-1)).toMatchObject({ type: 2, json: { protocol: 1 } });
+    next.socket.destroy();
+  });
+
+  it("sends on what the fence checked: a path through a symbolic link and .. lands where the fence said, never outside", async () => {
+    const { symlinkSync } = await import("node:fs");
+    const outside = join(base, "outside-sub");
+    mkdirSync(outside, { recursive: true });
+    symlinkSync(outside, join(root, "linkdir"));
+    const client = await attach(address);
+    const answer = await client.ask(50, { op: "write", path: `${root}/linkdir/../escaped.txt`, append: false }, Buffer.from("x"));
+    expect(answer.at(-1)).toMatchObject({ type: 2 });
+    expect(existsSync(join(base, "escaped.txt"))).toBe(false);
+    expect(existsSync(join(outside, "../escaped.txt"))).toBe(false);
+    expect(readFileSync(join(root, "escaped.txt"), "utf8")).toBe("x");
+    // A dangling link is refused outright, the way the bridge's own file calls refuse it.
+    symlinkSync(join(base, "never-made"), join(root, "dangling"));
+    const refusedLink = await client.ask(51, { op: "write", path: join(root, "dangling"), append: false }, Buffer.from("x"));
+    expect(refusedLink.at(-1)).toMatchObject({ type: 3, json: { code: "OutsideSandbox" } });
+    expect(existsSync(join(base, "never-made"))).toBe(false);
+    client.socket.destroy();
   });
 
   it("is gone when the scope closes: the daemon exited, the port closed", async () => {
@@ -156,7 +220,7 @@ describe("relay", () => {
     mkdirSync(where, { recursive: true });
     const relay = await Effect.runPromise(Effect.gen(function* () {
       const fence = yield* Fence.of(nodeDisk, where);
-      return yield* Relay.start({ binary: localDaemon(), cwd: where, token: "beef", fence, env: { PATH: `${shims}:/usr/bin:/bin` }, observe: { refused: () => Effect.void, started: () => Effect.succeed(0), exited: () => Effect.void } });
+      return yield* Relay.start({ binary: localDaemon(), cwd: where, token: "beef", blocked: [], fence, env: { PATH: `${shims}:/usr/bin:/bin` }, observe: { refused: () => Effect.void, started: () => Effect.succeed(0), exited: () => Effect.void } });
     }).pipe(Scope.provide(mine), Effect.provide(TimersLive)));
     expect(alive(relay.pid)).toBe(true);
     await Effect.runPromise(Scope.close(mine, Exit.void));
@@ -172,7 +236,7 @@ describe("relay", () => {
     mkdirSync(where, { recursive: true });
     const result = await Effect.runPromise(Effect.gen(function* () {
       const fence = yield* Fence.of(nodeDisk, where);
-      return yield* Relay.start({ binary: join(base, "no-such-daemon"), cwd: where, token: "x", fence, env: {}, observe: { refused: () => Effect.void, started: () => Effect.succeed(0), exited: () => Effect.void } });
+      return yield* Relay.start({ binary: join(base, "no-such-daemon"), cwd: where, token: "x", blocked: [], fence, env: {}, observe: { refused: () => Effect.void, started: () => Effect.succeed(0), exited: () => Effect.void } });
     }).pipe(Scope.provide(mine), Effect.provide(TimersLive), Effect.result));
     expect(result).toMatchObject({ _tag: "Failure", failure: { _tag: "DaemonFailed", reason: expect.stringContaining("not found") } });
     await Effect.runPromise(Scope.close(mine, Exit.void));

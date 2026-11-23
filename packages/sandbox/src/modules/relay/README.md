@@ -12,7 +12,10 @@ message starting `OutsideSandbox: <path> is outside <root>`, which the model rea
 each `exec` and its exit code, so the sandbox can say what ran. A blocked command is caught by the shims on the daemon's `PATH`
 (`commands`), whose exit is 126.
 
-One client at a time: a second connection is closed at once. The relay pings the daemon every 5 seconds through `Timers`, so a
+A client's first line must equal the sandbox's token (constant time, within 5 seconds) before anything it sends goes further; only then does it take the one client
+slot, and the relay writes `PI-ENV <token>` back. A socket that says nothing, or the wrong thing, is closed and never blocks the real client. What goes to the daemon is
+each request rewritten to the paths the fence resolved (never the raw spelling), and an `exec` whose first word is blocked is answered by the relay itself, exit 126.
+One client at a time, each with its own partial-frame buffer. The relay pings the daemon every 5 seconds through `Timers`, so a
 daemon with no client is not taken for dead (it exits after 30 s of silence). The daemon is a process of the caller's scope: when
 the scope closes the socket is closed and the daemon gets SIGTERM, then SIGKILL after 2 seconds, and the finalizer returns
 only when it has exited. Test: `relay.test.ts`, on the real daemon and a real socket.

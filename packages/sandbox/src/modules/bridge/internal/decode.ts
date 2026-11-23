@@ -49,7 +49,7 @@ export const exec = (value: unknown): Effect.Effect<ExecInput, BadRequest> =>
     const o = yield* body(value);
     const cwd = yield* optionalText(o, "cwd");
     const timeout = o["timeoutSeconds"];
-    if (timeout !== undefined && (typeof timeout !== "number" || !(timeout > 0))) return yield* bad("timeoutSeconds must be a positive number");
+    if (timeout !== undefined && (typeof timeout !== "number" || !Number.isFinite(timeout) || !(timeout > 0))) return yield* bad("timeoutSeconds must be a positive number");
     return { sandbox: yield* text(o, "sandbox"), command: yield* strings(o, "command", 1), ...(cwd === undefined ? {} : { cwd }), lend: yield* listOf(o, "lend", loan), ...(timeout === undefined ? {} : { timeoutSeconds: timeout }) };
   });
 

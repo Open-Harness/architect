@@ -68,8 +68,24 @@ needs `lend` declared on the framework's adapter spec, which has no such field; 
 
 An `exec` runs in its own process group; the group is killed when the call ends, times out (exit 124, default 120 s), is interrupted, or the sandbox closes. `close` stops
 the daemon (SIGTERM, SIGKILL after two seconds, and waits), closes the socket and removes the sandbox's folder and its shims folder; a second `close` answers
-`closed: false`. `<dir>/sandboxes` holds sandboxes' roots and nothing else. The bridge sweeps at start and at stop (SIGTERM or SIGINT), removing a crashed bridge's folders; a
-bridge killed hard leaves no daemon (its stdin ends and the daemon exits), but does leave folders, which the next bridge on that folder sweeps.
+`closed: false`. `<dir>/sandboxes` holds sandboxes' roots and nothing else. The bridge sweeps at start and at stop (SIGTERM, SIGINT, SIGHUP or an uncaught failure); a
+bridge killed hard (SIGKILL cannot be caught) takes its daemons with it (their stdin ends) but not its `exec` commands, which are detached, nor its folders. See call 8.
+
+### 8. The security review's findings (23 November 2026)
+
+The 🔍 review reproduced each with a real probe; each fix has a test on real processes and disk.
+
+- **Symbolic links.** A symbolic link that does not resolve (dangling, or a loop) is not "missing": a write through it creates its target. `fence` refuses it (`disk.isLink`), and a
+  path below one. The relay **sends on what the fence checked**: each path in a request is rewritten to the fence's resolved spelling (`linkdir/../x` is `<root>/x`, as the fence
+  judged it), never the raw string the kernel would resolve differently.
+- **The socket's token is checked.** A client's first line must equal the sandbox's token (constant time) within 5 seconds; only then does it take the one client slot, and the relay
+  writes `PI-ENV <token>` back. A socket that says nothing or the wrong thing is closed and never blocks the real client. The relay's partial-frame buffer is per client.
+- **The bridge's HTTP needs its secret.** `main.ts` makes 32 random bytes at start and writes them to `<dir>/bridge.secret` (0600, outside `sandboxes/`); every route, `health` and
+  `reset` included, answers 401 without it as `x-bridge-secret` (constant-time compare). It is never configured and never printed.
+- **A hard-killed bridge.** Each sandbox's running `exec` groups are kept in `<dir>/shims/<id>/.pgids` (removed as each ends); the next bridge's sweep kills those groups before it removes
+  folders. SIGHUP and uncaught failures close every sandbox like SIGTERM. A command is started only if the sandbox is open at that instant, so nothing starts after a close's snapshot.
+- **Pi `exec` and blocked names.** The relay applies `firstBlocked` to a Pi `exec`'s argv (or the first word of its shell string): it answers `BlockedCommand: <name>` and exit 126 itself.
+- Small: a non-finite `timeoutSeconds` is refused; `credentialLike` also takes COOKIE, SESSION, DSN, BEARER and JWT; `loans` has an `internal/`.
 
 ## What each test stands for
 
@@ -98,6 +114,9 @@ The harness surface that loads `e2e/superagent/agent-journeys/` is the other bui
 
 - A command run by an absolute path, or one that leaves its process group (`setsid`), is outside the shims and the group kill (the prototype's "defaults" caveat). A group-leaving process is not killed by `close`.
 - The relay's fence compares case-folded, as the record says: on a case-sensitive disk two folders differing only in case count as one place.
+- **A blocked name can be run around.** `PATH=/usr/bin sudo ls`, `env PATH=/usr/bin sudo ls`, an absolute path inside a shell string, or a copied binary skip the first-word check and the shims. Not closed here: the real wall is the sandbox, and E2B comes later.
+- **A program in a sandbox can read the bridge's secret file** (`<dir>/bridge.secret`, 0600, the same user): the fence covers the bridge's own file calls and Pi's tools, not a program's own reads. The secret stops other loopback processes driving the bridge unasked; it does not isolate an agent whose shell runs on this Mac. E2B is the isolation.
+- A command's group is written to `.pgids` just after it spawns, so a SIGKILL in that instant can lose one; and a path the fence checked can change before it is used (a link swapped in between). Both need a program already running inside the sandbox.
 - One bridge per state folder: a second bridge on the same `--dir` would sweep the first's sandboxes at start.
 
 ## Supersedes

@@ -29,7 +29,7 @@ describe("environment", () => {
   });
 
   it("refuses a name that looks like a credential, whatever it is called besides, and says which", async () => {
-    for (const name of ["GH_TOKEN", "GITHUB_TOKEN", "API_KEY", "MY_SECRET", "DB_PASSWORD", "PASSWD", "AWS_CREDENTIALS", "AUTHORIZATION", "SSH_AUTH_SOCK"]) {
+    for (const name of ["GH_TOKEN", "GITHUB_TOKEN", "API_KEY", "MY_SECRET", "DB_PASSWORD", "PASSWD", "AWS_CREDENTIALS", "AUTHORIZATION", "SSH_AUTH_SOCK", "SESSION_ID", "COOKIE_JAR", "SENTRY_DSN", "BEARER_VALUE", "JWT_RAW"]) {
       expect(await of([{ name, value: "x" }]), name).toMatchObject({ _tag: "Failure", failure: { _tag: "CredentialLikeVariable", variable: name } });
     }
   });

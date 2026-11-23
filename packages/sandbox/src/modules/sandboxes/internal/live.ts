@@ -38,3 +38,6 @@ export interface Shared {
 
 export const rootOf = (config: SandboxesConfig, id: string): string => `${config.dir}/sandboxes/${id}`;
 export const shimsOf = (config: SandboxesConfig, id: string): string => `${config.dir}/shims/${id}`;
+
+/** The bridge-owned file listing the process groups of a sandbox's running `exec` calls, so a bridge killed hard cannot lose them. */
+export const pgidsFile = (shims: string): string => `${shims}/.pgids`;

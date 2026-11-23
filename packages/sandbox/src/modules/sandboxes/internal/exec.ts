@@ -4,7 +4,7 @@ import { BlockedCommand } from "../../commands/types.ts";
 import { Commands } from "../../commands/service.ts";
 import { Loans } from "../../loans/service.ts";
 import type { ExecError, ExecInput, Executed } from "../types.ts";
-import type { Shared } from "./live.ts";
+import { pgidsFile, type Shared } from "./live.ts";
 import { runTracked } from "./spawn.ts";
 import { inside, liveOf } from "./lookup.ts";
 import { readHits } from "./hits.ts";
@@ -32,7 +32,7 @@ export const execIn = (shared: Shared, input: ExecInput): Effect.Effect<Executed
       return yield* Effect.fail(new BlockedCommand({ command: first }));
     }
 
-    const ran = yield* runTracked({ argv: input.command, cwd, env: { ...live.processEnv, ...taken.env }, running: live.running, timeout: `${input.timeoutSeconds ?? 120} seconds` });
+    const ran = yield* runTracked({ sandbox: live.id, open: () => live.state === "open", record: (set) => (live.state === "open" ? shared.disk.write(pgidsFile(live.shims), [...set].join("\n")).pipe(Effect.ignore) : Effect.void), argv: input.command, cwd, env: { ...live.processEnv, ...taken.env }, running: live.running, timeout: `${input.timeoutSeconds ?? 120} seconds` });
     const refused = yield* readHits(shared, live);
     record.exit = ran.exit;
     // A shim exits 126 after saying its name: that is the command being refused, not a program failing.
