@@ -64,11 +64,11 @@ events: { issueComment: Blueprint.event(IssueComment, {
 
 // the app: an outside account is a thing, and listing it is a move made in the portal
 export const Account = Blueprint.thing({
-  fields: { source: Source.fields.id, id: Blueprint.text(), login: Blueprint.text(), bot: Blueprint.bool() }, machine,   // Superseded by GOAL17-source-from, 22 November 2026: `source` is the mount's name, plus a `superagent` field
+  fields: { source: Source.fields.id, id: Blueprint.text(), login: Blueprint.text(), bot: Blueprint.bool() }, machine,   // Superseded by GOAL17-source-from, 22 November 2026: `source` is the mount's name, plus a `superagent` field; Superseded by GOAL17-account-key, 23 November 2026: the outside id is `external`, and `id` is the row's own
 });  // source: the connection it came through (its mount)
 // machine: seen → listed → unlisted
 export const listed = Blueprint.role(Account, {
-  actor: { mount: Account.fields.source, id: Account.fields.id }, while: [machine.states.listed],   // Superseded by GOAL17-source-from, 22 November 2026: it also takes `within: Account.fields.superagent`, so a listed account of one superagent is never admitted for another's call
+  actor: { mount: Account.fields.source, id: Account.fields.id }, while: [machine.states.listed],   // Superseded by GOAL17-source-from, 22 November 2026: it also takes `within: Account.fields.superagent`, so a listed account of one superagent is never admitted for another's call; Superseded by GOAL17-account-key, 23 November 2026: `id: Account.fields.external`
 });
 // blueprint/things/ticket/verbs/accept.ts
 allowed: [listed.of("account")],

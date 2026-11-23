@@ -329,7 +329,7 @@ declared event. The operations are named here; their payloads follow the prototy
 | Concept | Is | Operations, and who calls them |
 |---|---|---|
 | Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off`; `failures` counts polls failed in a row and a success zeroes it, `failAfter` is 3 (GOAL17-derived-reads) | `save`, `enable`, `disable` (person); `positionAdvanced` (source); `problem` (source: `error` after three failed polls in a row; an item failing a day is dropped); a configuration its kind rejects disables it |
-| Account | thing, intake (K40 fix 1), keyed by `(superagent, source, id)`, where `source` is its mount's name; `seen → listed → unlisted` | `seen` (source); `list`, `unlist`, `sync` (person; main proposes) |
+| Account | thing, intake (K40 fix 1), keyed by `(superagent, source, external)`, where `source` is its mount's name and `external` the outside account's id (GOAL17-account-key); `seen → listed → unlisted` | `seen` (source); `list`, `unlist`, `sync` (person; main proposes) |
 | Trigger | thing, intake; never changed | `receive` (source; stored, duplicate or filtered, idempotent by source and event); `requeue` (main); `reevaluate` (person) |
 | Thread | thing, intake; `idle → queued → evaluating`, one eval at a time | `bind`, `closed` (source); `unsubscribe` (person, main) |
 | Correlation | thing, intake | made by `receive`: a trigger seen on another thread; adds context, never routes |
@@ -608,7 +608,13 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
 23 November 2026. Slice 1 is on `main` (#515), and K40 is decided (#529). The lead is Claude Code on `claude-opus-5-5`.
 The brief, K39, K40 and GOAL17-model-endpoint reached this branch by #578: real model runs go through VibeProxy, with
 Pi Durable running the agents. Slice 2 is the four seam records (#583), passed by 🔍 after five rounds, with a "Two
-writers, one guard" table in GOAL17-executor-slots. Slice 4 is built on `goal-17/s4-adapters-from-spec-build` (GOAL17-adapters-from-spec).
+writers, one guard" table in GOAL17-executor-slots. Slice 3's checks (#597) and slice 4's adapters from a spec (#601,
+GOAL17-adapters-from-spec) are merged: `ortho new adapter --from-openapi` generates the GitHub, Slack and PostHog plugins in
+`examples/superagent/plugins/`, each passing against its stand-in. `goal/stage-1` was merged in at slice 5's start (#625).
+GOAL17-names (#651, #654) gave one name each to six operations and calls the records named two ways. Slice 5's checks
+are merged (#648, 08 to 17: 119 lines on the ratchet), and its build runs on `goal-17/s5-blueprint-build`. Two snags are
+open: the new forms can't be shown passable before the build (#652), and the compiler's acme tests time out on a slow
+CI runner, about one run in two.
 
 What slice 5's and slice 8's authors take from slice 2's last review, beyond the records:
 
