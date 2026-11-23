@@ -1,14 +1,8 @@
-import type { Hex, Signed } from "@orthograph/chain-evm/device";
-import { Effect } from "effect";
+import type { Hex } from "@orthograph/chain-evm/device";
+import { Clock, Effect } from "effect";
 import type { Relayed } from "../types.ts";
 import { definite, NO_HASH, reason } from "./adopt.ts";
 import type { Parts } from "./live.ts";
-
-/** What a replacement may pay at most, per gas: ten times what the first transaction paid. */
-export const capOf = (signed: Signed) => {
-  const { transaction } = signed.prepared;
-  return (transaction.type === "legacy" ? transaction.gasPrice : transaction.maxFeePerGas) * 10n;
-};
 
 /**
  * The relayer's store owns its nonces. The moment `prepare` reserves one, a row is written for it (its nonce, no bytes yet), before
@@ -29,7 +23,8 @@ export const relay = (parts: Parts, call: { readonly to: Hex; readonly data: Hex
   if (reservation === undefined) return yield* Effect.die(new Error("a prepared transaction has no reservation"));
   const nonce = prepared.transaction.nonce;
   const id = yield* Effect.sync(() => crypto.randomUUID());
-  store.add({ id, nonce, state: "submitting", hash: NO_HASH, serialized: "0x", replaces: [], fromBlock: 0n, cap: 0n, fill: false, note: "" });
+  const createdAt = yield* Clock.currentTimeMillis;
+  store.add({ id, nonce, state: "submitting", hash: NO_HASH, serialized: "0x", fromBlock: 0n, fill: false, note: "", createdAt });
   live.held.set(id, { reservation });
   live.inflight.add(id);
   const giveUp = (error: unknown) => Effect.gen(function* () {
@@ -39,7 +34,7 @@ export const relay = (parts: Parts, call: { readonly to: Hex; readonly data: Hex
   });
   const work = Effect.gen(function* () {
     const signed = yield* port.simulate(prepared).pipe(Effect.andThen(port.sign(prepared, key.signer)), Effect.catch(giveUp));
-    store.bytes(id, signed.hash, signed.serialized, capOf(signed));
+    store.bytes(id, signed.hash, signed.serialized);
     live.held.set(id, { reservation, signed });
     const failed = yield* port.submit(signed).pipe(
       Effect.map((submission) => { store.sent(id, submission.fromBlock); return undefined; }),

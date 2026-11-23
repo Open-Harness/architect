@@ -4,6 +4,7 @@ import { TimersLive } from "@orthograph/language-effect/device";
 import { Clock, Effect, Semaphore } from "effect";
 import { reconcile, status } from "./internal/check.ts";
 import { describe, startLive, type Live, type Parts } from "./internal/live.ts";
+import { health } from "./internal/health.ts";
 import { relay } from "./internal/relay.ts";
 import { makeStore } from "./internal/store.ts";
 import type { RelayerApi, RelayerConfig, RelayerEnv } from "./types.ts";
@@ -15,7 +16,7 @@ const invalid = (message: string) => new ChainFault({ kind: "configuration", mes
  * The relayer's Durable Object. Export it from the Worker's entry, bind it as `RELAYER`, bind the key as the secret `RELAYER_KEY`, and name
  * each instance by its chain's CAIP-2 id (`env.RELAYER.getByName("eip155:8453")`): one relayer per key, so one per chain. It keeps its
  * submissions in its own SQLite, and its alarm (every `pollIntervalMs` from `configure`, while any submission may still change) sends a
- * dropped transaction again with a higher fee, the same work `reconcile` does on call.
+ * dropped transaction again, byte for byte, the same work `reconcile` does on call. `health` names a nonce pending past its deadline.
  */
 export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
   private readonly store = makeStore(this.ctx.storage.sql);
@@ -76,10 +77,15 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
       if (config.pollIntervalMs !== undefined && (!Number.isSafeInteger(config.pollIntervalMs) || config.pollIntervalMs <= 0)) return yield* invalid("pollIntervalMs must be a positive integer");
       if (kept !== undefined && kept.chainId !== config.chainId) return yield* invalid(`this relayer is for chain ${kept.chainId}`);
       if (kept?.pollIntervalMs !== config.pollIntervalMs) yield* Effect.promise(() => this.ctx.storage.deleteAlarm());
-      if (kept?.rpcUrl !== config.rpcUrl || kept.pollIntervalMs !== config.pollIntervalMs) {
-        this.store.keep({ rpcUrl: config.rpcUrl, chainId: config.chainId, ...(config.pollIntervalMs === undefined ? {} : { pollIntervalMs: config.pollIntervalMs }) });
-        this.live = undefined;
+      const changed = kept?.rpcUrl !== config.rpcUrl || kept.pollIntervalMs !== config.pollIntervalMs;
+      if (changed || kept?.stuckAfterMs !== config.stuckAfterMs) {
+        this.store.keep({
+          rpcUrl: config.rpcUrl, chainId: config.chainId,
+          ...(config.pollIntervalMs === undefined ? {} : { pollIntervalMs: config.pollIntervalMs }),
+          ...(config.stuckAfterMs === undefined ? {} : { stuckAfterMs: config.stuckAfterMs }),
+        });
       }
+      if (changed) this.live = undefined;
       const { live, arm } = yield* this.parts;
       yield* arm;
       return { address: live.key.address as Hex };
@@ -88,6 +94,10 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
 
   relay(call: { readonly to: Hex; readonly data: Hex }) {
     return this.run(this.swap.withPermits(1)(this.parts.pipe(Effect.flatMap((parts) => relay(parts, call)))));
+  }
+
+  health() {
+    return this.run(Clock.currentTimeMillis.pipe(Effect.map((now) => health(this.store, now))));
   }
 
   status(id: string) {

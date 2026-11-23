@@ -275,7 +275,7 @@ say where they collide.
 
 | # | Slice | Done when |
 |---|---|---|
-| 9 | **M6.07, the relayer actor.** Not written from scratch: a Durable Object that holds the relayer key and wraps `chain-evm`'s nonce allocator, transaction manager, replacement and tracker (adapted from `@prb/effect-evm`) | M6.07's check |
+| 9 | **M6.07, the relayer actor.** Not written from scratch: a Durable Object that holds the relayer key and wraps `chain-evm`'s nonce allocator, transaction manager, rebroadcast and tracker (adapted from `@prb/effect-evm`) | M6.07's check |
 | 10 | **M6.09, the follower actor.** A Durable Object around `chain-evm`'s reliable event stream (backfill, cursor, decoder), storing its checkpoint | M6.09's check |
 | 11 | **M6.15, the signing flow**, the in-between state and the submission lifecycle, through the relayer | M6.15's check, and an SDK spend is confirmed by the follower |
 | 12 | **M6.16, M6.17 and M6.18: worlds with a chain, redeploy on new bytecode only, and key hygiene.** `ortho prove --env local` runs every budgets journey on Anvil | M6.16's, M6.17's and M6.18's checks |

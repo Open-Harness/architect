@@ -386,7 +386,7 @@ The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m
 `11-m6-09-follower.test.ts`: two Durable Object classes, `Relayer` and `Follower`, exported from
 `@orthograph/host-cloudflare`. What follows settles what that seam left open.
 
-- **The relayer replaces a dropped transaction on its own.** Its alarm notices a submission the node no longer holds
+- **The relayer replaces a dropped transaction on its own.** (Superseded by M6-relayer-rebroadcast, 23 November 2026: it rebroadcasts the same bytes; replacement is later.) Its alarm notices a submission the node no longer holds
   and resends it at the same nonce with a higher fee. `reconcile` does the same work on call, but a relayer that only
   replaces when `reconcile` is called is wrong. Each actor's alarm runs at the `pollIntervalMs` its `configure` is given;
   an actor configured with none sets no alarm, so a check that drives `poll` or `reconcile` by hand is never raced.

@@ -29,8 +29,6 @@ interface Script {
   resume: Array<Signed | ChainFault>;
   /** What each `fill` answers, in order. */
   fill: Array<ChainFault | "ok">;
-  /** What each `replace` answers, in order. */
-  replace: Array<ChainFault | "ok">;
   /** Every call the port was given, by name: what the relayer asked for. */
   calls: Array<{ name: string; arg?: unknown }>;
   /** What the store held for each row when the port was asked to `simulate` and to `submit`. */
@@ -40,8 +38,7 @@ interface Script {
 
 const harness = (store: Store, script: Script, held: Map<string, Held> = new Map()): Parts => {
   const next = <A>(list: A[]) => list.length > 1 ? list.shift()! : list[0]!;
-  let made = 100;
-  let nonce = 7;
+    let nonce = 7;
   const port = {
     read: () => Effect.void,
     prepare: () => Effect.sync(() => { script.calls.push({ name: "prepare" }); const at = nonce++; return signedAt(at, 30 + at).prepared; }),
@@ -56,11 +53,6 @@ const harness = (store: Store, script: Script, held: Map<string, Held> = new Map
       const out = next(script.fill);
       return out === "ok" ? Effect.succeed(signedAt(owned.nonce, 60 + owned.nonce)) : Effect.fail(out);
     }),
-    replace: (signed: Signed, _signer: unknown, policy: { strategy: string }) => Effect.suspend(() => {
-      script.calls.push({ name: "replace", arg: { replaces: signed.hash, strategy: policy.strategy } });
-      const out = next(script.replace);
-      return out === "ok" ? Effect.succeed(signedAt(signed.prepared.transaction.nonce, made++)) : Effect.fail(out);
-    }),
     submit: () => Effect.suspend(() => {
       script.atSubmit.push(store.open());
       const out = next(script.submit);
@@ -71,35 +63,49 @@ const harness = (store: Store, script: Script, held: Map<string, Held> = new Map
   return { live, store, arm: Effect.void };
 };
 const script = (over: Partial<Script> = {}): Script => ({
-  probe: [{ _tag: "Held" }], submit: ["ok"], simulate: ["ok"], resume: [], fill: ["ok"], replace: ["ok"], calls: [], atSimulate: [], atSubmit: [], ...over,
+  probe: [{ _tag: "Held" }], submit: ["ok"], simulate: ["ok"], resume: [], fill: ["ok"], calls: [], atSimulate: [], atSubmit: [], ...over,
 });
 const inDo = (name: string, body: (store: Store) => Promise<void>) =>
   runInDurableObject(env.RELAYER.getByName(name) as DurableObjectStub<Relayer>, (_relayer, state) => body(makeStore(state.storage.sql)));
 const run = <A>(effect: Effect.Effect<A, unknown>) => Effect.runPromise(effect);
-const row = (id: string, nonce: number, n: number) => ({ id, nonce, state: "submitted" as const, hash: hash(n), serialized: signedAt(nonce, n).serialized, replaces: [], fromBlock: 10n, cap: 1_000n, fill: false, note: "" });
+const row = (id: string, nonce: number, n: number) => ({ id, nonce, state: "submitted" as const, hash: hash(n), serialized: signedAt(nonce, n).serialized, fromBlock: 10n, fill: false, note: "", createdAt: 0 });
 const holding = (...rows: Array<[string, number, number]>) => new Map<string, Held>(rows.map(([id, nonce, n]) => [id, { reservation: reservation(nonce), signed: signedAt(nonce, n) }]));
 const call = { to: FROM, data: "0x" } as const;
 
-describe("a replacement that fails in transit", () => {
-  it("is kept as the current transaction, so the next alarm replaces that one and the nonce does not wedge", () => inDo("eip155:11", async (store) => {
+describe("a transaction the node dropped", () => {
+  it("is sent again, the same signed bytes and the same hash, and is never replaced", () => inDo("eip155:11", async (store) => {
     store.add(row("a", 5, 1));
     const held = holding(["a", 5, 1]);
-    const s = script({ probe: [{ _tag: "Dropped" }], submit: [new ChainFault({ kind: "transport", message: "reset" }), "ok"] });
+    const s = script({ probe: [{ _tag: "Dropped" }, { _tag: "Held" }] });
     const parts = harness(store, s, held);
-    expect((await run(reconcile(parts))).replaced).toEqual([{ id: "a", nonce: 5, oldHash: hash(1), newHash: hash(100) }]);
-    expect(store.find("a")).toMatchObject({ hash: hash(100), replaces: [hash(1)], state: "submitted" });
-    expect(held.get("a")?.signed?.hash).toBe(hash(100));
-    await run(reconcile(parts));
-    expect(s.calls.filter((c) => c.name === "replace").map((c) => c.arg)).toEqual([{ replaces: hash(1), strategy: "speedup" }, { replaces: hash(100), strategy: "speedup" }]);
-    expect(store.find("a")).toMatchObject({ hash: hash(101), replaces: [hash(1), hash(100)] });
+    expect(await run(reconcile(parts))).toEqual({ replaced: [], rebroadcast: [{ id: "a", nonce: 5, hash: hash(1) }] });
+    expect(s.atSubmit).toHaveLength(1);
+    expect(store.find("a")).toMatchObject({ hash: hash(1), serialized: signedAt(5, 1).serialized, state: "submitted", fromBlock: 40n });
+    expect(held.get("a")?.signed?.hash).toBe(hash(1));
+    expect((await run(reconcile(parts))).rebroadcast, "held by the node now, so left alone").toEqual([]);
+    expect(await run(status(parts, "a"))).toEqual({ id: "a", nonce: 5, hash: hash(1), state: "submitted", replaces: [] });
   }));
 
-  it("that the node refuses for good leaves the old one current and says why on the row, and status shows it", () => inDo("eip155:12", async (store) => {
+  it("that fails to go in transit is noted and sent again at the next alarm, the same bytes; one the node refuses for good becomes a fill", () => inDo("eip155:12", async (store) => {
     store.add(row("b", 5, 1));
-    const parts = harness(store, script({ probe: [{ _tag: "Dropped" }], submit: [new ChainFault({ kind: "funds", message: "the relayer cannot pay" })] }), holding(["b", 5, 1]));
-    expect((await run(reconcile(parts))).replaced).toEqual([]);
-    expect(store.find("b")).toMatchObject({ hash: hash(1), replaces: [], note: "the relayer cannot pay" });
-    expect(await run(status(parts, "b"))).toMatchObject({ id: "b", hash: hash(1), state: "dropped", problem: "the relayer cannot pay" });
+    store.add(row("c", 6, 2));
+    const s = script({ probe: [{ _tag: "Dropped" }], submit: [new ChainFault({ kind: "transport", message: "reset" }), new ChainFault({ kind: "rejected", message: "The node refused the transaction for good" }), "ok"] });
+    const parts = harness(store, s, holding(["b", 5, 1], ["c", 6, 2]));
+    await run(reconcile(parts));
+    expect(store.find("b")).toMatchObject({ hash: hash(1), state: "submitted", note: "reset", fill: false });
+    expect(store.find("c")).toMatchObject({ fill: true, serialized: "0x", state: "submitting" });
+    expect(parts.live.held.get("c")).toEqual({ reservation: reservation(6) });
+    await run(reconcile(parts));
+    expect(store.find("b")).toMatchObject({ hash: hash(1), note: "", state: "submitted" });
+    expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 6 }]);
+  }));
+
+  it("that is a fill is sent again as it is, its own bytes", () => inDo("eip155:22", async (store) => {
+    store.add({ ...row("f", 5, 65), fill: true });
+    const s = script({ probe: [{ _tag: "Dropped" }] });
+    const parts = harness(store, s, holding(["f", 5, 65]));
+    expect((await run(reconcile(parts))).rebroadcast).toEqual([{ id: "f", nonce: 5, hash: hash(65) }]);
+    expect(s.calls.filter((c) => c.name === "fill")).toEqual([]);
   }));
 });
 
@@ -115,18 +121,6 @@ describe("a send the node refused for good", () => {
     await run(reconcile(parts));
     expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 7 }]);
     expect(store.open().map((r) => [r.nonce, r.state])).toEqual([[7, "submitted"], [8, "submitted"]]);
-  }));
-
-  it("and a replacement the port will not make (nothing is broadcast at the nonce) turns the row into a fill, which the alarm then fills", () => inDo("eip155:21", async (store) => {
-    store.add(row("w", 5, 1));
-    const s = script({ probe: [{ _tag: "Dropped" }], replace: [new ChainFault({ kind: "nonce", message: "The transaction is not the one broadcast at its nonce" })] });
-    const parts = harness(store, s, holding(["w", 5, 1]));
-    expect((await run(reconcile(parts))).replaced).toEqual([]);
-    expect(store.find("w")).toMatchObject({ fill: true, serialized: "0x", state: "submitting" });
-    expect(parts.live.held.get("w")).toEqual({ reservation: reservation(5) });
-    await run(reconcile(parts));
-    expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 5 }]);
-    expect(s.calls.filter((c) => c.name === "replace")).toHaveLength(1);
   }));
 });
 
