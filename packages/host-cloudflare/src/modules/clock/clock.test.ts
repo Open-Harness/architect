@@ -108,6 +108,23 @@ describe("the instant a world keeps", () => {
     });
   });
 
+  it("says where the clock stands in every refusal, so a caller refused after a move reached something still knows the instant", async () => {
+    await inStorage("clock-refusals-now", async (sql) => {
+      const clock = WorldClock.state(sql, STEPPED);
+      const ask = (path: string, body: object) => WorldClock.door(clock, new Request(`http://world/_world/clock${path}`, { method: "POST", body: JSON.stringify(body) }))!.then(async (r) => ({ status: r.status, body: (await r.json()) as { _tag: string; now?: string } }));
+      expect(clock.advance("1 day")).toMatchObject({ ok: true });
+      const now = iso(clock.now());
+      for (const [path, body] of [["/advance", { span: "a while" }], ["/advance", {}], ["/move-to", { to: "2020-01-01T00:00:00Z" }], ["/move-to", { to: "whenever" }], ["/move-to", {}]] as const) {
+        const refused = await ask(path, body);
+        expect([refused.status, refused.body._tag, refused.body.now], `${path} ${JSON.stringify(body)}`).toEqual([400, "BadMove", now]);
+      }
+      const real = WorldClock.state(sql, { kind: "real" });
+      const notMovable = await WorldClock.door(real, new Request("http://world/_world/clock/advance", { method: "POST", body: JSON.stringify({ span: "1 day" }) }))!.then((r) => r.json()) as { _tag: string; now: string };
+      expect(notMovable._tag).toBe("ClockNotMovable");
+      expect(Math.abs(Date.parse(notMovable.now) - Date.now())).toBeLessThan(60_000);
+    });
+  });
+
   it("refuses a span or an instant the clock cannot hold, whatever its size, and stays where it was", async () => {
     await inStorage("clock-huge", (sql) => {
       const clock = WorldClock.state(sql, STEPPED);

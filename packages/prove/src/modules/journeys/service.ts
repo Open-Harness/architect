@@ -66,10 +66,10 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       Effect.gen(function* () {
         const moved = yield* WorldClock.move(url, call.move);
         const answer = moved.body as { readonly now?: unknown } | null;
-        if (moved.status === 200) {
-          env["last"] = moved.body;
-          if (typeof answer?.now === "string") env["clock"] = { now: answer.now };
-        }
+        if (moved.status === 200) env["last"] = moved.body;
+        // Whatever the status: a refusal that came after the clock had moved (a wake that failed, a world that never went quiet) carries the
+        // instant the move reached, and the journey goes on from the world's real time, not from the one it asked at.
+        if (typeof answer?.now === "string" && Number.isFinite(Date.parse(answer.now))) env["clock"] = { now: answer.now };
         const record: CallRecord = {
           journey: journey.name, step, actor: "clock", person: "", operation: "clock", payload: { ...call.move }, status: moved.status, body: moved.body,
           trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: [], clock: true,

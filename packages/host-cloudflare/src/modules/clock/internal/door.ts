@@ -11,11 +11,12 @@ import type { ClockReading, ClockState, Controller, Moved, Planned, Unsettled } 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 const iso = (millis: number) => new Date(millis).toISOString();
 
-const refusal = (moved: Extract<Moved, { readonly ok: false }>): Response => json(moved.body, moved.status);
+/** Every refusal says where the world's clock stands now (`now`), so a caller that was refused after a move reached something still knows the instant. */
+const refusal = (moved: Extract<Moved, { readonly ok: false }>, now: string): Response => json({ ...moved.body, now }, moved.status);
 
 const unsettled = (why: Unsettled, now: string): Response =>
   why._tag === "Refused"
-    ? json(why.body, why.status)
+    ? json({ ...why.body, now }, why.status)
     : why._tag === "WorldReset"
     ? json({ _tag: "WorldReset", now, message: "the world was reset while this move was running: nothing was moved after it" }, 409)
     : why._tag === "NeverQuiet"
@@ -26,9 +27,9 @@ const unsettled = (why: Unsettled, now: string): Response =>
 const make = (state: ClockState, plan: () => Planned, controller: Controller | undefined): Promise<Response> => {
   if (controller === undefined) {
     const planned = plan();
-    if (!planned.ok) return Promise.resolve(refusal(planned));
+    if (!planned.ok) return Promise.resolve(refusal(planned, iso(state.now())));
     const moved = state.moveTo(iso(planned.target));
-    return Promise.resolve(moved.ok ? json({ now: iso(moved.now), fired: [] }) : refusal(moved));
+    return Promise.resolve(moved.ok ? json({ now: iso(moved.now), fired: [] }) : refusal(moved, iso(state.now())));
   }
   return Effect.runPromise(controller.settle(plan).pipe(
     Effect.match({
@@ -48,8 +49,8 @@ export const clockDoor = (state: ClockState, request: Request, controller?: Cont
   return request.json().catch(() => ({})).then((body) => {
     const { span, to } = body as { readonly span?: unknown; readonly to?: unknown };
     if (pathname === "/_world/clock/advance") {
-      return typeof span === "string" ? make(state, () => state.plan({ span }), controller) : Promise.resolve(json({ _tag: "BadMove", message: "advance names a span: { \"span\": \"1 month\" }" }, 400));
+      return typeof span === "string" ? make(state, () => state.plan({ span }), controller) : Promise.resolve(json({ _tag: "BadMove", now: iso(state.now()), message: "advance names a span: { \"span\": \"1 month\" }" }, 400));
     }
-    return typeof to === "string" ? make(state, () => state.plan({ to }), controller) : Promise.resolve(json({ _tag: "BadMove", message: "move-to names an instant: { \"to\": \"2027-01-10T09:00:00Z\" }" }, 400));
+    return typeof to === "string" ? make(state, () => state.plan({ to }), controller) : Promise.resolve(json({ _tag: "BadMove", now: iso(state.now()), message: "move-to names an instant: { \"to\": \"2027-01-10T09:00:00Z\" }" }, 400));
   });
 };

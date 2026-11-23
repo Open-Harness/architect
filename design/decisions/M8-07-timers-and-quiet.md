@@ -210,6 +210,7 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | the real alarm: `Effect.runPromise(fireDue())` | not cancellable (an alarm runs to its end); its wakes are never timed out in a real world, so none is abandoned and run twice |
     | the entry: `new Promise(store.run(...)).finally(end)` and `Effect.runPromise(box.gate...)` | the end is attached to every path (a throw is a rejection); it runs under the box's gate and is short |
     | `Effect.promise` over D1 (`leases.ts`, `reset.ts`, `facts.ts`, `worlds.ts`) | reads and the reset's own writes of the world's registry; none is a wake or a request's work, so none outlives a token |
+    | the door's answer to a journey's clock step (`prove` `moveClock`) | **was open**: `s.clock.now` was refreshed only on a 200, so a refusal that came after the clock had moved (`WakeFailed`, `NeverQuiet`, `WorldReset`) left it stale. Every refusal the door makes now carries `now`, the instant the clock stands at (`NeverQuiet`, `WakeFailed`, `WorldReset`, `Refused`, `BadMove`, `ClockNotMovable`), and prove takes any valid `now` whatever the status (`env.last` stays success-only); tested in `journeys/clock-step.test.ts` and `clock/clock.test.ts` |
     | `language-effect` `timers`, `work`, `handler` | no `runPromise`, `tryPromise` or `new Promise`: they are Effect throughout, so interruption is the runtime's own |
 
     **Where a generation, epoch or token is recorded: at the moment the work starts, never after a wait.**
