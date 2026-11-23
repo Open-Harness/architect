@@ -85,7 +85,11 @@ afterAll(async () => {
   rmSync(dir, { recursive: true, force: true });
 }, 60_000);
 
-describe("the logbook on local workerd, with a real issuer", () => {
+// The setup is already shared (one workerd and two issuers for the file, above). Each case is a few HTTP round trips
+// through those processes, and one RSA key: 0.3 to 1.5 s on a CI runner and on the loaded shared Mac, but once, on a
+// runner starved by other suites, the first case passed 5 s (run 45118635060, attempt 2). How fast it answers is up to
+// processes vitest doesn't schedule, so each case gets 30 s (design/decisions/CI-sibling-test-speed.md).
+describe("the logbook on local workerd, with a real issuer", { timeout: 30_000 }, () => {
   it("refuses forged, foreign, wrong-ref, unsigned and not-a-token requests with 401, and stores nothing", async () => {
     const trusted = await mint(issuer);
     const refused: Array<[string, string | undefined]> = [
