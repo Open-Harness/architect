@@ -28,7 +28,8 @@ export const assign = (before: Lock, wanted: ReadonlyArray<Wanted>): { readonly 
   const taken = (code: string) => code in live;
   const find = (w: Wanted): { readonly code: string; readonly was: LockEntry | undefined } => {
     if (w.code !== undefined) return { code: w.code, was: before.refusals[w.code] ?? retired[w.code] };
-    const holds = (e: LockEntry, code: string) => e.name === w.name && e.owner === w.owner && prefixOf(code) === w.prefix && numberOf(code) < GENERATED;
+    // By name, owner and number, not prefix: a code that shipped is a promise clients match on, so it outlives its thing's prefix.
+    const holds = (e: LockEntry, code: string) => e.name === w.name && e.owner === w.owner && numberOf(code) < GENERATED;
     const there = Object.entries(before.refusals).find(([c, e]) => holds(e, c) && !taken(c)) ?? Object.entries(retired).find(([c, e]) => holds(e, c) && !taken(c));
     if (there) return { code: there[0], was: there[1] };
     const top = [...used].filter((c) => prefixOf(c) === w.prefix && numberOf(c) < GENERATED).reduce((m, c) => Math.max(m, numberOf(c)), 0);

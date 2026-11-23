@@ -55,4 +55,17 @@ describe("the refusals lock", () => {
     expect(RefusalLock.runtime(false).map((w) => w.code)).toEqual(["AR-001", "AR-002"]);
     expect(RefusalLock.runtime(true).map((w) => w.code)).toEqual(["AR-001", "AR-002", "AR-003", "AR-004", "AR-005", "AR-006"]);
   });
+
+  it("a changed prefix keeps the code that shipped, and a new refusal takes the new prefix", () => {
+    const first = RefusalLock.evolve(EMPTY_LOCK, [declared("TicketBusy")]);
+    const moved = (name: string): Wanted => ({ ...declared(name), prefix: "TT" });
+    const after = RefusalLock.evolve(first, [moved("TicketBusy"), moved("Fresh")]);
+    expect(codes(after)).toEqual({ TicketBusy: "TK-001", Fresh: "TT-001" });
+    expect(after.retired).toEqual({});
+    const left = RefusalLock.evolve(first, []);
+    const back = RefusalLock.evolve(left, [moved("TicketBusy")]);
+    expect(codes(back)).toEqual({ TicketBusy: "TK-001" });
+    expect(back.retired).toEqual({});
+    expect(RefusalLock.assign(first, [moved("TicketBusy"), moved("TicketBusy")]).codes).toEqual(["TK-001", "TT-001"]);
+  });
 });

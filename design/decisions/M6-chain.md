@@ -258,6 +258,7 @@ Superseded by M6-money, 21 November 2026: a money field is written `{ "value": "
   name and its owner. A retired code is never given to another name; when the same name comes back to the same thing,
   it takes its old code out of `retired` rather than a new one (`packages/compiler/src/modules/lock/internal/evolve.ts`,
   `assign`). One name is never both live and retired, and the lock's reader refuses a lock where it is.
+- **A changed prefix keeps the codes that shipped.** When a thing's code prefix changes, each refusal that already has a code keeps it (`TK-001` stays `TK-001` under prefix `TT`), because clients match on it; only a new refusal takes the new prefix. A name is never both live and retired (Codex on #331, 23 November 2026).
 - **Generated refusals follow their thing.** The machine's refusal (`-900`) and not-found (`-901`) are named from the
   thing and its first state (`describe.ts:101`, `found.ts`). Renaming either keeps the code, since it is the thing's
   own slot, and moves the old wire identity to `earlier`; `ortho check` reports it as major.

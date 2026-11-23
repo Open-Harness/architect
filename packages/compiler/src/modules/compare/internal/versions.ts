@@ -3,6 +3,7 @@
 import { canonical } from "#modules/model/service.js";
 import type { Model } from "#modules/model/types.js";
 import type { Bump, Change, Release, Versioned } from "../types.ts";
+import { assetBumps } from "./assets.ts";
 import { thingBumps } from "./chain.ts";
 import { diff } from "./diff.ts";
 
@@ -64,7 +65,7 @@ const movedCodes = (before: Model, after: Model): ReadonlyArray<Versioned> =>
  * Nothing different still makes a release (a rebuilt revision, never an identical version), so it is a patch.
  */
 export const release = (before: Model, after: Model): Release => {
-  const changes = [...diff(before, after).flatMap((c) => entriesOf(c, before, after)), ...movedCodes(before, after)];
+  const changes = [...diff(before, after).flatMap((c) => entriesOf(c, before, after)), ...movedCodes(before, after), ...assetBumps(before, after)];
   const bump = changes.reduce<Bump>((top, c) => (RANK[c.bump] > RANK[top] ? c.bump : top), "patch");
   return { bump, changes };
 };
