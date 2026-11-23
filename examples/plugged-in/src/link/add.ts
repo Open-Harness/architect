@@ -1,5 +1,6 @@
 // Scaffolded from blueprint/things/link/verbs/add.ts. Yours from now on.
 import { Effect } from "effect";
+import { acting } from "orthograph";
 import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/link/add.handler.ts";
@@ -45,10 +46,12 @@ const { LinkNeedsHandle } = Errors.declared;
  */
 const add: Handler = ({ title, url }, { principal, steps, move, id }) =>
   Effect.gen(function* () {
-    if (principal.kind !== "person") return yield* Effect.die(new Error("reached without a signed-in person"));
+    // `signedIn` admits a person and an agent acting for one (M2-auth, fork 2): the page is the person's either way.
+    const who = acting(principal);
+    if (!who) return yield* Effect.die(new Error("reached without a signed-in person"));
     const records = yield* Records;
     // Step load: database, span link.add.load.
-    const page = yield* steps.load(records.findBy(oneNamePerPerson, principal.person as never));
+    const page = yield* steps.load(records.findBy(oneNamePerPerson, who.person as never));
 
     // LinkNeedsHandle: exit 30, LN-001. The caller holds no claimed name.
     if (!page) {
@@ -63,7 +66,7 @@ const add: Handler = ({ title, url }, { principal, steps, move, id }) =>
     // Step record: database, span link.add.record.
     yield* steps.record(
       Effect.gen(function* () {
-        yield* records.insert(Link, { id, profile: profile["id"] as never, owner: principal.person as never, title, url });
+        yield* records.insert(Link, { id, profile: profile["id"] as never, owner: who.person as never, title, url });
         yield* records.update(Profile, profile["id"] as never, { links: [...(profile["links"] as ReadonlyArray<string>), id] as never });
       }),
     );

@@ -46,6 +46,12 @@ Starts from the world `founded`.
 
 - **bob founds an organisation of his own.** `bob` (signed in) calls and sends name `Bob Co`, cap `1000`, and gets back an answer matching `^org_[0-9a-z]+$`.
 
+### the system is nobody signed in
+
+Starts from the world `founded`.
+
+- **the system can't found an organisation: that is for a person.** `clock` (system) calls and sends name `System Co`, cap `1000`, and is refused with NotAllowed, AR-001.
+
 ## How to call
 
 ```sh

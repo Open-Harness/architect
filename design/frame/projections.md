@@ -279,6 +279,8 @@ export const web = Blueprint.projection({
   Built in ST1.25, ST1.06 and ST2.03.
 - **Scope:** it renders pieces, not screens. Pages are the app's own code in `src/web/`, composed from the pieces and
   UI SDK's components, scaffolded once if asked.
+- **The map:** which pages exist, their routes, who may open them and the shell around them are declared in
+  `blueprint/app/` and come out of the app projection (`generated/app/`) and `@orthograph/shell`, beside this one (K31).
 - **Replay:** a headless browser fills and presses the step's piece, as a person or as an agent through UI SDK's
   bridge. The browser signer of wallets is proved here, which is how risk 3 in `spikes/kits-dx/README.md` is closed.
 
@@ -507,7 +509,7 @@ Each projection's replay also adds checks of its own:
 
 ### Cost, and when it runs
 
-Replay multiplies prove time by the number of projections that take a step. Today acme has 11 journeys through one
+Replay multiplies prove time by the number of projections that take a step. Today acme has 15 journeys through one
 door. With the server API, SDK, CLI, MCP and React, most steps run four or five times.
 
 - **In CI:** every journey through every projection, every time. Verdicts are only written there.

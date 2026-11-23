@@ -6,6 +6,7 @@ import { workedExamples } from "./examples.ts";
 import { IDEMPOTENCY_CONFLICT, IDEMPOTENCY_CONFLICT_EXIT, NOT_ALLOWED_EXIT, lines, ruleBehind, ruleSentence, who, type RenderedFile } from "@orthograph/projections/shared";
 
 type FieldsModel = Readonly<Record<string, FieldModel>>;
+import { timeMoveOf, whenWords } from "@orthograph/projections/shared";
 const MARK = "<!-- Generated from the blueprint. Do not edit. -->";
 
 /** A sentence in a table cell: a `|` would end the cell, a line break the row. */
@@ -46,6 +47,8 @@ const refusals = (model: Model, op: OperationModel) => {
     const refused = rule ? model.things[rule.thing]?.errors[r] : undefined;
     if (rule && refused) return `| ${r} | ${refused.exit} | ${code} | ${cell(`${rule.sentence}; by the rule ${rule.full}`)}${Object.keys(refused.fields).length ? `, carrying ${Object.keys(refused.fields).join(", ")}` : ""} |`;
     if (declared) return `| ${r} | ${declared.exit} | ${code} | declared in errors.ts${Object.keys(declared.fields).length ? `, carrying ${Object.keys(declared.fields).join(", ")}` : ""} |`;
+    // Only a blueprint with a keeper lists NotAllowed on an operation open to anyone: the keeper is the one caller it turns away.
+    if (r === "NotAllowed" && op.allowed.every((a) => a.kind === "anyone")) return `| NotAllowed | ${NOT_ALLOWED_EXIT} | ${code} | the caller is the keeper, which calls only the moves time makes; the handler never runs |`;
     const missing = Object.entries(op.notFound ?? {}).filter(([, e]) => e === r).map(([k]) => k);
     if (missing.length > 0) return `| ${r} | ${Object.values(model.things).find((t) => t.notFound?.error === r)?.notFound?.exit ?? "?"} | ${code} | nothing has the id in ${missing.join(", ")}; the handler never runs; carries \`id\` |`;
     if (r === "NotAllowed") return `| NotAllowed | ${NOT_ALLOWED_EXIT} | ${code} | the caller isn't ${who(op)}; the handler never runs |`;
@@ -66,6 +69,7 @@ const operationPage = (model: Model, op: OperationModel, project: string): Rende
     [
       `**Who may call:** ${who(op)}.`,
       op.kind === "read" ? `**A read:** answered from the records, with no handler.${op.list ? ` A page of ${op.list.page} at a time, ${op.list.order === "newest" ? "newest" : "oldest"} first, narrowed by ${op.list.where.join(", ") || "nothing"}; pass the answer's \`next\` as \`cursor\` for the page after it.` : ""}` : "",
+      timeMoveOf(model, op) ? `**When:** ${whenWords(op.thing, timeMoveOf(model, op)!, "`")}.` : "",
       op.idempotent === "request" ? "**Idempotent by request:** send `idempotency-key`; the same key twice is one call." : "",
       op.budget ? `**Budget:** p95 ${op.budget.p95Ms}ms.` : "",
     ].filter((l) => l !== "").join("\n\n"),
@@ -94,7 +98,11 @@ const thingPage = (model: Model, t: ThingModel): RenderedFile => {
       "", "## Fields", "", fieldRows(t.fields),
       t.machine ? ["", "## Machine", "", `States: ${t.machine.states.join(", ")}. A move from the wrong state is refused ${t.machine.notFrom.error} (exit ${t.machine.notFrom.exit}).`, "",
         "| move | from | to | emits |", "|---|---|---|---|",
-        ...Object.entries(t.machine.moves).map(([k, m]) => `| ${k} | ${m.from.join(", ") || "(creates)"} | ${m.to.join(", ")} | ${m.emits} |`)] : [],
+        ...Object.entries(t.machine.moves).map(([k, m]) => `| ${k} | ${m.from.join(", ") || "(creates)"} | ${m.to.join(", ")} | ${m.emits} |`),
+        // Only a machine with a move made by time says when it happens; every other thing's page is as it was.
+        ...(Object.values(t.machine.moves).some((m) => m.by !== undefined)
+          ? ["", "Moves made by time:", "", ...Object.entries(t.machine.moves).flatMap(([k, m]) => (m.by === undefined ? [] : [`- ${k}: ${whenWords(t.name, { by: m.by, ...(m.late === undefined ? {} : { late: m.late }), ...(m.lazy === undefined ? {} : { lazy: m.lazy }) }, "`")}`]))]
+          : [])] : [],
       Object.keys(t.invariants ?? {}).length ? ["", "## Invariants", "", ...invariantRows(t)] : [],
       Object.keys(t.events).length ? ["", "## Events", "", ...eventRows(t)] : [],
       t.roles.length ? ["", "## Roles", "", ...t.roles.map((r) => `- ${r}`)] : [],

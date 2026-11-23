@@ -10,6 +10,7 @@ import { answerAttributes, payloadAttributes, principalAttributes } from "./attr
 import { CALL_ID, newCallId } from "./call-id.ts";
 import { spanned } from "./span.ts";
 import { cutAnswer } from "#modules/visibility/service.js";
+import { defectAttributes } from "./defect.ts";
 
 type AnyCodec = Schema.Codec<object, unknown>;
 type AnyHandler = (payload: object, context: { principal: Principal; steps: object; refs: object; move: (to?: string) => Effect.Effect<void> }) => Effect.Effect<object, unknown, unknown>;
@@ -54,7 +55,7 @@ const device = ({ name, operation, handler }: { readonly name: string; readonly 
         return cutAnswer(op, answer, []);
       }).pipe(
         Effect.tapCause((cause) => Cause.hasDies(cause)
-          ? Effect.annotateCurrentSpan({ defect: Cause.pretty(cause).split("\n")[0] ?? "" })
+          ? Effect.annotateCurrentSpan(defectAttributes(cause))
           : Effect.annotateCurrentSpan({ refusal: tagOf(Cause.squash(cause)) })),
         spanned(name, { operation: name, [CALL_ID]: callId, ...principalAttributes(principal) }),
         where.otlp === undefined ? (effect) => effect : Effect.provide(exporter(where.otlp, where.service)),

@@ -12,3 +12,8 @@ declares it with `ORTHO_WALLET_DEPTH` (a whole number of at least 1; `0`, `-1`, 
 variable), a world with `chain.depth`. Chain id 31337 is local and is depth 1 without a declaration; any other chain has
 none: `fromHost` still answers (keys work on any chain) with `depth` undefined, and a send on it is a defect naming
 `ORTHO_WALLET_DEPTH`, asked before anything is prepared, signed or sent.
+
+**No nonce state outlives a send.** `Chain.port` makes a port, with its own nonce manager, and a send throws it away: the
+next send's `prepare` reads the pending nonce from the chain, so nothing kept here can drift from it. What a process
+does share is `Chain.lock(setting, from)`: one lock per `chainId|rpcUrl|account`, made in one step on the first ask
+(`internal/lanes.ts`). A keyed send holds it from `prepare` until the node has accepted the broadcast.

@@ -128,7 +128,7 @@ describe("the remote MCP server", () => {
       expect(operation?.resource?.attributes?.find((attribute) => attribute.key === "deployment.environment.name")?.value.stringValue).toBe("local");
     }))));
 
-  it("serves one tool per operation and read, behind OAuth, as the person the token names", { timeout: 180_000 }, () =>
+  it("serves one tool per operation and read an agent may call, behind OAuth, as the agent for the person the token names", { timeout: 180_000 }, () =>
     Effect.runPromise(Effect.scoped(Effect.gen(function* () {
       const { url } = yield* Worlds.start({ root: acme, port: 0, name: "mcp-test" });
       const post = (path: string, body: unknown, token?: string, headers: Record<string, string> = {}) =>
@@ -154,10 +154,13 @@ describe("the remote MCP server", () => {
       const asBob = yield* Effect.promise(() => connect(url, bob.token));
       yield* Effect.addFinalizer(() => Effect.promise(() => Promise.all([asAda.close(), asBob.close()]).then(() => undefined)));
 
-      // One tool per operation and read, named as the operation is, each with the model's own input.
+      // One tool per operation and read an agent may call (the model's `agentTool`), named as the operation is, each with the model's own input.
       const { tools } = yield* Effect.promise(() => asAda.listTools());
-      const model = JSON.parse(readFileSync(join(acme, "generated/model/model.json"), "utf8")) as { operations: Record<string, { kind: string }> };
-      expect(tools.map((t) => t.name).sort()).toEqual(Object.keys(model.operations).sort());
+      const model = JSON.parse(readFileSync(join(acme, "generated/model/model.json"), "utf8")) as { operations: Record<string, { kind: string; agentTool: boolean }> };
+      expect(tools.map((t) => t.name).sort()).toEqual(Object.entries(model.operations).filter(([, o]) => o.agentTool).map(([name]) => name).sort());
+      // Consent and a new credential are a person's own: no tool offers either.
+      expect(tools.map((t) => t.name)).not.toContain("invitation.accept");
+      expect(tools.map((t) => t.name)).not.toContain("api-key.create");
       const get = tools.find((t) => t.name === "allowance.get")!;
       expect(get.inputSchema).toMatchObject({ type: "object", properties: { id: { type: "string" } }, required: ["id"], additionalProperties: false });
       expect(get.annotations?.readOnlyHint).toBe(true);
@@ -179,11 +182,10 @@ describe("the remote MCP server", () => {
       const over = yield* Effect.promise(() => asAda.callTool({ name: "allowance.grant", arguments: { organization, member: olga.person, limit: "1001" } }));
       expect([over["isError"], textOf(over)]).toEqual([true, "[AL-003] AllowanceLimitTooHigh { cap: 1000 }"]);
 
-      // A secret is never an answer: the key made is not in it, only the id.
+      // An agent is no one to make a key: it is not shown the tool, and naming it anyway is refused as the API refuses it, so no secret is an answer.
       const made = yield* Effect.promise(() => asAda.callTool({ name: "api-key.create", arguments: { organization, name: "ci" } }));
-      expect(made["isError"]).toBeFalsy();
-      expect(Object.keys(JSON.parse(textOf(made)) as object)).toEqual(["apiKey"]);
-      // And one can't be sent: the secret input is not in the tool, and naming it anyway is refused.
+      expect([made["isError"], textOf(made)]).toEqual([true, "[AR-001] NotAllowed"]);
+      // And a secret can't be sent: the secret input is not in the tool, and naming it anyway is refused.
       const signedIn = yield* Effect.promise(() => asAda.callTool({ name: "session.sign-in", arguments: { email: ada.email, password: ada.password } }));
       expect(signedIn["isError"]).toBe(true);
       expect(textOf(signedIn)).not.toContain("token");
