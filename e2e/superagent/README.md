@@ -223,6 +223,57 @@ changed stops and asks its author.
   or slice 4's builder cannot take its lines off the list.
 - `e2e/project.json` and `e2e/vitest.superagent*.config.ts` register the checks, as M8's are.
 
+# Goal 17's checks: the agents and the sandbox (slice 8)
+
+Written before slice 9 builds the agents (`@orthograph/agents` on Pi Durable), the sandbox, slots and pause, by an author who builds none of it.
+They run **on the doors `design/decisions/GOAL17-check-harness.md` fixes**: `s.runner.kill/start/restart`, `models.script` and the `/_stand/*`
+controls of the stand-ins, `s.clock.advance` and `settle`, `outbox.rows/hold/release/mark/redeliver`, `s.together`, and the `agent.calls` and
+`agent.told` probes. Each journey sits in `agent-journeys/` (one file each; slice 10's are in `journeys/`), its starting worlds in `starting-worlds/`, and what they share in `kit/`
+(`ops.ts` names every operation, role and event from where the blueprint declares it; `doors.ts` the descriptors; `consts.ts` the values no record fixes).
+A check lays them over a copy of `examples/superagent` (`agents-support.ts`) and runs `ortho prove`, as a user does.
+
+| Check | What it proves | Red today because |
+|---|---|---|
+| `40-the-journeys-are-fair` | each of the 28 journeys can pass against a tape (what a correct system answers, written from the records), fails at exactly the step each planted wrong tape is wrong at, and catches every change to an answer part it reads, every event left out and every field made wrong. The author's proofs 2 and 5 and the hostile pass's findings, kept as a check | green: it needs no builder |
+| `41-executors-and-steering` | one executor per ticket, found again after a restart; a message while it works steers it | the doors are unbuilt (below) |
+| `42-the-sandbox` | a write outside refused as `OutsideSandbox`; a blocked command failed as `BlockedCommand`; no credential among the variables; nothing left after a retire | `@orthograph/sandbox` and its bridge |
+| `43-kills-and-retries` | a kill mid-turn: no second committed model call; a kill mid-push: one branch update, one pull request; a failed send retried after a restart | the runner, the stand-ins' controls |
+| `44-what-a-main-agent-may-do` | the main agent sees no stranger's text; its configuration change only records a proposal | the main agent, proposals |
+| `45-seats` | a full pool keeps its slot for a person; a message routed as a turn ends gets a new seat; a handed-off or stopped ticket gets no seat back; a person's message after a CI result promotes the Assignment; `promoted` is skipped when `why` is already `person` | slots |
+| `46-two-writers-one-guard` | a late idle cannot end the next Assignment (reap, restart, redeliver); a stopped ticket's opening tell is refused; a reap before the opening tell frees no seat the executor uses; a refusal cycle writes at most six rows in 30 s; two fills start an Assignment once; a stop on a full pool starts nothing until `AgentClosed`; `reap`'s grace; a close is resent only for an old closing row | slots, the Agent's `current` |
+| `47-replies-and-pause` | two replies at once and a head that sends leave one head and no lost reply; one chatty ticket stays within budget; pause holds evals, launches, deliveries and replies and moves an eval's deadline later by its length; a kill during a pause loses nothing | pause, the outbox's holds |
+| `48-nothing-is-left` | no sandbox folder and no process of these checks is left, read from the process table and the disk (a planted leftover is found first) | green: nothing is left today |
+| `harness-01-no-probe-in-production` | a journey reaches no `testing.ts`, stand-in entry or server-side package; the production Worker's entry reaches no `testing.ts` and names no probe route (each shown on a planted graph first); the world's own entry registers the probes | one test: `generated/server/world.ts` is slice 9's |
+
+**Why `ortho prove` cannot yet name a step.** The harness's surface (the three call kinds, `runner`, `together`, `settle`, `Stand.command`, `Probe`) is a
+builder's first pull request, `goal-17/s8-surface-build`, and it is not on `goal/superagent`. Until it is, every journey stops at load, naming the
+package it cannot find (`@orthograph/stand-in-model`). The failure then moves to the first step that needs a door, which is the right reason. The tape runner
+(`tape/`) is how 40 shows the journeys fair meanwhile: it runs each journey's own checks against a recorded world through prove's own `runChecks` (imported by its internal path, in this check only:
+`packages/prove` does not export it), on a `CallRecord` the tape makes, with each step's good journal written out in `tapes/<name>.journal.ts`, and points three
+imports at throwaway descriptors (`tape/shims/`). Six calls the review made are in `design/decisions/GOAL17-agents-checks.md`. It is not a world, and it goes, with the shims, when slice 9 runs the journeys for real.
+
+## What the builder must make, and where the checks read it (slice 8)
+
+1. **Layout.** The checks lay `journeys/`, `kit/` and `blueprint/starting-worlds/` over the app; the builder writes none of them. `kit/doors.ts` imports `models` from
+   `@orthograph/stand-in-model/stand`, `calls` and `told` from `@orthograph/agents/probes`, `outbox` from `orthograph` (the record's places). The GitHub, Slack and sandbox
+   commands the record gives only by file are written in `kit/doors.ts` as the record writes them; slices 9 and 11 replace them with their packages' own.
+2. **The test world.** `prove --env local` runs a stepped clock (`Blueprint.clock.stepped`), the stand-ins of `models`, `sandbox`, `github` and `slack` mounted, and a
+   superagent with one seat (`kit/consts.ts` `POOL`). `environments/local.ts` has none of this yet.
+3. **Values the records leave open, fixed here.** Ann is GitHub account `583231` and a stranger `999`; an Account's `external` is the id, and `trigger.receive`'s `author` is that id.
+   A Slack thread is `<channel>:<ts>`. A person's message is `input.store` with `from: "person"`, a CI result `from: "system"`. An executor Agent is opened with `agent.open`
+   (`kind: "executor"`, `about: "ticket/<name>"`), and a scripted turn is matched by that `about`. `settings.save`'s first `base` is 0 and its first `revision` 1; so are `policy.save`'s,
+   and `superagent.update`'s base after a create is 1. A proposal read answers `{ items: [{ operation, changes, why }], next }`. A sandbox is a clone of `acme/widgets` from the GitHub
+   stand-in. `AssignmentStarted` has two deliveries (`agent.tell` and `input.route`) and `AssignmentEnded` two (`input.route` and `fill`): the journeys read each by `to`.
+4. **The record against the blueprint, where they disagree.** `outgoing-message.reply` is allowed to the main agent and the system only: the executor replies through `ticket.ack`,
+   so "two replies at once" is main and main (GOAL17-agents-checks, call C). `policy.save`, `policy.sync`, `account.list`, `settings.save` and `prompts.save` are `signedIn` only in slice 5's build, though the brief
+   lets a main agent call each and record a proposal: 44 fails until each has `itsMain` in `allowed` (call D, issue #705). `assignment.waiting` reads person first (call B): slice 9 changes its `order`.
+5. **What no check reaches, and why.**
+   - No ticket's id can be named for a ticket made inside a journey (an answer is `s.last` for one step only), so the full pool, `promoted` and the CI journeys read which `why` waits, not which ticket.
+   - `Ticket.seq` is read by no operation: the chatty ticket's first count in the record ("the ticket's own `seq` equals the writes that committed") is judged by each write's one answer and one fan-out instead.
+   - `CredentialLikeVariable`'s file is named by no record, so a credential-like variable is not tried.
+   - A reply's natural key is read as "not null": no record says its form. `EvalExpired` is not tied to the eval that was paused.
+   - The 20 s window of the close-resend journey holds at most one 30 s sweep, whose phase no record fixes; the grace journey calls `reap` by hand so its first sight of the idleness is at a known instant.
+
 # Goal 17's checks: stage one's behaviour (slice 6)
 
 Written before slice 7 builds stage one's handlers, by an author who builds none of them. Slice 6's done-when is "they fail on
@@ -295,6 +346,8 @@ pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/18 su
 pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/19                                              # one prove run, about 40 seconds
 pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/22                                              # red until the doors are built
 SUPERAGENT_APP=<folder> ...                                                                                                 # an author's throwaway app that should pass
+pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/40     # the fairness proofs: green
+pnpm nx run e2e:superagent-ratchet                                                   # everything, against expected-failing/
 ```
 
 # Goal 17's checks: the connections (slice 10)
