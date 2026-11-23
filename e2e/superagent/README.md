@@ -274,8 +274,8 @@ empty handlers"; slice 7's is "slice 6 passes". `GOAL17-stage-one.md` makes the 
 | the journey surface: `s.clock.settle`, `outbox`, `Stand.command`, `Probe`, the `actor:` and `agent:` cast forms (GOAL17-check-harness, call 0) | slice 8's first pull request |
 | `agent.open`'s handler, `@orthograph/stand-in-model`, the drain on `Timers`, `outbox.rows`, `outbox.hold` | slice 9 |
 
-Shapes the records do not give, which `22` guesses and says so in its journeys: `decision.route`'s items (`{ action, trigger, title }`); that `outbox.rows`' `subject` for `TicketCreated` is the ticket's id;
-that the `actor:` cast member is named by the world's listed account (`U1`). Slice 9 or the lead settles each when the door is built.
+Shapes the records did not give, which `22` keeps and `GOAL17-stage-one` call 11 settles: `decision.route`'s items (`{ action, trigger, title? }`, with the `eval` it answers, which a script names `"$eval"`); that
+`outbox.rows`' `subject` for `TicketCreated` is the ticket's id; that the `actor:` cast member is the world's listed account (`U1`).
 
 ## What proving 19 found
 

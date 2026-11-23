@@ -14,8 +14,7 @@ export default Blueprint.journey("a stop withdraws the mandate", {
   starts: "a-trigger-was-received",
   steps: (s) => [
     s.step("the main agent is scripted to accept ann's ask", models.script({ for: { kind: "main" }, turns: [
-      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." },
-      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "ignore" }] } }] }, { say: "Ignored." } ] })),
+      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." } ] })),
     s.step("the executor's first turn is held open", models.script({ for: { kind: "executor" }, turns: [{ say: "On it.", hold: "before-reply" }] })),
     s.step("the eval pass runs and the ticket is made", s.clock.advance("5 seconds")),
     s.step("the world settles", s.clock.settle()),
@@ -30,6 +29,8 @@ export default Blueprint.journey("a stop withdraws the mandate", {
     s.step("ann writes on its thread again, as a person", s.source.run(receive, {
       superagent: s.world.superagent, source: "slack", event: "Ev3", thread: "C1:1.1", kind: "mention", addressed: "mention", text: "@agent are you still there?",
       actor: { id: "U1", name: "ann", bot: false }, channel: { channel: "C1", ts: "1.1" } }), expect((a) => a.outcome).toBe("stored")),
+    s.step("the main agent is scripted to ignore ann's new message, the trigger it was stored as", models.script({ for: { kind: "main" }, turns: [
+      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "ignore", trigger: s.last.trigger }] } }] }, { say: "Ignored." } ] })),
     s.step("the world settles past the next eval pass", s.clock.advance("5 seconds")),
     s.step("the stopped ticket was not resumed", outbox.rows({ name: "TicketResumed", afterSeq: "journey" }), expect((a) => a.rows.length).toBe(0)),
     s.step("the message went to a new eval", outbox.rows({ name: "EvalStarted", afterSeq: "journey" }), expect((a) => a.rows.length).toBe(2)),

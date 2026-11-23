@@ -31,7 +31,7 @@ export const DOORS: ReadonlyArray<Wanted> = [
   { file: "observe-records-would-accept-and-starts-nothing.ts", name: "observe records would accept and starts nothing", steps: 6 },
   { file: "a-follow-up-reaches-its-ticket-with-no-eval.ts", name: "a follow-up reaches its ticket with no eval", steps: 9 },
   { file: "a-policy-change-restarts-a-live-eval.ts", name: "a policy change restarts a live eval", steps: 7 },
-  { file: "a-stop-withdraws-the-mandate.ts", name: "a stop withdraws the mandate", steps: 16 },
+  { file: "a-stop-withdraws-the-mandate.ts", name: "a stop withdraws the mandate", steps: 17 },
   { file: "a-stop-cancels-or-closes-from-the-state-it-reads.ts", name: "a stop cancels or closes from the state it reads", steps: 9 },
   { file: "a-stop-after-a-handoff-closes-the-agents-turn.ts", name: "a stop after a handoff closes the agent's turn", steps: 10 },
   { file: "the-stage-read-has-every-row.ts", name: "the stage read has every row", steps: 22 },

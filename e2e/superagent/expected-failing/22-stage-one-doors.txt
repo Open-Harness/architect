@@ -4,6 +4,6 @@ superagent/22-stage-one-doors.test.ts > 22 stage one's journeys through the harn
 superagent/22-stage-one-doors.test.ts > 22 stage one's journeys through the harness's doors: the model's script and the outbox > journey "a policy change restarts a live eval": 7 steps, each green
 superagent/22-stage-one-doors.test.ts > 22 stage one's journeys through the harness's doors: the model's script and the outbox > journey "a stop after a handoff closes the agent's turn": 10 steps, each green
 superagent/22-stage-one-doors.test.ts > 22 stage one's journeys through the harness's doors: the model's script and the outbox > journey "a stop cancels or closes from the state it reads": 9 steps, each green
-superagent/22-stage-one-doors.test.ts > 22 stage one's journeys through the harness's doors: the model's script and the outbox > journey "a stop withdraws the mandate": 16 steps, each green
+superagent/22-stage-one-doors.test.ts > 22 stage one's journeys through the harness's doors: the model's script and the outbox > journey "a stop withdraws the mandate": 17 steps, each green
 superagent/22-stage-one-doors.test.ts > 22 stage one's journeys through the harness's doors: the model's script and the outbox > journey "observe records would accept and starts nothing": 6 steps, each green
 superagent/22-stage-one-doors.test.ts > 22 stage one's journeys through the harness's doors: the model's script and the outbox > journey "the stage read has every row": 22 steps, each green
