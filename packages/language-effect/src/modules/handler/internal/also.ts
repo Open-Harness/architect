@@ -14,6 +14,8 @@ export interface Also {
   readonly fields: Readonly<Record<string, unknown>>;
   /** The outcome, when the move has more than one `to`. */
   readonly to?: string;
+  /** Fields only the event carries (an Assignment's start says the words it opens with, which the Assignment does not store): they are never written to the instance. */
+  readonly event?: Readonly<Record<string, unknown>>;
 }
 
 /** Make `move` of `move.machine.thing`, and keep its entry for the commit. Answers the instance's id (minted for a creating move). */
@@ -38,7 +40,8 @@ export const makeAlso = (name: string, unit: Unit, entries: Ref.Ref<ReadonlyArra
     // An event field that is the thing's own id (`proposal`, whatever the event calls it) is the instance's id, as it is for the operation's own move.
     const idField = thing.fields["id"];
     const isId = (k: string) => { const f = move.emits.fields[k]; return f !== undefined && idField !== undefined && f.kind === "field" && f.of === idField.of && f.key === idField.key; };
-    const source = Object.fromEntries(Object.keys(move.emits.fields).flatMap((k) => (k in instance ? [[k, (instance as Record<string, unknown>)[k]]] : isId(k) ? [[k, id]] : [])));
+    const given = { ...instance, ...(spec.event ?? {}) } as Record<string, unknown>;
+    const source = Object.fromEntries(Object.keys(move.emits.fields).flatMap((k) => (k in given ? [[k, given[k]]] : isId(k) ? [[k, id]] : [])));
     const missing = Object.keys(move.emits.fields).filter((k) => !(k in source));
     if (missing.length > 0) return yield* Effect.die(new Error(`${name}: also ${move.key}: its event needs ${missing.join(", ")}`));
     const picked = source;

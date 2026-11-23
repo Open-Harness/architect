@@ -14593,9 +14593,9 @@
       "file": "blueprint/features/tickets.ts",
       "package": "@orthograph/tickets",
       "version": "0.0.0",
-      "integrity": "sha256-sFUlELZsKaJV8/RpDHUWm6msolThUvp8m/eol3559Ec=",
+      "integrity": "sha256-u68WZpHkTu7RVBLF2XeMS5j/NEtP3hbOF7+11r4vyVg=",
       "chosen": {},
-      "hash": "41dc29d9f7b25101"
+      "hash": "e197e0c99808922a"
     }
   }
 }

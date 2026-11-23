@@ -137,3 +137,15 @@ With main's world clock merged (#790), a world on a stepped clock tells time fro
 ### What a real run of slice 8's first journey needs next (observed, not guessed)
 
 `one executor per ticket…` with the surface, the stand-in and the caller stops at: `AssignmentStarted` not emitted after `ticket.accept` (slots and `fill`, blank); `world.probe/agent/told` answers 404 (the agents' probe handler, `testing.ts`); `input.store` is blank. Each is slice 9's own, and they are what (c) builds: the Agent in its actor, the seat and its first tell, and the probes.
+
+## Fifth stretch: (c) begins, and finds the event outbox is not built
+
+### 11. Seats: `slots`, `superagent.fill`, and `ticket.accept` queues its Assignment by its own move
+
+- `tickets/src/modules/slots` is the pure rule of GOAL17-executor-slots section 2 (`line`, `seatFor`, the reserve seat 255), with its test.
+- `superagent.fill` is written (the app's `src/superagent/fill.ts`): nothing while paused or retired; it reads the running, closing and pending Assignments, takes each next in line a seat, and starts it with `also(assignments.moves.started, { id, fields: { seat }, event: { text } })`, so `AssignmentStarted` is journalled in the call's own commit. The head that cannot be seated stops the loop. `also` gained `event` (fields only the event carries, never written to the row).
+- `ticket.accept` makes its Assignment with `also(assignments.moves.queued, …)`, so `AssignmentQueued` is journalled with `TicketCreated`.
+
+### 12. Finding: no event is ever delivered, because the outbox for `on:` hops is not built
+
+A scratch run of slice 8's `one executor per ticket` (stepped clock, the surface, the stand-in, the caller) accepts the ticket, journals `AssignmentQueued`, and then nothing calls `superagent.fill`: the world's log has no `POST /superagent/fill` and `GET /_world/outbox` answers 404. `Blueprint.on(...)` is declared on `fill`, `agent.tell`, `input.route`, `assignment.turnEnded` and the rest, and the compiler records each, but **no host drains them**. The outbox for every move is Goal 11's slice 4 (#390, "nothing written", parked under K42; its design is `design/decisions/M5-reach-out.md` on `goal/events`); what main brought is Timers and the world clock, and the chain follower's own outbox (Goal 12's), which is a different thing. Nothing in slices 6 to 9's journeys can pass past an `emits` of a hop's event until it exists: the seat, the tell, `input.route`, `agent.idled`, the replies and pause's held rows are all hops. **The outbox (a row per declared hop written in the commit that journals its event, a drain on `Timers`, `system` calls, `onRefused`, holds, `/_world/outbox` rows) is the next piece, and it is Goal 11's, taken under K42 section 7.**

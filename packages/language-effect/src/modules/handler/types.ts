@@ -36,7 +36,7 @@ export interface HandlerContext<O, C = {}> {
    * Another thing's move, made in this same commit (GOAL17-slice9-build, call 8): a creating move makes its instance (its id minted and answered), any other
    * moves the instance `id` names, from a state it declares. Its event is journalled with the operation's own; the commit carries both or neither.
    */
-  readonly also: (move: Move, spec: { readonly id?: string; readonly fields: Readonly<Record<string, unknown>>; readonly to?: string }) => Effect.Effect<string>;
+  readonly also: (move: Move, spec: { readonly id?: string; readonly fields: Readonly<Record<string, unknown>>; readonly to?: string; readonly event?: Readonly<Record<string, unknown>> }) => Effect.Effect<string>;
   /**
    * The instance this call is about, read before the handler ran (the from-check and the commit's version guard read the
    * same one), so a handler never reads it again. Undefined when the payload names none, and for a creating move.

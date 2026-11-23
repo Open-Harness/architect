@@ -14597,9 +14597,9 @@
         "file": "blueprint/features/tickets.ts",
         "package": "@orthograph/tickets",
         "version": "0.0.0",
-        "integrity": "sha256-sFUlELZsKaJV8/RpDHUWm6msolThUvp8m/eol3559Ec=",
+        "integrity": "sha256-u68WZpHkTu7RVBLF2XeMS5j/NEtP3hbOF7+11r4vyVg=",
         "chosen": {},
-        "hash": "41dc29d9f7b25101"
+        "hash": "e197e0c99808922a"
       }
     }
   },
@@ -15146,5 +15146,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "55fa4b40960fdcff2549aa8ba393591dd14cca89b168cae4141a268bd63525d6"
+  "digest": "508222d09284550b64614dc71614224a304002e7e9e56b46e1e2d579e8b72de7"
 }
