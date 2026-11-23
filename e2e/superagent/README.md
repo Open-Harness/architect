@@ -15,10 +15,11 @@ add their halves beside these.
 | `04-stand-in-github` | each GitHub call passes against the stand-in over a bare repository: comments, a pushed branch and the pull request opened on it, reviews | the held GitHub plugin and its stand-in |
 | `05-stand-ins-slack-posthog` | each Slack and PostHog call passes against its stand-in | the held Slack and PostHog plugins |
 | `06-events` | each event the superagent listens to decodes what its service sends, whole, and refuses each wrong payload | the held plugins |
-| `07-whole-specs` | the whole published specs (fetched once, hash-checked) generate; each generated file of a held plugin is what the generator makes of the pinned spec today | the held plugins; the full specs |
+| `07-whole-specs` | the whole published specs (fetched once, hash-checked) generate; each generated file of a held plugin is what the generator makes of the committed fixture today | the held plugins; the full specs |
 
 "The held plugins" are the ones the app holds, `examples/superagent/plugins/{github,slack,posthog}` (the brief's folder
-tree): each is the generator's output for the pinned full spec, narrowed and extended by hand.
+tree): each is the generator's output for the committed fixture in `specs/` (pinned in the repository, so it never moves),
+extended by hand where the design says (Slack's events, the stand-ins).
 
 ## What the builder must make, and where the checks read it
 
@@ -62,7 +63,7 @@ so a check can read them. A builder who needs one changed stops and asks its aut
    correction is fixed here: Slack types `conversations.replies`'s `ts` as a number, and it is the string
    `1503435956.000247` Slack gives and wants, so a field the spec types as a number is also accepted as a numeric string
    and sent as written.
-6. **Events.** `descriptor.events.<name>.schema` is an Effect schema of the payload the door receives. Decoding gives back
+6. **Events.** `descriptor.events.<name>.schema` (this settles the event's shape: `{ kind: "event", schema }`, as `Blueprint.event` builds today; `GOAL17-source-from.md`'s `payload` is to be reconciled with it in slice 4) is an Effect schema of the payload the door receives. Decoding gives back
    the same JSON as went in: nothing the spec documents is dropped, nothing becomes a `Date`. Slack's `appMention` and
    `message` decode the **whole envelope** Slack's Events API posts (`type: "event_callback"`, `team_id`, `event_id`,
    `event_time`, `event`), written by hand from `slack-events.ts`; a bot's message arrives as a `message` with `subtype:

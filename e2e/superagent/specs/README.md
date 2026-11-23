@@ -31,9 +31,9 @@ three actions of each of the six events it listens to (a full set is megabytes o
 - **A fixture is the whole spec's.** `07-whole-specs` checks that each included call, and each action of each included
   event, is, in the fixture, equal to the whole spec's.
 - **The whole spec is fetched, never committed.** `07-whole-specs` downloads each into `tmp/specs/<name>-<hash>.json`, once,
-  and refuses a file whose hash is not the pin's. GitHub's and Slack's URLs name a commit, so their bytes never change.
+  and refuses a file whose hash is not the pin's (no network: one message naming `tmp/specs/`; CI caches it keyed on `pins.json`). GitHub's and Slack's URLs name a commit, so their bytes never change.
   PostHog serves its live schema and cannot be pinned by URL: if its hash has moved, `07` warns, judges what it served,
-  and skips the comparison with the held plugins; re-pin as below.
+  and skips only the comparison of the fixture with the whole spec; the held plugins are judged against the committed fixture, which never moves. Re-pin as below.
 - **No key.** All three URLs are public.
 
 ## Re-pinning

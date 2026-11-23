@@ -3,7 +3,7 @@
 // (pins.ts); a second run uses the cache. Nothing here needs a key: the specs are public.
 //
 // It also keeps the held plugins honest: every file of examples/superagent/plugins/<name> that says it is generated is
-// what the generator makes of the pinned spec today, byte for byte, so nobody has edited one by hand.
+// what the generator makes of the committed fixture (specs/), byte for byte, so nobody has edited one by hand.
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -38,10 +38,14 @@ describe.each(NAMES)("07 %s: the whole spec", (name: Name) => {
     expect(operations(spec).length).toBeGreaterThan(100);
   });
 
-  it("holds every call and event the superagent includes, each as the fixture has it", async () => {
-    const full = readSpec((await cache()).file);
+  it("holds every call and event the superagent includes, each as the fixture has it (a moved PostHog spec only warns)", async () => {
+    const got = await cache();
+    const full = readSpec(got.file);
     const cut = readSpec(trimmed(name));
-    for (const call of NEEDS[name].calls) expect(operationNamed(cut, call), call).toEqual(operationNamed(full, call));
+    for (const call of NEEDS[name].calls) {
+      expect(operations(full).map((o) => o.name), `${call} is in the spec`).toContain(call);
+      if (!got.drifted) expect(operationNamed(cut, call), call).toEqual(operationNamed(full, call));
+    }
     if (name === "github") {
       for (const event of NEEDS.github.events) {
         const [a, b] = [webhooks(full).find((e) => e.name === event), webhooks(cut).find((e) => e.name === event)];
@@ -64,11 +68,10 @@ describe.each(NAMES)("07 %s: the whole spec", (name: Name) => {
     expect(Object.keys(adapter["events"] ?? {}).sort()).toEqual(webhooks(spec).map((e) => e.name).sort());
   });
 
-  it("is what the app holds: each generated file of the held plugin is what the generator makes of this spec", async () => {
-    const got = await cache();
-    if (got.drifted) return;
+  // The held plugin is generated from the committed fixture, which is pinned in the repository and never moves.
+  it("is what the app holds: each generated file of the held plugin is what the generator makes of the committed fixture", () => {
     const copy = join(scratch, `${name}.json`);
-    cpSync(got.file, copy);
+    cpSync(trimmed(name), copy);
     const { root } = project();
     const run = newAdapter(root, name, copy);
     expect(run.status, run.out).toBe(0);

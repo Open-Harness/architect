@@ -50,8 +50,11 @@ describe.each(NAMES)("00 the oracle: %s's examples and wrong values", (name) => 
     }
   });
 
+});
+
+describe("00 the oracle: github's events and wrong values", () => {
+  const spec = readSpec(trimmed("github"));
   it("every included event's payload: each action's example fits and each planted wrong value does not", () => {
-    if (name !== "github") return;
     for (const event of webhooks(spec).filter((e) => NEEDS.github.events.includes(e.name))) {
       expect(event.actions.length, event.name).toBeGreaterThan(0);
       for (const action of event.actions) {
