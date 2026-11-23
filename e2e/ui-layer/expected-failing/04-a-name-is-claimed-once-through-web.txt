@@ -1,3 +1,0 @@
-# ST1.26 (Goal 5, slice 2): the web projection does not exist yet (ST1.25, slice 4). `ortho prove --through web` is not a flag, and generated/web and packages/web are empty. The HTTP baseline and the controls pass today.
-ui-layer/04-a-name-is-claimed-once-through-web.test.ts > 04 a name is claimed once, through the web pieces > `--through web` gives the same verdicts and the same failures, step for step, as over HTTP
-ui-layer/04-a-name-is-claimed-once-through-web.test.ts > 04 a name is claimed once, through the web pieces > the pieces did it: with handle.claim's piece broken in the project, no handle.claim step passes

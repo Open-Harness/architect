@@ -1,6 +1,5 @@
 import { resolve } from "node:path";
 import { Effect } from "effect";
-import { chromium } from "playwright";
 import { replay } from "./internal/drive.ts";
 import { bundle, planOf, sceneSource, type Bundle } from "./internal/scene.ts";
 import { WebUnavailable, type WebApi } from "./types.ts";
@@ -9,8 +8,9 @@ export const Web: WebApi = {
   open: ({ root: given, url, model, name }) =>
     Effect.gen(function* () {
       const root = resolve(given);
+      // Playwright is loaded when a run asks for the browser, so every other `ortho` command starts without it.
       const browser = yield* Effect.acquireRelease(
-        Effect.tryPromise({ try: () => chromium.launch({ headless: true }), catch: (cause) => new WebUnavailable({ message: `--through web needs Chromium and couldn't start it (npx playwright install chromium): ${cause instanceof Error ? cause.message : String(cause)}` }) }),
+        Effect.tryPromise({ try: () => import("playwright").then(({ chromium }) => chromium.launch({ headless: true })), catch: (cause) => new WebUnavailable({ message: `--through web needs Chromium and couldn't start it (npx playwright install chromium): ${cause instanceof Error ? cause.message : String(cause)}` }) }),
         (launched) => Effect.promise(() => launched.close().catch(() => undefined)),
       );
       // One scene for each operation a journey calls, bundled the first time it is called.
