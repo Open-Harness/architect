@@ -1,5 +1,6 @@
 // Turns the layout into the model: every declaration named, every reference resolved, every entry hashed.
-import { Duration, type Schema, SchemaAST } from "effect";
+import { Duration } from "effect";
+import { isNullable } from "./nullable.ts";
 import type { AnyErrorClass, CallStep, On, Field, FieldsInput, Operation, Read, Role, Step, Thing, Value, Visibility } from "orthograph";
 import type { AllowedModel, BlankOperationModel, FieldModel, FieldsModel, Model, OperationModel, StepModel, ThingModel, VisibilityModel } from "../types.ts";
 import { admitsAgent } from "orthograph";
@@ -24,13 +25,6 @@ import { formsOf } from "./forms.ts";
 import { roleRuleOf, withReadNotServed } from "./bits.ts";
 import { readModelOf, type ReadContext } from "./reads.ts";
 import type { MountModel } from "../types.ts";
-
-/** Does the value's encoded form allow null (a union with null)? Its column may then be NULL (an optional value says so on its own). */
-const isNullable = (value: Value): boolean => {
-  if (value.meta.type !== "schema") return false;
-  const ast = SchemaAST.toEncoded((value.schema as Schema.Top).ast);
-  return ast._tag === "Union" && ast.types.some((m) => m._tag === "Null");
-};
 
 /** A module's exports in name order: a namespace's own order differs between loaders, and the model must not. */
 const byName = <V>(m: ReadonlyMap<string, V>) => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
