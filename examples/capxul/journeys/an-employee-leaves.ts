@@ -15,6 +15,17 @@ export default Blueprint.journey("an employee leaves", {
   starts: "an employee",
   steps: (s) => [
     s.step(
+      "Ada reads Olga's record, as the company's owner",
+      s.ada.run(get, { id: s.world.employee }),
+      expect((a) => [a.company, a.person, a.dateOfJoining, a.state]).toEqual([
+        s.world.company,
+        s.olga.person,
+        "2026-01-05",
+        "active",
+      ]),
+      noEvents(),
+    ),
+    s.step(
       "Olga can't relieve herself",
       s.olga.run(relieve, { employee: s.world.employee, relievingDate: "2026-11-30" }),
       refuses(Blueprint.NotAllowed),

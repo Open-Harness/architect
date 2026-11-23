@@ -3,7 +3,7 @@
 
 Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.
 
-**Who may call:** the self of the employee, or the owner of its employee.company.
+**Who may call:** the self of the employee, or the owner of its company.
 
 **A read:** answered from the records, with no handler.
 
@@ -33,7 +33,7 @@ Read one employee by its id: company, person, firstName, gender, dateOfBirth, da
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| NotAllowed | 3 | AR-001 | the caller isn't the self of the employee, or the owner of its employee.company; the handler never runs |
+| NotAllowed | 3 | AR-001 | the caller isn't the self of the employee, or the owner of its company; the handler never runs |
 
 ## Worked examples
 
@@ -41,6 +41,7 @@ Read one employee by its id: company, person, firstName, gender, dateOfBirth, da
 
 Starts from the world `an employee`.
 
+- **Ada reads Olga's record, as the company's owner.** `ada` (role company.owner) calls and sends id the world's employee, and gets back [the world's company, the cast's olga person, `2026-01-05`, `active`].
 - **Olga still reads her old record, which shows she has left.** `olga` (signed in) calls and sends id the world's employee, and gets back [`2026-01-05`, `left`].
 
 ### hire an employee

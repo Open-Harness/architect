@@ -52,6 +52,7 @@ Starts from the world `a company`.
 
 - **Ada adds a job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.
 - **Ada can't add the same job title twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.
+- **Ada adds a second job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Senior Accountant`, and gets back an answer matching `^dsg_[0-9a-z]+$`.
 
 ## How to call
 

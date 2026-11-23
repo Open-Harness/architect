@@ -3,7 +3,7 @@
 
 Read one department by its id: company, departmentName, state.
 
-**Who may call:** the owner of its department.company.
+**Who may call:** the owner of its company.
 
 **A read:** answered from the records, with no handler.
 
@@ -27,7 +27,7 @@ Read one department by its id: company, departmentName, state.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| NotAllowed | 3 | AR-001 | the caller isn't the owner of its department.company; the handler never runs |
+| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |
 
 ## Worked examples
 
@@ -37,6 +37,7 @@ Starts from the world `a company`.
 
 - **Bo can't read Ada's department.** `bo` (signed in) calls and sends id the last call's department, and is refused with NotAllowed, AR-001.
 - **Ada reads the department back.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Engineering`, `active`].
+- **it reads back under its own name.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Finance and Accounts`, `active`].
 
 ## How to call
 

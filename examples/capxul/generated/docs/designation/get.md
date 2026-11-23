@@ -3,7 +3,7 @@
 
 Read one designation by its id: company, designationName, state.
 
-**Who may call:** the owner of its designation.company.
+**Who may call:** the owner of its company.
 
 **A read:** answered from the records, with no handler.
 
@@ -27,7 +27,7 @@ Read one designation by its id: company, designationName, state.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| NotAllowed | 3 | AR-001 | the caller isn't the owner of its designation.company; the handler never runs |
+| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |
 
 ## Worked examples
 
@@ -37,6 +37,7 @@ Starts from the world `a company`.
 
 - **Bo can't read Ada's job title.** `bo` (signed in) calls and sends id the last call's designation, and is refused with NotAllowed, AR-001.
 - **Ada reads the job title back.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Engineer`, `active`].
+- **that reads back under its own name too.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Senior Accountant`, `active`].
 
 ## How to call
 

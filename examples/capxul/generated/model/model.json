@@ -926,7 +926,7 @@
         {
           "kind": "role-of",
           "role": "company.owner",
-          "path": "department.company"
+          "path": "company"
         }
       ],
       "agentTool": true,
@@ -937,7 +937,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "e080f6db61d65ed0"
+      "hash": "49a7441f7c20907a"
     },
     "designation.create": {
       "kind": "operation",
@@ -1075,7 +1075,7 @@
         {
           "kind": "role-of",
           "role": "company.owner",
-          "path": "designation.company"
+          "path": "company"
         }
       ],
       "agentTool": true,
@@ -1086,7 +1086,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "98f6ee02514a7d04"
+      "hash": "93934f240bcf1da3"
     },
     "employee.get": {
       "kind": "read",
@@ -1189,7 +1189,7 @@
         {
           "kind": "role-of",
           "role": "company.owner",
-          "path": "employee.company"
+          "path": "company"
         }
       ],
       "agentTool": true,
@@ -1200,7 +1200,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "6008b1f38605aefa"
+      "hash": "9ad5dc63bac5d397"
     },
     "employee.hire": {
       "kind": "operation",
@@ -1454,6 +1454,46 @@
       },
       "starts": "an employee",
       "steps": [
+        {
+          "title": "Ada reads Olga's record, as the company's owner",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "person"
+                  ]
+                },
+                "2026-01-05",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
         {
           "title": "Olga can't relieve herself",
           "call": {
@@ -1757,7 +1797,7 @@
           ]
         }
       ],
-      "sourceHash": "960c9add8ce66f8eda8da54f42d957e1bc4d38bffdc1da5383ecae52b186ea8e"
+      "sourceHash": "da225c6fb3b5cbb8d1f672480782360c1fbb08206ffc73a24ec3cb0bb58c4661"
     },
     "journeys/another-companys-department-is-refused.ts": {
       "name": "another company's department is refused",
@@ -2978,6 +3018,80 @@
           ]
         },
         {
+          "title": "Ada adds a second department",
+          "call": {
+            "actor": "ada",
+            "operation": "department.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "departmentName": "Finance and Accounts"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^dep_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "DepartmentCreated",
+              "fields": {
+                "department": {
+                  "ref": [
+                    "last",
+                    "department"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "it reads back under its own name",
+          "call": {
+            "actor": "ada",
+            "operation": "department.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "department"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Finance and Accounts",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Ada adds a job title",
           "call": {
             "actor": "ada",
@@ -3124,6 +3238,80 @@
           ]
         },
         {
+          "title": "Ada adds a second job title",
+          "call": {
+            "actor": "ada",
+            "operation": "designation.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "designationName": "Senior Accountant"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^dsg_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "DesignationCreated",
+              "fields": {
+                "designation": {
+                  "ref": [
+                    "last",
+                    "designation"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "that reads back under its own name too",
+          "call": {
+            "actor": "ada",
+            "operation": "designation.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "designation"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Senior Accountant",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Bo sets up a company of his own",
           "call": {
             "actor": "bo",
@@ -3179,7 +3367,7 @@
           ]
         }
       ],
-      "sourceHash": "9e8a362867f55a5948c773e3eb18f9ac2e35110bcbb6b47d343d7fe0e997db78"
+      "sourceHash": "a51f1bf2e205b3a6bccd4100b01da942e61197a6b9c453c024d5e2ad836dd6ee"
     }
   },
   "startingWorlds": {

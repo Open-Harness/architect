@@ -7,6 +7,6 @@ import { owner } from "../../company/roles.ts";
 export default Blueprint.read(Employee, {
   by: "id",
   fields: ["company", "person", "firstName", "gender", "dateOfBirth", "dateOfJoining", "department", "designation", "state"],
-  allowed: [self, owner.of("employee.company")],
+  allowed: [self, owner.of("company")],
   budget: { p95: "50 millis" },
 });
