@@ -171,10 +171,10 @@ of the separate approval as well. [Anvil receipts](evidence/anvil.txt)
 
 ## The decision it supports
 
-The stage-three budgets draft puts budget enforcement, hat authority and
+None is decided yet. The stage-three budgets recommendation puts budget enforcement, hat authority and
 payout truth on chain. It uses D1 for app records and a read copy for
 display. The signature workflow remains open for the workflows spike.
-[Draft decision](../../design/decisions/ST3-budgets.md)
+[Draft recommendation](../../design/decisions/ST3-budgets.md)
 
 ## Open risks
 

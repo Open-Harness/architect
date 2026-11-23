@@ -136,7 +136,8 @@ person turned its hat off.
 
 ## What follows
 
-- The stage-three budgets decision is this draft (ST3.02). The journeys and
+- The stage-three budgets decision (ST3.02) is made when an app pulls budgets, with
+  this page as its evidence. The journeys and
   the independent budget model come next (ST3.03). The spike's invariant
   checked its own ledger against the Safe balances and caught a rollover
   that kept prior spend.
