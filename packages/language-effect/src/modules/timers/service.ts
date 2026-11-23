@@ -1,7 +1,7 @@
 import { Clock, Context, Deferred, Duration, Effect, Layer, Option } from "effect";
 import { Busy } from "#modules/work/types.js";
 import { DurableTimers, TimerWakes, Timers, type DurableTimer, type Timer, type Wake } from "./types.ts";
-import type { Lease } from "#modules/work/types.js";
+import { BusyBoxRef, type Lease } from "#modules/work/types.js";
 
 export { TimersWorld } from "./internal/world.ts";
 
@@ -99,10 +99,10 @@ export const TimersMemory: Layer.Layer<Timers | DurableTimers, never, Busy> = La
           // Publish the deadline before lending our token out so the world can advance it.
           lease = yield* busy.lend;
           const mine = lease;
-          return yield* restore(Effect.raceFirst(
+          return yield* restore(Effect.provideService(Effect.raceFirst(
             Effect.map(wait, Option.some),
             Deferred.await(ended).pipe(Effect.as(Option.none())),
-          )).pipe(Effect.ensuring(Effect.sync(() => remove(id)).pipe(Effect.andThen(mine.reclaim))));
+          ), BusyBoxRef, undefined)).pipe(Effect.ensuring(Effect.sync(() => remove(id)).pipe(Effect.andThen(mine.reclaim))));
         })),
       due: (target) =>
         Effect.sync(() => table.reduce<number | undefined>((best, t) => (t.at <= target && (best === undefined || t.at < best) ? t.at : best), undefined)),

@@ -32,6 +32,9 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
     name: (id, owner) => (counted ? call(env, (keeper) => keeper.countName(id, owner)) : Effect.void),
     // A box that holds an id the world no longer knows (a reset since) takes a fresh token.
     valid: (id) => (counted ? call(env, (keeper) => keeper.countHas(id)) : Effect.succeed(true)),
+    // A write section: the world holds the request's token, and waits for the section to end before it wipes anything.
+    section: (id) => (counted ? call(env, (keeper) => keeper.countSection(id)) : Effect.succeed(true)),
+    sectionEnd: (id) => (counted ? call(env, (keeper) => keeper.countSectionEnd(id)) : Effect.void),
     // The box of the request this fiber runs in, taken at its entry: the work counts under it instead of taking another token.
     request: Effect.sync(() => WorldClock.box()),
   }));

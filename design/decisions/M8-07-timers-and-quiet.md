@@ -194,6 +194,8 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | the entry ends while a fiber of its box is telling the world (a release's check of its id, a take) | ✓ the entry's end runs under the box's own gate, so it cannot end between a take and the record of it; after the world answers, what the box wants is read again and a token just taken that nothing needs is given back | ✓ a stale id is replaced, never kept | n/a | n/a | n/a |
     | a durable row whose wake fails, with rows due after it | ✓ | ✓ | ✓ stays pending with its retry; the rows after it fire in order | ✓ | n/a |
     | limits (`ORTHO_QUIET_MS`, `ORTHO_FIRE_LIMIT`) | n/a | n/a | n/a | ✓ whole numbers above nought, no longer than 2^31-2 ms (a longer timer would fire at once) | n/a |
+    | forked fibers in a request (`Effect.all` and `forEach` with concurrency, `race`, `raceFirst`, `timeout`, `fork`, `forkDaemon`, `Timers.within`'s branches) | ✓ every fiber the request forks under its box is announced by the runtime (`Metric.FiberRuntimeMetrics`) and counted while it runs; a parent that only waits for its children is not counted, so a sleeping branch lends the token out only when no other branch is working | ✓ a child belongs to the box's generation | n/a | n/a | ✓ a branch that resumes takes the world's clock through `resumed` |
+    | a request mid-I/O at reset (parked on a fetch or a D1 read, not on a timer) | ✓ not counted in the new run: its box takes no token, and a move does not wait on it | ✓ its writes (`busy.fenced`: the commit), its spawns and its timers are refused or interrupted at the choke point; the reset waits for the write sections already open, and the world is closed to new tokens and writes until the wipe is over | n/a | ✓ the drain is bounded by `ORTHO_QUIET_MS` | n/a |
     | instants and payloads into SQL | n/a | n/a | ✓ refused before SQL (finite, within a Date's range, JSON) | n/a | n/a |
 
     **Runtime bridges** (a second runtime, a promise, an RPC: a place where an interrupt on one side must reach the other). Cancellation flows
@@ -226,6 +228,31 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | the front door | the token is taken when the route starts, before anything is awaited |
     | `countHas`, `leave`, `cancel` | by the id the caller holds; a later generation cannot answer for it |
 
+    **Every site, graded again against the two classes of the next round.** F: forks (a request's forked fibers are counted while they run).
+    M: mid-I/O at reset (work admitted in generation g cannot write, commit, spawn or set a timer in g+1).
+
+    | Site | F forks | M mid-I/O at reset |
+    |---|---|---|
+    | entry: `fetch`, `scheduled`, `queue`, `within`, `withinNow` | ✓ the entry's box roots the tree; what the handler forks is counted | ✓ the entry is refused while the world is closed; a request admitted before the reset is stale after it |
+    | entry throws or rejects | n/a | ✓ stale release is a no-op |
+    | handler attempt, retry, authorization | ✓ under the one pinned token | ✓ authorization reads are not writes; a stale request meets its first write section and is interrupted |
+    | handler commit | ✓ inside the section | ✓ `busy.fenced`: refused if the token is stale, waited for by the reset if open |
+    | operation names its token | n/a | ✓ ignored if stale |
+    | `Busy.counted` / `enter` / `leave` | ✓ a fiber already under a box is counted by the runtime, not twice | ✓ a box whose id the world no longer knows is stale: not counted, fenced |
+    | `spawn` | ✓ forked outside its parent's box, under its own | ✓ refused (interrupted) from a stale request |
+    | sleep, within, `Timers.at` | ✓ branches of a `within` race are outside the box (the port call is what is awaited); a sleeper lends only itself | ✓ a forgotten row interrupts its sleeper; `timerAdd` refuses a stale token |
+    | durable `set`, `clear`, replace | n/a | ✓ `timerSet` refuses a stale token |
+    | durable wakes (success, fails, never acknowledges, interrupted, the world dies) | n/a (a wake runs in the world's own runtime) | ✓ interrupted at reset, across the runtime bridge |
+    | controller (waits, second move, fire limit, alarm) | n/a | ✓ a move that a reset overtakes fails `WorldReset` |
+    | warm reset | n/a | ✓ closes, drains the write sections, bumps the generation, wipes, and only then admits |
+    | reset while a request is in flight; sleepers; a running wake; a move | ✓ | ✓ each: not counted, not written |
+    | a call carrying an old token | n/a | ✓ refused |
+    | a DO rebuilt, or another world | n/a | ✓ ids carry the incarnation |
+    | front door routes | n/a | ✓ counted; refused while the world is closed |
+    | the entry ends during a telling the world | ✓ under the box's gate | ✓ |
+    | a failing head row | n/a | n/a |
+    | limits; instants and payloads | n/a | n/a |
+
     **What a violation would look like, and where it is tested.** I1: `world/entry.test.ts` (a request held before its handler, a retry's gap, a
     spawn that outlives the response, a throwing callback), `work/world-count.test.ts` (the pinned token is never released between attempts; a
     sleep lends it out and reclaims). I2: `timers/generation.test.ts` (a stale-generation `leave`), `timers/reset.test.ts` (two counts never share an id; a rebuilt DO does not honour
@@ -251,6 +278,45 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     back. A parked sleeper's `T_w` is released by its acknowledgement, which never comes, and an entry's token by its end. The world cannot
     tell a parked or running request from a dead one; the world is `NeverQuiet` until it is reset or ends. A lease on each token would
     tell, and is not built.
+
+13. **A reset fences work that is mid-I/O, and what a request forks is counted** (review of #696, two P1s at sites call 12 did not list).
+
+    *The class, in two parts.* (a) Anything a request forks is a fiber of that request for as long as it runs: it must keep the token. (b) No work
+    admitted in generation g may write, commit, spawn or set a timer in generation g+1, whatever it was waiting on.
+
+    *(a) Forked fibers, structurally.* The request's box is installed in the fiber's context along with a `Metric.FiberRuntimeMetrics` hook, which the
+    runtime calls whenever a fiber starts or ends under that context: so every fiber a handler forks (`Effect.all` and `forEach` with
+    concurrency, `race`, `raceFirst`, a timeout, `fork`, `forkDaemon`) is announced to the box without the handler's help. At a start the running
+    fiber is the forker; at an end the runtime names only the ending fiber's context, so the parent is taken to be the deepest one that forked
+    with that context (a parent can look done a moment early, never late). A fiber is working unless it has forked children that are still alive
+    (it is waiting for them: `Effect.all`, `race` and `timeout` run every branch as a fiber of its own and only wait) or has lent its token out. The
+    token is released only when nothing is working; before it is released the box yields twice, so the other branches of an `all`, which are
+    started one after the other, have started; and a branch that starts after the token was lent takes it back. A fiber a bounded wait
+    (`Timers.within`) races is outside the box on purpose: the port call is what is awaited, and the token is lent. A `spawn` and a `Timers.at`
+    waiter are forked outside the parent's box. **Limit:** a parent that forks children and then works on its own while they are all parked is
+    taken to be waiting; the write sections and the reset's drain still fence what it writes. `work/fibers.test.ts` fails if a new `effect`
+    changes what the runtime announces.
+
+    *(b) The fence.* A request whose token the world no longer holds is **stale**: its box takes no token, so a move does not wait on it or
+    count it, and it is interrupted at the first choke point it reaches. The choke points: the handler's `store.commit` (a write section:
+    `busy.fenced` opens a section for the token and the reset waits for the open ones; a stale token is refused and the request interrupted),
+    `spawn` (a stale parent is interrupted), `timerAdd` and `timerSet` (refused when they carry a token the world no longer holds), sleepers
+    (a forgotten row ends them), wakes (interrupted at reset), and the move itself (`WorldReset`). A handler's own direct SQL or `fetch` writes are
+    not intercepted; the commit is where a handler's records are written.
+
+    *The order, and admission.* The reset is one protocol, in the world's Durable Object and `toWorld`:
+    1. `close`: the world is closed to new tokens and to new write sections, and waits (bounded by `ORTHO_QUIET_MS`) for the sections already open;
+    2. the front door answers who is in the cast; the clock and the table are reset and the generation moves on (every old token is stale);
+    3. `toWorld` wipes the databases, with the world still closed: a request that begins now is refused (`begin` rejects) instead of being admitted
+       into a world whose writes the wipe will take;
+    4. `/_world/reset/done` admits requests again, however the wipe ended; and a world that was closed opens again by itself after 30 seconds,
+       so a wipe that never finishes cannot keep it shut. A real world counts nothing and never closes.
+
+    *Tests.* `work/fences.test.ts` (forks counted with `all`, `raceFirst` and a detached child; a stale request is interrupted at its write and its
+    spawn), `work/fibers.test.ts`, `handler/handler.test.ts` (the commit is a write section), `world/fence.test.ts` (through the real count, table
+    and controller: a move made while a branch sleeps and another works fails `NeverQuiet`, for each combinator; a handler parked on I/O across a
+    reset commits nothing and a move after it neither waits on nor counts it; a request that begins during the wipe is refused, then admitted),
+    `world/front-door.test.ts` (the reset protocol closes and `/_world/reset/done` admits).
 
 ## Evidence
 

@@ -1,6 +1,6 @@
 // Counted work: how a world knows it is quiet. Every piece of work that can read the clock holds a token for as long as it runs
 // (M8-07, call 12). A token has an identity: the world gives each one an id that carries its generation, and only that id releases it.
-import { Context, Semaphore, type Effect } from "effect";
+import { Context, Semaphore, type Effect, type Fiber } from "effect";
 
 /**
  * One token's worth of work: a request (taken at its entry, held until the response or the work ends, retries, authorization and
@@ -16,11 +16,23 @@ export interface BusyBox {
   lent: number;
   /** A request's box: the token is held from the entry until the entry ends, not only while a fiber runs. */
   pinned: boolean;
+  /** The world no longer holds this box's token (a reset since): the work belongs to a run that is over, so it is not counted and may not write. */
+  stale: boolean;
   readonly gate: Semaphore.Semaphore;
+  /** The ids of the fibers that took the token under this box (a request's handler, a spawn's work). */
+  readonly rootIds: Set<number>;
+  /** How many live fibers each fiber has forked under this box, from what the runtime announces: a fiber with some is waiting for them, not working. */
+  readonly kids: Map<number, number>;
+  /** The fibers that forked, by id, so a parent that has ended is not taken to be waiting. */
+  readonly parents: Map<number, Fiber.Fiber<unknown, unknown>>;
+  /** The same by the context the child was made with, because the runtime does not say which fiber ends: it says only whose context it had. */
+  readonly kidsByContext: Map<object, Map<number, number>>;
+  /** The ids of the fibers that have lent the token out (a sleep): parked, so not running. */
+  readonly lentIds: Set<number>;
 }
 
 export const makeBox = (owner: string, options: { readonly id?: string; readonly pinned?: boolean } = {}): BusyBox => ({
-  owner, id: options.id, holders: 0, lent: 0, pinned: options.pinned ?? false, gate: Semaphore.makeUnsafe(1),
+  owner, id: options.id, holders: 0, lent: 0, pinned: options.pinned ?? false, stale: false, gate: Semaphore.makeUnsafe(1), rootIds: new Set(), parents: new Map(), kids: new Map(), kidsByContext: new Map(), lentIds: new Set(),
 });
 
 /** A token lent out by a sleep or a wait, to be taken back (reclaimed) from wherever the wake happens. */
@@ -46,6 +58,11 @@ export interface BusyShape {
   readonly held: Effect.Effect<ReadonlyArray<string>>;
   /** Wait until no work holds a token. */
   readonly quiet: Effect.Effect<void>;
+  /**
+   * A write section: `work` (a commit) runs only while the request's token is live in the world, and a reset waits for it to end. A request
+   * whose token is gone (the world was reset under it) is interrupted instead, so nothing of the old run is written into the new one.
+   */
+  readonly fenced: <A, E, R>(work: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>;
   /** The same service with its tokens counted for `owner` (a path: an operation's name, `agents/run/<runId>`, ...). */
   readonly as: (owner: string) => BusyShape;
 }
@@ -67,6 +84,10 @@ export class WorldCount extends Context.Service<WorldCount, {
   readonly leave: (id: string) => Effect.Effect<void>;
   /** Is this token still held by the world? A box whose id the world no longer knows (a reset) takes a fresh token. */
   readonly valid?: (id: string) => Effect.Effect<boolean>;
+  /** Open a write section for this token: false when the world no longer holds it (a reset) or is closed to writes while it resets. */
+  readonly section?: (id: string) => Effect.Effect<boolean>;
+  /** The write section ended. */
+  readonly sectionEnd?: (id: string) => Effect.Effect<void>;
   /** A request's token was taken at its entry under the entry's name; the operation names it when it begins. */
   readonly name?: (id: string, owner: string) => Effect.Effect<void>;
   /** The box of the request this fiber runs in, when the entry took a token for it. */

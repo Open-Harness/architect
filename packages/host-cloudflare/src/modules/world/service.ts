@@ -62,15 +62,25 @@ export class World extends DurableObject<WorldEnv> {
     }
     const clock = WorldClock.door(this.clock, request, this.timers.controller);
     if (clock) return clock;
+    // The wipe of the databases is over: the world admits requests again.
+    if (pathname === "/_world/reset/done" && request.method === "POST") {
+      this.timers.admit();
+      return Promise.resolve(json({ admitted: true }));
+    }
     // The cast signs up and in through Better Auth, which reads `Date`: at the world's instant, not the machine's.
     // The cast, the credentials and the other front-door routes run Better Auth, which reads `Date`: each is counted work for its whole life,
     // so a move does not pass one that is in flight (a real world counts nothing).
     const token = this.clock.kind === "real" ? undefined : this.timers.rpc.countEnter(`world:${pathname.replace("/_world/", "")}`);
-    const answered = this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)))
+    const resetting = pathname === "/_world/reset" && request.method === "POST";
+    // A reset first closes the world to new tokens and to writes and lets the writes in progress end; the databases are wiped next, by
+    // `toWorld`, and only then (`/_world/reset/done`) does the world admit requests again.
+    const closed = resetting ? Effect.runPromise(this.timers.close()) : Promise.resolve();
+    const answered = closed
+      .then(() => this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE))))
       .finally(() => { if (token !== undefined) this.timers.rpc.countLeave(token); });
     // The warm reset between runs (ST1.24) is the one way back: the clock returns to its declared start, a scaled one re-anchored now.
     // Only the reset the world itself accepted (its nonce matched) does it.
-    return pathname === "/_world/reset" && request.method === "POST" ? answered.then((response) => { if (response.ok) { this.clock.reset(); this.timers.reset(); } return response; }) : answered;
+    return resetting ? answered.then((response) => { if (response.ok) { this.clock.reset(); this.timers.reset(); } else this.timers.admit(); return response; }) : answered;
   }
 
   /** The world's instant now. */
@@ -132,6 +142,8 @@ export class World extends DurableObject<WorldEnv> {
   countLeave(id: string): void { return this.timers.rpc.countLeave(id); }
   countName(id: string, owner: string): void { return this.timers.rpc.countName(id, owner); }
   countHas(id: string): boolean { return this.timers.rpc.countHas(id); }
+  countSection(id: string): boolean { return this.timers.rpc.countSection(id); }
+  countSectionEnd(id: string): void { return this.timers.rpc.countSectionEnd(id); }
   timerAdd(...args: Parameters<WorldTimersRpc["timerAdd"]>): number { return this.timers.rpc.timerAdd(...args); }
   timerWait(id: number): ReturnType<WorldTimersRpc["timerWait"]> { return this.timers.rpc.timerWait(id); }
   timerCancel(id: number): void { return this.timers.rpc.timerCancel(id); }
@@ -162,9 +174,14 @@ export const toWorld = (world: WorldHost, request: Request): Promise<Response> =
   if (pathname === "/_world/reset" && request.method === "POST") {
     if (world.leases) return Promise.resolve(json({ error: "a world with leases is ended, not reset" }, 404));
     if (!request.headers.get(RESET_HEADER)) return Promise.resolve(json({ error: `a reset names its world in ${RESET_HEADER}` }, 400));
-    return world.worlds.get(world.worlds.idFromName("world")).fetch(request).then((cast) =>
+    const keeper = world.worlds.get(world.worlds.idFromName("world"));
+    const admit = () => keeper.fetch(new Request("http://world/_world/reset/done", { method: "POST" }));
+    return keeper.fetch(request).then((cast) =>
       cast.ok
-        ? (cast.json() as Promise<{ readonly people: ReadonlyArray<string> }>).then(({ people }) => Effect.runPromise(resetDatabases(world, people))).then(() => json({ reset: true }))
+        // The world is closed from the reset until the wipe is over, however the wipe ends.
+        ? (cast.json() as Promise<{ readonly people: ReadonlyArray<string> }>).then(({ people }) => Effect.runPromise(resetDatabases(world, people)))
+          .then(() => admit(), (failure: unknown) => admit().then(() => Promise.reject(failure)))
+          .then(() => json({ reset: true }))
         : cast);
   }
   if (!world.leases) return world.worlds.get(world.worlds.idFromName("world")).fetch(request);

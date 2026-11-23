@@ -3,7 +3,7 @@
 // for the sleeper until the sleeper has taken its token back (`reclaim`) and acknowledged (`cancel`), so the world is never quiet
 // between the firing and the wake.
 import { Clock, Context, Duration, Effect, Layer, Option } from "effect";
-import { Busy } from "#modules/work/types.js";
+import { Busy, BusyBoxRef } from "#modules/work/types.js";
 import { DurableTimers, TimerWakes, Timers, WorldTable } from "../types.ts";
 
 /** The furthest instant a `Date` holds either side of the epoch: the world's clock cannot hold more, so nothing past it is set. */
@@ -32,7 +32,7 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
               // The work gets a token of its own (taken before `spawn` returns) before the world lets go of the one it held for the row.
               Effect.andThen(busy.as(owner).spawn(Effect.andThen(table.cancel(id), Effect.ignore(work)))),
             );
-            return Effect.as(Effect.forkDetach(run), id);
+            return Effect.as(Effect.provideService(Effect.forkDetach(run), BusyBoxRef, undefined), id);
           })),
       sleep: (owner, span) =>
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
@@ -50,10 +50,11 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
           const at = yield* instantOf(now + Duration.toMillis(span), `a deadline for ${owner}`);
           const id = yield* table.add(owner, "deadline", at, owner);
           const lease = yield* busy.lend;
-          return yield* restore(Effect.raceFirst(
+          // The token is lent out while the race runs, and its branches are not the request's work: the port call is what is awaited.
+          return yield* restore(Effect.provideService(Effect.raceFirst(
             Effect.map(wait, Option.some),
             table.wait(id).pipe(Effect.as(Option.none())),
-          )).pipe(Effect.ensuring(resume(lease, id)));
+          ), BusyBoxRef, undefined)).pipe(Effect.ensuring(resume(lease, id)));
         })),
       due: () => Effect.succeed(undefined),
       fire: () => Effect.succeed([]),

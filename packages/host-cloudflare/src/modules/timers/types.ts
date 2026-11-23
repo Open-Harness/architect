@@ -32,6 +32,9 @@ export interface WorldTimersRpc {
   countName(id: string, owner: string): void;
   /** Is this token held by the world now? False after a reset, a restart, or its release. */
   countHas(id: string): boolean;
+  /** Open a write section for a token (a commit): false when the world no longer holds it, or is closed to writes while it resets. */
+  countSection(id: string): boolean;
+  countSectionEnd(id: string): void;
   /** `token` is the caller's own, when it has one: a call that carries a token the world no longer holds is from a run that is over, and is refused. */
   timerAdd(owner: string, name: string, at: number, holder: string, token?: string): number;
   /** Resolves when the world fires the row, or, with `forgotten`, when a reset ended the run the row belonged to. */
@@ -54,6 +57,13 @@ export interface WorldTimersState {
   readonly fireDue: () => Effect.Effect<void>;
   /** The owner of each token the world holds now, once per token, sorted. */
   readonly held: () => ReadonlyArray<string>;
+  /**
+   * The first half of the warm reset: the world closes to new tokens and to writes, and waits (bounded) for the write sections already open
+   * to end. A request that begins now is refused, rather than admitted into a world that is about to be wiped.
+   */
+  readonly close: () => Effect.Effect<void>;
+  /** The second half: the databases are wiped, and the world admits requests again. Also happens by itself, a while after `close`. */
+  readonly admit: () => void;
   /** The warm reset between runs: no row survives, and a sleeper still waiting on a row is woken rather than left hanging. */
   readonly reset: () => void;
 }
