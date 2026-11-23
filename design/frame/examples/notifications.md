@@ -95,8 +95,9 @@ export default Blueprint.journey("invite sends one email", {
   starts: "founded",
   steps: (s) => [
     s.step("ada invites olga", s.ada.run(send, { organization: s.world.organization, email: "olga@example.test" }),
-      emits(InvitationSent),                                  // then s.clock.settle() waits until the outbox is quiet (GOAL17-check-harness)
-      inbox("olga@example.test", { count: 1, subject: /invited to/, links: [s.last.invitation] })),
+      emits(InvitationSent)),
+    s.step("the outbox settles", s.clock.settle(),             // waits until the outbox is quiet (GOAL17-check-harness)
+      inbox("olga@example.test", { count: 1, subject: /invited to/, links: [s.world.invitation] })),
     s.step("the event is delivered again", outbox.redeliver({ event: s.world.invitationEvent }),
       inbox("olga@example.test", { count: 1 }), noEvents()),
     s.step("bob can't send it himself", s.bob.run(invite, { invitation: s.world.invitation, to: "x@example.test", cause: "evt_1" }),
