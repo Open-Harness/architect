@@ -1,0 +1,191 @@
+// Generated from blueprint/projections/app.ts. Do not edit.
+
+export type Allowed =
+  | { readonly kind: "anyone" }
+  | { readonly kind: "signed-in" }
+  | { readonly kind: "role"; readonly role: string }
+  | { readonly kind: "role-of"; readonly role: string; readonly path: string };
+
+export type PaletteEntry =
+  | { readonly kind: "page"; readonly name: string; readonly path: string; readonly description: string; readonly allowed: ReadonlyArray<Allowed> }
+  | { readonly kind: "operation"; readonly name: string; readonly page: string; readonly component: string | null; readonly description: string; readonly allowed: ReadonlyArray<Allowed> };
+
+export type Caller = "anonymous" | "person";
+
+export const entries: ReadonlyArray<PaletteEntry> = [
+  {
+    "kind": "page",
+    "name": "access",
+    "path": "/portal/reference/access",
+    "description": "Who may call what.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "compare",
+    "path": "/portal/compare",
+    "description": "Every environment side by side.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "environment",
+    "path": "/portal/environments/:name",
+    "description": "One declared environment: its summary, its fields and its proof.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "events",
+    "path": "/portal/reference/events",
+    "description": "Every event a thing emits.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "home",
+    "path": "/portal",
+    "description": "The things as cards in the tree's order, and what each did in the window.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "journeys",
+    "path": "/portal/journeys",
+    "description": "Every declared journey as a sequence of steps.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "machines",
+    "path": "/portal/reference/machines",
+    "description": "Every lifecycle.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "monitor",
+    "path": "/portal/monitor",
+    "description": "The alerts, issues and objectives the declarations imply.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "operation",
+    "path": "/portal/operations/:name",
+    "description": "One operation, on five tabs: contract, metrics, proof, docs and notes.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "plugins",
+    "path": "/portal/plugins",
+    "description": "A card per mounted plugin, then the stores and what each runs on.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "refusals",
+    "path": "/portal/reference/refusals",
+    "description": "Every refusal code, counted in the window.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "thing",
+    "path": "/portal/things/:name",
+    "description": "One thing: its lifecycle, its operations, its rules, events and errors.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "trace",
+    "path": "/portal/traces/:id",
+    "description": "One call's trace: its structure and timing, never a value.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "values",
+    "path": "/portal/reference/values",
+    "description": "Every value a field can take.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  },
+  {
+    "kind": "page",
+    "name": "worlds",
+    "path": "/portal/starting-worlds",
+    "description": "The starting worlds, and the journeys that start from each.",
+    "allowed": [
+      {
+        "kind": "anyone"
+      }
+    ]
+  }
+];
+
+/** An anonymous caller passes only `anyone`. A person passes `anyone`, `signed-in` or a role: a role is decided on an instance, so it is not ruled out here. */
+const passes = (allowed: ReadonlyArray<Allowed>, caller: Caller): boolean =>
+  caller === "person" ? allowed.length > 0 : allowed.some((a) => a.kind === "anyone");
+
+/** What the caller may open and call: a page whose `allowed` they pass, and an operation of such a page whose own `allowed` they pass. */
+export const visibleTo = (caller: Caller): ReadonlyArray<PaletteEntry> => {
+  const pages = new Set(entries.flatMap((e) => (e.kind === "page" && passes(e.allowed, caller) ? [e.name] : [])));
+  return entries.filter((e) => (e.kind === "page" ? pages.has(e.name) : pages.has(e.page) && passes(e.allowed, caller)));
+};
