@@ -43,6 +43,11 @@ pull request deletes the line (and the file when its last line goes). A builder 
 
 - **`web-support.ts` is what they share:** the model they judge against, the pieces' files, a world of Plugged In on real workerd and D1, a page of check code
   (`page/*.tsx`) that mounts generated pieces, and headless Chromium through Playwright. No jsdom.
-- **The one seam to the builder's runtime is `page/boot.tsx`:** `WebHost.make({ client, ask })`. If the builder spells it differently, its author asks the checks author.
+- **The one seam to the builder's runtime is `page/boot.tsx`:** `WebHost.make({ client, ask })`. It is fixed by `design/decisions/WEB-host-seam.md`: `client` is the SDK layer with the person's credential in it, and the host has no `session`.
+- **The contract the checks add to K29 (K29 names the states, not the DOM):**
+  - *Pending* is `aria-busy="true"` on a piece's root, or a `data-pending` attribute that is absent (or `"false"`) when idle. UI SDK prints it only when true.
+  - *The refusal* is text holding the refusal's declared name and code, in one element below the field it belongs to.
+  - *The confirming control* is the one control inside the opened `alertdialog` carrying `data-agent-confirm`, whose value is the operation's description in the model, and no other element of the page carries it.
+  - *The dialog in the agent's snapshot* is found by UI SDK's own naming: the entry whose component name matches `/dialog/i` (UI SDK's `AlertDialog`), else the entry labelled with "release". A builder who wraps the dialog under another name asks the checks author.
 - **Red only on the missing projection.** Each file stops at `needPieces`, which names the files K29 section 3 says the projection writes.
 - **Expected values come from the model or from a recording** (the SDK from Node, the world's journal), never from what the page shows.

@@ -109,10 +109,12 @@ describe("04 a name is claimed once, through the web pieces", () => {
     }
     const ended = await run(copy.root, "broken", ["--through", "web"]);
     expect(ended.hung, "prove still running at the hard stop").toBe(false);
-    const passing = (stepsOf(ended) ?? []).filter((s) => s.operation === "handle.claim" && s.verdict === "pass").map((s) => s.name);
+    const steps = stepsOf(ended);
+    expect(steps, `prove wrote no report with the journey (a crash is not a refusal):\n${plain(ended.out).slice(-1500)}`).toBeDefined();
+    const passing = (steps ?? []).filter((s) => s.operation === "handle.claim" && s.verdict === "pass").map((s) => s.name);
     expect(passing, `these steps of handle.claim passed with the project's piece broken, so they did not go through it:\n${plain(ended.out).slice(-1500)}`).toEqual([]);
     expect(plain(ended.out), "and the run does not end by saying it passed").not.toMatch(/^prove ✔/m);
-  });
+  }, 300_000);
 });
 
 describe("04 controls: differences refuses each way a run can differ from the HTTP run", () => {

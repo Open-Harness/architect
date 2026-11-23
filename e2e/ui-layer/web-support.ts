@@ -27,7 +27,7 @@ export interface ModelOperation {
   readonly thing: string;
   readonly verb: string;
   readonly description: string;
-  readonly payload: Record<string, { readonly description?: string }>;
+  readonly payload: Record<string, { readonly description?: string; readonly value?: { readonly prefix?: string } }>;
   readonly move: null | { readonly emits: string };
   readonly refusals: ReadonlyArray<string>;
   readonly needsApproval?: true;

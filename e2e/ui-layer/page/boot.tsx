@@ -1,5 +1,5 @@
 // The page the checks mount a generated piece in: check code (ST1.26), never generated, never the app's. Three things live here, and nothing else:
-//   - the host seam, the one place the checks touch `@orthograph/web`: `WebHost.make({ client, ask })` (K29 section 2 and the entry in section 4: the host gives an action its
+//   - the host seam, the one place the checks touch `@orthograph/web`: `WebHost.make({ client, ask })` (fixed by design/decisions/WEB-host-seam.md; K29 section 2 and the entry in section 4: the host gives an action its
 //     client (the SDK's layer, the person's credential in it), the caller, a request key per form open, and a person to ask). If the builder's constructor is spelled differently, its author asks the
 //     checks author, who changes this one line.
 //   - UI SDK's own agent bridge, made with `createAgent` and handed to the test as `window.__ortho.agent`, as the spike did.

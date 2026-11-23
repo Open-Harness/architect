@@ -22,6 +22,8 @@ import { call, declaredError, inputOf, labelOf, model, needPieces, openSite, sna
 const m = model();
 const taken = declaredError(m, "handle.claim", "HandleTaken");
 const missing = needPieces("handle.claim", "profile.get");
+/** The prefix the model gives a handle's id (`hdl`): what an answer's handle starts with. */
+const idPrefix = m.operations["handle.release"]!.payload["handle"]!.value!.prefix!;
 
 let site: Site;
 let aaron: Person;
@@ -48,8 +50,8 @@ const hold = async (page: Page, path: string) => {
   };
 };
 
-/** The piece's root says it is busy: K29's `pending`, as `aria-busy` or `data-pending`. */
-const pending = (page: Page) => page.evaluate(() => document.querySelectorAll('[aria-busy="true"], [data-pending]').length > 0);
+/** The piece's root says it is busy: K29's `pending`, as `aria-busy="true"` or a `data-pending` attribute that is absent (or "false") when idle: UI SDK prints it only when true. */
+const pending = (page: Page) => page.evaluate(() => document.querySelectorAll('[aria-busy="true"], [data-pending]:not([data-pending="false"])').length > 0);
 const text = (page: Page) => page.locator("body").innerText();
 
 describe("08 the pending state is seen before the answer", () => {
@@ -64,7 +66,7 @@ describe("08 the pending state is seen before the answer", () => {
     expect(await pending(page), "pending while the answer is held").toBe(true);
     const during = await text(page);
     expect(during, "no refusal while pending").not.toContain(taken.code);
-    expect(during, "no answer while pending").not.toMatch(/hdl_[0-9a-z]+/);
+    expect(during, "no answer while pending").not.toMatch(new RegExp(`${idPrefix}_[0-9a-z]+`));
     expect(await written(site, "/handle/claim", from), "the world has written nothing yet").toEqual([]);
     await page.getByRole("textbox", { name: labelOf("name"), exact: true }).press("Enter");
     await page.getByRole("button").click({ force: true, timeout: 2000 }).catch(() => undefined);
