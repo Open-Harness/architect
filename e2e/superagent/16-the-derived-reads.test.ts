@@ -45,7 +45,9 @@ describe("16 the derived reads and superagent.boot exist as declared", () => {
       expect(w?.list).toMatchObject({ where: ["superagent"], order: "newest", page: 50 });
       expect(w?.only).toEqual({ stage: "person" });
       expect(w?.budget).toEqual({ p95Ms: 150 });
-      expect(keys(w?.answer)).toEqual(expect.arrayContaining(["stage", "why", "label"]));
+      expect(keys(w?.answer), "a list read answers a page, derived or not (GOAL17-list-answer)").toEqual(["items", "next"]);
+      expect(keys(w?.derive?.adds)).toEqual(expect.arrayContaining(["stage", "why", "label"]));
+      expect(w?.derive?.adds, "the same adds as ticket.stage").toEqual(op("ticket.stage")?.derive?.adds);
     });
 
     it("uses the same stage table as ticket.stage, written once, and is for a signed-in person and the main agent", () => {
