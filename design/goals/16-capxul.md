@@ -5,11 +5,11 @@ milestone: "Goal 16: Capxul on Orthograph"
 release: "1.0"
 branch: goal/capxul
 base: goal/stage-1     # main once the lander's slice 1 retires goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: amp         # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-23    # the date it started
 done_check: the journeys of Capxul's books, HR and payroll, and of KYC, KYB and a bank account through Bridge, green in Capxul's staging (K42, section 6)
 owns:
   - examples/capxul/
