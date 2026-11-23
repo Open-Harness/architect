@@ -215,7 +215,7 @@ so the comment would count twice.
 ```ts
 // packages/github (Blueprint.adapter)
 events: { issueComment: Blueprint.event(IssueComment, {
-  id: (e) => `comment:${e.comment.id}:${e.action}:${e.comment.updated_at}`,   // one change; the same from door and poll
+  id: (e) => `comment:${e.comment.id}:${e.action}:${e.comment.updated_at}`,   // one change; the same from door and poll   // Superseded by GOAL17-connections, 23 November 2026: no `e.action` (a poll's copy has none), and the kind and `e.repository.full_name` in front
 }) },
 catchUp: {
   every: "5 minutes",                                  // through Timers, and once when the world starts

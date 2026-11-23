@@ -23,8 +23,8 @@ three actions of each of the six events it listens to (a full set is megabytes o
 
 | File | Bytes | Operations | Events |
 |---|---|---|---|
-| `github.trimmed.json` | 880,160 | 20 | 8 |
-| `slack.trimmed.json` | 30,758 | 5 | 0 |
+| `github.trimmed.json` | 886,334 | 21 | 8 |
+| `slack.trimmed.json` | 33,002 | 6 | 0 |
 | `posthog.trimmed.json` | 21,856 | 6 | 0 |
 
 - **A fixture is its pin.** `00-the-oracle` fails if a fixture's SHA-256 is not the one in `pins.json`.

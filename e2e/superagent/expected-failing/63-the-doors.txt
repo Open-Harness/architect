@@ -1,5 +1,8 @@
 # Slice 10 checks. Red until slice 11 builds the doors: the Worker has no /_in/ route (M5-reach-out Q2) and answers 404.
+superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > a bad signature on an id that was accepted is refused, not seen, and on a ping, which a good one only ignores
+superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > a body signed as it was written is accepted, however it was written: indented, or with `<` as \u003c, which JSON.stringify would not give back
 superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > a mount the app does not have is 404, and anything but POST is 405
+superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > a redelivery that differs in the installation, the sender or the action around the same comment is seen too: they are not part of the event
 superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > a signed delivery of an event the app does not listen to, or one it listens to that does not decode, is acknowledged and ignored, with nothing written
 superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > again, by another delivery id, is seen: a comment settles once, whatever delivery brought it, and nothing more is written
 superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > every event the app listens to is accepted, each with its own id: a review, a review comment, an opened issue, a closed pull request, a check
@@ -8,7 +11,9 @@ superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs i
 superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > is accepted, and the inbox keeps one row in its trace: an id of the github source, the operation `in:github`, the event's name
 superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > the same comment edited is another event, and edited again later is a third; a different comment is its own
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > Slack's retry of a delivery it thought failed is seen, not written again, and another message is accepted
+superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > a bad signature on the URL verification challenge is refused too, and the challenge is not echoed
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > an app mention and a message are accepted, each written once with its own event's name
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > an event the app does not listen to (a reaction), signed, is acknowledged and ignored
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > every way to a bad signature is refused 401 BadSignature with nothing written: no header, no time, another secret, a body or a time changed after signing, five minutes and a second old, and from the future
+superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > one message that arrives as a message and as an app mention, each with its own event id, is one event: the second is seen
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > the URL verification challenge, signed, is answered with its challenge, and writes nothing

@@ -1,1 +1,12 @@
 # Written before slice 4. Red until the held plugins' clients exist in examples/superagent/plugins (slice 4); due before it merges.
+# Slice 10: `repos.listCollaborators` and `usergroupsUsersList` are in needs.ts, so the held GitHub and Slack plugins lack them until slice 11 regenerates them from the re-trimmed fixtures.
+superagent/03-calls.test.ts > 03 github: each included call > repos.listCollaborators: fails with what the server said
+superagent/03-calls.test.ts > 03 github: each included call > repos.listCollaborators: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 github: each included call > repos.listCollaborators: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 github: each included call > repos.listCollaborators: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 github: each included call > repos.listCollaborators: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 slack: each included call > usergroupsUsersList: fails with what the server said
+superagent/03-calls.test.ts > 03 slack: each included call > usergroupsUsersList: refuses a wrong input before it sends anything
+superagent/03-calls.test.ts > 03 slack: each included call > usergroupsUsersList: refuses an answer the spec doesn't allow, one wrong part at a time
+superagent/03-calls.test.ts > 03 slack: each included call > usergroupsUsersList: returns exactly what came back, whole
+superagent/03-calls.test.ts > 03 slack: each included call > usergroupsUsersList: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one

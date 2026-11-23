@@ -25,6 +25,12 @@ export interface Door {
 
 /** The app in a world, its doors' secrets made here. Generating and starting are the app's own `ortho generate` and `Worlds.start`. */
 export const openDoor = async (): Promise<Door> => {
+  // An author's fairness proof (README, point 6 of slice 5; never CI): a throwaway door that should pass, as `{ url, github, slack }`.
+  const throwaway = process.env["THROWAWAY_DOOR"];
+  if (throwaway !== undefined) {
+    const t = JSON.parse(throwaway) as { url: string; github: string; slack: string };
+    return { url: t.url, secrets: { github: t.github, slack: t.slack }, close: async () => undefined };
+  }
   const built = build();
   const secrets = { github: `ghs_${randomBytes(16).toString("hex")}`, slack: `sls_${randomBytes(16).toString("hex")}` };
   const scope = Effect.runSync(Scope.make());

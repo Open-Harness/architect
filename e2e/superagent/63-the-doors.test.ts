@@ -6,12 +6,14 @@
 // minutes old, and its URL verification challenge answered. The secrets are random test values this check makes and gives the
 // world. What a delivery becomes after the door (the outbox's hop to `trigger.receive`, the account on the caller) and a poll
 // of the same comment wait on GOAL17-check-harness; PostHog's door is not here (README, "Not judged").
-// Red until slice 11 builds the doors: today the Worker has no `/_in/` route and answers 404.
+// A comment settles once because the event's identity is the object and its own last-change time (GOAL17-connections A, B), not
+// the delivery or the action. Red until slice 11 builds the doors: today the Worker has no `/_in/` route and answers 404.
 import { afterAll, describe, expect, it } from "vitest";
 import {
   CHECK_ON_PR, COMMENT_CREATED, COMMENT_EDITED, ISSUE_OPENED, PR_CLOSED, REVIEW_COMMENT_CREATED, REVIEW_SUBMITTED, githubSignature, setAt, slackSignature,
 } from "./connections.ts";
 import { github, journalOf, openDoor, slack, trace, type Door } from "./door.ts";
+import { githubLegacySignature } from "./connections.ts";
 import { APP_MENTION, SLACK_ENVELOPES, THREAD_REPLY, USER_MESSAGE } from "./slack-events.ts";
 
 let opened: Promise<Door> | undefined;
@@ -43,6 +45,28 @@ describe("63 github: a delivery signed as GitHub signs it", () => {
       expect(said(await github(door, "issue_comment", setAt(COMMENT_CREATED, "comment.id", 9100), { delivery, trace: t.header })), delivery).toEqual(SEEN);
       expect(await journalOf(door.url, t.id), delivery).toEqual([]);
     }
+  });
+
+  it("a redelivery that differs in the installation, the sender or the action around the same comment is seen too: they are not part of the event", async () => {
+    const door = await world();
+    const comment = setAt(COMMENT_CREATED, "comment.id", 9150);
+    expect(said(await github(door, "issue_comment", comment))).toEqual(ACCEPTED);
+    for (const [what, again] of [
+      ["another installation", { ...comment, installation: { id: 99 } }], ["another sender", setAt(comment, "sender.id", 7)], ["another action", setAt(comment, "action", "edited")],
+    ] as const) expect(said(await github(door, "issue_comment", again as never)), what).toEqual(SEEN);
+  });
+
+  it("a body signed as it was written is accepted, however it was written: indented, or with `<` as \\u003c, which JSON.stringify would not give back", async () => {
+    const door = await world();
+    const comment = setAt(setAt(COMMENT_CREATED, "comment.id", 9160), "comment.body", "@agent a < b and a > c & d");
+    const pretty = JSON.stringify(comment, null, 2);
+    const escaped = JSON.stringify(setAt(comment, "comment.id", 9161)).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
+    expect(escaped).not.toBe(JSON.stringify(JSON.parse(escaped)));
+    expect(said(await github(door, "issue_comment", pretty)), "pretty-printed").toEqual(ACCEPTED);
+    expect(said(await github(door, "issue_comment", escaped)), "escaped").toEqual(ACCEPTED);
+    const t = trace();
+    expect(said(await github(door, "issue_comment", pretty, { trace: t.header })), "the same pretty body again").toEqual(SEEN);
+    expect(said(await github(door, "issue_comment", pretty, { signature: githubSignature(door.secrets.github, JSON.stringify(comment)) })), "signed as JSON.stringify gives it, sent as written").toEqual(BAD);
   });
 
   it("the same comment edited is another event, and edited again later is a third; a different comment is its own", async () => {
@@ -94,7 +118,7 @@ describe("63 github: a delivery signed as GitHub signs it", () => {
       ["a body altered after signing", JSON.stringify(setAt(comment, "comment.body", "@agent do something else")), sign(door.secrets.github, raw)],
       ["a signature cut short", raw, sign(door.secrets.github, raw).slice(0, 40)],
       ["a signature with a letter changed", raw, sign(door.secrets.github, raw).replace(/.$/, (c) => (c === "0" ? "1" : "0"))],
-      ["only the legacy sha1 header", raw, `sha1=${"0".repeat(40)}`],
+      ["a sha1 value in the sha256 header", raw, githubLegacySignature(door.secrets.github, raw)],
       ["an empty body signed for another", "", sign(door.secrets.github, raw)],
     ];
     for (const [what, body, signature] of cases) {
@@ -102,7 +126,20 @@ describe("63 github: a delivery signed as GitHub signs it", () => {
       expect(said(await github(door, "issue_comment", body, { signature, trace: t.header })), what).toEqual(BAD);
       expect(await journalOf(door.url, t.id), what).toEqual([]);
     }
-    expect(said(await github(door, "issue_comment", comment)), "the id is still free").toEqual(ACCEPTED);
+    const t = trace();
+    const legacy = await fetch(`${door.url}/_in/github`, { method: "POST", headers: { "content-type": "application/json", "x-github-event": "issue_comment", "x-github-delivery": crypto.randomUUID(), "x-hub-signature": githubLegacySignature(door.secrets.github, raw), traceparent: t.header }, body: raw });
+    expect(legacy.status, "only the legacy X-Hub-Signature header, truly signed: GitHub still sends it, and the door takes the sha256 one only").toBe(401);
+    expect(await journalOf(door.url, t.id)).toEqual([]);
+    expect(said(await github(door, "issue_comment", comment)), "the id is still free after every refusal: a signed re-send is accepted").toEqual(ACCEPTED);
+  });
+
+  it("a bad signature on an id that was accepted is refused, not seen, and on a ping, which a good one only ignores", async () => {
+    const door = await world();
+    const comment = setAt(COMMENT_CREATED, "comment.id", 9450);
+    expect(said(await github(door, "issue_comment", comment))).toEqual(ACCEPTED);
+    expect(said(await github(door, "issue_comment", comment, { signature: githubSignature("not-the-secret", JSON.stringify(comment)) })), "bad on an accepted id").toEqual(BAD);
+    expect(said(await github(door, "ping", { zen: "Keep it logically awesome.", hook_id: 1 }, { signature: null })), "unsigned ping").toEqual(BAD);
+    expect(said(await github(door, "ping", { zen: "Keep it logically awesome.", hook_id: 1 }))).toEqual(IGNORED);
   });
 
   it("a signed delivery of an event the app does not listen to, or one it listens to that does not decode, is acknowledged and ignored, with nothing written", async () => {
@@ -111,6 +148,8 @@ describe("63 github: a delivery signed as GitHub signs it", () => {
       ["a ping", "ping", { zen: "Keep it logically awesome.", hook_id: 1 }], ["a star", "star", { action: "created" }], ["an unknown event", "nonsense", {}],
       ["a comment with no comment in it", "issue_comment", setAt(COMMENT_CREATED, "comment", undefined)], ["a comment whose number is a string", "issue_comment", setAt(COMMENT_CREATED, "comment.id", "9001")],
       ["no event header at all", "", COMMENT_CREATED],
+      ["a comment deleted, an action no mapping takes", "issue_comment", setAt(setAt(COMMENT_CREATED, "comment.id", 9500), "action", "deleted")],
+      ["an issue labeled", "issues", setAt(ISSUE_OPENED, "action", "labeled")],
     ] as const) {
       const t = trace();
       expect(said(await github(door, event, payload, { trace: t.header })), what).toEqual(IGNORED);
@@ -121,7 +160,9 @@ describe("63 github: a delivery signed as GitHub signs it", () => {
   it("a mount the app does not have is 404, and anything but POST is 405", async () => {
     const door = await world();
     expect((await github(door, "issue_comment", COMMENT_CREATED, { mount: "gitlab" })).status).toBe(404);
-    expect((await github(door, "issue_comment", COMMENT_CREATED, { method: "GET" })).status).toBe(405);
+    for (const method of ["GET", "PUT", "DELETE"]) expect((await github(door, "issue_comment", COMMENT_CREATED, { method })).status, method).toBe(405);
+    expect((await fetch(`${door.url}/_in/slack`, { method: "GET" })).status, "Slack's door, GET").toBe(405);
+    expect((await fetch(`${door.url}/_in/slack`, { method: "PUT", body: "{}" })).status, "Slack's door, PUT").toBe(405);
   });
 });
 
@@ -145,6 +186,15 @@ describe("63 slack: a delivery signed as Slack signs it", () => {
     expect(said(await slack(door, one, { retry: 1, trace: t.header }))).toEqual(SEEN);
     expect(await journalOf(door.url, t.id)).toEqual([]);
     expect(said(await slack(door, message("Ev0RETRY002", "1700000000.000101")))).toEqual(ACCEPTED);
+    expect(said(await slack(door, message("Ev0RETRY003", "1700000000.000101"), { retry: 2 })), "a retry with a new event id and the same time").toEqual(SEEN);
+  });
+
+  it("one message that arrives as a message and as an app mention, each with its own event id, is one event: the second is seen", async () => {
+    const door = await world();
+    const asMention = setAt(setAt(setAt(APP_MENTION, "event.channel", "C024BE91L"), "event.ts", "1700000000.000300"), "event_id", "Ev0BOTH0001");
+    const asMessage = setAt(setAt(setAt(setAt(USER_MESSAGE, "event.ts", "1700000000.000300"), "event_id", "Ev0BOTH0002"), "event.user", "U061F7AUR"), "event.text", "<@U0LAN0Z89> is the build green?");
+    expect(said(await slack(door, asMessage))).toEqual(ACCEPTED);
+    expect(said(await slack(door, asMention))).toEqual(SEEN);
   });
 
   it("the URL verification challenge, signed, is answered with its challenge, and writes nothing", async () => {
@@ -155,6 +205,16 @@ describe("63 slack: a delivery signed as Slack signs it", () => {
     expect(a.status).toBe(200);
     expect(a.text.includes(String(challenge["challenge"])), `the answer says the challenge: ${a.text}`).toBe(true);
     expect(await journalOf(door.url, t.id)).toEqual([]);
+  });
+
+  it("a bad signature on the URL verification challenge is refused too, and the challenge is not echoed", async () => {
+    const door = await world();
+    const challenge = SLACK_ENVELOPES[0]!.payload;
+    for (const options of [{ signature: null }, { signature: slackSignature("not-the-secret", Math.floor(Date.now() / 1000), JSON.stringify(challenge)) }, { at: Math.floor(Date.now() / 1000) - 3600 }] as const) {
+      const a = await slack(door, challenge, options);
+      expect([a.status, a.body], JSON.stringify(Object.keys(options))).toEqual(BAD);
+      expect(a.text.includes(String(challenge["challenge"]))).toBe(false);
+    }
   });
 
   it("every way to a bad signature is refused 401 BadSignature with nothing written: no header, no time, another secret, a body or a time changed after signing, five minutes and a second old, and from the future", async () => {
@@ -170,7 +230,7 @@ describe("63 slack: a delivery signed as Slack signs it", () => {
       ["another secret", raw, { signature: slackSignature("not-the-secret", now, raw) }],
       ["a body altered after signing", JSON.stringify(setAt(payload, "event.text", "something else")), { signature: slackSignature(door.secrets.slack, now, raw) }],
       ["a time changed after signing", raw, { signature: slackSignature(door.secrets.slack, now - 5, raw), stamp: now }],
-      ["signed five minutes and a second ago", raw, { at: now - 301 }],
+      ["signed five minutes and ten seconds ago", raw, { at: now - 310 }],
       ["signed an hour ago", raw, { at: now - 3600 }],
       ["signed ten minutes from now", raw, { at: now + 600 }],
     ];
@@ -180,7 +240,7 @@ describe("63 slack: a delivery signed as Slack signs it", () => {
       expect(await journalOf(door.url, t.id), what).toEqual([]);
     }
     expect(said(await slack(door, payload)), "the event's id is still free").toEqual(ACCEPTED);
-    expect(said(await slack(door, message("Ev0BAD0002", "1700000000.000201"), { at: now - 299 })), "four minutes fifty nine seconds old is within Slack's five").toEqual(ACCEPTED);
+    expect(said(await slack(door, message("Ev0BAD0002", "1700000000.000201"), { at: now - 290 })), "four minutes fifty seconds old is within Slack's five").toEqual(ACCEPTED);
   });
 
   it("an event the app does not listen to (a reaction), signed, is acknowledged and ignored", async () => {

@@ -233,17 +233,22 @@ HTTP in a world (`Worlds.start`). Each says in its header what is red today and 
 
 | Check | What it proves | Reads |
 |---|---|---|
-| `60-connections-oracle` | the instruments are sound: the signing helpers give GitHub's documented test vector and Slack's `v0` scheme; every GitHub payload the checks send fits GitHub's spec, and each part left out or mistyped does not | the pinned GitHub spec |
-| `61-events-carry-ids-and-accounts` | each event an adapter offers names its identity (`id(e)`: one change to one object, the same from door and poll) and its account (`actor(e)`: stable id as a string, name, bot); PostHog's `errorAlert` and `errorResolved` decode whole and refuse each wrong payload | the held adapters' descriptors |
+| `60-connections-oracle` | the instruments are sound: the signing helpers give GitHub's documented test vector and Slack's own worked example (docs.slack.dev); the legacy sha1 header is a different scheme; every GitHub payload the checks send fits GitHub's spec, and each part left out or mistyped does not | the pinned GitHub spec |
+| `61-events-carry-ids-and-accounts` | each event an adapter offers names its identity (`id(e)`: the object's kind, repository, id and own last-change time, the same from door and poll, GOAL17-connections A, B, D) and its account (`actor(e)`: stable id as a string, name, bot); PostHog's `errorAlert` and `errorResolved` decode whole (extras kept at every level) and refuse each wrong payload | the held adapters' descriptors |
 | `62-the-mappings` | each mapping makes the right trigger: kind, thread, text, url, `addressed`, address, which connections listen, how a reply and a history are made, what the environment holds; GitHub's, Slack's and PostHog's | the source kinds' `spec` |
-| `63-the-doors` | `/_in/github` and `/_in/slack`: a signed delivery accepted and written once; each bad signature refused with nothing written; a comment settles once by any delivery id, an edit is another event; ignored types; Slack's challenge, retry and five-minute window | the app in a world |
+| `63-the-doors` | `/_in/github` and `/_in/slack`: a signed delivery accepted and written once, however the body was written; each bad signature (and the legacy sha1 header alone) refused with nothing written and the id still free; a comment settles once by any delivery id, installation or sender, an edit is another event; ignored types and unmapped actions; Slack's challenge, retry, one message as mention and message, and five-minute window; 404 and 405 | the app in a world |
 | `64-the-deferred-source-refusals` | the four refusals check 15 deferred (GOAL17-source-from :322, :324, :326 and :325's second half), each with a passing control | `ortho generate`, `ortho check` |
-| `65-posthog-is-a-source` | with its events, PostHog is an active source: the mount, `sources.posthog`, its refusals and its silence when nothing is included | `ortho model --json`, `ortho check` |
+| `65-posthog-is-a-source` | with its events, PostHog is an active source, exactly as declared; a mount that includes some of what it uses and not the rest is refused naming each missing piece; none of its events included leaves it silent | `ortho model --json`, `ortho check` |
+| `66-the-connection-journeys` | the five journeys of `journeys/` through `ortho prove`: a webhook and a poll of one comment make one trigger, a comment made while the world was down is found once, a delivery survives a kill, a reply goes out once in order, Slack's door; they wait on GOAL17-check-harness's instruments (`s.runner`, `s.clock.settle`, `outbox.rows`, `github.deliver`) | `ortho prove` on a copy with the journeys overlaid |
 
 Also changed: `needs.ts` lists PostHog's two events (so `02-includes` now asks the held PostHog plugin for them, red until slice
 11); `14-the-framework-forms` no longer says PostHog is not a source (65 says it is); `app.ts` gains `swapPlugins`, which copies every
 held plugin and links each copy to the others', so an edited plugin still passes `ortho check` where nothing else is wrong (`swapPlugin`
-leaves the others importing the original, and `ortho check` then refuses for that whatever the edit).
+leaves the others importing the original, and `ortho check` then refuses for that whatever the edit). `needs.ts` also lists `repos.listCollaborators` and
+`usergroupsUsersList` (the policy's `sync`): both fixtures are re-trimmed and re-pinned (`specs/`), so the held GitHub and Slack plugins
+must be regenerated from them (07 says which files differ) and the stand-ins serve both (04 and 05). Three knobs are for an author's
+fairness proof, never CI: `SUPERAGENT_APP` (also read by `needs.ts`'s `appPlugin`), `ORTHO_CLI` (another `ortho`) and `THROWAWAY_DOOR`
+(another door, for 63). The decisions are `design/decisions/GOAL17-connections.md`.
 
 ## What the builder must make, and where the checks read it (slice 10)
 
@@ -255,13 +260,13 @@ its author.
    is `{ id: string, name: string, bot: boolean }` or `undefined` (no sender), as K40 fixes 1 and 5 write them on the event; slice 11
    widens `Blueprint.incoming(schema)` to take them (GOAL17-adapters-from-spec, "Supersedes"). They are functions of the decoded payload
    alone. For Slack, `name` is not judged (its events carry only the user's id).
-2. **The identity of a GitHub event** is its object, its action and, for a comment, the object's own `updated_at` (K40 fix 5: "a comment
-   edited twice is two events"; the brief's sketch leaves `updated_at` out, K40 wins since it says why). The check judges that these
-   differ and that nothing else (the sender, the delivery, the installation, the issue a comment is on) is in it, never the string.
-   Two kinds of object with the same number are two ids.
+2. **The identity of an event** is GOAL17-connections' (A, B, D), which replaced the first version of this point: GitHub's is the object's kind, the
+   repository's `full_name`, the object's own id or number and its own last-change time (`updated_at`; a review's `submitted_at`, a check
+   run's `completed_at`), with no action and no delivery in it, so a poll's copy gives the door's id; Slack's is channel and `ts`, whatever the
+   envelope or the event's kind; PostHog's is issue, kind and `timestamp`. The checks judge what changes an id and what does not, never the string.
 3. **PostHog's alert body.** PostHog publishes no payload for an alert: a destination's template makes it, so there is none to judge
    against. The check fixes the shape GOAL17-source-from's mapping reads: `{ project: { id: string }, issue: { id, name, url, status,
-   description? } }`, with what a template adds kept; `errorAlert` has `issue.status` `"active"` and `errorResolved` `"resolved"`, so
+   description? (a string, or null) }, timestamp }`, with what a template adds kept at every level; `errorAlert` has `issue.status` `"active"` and `errorResolved` `"resolved"`, so
    each refuses the other's payload. The plugin's template writes this body once.
 4. **The doors.** `POST /_in/<mount>`, answering as `M5-checks.md` call 4: 401 `{ _tag: "BadSignature" }` for a bad or stale
    signature, 200 `{ accepted: true }`, `{ seen: true }` or `{ ignored: true }`, 404 for a mount the app does not have, 405 for any
@@ -279,16 +284,28 @@ its author.
 7. **The source file** `plugins/intake/blueprint/sources/posthog.ts` exports `posthogSource`, as `githubSource` is in `github.ts`; a
    source kind's `spec` is what `Source.from` was given (the shape `SourceKind` already has).
 8. **PostHog is active** (65) when its mount includes `errorAlert` and `errorResolved`; `sources.posthog` is `{ mount: "posthog",
-   events: [errorAlert, errorResolved], calls, variables: POSTHOG_ISSUE and POSTHOG_PROJECT, kinds: ["errorIssue"] }`.
+   events: [errorAlert, errorResolved], calls: [errorTrackingIssuesRetrieve], variables: POSTHOG_ISSUE and POSTHOG_PROJECT, kinds: ["errorIssue"] }`.
+   A mount that includes one event and not the other, or not that call, is refused on a problem line of the mount's file, naming the piece, the
+   source and the line to add.
+9. **A GitHub history pages by `per_page`:** `history.args` names a page size, and `history.page(answer, cursor?)` answers `next` (the cursor plus
+   one, as text, starting at "2") when the answer holds a full page, and none when it is short. A Slack history answers `next` from
+   `response_metadata.next_cursor`, none when it is empty.
+10. **`policyPart.sync`** (F): GitHub's `accounts` maps collaborators to `{ id: String(id), login, bot: type === "Bot" }`; Slack's maps a user group's
+    `users` to `{ id, login: id, bot: false }`. The stand-ins hold collaborator `ann` (who opened issue 1) and user group `S0614TZR7`, and refuse
+    another repository (404) and another group (`no_such_subteam`).
+11. **A refusal's form** (64, 65): a problem line `<file>.ts…: <sentence>` holding the words asked for, with no stack trace, exception name or `TS` error,
+    so a crash is never a refusal.
+12. **The journeys' imports** (66): `github` from `@orthograph/github/stand`, `slack` from `@orthograph/slack/stand`, `outbox`, `spans`, `emits`, `noEvents`
+    and `expect` from `orthograph`; the starting worlds `a-live-superagent-listening-to-acme-widgets` (the declared `coder`, live, its GitHub
+    and Slack connections naming `acme/widgets` and `C024BE91L`) and slice 8's `a-live-superagent-with-a-ticket` (which gives `superagent` and
+    `ticket`) are the lanes' to build.
 
 ## Not judged here, and why
 
-- **Waits on GOAL17-check-harness** (the record that fixes how a check steps the outbox and Timers, reads `_outbox` rows and kills a
-  world): a reply going out once and in order; the door's caller carrying the account, read on the delivery's span; a webhook and a
-  catch-up poll of one comment settling once (61 judges the identity both would key by, 63 the door's half); the poll's timing; a
-  delivery surviving a restart.
+- **Written against GOAL17-check-harness** (66, `journeys/`): a reply going out once and in order; the door's caller carrying the account (the
+  `account.seen` span); a webhook and a catch-up poll of one comment settling once; the poll's timing; a delivery and a poll surviving a restart.
+  They cannot be shown passable until slice 9's surface and slice 11's stand-in commands exist (snag).
 - **PostHog's door.** PostHog documents no signature for a webhook destination, and no record says how the door verifies one.
 - **`@orthograph/webhook`** and **`Source.timer`'s ticks.** Neither has a named shape (the webhook's events, signing and config) nor a
   harness for a tick.
-- **GitHub's collaborators and Slack's user group** (`policyPart.sync`): `repos.listCollaborators` and `usergroupsUsersList` are not
-  in `needs.ts`, so no check holds them.
+- **PostHog's resolve**: nothing documents a PostHog alert for a resolved error (GOAL17-connections, open risks).
