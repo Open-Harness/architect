@@ -42,9 +42,9 @@ builds M5.07 (`ortho new adapter --from-openapi`) on the integration branch, as 
 
 ## Supersedes
 
-- `design/decisions/GOAL17-source-from.md`: "Goal 11's (M5.03) typed event; today an adapter's `events` are `unknown`" → "adapter events are typed (`AdapterEvent`) and built by `Blueprint.incoming(schema)`; Goal 11's `Blueprint.on` reads them".
-- `design/decisions/GOAL17-source-from.md`: "`Blueprint.event(…, { id, actor })`" → "`Blueprint.incoming(schema)`, which slice 11 widens with `{ id, actor }`".
-- `design/decisions/GOAL17-source-from.md`: "Goal 11's `Blueprint.event` has `id`" → "`Blueprint.incoming` has `id`".
+- `design/decisions/GOAL17-source-from.md`: "Goal 11's (M5.03) typed event; today an adapter's `events` are `unknown`" → "adapter events are typed (`AdapterEvent`) and built by `Blueprint.incoming(schema)`; Goal 11's `Blueprint.on` reads them"
+- `design/decisions/GOAL17-source-from.md`: "`Blueprint.event(…, { id, actor })`" → "`Blueprint.incoming(schema)`, which slice 11 widens with `{ id, actor }`"
+- `design/decisions/GOAL17-source-from.md`: "Goal 11's `Blueprint.event` has `id`" → "`Blueprint.incoming` has `id`"
 - `design/goals/17-superagent.md`: "Slice 3's checks are being written. Slice 4 starts when they land." → "Slice 4 is built on `goal-17/s4-adapters-from-spec-build`."
 
 ## Not done
