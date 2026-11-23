@@ -1,0 +1,14 @@
+# Written before slice 4. Red until generated adapters have nested call groups and events and `ortho check` refuses a missing include (slice 4); due before it merges.
+superagent/02-includes.test.ts > 02 includes: a call or event the spec doesn't have fails `ortho check` > a call the spec has but another service's mount does, and one from a group that is not there
+superagent/02-includes.test.ts > 02 includes: a call or event the spec doesn't have fails `ortho check` > a misspelt call in a real group, a call no group has, and a wrong case, each named, for each service
+superagent/02-includes.test.ts > 02 includes: a call or event the spec doesn't have fails `ortho check` > an event the spec doesn't have, an event misspelt, and a call named where an event goes
+superagent/02-includes.test.ts > 02 includes: a call or event the spec doesn't have fails `ortho check` > one wrong include among right ones still fails, and names only the wrong one
+superagent/02-includes.test.ts > 02 includes: a mount reaches what it names and no more > GitHub's events the superagent listens to are in the model once included
+superagent/02-includes.test.ts > 02 includes: a mount reaches what it names and no more > a mount that includes nothing reaches nothing, one call reaches one, and naming a call twice lists it once
+superagent/02-includes.test.ts > 02 includes: a mount reaches what it names and no more > github: the calls the superagent includes pass `ortho check`, and the model lists exactly those
+superagent/02-includes.test.ts > 02 includes: a mount reaches what it names and no more > posthog: the calls the superagent includes pass `ortho check`, and the model lists exactly those
+superagent/02-includes.test.ts > 02 includes: a mount reaches what it names and no more > slack: the calls the superagent includes pass `ortho check`, and the model lists exactly those
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > github: every call and event the superagent includes is in the plugin, and a missing one is refused
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > posthog: every call and event the superagent includes is in the plugin, and a missing one is refused
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > slack: every call and event the superagent includes is in the plugin, and a missing one is refused
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > the held GitHub plugin has every GitHub call and event the fixture does, so the app's choice is a narrowing, not a copy
