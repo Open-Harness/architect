@@ -14,6 +14,16 @@ export interface HandlerFile {
   readonly file: string;
 }
 
+/** The verbs of the four operations a thing with versions has (K40 fix 2). */
+const VERSION_VERBS: ReadonlyArray<string> = ["save", "get", "history", "restore"];
+
+/**
+ * Is this operation one of the four the framework serves for a thing with `versions:`: its verb is one of them, and the thing's key
+ * is a field of its payload? It has no handler file: the generated server serves it from the thing's declaration.
+ */
+export const isVersioned = (op: Pick<OperationModel, "kind" | "verb" | "payload">, versions: { readonly key: string } | undefined): boolean =>
+  op.kind === "operation" && versions !== undefined && VERSION_VERBS.includes(op.verb) && versions.key in op.payload;
+
 export const handlerFiles = (op: Pick<OperationModel, "kind" | "thing" | "verb" | "runs" | "from">): ReadonlyArray<HandlerFile> => {
   if (op.kind !== "operation") return [];
   if (op.from.kind === "app") {

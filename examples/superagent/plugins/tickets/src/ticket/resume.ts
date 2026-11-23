@@ -1,7 +1,8 @@
-import { Handlers, type Handler } from "@orthograph/language-effect";
+import { Effect } from "effect";
+import type { Handler } from "@orthograph/language-effect";
 import type declaration from "../../blueprint/things/ticket/verbs/resume.ts";
 
-/** Wake an ended ticket on a person's message, after its mandate is revalidated: the same executor, with its memory. Not written yet: slice 7 gives it its body. */
-const resume: Handler<typeof declaration> = () => Handlers.blank("ticket.resume is not written yet");
+/** Wake an ended ticket (the machine refuses any other state): the same executor, with its memory. Its mandate is revalidated by `mandate.revalidate` first. */
+const resume: Handler<typeof declaration> = (_payload, { move }) => Effect.as(move(), {});
 
 export default resume;

@@ -7,6 +7,9 @@ import { callImports, renderHandlerScaffold, wired } from "#modules/handlers/ser
 import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, pascal, storeFileAt, thingFileAt, toRoot } from "#modules/names/service.js";
 import { renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 
+/** The verbs of the four operations a thing with versions has. */
+const VERSION_VERBS = ["save", "get", "history", "restore"];
+
 const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
 
 /** The runtime's refusals the generated code names: the machine's, when the move starts from a state (D2 #37), and each not-found. */
@@ -50,15 +53,23 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   // Each adapter a `service` role names (M2-auth, fork 3): the runtime reads the role against the mount's name, so the server hands it each mount by name.
   const serviced = [...new Set(ops.flatMap((o) => o.allowed.flatMap((a) => ("service" in a && a.service !== undefined ? [a.service] : []))))].filter((m) => model.mounts?.[m]).sort();
   const mountsOption = serviced.length > 0 ? ", mounts" : "";
-  const served = (o: OperationModel) => (o.from.kind !== "app" && mounted.includes(o.from.mount) ? `Mount.serving(${mountVar(o.from.mount)}, ${opVar(o)}Handler)` : `${opVar(o)}Handler`);
+  // The four operations of a thing with versions (K40 fix 2) are the framework's: served from the thing's declaration, with no handler file.
+  const versioned = (o: OperationModel) => o.kind === "operation" && VERSION_VERBS.includes(o.verb) && model.things[o.thing]?.versions !== undefined && Object.keys(o.payload).includes(model.things[o.thing]!.versions!.key);
+  const staleOf = (o: OperationModel) => (o.errors.includes("StaleRevision") ? "Errors.declared.StaleRevision" : "undefined");
+  const served = (o: OperationModel) =>
+    versioned(o) ? `Versions.handler("${o.verb}", thingIn(${camel(o.thing)}Thing), ${staleOf(o)}${o.move === null ? ", false" : ""})`
+    : o.from.kind !== "app" && mounted.includes(o.from.mount) ? `Mount.serving(${mountVar(o.from.mount)}, ${opVar(o)}Handler)` : `${opVar(o)}Handler`;
   // Each declared database store (K3) has a D1 binding of its own, and its own journal and request keys.
   const stores = databaseStores(model);
   const storeOption = stores.length > 0 ? `, stores: [${stores.map((s) => `[${camel(s.name)}Store, env.${bindingOf(s)}]`).join(", ")}]` : "";
   const journal = stores.length > 0 ? `JournalD1.across([${stores.map((s) => `env.${bindingOf(s)}`).join(", ")}])` : "JournalD1.layer";
   const apart = new Set(Object.values(model.things).filter((t) => t.store !== undefined && stores.some((s) => s.name === t.store)).map((t) => t.name));
-  const world = stores.length > 0
+  // A thing that lives as actors is read from its Durable Object, so the world's facts door is told which tables are actors' and where they are.
+  const actorTables = Object.values(model.things).filter((t) => t.lives === "actor").map((t) => `"${t.name}"`).join(", ");
+  const actorOption = actors ? `, actors: env.ACTORS, actorTables: [${actorTables}]` : "";
+  const world = (stores.length > 0
     ? `tables: [${Object.values(model.things).filter((t) => !apart.has(t.name)).map((t) => `"${t.name}"`).join(", ")}], stores: [${stores.map((s) => `{ db: env.${bindingOf(s)}, tables: [${Object.values(model.things).filter((t) => t.store === s.name).map((t) => `"${t.name}"`).join(", ")}] }`).join(", ")}]`
-    : "tables: tables.map(([, table]) => table)";
+    : "tables: tables.map(([, table]) => table)") + actorOption;
   const group = (t: string) => {
     const handles = ops
       .filter((o) => o.thing === t)
@@ -90,13 +101,13 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `import { SqlClient } from "effect/sql";`,
       `import type { Principal } from "${Names.frontDoor}";`,
       `import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "${Names.pkg("host-cloudflare")}";`,
-      `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, Wire, ${ruled.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
+      `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, ${handled.some(versioned) ? "Versions, " : ""}Wire, ${ruled.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
       `import { Mcp, type McpResult, type ShownOperation } from "${Names.pkg("language-effect")}";`,
       `import { Api, Errors } from "../api/src/index.ts";`,
       `import * as portal from "../portal/main.ts";`,
       `import { catalog } from "../mcp/src/index.ts";`,
       ops.map((o) => `import * as ${opVar(o)} from "../api/src/${o.thing}/${o.verb}.ts";`),
-      handled.map((o) => `import ${opVar(o)}Handler from "${handlerAt("generated/server/main.ts", o)}";`),
+      handled.filter((o) => !versioned(o)).map((o) => `import ${opVar(o)}Handler from "${handlerAt("generated/server/main.ts", o)}";`),
       empty ? handled.map((o) => `import ${opVar(o)}Blank from "./${emptyPath(o)}";`) : [],
       callImports(model),
       mounted.map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),

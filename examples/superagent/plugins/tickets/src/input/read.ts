@@ -1,7 +1,8 @@
-import { Handlers, type Handler } from "@orthograph/language-effect";
+import { Effect } from "effect";
+import type { Handler } from "@orthograph/language-effect";
 import type declaration from "../../blueprint/things/input/verbs/read.ts";
 
-/** Read one Input's text. Not written yet: slice 7 gives it its body. */
-const read: Handler<typeof declaration> = () => Handlers.blank("input.read is not written yet");
+/** Read one Input's text: the runtime has read the Input the payload names, and refused one that is not there. */
+const read: Handler<typeof declaration> = (_payload, { subject }) => Effect.succeed({ text: String(subject?.["text"]) });
 
 export default read;

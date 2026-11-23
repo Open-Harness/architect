@@ -40,6 +40,12 @@ describe("the stage table", () => {
     expect(stageOf(open, { ...none, assignment: { state: "ended" } })).toMatchObject({ stage: "idle" });
   });
 
+  it("a closing assignment is stopping, below a question and a ready report", () => {
+    expect(stageOf(open, { ...none, assignment: { state: "closing" } })).toEqual({ stage: "working", why: "none", label: "Stopping" });
+    expect(stageOf(open, { ...none, assignment: { state: "closing" }, attention: {} })).toMatchObject({ why: "answer" });
+    expect(stageOf(open, { ...none, assignment: { state: "closing" }, report: { state: "ready", seq: 1n } })).toMatchObject({ why: "review" });
+  });
+
   it("otherwise it is working", () => {
     expect(stageOf(open, { ...none, assignment: { state: "running" } })).toMatchObject({ stage: "working", why: "none" });
   });

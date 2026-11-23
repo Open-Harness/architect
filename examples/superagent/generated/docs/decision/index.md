@@ -31,4 +31,4 @@ States: recorded, dismissed. A move from the wrong state is refused DecisionNotR
 ## Operations
 
 - [decision.dismiss](dismiss.md): Set aside a decision a person disagrees with.
-- [decision.route](route.md): Route an eval's items: one to twenty, each accept, attach, stop or ignore. In observe an accept is only recorded as one it would make.
+- [decision.route](route.md): Route an eval's items: one to twenty, each accept, attach, stop or ignore. An explicit request makes its ticket in every mode; in observe an inferred accept is only recorded as one it would make.

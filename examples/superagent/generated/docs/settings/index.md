@@ -13,6 +13,7 @@ Lives in the database.
 | revision | uint |
 | variables | schema |
 | blocked | schema |
+| saved (optional) | schema |
 
 ## Machine
 

@@ -4,11 +4,11 @@
 // package and the host. Nothing is shimmed (M1-plugins sections 8 and 8.1).
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { handlerFiles, packageDir, type Model } from "@orthograph/compiler";
+import { handlerFiles, isVersioned, packageDir, type Model } from "@orthograph/compiler";
 
 export const missingHandlers = (absoluteRoot: string, model: Model): ReadonlyArray<string> =>
   Object.values(model.operations).flatMap((op) => {
-    if (op.kind !== "operation" || op.from.kind === "app") return [];
+    if (op.kind !== "operation" || op.from.kind === "app" || isVersioned(op, model.things[op.thing]?.versions)) return [];
     const from = op.from;
     const mount = model.mounts?.[from.mount];
     const dir = packageDir(absoluteRoot, from.package);

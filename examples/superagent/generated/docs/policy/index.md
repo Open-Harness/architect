@@ -17,6 +17,7 @@ Lives in the database.
 | bots | schema |
 | admission | schema |
 | rules | schema |
+| saved (optional) | schema |
 
 ## Machine
 
@@ -25,7 +26,7 @@ States: current. A move from the wrong state is refused PolicyNotCurrent (exit 8
 | move | from | to | emits |
 |---|---|---|---|
 | save | (creates) | current | PolicyChanged |
-| restore | current | current | PolicyChanged |
+| restore | (creates) | current | PolicyChanged |
 
 ## Events
 

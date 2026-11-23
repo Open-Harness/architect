@@ -2,15 +2,13 @@ import { Blueprint } from "orthograph";
 import { Thread } from "./thing.ts";
 import * as Events from "./events.ts";
 
+// One state (GOAL17-stage-one, call 5): whether a thread waits, or is being evaluated, is read from its triggers and its evals, never stored twice.
 export const machine = Blueprint.machine(Thread, {
-  states: ["idle", "queued", "evaluating"],
+  states: ["idle"],
   moves: {
     bind: { from: [], to: "idle", emits: Events.ThreadSubscribed },
-    closed: { from: ["idle", "queued", "evaluating"], to: "idle", emits: Events.ThreadClosed },
-    unsubscribe: { from: ["idle", "queued", "evaluating"], to: "idle", emits: Events.ThreadUnsubscribed },
-    queue: { from: ["idle"], to: "queued", emits: Events.ThreadQueued },
-    evaluate: { from: ["queued"], to: "evaluating", emits: Events.ThreadEvaluating },
-    release: { from: ["evaluating"], to: "idle", emits: Events.ThreadReleased },
+    closed: { from: ["idle"], to: "idle", emits: Events.ThreadClosed },
+    unsubscribe: { from: ["idle"], to: "idle", emits: Events.ThreadUnsubscribed },
   },
   notFrom: { exit: 84 },
 });

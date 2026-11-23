@@ -47,7 +47,7 @@ const errors = (model: Model): RenderedFile => {
   row("NotAllowed", model.refusals["NotAllowed"] ?? "AR-001", NOT_ALLOWED_EXIT, STATUS.notAllowed);
   body.push(cls(IDEMPOTENCY_CONFLICT, "{}"));
   row(IDEMPOTENCY_CONFLICT, model.refusals[IDEMPOTENCY_CONFLICT] ?? "AR-002", IDEMPOTENCY_CONFLICT_EXIT, STATUS.idempotencyConflict);
-  // A pinned or derived read is served from slice 7 of Goal 17; until then it refuses by name, 501, never as a defect.
+  // A derived read that looks at problems is not served yet: it refuses by name, 501, never as a defect (the rest are served, slice 7 of Goal 17).
   if (READ_NOT_SERVED in model.refusals) {
     body.push(cls(READ_NOT_SERVED, "{ read: Schema.String, message: Schema.String }"));
     row(READ_NOT_SERVED, model.refusals[READ_NOT_SERVED]!, READ_NOT_SERVED_EXIT, STATUS.notServed);

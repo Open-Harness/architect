@@ -37,10 +37,13 @@ describe("a delivery a mount's `on` verb declares", () => {
   });
 });
 
+const watching = Blueprint.read(Echo, { by: "id", fields: ["id"], derive: Blueprint.derive(Echo, { looks: { watched: Blueprint.problems() }, adds: { ok: Blueprint.bool() }, is: () => ({ ok: true }) }), allowed: [Blueprint.signedIn] });
+
 describe("a read the runtime does not serve yet", () => {
-  it("can refuse ReadNotServed: modelled on the read, and a framework refusal with a code of its own", async () => {
-    const m = await model(Blueprint.use(feature), { pinned: listed, plain });
-    expect(m.operations["echo.pinned"]?.refusals).toContain("ReadNotServed");
+  it("can refuse ReadNotServed only when its derive looks at the app's problems: modelled on the read, and a framework refusal with a code of its own", async () => {
+    const m = await model(Blueprint.use(feature), { pinned: listed, plain, watching });
+    expect(m.operations["echo.watching"]?.refusals).toContain("ReadNotServed");
+    expect(m.operations["echo.pinned"]?.refusals, "a pinned read is served").not.toContain("ReadNotServed");
     expect(m.operations["echo.plain"]?.refusals).not.toContain("ReadNotServed");
     expect(m.refusals["ReadNotServed"]).toBe("AR-008");
   });

@@ -21,14 +21,13 @@ Save an earlier version again, as a new one.
 
 ## Move
 
-`restore`: from current to current, emitting PolicyChanged.
+`restore`: from nothing (it creates) to current, emitting PolicyChanged.
 
 ## Refusals
 
 | refusal | exit | code | when |
 |---|---|---|---|
 | StaleRevision | 87 | SU-002 | the policy is in a state restore can't start from; carries `state` |
-| PolicyNotCurrent | 87 | PO-900 | the policy is in a state restore can't start from; carries `state` |
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |
 
 ## How to call

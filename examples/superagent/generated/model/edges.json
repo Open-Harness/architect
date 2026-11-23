@@ -255,6 +255,16 @@
     "kind": "acts-on"
   },
   {
+    "from": "eval.expire",
+    "to": "eval",
+    "kind": "acts-on"
+  },
+  {
+    "from": "eval.expire",
+    "to": "eval.EvalExpired",
+    "kind": "emits"
+  },
+  {
     "from": "eval.read",
     "to": "eval",
     "kind": "acts-on"
