@@ -304,6 +304,10 @@ s.clock.settle()                    // new: advance("0 seconds"): move nothing, 
   model call.
 
 ```ts
+// The watermark is never a step's answer: `s.last` is replaced by every step, and the journey language has no named step (it has `s.last`
+// and a starting world's `gives`, `journeys/types.ts:107-118`). Instead `"journey"` means the baseline `prove` takes once, when the journey's
+// first step starts (after its starting worlds): `rows({ afterSeq: "journey" })` is every row written during the journey, and
+// `mark({ since: "journey" })` counts `conflicts` since then. A check that needs a number reads it where it is used.
 // descriptors: packages/orthograph/src/modules/plugins/probes.ts, exported as `outbox` (the world's door contract, like ClockCall; imports nothing).
 // Handlers: packages/host-cloudflare/src/modules/outbox/testing.ts (Goal 11's module, built here first, to M5-reach-out Q1 and Q5)
 export interface OutboxRow {
@@ -319,8 +323,8 @@ export interface OutboxRow {
   readonly outcome: string | null;    // the refusal's tag or the defect's first line
 }
 export const outbox = {
-  mark:      Probe.read<{}, { seq: number; conflicts: number }>("outbox/mark"),                              // the default store's journal high-water now, and its count of commits that lost the version guard and re-ran
-  rows:      Probe.read<{ to?: string; name?: string; subject?: string; state?: OutboxRow["state"]; afterSeq?: number }, { rows: ReadonlyArray<OutboxRow> }>("outbox"),   // GET /_world/outbox gains `rows` (Q5.4's summary stays)
+  mark:      Probe.read<{ since?: "journey" }, { seq: number; conflicts: number }>("outbox/mark"),                              // the default store's journal high-water now, and its count of commits that lost the version guard and re-ran
+  rows:      Probe.read<{ to?: string; name?: string; subject?: string; state?: OutboxRow["state"]; afterSeq?: number | "journey" }, { rows: ReadonlyArray<OutboxRow> }>("outbox"),   // GET /_world/outbox gains `rows` (Q5.4's summary stays)
   redeliver: Probe.send<{ event: string; to?: string }, { redelivered: number }>("outbox/redeliver"),         // Q5.3
   hold:      Probe.send<{ name?: string; event?: string; to: string }, { hold: string; held: number }>("outbox/hold"),   // park one row (by `event`), or every future row of an event `name`, under a `test:<n>` hold
   release:   Probe.send<{ hold: string | "all" }, { released: number }>("outbox/release"),                      // un-park, and kick the drain
@@ -338,28 +342,27 @@ export default Blueprint.journey("pause holds deliveries while triggers keep arr
   cast: { ann: Blueprint.signedIn, source: sourceCaller },     // `source` as slice 6's journeys cast the source's caller
   starts: "a-live-superagent-with-a-ticket",
   steps: (s) => [
-    s.step("a mark before", outbox.mark({}), expect((a) => a.seq > 0).toBe(true)),
     s.step("ann pauses it", s.ann.run(superagent.pause, { id: s.world.superagent }), emits(SuperagentPaused, {})),
     s.step("a trigger arrives and is stored", s.source.run(trigger.receive, { /* … a comment on the ticket's thread … */ }), emits(TriggerReceived, {})),
     s.step("a minute passes", s.clock.advance("1 minute")),
-    s.step("its tell waits, untried and held", outbox.rows({ name: "InputRouted", afterSeq: s.last.seq }),
+    s.step("its tell waits, untried and held", outbox.rows({ name: "InputRouted", afterSeq: "journey" }),
       expect((a) => a.rows.map((r: OutboxRow) => [r.state, r.attempts, r.hold !== null])).toEqual([["pending", 0, true]])),
     s.step("ann resumes it", s.ann.run(superagent.resume, { id: s.world.superagent }), emits(SuperagentResumed, {})),
     s.step("the world settles", s.clock.settle()),
     s.step("the tell is delivered", outbox.rows({ name: "InputRouted" }), expect((a) => a.rows.at(-1).state).toBe("delivered")),
   ],
 });
-// the refusal cycle's bound is the same two steps: mark, drive 30 seconds with advance("1 second") x 30 (or one advance and `fired`), then
-//   outbox.rows({ to: "op:input.route", afterSeq }) → expect rows.length <= 6
+// the refusal cycle's bound is the same: drive 30 seconds with one advance("30 seconds"), then
+//   outbox.rows({ to: "op:input.route", afterSeq: "journey" }) → expect rows.length <= 6
 ```
 
 **Slice 8's three checks that need a held row, a concurrent pair and a count.** Each is a few steps of what is above:
 
 | Check | Steps |
 |---|---|
-| a reap before the opening tell arrives never frees a seat the executor then uses | `outbox.hold({ name: "AssignmentStarted", to: "op:agent.tell" })`, so the opening tell's row is parked, not tried; `ticket.accept`; `s.clock.settle()` (the seat is taken, the tell waits); `s.clock.advance("2 minutes")` (the 30 s sweep runs `reap` at least twice, past its one-sweep grace); read the Assignment: still `running`, its seat still held; `outbox.release({ hold: "all" })`, `settle`; the executor works, and no second Assignment holds that seat |
+| a reap before the opening tell arrives never frees a seat the executor then uses | Follows GOAL17-executor-slots sections 3 and 5, in which a late opening tell is refused, not honoured. `outbox.hold({ name: "AssignmentStarted", to: "op:agent.tell" })` parks the opening tell; `ticket.accept`; `s.clock.settle()` (the seat is taken, the tell waits); `s.clock.advance("2 minutes")` (the 30 s sweep runs `reap` twice, past its one-sweep grace): `emits(AssignmentInterrupted)` (running to `closing`, the seat still held), then `emits(AgentClosed)` and `emits(AssignmentEnded)` (only the Agent's acknowledgement frees the seat). `outbox.release({ hold: "all" })`, `settle`: the parked tell reaches the Agent and is refused, so its row is `refused` with `outcome` `StaleAssignment` and `attempts` 0 (`outbox.rows({ name: "AssignmentStarted", state: "refused" })`), and `onRefused` requeues the Input (`emits(InputStored)`). The seat is never used by the stale executor: `agent.told` for it holds no input, `agent.calls` no step, `models.seen` no request; the requeue then queues a new Assignment (`emits(AssignmentQueued)`) and `fill` seats that one, the only holder of the freed seat |
 | two replies at once, and a head that sends at that moment, leave one head and no lost reply | `slack.hold({ match: { path: "/api/chat.postMessage" }, when: "before" })`; `s.executor.run(ticket.ack, …)`; `slack.held({ count: 1 })` (the head is mid-send, at the stand-in); `s.together(s.executor.run(outgoingMessage.reply, { ticket, purpose: "update", text: "one" }), s.main.run(outgoingMessage.reply, { ticket, purpose: "update", text: "two" }))`, the callers the brief allows ("main, executor, by purpose", `17-superagent.md:347`), cast as `executor: itsAgent` and `main: itsMain` (the `agent:` role form, K40 fix 3), never `ann`; `slack.release({ hold: "all" })`; `settle`; `slack.replies({ channel })` lists each text exactly once, in order, and `outbox.rows({ name: "ReplyQueued" })` shows no row left `pending` |
-| one chatty ticket's writes, which all bump one `Ticket.seq`, stay within budget | `outbox.mark({})` gives `{ seq, conflicts }`; `s.together(…N inputs to one ticket…)` (N = 8); `settle`. It counts three things, none of them a row's `seq` (a row's `seq` is its event's journal position, not the ticket's): the ticket's own `Ticket.seq` read equals the writes that committed (no lost or doubled bump); `outbox.rows({ subject: <ticket>, afterSeq })` has exactly N times the fan-out of one write (no row doubled by a retried commit); and `outbox.mark({})` afterwards shows `conflicts` grew by no more than N(N−1)/2, the most N writers racing on one row can lose |
+| one chatty ticket's writes, which all bump one `Ticket.seq`, stay within budget | `s.together(…N inputs to one ticket…)` (N = 8); `settle`. It counts three things, none of them a row's `seq` (a row's `seq` is its event's journal position, not the ticket's): the ticket's own `Ticket.seq` read equals the writes that committed (no lost or doubled bump); `outbox.rows({ subject: <ticket>, afterSeq: "journey" })` has exactly N times the fan-out of one write (no row doubled by a retried commit); and `outbox.mark({ since: "journey" })` shows `conflicts` no more than N(N−1)/2, the most N writers racing on one row can lose |
 
 `outbox.hold` is the one new mechanism: a `test:<n>` hold on one row or on the future rows of an event name, in the **same hold
 column and claim query GOAL17-pause already adds** (`NOT EXISTS` over the hold view), so a held row stays `pending` with
