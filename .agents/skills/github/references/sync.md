@@ -57,8 +57,12 @@ never has. So a human or Goal 18 runs this **once**, locally, with a token that 
 node tools/github/sync.mjs --board --bootstrap --apply    # makes the issue types and nothing else
 ```
 
-Until the types exist, the workflow's steps print `::warning::` ("run --board --bootstrap locally") and exit 0, writing
-nothing: they never go red, and never try. Once they exist, every create and update happens inside the workflow's
+Until the types exist, the workflow's **board step** prints `::warning::` ("run --board --bootstrap locally") and exits 0,
+writing nothing: it never goes red, and never tries. That holds only for the board step, and only for a token whose scopes
+cannot be read (the workflow's own `github.token`). The **goal-pages step** (`--goal-branches --apply`) is different: with
+`ORTHOGRAPH_PROJECT_TOKEN` set, its scopes can be read, and while the types are missing and the token lacks `admin:org` it
+exits 3 (`gate.test.mjs`). Today no such secret exists (`gh secret list` shows none), so both steps run on `github.token`
+and warn. Once the types exist, every create and update happens inside the workflow's
 `concurrency` group, one run at a time, so a local run cannot race it. Do the bootstrap before the first push to `main`
 that carries the board, and run the board itself only through the workflow.
 
@@ -72,5 +76,9 @@ node --test tools/github/                                 # its tests
 ```
 
 A dry run prints how many issues it would adopt, create, update, close and fold, the pace and each milestone's date, and
-the Project's field writes. `--apply` needs the token's `project` scope for the Project; without it, nothing of the
-Project is written and the run exits 3.
+the Project's field writes. `--apply --project` needs the token's `project` scope; without it the run exits 3 **before any write at
+all** (the issues too). The workflow therefore passes `--project` only when `ORTHOGRAPH_PROJECT_TOKEN` is set.
+
+**What runs when.** The goal pages run on issue events (opened, closed, reopened, milestoned, labeled), on a push to
+`main`, every three hours and on dispatch. The board runs only on a push to `main`, on the three-hourly schedule and on
+`workflow_dispatch`, never on an issue event.

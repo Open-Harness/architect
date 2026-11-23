@@ -108,12 +108,15 @@ node --test tools/github/                                                 # its 
 
 It finds each issue by a marker in its body, never by title, takes only issues the owner, a collaborator or the workflow
 opened, and **never deletes anything**: a row removed from the page leaves its issue where it is. You rarely run it: the
-`goals` workflow runs it, one run at a time, on every push to `main`, every three hours, and when an issue opens, closes or
-changes. The organization's issue types need `admin:org`, which the workflow's token lacks, so they are made once by
-`--board --bootstrap --apply` run locally; until then the workflow warns (`::warning::`) and writes nothing, and never goes
-red. Writes are paced and a rate-limit refusal is waited out; a run that stops is mended by the next, since every row is
-found again by its marker. The Project needs a token with the `project` scope (`ORTHOGRAPH_PROJECT_TOKEN`); without one the
-issues are written and the Project is kept by a local run.
+`goals` workflow runs it, one run at a time. The goal pages run on issue events, on a push to `main`, every three hours
+and on dispatch; the board runs only on a push to `main`, on the three-hourly schedule and on `workflow_dispatch`. The
+organization's issue types need `admin:org`, which the workflow's token lacks, so they are made once by
+`--board --bootstrap --apply` run locally. Until then the **board step** warns (`::warning::`) and writes nothing, and never
+goes red; the goal-pages step does too on `github.token`, but with `ORTHOGRAPH_PROJECT_TOKEN` set it exits 3 while the types
+are missing. Writes are paced and a rate-limit refusal is waited out; a run that stops is mended by the next, since every row is
+found again by its marker. The Project needs a token with the `project` scope (`ORTHOGRAPH_PROJECT_TOKEN`), and **no such secret exists today**
+(`gh secret list` shows none). So the workflow runs on `github.token`, keeps the board's issues and milestones, and leaves
+the Project's fields to a local run by Goal 18 each round, until Aaron grants a Project token.
 
 ## Working a slice
 
