@@ -156,7 +156,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Quotation | thing | SUB FX | 76 | `erpnext/erpnext/selling/doctype/quotation/quotation.json` |  |
 | Quotation Lost Reason | thing |  | 1 | `erpnext/erpnext/setup/doctype/quotation_lost_reason/quotation_lost_reason.json` |  |
 | Repost Accounting Ledger | job | SUB | 6 | `erpnext/erpnext/accounts/doctype/repost_accounting_ledger/repost_accounting_ledger.json` |  |
-| Repost Accounting Ledger Settings | job |  | 0 | `erpnext/erpnext/accounts/doctype/repost_accounting_ledger_settings/repost_accounting_ledger_settings.json` |  |
+| Repost Accounting Ledger Settings | settings |  | 0 | `erpnext/erpnext/accounts/doctype/repost_accounting_ledger_settings/repost_accounting_ledger_settings.json` |  |
 | Repost Payment Ledger | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/repost_payment_ledger/repost_payment_ledger.json` |  |
 | Request for Quotation | thing | SUB | 24 | `erpnext/erpnext/buying/doctype/request_for_quotation/request_for_quotation.json` |  |
 | SMS Center | job |  | 10 | `erpnext/erpnext/selling/doctype/sms_center/sms_center.json` |  |
@@ -415,7 +415,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Training Program | thing |  | 9 | `hrms/hrms/hr/doctype/training_program/training_program.json` |  |
 | Training Result | thing | SUB | 3 | `hrms/hrms/hr/doctype/training_result/training_result.json` |  |
 | Travel Request | thing | SUB | 20 | `hrms/hrms/hr/doctype/travel_request/travel_request.json` |  |
-| Upload Attendance | settings |  | 2 | `hrms/hrms/hr/doctype/upload_attendance/upload_attendance.json` |  |
+| Upload Attendance | job |  | 2 | `hrms/hrms/hr/doctype/upload_attendance/upload_attendance.json` |  |
 | Vehicle | thing |  | 20 | `erpnext/erpnext/setup/doctype/vehicle/vehicle.json` |  |
 | Vehicle Log | thing | SUB | 13 | `hrms/hrms/hr/doctype/vehicle_log/vehicle_log.json` |  |
 | Vehicle Service Item | thing |  | 1 | `hrms/hrms/hr/doctype/vehicle_service_item/vehicle_service_item.json` |  |
@@ -577,12 +577,12 @@ reverse it. Item, its prices and its units are taken, so an invoice can carry go
 | CRM Enrichment Run Change | line |  | 3 | `crm/crm/domain_enrichment/doctype/crm_enrichment_run_change/crm_enrichment_run_change.json` | a line of CRM Enrichment Run, not taken |
 | CRM Enrichment Skip Pattern | line |  | 1 | `crm/crm/domain_enrichment/doctype/crm_enrichment_skip_pattern/crm_enrichment_skip_pattern.json` | a line of CRM Enrichment Settings, not taken |
 | Facebook Lead Form Question | line |  | 5 | `crm/crm/lead_syncing/doctype/facebook_lead_form_question/facebook_lead_form_question.json` | a line of Facebook Lead Form, not taken |
-| Linked Location | line |  | 1 | `erpnext/erpnext/assets/doctype/linked_location/linked_location.json` | a line no record type holds at this commit (left from an older version) |
-| Loyalty Point Entry Redemption | line |  | 3 | `erpnext/erpnext/accounts/doctype/loyalty_point_entry_redemption/loyalty_point_entry_redemption.json` | a line no record type holds at this commit (left from an older version) |
+| Linked Location | line |  | 1 | `erpnext/erpnext/assets/doctype/linked_location/linked_location.json` | a line no doctype in ERPNext, HRMS or the CRM holds at this commit (another Frappe app may use it) |
+| Loyalty Point Entry Redemption | line |  | 3 | `erpnext/erpnext/accounts/doctype/loyalty_point_entry_redemption/loyalty_point_entry_redemption.json` | a line no doctype in ERPNext, HRMS or the CRM holds at this commit (another Frappe app may use it) |
 | Salary Slip Loan | line |  | 8 | `hrms/hrms/payroll/doctype/salary_slip_loan/salary_slip_loan.json` | a loan repayment line; loans are Frappe's lending app, not taken |
 | South Africa VAT Account | line |  | 1 | `erpnext/erpnext/accounts/doctype/south_africa_vat_account/south_africa_vat_account.json` | a line of South Africa VAT Settings, not taken |
-| Subscription Invoice | line |  | 2 | `erpnext/erpnext/accounts/doctype/subscription_invoice/subscription_invoice.json` | a line no record type holds at this commit (left from an older version) |
-| Website Item Group | line |  | 1 | `erpnext/erpnext/setup/doctype/website_item_group/website_item_group.json` | a line no record type holds at this commit (left from an older version) |
+| Subscription Invoice | line |  | 2 | `erpnext/erpnext/accounts/doctype/subscription_invoice/subscription_invoice.json` | a line no doctype in ERPNext, HRMS or the CRM holds at this commit (another Frappe app may use it) |
+| Website Item Group | line |  | 1 | `erpnext/erpnext/setup/doctype/website_item_group/website_item_group.json` | a line no doctype in ERPNext, HRMS or the CRM holds at this commit (another Frappe app may use it) |
 
 ### Linked from a taken record type, but outside Capxul core
 
