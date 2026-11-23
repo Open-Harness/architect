@@ -1,6 +1,6 @@
 {
   "files": {
-    "server/main.ts": "7d9bf05bd455dfd2743b02ff2cd7be5299aaa8134105a6cf1873596b444bec9f",
+    "server/main.ts": "b553e2ba8f047c35459bf51147973470d255d3a492dcc09f9996e530ff19401f",
     "server/migrations/0001_things.sql": "bd49d2d150376824fadd3cebc981ca2b89aca06102b079aa3430de7ef4d43ecc",
     "server/wrangler.jsonc": "f51fb8160ae5e6ee14b0b3d68db13b2a18737ad4cbb26ddf86d18db3a93ba689",
     "api/src/allowance/get.ts": "e5fa906c7e2d6cbe3f53305ab8c1a9ad6e6043ba7e12fd9a3a6e33fa44887bf1",
@@ -34,5 +34,5 @@
     "api/src/system/health.handler.ts": "50cf348a6859a1074fb340e727ec011977e13fc6e48d34a292fada2fe434ba30",
     "api/src/system/health.ts": "c8b114cba8ba004fda4b12dbd6e694dba9e2c709a13e2652b33130eababaa68c"
   },
-  "model": "c5c78fae13e7f70be113d94c5156346a71c693912788ef6bde2fab11c19d4960"
+  "model": "cd8d0fabb7f1451ba81ffcc9d125ab1961f1653841fdffa5297934eabd477f16"
 }

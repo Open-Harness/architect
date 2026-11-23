@@ -208,6 +208,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "refs": {
         "sheet": "sheet"
       },
@@ -226,7 +227,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "5ff2de75e7294f8e"
+      "hash": "cfb0e68868397eb4"
     },
     "sheet.get": {
       "kind": "read",
@@ -289,6 +290,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -296,7 +298,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "647f208a50cda6f5"
+      "hash": "09767e4f4ef5a8c9"
     },
     "sheet.join": {
       "kind": "operation",
@@ -360,6 +362,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "refs": {
         "sheet": "sheet"
       },
@@ -382,7 +385,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "0654da6d079c113d"
+      "hash": "aab95ecb61d4f88d"
     },
     "sheet.open": {
       "kind": "operation",
@@ -440,6 +443,7 @@
           "kind": "anyone"
         }
       ],
+      "agentTool": true,
       "mints": "sheet",
       "steps": {
         "insert": {
@@ -453,7 +457,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "8c2cdb4e47331efb"
+      "hash": "389a59321bbe525d"
     }
   },
   "journeys": {

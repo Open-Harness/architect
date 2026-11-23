@@ -414,6 +414,7 @@
             "kind": "signed-in"
           }
         ],
+        "agentTool": true,
         "mints": "handle",
         "steps": {
           "record": {
@@ -430,7 +431,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "f3b0ba5eb265de74"
+        "hash": "61e97f85ea760d5b"
       },
       "handle.release": {
         "kind": "operation",
@@ -476,6 +477,7 @@
             "role": "handle.handleOwner"
           }
         ],
+        "agentTool": true,
         "refs": {
           "handle": "handle"
         },
@@ -491,7 +493,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "f875bc245f1b5a16"
+        "hash": "a25577a53e08dff2"
       },
       "handle.resolve": {
         "kind": "operation",
@@ -537,6 +539,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "steps": {
           "load": {
             "name": "handle.resolve.load",
@@ -549,7 +552,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "fbe1dbfa3de5ad1f"
+        "hash": "c7e3558f97930e9a"
       },
       "link.add": {
         "kind": "operation",
@@ -613,6 +616,7 @@
             "kind": "signed-in"
           }
         ],
+        "agentTool": true,
         "mints": "link",
         "steps": {
           "load": {
@@ -630,7 +634,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "68e3a0e037ae0530"
+        "hash": "d3ed67ad7a36cbca"
       },
       "link.order": {
         "kind": "operation",
@@ -677,6 +681,7 @@
             "role": "link.linkOwner"
           }
         ],
+        "agentTool": true,
         "refs": {
           "link": "link"
         },
@@ -696,7 +701,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "6955c4a359ef7c40"
+        "hash": "c2bb84f2918d1db3"
       },
       "link.remove": {
         "kind": "operation",
@@ -742,6 +747,7 @@
             "role": "link.linkOwner"
           }
         ],
+        "agentTool": true,
         "refs": {
           "link": "link"
         },
@@ -757,7 +763,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "c5986166d415489f"
+        "hash": "58309131d39628e5"
       },
       "profile.get": {
         "kind": "operation",
@@ -808,6 +814,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "steps": {
           "load": {
             "name": "profile.get.load",
@@ -821,7 +828,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "f7c27314764a8886"
+        "hash": "64401959da0ca2d4"
       }
     },
     "journeys": {
@@ -3987,37 +3994,37 @@
   },
   "dependsOnByOperation": {
     "handle.claim": {
-      "operation:handle.claim": "f3b0ba5eb265de74",
+      "operation:handle.claim": "61e97f85ea760d5b",
       "thing:handle": "d9dcca222783bbef"
     },
     "handle.release": {
-      "operation:handle.release": "f875bc245f1b5a16",
+      "operation:handle.release": "a25577a53e08dff2",
       "thing:handle": "d9dcca222783bbef"
     },
     "handle.resolve": {
-      "operation:handle.resolve": "fbe1dbfa3de5ad1f",
+      "operation:handle.resolve": "c7e3558f97930e9a",
       "thing:handle": "d9dcca222783bbef"
     },
     "link.add": {
-      "operation:link.add": "68e3a0e037ae0530",
+      "operation:link.add": "d3ed67ad7a36cbca",
       "thing:handle": "d9dcca222783bbef",
       "thing:link": "72c22f92188f5790",
       "thing:profile": "b6fe73c29fc30ccb"
     },
     "link.order": {
-      "operation:link.order": "6955c4a359ef7c40",
+      "operation:link.order": "c2bb84f2918d1db3",
       "thing:handle": "d9dcca222783bbef",
       "thing:link": "72c22f92188f5790",
       "thing:profile": "b6fe73c29fc30ccb"
     },
     "link.remove": {
-      "operation:link.remove": "c5986166d415489f",
+      "operation:link.remove": "58309131d39628e5",
       "thing:handle": "d9dcca222783bbef",
       "thing:link": "72c22f92188f5790",
       "thing:profile": "b6fe73c29fc30ccb"
     },
     "profile.get": {
-      "operation:profile.get": "f7c27314764a8886",
+      "operation:profile.get": "64401959da0ca2d4",
       "thing:handle": "d9dcca222783bbef",
       "thing:profile": "b6fe73c29fc30ccb"
     }
@@ -4048,5 +4055,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "f9ce409ce8a9bdd4a030c1337136fe75d199b761ffd26b8e215deb7716c3dc4f"
+  "digest": "db96b8dfa69f972b3e623fa5fb41370007b0c360a616d488e72a069bd72df6e5"
 }

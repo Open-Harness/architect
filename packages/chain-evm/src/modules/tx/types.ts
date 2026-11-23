@@ -68,6 +68,8 @@ export interface ChainPort {
   readonly prepare: (call: Call) => Effect.Effect<Unsigned, ChainError>;
   /** An `eth_call` of the prepared transaction. `sign` and `submit` refuse a transaction that has not passed it. On failure, `release` it. */
   readonly simulate: (tx: Unsigned) => Effect.Effect<void, ChainError>;
+  /** A plain `eth_call` of `call` at the latest block that returns the data the call answered (`0x` when it answers nothing). A revert fails exactly as `simulate`'s does. Nothing is prepared, reserved or sent. */
+  readonly read: (call: Call) => Effect.Effect<Hex, ChainError>;
   readonly sign: (tx: Unsigned, signer: Signer) => Effect.Effect<Signed, ChainFault>;
   readonly submit: (tx: Signed) => Effect.Effect<Submission, ChainError>;
   readonly track: <TEvent extends DecodedEvent>(

@@ -58,13 +58,18 @@ export const loadProject = (given: string, model: Model): Effect.Effect<Project,
     }
     // A journey's step that runs an operation a mount omits is skipped and named when it runs (M1-plugins section 3).
     const omitted = yield* omittedBy(root, model);
+    // Each adapter's mount by its name: the same objects the declarations name in a `service` role.
+    const mounts = new Map<unknown, string>();
+    for (const [name, m] of Object.entries(model.mounts ?? {})) {
+      if (m.kind === "adapter") mounts.set((yield* importFile(fileOf(root, m.file)))["default"], name);
+    }
     const startingWorlds = new Map<string, StartingWorld>();
     for (const file of filesIn(join(root, "blueprint/starting-worlds"))) {
       const d = (yield* importFile(file))["default"];
       if (kindOf(d) !== "starting-world") return yield* new ProjectFailed({ message: `${file}: the default export must be a Blueprint.startingWorld` });
       startingWorlds.set((d as StartingWorld).name, d as StartingWorld);
     }
-    return { root: given, model, operations, things, journeys, journeyFiles, startingWorlds, ...(omitted.size > 0 ? { omitted } : {}), ...(unfinished.length > 0 ? { unfinished } : {}) } satisfies Project;
+    return { root: given, model, operations, things, journeys, journeyFiles, startingWorlds, ...(mounts.size > 0 ? { mounts } : {}), ...(omitted.size > 0 ? { omitted } : {}), ...(unfinished.length > 0 ? { unfinished } : {}) } satisfies Project;
   });
 
 /** Each operation a mount omits, by its declaration: the plugin's own file, found from the operation's final name. */
