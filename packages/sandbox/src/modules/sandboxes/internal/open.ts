@@ -4,6 +4,7 @@ import { Commands } from "../../commands/service.ts";
 import { Environment } from "../../environment/service.ts";
 import { Fence } from "../../fence/service.ts";
 import { Relay } from "../../relay/service.ts";
+import { DaemonFailed } from "../../relay/types.ts";
 import { SandboxLimit, type Opened, type OpenError, type OpenInput } from "../types.ts";
 import { rootOf, shimsOf, type Live, type Shared } from "./live.ts";
 
@@ -33,15 +34,18 @@ export const openSandbox = (shared: Shared, input: OpenInput): Effect.Effect<Ope
       yield* disk.makeDir(`${root}/.tmp`);
       const fence = yield* Fence.of(disk, root);
       const processEnv = Environment.processEnv(env, { root, shims, systemPath: config.systemPath });
+      // The client's token and the daemon's are two values: the daemon's is on its command line. One value for both would hand every process the key.
+      const [token, daemonToken] = [config.ids.token(), config.ids.token()];
+      if (token === daemonToken) return yield* Effect.fail(new DaemonFailed({ reason: "the client token and the daemon token must differ" }));
       const relay = yield* Relay.start({
-        binary: config.daemon, cwd: root, env: processEnv, token: config.ids.token(), fence,
+        binary: config.daemon, cwd: root, env: processEnv, token, daemonToken, blocked: input.blocked, fence,
         observe: {
-          refused: (r) => Effect.sync(() => { if (refusals.at(-1)?.detail !== r.detail) refusals.push(r); }),
+          refused: (r) => Effect.sync(() => { if (r.name === "BlockedCommand" || refusals.at(-1)?.detail !== r.detail) refusals.push(r); }),
           started: (words) => Effect.sync(() => execs.push({ command: words, exit: null, lent: [] }) - 1),
           exited: (handle, exit) => Effect.sync(() => { const e = execs[handle]; if (e !== undefined) e.exit = exit; }),
         },
       }).pipe(Scope.provide(scope));
-      const sandbox: Live = { id, owner: input.owner, tag: input.tag, root, shims, env, blocked: input.blocked, fence, scope, relay, processEnv, execs, refusals, loans: [], running: new Set(), hitsRead: 0, state: "open" };
+      const sandbox: Live = { id, owner: input.owner, tag: input.tag, root, shims, env, blocked: input.blocked, fence, scope, relay, processEnv, execs, refusals, loans: [], running: new Set(), programs: new Map(), hitsRead: 0, state: "open" };
       all.set(id, sandbox);
       return opened(sandbox);
     }).pipe(Effect.tapError(() => Scope.close(scope, Exit.void)));

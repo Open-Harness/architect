@@ -14,6 +14,7 @@ import { nodeDisk } from "../disk/service.ts";
 import { Sandboxes } from "./service.ts";
 import type { SandboxesApi } from "./types.ts";
 
+const counter = (prefix: string) => { let k = 0; return () => `${prefix}${++k}`; };
 const STAND_IN = join(dirname(fileURLToPath(import.meta.url)), "../../../../../examples/superagent/plugins/github/src/stand-in/main.ts");
 const TOKEN = "ghs_lent_for_one_hour_canary";
 let base = "";
@@ -27,7 +28,7 @@ beforeAll(async () => {
   github = spawn(process.execPath, [STAND_IN, "--port", "0", "--dir", join(base, "github")], { stdio: ["ignore", "pipe", "ignore"] });
   origin = await new Promise<string>((resolve) => github.stdout?.on("data", (c: Buffer) => { const m = /listening on (http:\/\/\S+)/.exec(c.toString("utf8")); if (m?.[1] !== undefined) resolve(m[1]); }));
   let n = 0;
-  api = await run(Sandboxes.make({ dir: join(base, "bridge"), limit: 2, daemon: localDaemon(), systemPath: process.env["PATH"] ?? "/usr/bin:/bin", disk: nodeDisk, ids: { id: () => `sbx_${++n}`, token: () => `t${n}` }, now: () => 1_000 }).pipe(Effect.provide(TimersLive)));
+  api = await run(Sandboxes.make({ dir: join(base, "bridge"), limit: 2, daemon: localDaemon(), systemPath: process.env["PATH"] ?? "/usr/bin:/bin", disk: nodeDisk, ids: { id: () => `sbx_${++n}`, token: counter("t") }, now: () => 1_000 }).pipe(Effect.provide(TimersLive)));
 });
 afterAll(async () => {
   await run(api.sweep);

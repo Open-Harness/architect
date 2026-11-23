@@ -11,16 +11,20 @@ import { Sandboxes } from "../sandboxes/service.ts";
 import type { SandboxesApi } from "../sandboxes/types.ts";
 import { Bridge } from "./service.ts";
 
+const counter = (prefix: string) => { let k = 0; return () => `${prefix}${++k}`; };
 let dir = "";
 let sandboxes: SandboxesApi;
 let n = 0;
 let call: (path: string, body?: unknown, method?: string) => Promise<{ status: number; body: any }>;
+let raw: (request: { method: string; path: string; body?: unknown; secret?: string | undefined }) => Promise<{ status: number; body: any }>;
+const SECRET = "a-test-secret-not-a-real-one";
 
 beforeAll(async () => {
   dir = realpathSync(mkdtempSync(join(tmpdir(), "ortho-sbx-bridge-")));
-  sandboxes = await Effect.runPromise(Sandboxes.make({ dir, limit: 4, daemon: localDaemon(), systemPath: process.env["PATH"] ?? "/usr/bin:/bin", disk: nodeDisk, ids: { id: () => `sbx_${++n}`, token: () => `t${n}` }, now: () => 5_000 }).pipe(Effect.provide(TimersLive)));
-  const bridge = Bridge.of(sandboxes);
-  call = (path, body, method = "POST") => Effect.runPromise(bridge.handle({ method, path, body })) as never;
+  sandboxes = await Effect.runPromise(Sandboxes.make({ dir, limit: 4, daemon: localDaemon(), systemPath: process.env["PATH"] ?? "/usr/bin:/bin", disk: nodeDisk, ids: { id: () => `sbx_${++n}`, token: counter("t") }, now: () => 5_000 }).pipe(Effect.provide(TimersLive)));
+  const bridge = Bridge.of(sandboxes, SECRET);
+  raw = (request) => Effect.runPromise(bridge.handle({ secret: undefined, body: undefined, ...request })) as never;
+  call = (path, body, method = "POST") => raw({ method, path, body, secret: SECRET });
 });
 afterAll(async () => {
   await Effect.runPromise(sandboxes.sweep);
@@ -61,8 +65,27 @@ describe("bridge", () => {
     expect(await call("/_stand/health", undefined, "GET")).toEqual({ status: 200, body: { ok: true, service: "sandbox" } });
   });
 
+  it("refuses every route, health and reset included, without the secret or with a wrong or near one, and does nothing", async () => {
+    const opened = await call("/call/open", { owner: "coder", tag: "t/secret", variables: [], blocked: [] });
+    const sandbox = opened.body.answer.sandbox;
+    const routes: ReadonlyArray<readonly [string, string, unknown]> = [
+      ["POST", "/call/open", { owner: "x", tag: "y", variables: [], blocked: [] }], ["POST", "/call/exec", { sandbox, command: ["echo", "hi"] }],
+      ["POST", "/call/write", { sandbox, path: "a", content: "b" }], ["POST", "/call/read", { sandbox, path: "a" }], ["POST", "/call/close", { sandbox }],
+      ["POST", "/call/list", {}], ["POST", "/_stand/seen", {}], ["POST", "/_stand/left", {}], ["POST", "/_stand/reset", {}], ["GET", "/_stand/health", undefined],
+    ];
+    for (const secret of [undefined, "", "wrong", SECRET.slice(0, -1), `${SECRET}x`, SECRET.toUpperCase()]) {
+      for (const [method, path, body] of routes) {
+        expect(await raw({ method, path, body, secret }), `${method} ${path} with ${secret}`).toEqual({ status: 401, body: { ok: false, error: { name: "Unauthorized" } } });
+      }
+    }
+    // Nothing above ran: the sandbox is still open, with nothing in it, and the reset did not close it.
+    expect((await call("/_stand/seen", { sandbox })).body.answer.sandboxes[0]).toMatchObject({ state: "open", execs: [], refusals: [] });
+    await call("/call/close", { sandbox });
+  });
+
   it("refuses a request that does not decode as 400 BadRequest, an unknown call likewise, and an unknown route as 404", async () => {
-    for (const [path, body, what] of [["/call/open", {}, "owner must be text"], ["/call/exec", { sandbox: "s", command: [] }, "command must be a list of text with at least 1"], ["/call/exec", { sandbox: "s", command: ["a"], timeoutSeconds: -1 }, "timeoutSeconds must be a positive number"], ["/call/write", "text", "the body is not a JSON object"], ["/call/nope", {}, "no such call: /call/nope"]] as const) {
+    for (const [path, body, what] of [["/call/open", {}, "owner must be text"], ["/call/exec", { sandbox: "s", command: [] }, "command must be a list of text with at least 1"], ["/call/exec", { sandbox: "s", command: ["a"], timeoutSeconds: -1 }, "timeoutSeconds must be a positive number"],
+["/call/exec", { sandbox: "s", command: ["a"], timeoutSeconds: Number.POSITIVE_INFINITY }, "timeoutSeconds must be a positive number"], ["/call/write", "text", "the body is not a JSON object"], ["/call/nope", {}, "no such call: /call/nope"]] as const) {
       expect(await call(path, body), path).toEqual({ status: 400, body: { ok: false, error: { name: "BadRequest", what } } });
     }
     expect((await call("/elsewhere")).status).toBe(404);

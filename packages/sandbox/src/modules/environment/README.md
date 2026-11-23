@@ -3,7 +3,7 @@
 What a sandbox's processes can read (GOAL17-check-harness, call 4; K40 fix 6). Exactly: the four the bridge always sets
 (`SUPERAGENT_DIR`, `SUPERAGENT_NAME` the owner, `SUPERAGENT_TICKET` the tag, `SUPERAGENT_BLOCKED_COMMANDS`), then each source's
 `environment.of` variables, then Settings' `variables`. A name must match `^[A-Z][A-Z0-9_]{0,63}$` and contain none of
-TOKEN, SECRET, KEY, PASSWORD, PASSWD, CREDENTIAL or AUTH, or `open` fails as `CredentialLikeVariable`: the bridge refuses
+TOKEN, SECRET, KEY, PASSWORD, PASSWD, CREDENTIAL, AUTH, COOKIE, SESSION, DSN, BEARER or JWT, or `open` fails as `CredentialLikeVariable`: the bridge refuses
 a credential even when the app's own check let one by. A credential reaches a process only as `exec`'s `lend` for that call
 (the `loans` module), never here.
 

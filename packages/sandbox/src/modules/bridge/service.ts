@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { Effect } from "effect";
 import type { SandboxesApi } from "../sandboxes/types.ts";
 import { BadRequest, type BridgeFactory, type BridgeRequest, type BridgeResponse } from "./types.ts";
@@ -5,11 +6,19 @@ import { answer } from "./internal/answer.ts";
 import * as decode from "./internal/decode.ts";
 
 const MISSING: BridgeResponse = { status: 404, body: { ok: false, error: { name: "NotFound" } } };
+const UNAUTHORIZED: BridgeResponse = { status: 401, body: { ok: false, error: { name: "Unauthorized" } } };
+
+/** Constant time, so the secret cannot be found a character at a time. */
+const presented = (given: string | undefined, secret: string): boolean => {
+  const [a, b] = [Buffer.from(given ?? "", "utf8"), Buffer.from(secret, "utf8")];
+  return a.length === b.length && timingSafeEqual(a, b);
+};
 
 export const Bridge: BridgeFactory = {
-  of: (sandboxes: SandboxesApi) => ({
+  of: (sandboxes: SandboxesApi, secret: string) => ({
     handle: (request: BridgeRequest): Effect.Effect<BridgeResponse> => {
       const { method, path, body } = request;
+      if (!presented(request.secret, secret)) return Effect.succeed(UNAUTHORIZED);
       if (method === "GET" && path === "/_stand/health") return Effect.succeed({ status: 200, body: { ok: true, service: "sandbox" } });
       if (method !== "POST") return Effect.succeed(MISSING);
       switch (path) {

@@ -15,6 +15,15 @@ export const pathsOf = (request: Readonly<Record<string, unknown>>): ReadonlyArr
   return found;
 };
 
+/** The same request with each path `map` gives a new spelling for: what the fence checked is what is sent on, never the raw string. */
+export const mapPaths = (request: Readonly<Record<string, unknown>>, map: (path: string) => string): Record<string, unknown> => {
+  const out: Record<string, unknown> = { ...request };
+  for (const key of ["path", "to", "cwd"]) if (typeof out[key] === "string") out[key] = map(out[key]);
+  const targets = out["targets"];
+  if (Array.isArray(targets)) out["targets"] = targets.map((t) => (typeof t === "object" && t !== null && typeof (t as { path?: unknown }).path === "string" ? { ...t, path: map((t as { path: string }).path) } : t));
+  return out;
+};
+
 /** The words of an `exec`, `process` or `pty` request, for the record: its argv, or its shell string split on spaces. */
 export const wordsOf = (request: Readonly<Record<string, unknown>>): ReadonlyArray<string> | undefined => {
   if (request["op"] !== "exec" && request["op"] !== "process" && request["op"] !== "pty") return undefined;

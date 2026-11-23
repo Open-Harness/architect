@@ -7,7 +7,7 @@ export class DaemonFailed extends Data.TaggedError("DaemonFailed")<{ readonly re
 
 /** A refusal the relay made: only the fence's, at the wire. */
 export interface Refusal {
-  readonly name: "OutsideSandbox";
+  readonly name: "OutsideSandbox" | "BlockedCommand";
   readonly detail: string;
 }
 
@@ -26,7 +26,12 @@ export interface RelaySpec {
   readonly cwd: string;
   /** The daemon's whole environment: the sandbox's variables and a PATH with the shims first. */
   readonly env: Readonly<Record<string, string>>;
+  /** The client's token: its first line must equal it. Held in memory and given to the app in `open`'s address; never in a process's arguments, environment or a file. */
   readonly token: string;
+  /** The daemon's own `--token`, which is on its command line and so readable by any process: it is never accepted from a client, and never the client's token. */
+  readonly daemonToken: string;
+  /** Blocked program names: an `exec` whose first word is one is answered here with exit 126. */
+  readonly blocked: ReadonlyArray<string>;
   readonly fence: Fence;
   readonly observe: Observer;
 }

@@ -8,6 +8,8 @@ export interface BridgeRequest {
   readonly method: string;
   /** The path, without a query. */
   readonly path: string;
+  /** The secret the caller presented (the `x-bridge-secret` header), if any. */
+  readonly secret: string | undefined;
   /** The parsed JSON body, or undefined when there was none. */
   readonly body: unknown;
 }
@@ -22,5 +24,6 @@ export interface BridgeApi {
 }
 
 export interface BridgeFactory {
-  readonly of: (sandboxes: SandboxesApi) => BridgeApi;
+  /** `secret` is the bridge's own, made at start: every route refuses a request that does not present it. */
+  readonly of: (sandboxes: SandboxesApi, secret: string) => BridgeApi;
 }

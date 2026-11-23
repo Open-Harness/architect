@@ -20,7 +20,7 @@ export interface Spawned {
 
 export const spawnDaemon = (spec: RelaySpec): Effect.Effect<Spawned> =>
   Effect.sync(() => {
-    const child = spawn(spec.binary, ["serve", "--token", spec.token], { cwd: spec.cwd, env: { ...spec.env }, stdio: ["pipe", "pipe", "pipe"] });
+    const child = spawn(spec.binary, ["serve", "--token", spec.daemonToken], { cwd: spec.cwd, env: { ...spec.env }, stdio: ["pipe", "pipe", "pipe"] });
     let stderr = "";
     let text: Buffer<ArrayBufferLike> = Buffer.alloc(0);
     let isSynced = false;

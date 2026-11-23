@@ -4,6 +4,7 @@ import { Effect } from "effect";
 export const REQUEST = 1;
 export const RESULT = 2;
 export const ERROR = 3;
+export const EVENT = 4;
 export const PING = 6;
 
 /** Complete frames (each with its length field) at the front of `pending` + `incoming`, and the bytes of the one still arriving. */
@@ -30,14 +31,18 @@ export const jsonOf = (frame: Buffer): Effect.Effect<Record<string, unknown> | u
         Effect.orElseSucceed(() => undefined),
       );
 
-/** A frame of `type` for request `id`, with a JSON object and no payload. */
-export const frameOf = (type: number, id: number, json: object): Buffer => {
+/** A request frame's raw payload bytes (after its JSON). */
+export const payloadOf = (frame: Buffer): Buffer => frame.subarray(13 + frame.readUInt32BE(9));
+
+/** A frame of `type` for request `id`, with a JSON object and a payload (none by default). */
+export const frameOf = (type: number, id: number, json: object, payload: Buffer<ArrayBufferLike> = Buffer.alloc(0)): Buffer => {
   const body = Buffer.from(JSON.stringify(json), "utf8");
-  const out = Buffer.alloc(13 + body.length);
-  out.writeUInt32BE(9 + body.length, 0);
+  const out = Buffer.alloc(13 + body.length + payload.length);
+  out.writeUInt32BE(9 + body.length + payload.length, 0);
   out.writeUInt8(type, 4);
   out.writeUInt32BE(id, 5);
   out.writeUInt32BE(body.length, 9);
   body.copy(out, 13);
+  payload.copy(out, 13 + body.length);
   return out;
 };

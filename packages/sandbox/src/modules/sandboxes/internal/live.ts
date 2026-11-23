@@ -24,6 +24,8 @@ export interface Live {
   readonly loans: Array<Loan>;
   /** Pids of the bridge's own `exec` processes that are still running. */
   readonly running: Set<number>;
+  /** The program each running group was started as (its basename), by pid: what `.pgids` records so a sweep can tell a group is still ours. */
+  readonly programs: Map<number, string>;
   /** How many lines of the shims' log have become refusals. */
   hitsRead: number;
   state: SandboxState;
@@ -38,3 +40,6 @@ export interface Shared {
 
 export const rootOf = (config: SandboxesConfig, id: string): string => `${config.dir}/sandboxes/${id}`;
 export const shimsOf = (config: SandboxesConfig, id: string): string => `${config.dir}/shims/${id}`;
+
+/** The bridge-owned file listing the process groups of a sandbox's running `exec` calls, so a bridge killed hard cannot lose them. */
+export const pgidsFile = (shims: string): string => `${shims}/.pgids`;

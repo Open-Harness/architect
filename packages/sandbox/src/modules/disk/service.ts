@@ -1,10 +1,13 @@
 import { Effect } from "effect";
 import type { Disk } from "./types.ts";
+import { writeFileSync } from "node:fs";
 import { failed, fs, writeFile } from "./internal/node.ts";
 
 /** The real disk. */
 export const nodeDisk: Disk = {
   realpath: (path) => Effect.promise(() => fs.realpath(path).catch(() => null)),
+  isLink: (path) => Effect.promise(() => fs.lstat(path).then((s) => s.isSymbolicLink(), () => false)),
+  writeSync: (path, content) => Effect.try({ try: () => writeFileSync(path, content), catch: () => undefined }).pipe(Effect.ignore),
   makeDir: (path) => Effect.tryPromise({ try: () => fs.mkdir(path, { recursive: true }), catch: (e) => failed(path, e) }).pipe(Effect.asVoid),
   write: (path, content, mode) => Effect.tryPromise({ try: () => writeFile(path, content, mode), catch: (e) => failed(path, e) }),
   read: (path) => Effect.tryPromise({ try: () => fs.readFile(path, "utf8"), catch: (e) => failed(path, e) }),
