@@ -617,7 +617,7 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
   every comment an agent posts starts `[goal-17 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" at every slice
   merge. Decisions this goal makes are named `GOAL17-<slug>`.
-- **Limits.** No new cloud credential without Aaron's written yes; VibeProxy and the Cloudflare keys already on hand are under his standing yes (GOAL17-standing-yes), within the daily cap. Stop every process you start, by its id, before you report.
+- **Limits.** No cloud and no keys, except what Aaron's standing yes covers (GOAL17-standing-yes): VibeProxy and the Cloudflare keys already on hand, within the daily cap. A new credential still waits for his written yes. Stop every process you start, by its id, before you report.
 
 ## Where it stands
 
