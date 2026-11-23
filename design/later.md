@@ -216,7 +216,7 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
 ## From the Goal 4 relayer review rounds (23 November 2026)
 
 Five rounds of review on the relayer (M6.07) each found a valid nonce fault. The cause was the same every time: the relayer and `chain-evm`'s port
-each owned a piece of one nonce's state, and the relayer guessed the rest. Both entries below are cut from that slice by
+each owned a piece of one nonce's state, and the relayer guessed the rest. The first two entries below are cut from that slice by
 `decisions/M6-relayer-rebroadcast.md`.
 
 - **Fee-bump replacement of a dropped or stuck transaction** (its own slice). Today the relayer sends a dropped transaction again, byte for byte,
@@ -228,3 +228,7 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. Both 
   included transaction is not noticed. The relayer would keep a mined row open until it is a chosen number of blocks deep, and send the transaction
   again if the node no longer shows it. **Trigger:** the relayer runs on a chain that reorgs, or the follower reports a `Corrected` event for a
   transaction the relayer sent.
+- **The follower's outbox, one key per entry.** Today a step stores all its sink entries as one value and rewrites the
+  rest after each delivery, so a backfill with many confirmed events makes one large value and quadratic writes (🔍 on
+  #679). The step would cap its entries or store one key per entry. **Trigger:** a follower backfills from an old
+  `fromBlock` with thousands of events, or a Durable Object value nears its size limit.
