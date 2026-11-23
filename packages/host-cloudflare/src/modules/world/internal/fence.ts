@@ -1,6 +1,7 @@
 // What a request that belongs to a run the world has reset may not do (M8.07, I2): every statement it runs, and every write it makes through a
 // door of its own (the auth routes), is a write section of its token, which the reset waits for; a request the world no longer holds is refused
 // before it runs anything.
+import { genOf } from "@orthograph/language-effect";
 import { WorldClock } from "#modules/clock/service.js";
 import type { EntryEnv } from "../types.ts";
 import { keeperOf } from "./entry.ts";
@@ -21,7 +22,14 @@ export const section = <A>(env: EntryEnv, f: () => Promise<A>): Promise<A> => {
     const held = box.id;
     // The box's own token when it has one; otherwise one for the length of the statement, which the world closes to like any other.
     const own = held === undefined ? Promise.resolve(keeper.countEnter(`${box.owner}`)) : Promise.resolve(held);
-    return own.then((id) => Promise.resolve(keeper.countSection(id)).then((open) => {
+    return own.then((id) => {
+      // A token of another generation than the box's first is of a run that came after: the box is stale, and nothing it does is written.
+      if (held === undefined && box.gen !== undefined && box.gen !== genOf(id)) {
+        box.stale = true;
+        return Promise.resolve(keeper.countLeave(id)).then(refused);
+      }
+      if (box.gen === undefined) box.gen = genOf(id);
+      return Promise.resolve(keeper.countSection(id)).then((open) => {
       const done = () => Promise.resolve(held === undefined ? keeper.countLeave(id) : undefined);
       if (!open) {
         if (held !== undefined) {
@@ -31,7 +39,8 @@ export const section = <A>(env: EntryEnv, f: () => Promise<A>): Promise<A> => {
         return done().then(refused);
       }
       return f().finally(() => Promise.resolve(keeper.countSectionEnd(id)).then(done));
-    }));
+      });
+    });
   });
 };
 

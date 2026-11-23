@@ -37,7 +37,8 @@ export class Timers extends Context.Service<Timers, {
       // Only a call that really forks joins. With the default concurrency the effects run one after another in the calling fiber, which is doing
       // the work itself: marking it joining would leave real I/O uncounted.
       const concurrency = options?.concurrency;
-      const forks = effects.length > 1 && concurrency !== undefined && concurrency !== 1;
+      // Effect runs 0 and negative concurrency, and 1, one after another: only "unbounded" and a number above one fork.
+      const forks = effects.length > 1 && (concurrency === "unbounded" || (typeof concurrency === "number" && concurrency > 1));
       return forks ? busy.joining(Fx.all(effects, options)) : Fx.all(effects, options);
     });
   /** `Effect.raceFirst`, as a join. */

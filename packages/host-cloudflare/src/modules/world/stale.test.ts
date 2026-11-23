@@ -165,6 +165,38 @@ describe("a request that went stale across a reset", () => {
     });
   });
 
+  it("a statement made while the token is lent out, after a reset, is refused: the token it would take is of the new run", async () => {
+    await worldOf("stale-lent", async (timers, clock, at) => {
+      const ran: Array<string> = [];
+      const statement = (sql: string) => {
+        const self = { bind: () => self, run: () => { ran.push(sql); return Promise.resolve({ results: [] }); }, all: () => Promise.resolve({ results: [] }), first: () => Promise.resolve(null), raw: () => Promise.resolve([]) };
+        return self;
+      };
+      const db = { prepare: (sql: string) => statement(sql), batch: () => Promise.resolve([]), exec: () => Promise.resolve({ count: 0, duration: 0 }) } as unknown as D1Database;
+      const guarded = WorldEntry.fenced(at, db);
+      let refusal = "";
+      const request = requestOf(at, async (gate) => {
+        await Effect.runPromise(Effect.gen(function* () {
+          const busy = yield* Busy;
+          yield* busy.as("probe.spin").counted(Effect.gen(function* () {
+            yield* busy.lend;
+            yield* Effect.promise(() => gate());
+            yield* Effect.promise(() => guarded.prepare("INSERT lent").run().catch((e: Error) => { refusal = e.message; }));
+          }));
+        }).pipe(Effect.provide(work(at))));
+      });
+      const response = request.send();
+      await pause(30);
+      clock.reset();
+      timers.reset();
+      await request.open();
+      await response;
+      expect(ran).toEqual([]);
+      expect(refusal).toMatch(/reset/);
+      expect(timers.held()).toEqual([]);
+    });
+  });
+
   it("cannot write through the auth routes: a section around them refuses it", async () => {
     await worldOf("stale-auth", async (timers, clock, at) => {
       let wrote = false;

@@ -18,6 +18,11 @@ export interface BusyBox {
   pinned: boolean;
   /** The world no longer holds this box's token (a reset since): the work belongs to a run that is over, so it is not counted and may not write. */
   stale: boolean;
+  /**
+   * The `<epoch>.<generation>` prefix of the first token this box took (a world's ids are `<epoch>.<generation>.<n>`). A token the box mints
+   * later under another prefix is of a run that came after: the box belongs to a run that is over, so it is stale and takes nothing.
+   */
+  gen: string | undefined;
   readonly gate: Semaphore.Semaphore;
   /** The ids of the fibers that took the token under this box (a request's handler, a spawn's work). */
   readonly rootIds: Set<number>;
@@ -25,8 +30,11 @@ export interface BusyBox {
   readonly joining: Set<number>;
 }
 
+/** The `<epoch>.<generation>` of a token id: everything before the last dot. */
+export const genOf = (id: string): string => id.slice(0, Math.max(0, id.lastIndexOf(".")));
+
 export const makeBox = (owner: string, options: { readonly id?: string; readonly pinned?: boolean } = {}): BusyBox => ({
-  owner, id: options.id, holders: 0, lent: 0, pinned: options.pinned ?? false, stale: false, gate: Semaphore.makeUnsafe(1), rootIds: new Set(), joining: new Set(),
+  owner, id: options.id, gen: options.id === undefined ? undefined : genOf(options.id), holders: 0, lent: 0, pinned: options.pinned ?? false, stale: false, gate: Semaphore.makeUnsafe(1), rootIds: new Set(), joining: new Set(),
 });
 
 /** A token lent out by a sleep or a wait, to be taken back (reclaimed) from wherever the wake happens. */

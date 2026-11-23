@@ -1,5 +1,5 @@
 import { Context, Deferred, Effect, Layer, Metric } from "effect";
-import { Busy, BusyBoxRef, WorldCount, makeBox, type BusyBox, type BusyShape, type Lease } from "./types.ts";
+import { Busy, BusyBoxRef, WorldCount, genOf, makeBox, type BusyBox, type BusyShape, type Lease } from "./types.ts";
 import { runningId } from "./internal/fibers.ts";
 
 type Report = {
@@ -46,10 +46,24 @@ const counting = (world?: Report): BusyShape => {
    * end between a take and its record. Telling the world takes time, and what the box wants can change meanwhile: it is read again
    * afterwards, and a token just taken that nothing needs now is given back, so none is left that nobody will release.
    */
+  /**
+   * Take a token for the box in the world. One of another generation than the box's first is of a run that came after (a reset since): the
+   * box belongs to a run that is over, so the token is given back at once, the box is stale, and nothing is taken.
+   */
+  const mint = (box: BusyBox): Effect.Effect<string | undefined> =>
+    Effect.gen(function* () {
+      const id = yield* world!.enter(box.owner);
+      if (box.gen === undefined) box.gen = genOf(id);
+      if (box.gen === genOf(id)) return id;
+      box.id = undefined;
+      box.stale = true;
+      yield* world!.leave(id);
+      return undefined;
+    });
   const sync = (box: BusyBox): Effect.Effect<void> =>
     box.gate.withPermits(1)(Effect.gen(function* () {
       if (world === undefined) return;
-      if (wants(box) && box.id === undefined) box.id = yield* world.enter(box.owner);
+      if (wants(box) && box.id === undefined) box.id = yield* mint(box);
       // The box holds an id: the world must still know it. After a reset it does not, and the request would run unseen.
       else if (wants(box) && box.id !== undefined && world.valid !== undefined && !(yield* world.valid(box.id))) {
         // The world does not hold this token any more: a reset ended the run this work belongs to. It is not counted in the new one, and it may not write.
@@ -188,13 +202,23 @@ const counting = (world?: Report): BusyShape => {
       fenced: (work) => Effect.gen(function* () {
         const box = yield* requestBox;
         if (box?.stale === true) return yield* Effect.interrupt;
-        if (world?.section === undefined || box?.id === undefined) return yield* work;
-        const id = box.id;
+        if (world?.section === undefined || box === undefined) return yield* work;
         return yield* Effect.uninterruptibleMask((restore) =>
-          Effect.flatMap(world.section!(id), (open) => (open
-            ? Effect.ensuring(restore(work), world.sectionEnd === undefined ? Effect.void : world.sectionEnd(id))
-            // The world no longer holds this request's token: it belongs to a run that is over, and it writes nothing.
-            : Effect.andThen(Effect.sync(() => { box.stale = true; box.id = undefined; }), restore(Effect.interrupt)))));
+          Effect.gen(function* () {
+            // A box whose token is lent out writes under a token of its own for the length of the section, never unfenced: of its own run, or refused.
+            const held = box.id;
+            const id = held ?? (yield* mint(box));
+            if (id === undefined) return yield* restore(Effect.interrupt);
+            const done = held === undefined ? world.leave(id) : Effect.void;
+            const open = yield* world.section!(id);
+            if (!open) {
+              // The world no longer holds this request's token: it belongs to a run that is over, and it writes nothing.
+              if (held !== undefined) { box.stale = true; box.id = undefined; }
+              yield* done;
+              return yield* restore(Effect.interrupt);
+            }
+            return yield* Effect.ensuring(restore(work), Effect.andThen(world.sectionEnd === undefined ? Effect.void : world.sectionEnd(id), done));
+          }));
       }),
       count: Effect.sync(running),
       held: Effect.sync(() => [...active].flatMap((box) => Array.from({ length: activity(box) }, () => box.owner)).sort()),
