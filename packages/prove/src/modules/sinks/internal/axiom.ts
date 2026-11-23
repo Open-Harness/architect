@@ -7,6 +7,7 @@ export interface Exporter {
   readonly id: string;
   readonly traces: { readonly url: string; readonly headers: Readonly<Record<string, string>> };
   readonly logs: { readonly url: string; readonly headers: Readonly<Record<string, string>> };
+  readonly metrics: { readonly url: string; readonly headers: Readonly<Record<string, string>> };
 }
 
 /** `capxul-test` is read from `capxul-ingest-test`, `capxul-real` from `capxul-ingest-real`: one token per group, by name. */
@@ -31,9 +32,9 @@ export const axiom = (group: string, env: Env, read: Reader): Effect.Effect<Axio
     const domain = env["AXIOM_DOMAIN"] || (yield* read("axiom-domain"));
     if (!domain) return { kind: "skipped", note: `axiom ${group}: skipped, no edge domain (AXIOM_DOMAIN, or the keychain item axiom-domain)` } as const;
     const base = baseOf(domain);
-    const endpoint = (signal: "traces" | "logs") => ({
+    const endpoint = (signal: "traces" | "logs" | "metrics") => ({
       url: `${base}/v1/${signal}`,
-      headers: { authorization: `Bearer ${token}`, "x-axiom-dataset": `${group}-${signal}` },
+      headers: { authorization: `Bearer ${token}`, [signal === "metrics" ? "x-axiom-metrics-dataset" : "x-axiom-dataset"]: `${group}-${signal}` },
     });
-    return { kind: "ready", exporter: { id: `axiom ${group}`, traces: endpoint("traces"), logs: endpoint("logs") } } as const;
+    return { kind: "ready", exporter: { id: `axiom ${group}`, traces: endpoint("traces"), logs: endpoint("logs"), metrics: endpoint("metrics") } } as const;
   });

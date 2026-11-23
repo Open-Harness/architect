@@ -1,0 +1,25 @@
+$ node packages/prove/test/device-journeys.ts wallets
+# commit 3f762331 · 2026-11-19T07:35:40Z · exit 0 (expected 0) · 11.1s
+
+[07:35:36.094] INFO (#1): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+[07:35:37.188] INFO (#1): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+[07:35:38.526] INFO (#1): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+[07:35:39.641] INFO (#1): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+journey wallet on the browser signer ✔ 8/8 steps
+journey wallet on the keystore signer ✔ 8/8 steps
+journey wallet on the node signer ✔ 8/8 steps
+journey wallet on the world signer ✔ 8/8 steps
+wallet.create coverage ✘ wallet.create refusing KeyLocked reached by no journey
+wallet.create 1 of 9 evals ✘ p50 1ms p95 57ms (no budget)
+wallet.import coverage ✘ wallet.import refusing KeyLocked reached by no journey
+wallet.import 1 of 9 evals ✘ p50 1ms p95 54ms (no budget)
+wallet.keys coverage ✘ wallet.keys refusing KeyLocked reached by no journey
+wallet.keys 1 of 9 evals ✘ p50 0ms p95 1ms (no budget)
+wallet.send coverage ✘ wallet.send refusing KeyLocked reached by no journey
+wallet.send coverage ✘ wallet.send refusing NoSuchKey reached by no journey
+wallet.send 1 of 9 evals ✘ p50 517ms p95 568ms (no budget)
+wallet.sign coverage ✘ wallet.sign refusing KeyLocked reached by no journey
+wallet.sign coverage ✘ wallet.sign refusing NoSuchKey reached by no journey
+wallet.sign 1 of 9 evals ✘ p50 1ms p95 54ms (no budget)
+prove ✘ 20 failing
+RESULT {"notes":[],"journeys":["journey wallet on the browser signer ✔ 8/8 steps","journey wallet on the keystore signer ✔ 8/8 steps","journey wallet on the node signer ✔ 8/8 steps","journey wallet on the world signer ✔ 8/8 steps"],"evals":["wallet.create answer shape ✔","wallet.create declared errors ✔","wallet.create machine path ✔","wallet.create events ✔","wallet.create who may call ✔","wallet.create steps ✔","wallet.create performance ✔ p50 1ms p95 57ms (no budget)","wallet.create coverage ✘ wallet.create refusing KeyLocked reached by no journey","wallet.create explainability ✔","wallet.create 1 of 9 evals ✘ p50 1ms p95 57ms (no budget)","wallet.import answer shape ✔","wallet.import declared errors ✔","wallet.import machine path ✔","wallet.import events ✔","wallet.import who may call ✔","wallet.import steps ✔","wallet.import performance ✔ p50 1ms p95 54ms (no budget)","wallet.import coverage ✘ wallet.import refusing KeyLocked reached by no journey","wallet.import explainability ✔","wallet.import 1 of 9 evals ✘ p50 1ms p95 54ms (no budget)","wallet.keys answer shape ✔","wallet.keys declared errors ✔","wallet.keys machine path ✔","wallet.keys events ✔","wallet.keys who may call ✔","wallet.keys steps ✔","wallet.keys performance ✔ p50 0ms p95 1ms (no budget)","wallet.keys coverage ✘ wallet.keys refusing KeyLocked reached by no journey","wallet.keys explainability ✔","wallet.keys 1 of 9 evals ✘ p50 0ms p95 1ms (no budget)","wallet.send answer shape ✔","wallet.send declared errors ✔","wallet.send machine path ✔","wallet.send events ✔","wallet.send who may call ✔","wallet.send steps ✔","wallet.send performance ✔ p50 517ms p95 568ms (no budget)","wallet.send coverage ✘ wallet.send refusing KeyLocked reached by no journey","wallet.send coverage ✘ wallet.send refusing NoSuchKey reached by no journey","wallet.send explainability ✔","wallet.send 1 of 9 evals ✘ p50 517ms p95 568ms (no budget)","wallet.sign answer shape ✔","wallet.sign declared errors ✔","wallet.sign machine path ✔","wallet.sign events ✔","wallet.sign who may call ✔","wallet.sign steps ✔","wallet.sign performance ✔ p50 1ms p95 54ms (no budget)","wallet.sign coverage ✘ wallet.sign refusing KeyLocked reached by no journey","wallet.sign coverage ✘ wallet.sign refusing NoSuchKey reached by no journey","wallet.sign explainability ✔","wallet.sign 1 of 9 evals ✘ p50 1ms p95 54ms (no budget)"],"closing":{"line":"prove ✘ 20 failing","passed":false}}

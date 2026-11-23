@@ -1,0 +1,13 @@
+$ pnpm exec tsx tools/evidence/m1-17.mts world
+# commit 892851a · 2026-11-18T22:41:23Z · exit 0 (expected 0) · 11.6s
+
+stores: vault-ledger (database, from @fixture/vault)
+migrations: generated/server/migrations/0001_things.sql, generated/server/migrations/vault-ledger/0001_things.sql
+(node:46754) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+POST /line/add (the vault's store) -> 200 {"line":"lin_xx10fjek6kq9hs9g"}
+fact: line row -> 200 {"id":"lin_xx10fjek6kq9hs9g","amount":"5","version":0}
+POST /system/health (acme, the default store) -> 200 {"status":"ok"}
+databases the world made: 2
+  default: _journal, _requests, allowance, api-key, d1_migrations, invitation, membership, organization, person, session, system | allowance=0 _journal=0
+  vault-ledger: _journal, _requests, d1_migrations, line | line=1 _journal=0

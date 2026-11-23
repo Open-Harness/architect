@@ -55,7 +55,7 @@ describe("refusal code admission", () => {
     const exit = await modelOf(blueprint("article", "AT", 1, true));
     expect(Exit.isSuccess(exit)).toBe(true);
     if (!Exit.isSuccess(exit)) return;
-    expect(exit.value.refusals).toEqual({ ArticleNotActive: "AT-900", NotAllowed: "AR-001", Refusal1: "AT-001" });
+    expect(exit.value.refusals).toEqual({ ArticleNotActive: "AT-900", IdempotencyConflict: "AR-002", NotAllowed: "AR-001", Refusal1: "AT-001" });
   });
 
   it("rejects duplicate emitted codes when a declared error reaches the machine's reserved number", async () => {

@@ -28,6 +28,15 @@ States: intake, running, paused, done, stopped. A move from the wrong state is r
 | finish | running | done | MissionFinished |
 | stop | intake, running, paused | stopped | MissionStopped |
 
+## Events
+
+- `MissionFinished`: carries mission (mission.id); emitted by the move finish
+- `MissionOpened`: carries mission (mission.id), title (mission.title), target (mission.target), blueprint (mission.blueprint); emitted by the move open
+- `MissionPaused`: carries mission (mission.id), why (Note); emitted by the move pause
+- `MissionResumed`: carries mission (mission.id); emitted by the move resume
+- `MissionStarted`: carries mission (mission.id); emitted by the move start
+- `MissionStopped`: carries mission (mission.id), why (Note); emitted by the move stop
+
 ## Roles
 
 - owner

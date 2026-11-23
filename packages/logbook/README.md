@@ -7,4 +7,4 @@ environment names. The routes are listed in `src/modules/http/types.ts`.
 - `src/main.ts` is the worker's entry; `wrangler.jsonc` its bindings.
 - The package's export is how to run it: `Logbook.launch`, `.ready`, `.discoverJwks`, `.start` (module `local`).
 - Modules: `tokens` (verification and policy), `book` (the ledger), `http` (routes), `local` (running it here).
-- Test: `nx test logbook` runs the worker under `wrangler dev` on ports 8930 to 8949 with a mock OIDC server in Docker.
+- Test: `nx test logbook` runs the worker under `wrangler dev` on ports 8930 to 8949 with a OIDC issuer process (@orthograph/services).

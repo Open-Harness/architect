@@ -40,7 +40,7 @@ const recording = () => {
   const store = storeMemory();
   return { spans, store, layer: Layer.mergeAll(BusyLive, store.layer, Layer.succeed(Tracer.Tracer, tracer)) };
 };
-const ada = { kind: "person", person: "per_ada" } as const;
+const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 const served = Handlers.serve({ name: "allowance.grant", operation: grant, handler });
 
 describe("handler wrapper", () => {
@@ -73,7 +73,7 @@ describe("handler wrapper", () => {
       });
     const { spans, layer } = recording();
     await Effect.runPromise(Effect.provide(Handlers.serve({ name: "allowance.settle", operation: settle, handler: h }).call({ member: "per_olga", limit: "1" }, ada), layer));
-    const stepSpans = spans.filter((x) => x.name.startsWith("allowance.settle."));
+    const stepSpans = spans.filter((x) => x.name.startsWith("allowance.settle.") && x.name !== "allowance.settle.commit");
     expect(stepSpans.map((x) => [x.name, x.attributes.get("step.kind")])).toEqual([
       ["allowance.settle.load", "database"], ["allowance.settle.wait", "wait"],
     ]);
@@ -97,7 +97,20 @@ describe("handler wrapper", () => {
     const { spans, layer } = recording();
     const exit = await Effect.runPromiseExit(Effect.provide(served.call({ member: "per_olga", limit: "500" }, { kind: "anonymous" }), layer));
     expect(Exit.isFailure(exit) ? Cause.squash(exit.cause) : undefined).toBeInstanceOf(NotAllowed);
-    expect(spans.map((s) => s.name)).toEqual([]); // the handler never ran, so it has no span
+    // The handler never ran, so the operation has no span of its own; the refused call is still traced, in `.refused`.
+    expect(spans.map((s) => s.name)).toEqual(["allowance.grant.refused"]);
+    expect(spans[0]!.attributes.get("refusal")).toBe("NotAllowed");
+    expect(spans[0]!.attributes.get("operation")).toBe("allowance.grant");
+  });
+
+  it("a refused NotAllowed call's span carries the refusal, its code and the operation, and the handler never ran", async () => {
+    const { spans, layer } = recording();
+    let ran = false;
+    const s = Handlers.serve({ name: "allowance.grant", operation: grant, handler: () => { ran = true; return Effect.succeed({ allowance: "alw_1" as never }); }, codes: { NotAllowed: "AL-001" } });
+    await Effect.runPromiseExit(Effect.provide(s.call({ member: "per_olga", limit: "500" }, { kind: "anonymous" }), layer));
+    expect(ran).toBe(false);
+    expect(spans[0]!.attributes.get("refusal.code")).toBe("AL-001");
+    expect(spans[0]!.attributes.get("operation")).toBe("allowance.grant");
   });
 
   it("refuses a payload outside its declaration before the handler runs", async () => {
@@ -145,6 +158,33 @@ describe("handler wrapper", () => {
       ]);
       expect(r.spans[0]!.attributes.get("move.to")).toBe("active");
       expect(r.spans[0]!.attributes.get("answer.allowance")).toBe("alw_7");
+    });
+
+    it("a move made inside a step is written on the operation's span, not the step's", async () => {
+      const r = recording();
+      const stepped = Blueprint.operation(Allowance, {
+        description: "Grant, with its move, in a step.",
+        payload: { member: Allowance.fields.member, limit: Allowance.fields.limit },
+        answer: { allowance: Allowance.fields.id },
+        move: machine.moves.grant,
+        allowed: [Blueprint.signedIn],
+        steps: { insert: Blueprint.step.database() },
+      });
+      const inStep: Handler<typeof stepped, Records> = (payload, { move, steps }) => steps.insert(
+        Effect.gen(function* () {
+          const records = yield* Records;
+          yield* records.insert(Allowance, { id: "alw_7" as never, member: payload.member, limit: payload.limit });
+          yield* move();
+          return { allowance: "alw_7" as never };
+        }),
+      );
+      const s = Handlers.serve({ name: "allowance.grant", operation: stepped, handler: inStep });
+      await Effect.runPromise(Effect.provide(s.call({ member: "per_olga", limit: "5" }, ada), r.layer));
+      const op = r.spans.find((x) => x.name === "allowance.grant");
+      const step = r.spans.find((x) => x.name === "allowance.grant.insert");
+      expect(op!.attributes.get("move.name")).toBe("grant");
+      expect(op!.attributes.get("move.to")).toBe("active");
+      expect(step!.attributes.has("move.name")).toBe(false);
     });
 
     it("an outcome the move doesn't declare dies, and the span says what was asked", async () => {
@@ -255,6 +295,24 @@ describe("a move with a machine: the race, the machine's refusal, all or nothing
     expect(exits.filter(Exit.isSuccess)).toHaveLength(50);
     expect(memory.rows[0]!.instance).toMatchObject({ spent: 500n, state: "exhausted" });
     expect(memory.entries).toHaveLength(50);
+  });
+
+  it("every attempt span of a call carries its call's name (O3): 50 concurrent calls are 50 names, and each name's attempts are 1..n", async () => {
+    const memory = start("active");
+    const spans: Array<Tracer.NativeSpan> = [];
+    const tracer = Tracer.make({ span: (options) => { const s = new Tracer.NativeSpan(options); spans.push(s); return s; } });
+    const layer = Layer.mergeAll(BusyLive, memory.layer, Layer.succeed(Tracer.Tracer, tracer));
+    const calls = Array.from({ length: 50 }, () => served.call({ allowance: "alw_1", amount: "10" }, ada));
+    await Effect.runPromise(Effect.all(calls, { concurrency: "unbounded" }).pipe(Effect.provide(layer)));
+    const attempts = spans.filter((s) => s.name === "purse.spend");
+    const byCall = new Map<string, Array<number>>();
+    for (const s of attempts) {
+      const id = s.attributes.get("call.id");
+      expect(id, "every attempt span names its call").toMatch(/^call_[0-9a-z]{16}$/);
+      byCall.set(String(id), [...(byCall.get(String(id)) ?? []), Number(s.attributes.get("attempt"))]);
+    }
+    expect(byCall.size).toBe(50);
+    for (const numbers of byCall.values()) expect(numbers.sort((a, b) => a - b)).toEqual(numbers.map((_, i) => i + 1));
   });
 
   it("refuses with the machine's refusal, carrying the state it was in, before the handler runs", async () => {

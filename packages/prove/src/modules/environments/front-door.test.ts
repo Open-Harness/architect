@@ -1,6 +1,6 @@
 // L2.08 (D3 #126): `/_world/*` (the cast, the facts, the registry of worlds) answers only in an environment that hosts worlds.
 // Staging and production answer 404 before any handler runs, and their API and MCP route carry on. Real wrangler and workerd
-// on a copy of acme under git, on free ports (staging and the test environment each start a collector: Docker).
+// on a copy of acme under git, on free ports (staging and the test environment each start a collector process).
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

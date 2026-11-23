@@ -1,8 +1,11 @@
 # Local registry for the starter e2e: anyone may read and publish @orthograph/*, everything else is proxied to npmjs.
-storage: /verdaccio/storage
+# starter.sh fills in __STORAGE__ and __PORT__ and runs the pinned `verdaccio` package under Node (K10 section 8: no container).
+storage: __STORAGE__
+listen: 127.0.0.1:__PORT__
+web: { enable: false }
 auth:
   htpasswd:
-    file: /verdaccio/storage/htpasswd
+    file: __STORAGE__/htpasswd
     max_users: 10
 uplinks:
   npmjs:

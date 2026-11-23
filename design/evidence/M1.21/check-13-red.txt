@@ -1,0 +1,69 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/13
+# commit 2fb60fe4 · 2026-11-19T07:04:23Z · exit 1 (expected 1) · 22.8s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/13-live-steps.test.ts (6 tests | 3 failed) 21272ms
+     × each step's start and end are in the Collector's file while the call is still held, joined to its span by span id 8882ms
+     × shows the load step running before the response, then ended with record running, then the committed event with its commit 2ms
+     × shows a refused call's load step and nothing else: no event, no commit 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/13-live-steps.test.ts > 13 M1.21: the step signals > each step's start and end are in the Collector's file while the call is still held, joined to its span by span id
+AssertionError: the load step started, so its signal is in the file while the call is held in it: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ m1/13-live-steps.test.ts:214:128
+    212|       await gate.held("load");
+    213|       const started = await until(() => signalsOf(world.trace, call.tr…
+    214|       expect(seen(started, LOAD, "start"), "the load step started, so …
+       |                                                                                                                                ^
+    215|       expect(seen(started, LOAD, "end"), "the load step has not ended"…
+    216|       expect(seen(started, RECORD, "start"), "the record step has not …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  m1/13-live-steps.test.ts > 13 M1.21: the portal's live view > shows the load step running before the response, then ended with record running, then the committed event with its commit
+AssertionError: @orthograph/portal exports `Live.call` (M1.21, assumption 3): expected undefined to be type of 'function'
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ m1/13-live-steps.test.ts:248:88
+    246|   it("shows the load step running before the response, then ended with…
+    247|     const live = (portal as unknown as { Live?: { call: (read: unknown…
+    248|     expect(live?.call, "@orthograph/portal exports `Live.call` (M1.21,…
+       |                                                                                        ^
+    249|     const root = beaconProject();
+    250|     const gate = await gates();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  m1/13-live-steps.test.ts > 13 M1.21: the portal's live view > shows a refused call's load step and nothing else: no event, no commit
+AssertionError: @orthograph/portal exports `Live.call` (M1.21, assumption 3): expected undefined to be type of 'function'
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ m1/13-live-steps.test.ts:279:88
+    277|   it("shows a refused call's load step and nothing else: no event, no …
+    278|     const live = (portal as unknown as { Live?: { call: (read: unknown…
+    279|     expect(live?.call, "@orthograph/portal exports `Live.call` (M1.21,…
+       |                                                                                        ^
+    280|     const root = beaconProject();
+    281|     const gate = await gates();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 passed (6)
+   Start at  07:04:00
+   Duration  22.18s (transform 428ms, setup 0ms, import 797ms, tests 21.27s, environment 0ms)

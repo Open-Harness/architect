@@ -1,0 +1,1183 @@
+# Check 19, handlers.test.ts, prehandle.test.ts and refusals-table.test.ts, red before the build (K16: M1.44 to M1.48), on origin/m1 at 6419d4b7, 2026-11-19
+
+## packages/projections/src/modules/handlers/handlers.test.ts (M1.44, M1.45, M1.46's header lines)
+
+
+ RUN  v4.1.12 <repo>/packages/projections
+
+ ❯ src/modules/handlers/handlers.test.ts (10 tests | 9 failed) 52ms
+     × writes allowance.spend's scaffold exactly as the golden: header, steps, refusal, one branch per outcome, the answer 44ms
+     × opens with a doc block that cites, for each part, the blueprint file it came from 1ms
+     × says nothing the model doesn't hold: every declared-looking name in the header is one the model declares 0ms
+     × marks each secret or private payload and answer field in the header, and says who sees it (M1.35's rule) 1ms
+     × lists the generated not-found refusal for a referenced id no role check reads, with its exit and code 1ms
+     × says the runtime mints a creating move's id and hands in what the payload references, and answers with the minted id 0ms
+     × enumerates allowance's eight paths: five allowed transitions and three refused moves, in the machine's order 0ms
+     × gives a thing with no machine no paths, and a creating move no refused path (the runtime never checks it) 0ms
+     × scaffolds one journey per path in blueprint/journeys/, then per role and per declared error, five of them exactly as their goldens 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: the scaffold explains itself (M1.44) > writes allowance.spend's scaffold exactly as the golden: header, steps, refusal, one branch per outcome, the answer
+AssertionError: expected '// Scaffolded from blueprint/things/a…' to be '// Scaffolded from blueprint/things/a…' // Object.is equality
+
+- Expected
++ Received
+
+  // Scaffolded from blueprint/things/allowance/verbs/spend.ts. Yours from now on.
+- import { Effect, Match } from "effect";
++ import { Effect } from "effect";
+  import { Handlers } from "@orthograph/language-effect";
+  import { Errors } from "../../generated/api/src/index.ts";
+- import type { Handler, Outcome } from "../../generated/api/src/allowance/spend.handler.ts";
++ import type { Handler } from "../../generated/api/src/allowance/spend.handler.ts";
+
+  const { AllowanceExceeded } = Errors.declared;
+
+- /**
+-  * allowance.spend: Spend from what is left of this month's allowance.
+-  *
+-  * Who may call, from blueprint/things/allowance/roles.ts:
+-  *   the grantee of the allowance: (allowance, principal) => allowance.member === principal.person
+-  *
+-  * Payload, from blueprint/things/allowance/verbs/spend.ts:
+-  *   allowance  allowance.id
+-  *   amount     Amount
+-  *   memo       Memo
+-  *
+-  * Answer, from blueprint/things/allowance/verbs/spend.ts:
+-  *   remaining  Amount
+-  *
+-  * Refusals:
+-  *   AllowanceExceeded   exit 41  AL-001  yours to refuse below, carrying remaining; from blueprint/things/allowance/errors.ts
+-  *   AllowanceNotActive  exit 40  AL-900  the runtime's, when the allowance isn't in active, carrying state; from blueprint/things/allowance/machine.ts
+-  *   NotAllowed          exit 3   AR-001  the runtime's, when the caller isn't the grantee of the allowance; from blueprint/things/allowance/roles.ts
+-  *
+-  * Idempotent by request, from blueprint/things/allowance/verbs/spend.ts: the same request key from the same caller is one call.
+-  * Budget, from blueprint/things/allowance/verbs/spend.ts: p95 150ms.
+-  *
+-  * The allowance's machine, from blueprint/things/allowance/machine.ts (▶ marks this call):
+-  *     from       move    to         emits
++ /** Spend from what is left of this month's allowance. */
++ const spend: Handler = (_payload, { steps, move }) =>
++   Effect.gen(function* () {
+-  *     (creates)  grant   active     AllowanceGranted
+-  *   ▶ active     spend   active     AllowanceSpent
+-  *   ▶ active     spend   exhausted  AllowanceSpent
+-  *     active     revoke  revoked    AllowanceRevoked
+-  *     exhausted  revoke  revoked    AllowanceRevoked
+-  *
+-  * What the runtime does, so this handler doesn't:
+-  *   before it runs, it refuses NotAllowed unless the caller is the grantee of the allowance;
+-  *   before it runs, it refuses AllowanceNotActive unless the allowance is in active;
+-  *   before it runs, it hands in the allowance it read as subject, so this handler never reads it again;
+-  *   each step is its own span: allowance.spend.load, allowance.spend.record;
+-  *   once it answers, it sets the allowance's state to the outcome given to move;
+-  *   once it answers, it writes AllowanceSpent: allowance, amount and memo from the payload, remaining from the answer;
+-  *   the call is the span allowance.spend, and its commit allowance.spend.commit.
+-  */
+- const spend: Handler = (_payload, { steps, move }) =>
+-   Effect.gen(function* () {
+-     // Step load: database, span allowance.spend.load.
++     yield* steps.load(Handlers.blank("load: the work this step does"));
+-     yield* steps.load(Handlers.blank("load: the work this step does"));
+-
+-     // AllowanceExceeded: exit 41, AL-001.
++     yield* steps.record(Handlers.blank("record: the work this step does"));
+      if (yield* Handlers.blank<boolean>("refuse AllowanceExceeded when?")) {
+        yield* Effect.logInfo(yield* Handlers.blank("why AllowanceExceeded was refused"));
+-       return yield* new AllowanceExceeded({
+-         remaining: yield* Handlers.blank("AllowanceExceeded.remaining, an Amount"),
+-       });
+-     }
+-
+-     // Step record: database, span allowance.spend.record.
+-     yield* steps.record(Handlers.blank("record: the work this step does"));
+-
+-     // The move spend, from active: one branch per outcome. A new outcome won't compile until it has its branch.
+-     const outcome = yield* Handlers.blank<Outcome>("where spend ends: active or exhausted");
+-     yield* Match.value(outcome).pipe(
+-       // To active. From there the allowance can: spend (to active or exhausted), revoke (to revoked).
+-       Match.when("active", () => move("active")),
+-       // To exhausted. From there the allowance can: revoke (to revoked).
+-       Match.when("exhausted", () => move("exhausted")),
+-       Match.exhaustive,
+-     );
++       return yield* new AllowanceExceeded(yield* Handlers.blank("AllowanceExceeded's fields"));
++     }
++     yield* move(yield* Handlers.blank("the move’s outcome"));
+-
+-     return {
+-       // AllowanceSpent needs remaining, and only the answer can give it.
+-       remaining: yield* Handlers.blank("remaining, an Amount"),
+-     };
++     return yield* Handlers.blank("the answer");
+    });
+
+  export default spend;
+
+
+ ❯ src/modules/handlers/handlers.test.ts:50:32
+     48|   it("writes allowance.spend's scaffold exactly as the golden: header,…
+     49|     expect(scaffold()).toMatchObject({ path: "src/allowance/spend.ts",…
+     50|     expect(scaffold().content).toBe(read("allowance-spend.ts.golden"));
+       |                                ^
+     51|   });
+     52|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: the scaffold explains itself (M1.44) > opens with a doc block that cites, for each part, the blueprint file it came from
+AssertionError: Who may call, from blueprint/things/allowance/roles.ts:: expected '/** Spend from what is left of this m…' to contain 'Who may call, from blueprint/things/a…'
+
+Expected: "Who may call, from blueprint/things/allowance/roles.ts:"
+Received: "/** Spend from what is left of this month's allowance. */"
+
+ ❯ src/modules/handlers/handlers.test.ts:64:29
+     62|       "▶ active     spend   exhausted  AllowanceSpent",
+     63|       "remaining from the answer",
+     64|     ]) expect(header, line).toContain(line);
+       |                             ^
+     65|   });
+     66|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: the scaffold explains itself (M1.44) > says nothing the model doesn't hold: every declared-looking name in the header is one the model declares
+AssertionError: expected 0 to be greater than 0
+ ❯ src/modules/handlers/handlers.test.ts:75:26
+     73|       ...fields.flatMap((f) => (f.named ? [f.named] : []))]);
+     74|     const names = [...header.matchAll(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b…
+     75|     expect(names.length).toBeGreaterThan(0);
+       |                          ^
+     76|     expect(names.filter((w) => !declared.has(w))).toEqual([]);
+     77|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: the scaffold explains itself (M1.44) > marks each secret or private payload and answer field in the header, and says who sees it (M1.35's rule)
+AssertionError: expected '/** Spend from what is left of this m…' to match /\n \*   memo +Memo \(private: only th…/
+
+- Expected:
+/\n \*   memo +Memo \(private: only the grantee of the allowance sees it\)\n/
+
++ Received:
+"/** Spend from what is left of this month's allowance. */"
+
+ ❯ src/modules/handlers/handlers.test.ts:85:20
+     83|     const op = { ...spend, payload: { ...spend.payload, memo }, answer…
+     84|     const header = headerOf((renderHandlerScaffold as unknown as K16["…
+     85|     expect(header).toMatch(/\n \*   memo +Memo \(private: only the gra…
+       |                    ^
+     86|     expect(header).toMatch(/\n \*   remaining +Amount \(secret: no cal…
+     87|     expect(header).toMatch(/\n \*   amount +Amount\n/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: the scaffold shows what the runtime hands in (M1.46, through M1.44's scaffold) > lists the generated not-found refusal for a referenced id no role check reads, with its exit and code
+AssertionError: expected [ 'AllowanceLimitTooHigh', …(1) ] to include 'PersonNotFound'
+ ❯ src/modules/handlers/handlers.test.ts:96:59
+     94|   it("lists the generated not-found refusal for a referenced id no rol…
+     95|     // grant's member names a person; the role check reads the organis…
+     96|     expect(model.operations["allowance.grant"]!.refusals).toContain("P…
+       |                                                           ^
+     97|     expect(headerOf(grant())).toMatch(/PersonNotFound +exit 4 +PE-901 …
+     98|     expect(model.operations["allowance.spend"]!.refusals).not.toContai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: the scaffold shows what the runtime hands in (M1.46, through M1.44's scaffold) > says the runtime mints a creating move's id and hands in what the payload references, and answers with the minted id
+AssertionError: expected '/** Let a member spend from the organ…' to match /mints the allowance's new id and hand…/
+
+- Expected:
+/mints the allowance's new id and hands it in as id/
+
++ Received:
+"/** Let a member spend from the organisation, up to a limit each month. */"
+
+ ❯ src/modules/handlers/handlers.test.ts:103:31
+    101|   it("says the runtime mints a creating move's id and hands in what th…
+    102|     const content = grant();
+    103|     expect(headerOf(content)).toMatch(/mints the allowance's new id an…
+       |                               ^
+    104|     expect(headerOf(content)).toMatch(/refs\.member/);
+    105|     expect(content).toMatch(/\{ [^}]*\bid\b[^}]* \}\) =>/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: one journey stub per path through a thing's machine (M1.45) > enumerates allowance's eight paths: five allowed transitions and three refused moves, in the machine's order
+AssertionError: machinePaths is not exported from the handlers module yet: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ src/modules/handlers/handlers.test.ts:112:98
+    110| describe("K16: one journey stub per path through a thing's machine (M1…
+    111|   it("enumerates allowance's eight paths: five allowed transitions and…
+    112|     expect(typeof k16.machinePaths, "machinePaths is not exported from…
+       |                                                                                                  ^
+    113|     const n = "AllowanceNotActive";
+    114|     expect(k16.machinePaths!(model, "allowance")).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: one journey stub per path through a thing's machine (M1.45) > gives a thing with no machine no paths, and a creating move no refused path (the runtime never checks it)
+AssertionError: machinePaths is not exported from the handlers module yet: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ src/modules/handlers/handlers.test.ts:127:98
+    125|
+    126|   it("gives a thing with no machine no paths, and a creating move no r…
+    127|     expect(typeof k16.machinePaths, "machinePaths is not exported from…
+       |                                                                                                  ^
+    128|     expect(k16.machinePaths!(model, "person")).toEqual([]);
+    129|     expect(k16.machinePaths!(model, "allowance").filter((p) => p.move …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  src/modules/handlers/handlers.test.ts > K16: one journey stub per path through a thing's machine (M1.45) > scaffolds one journey per path in blueprint/journeys/, then per role and per declared error, five of them exactly as their goldens
+AssertionError: renderJourneyStubs is not exported from the handlers module yet: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ src/modules/handlers/handlers.test.ts:133:110
+    131|
+    132|   it("scaffolds one journey per path in blueprint/journeys/, then per …
+    133|     expect(typeof k16.renderJourneyStubs, "renderJourneyStubs is not e…
+       |                                                                                                              ^
+    134|     const stubs = k16.renderJourneyStubs!(model, "allowance");
+    135|     expect(stubs.map((s) => s.path)).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 1 passed (10)
+   Start at  11:49:38
+   Duration  859ms (transform 93ms, setup 0ms, import 680ms, tests 52ms, environment 0ms)
+
+
+## packages/language-effect/src/modules/handler/prehandle.test.ts (M1.46)
+
+
+ RUN  v4.1.12 <repo>/packages/language-effect
+
+ ❯ src/modules/handler/prehandle.test.ts (6 tests | 5 failed) 18ms
+     × hands the handler its subject, the instance the from-check read 11ms
+     × hands in each thing the payload references by id, keyed by the payload's field 2ms
+     × mints a creating move's id and hands it in, and the answer that uses it commits 2ms
+     × refuses a missing subject no role check read as PurseNotFound, carrying the id, and never runs the handler 1ms
+     × refuses a referenced id that names nothing as PersonNotFound, and never runs the handler 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/handler/prehandle.test.ts > K16: the runtime hands in what it already read (M1.46) > hands the handler its subject, the instance the from-check read
+AssertionError: context.subject: expected undefined to match object { id: 'pur_1', limit: 500n, …(2) }
+
+- Expected:
+{
+  "id": "pur_1",
+  "limit": 500n,
+  "spent": 100n,
+  "state": "active",
+}
+
++ Received:
+undefined
+
+ ❯ src/modules/handler/prehandle.test.ts:69:40
+     67|     const served = Handlers.serve({ name: "purse.spend", operation: sp…
+     68|     const exit = await run(served.call({ purse: "pur_1", amount: "50" …
+     69|     expect(seen[0], "context.subject").toMatchObject({ id: "pur_1", li…
+       |                                        ^
+     70|     expect(Exit.isSuccess(exit) ? exit.value : refusal(exit)).toEqual(…
+     71|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/modules/handler/prehandle.test.ts > K16: the runtime hands in what it already read (M1.46) > hands in each thing the payload references by id, keyed by the payload's field
+AssertionError: context.refs: expected undefined to match object { member: { id: 'per_ada' } }
+
+- Expected:
+{
+  "member": {
+    "id": "per_ada",
+  },
+}
+
++ Received:
+undefined
+
+ ❯ src/modules/handler/prehandle.test.ts:82:37
+     80|     const served = Handlers.serve({ name: "purse.open", operation: ope…
+     81|     await run(served.call({ member: "per_ada", limit: "10" }, ada).pip…
+     82|     expect(seen[0], "context.refs").toMatchObject({ member: { id: "per…
+       |                                     ^
+     83|   });
+     84|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/modules/handler/prehandle.test.ts > K16: the runtime hands in what it already read (M1.46) > mints a creating move's id and hands it in, and the answer that uses it commits
+TypeError: .toMatch() expects to receive a string, but got undefined
+ ❯ src/modules/handler/prehandle.test.ts:94:34
+     92|     const served = Handlers.serve({ name: "purse.open", operation: ope…
+     93|     const exit = await run(served.call({ member: "per_ada", limit: "10…
+     94|     expect(ids[0], "context.id").toMatch(/^pur_[0-9a-z]+$/);
+       |                                  ^
+     95|     expect(Exit.isSuccess(exit) ? exit.value : refusal(exit)).toEqual(…
+     96|     expect(memory.entries.map((e) => e.event)).toEqual(["Opened"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/modules/handler/prehandle.test.ts > K16: a missing id is refused before the handler, with a generated <Thing>NotFound (M1.46) > refuses a missing subject no role check read as PurseNotFound, carrying the id, and never runs the handler
+AssertionError: expected undefined to match object { _tag: 'PurseNotFound', …(1) }
+
+- Expected:
+{
+  "_tag": "PurseNotFound",
+  "id": "pur_gone",
+}
+
++ Received:
+undefined
+
+ ❯ src/modules/handler/prehandle.test.ts:109:27
+    107|     const served = Handlers.serve({ name: "purse.spend", operation: sp…
+    108|     const exit = await run(served.call({ purse: "pur_gone", amount: "1…
+    109|     expect(refusal(exit)).toMatchObject({ _tag: "PurseNotFound", id: "…
+       |                           ^
+    110|     expect(ran).toEqual([]);
+    111|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/modules/handler/prehandle.test.ts > K16: a missing id is refused before the handler, with a generated <Thing>NotFound (M1.46) > refuses a referenced id that names nothing as PersonNotFound, and never runs the handler
+AssertionError: expected undefined to match object { _tag: 'PersonNotFound', …(1) }
+
+- Expected:
+{
+  "_tag": "PersonNotFound",
+  "id": "per_nobody",
+}
+
++ Received:
+undefined
+
+ ❯ src/modules/handler/prehandle.test.ts:117:27
+    115|     const served = Handlers.serve({ name: "purse.open", operation: ope…
+    116|     const exit = await run(served.call({ member: "per_nobody", limit: …
+    117|     expect(refusal(exit)).toMatchObject({ _tag: "PersonNotFound", id: …
+       |                           ^
+    118|     expect(ran).toEqual([]);
+    119|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 1 passed (6)
+   Start at  11:49:39
+   Duration  488ms (transform 145ms, setup 0ms, import 361ms, tests 18ms, environment 0ms)
+
+
+## packages/language-effect/src/modules/mcp/refusals-table.test.ts (M1.47)
+
+
+ RUN  v4.1.12 <repo>/packages/language-effect
+
+ ❯ src/modules/mcp/refusals-table.test.ts (2 tests | 2 failed) 12ms
+     × a declared refusal: its code, its declared exit, and 422 10ms
+     × the runtime's own refusal: NotAllowed, exit 3, 403 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/mcp/refusals-table.test.ts > K16: an MCP refusal carries the table's code, exit and status (M1.47) > a declared refusal: its code, its declared exit, and 422
+AssertionError: expected undefined to deeply equal { refusal: 'TooMuch', …(4) }
+
+- Expected:
+{
+  "code": "PU-001",
+  "exit": 41,
+  "left": "7",
+  "refusal": "TooMuch",
+  "status": 422,
+}
+
++ Received:
+undefined
+
+ ❯ src/modules/mcp/refusals-table.test.ts:44:31
+     42|     const result = await call({ purse: "pur_1", amount: "101" }, "per_…
+     43|     expect(result.text, "control: the text line is unchanged").toBe("[…
+     44|     expect(result.structured).toEqual({ refusal: "TooMuch", code: "PU-…
+       |                               ^
+     45|   });
+     46|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/modules/mcp/refusals-table.test.ts > K16: an MCP refusal carries the table's code, exit and status (M1.47) > the runtime's own refusal: NotAllowed, exit 3, 403
+AssertionError: expected undefined to deeply equal { refusal: 'NotAllowed', …(3) }
+
+- Expected:
+{
+  "code": "AR-001",
+  "exit": 3,
+  "refusal": "NotAllowed",
+  "status": 403,
+}
+
++ Received:
+undefined
+
+ ❯ src/modules/mcp/refusals-table.test.ts:50:31
+     48|     const result = await call({ purse: "pur_1", amount: "1" }, "per_bo…
+     49|     expect(result.text, "control: the text line is unchanged").toBe("[…
+     50|     expect(result.structured).toEqual({ refusal: "NotAllowed", code: "…
+       |                               ^
+     51|   });
+     52| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  11:49:40
+   Duration  611ms (transform 166ms, setup 0ms, import 492ms, tests 12ms, environment 0ms)
+
+
+## e2e/m1/19-scaffold-explains.test.ts (M1.44 to M1.48)
+
+
+ RUN  v4.1.12 <repo>/e2e
+
+ ❯ m1/19-scaffold-explains.test.ts (12 tests | 10 failed) 25140ms
+     × ortho generate writes allowance.spend's scaffold exactly as the golden, and it compiles 1856ms
+     × a handler written from the scaffold stops compiling, at its Match, when the machine gains an outcome 3033ms
+     × ortho add journeys allowance writes the sixteen stubs, five exactly as their goldens, and they compile 972ms
+     × never overwrites a stub that is yours: a second run writes nothing and names what is already there 973ms
+     × the model and ortho check count every unfilled stub as blanks, and the model still compiles 980ms
+     × a new outcome of spend's move that the handler never chooses is named, with the file 3812ms
+     × a new declared error on spend that the handler never refuses with is named, with the file 3660ms
+     × the model gives person a PersonNotFound at PE-901, adopts allowance's declared AllowanceNotFound at AL-002, and lists them where they apply 1026ms
+     × generated errors.ts exports the table, one row per refusal, and the old exits and codes are read from it 1370ms
+     × a field of AllowanceSpent that is in neither the allowance, spend's payload nor its answer is named, with the event and the operation 1026ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.44: the scaffold explains itself > ortho generate writes allowance.spend's scaffold exactly as the golden, and it compiles
+AssertionError: expected '// Scaffolded from blueprint/things/a…' to be '// Scaffolded from blueprint/things/a…' // Object.is equality
+
+- Expected
++ Received
+
+  // Scaffolded from blueprint/things/allowance/verbs/spend.ts. Yours from now on.
+- import { Effect, Match } from "effect";
++ import { Effect } from "effect";
+  import { Handlers } from "@orthograph/language-effect";
+  import { Errors } from "../../generated/api/src/index.ts";
+- import type { Handler, Outcome } from "../../generated/api/src/allowance/spend.handler.ts";
++ import type { Handler } from "../../generated/api/src/allowance/spend.handler.ts";
+
+  const { AllowanceExceeded } = Errors.declared;
+
+- /**
+-  * allowance.spend: Spend from what is left of this month's allowance.
+-  *
+-  * Who may call, from blueprint/things/allowance/roles.ts:
+-  *   the grantee of the allowance: (allowance, principal) => allowance.member === principal.person
+-  *
+-  * Payload, from blueprint/things/allowance/verbs/spend.ts:
+-  *   allowance  allowance.id
+-  *   amount     Amount
+-  *   memo       Memo
+-  *
+-  * Answer, from blueprint/things/allowance/verbs/spend.ts:
+-  *   remaining  Amount
+-  *
+-  * Refusals:
+-  *   AllowanceExceeded   exit 41  AL-001  yours to refuse below, carrying remaining; from blueprint/things/allowance/errors.ts
+-  *   AllowanceNotActive  exit 40  AL-900  the runtime's, when the allowance isn't in active, carrying state; from blueprint/things/allowance/machine.ts
+-  *   NotAllowed          exit 3   AR-001  the runtime's, when the caller isn't the grantee of the allowance; from blueprint/things/allowance/roles.ts
+-  *
+-  * Idempotent by request, from blueprint/things/allowance/verbs/spend.ts: the same request key from the same caller is one call.
+-  * Budget, from blueprint/things/allowance/verbs/spend.ts: p95 150ms.
+-  *
+-  * The allowance's machine, from blueprint/things/allowance/machine.ts (▶ marks this call):
+-  *     from       move    to         emits
++ /** Spend from what is left of this month's allowance. */
++ const spend: Handler = (_payload, { steps, move }) =>
++   Effect.gen(function* () {
+-  *     (creates)  grant   active     AllowanceGranted
+-  *   ▶ active     spend   active     AllowanceSpent
+-  *   ▶ active     spend   exhausted  AllowanceSpent
+-  *     active     revoke  revoked    AllowanceRevoked
+-  *     exhausted  revoke  revoked    AllowanceRevoked
+-  *
+-  * What the runtime does, so this handler doesn't:
+-  *   before it runs, it refuses NotAllowed unless the caller is the grantee of the allowance;
+-  *   before it runs, it refuses AllowanceNotActive unless the allowance is in active;
+-  *   before it runs, it hands in the allowance it read as subject, so this handler never reads it again;
+-  *   each step is its own span: allowance.spend.load, allowance.spend.record;
+-  *   once it answers, it sets the allowance's state to the outcome given to move;
+-  *   once it answers, it writes AllowanceSpent: allowance, amount and memo from the payload, remaining from the answer;
+-  *   the call is the span allowance.spend, and its commit allowance.spend.commit.
+-  */
+- const spend: Handler = (_payload, { steps, move }) =>
+-   Effect.gen(function* () {
+-     // Step load: database, span allowance.spend.load.
++     yield* steps.load(Handlers.blank("load: the work this step does"));
+-     yield* steps.load(Handlers.blank("load: the work this step does"));
+-
+-     // AllowanceExceeded: exit 41, AL-001.
++     yield* steps.record(Handlers.blank("record: the work this step does"));
+      if (yield* Handlers.blank<boolean>("refuse AllowanceExceeded when?")) {
+        yield* Effect.logInfo(yield* Handlers.blank("why AllowanceExceeded was refused"));
+-       return yield* new AllowanceExceeded({
+-         remaining: yield* Handlers.blank("AllowanceExceeded.remaining, an Amount"),
+-       });
+-     }
+-
+-     // Step record: database, span allowance.spend.record.
+-     yield* steps.record(Handlers.blank("record: the work this step does"));
+-
+-     // The move spend, from active: one branch per outcome. A new outcome won't compile until it has its branch.
+-     const outcome = yield* Handlers.blank<Outcome>("where spend ends: active or exhausted");
+-     yield* Match.value(outcome).pipe(
+-       // To active. From there the allowance can: spend (to active or exhausted), revoke (to revoked).
+-       Match.when("active", () => move("active")),
+-       // To exhausted. From there the allowance can: revoke (to revoked).
+-       Match.when("exhausted", () => move("exhausted")),
+-       Match.exhaustive,
+-     );
++       return yield* new AllowanceExceeded(yield* Handlers.blank("AllowanceExceeded's fields"));
++     }
++     yield* move(yield* Handlers.blank("the move’s outcome"));
+-
+-     return {
+-       // AllowanceSpent needs remaining, and only the answer can give it.
+-       remaining: yield* Handlers.blank("remaining, an Amount"),
+-     };
++     return yield* Handlers.blank("the answer");
+    });
+
+  export default spend;
+
+
+ ❯ m1/19-scaffold-explains.test.ts:47:33
+     45|     removeAt(root, spend);
+     46|     succeeds(root, "generate");
+     47|     expect(textAt(root, spend)).toBe(readFileSync(join(golden, "allowa…
+       |                                 ^
+     48|     const tsc = typed(root);
+     49|     expect(tsc.status, tsc.stdout + tsc.stderr).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.44: the scaffold explains itself > a handler written from the scaffold stops compiling, at its Match, when the machine gains an outcome
+AssertionError: the golden compiles against acme as shipped: src/allowance/spend.ts(5,24): error TS2305: Module '"../../generated/api/src/allowance/spend.handler.ts"' has no exported member 'Outcome'.
+src/allowance/spend.ts(49,3): error TS2375: Type 'Effect<{ remaining: never; }, unknown, unknown>' is not assignable to type 'Effect<{ readonly remaining: bigint; }, AllowanceExceeded, Auth | Records | SqlClient>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Type 'unknown' is not assignable to type 'AllowanceExceeded'.
+src/allowance/spend.ts(66,12): error TS2488: Type 'never' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/allowance/spend.ts(71,7): error TS2345: Argument of type '<I, F, A, Pr, Ret, Args extends Array<any>>(self: Matcher<I, F, never, A, Pr, Ret, Args>) => [Pr] extends [never] ? [Args] extends [[]] ? (u: I) => Unify<...> : (...args: Args) => Unify<...> : Unify<...>' is not assignable to parameter of type '(_: Matcher<Outcome, Without<"active" | "exhausted">, any, Effect<void, never, never>, "value", any, []>) => Effect<void, never, never>'.
+  Types of parameters 'self' and '_' are incompatible.
+    Type 'Matcher<Outcome, Without<"active" | "exhausted">, any, Effect<void, never, never>, "value", any, []>' is not assignable to type 'Matcher<Outcome, Without<"active" | "exhausted">, never, Effect<void, never, never>, "value", any, []>'.
+      Type 'TypeMatcher<Outcome, Without<"active" | "exhausted">, any, Effect<void, never, never>, any, []>' is not assignable to type 'Matcher<Outcome, Without<"active" | "exhausted">, never, Effect<void, never, never>, "value", any, []>'.
+        Type 'TypeMatcher<Outcome, Without<"active" | "exhausted">, any, Effect<void, never, never>, any, []>' is not assignable to type 'TypeMatcher<Outcome, Without<"active" | "exhausted">, never, Effect<void, never, never>, any, []>'.
+          Type 'any' is not assignable to type 'never'.
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ m1/19-scaffold-explains.test.ts:57:108
+     55|     succeeds(root, "generate");
+     56|     const before = typed(root);
+     57|     expect(before.status, `the golden compiles against acme as shipped…
+       |                                                                                                            ^
+     58|     const machine = "blueprint/things/allowance/machine.ts";
+     59|     edit(root, machine, `states: ["active", "exhausted", "revoked"]`, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.45: one journey stub per path through the allowance's machine, per role and per declared error > ortho add journeys allowance writes the sixteen stubs, five exactly as their goldens, and they compile
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing         
+  operation     
+  read          
+  journey       
+  feature       
+  adapter       
+  projection    
+
+ERRORS
+  Unknown subcommand "journeys" for "ortho add"
+
+  Did you mean this?
+    journey
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/19-scaffold-explains.test.ts:73:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.45: one journey stub per path through the allowance's machine, per role and per declared error > never overwrites a stub that is yours: a second run writes nothing and names what is already there
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing         
+  operation     
+  read          
+  journey       
+  feature       
+  adapter       
+  projection    
+
+ERRORS
+  Unknown subcommand "journeys" for "ortho add"
+
+  Did you mean this?
+    journey
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/19-scaffold-explains.test.ts:85:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.45: one journey stub per path through the allowance's machine, per role and per declared error > the model and ortho check count every unfilled stub as blanks, and the model still compiles
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing         
+  operation     
+  read          
+  journey       
+  feature       
+  adapter       
+  projection    
+
+ERRORS
+  Unknown subcommand "journeys" for "ortho add"
+
+  Did you mean this?
+    journey
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/19-scaffold-explains.test.ts:96:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.44: ortho check says when the blueprint grew past a handler that is yours > a new outcome of spend's move that the handler never chooses is named, with the file
+AssertionError: blanks left 0
+types ✔
+rules ✔
+drift ✔
+ratchets 0
+check ✔
+: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ m1/19-scaffold-explains.test.ts:122:89
+    120|     succeeds(root, "generate");
+    121|     const out = succeeds(root, "check").out;
+    122|     expect(warnings(out).filter((l) => l.includes(spend) && /\bfrozen\…
+       |                                                                                         ^
+    123|     expect(warnings(out).filter((l) => /\b(?:active|exhausted)\b/.test…
+    124|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.44: ortho check says when the blueprint grew past a handler that is yours > a new declared error on spend that the handler never refuses with is named, with the file
+AssertionError: blanks left 0
+types ✔
+rules ✔
+drift ✔
+ratchets 0
+check ✔
+: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ m1/19-scaffold-explains.test.ts:134:98
+    132|     succeeds(root, "generate");
+    133|     const out = succeeds(root, "check").out;
+    134|     expect(warnings(out).filter((l) => l.includes(spend) && l.includes…
+       |                                                                                                  ^
+    135|     expect(warnings(out).filter((l) => l.includes("AllowanceExceeded")…
+    136|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.46: the runtime finds what the payload names, and refuses what is missing with a generated <Thing>NotFound > the model gives person a PersonNotFound at PE-901, adopts allowance's declared AllowanceNotFound at AL-002, and lists them where they apply
+AssertionError: expected { AllowanceExceeded: 'AL-001', …(8) } to match object { PersonNotFound: 'PE-901', …(3) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "AllowanceExceeded": "AL-001",
+    "AllowanceLimitTooHigh": "AL-003",
+    "AllowanceNotFound": "AL-002",
+-   "PersonNotFound": "PE-901",
+  }
+
+ ❯ m1/19-scaffold-explains.test.ts:147:24
+    145|   it("the model gives person a PersonNotFound at PE-901, adopts allowa…
+    146|     const m = model(fresh());
+    147|     expect(m.refusals).toMatchObject({ PersonNotFound: "PE-901", Allow…
+       |                        ^
+    148|     // grant names a member no role check reads: a missing one is Pers…
+    149|     // role check, so a missing one stays NotAllowed and a stranger le…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.47: one refusals table carries code, exit and HTTP status to the CLI, HTTP and MCP > generated errors.ts exports the table, one row per refusal, and the old exits and codes are read from it
+AssertionError: expected '// Generated from blueprint/projectio…' to match /^export const refusals = \{$/m
+
+- Expected:
+/^export const refusals = \{$/m
+
++ Received:
+"// Generated from blueprint/projections/api.ts. Do not edit.
+import { Schema } from \"effect\";
+import { ErrorNames, structOf } from \"orthograph/server\";
+import * as Allowance from \"../../../blueprint/things/allowance/errors.ts\";
+import * as Person from \"../../../blueprint/things/person/errors.ts\";
+import * as Session from \"../../../blueprint/things/session/errors.ts\";
+
+ErrorNames.name(Allowance.AllowanceExceeded, \"AllowanceExceeded\");
+export class AllowanceExceeded extends Schema.TaggedError<AllowanceExceeded>()(\"AllowanceExceeded\", { code: Schema.Literal(\"AL-001\"), ...structOf(Allowance.AllowanceExceeded.fields).fields }, { httpApiStatus: 422 }) { static readonly code = \"AL-001\" as const; }
+ErrorNames.name(Allowance.AllowanceNotFound, \"AllowanceNotFound\");
+export class AllowanceNotFound extends Schema.TaggedError<AllowanceNotFound>()(\"AllowanceNotFound\", { code: Schema.Literal(\"AL-002\"), ...structOf(Allowance.AllowanceNotFound.fields).fields }, { httpApiStatus: 422 }) { static readonly code = \"AL-002\" as const; }
+ErrorNames.name(Allowance.AllowanceLimitTooHigh, \"AllowanceLimitTooHigh\");
+export class AllowanceLimitTooHigh extends Schema.TaggedError<AllowanceLimitTooHigh>()(\"AllowanceLimitTooHigh\", { code: Schema.Literal(\"AL-003\"), ...structOf(Allowance.AllowanceLimitTooHigh.fields).fields }, { httpApiStatus: 422 }) { static readonly code = \"AL-003\" as const; }
+ErrorNames.name(Person.PersonEmailTaken, \"PersonEmailTaken\");
+export class PersonEmailTaken extends Schema.TaggedError<PersonEmailTaken>()(\"PersonEmailTaken\", { code: Schema.Literal(\"PE-001\"), ...structOf(Person.PersonEmailTaken.fields).fields }, { httpApiStatus: 422 }) { static readonly code = \"PE-001\" as const; }
+ErrorNames.name(Session.SessionCredentialsWrong, \"SessionCredentialsWrong\");
+export class SessionCredentialsWrong extends Schema.TaggedError<SessionCredentialsWrong>()(\"SessionCredentialsWrong\", { code: Schema.Literal(\"SE-001\"), ...structOf(Session.SessionCredentialsWrong.fields).fields }, { httpApiStatus: 422 }) { static readonly code = \"SE-001\" as const; }
+export class AllowanceNotActive extends Schema.TaggedError<AllowanceNotActive>()(\"AllowanceNotActive\", { code: Schema.Literal(\"AL-900\"), ...{ state: Schema.String } }, { httpApiStatus: 409 }) { static readonly code = \"AL-900\" as const; }
+export class InvitationNotPending extends Schema.TaggedError<InvitationNotPending>()(\"InvitationNotPending\", { code: Schema.Literal(\"IN-900\"), ...{ state: Schema.String } }, { httpApiStatus: 409 }) { static readonly code = \"IN-900\" as const; }
+export class OrganizationNotActive extends Schema.TaggedError<OrganizationNotActive>()(\"OrganizationNotActive\", { code: Schema.Literal(\"OR-900\"), ...{ state: Schema.String } }, { httpApiStatus: 409 }) { static readonly code = \"OR-900\" as const; }
+export class NotAllowed extends Schema.TaggedError<NotAllowed>()(\"NotAllowed\", { code: Schema.Literal(\"AR-001\"), ...{} }, { httpApiStatus: 403 }) { static readonly code = \"AR-001\" as const; }
+
+/** Each refusal's exit code, for the CLI. */
+export const exits = {
+  AllowanceExceeded: 41,
+  AllowanceNotFound: 43,
+  AllowanceLimitTooHigh: 44,
+  PersonEmailTaken: 11,
+  SessionCredentialsWrong: 10,
+  AllowanceNotActive: 40,
+  InvitationNotPending: 40,
+  OrganizationNotActive: 20,
+  NotAllowed: 3,
+} as const;
+
+/** Each refusal's code, stable across targets: `[AL-002] Name { field: value }`. Beside the tag, never in place of it. */
+export const codes = {
+  AllowanceExceeded: \"AL-001\",
+  AllowanceNotFound: \"AL-002\",
+  AllowanceLimitTooHigh: \"AL-003\",
+  PersonEmailTaken: \"PE-001\",
+  SessionCredentialsWrong: \"SE-001\",
+  AllowanceNotActive: \"AL-900\",
+  InvitationNotPending: \"IN-900\",
+  OrganizationNotActive: \"OR-900\",
+  NotAllowed: \"AR-001\",
+} as const;
+
+/** The fields of each refusal whose values may be shown (printed, logged, put in a span): only the public ones. */
+export const shown: Readonly<Record<string, ReadonlyArray<string>>> = {
+  AllowanceExceeded: [\"remaining\"],
+  AllowanceNotFound: [],
+  AllowanceLimitTooHigh: [\"cap\"],
+  PersonEmailTaken: [],
+  SessionCredentialsWrong: [],
+  AllowanceNotActive: [\"state\"],
+  InvitationNotPending: [\"state\"],
+  OrganizationNotActive: [\"state\"],
+  NotAllowed: [],
+};
+
+/** The declared errors themselves, by name: their fields say who may see a value (the MCP server redacts by role). */
+export const declared = {
+  AllowanceExceeded: Allowance.AllowanceExceeded,
+  AllowanceNotFound: Allowance.AllowanceNotFound,
+  AllowanceLimitTooHigh: Allowance.AllowanceLimitTooHigh,
+  PersonEmailTaken: Person.PersonEmailTaken,
+  SessionCredentialsWrong: Session.SessionCredentialsWrong,
+} as const;
+
+/** The wire class of each refusal, by name. */
+export const wire = { AllowanceExceeded, AllowanceNotFound, AllowanceLimitTooHigh, PersonEmailTaken, SessionCredentialsWrong, AllowanceNotActive, InvitationNotPending, OrganizationNotActive, NotAllowed };
+"
+
+ ❯ m1/19-scaffold-explains.test.ts:161:20
+    159|     succeeds(root, "generate");
+    160|     const errors = textAt(root, "generated/api/src/errors.ts");
+    161|     expect(errors).toMatch(/^export const refusals = \{$/m);
+       |                    ^
+    162|     for (const row of [
+    163|       'AllowanceExceeded: { code: "AL-001", exit: 41, status: 422 },',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.48: an event the runtime can't fill is refused by the compiler, not found at run time > a field of AllowanceSpent that is in neither the allowance, spend's payload nor its answer is named, with the event and the operation
+AssertionError: thing allowance (active, exhausted, revoked)  d5087b6cc9483c94
+thing api-key  dec54cf75bd4acb9
+thing invitation (pending, accepted, revoked)  7c1d13c393ddaa62
+thing membership  e6505be81a7030e4
+thing organization (active)  561078515c5ea01e
+thing person  ad771ebabdfe3e0e
+thing session  455311c2adae1097
+thing system  357767c64efceced
+operation allowance.get  refuses NotAllowed  6bed21e0ae22d8a8
+operation allowance.grant  refuses AllowanceLimitTooHigh, NotAllowed  f883070ae1800cf3
+operation allowance.revoke  refuses AllowanceNotActive, NotAllowed  a145b0ab143dcc8a
+operation allowance.spend  refuses AllowanceExceeded, AllowanceNotActive, NotAllowed  fe130df24265eeb2
+operation api-key.create  refuses NotAllowed  56de0903f4a0f20e
+operation invitation.accept  refuses InvitationNotPending, NotAllowed  937e15a8f2c9b98a
+operation invitation.revoke  refuses InvitationNotPending, NotAllowed  a527002466da0300
+operation invitation.send  refuses NotAllowed  2f3b2483d2c752f7
+operation membership.get  refuses NotAllowed  681858c8967f5976
+operation organization.create  refuses NotAllowed  431b6d1d45006435
+operation organization.get  refuses NotAllowed  fa554aa19547e5b1
+operation person.sign-up  refuses PersonEmailTaken  e11e9d899807519a
+operation session.show  refuses NotAllowed  4c1f11c0f00cc6e0
+operation session.sign-in  refuses SessionCredentialsWrong  64fc31973ed9c65e
+operation system.health  refuses nothing  7e17e7bd40ff6ca9
+: expected +0 not to be +0 // Object.is equality
+ ❯ m1/19-scaffold-explains.test.ts:179:37
+    177|     edit(root, "blueprint/things/allowance/events.ts", "memo: Memo, re…
+    178|     const out = run(root, "model");
+    179|     expect(out.status, out.out).not.toBe(0);
+       |                                     ^
+    180|     expect(out.out).toMatch(/AllowanceSpent/);
+    181|     expect(out.out).toMatch(/\bnote\b/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 2 passed (12)
+   Start at  11:48:32
+   Duration  25.30s (transform 37ms, setup 0ms, import 52ms, tests 25.14s, environment 0ms)
+
+
+## e2e/m1/19-scaffold-explains.test.ts, M1.47's exit clashes (added later the same day; the other tests as above)
+
+
+ RUN  v4.1.12 <repo>/e2e
+
+ ❯ m1/19-scaffold-explains.test.ts (19 tests | 6 failed | 12 skipped) 9787ms
+     × ortho model refuses a declared exit of 2, a payload that doesn't decode, naming the error and its file 1643ms
+     × ortho model refuses a declared exit of 3, NotAllowed's, naming the error and its file 2120ms
+     × ortho model refuses a declared exit of 4, the generated not-found's, naming the error and its file 1842ms
+     × ortho model refuses a declared exit of 130, the shell's, naming the error and its file 1176ms
+     × ortho model refuses a declared exit of 41, another error of the same thing, naming the error and its file 1072ms
+     × ortho model refuses a declared exit of 40, the thing's machine's, naming the error and its file 944ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.47: an exit means one thing, so the compiler refuses a clash > ortho model refuses a declared exit of 2, a payload that doesn't decode, naming the error and its file
+AssertionError: thing allowance (active, exhausted, revoked)  e13237d929917892
+thing api-key  dec54cf75bd4acb9
+thing invitation (pending, accepted, revoked)  7c1d13c393ddaa62
+thing membership  e6505be81a7030e4
+thing organization (active)  561078515c5ea01e
+thing person  ad771ebabdfe3e0e
+thing session  455311c2adae1097
+thing system  357767c64efceced
+operation allowance.get  refuses NotAllowed  6bed21e0ae22d8a8
+operation allowance.grant  refuses AllowanceLimitTooHigh, NotAllowed  f883070ae1800cf3
+operation allowance.revoke  refuses AllowanceNotActive, NotAllowed  a145b0ab143dcc8a
+operation allowance.spend  refuses AllowanceExceeded, AllowanceNotActive, NotAllowed  fe130df24265eeb2
+operation api-key.create  refuses NotAllowed  56de0903f4a0f20e
+operation invitation.accept  refuses InvitationNotPending, NotAllowed  937e15a8f2c9b98a
+operation invitation.revoke  refuses InvitationNotPending, NotAllowed  a527002466da0300
+operation invitation.send  refuses NotAllowed  2f3b2483d2c752f7
+operation membership.get  refuses NotAllowed  681858c8967f5976
+operation organization.create  refuses NotAllowed  431b6d1d45006435
+operation organization.get  refuses NotAllowed  fa554aa19547e5b1
+operation person.sign-up  refuses PersonEmailTaken  e11e9d899807519a
+operation session.show  refuses NotAllowed  4c1f11c0f00cc6e0
+operation session.sign-in  refuses SessionCredentialsWrong  64fc31973ed9c65e
+operation system.health  refuses nothing  7e17e7bd40ff6ca9
+: expected +0 not to be +0 // Object.is equality
+ ❯ m1/19-scaffold-explains.test.ts:191:37
+    189|     edit(root, errors, from, to);
+    190|     const out = run(root, "model");
+    191|     expect(out.status, out.out).not.toBe(0);
+       |                                     ^
+    192|     expect(out.out).toMatch(message);
+    193|     expect(out.out).toContain(errors);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.47: an exit means one thing, so the compiler refuses a clash > ortho model refuses a declared exit of 3, NotAllowed's, naming the error and its file
+AssertionError: thing allowance (active, exhausted, revoked)  3dbbe8fec0239e9e
+thing api-key  dec54cf75bd4acb9
+thing invitation (pending, accepted, revoked)  7c1d13c393ddaa62
+thing membership  e6505be81a7030e4
+thing organization (active)  561078515c5ea01e
+thing person  ad771ebabdfe3e0e
+thing session  455311c2adae1097
+thing system  357767c64efceced
+operation allowance.get  refuses NotAllowed  6bed21e0ae22d8a8
+operation allowance.grant  refuses AllowanceLimitTooHigh, NotAllowed  f883070ae1800cf3
+operation allowance.revoke  refuses AllowanceNotActive, NotAllowed  a145b0ab143dcc8a
+operation allowance.spend  refuses AllowanceExceeded, AllowanceNotActive, NotAllowed  fe130df24265eeb2
+operation api-key.create  refuses NotAllowed  56de0903f4a0f20e
+operation invitation.accept  refuses InvitationNotPending, NotAllowed  937e15a8f2c9b98a
+operation invitation.revoke  refuses InvitationNotPending, NotAllowed  a527002466da0300
+operation invitation.send  refuses NotAllowed  2f3b2483d2c752f7
+operation membership.get  refuses NotAllowed  681858c8967f5976
+operation organization.create  refuses NotAllowed  431b6d1d45006435
+operation organization.get  refuses NotAllowed  fa554aa19547e5b1
+operation person.sign-up  refuses PersonEmailTaken  e11e9d899807519a
+operation session.show  refuses NotAllowed  4c1f11c0f00cc6e0
+operation session.sign-in  refuses SessionCredentialsWrong  64fc31973ed9c65e
+operation system.health  refuses nothing  7e17e7bd40ff6ca9
+: expected +0 not to be +0 // Object.is equality
+ ❯ m1/19-scaffold-explains.test.ts:191:37
+    189|     edit(root, errors, from, to);
+    190|     const out = run(root, "model");
+    191|     expect(out.status, out.out).not.toBe(0);
+       |                                     ^
+    192|     expect(out.out).toMatch(message);
+    193|     expect(out.out).toContain(errors);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.47: an exit means one thing, so the compiler refuses a clash > ortho model refuses a declared exit of 4, the generated not-found's, naming the error and its file
+AssertionError: thing allowance (active, exhausted, revoked)  8f66fffdb6086aa4
+thing api-key  dec54cf75bd4acb9
+thing invitation (pending, accepted, revoked)  7c1d13c393ddaa62
+thing membership  e6505be81a7030e4
+thing organization (active)  561078515c5ea01e
+thing person  ad771ebabdfe3e0e
+thing session  455311c2adae1097
+thing system  357767c64efceced
+operation allowance.get  refuses NotAllowed  6bed21e0ae22d8a8
+operation allowance.grant  refuses AllowanceLimitTooHigh, NotAllowed  f883070ae1800cf3
+operation allowance.revoke  refuses AllowanceNotActive, NotAllowed  a145b0ab143dcc8a
+operation allowance.spend  refuses AllowanceExceeded, AllowanceNotActive, NotAllowed  fe130df24265eeb2
+operation api-key.create  refuses NotAllowed  56de0903f4a0f20e
+operation invitation.accept  refuses InvitationNotPending, NotAllowed  937e15a8f2c9b98a
+operation invitation.revoke  refuses InvitationNotPending, NotAllowed  a527002466da0300
+operation invitation.send  refuses NotAllowed  2f3b2483d2c752f7
+operation membership.get  refuses NotAllowed  681858c8967f5976
+operation organization.create  refuses NotAllowed  431b6d1d45006435
+operation organization.get  refuses NotAllowed  fa554aa19547e5b1
+operation person.sign-up  refuses PersonEmailTaken  e11e9d899807519a
+operation session.show  refuses NotAllowed  4c1f11c0f00cc6e0
+operation session.sign-in  refuses SessionCredentialsWrong  64fc31973ed9c65e
+operation system.health  refuses nothing  7e17e7bd40ff6ca9
+: expected +0 not to be +0 // Object.is equality
+ ❯ m1/19-scaffold-explains.test.ts:191:37
+    189|     edit(root, errors, from, to);
+    190|     const out = run(root, "model");
+    191|     expect(out.status, out.out).not.toBe(0);
+       |                                     ^
+    192|     expect(out.out).toMatch(message);
+    193|     expect(out.out).toContain(errors);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.47: an exit means one thing, so the compiler refuses a clash > ortho model refuses a declared exit of 130, the shell's, naming the error and its file
+AssertionError: thing allowance (active, exhausted, revoked)  703353db748df2e5
+thing api-key  dec54cf75bd4acb9
+thing invitation (pending, accepted, revoked)  7c1d13c393ddaa62
+thing membership  e6505be81a7030e4
+thing organization (active)  561078515c5ea01e
+thing person  ad771ebabdfe3e0e
+thing session  455311c2adae1097
+thing system  357767c64efceced
+operation allowance.get  refuses NotAllowed  6bed21e0ae22d8a8
+operation allowance.grant  refuses AllowanceLimitTooHigh, NotAllowed  f883070ae1800cf3
+operation allowance.revoke  refuses AllowanceNotActive, NotAllowed  a145b0ab143dcc8a
+operation allowance.spend  refuses AllowanceExceeded, AllowanceNotActive, NotAllowed  fe130df24265eeb2
+operation api-key.create  refuses NotAllowed  56de0903f4a0f20e
+operation invitation.accept  refuses InvitationNotPending, NotAllowed  937e15a8f2c9b98a
+operation invitation.revoke  refuses InvitationNotPending, NotAllowed  a527002466da0300
+operation invitation.send  refuses NotAllowed  2f3b2483d2c752f7
+operation membership.get  refuses NotAllowed  681858c8967f5976
+operation organization.create  refuses NotAllowed  431b6d1d45006435
+operation organization.get  refuses NotAllowed  fa554aa19547e5b1
+operation person.sign-up  refuses PersonEmailTaken  e11e9d899807519a
+operation session.show  refuses NotAllowed  4c1f11c0f00cc6e0
+operation session.sign-in  refuses SessionCredentialsWrong  64fc31973ed9c65e
+operation system.health  refuses nothing  7e17e7bd40ff6ca9
+: expected +0 not to be +0 // Object.is equality
+ ❯ m1/19-scaffold-explains.test.ts:191:37
+    189|     edit(root, errors, from, to);
+    190|     const out = run(root, "model");
+    191|     expect(out.status, out.out).not.toBe(0);
+       |                                     ^
+    192|     expect(out.out).toMatch(message);
+    193|     expect(out.out).toContain(errors);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.47: an exit means one thing, so the compiler refuses a clash > ortho model refuses a declared exit of 41, another error of the same thing, naming the error and its file
+AssertionError: thing allowance (active, exhausted, revoked)  84382d63d21e22b1
+thing api-key  dec54cf75bd4acb9
+thing invitation (pending, accepted, revoked)  7c1d13c393ddaa62
+thing membership  e6505be81a7030e4
+thing organization (active)  561078515c5ea01e
+thing person  ad771ebabdfe3e0e
+thing session  455311c2adae1097
+thing system  357767c64efceced
+operation allowance.get  refuses NotAllowed  6bed21e0ae22d8a8
+operation allowance.grant  refuses AllowanceLimitTooHigh, NotAllowed  f883070ae1800cf3
+operation allowance.revoke  refuses AllowanceNotActive, NotAllowed  a145b0ab143dcc8a
+operation allowance.spend  refuses AllowanceExceeded, AllowanceNotActive, NotAllowed  fe130df24265eeb2
+operation api-key.create  refuses NotAllowed  56de0903f4a0f20e
+operation invitation.accept  refuses InvitationNotPending, NotAllowed  937e15a8f2c9b98a
+operation invitation.revoke  refuses InvitationNotPending, NotAllowed  a527002466da0300
+operation invitation.send  refuses NotAllowed  2f3b2483d2c752f7
+operation membership.get  refuses NotAllowed  681858c8967f5976
+operation organization.create  refuses NotAllowed  431b6d1d45006435
+operation organization.get  refuses NotAllowed  fa554aa19547e5b1
+operation person.sign-up  refuses PersonEmailTaken  e11e9d899807519a
+operation session.show  refuses NotAllowed  4c1f11c0f00cc6e0
+operation session.sign-in  refuses SessionCredentialsWrong  64fc31973ed9c65e
+operation system.health  refuses nothing  7e17e7bd40ff6ca9
+: expected +0 not to be +0 // Object.is equality
+ ❯ m1/19-scaffold-explains.test.ts:191:37
+    189|     edit(root, errors, from, to);
+    190|     const out = run(root, "model");
+    191|     expect(out.status, out.out).not.toBe(0);
+       |                                     ^
+    192|     expect(out.out).toMatch(message);
+    193|     expect(out.out).toContain(errors);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  m1/19-scaffold-explains.test.ts > M1.47: an exit means one thing, so the compiler refuses a clash > ortho model refuses a declared exit of 40, the thing's machine's, naming the error and its file
+AssertionError: thing allowance (active, exhausted, revoked)  912695d41c500e4e
+thing api-key  dec54cf75bd4acb9
+thing invitation (pending, accepted, revoked)  7c1d13c393ddaa62
+thing membership  e6505be81a7030e4
+thing organization (active)  561078515c5ea01e
+thing person  ad771ebabdfe3e0e
+thing session  455311c2adae1097
+thing system  357767c64efceced
+operation allowance.get  refuses NotAllowed  6bed21e0ae22d8a8
+operation allowance.grant  refuses AllowanceLimitTooHigh, NotAllowed  f883070ae1800cf3
+operation allowance.revoke  refuses AllowanceNotActive, NotAllowed  a145b0ab143dcc8a
+operation allowance.spend  refuses AllowanceExceeded, AllowanceNotActive, NotAllowed  fe130df24265eeb2
+operation api-key.create  refuses NotAllowed  56de0903f4a0f20e
+operation invitation.accept  refuses InvitationNotPending, NotAllowed  937e15a8f2c9b98a
+operation invitation.revoke  refuses InvitationNotPending, NotAllowed  a527002466da0300
+operation invitation.send  refuses NotAllowed  2f3b2483d2c752f7
+operation membership.get  refuses NotAllowed  681858c8967f5976
+operation organization.create  refuses NotAllowed  431b6d1d45006435
+operation organization.get  refuses NotAllowed  fa554aa19547e5b1
+operation person.sign-up  refuses PersonEmailTaken  e11e9d899807519a
+operation session.show  refuses NotAllowed  4c1f11c0f00cc6e0
+operation session.sign-in  refuses SessionCredentialsWrong  64fc31973ed9c65e
+operation system.health  refuses nothing  7e17e7bd40ff6ca9
+: expected +0 not to be +0 // Object.is equality
+ ❯ m1/19-scaffold-explains.test.ts:191:37
+    189|     edit(root, errors, from, to);
+    190|     const out = run(root, "model");
+    191|     expect(out.status, out.out).not.toBe(0);
+       |                                     ^
+    192|     expect(out.out).toMatch(message);
+    193|     expect(out.out).toContain(errors);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 1 passed | 12 skipped (19)
+   Start at  12:04:09
+   Duration  9.96s (transform 44ms, setup 0ms, import 61ms, tests 9.79s, environment 0ms)
+

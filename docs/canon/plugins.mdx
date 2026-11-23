@@ -3,7 +3,7 @@ title: Plugins
 concept: plugin
 owns: [plugin, feature, adapter, projection, mount, choose, include, narrow, omit, choice, setting, need]
 questions:
-  - What is a plugin, and what are its three kinds?
+  - What is a plugin, and what are its five kinds?
   - What does mounting one put in my project?
   - What can a mount change, and what can it never change?
   - How is a choice different from a setting?
@@ -17,13 +17,15 @@ links: [orthograph, features, adapters, projections, environments, languages-and
 
 ## The idea
 
-A **plugin** is a blueprint someone else wrote, proved in its own CI, and shipped as a package. There are three kinds,
-and they answer three questions about a system. A **feature** is what else the system is: its things, operations and
-journeys (governance, wallets, auth). An **adapter** is what is outside it: an outside system's calls and events (a
-forum, Stripe, a browser wallet). A **projection** is what the system becomes: the API, the SDK, the CLI, the docs,
-the portal. You use a plugin by **mounting** it: one small file that says "use this plugin here, like this". Four
-verbs shape a mount (**choose**, **include**, **narrow**, **omit**), and every one of them keeps the plugin's proof
-true. None of this is built yet. It is planned for M1.06 to M1.13.
+A **plugin** is a blueprint someone else wrote, proved in its own CI, and shipped as a package. It is one of five kinds.
+The first three answer three questions about a system. A **feature** is what else the system is: its things, operations
+and journeys (governance, wallets, auth). An **adapter** is what is outside it: an outside system's calls and events (a
+forum, Stripe, a browser wallet). A **projection** is what the system becomes: the API, the SDK, the CLI, the docs, the
+portal. K27 adds two more kinds, a **language** and a **host**, for what code is written in and where it runs
+([languages and hosts](languages-and-hosts.mdx)); Goal 4 builds them. You use a plugin by **mounting** it: one small
+file that says "use this plugin here, like this". Four verbs shape a mount (**choose**, **include**, **narrow**,
+**omit**), and every one of them keeps the plugin's proof true. None of this is built yet. It is planned for M1.06 to
+M1.13.
 
 ## The smallest example
 
@@ -45,22 +47,21 @@ forum's one call and one event the app may reach, and nothing else of the forum 
 - the adapter brings typed calls, events in through `on:`, a stand-in for worlds, and a conformance test;
 - the portal shows an origin badge on every thing and operation that came from a plugin.
 
-What signup has today in place of mounted projections is this list, fixed in the generator:
+Acme mounts the model, the api, the server (M1.11), the sdk, the cli and the mcp (M1.12), one file each in
+`blueprint/projections/`, and what a mount makes is what is written: take `server.ts` away and `generated/server/` is
+gone. A project that mounts no projection, signup included, gets those six as if it had. What is still a fixed list in
+the generator, for every project, is the rest:
 
-```ts file=packages/generators/src/modules/render/service.ts name=imports lines=1-9
+```ts file=packages/generators/src/modules/render/service.ts name=imports,imports lines=1-6
+import { Effect } from "effect";
+import { emptyServer, renderHandlerScaffold } from "@orthograph/projections/shared";
 import { PortalRender } from "#modules/portal/service.js";
 import type { RenderApi } from "./types.ts";
-import { renderApi } from "./internal/api.ts";
-import { renderCli } from "./internal/cli.ts";
-import { renderDocs, renderEdges } from "./internal/docs.ts";
-import { renderMcp } from "./internal/mcp.ts";
-import { renderHandlerScaffold } from "./internal/scaffold.ts";
-import { renderSdk } from "./internal/sdk.ts";
-import { renderServer } from "./internal/server.ts";
+import { renderDocs } from "./internal/docs.ts";
+import { filesOf, mountedIn } from "./internal/mounted.ts";
 ```
 
-Every project gets every renderer, the portal included. When M1.11 to M1.13 land, each of these becomes a projection
-the blueprint mounts, and the portal is mounted the same way.
+The docs and the portal become projections the blueprint mounts when M1.13 lands.
 
 ## How it works
 
@@ -153,7 +154,7 @@ is no override.
 | Part | Status | Slice | Proved by |
 |---|---|---|---|
 | a fixed renderer list, every projection always on | proved | | the layer 1 generate checks |
-| the three kinds, the four verbs, choices and settings | specified | M1.01 | K2, K5 seam 8, `design/frame/mounting.md` |
+| K2's three kinds (feature, adapter, projection), the four verbs, choices and settings | specified | M1.01 | K2, K5 seam 8, `design/history/retired-2026-11-23/frame/mounting.md` |
 | mounts read from the three folders | open | M1.06 | check `01` |
 | choose, include, narrow, omit | open | M1.07 | a narrowed fixture generates without the omitted operation |
 | needs and clashes | open | M1.08 | checks `05` and `06` |
@@ -164,7 +165,7 @@ The page is a draft because the descriptor itself is not decided yet: M1.01 writ
 ## Notes
 
 <Note kind="decision" decision="K2">One front door (`orthograph`) and one package per plugin, language and host (K2 Q4).
-The three kinds and the mount API are K2's frame.</Note>
+K2's frame is the first three kinds and the mount API; K27 adds the language and the host.</Note>
 
 <Note kind="decision" decision="K5">K5 seam 8 sets what a mount writes and what falls out of it, and K5's portal row
 makes the portal a mounted projection (M1.11 to M1.13).</Note>

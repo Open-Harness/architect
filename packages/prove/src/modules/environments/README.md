@@ -20,7 +20,7 @@ Three environments are more than the revision's bundle (D3 #50 to #52, #91):
   `ORTHO_WORLDS=1` in its config, which opens `/_world/worlds` (see `test-worlds`). `down` removes the container.
 - **One that another environment is promoted from** (`promotesFrom`: staging) records telemetry too: the same collector and
   `OTLP_URL`, without `ORTHO_WORLDS`, because `promote --to staging` proves it where it runs and `watch` reads the same
-  folder. Such an environment needs Docker to start, and one already running without a collector is restarted onto one.
+  folder. Its collector is a process of its own (the pinned binary, stopped by `down`), and one already running without a collector is restarted onto one.
 - **`logbook` is the logbook's own worker** (`@orthograph/logbook`, L2.03), started with `policy` (issuer, repository,
   refs, workflows: `ORTHO_OIDC_*` in the CLI) through `Logbook.launch`, with its state, pid and port beside the
   others'. It has no bundle, so its status carries no revision.

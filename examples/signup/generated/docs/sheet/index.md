@@ -24,6 +24,12 @@ States: open, full, closed. A move from the wrong state is refused SheetNotOpen 
 | join | open | open, full | PlaceTaken |
 | close | open, full | closed | SheetClosed |
 
+## Events
+
+- `PlaceTaken`: carries sheet (sheet.id), left (Count); emitted by the move join
+- `SheetClosed`: carries sheet (sheet.id); emitted by the move close
+- `SheetOpened`: carries sheet (sheet.id), places (Count); emitted by the move open
+
 ## Operations
 
 - [sheet.close](close.md): Take a sheet down. Nobody can join it after this.

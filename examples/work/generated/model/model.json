@@ -1,7 +1,10 @@
 {
   "refusals": {
+    "AttentionNotFound": "AT-901",
     "AttentionNotOpen": "AT-900",
+    "IdempotencyConflict": "AR-002",
     "MilestoneNotActive": "ML-900",
+    "MilestoneNotFound": "ML-901",
     "MissionClosed": "MS-005",
     "MissionHasOpenQuestions": "MS-001",
     "MissionHasOpenTasks": "MS-004",
@@ -11,7 +14,9 @@
     "NotAllowed": "AR-001",
     "QuestionNoSuchOption": "QU-001",
     "QuestionNotAsked": "QU-900",
+    "QuestionNotFound": "QU-901",
     "RunAgentCannot": "RU-002",
+    "RunNotFound": "RU-901",
     "RunNotRunning": "RU-900",
     "RunOverBudget": "RU-001",
     "RunTaskClaimed": "RU-003"
@@ -223,8 +228,17 @@
         }
       },
       "errors": {},
+      "notFound": {
+        "error": "AttentionNotFound",
+        "exit": 4,
+        "code": "AT-901"
+      },
       "roles": [],
-      "hash": "ddfc27b01db3872b"
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "4bc4bbfa3bc73459"
     },
     "milestone": {
       "name": "milestone",
@@ -352,8 +366,17 @@
         }
       },
       "errors": {},
+      "notFound": {
+        "error": "MilestoneNotFound",
+        "exit": 4,
+        "code": "ML-901"
+      },
       "roles": [],
-      "hash": "c1707e2052fd0111"
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "10bfc73701266a5a"
     },
     "mission": {
       "name": "mission",
@@ -603,7 +626,13 @@
       "roles": [
         "owner"
       ],
-      "hash": "0ef71607a40139e5"
+      "roleRules": {
+        "owner": "(mission, principal) => mission.owner === principal.person"
+      },
+      "from": {
+        "kind": "app"
+      },
+      "hash": "0ce414120027dab4"
     },
     "person": {
       "name": "person",
@@ -635,7 +664,11 @@
       "events": {},
       "errors": {},
       "roles": [],
-      "hash": "0c62a8f851d3c32f"
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "c9a028d47a5f83b2"
     },
     "question": {
       "name": "question",
@@ -805,8 +838,17 @@
           "code": "QU-001"
         }
       },
+      "notFound": {
+        "error": "QuestionNotFound",
+        "exit": 4,
+        "code": "QU-901"
+      },
       "roles": [],
-      "hash": "8253c3475eb21dfa"
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "eb3656bcee0f85ef"
     },
     "run": {
       "name": "run",
@@ -1057,8 +1099,17 @@
           "code": "RU-003"
         }
       },
+      "notFound": {
+        "error": "RunNotFound",
+        "exit": 4,
+        "code": "RU-901"
+      },
       "roles": [],
-      "hash": "1ecf60f70ed99b66"
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "3ec697db6baa81eb"
     }
   },
   "operations": {
@@ -1069,6 +1120,9 @@
       "verb": "approve",
       "identifier": "approve",
       "file": "blueprint/things/attention/verbs/approve.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Say yes. For a promote, the promote runs.",
       "payload": {
         "mission": {
@@ -1098,8 +1152,10 @@
         "emits": "AttentionApproved"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "AttentionNotOpen",
+        "AttentionNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -1109,6 +1165,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "attention": "attention"
+      },
+      "notFound": {
+        "attention": "AttentionNotFound"
+      },
       "steps": {
         "record": {
           "name": "attention.approve.record",
@@ -1121,7 +1185,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "cca125254ef995f7"
+      "hash": "b41d3eb8001d82bb"
     },
     "attention.decline": {
       "kind": "operation",
@@ -1130,6 +1194,9 @@
       "verb": "decline",
       "identifier": "decline",
       "file": "blueprint/things/attention/verbs/decline.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Say not yet, and why. The task stays where its facts put it.",
       "payload": {
         "mission": {
@@ -1166,8 +1233,10 @@
         "emits": "AttentionDeclined"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "AttentionNotOpen",
+        "AttentionNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -1177,6 +1246,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "attention": "attention"
+      },
+      "notFound": {
+        "attention": "AttentionNotFound"
+      },
       "steps": {
         "record": {
           "name": "attention.decline.record",
@@ -1189,7 +1266,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "4b6fcff837667b9c"
+      "hash": "fd7efa41d9865b82"
     },
     "attention.list": {
       "kind": "read",
@@ -1198,6 +1275,9 @@
       "verb": "list",
       "identifier": "list",
       "file": "blueprint/things/attention/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "List attentions, newest first, 50 to a page, filtered by mission, state.",
       "payload": {
         "mission": {
@@ -1237,6 +1317,7 @@
       },
       "move": null,
       "errors": [],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -1247,6 +1328,7 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -1262,7 +1344,7 @@
         "order": "newest",
         "page": 50
       },
-      "hash": "a285f1ba16307abe"
+      "hash": "ebdea41f9007b66c"
     },
     "attention.raise": {
       "kind": "operation",
@@ -1271,6 +1353,9 @@
       "verb": "raise",
       "identifier": "raise",
       "file": "blueprint/things/attention/verbs/raise.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Ask the mission's owner for a decision only they can make.",
       "payload": {
         "mission": {
@@ -1332,9 +1417,11 @@
       "errors": [
         "MissionNotRunning"
       ],
+      "breaks": [],
       "refusals": [
         "MissionNotRunning",
-        "NotAllowed"
+        "NotAllowed",
+        "IdempotencyConflict"
       ],
       "allowed": [
         {
@@ -1343,6 +1430,11 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
+      "mints": "attention",
       "steps": {
         "insert": {
           "name": "attention.raise.insert",
@@ -1355,7 +1447,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "92d59b158780c2d2"
+      "hash": "9615fc0b9525f656"
     },
     "milestone.add": {
       "kind": "operation",
@@ -1364,6 +1456,9 @@
       "verb": "add",
       "identifier": "add",
       "file": "blueprint/things/milestone/verbs/add.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Add a milestone to a mission. Its tasks appear at once: its kinds over its subject.",
       "payload": {
         "mission": {
@@ -1424,9 +1519,11 @@
       "errors": [
         "MissionClosed"
       ],
+      "breaks": [],
       "refusals": [
         "MissionClosed",
-        "NotAllowed"
+        "NotAllowed",
+        "IdempotencyConflict"
       ],
       "allowed": [
         {
@@ -1435,6 +1532,11 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
+      "mints": "milestone",
       "steps": {
         "insert": {
           "name": "milestone.add.insert",
@@ -1447,7 +1549,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "f57260ccf4fa7dea"
+      "hash": "343a86926bb38881"
     },
     "milestone.drop": {
       "kind": "operation",
@@ -1456,6 +1558,9 @@
       "verb": "drop",
       "identifier": "drop",
       "file": "blueprint/things/milestone/verbs/drop.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Drop a milestone from its mission's scope. Its tasks leave the board; the burn-down shows the step.",
       "payload": {
         "mission": {
@@ -1485,8 +1590,10 @@
         "emits": "MilestoneDropped"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "MilestoneNotActive",
+        "MilestoneNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -1496,6 +1603,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "milestone": "milestone"
+      },
+      "notFound": {
+        "milestone": "MilestoneNotFound"
+      },
       "steps": {
         "record": {
           "name": "milestone.drop.record",
@@ -1508,7 +1623,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "c8fcf297b3a55d2f"
+      "hash": "8f1ca999fe2d6160"
     },
     "milestone.list": {
       "kind": "read",
@@ -1517,6 +1632,9 @@
       "verb": "list",
       "identifier": "list",
       "file": "blueprint/things/milestone/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "List milestones, oldest first, 50 to a page, filtered by mission, state.",
       "payload": {
         "mission": {
@@ -1556,6 +1674,7 @@
       },
       "move": null,
       "errors": [],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -1566,6 +1685,7 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -1581,7 +1701,7 @@
         "order": "oldest",
         "page": 50
       },
-      "hash": "432b05efdcd8e9f5"
+      "hash": "73a47df6293bbb14"
     },
     "mission.finish": {
       "kind": "operation",
@@ -1590,6 +1710,9 @@
       "verb": "finish",
       "identifier": "finish",
       "file": "blueprint/things/mission/verbs/finish.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Close the mission: every task is closed by a fact up to its target.",
       "payload": {
         "mission": {
@@ -1614,6 +1737,7 @@
       "errors": [
         "MissionHasOpenTasks"
       ],
+      "breaks": [],
       "refusals": [
         "MissionHasOpenTasks",
         "MissionNotIntake",
@@ -1626,6 +1750,10 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
       "steps": {
         "record": {
           "name": "mission.finish.record",
@@ -1638,7 +1766,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "b7fce489a2125211"
+      "hash": "a7f9c485cfc7907a"
     },
     "mission.get": {
       "kind": "read",
@@ -1647,6 +1775,9 @@
       "verb": "get",
       "identifier": "get",
       "file": "blueprint/things/mission/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Read one mission by its id: owner, title, target, blueprint, state.",
       "payload": {
         "id": {
@@ -1697,6 +1828,7 @@
       },
       "move": null,
       "errors": [],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -1706,6 +1838,7 @@
           "role": "mission.owner"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -1713,7 +1846,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "32b72425d755f755"
+      "hash": "c6e071db7e259620"
     },
     "mission.list": {
       "kind": "read",
@@ -1722,6 +1855,9 @@
       "verb": "list",
       "identifier": "list",
       "file": "blueprint/things/mission/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "List missions, newest first, 20 to a page, filtered by owner, state.",
       "payload": {
         "owner": {
@@ -1761,6 +1897,7 @@
       },
       "move": null,
       "errors": [],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -1769,6 +1906,7 @@
           "kind": "signed-in"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -1784,7 +1922,7 @@
         "order": "newest",
         "page": 20
       },
-      "hash": "3856ff5dba949558"
+      "hash": "adb7a03ed6088cec"
     },
     "mission.open": {
       "kind": "operation",
@@ -1793,6 +1931,9 @@
       "verb": "open",
       "identifier": "open",
       "file": "blueprint/things/mission/verbs/open.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Open a mission over the blueprint revision named. The manager starts by asking about the blueprint's gaps.",
       "payload": {
         "title": {
@@ -1837,14 +1978,18 @@
         "emits": "MissionOpened"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "IdempotencyConflict"
       ],
       "allowed": [
         {
           "kind": "signed-in"
         }
       ],
+      "agentTool": true,
+      "mints": "mission",
       "steps": {
         "insert": {
           "name": "mission.open.insert",
@@ -1857,7 +2002,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "9543931a3d016483"
+      "hash": "812106af3ec81b4c"
     },
     "mission.pause": {
       "kind": "operation",
@@ -1866,6 +2011,9 @@
       "verb": "pause",
       "identifier": "pause",
       "file": "blueprint/things/mission/verbs/pause.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Pause the mission, saying why.",
       "payload": {
         "mission": {
@@ -1895,6 +2043,7 @@
         "emits": "MissionPaused"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "MissionNotIntake",
         "NotAllowed"
@@ -1906,6 +2055,10 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
       "steps": {
         "record": {
           "name": "mission.pause.record",
@@ -1918,7 +2071,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "6c5f7dbc66625741"
+      "hash": "d3b6f3dc816bdfed"
     },
     "mission.resume": {
       "kind": "operation",
@@ -1927,6 +2080,9 @@
       "verb": "resume",
       "identifier": "resume",
       "file": "blueprint/things/mission/verbs/resume.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Pick a paused mission up again.",
       "payload": {
         "mission": {
@@ -1949,6 +2105,7 @@
         "emits": "MissionResumed"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "MissionNotIntake",
         "NotAllowed"
@@ -1960,6 +2117,10 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
       "steps": {
         "record": {
           "name": "mission.resume.record",
@@ -1972,7 +2133,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "c5e35210e6a420b0"
+      "hash": "5036eb1dbbb1edd7"
     },
     "mission.start": {
       "kind": "operation",
@@ -1981,6 +2142,9 @@
       "verb": "start",
       "identifier": "start",
       "file": "blueprint/things/mission/verbs/start.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Start the mission once intake is done. From here the manager only orchestrates.",
       "payload": {
         "mission": {
@@ -2005,6 +2169,7 @@
       "errors": [
         "MissionHasOpenQuestions"
       ],
+      "breaks": [],
       "refusals": [
         "MissionHasOpenQuestions",
         "MissionNotIntake",
@@ -2017,6 +2182,10 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
       "steps": {
         "record": {
           "name": "mission.start.record",
@@ -2029,7 +2198,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "8a8ddea8c0fe9c4f"
+      "hash": "759e820cdcef06b3"
     },
     "mission.stop": {
       "kind": "operation",
@@ -2038,6 +2207,9 @@
       "verb": "stop",
       "identifier": "stop",
       "file": "blueprint/things/mission/verbs/stop.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Stop the mission for good. Its runs are stopped with it.",
       "payload": {
         "mission": {
@@ -2069,6 +2241,7 @@
         "emits": "MissionStopped"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "MissionNotIntake",
         "NotAllowed"
@@ -2080,6 +2253,10 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
       "steps": {
         "record": {
           "name": "mission.stop.record",
@@ -2092,7 +2269,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "c2ffbd45aa4aae73"
+      "hash": "562e14aae500c09c"
     },
     "mission.tasks": {
       "kind": "operation",
@@ -2101,6 +2278,9 @@
       "verb": "tasks",
       "identifier": "tasks",
       "file": "blueprint/things/mission/verbs/tasks.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "The mission's tasks, each in the column its facts put it in.",
       "payload": {
         "mission": {
@@ -2121,6 +2301,7 @@
       },
       "move": null,
       "errors": [],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -2131,22 +2312,30 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
       "steps": {
         "plan": {
           "name": "mission.tasks.plan",
           "type": "database"
         },
         "facts": {
-          "name": "mission.tasks.facts"
+          "name": "mission.tasks.facts",
+          "type": "blank"
         }
       },
+      "blanks": [
+        "steps.facts: read eval rows, verdicts and compiled revisions from the logbook: a declared dependency (L3.01)"
+      ],
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": {
         "p95Ms": 300
       },
-      "hash": "08e5c4eaf83fb049"
+      "hash": "f032f66ccaa2cee0"
     },
     "question.answer": {
       "kind": "operation",
@@ -2155,6 +2344,9 @@
       "verb": "answer",
       "identifier": "answer",
       "file": "blueprint/things/question/verbs/answer.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Answer a question with one of its letters.",
       "payload": {
         "mission": {
@@ -2193,9 +2385,11 @@
       "errors": [
         "QuestionNoSuchOption"
       ],
+      "breaks": [],
       "refusals": [
         "QuestionNoSuchOption",
         "QuestionNotAsked",
+        "QuestionNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -2205,6 +2399,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "question": "question"
+      },
+      "notFound": {
+        "question": "QuestionNotFound"
+      },
       "steps": {
         "record": {
           "name": "question.answer.record",
@@ -2217,7 +2419,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "351a5e72d85b995e"
+      "hash": "af190c907ab1cb4a"
     },
     "question.ask": {
       "kind": "operation",
@@ -2226,6 +2428,9 @@
       "verb": "ask",
       "identifier": "ask",
       "file": "blueprint/things/question/verbs/ask.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Ask the mission's owner about one gap in the blueprint, with lettered answers.",
       "payload": {
         "mission": {
@@ -2287,9 +2492,11 @@
       "errors": [
         "MissionNotInIntake"
       ],
+      "breaks": [],
       "refusals": [
         "MissionNotInIntake",
-        "NotAllowed"
+        "NotAllowed",
+        "IdempotencyConflict"
       ],
       "allowed": [
         {
@@ -2298,6 +2505,11 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
+      "mints": "question",
       "steps": {
         "insert": {
           "name": "question.ask.insert",
@@ -2310,7 +2522,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "ce99fec8831ff30a"
+      "hash": "ad554a00d4c4326a"
     },
     "question.list": {
       "kind": "read",
@@ -2319,6 +2531,9 @@
       "verb": "list",
       "identifier": "list",
       "file": "blueprint/things/question/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "List questions, oldest first, 50 to a page, filtered by mission, state.",
       "payload": {
         "mission": {
@@ -2358,6 +2573,7 @@
       },
       "move": null,
       "errors": [],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -2368,6 +2584,7 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -2383,7 +2600,7 @@
         "order": "oldest",
         "page": 50
       },
-      "hash": "e780a06b74809b00"
+      "hash": "327ea58f20e30eed"
     },
     "question.spike": {
       "kind": "operation",
@@ -2392,6 +2609,9 @@
       "verb": "spike",
       "identifier": "spike",
       "file": "blueprint/things/question/verbs/spike.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Not sure yet: turn the question into a spike task on its subject.",
       "payload": {
         "mission": {
@@ -2421,8 +2641,10 @@
         "emits": "QuestionSpiked"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "QuestionNotAsked",
+        "QuestionNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -2432,6 +2654,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "question": "question"
+      },
+      "notFound": {
+        "question": "QuestionNotFound"
+      },
       "steps": {
         "record": {
           "name": "question.spike.record",
@@ -2444,7 +2674,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "ca77c15be4d4330a"
+      "hash": "7cfbd133245e5bca"
     },
     "run.fail": {
       "kind": "operation",
@@ -2453,6 +2683,9 @@
       "verb": "fail",
       "identifier": "fail",
       "file": "blueprint/things/run/verbs/fail.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "The run gave up, saying why.",
       "payload": {
         "mission": {
@@ -2490,8 +2723,10 @@
         "emits": "RunFailed"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "RunNotRunning",
+        "RunNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -2501,6 +2736,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "run": "run"
+      },
+      "notFound": {
+        "run": "RunNotFound"
+      },
       "steps": {
         "record": {
           "name": "run.fail.record",
@@ -2513,7 +2756,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "eaaf8ea198d0fcdf"
+      "hash": "0596c85907d6d342"
     },
     "run.finish": {
       "kind": "operation",
@@ -2522,6 +2765,9 @@
       "verb": "finish",
       "identifier": "finish",
       "file": "blueprint/things/run/verbs/finish.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "The run pushed its branch. CI proves it; the run cannot close its own task.",
       "payload": {
         "mission": {
@@ -2558,8 +2804,10 @@
         "emits": "RunFinished"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "RunNotRunning",
+        "RunNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -2569,6 +2817,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "run": "run"
+      },
+      "notFound": {
+        "run": "RunNotFound"
+      },
       "steps": {
         "record": {
           "name": "run.finish.record",
@@ -2581,7 +2837,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "d5c8959ee2ed50bc"
+      "hash": "4bb786b8cc371857"
     },
     "run.list": {
       "kind": "read",
@@ -2590,6 +2846,9 @@
       "verb": "list",
       "identifier": "list",
       "file": "blueprint/things/run/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "List runs, newest first, 50 to a page, filtered by mission, task, state.",
       "payload": {
         "mission": {
@@ -2638,6 +2897,7 @@
       },
       "move": null,
       "errors": [],
+      "breaks": [],
       "refusals": [
         "NotAllowed"
       ],
@@ -2648,6 +2908,7 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
       "steps": {},
       "idempotent": null,
       "runs": "server",
@@ -2664,7 +2925,7 @@
         "order": "newest",
         "page": 50
       },
-      "hash": "2a5b6fcfbf90e985"
+      "hash": "ad4643ee90683db2"
     },
     "run.report": {
       "kind": "operation",
@@ -2673,6 +2934,9 @@
       "verb": "report",
       "identifier": "report",
       "file": "blueprint/things/run/verbs/report.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Say how the run is going. It moves no card.",
       "payload": {
         "mission": {
@@ -2717,8 +2981,10 @@
         "emits": "RunReported"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "RunNotRunning",
+        "RunNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -2728,6 +2994,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "run": "run"
+      },
+      "notFound": {
+        "run": "RunNotFound"
+      },
       "steps": {
         "record": {
           "name": "run.report.record",
@@ -2740,7 +3014,7 @@
       "budget": {
         "p95Ms": 100
       },
-      "hash": "23753a4b42178e5c"
+      "hash": "cd06c7ba79eefc74"
     },
     "run.start": {
       "kind": "operation",
@@ -2749,6 +3023,9 @@
       "verb": "start",
       "identifier": "start",
       "file": "blueprint/things/run/verbs/start.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Start an agent on one task. The run claims the task until it ends.",
       "payload": {
         "mission": {
@@ -2814,12 +3091,14 @@
         "RunAgentCannot",
         "RunTaskClaimed"
       ],
+      "breaks": [],
       "refusals": [
         "MissionNotRunning",
         "RunOverBudget",
         "RunAgentCannot",
         "RunTaskClaimed",
-        "NotAllowed"
+        "NotAllowed",
+        "IdempotencyConflict"
       ],
       "allowed": [
         {
@@ -2828,6 +3107,11 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission"
+      },
+      "mints": "run",
       "steps": {
         "claim": {
           "name": "run.start.claim",
@@ -2840,7 +3124,7 @@
       "budget": {
         "p95Ms": 250
       },
-      "hash": "9042f562ee3c07c3"
+      "hash": "410a9424a5ad91e2"
     },
     "run.stop": {
       "kind": "operation",
@@ -2849,6 +3133,9 @@
       "verb": "stop",
       "identifier": "stop",
       "file": "blueprint/things/run/verbs/stop.ts",
+      "from": {
+        "kind": "app"
+      },
       "description": "Stop the run. A person's act, or the mission stopping.",
       "payload": {
         "mission": {
@@ -2886,8 +3173,10 @@
         "emits": "RunStopped"
       },
       "errors": [],
+      "breaks": [],
       "refusals": [
         "RunNotRunning",
+        "RunNotFound",
         "NotAllowed"
       ],
       "allowed": [
@@ -2897,6 +3186,14 @@
           "path": "mission"
         }
       ],
+      "agentTool": true,
+      "refs": {
+        "mission": "mission",
+        "run": "run"
+      },
+      "notFound": {
+        "run": "RunNotFound"
+      },
       "steps": {
         "record": {
           "name": "run.stop.record",
@@ -2909,8 +3206,15 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "9967cbbc707bd3b3"
+      "hash": "a58ba19ad179e771"
     }
+  },
+  "journeys": {},
+  "startingWorlds": {},
+  "blanks": {
+    "mission.tasks": [
+      "steps.facts: read eval rows, verdicts and compiled revisions from the logbook: a declared dependency (L3.01)"
+    ]
   },
   "environments": {
     "local": {
@@ -2949,5 +3253,2417 @@
       "publish": {},
       "hash": "e264584f19862db6"
     }
-  }
+  },
+  "alertRules": [
+    {
+      "id": "anomaly:AR-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "AR-001",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:AR-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "AR-002",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:AT-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "AT-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:AT-901",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "AT-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:ML-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "ML-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:ML-901",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "ML-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:MS-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "MS-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/mission/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:MS-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "MS-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/mission/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:MS-003",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "MS-003",
+        "severity": "ticket",
+        "owner": "blueprint/things/mission/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:MS-004",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "MS-004",
+        "severity": "ticket",
+        "owner": "blueprint/things/mission/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:MS-005",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "MS-005",
+        "severity": "ticket",
+        "owner": "blueprint/things/mission/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:MS-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "MS-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:QU-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "QU-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/question/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:QU-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "QU-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:QU-901",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "QU-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:RU-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "RU-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/run/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:RU-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "RU-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/run/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:RU-003",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "RU-003",
+        "severity": "ticket",
+        "owner": "blueprint/things/run/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:RU-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "RU-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:RU-901",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "RU-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "defect:attention.approve",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "attention.approve",
+        "severity": "page",
+        "owner": "blueprint/things/attention/verbs/approve.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:attention.decline",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "attention.decline",
+        "severity": "page",
+        "owner": "blueprint/things/attention/verbs/decline.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:attention.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "attention.list",
+        "severity": "page",
+        "owner": "blueprint/things/attention/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:attention.raise",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "attention.raise",
+        "severity": "page",
+        "owner": "blueprint/things/attention/verbs/raise.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:milestone.add",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "milestone.add",
+        "severity": "page",
+        "owner": "blueprint/things/milestone/verbs/add.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:milestone.drop",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "milestone.drop",
+        "severity": "page",
+        "owner": "blueprint/things/milestone/verbs/drop.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:milestone.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "milestone.list",
+        "severity": "page",
+        "owner": "blueprint/things/milestone/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.finish",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.finish",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/finish.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.get",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.list",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.open",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.open",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/open.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.pause",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.pause",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/pause.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.resume",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.resume",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/resume.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.start",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.start",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/start.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.stop",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.stop",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/stop.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:mission.tasks",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.tasks",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/tasks.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:question.answer",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "question.answer",
+        "severity": "page",
+        "owner": "blueprint/things/question/verbs/answer.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:question.ask",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "question.ask",
+        "severity": "page",
+        "owner": "blueprint/things/question/verbs/ask.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:question.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "question.list",
+        "severity": "page",
+        "owner": "blueprint/things/question/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:question.spike",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "question.spike",
+        "severity": "page",
+        "owner": "blueprint/things/question/verbs/spike.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:run.fail",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "run.fail",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/fail.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:run.finish",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "run.finish",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/finish.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:run.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "run.list",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:run.report",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "run.report",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/report.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:run.start",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "run.start",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/start.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:run.stop",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "run.stop",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/stop.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:attention.approve",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "attention.approve",
+        "severity": "page",
+        "owner": "blueprint/things/attention/verbs/approve.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:attention.decline",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "attention.decline",
+        "severity": "page",
+        "owner": "blueprint/things/attention/verbs/decline.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:attention.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "attention.list",
+        "severity": "page",
+        "owner": "blueprint/things/attention/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:attention.raise",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "attention.raise",
+        "severity": "page",
+        "owner": "blueprint/things/attention/verbs/raise.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 200,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:milestone.add",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "milestone.add",
+        "severity": "page",
+        "owner": "blueprint/things/milestone/verbs/add.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 200,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:milestone.drop",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "milestone.drop",
+        "severity": "page",
+        "owner": "blueprint/things/milestone/verbs/drop.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:milestone.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "milestone.list",
+        "severity": "page",
+        "owner": "blueprint/things/milestone/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.finish",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.finish",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/finish.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.get",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.list",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.open",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.open",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/open.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 200,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.pause",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.pause",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/pause.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.resume",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.resume",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/resume.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.start",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.start",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/start.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.stop",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.stop",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/stop.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:mission.tasks",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "mission.tasks",
+        "severity": "page",
+        "owner": "blueprint/things/mission/verbs/tasks.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 300,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:question.answer",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "question.answer",
+        "severity": "page",
+        "owner": "blueprint/things/question/verbs/answer.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:question.ask",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "question.ask",
+        "severity": "page",
+        "owner": "blueprint/things/question/verbs/ask.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 200,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:question.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "question.list",
+        "severity": "page",
+        "owner": "blueprint/things/question/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:question.spike",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "question.spike",
+        "severity": "page",
+        "owner": "blueprint/things/question/verbs/spike.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:run.fail",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "run.fail",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/fail.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:run.finish",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "run.finish",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/finish.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:run.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "run.list",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:run.report",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "run.report",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/report.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 100,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:run.start",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "run.start",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/start.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 250,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:run.stop",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "run.stop",
+        "severity": "page",
+        "owner": "blueprint/things/run/verbs/stop.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    }
+  ]
 }

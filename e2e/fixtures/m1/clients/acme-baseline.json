@@ -1,0 +1,121 @@
+{
+  "files": {
+    "sdk/src/allowance/get.ts": "143bf6eec2efd07fc54f02a96457b336dd657c1c7db1f844e76a5ee08d3e5278",
+    "sdk/src/allowance/grant.ts": "e8c97c8f1ec292905ba30d67caabb0db5405cbf6e306a7d7fc16774e17ecc8f8",
+    "sdk/src/allowance/index.ts": "3c970ebbbd7a5a34ba4d51b35d6e753d76c3321c40520909aa6ccd4807e57635",
+    "sdk/src/allowance/revoke.ts": "b91be5a52b817efac1ca2e52ec6c93b0286d81c22796f1a7815cd10566f2e33c",
+    "sdk/src/allowance/spend.ts": "c610d1cf90f9aad023814fd670d0b5f1a66f072f3974b939726a3467db10eeab",
+    "sdk/src/allowance/types.ts": "81ab517e5dbd73a2fea04981a4f2c22cb3db7ca40b55ad7b9c084d8eab67ee99",
+    "sdk/src/api-key/create.ts": "b7d17b371ce693bbe34a9995fbeff43fe9ddc8615212c65fbd62ea9bb2a87805",
+    "sdk/src/api-key/index.ts": "4ae205e61a4c333d803f99b8bb0547605d062b03e39a9d1dcbad2d361b03890b",
+    "sdk/src/api-key/types.ts": "916b51fe7de6fb59622568e23ce3786590cde923bf1dd9511fa3bfce920b3301",
+    "sdk/src/client.ts": "51d79255710585b01195fcf11948d259e2322169db44fada15d068c4c956cfde",
+    "sdk/src/index.ts": "8176591e8b639db19b4c02ea9e8d02eee18651ce77e23691a6adcbb6b956800e",
+    "sdk/src/invitation/accept.ts": "08c053242f8785c715b5719d73bcc8532a34c517bffbde57e9e381dbea40592d",
+    "sdk/src/invitation/index.ts": "3615a13aaf0a0ce901fcc412d2992638a4dccf2b49f4b5880621552c71ff92e8",
+    "sdk/src/invitation/revoke.ts": "28d4fdd6f70e3a24c39b08deb464ea15db7f89f2ecaac7be221e21c752dab85e",
+    "sdk/src/invitation/send.ts": "26c399ade20c3c757679222b9fd4c677f553066db8ecadf3a8b26c3334abd341",
+    "sdk/src/invitation/types.ts": "372c04423e69be975ec85c4f6b4633925edae0abdcc5d12ad9dd279a94b60c56",
+    "sdk/src/membership/get.ts": "3b8ad8efbb38d9621837ef16c7c0e4c1abe2bbeb2b4d810456a783f9feb12a36",
+    "sdk/src/membership/index.ts": "18b9d620342be5a4c9ce3d71b4f88351f9753211435f01f3cf2ac54aafdf5bef",
+    "sdk/src/membership/types.ts": "68398094fefb3bcb09329f384e0b2f19e78fa409c9ded1bf84f4a7b732ec7d38",
+    "sdk/src/organization/create.ts": "7dc3fc133c88abb6d7b5fdaee8d2bc998a226eafb718f7ba48d6a0f77d021574",
+    "sdk/src/organization/get.ts": "8d2b34e34d0d8fd36c85daad76bc3a5017b998ba4354f40924a4cb6bab5b3428",
+    "sdk/src/organization/index.ts": "8a5c601199dcdd541c9fcf1010a6d7c34e12b1877889ceca4eac87119a3da48f",
+    "sdk/src/organization/types.ts": "53d8772064cf105f29f478046876b53ba54749c769588b4523ac69152f028414",
+    "sdk/src/person/index.ts": "8928ef101240cc6501d3832efddd8c569523e4426e9e619d629748bf1830f931",
+    "sdk/src/person/sign-up.ts": "a2b1ceed26b88aa2bd28957fd642676e9a23ced7e2721296f03ade650098e9e0",
+    "sdk/src/person/types.ts": "92e3097f9957c83e4bb5f83c58ce4aee3c5a63e8571d65eafd466522724628a2",
+    "sdk/src/session/index.ts": "e33bc8fc0afa563c76d07d810ced972782685dc4213055a4df392484da568b6b",
+    "sdk/src/session/show.ts": "8ef320ac541ae7025e04361d74537e1efde477216f70f536de69710d7684ad71",
+    "sdk/src/session/sign-in.ts": "f9e8f00666b9f8b0e1609c7767b7710c6158732d228f025e8467fb6945990881",
+    "sdk/src/session/types.ts": "fc133a1cc3fb0f3057002ecd346bdc35110d4542e81fe5df1c87acb3011fe0cd",
+    "sdk/src/system/health.ts": "df38b2a7a82ed83755bae0fd51fa71a692385ea73134bbecb440a37c603422d9",
+    "sdk/src/system/index.ts": "3fa01ba8e5a6d3e20190270ec08dde38032c3f82a0a9a2cec962ab0ea9038e9c",
+    "sdk/src/system/types.ts": "1bd1deb482ed6bb34a9a3ef8df85d61ea5bf9cbf4b5676c82a2b9197a4af6f0e",
+    "cli/src/allowance/get.ts": "6091f58a860939e5eff601b1b6e9cdeb2c78f0dd51253bff8ebd87533eb4311e",
+    "cli/src/allowance/grant.ts": "b83742d74782a0bc4c886535646876bfdb059397735906c367b862977af7a88b",
+    "cli/src/allowance/revoke.ts": "4c9f8df870128522cc86c7cee4541e4af57f7c2e40197c2f73327dec1da180d6",
+    "cli/src/allowance/spend.ts": "2431f762d0823135d4217272fad31f3955052045ae4c08631cf3e702af23fa81",
+    "cli/src/api-key/create.ts": "b646025ab3a9657dc82344a6e00d44d6d4dfc92fcc016365535e773f9a00e787",
+    "cli/src/invitation/accept.ts": "8cdd70d5a7f8a152fa46fca2312e5993a41e153b069d4b1a90c16b2cfb872223",
+    "cli/src/invitation/revoke.ts": "f97eec300c538d7db8ffef8520752936446e93a9f6826462f44735de8c1600a6",
+    "cli/src/invitation/send.ts": "4931ed36358193b23f1c494d9a7a428c812c071041b896775842136c54da8e67",
+    "cli/src/main.ts": "5b6e1329b717d1b8ff12bd3135aa6c5aa8481a8177fbc61ba7fe30fb6b4c6acf",
+    "cli/src/membership/get.ts": "a7143bd5908b6455647af5880e42683a9ecfcfaaa967258c473ea7b526c93943",
+    "cli/src/organization/create.ts": "f77f72e9f4ded90afa195c259c537cc69eb37adda21cc13b384a700c25c8a19a",
+    "cli/src/organization/get.ts": "cf2a7f0e589387b48532e96fb22e22a58f6f7a0bdae6cae546be680498fcd62c",
+    "cli/src/output.ts": "aed843d3347553728f974bfa5e9f77371faff76bdc4dc4d204763fd79b48ed15",
+    "cli/src/person/sign-up.ts": "a116affc68eb0cc0d6c9863eec95aa91ae85f58020c99c6699fe73dfd18dbbc1",
+    "cli/src/session/device.ts": "7bea7360679f47596888b122fb46162620c44e1e7d176cb57b6558912580f9ce",
+    "cli/src/session/show.ts": "f469ab41e3c342b342bab08f0c0359fdc8a8a6b2e7255e0d3609b4a080e574af",
+    "cli/src/session/sign-in.ts": "f265408fcea36a23df755d7096a125e9d578d8f2318da412643621d18f1f4e7e",
+    "cli/src/system/health.ts": "b97d1ed83a8efe243431e0e4655bb3c530d0a31721c186695855a27df74883b6",
+    "mcp/src/index.ts": "aab84a095de7e935e5f472cf596c64937d188db941174ea06589939ff3ee39db"
+  },
+  "exports": {
+    "top": [
+      "Acme",
+      "Errors",
+      "allowance",
+      "apiKey",
+      "invitation",
+      "layer",
+      "membership",
+      "organization",
+      "person",
+      "session",
+      "system"
+    ],
+    "things": {
+      "Errors": [
+        "AllowanceExceeded",
+        "AllowanceLimitTooHigh",
+        "AllowanceNotActive",
+        "AllowanceNotFound",
+        "InvitationNotPending",
+        "NotAllowed",
+        "OrganizationNotActive",
+        "PersonEmailTaken",
+        "PersonNotFound",
+        "SessionCredentialsWrong",
+        "codes",
+        "declared",
+        "exits",
+        "refusals",
+        "wire"
+      ],
+      "allowance": [
+        "get",
+        "grant",
+        "revoke",
+        "spend"
+      ],
+      "apiKey": [
+        "create"
+      ],
+      "invitation": [
+        "accept",
+        "revoke",
+        "send"
+      ],
+      "membership": [
+        "get"
+      ],
+      "organization": [
+        "create",
+        "get"
+      ],
+      "person": [
+        "signUp"
+      ],
+      "session": [
+        "show",
+        "signIn"
+      ],
+      "system": [
+        "health"
+      ]
+    }
+  }
+}

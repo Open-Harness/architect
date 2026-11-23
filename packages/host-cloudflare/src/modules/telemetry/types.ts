@@ -10,11 +10,12 @@ export interface Endpoint {
   readonly headers: Readonly<Record<string, string>>;
 }
 
-/** A destination for spans and logs: the local Collector, or a sink the environment names. */
+/** A destination for telemetry: the local Collector, or a sink the environment names. */
 export interface Exporter {
   readonly id: string;
   readonly traces: Endpoint;
   readonly logs: Endpoint;
+  readonly metrics?: Endpoint | undefined;
 }
 
 export interface TelemetryApi {

@@ -1,0 +1,21 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-11-21T12:00:00Z"},
+  "title": "Orthograph portal: ST1.22 rules",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "designSystems": [],
+  "order": ["Main.dc.html", "RulesProfile.dc.html", "RulesClaim.dc.html", "RulesRelease.dc.html"],
+  "boards": {
+    "Main.dc.html": {"expand": "fill", "is_interactive": false, "title": "handle: the Rules section under the lifecycle", "x": 0, "y": 0, "w": 1440, "h": 1640},
+    "RulesProfile.dc.html": {"expand": "fill", "is_interactive": false, "title": "profile: one rule that refuses nothing", "x": 1520, "y": 0, "w": 1440, "h": 880},
+    "RulesClaim.dc.html": {"expand": "fill", "is_interactive": false, "title": "handle.claim: refusals read as their rule, and the rules stop", "x": 0, "y": 1760, "w": 1440, "h": 1540},
+    "RulesRelease.dc.html": {"expand": "fill", "is_interactive": false, "title": "handle.release: no rules stop", "x": 1520, "y": 1760, "w": 1440, "h": 1160}
+  },
+  "noteOrder": ["rowRules", "nRulesThing", "nRulesOp"],
+  "notes": {
+    "rowRules": {"kind": "title1", "maxW": 2960, "text": "ST1.22: rules in the portal (G5, Aaron's 1A 2A 3A 4A)", "x": 0, "y": -300},
+    "nRulesThing": {"fill": "blue", "w": 700, "x": 3040, "y": 0, "text": "Group: a thing's page. Rules sit under the lifecycle, one row per rule (1A). Each row says the rule in one sentence, the fields and states it holds in, and what a caller gets when it breaks.\nhandle has two rules, each owning a refusal. oneNamePerPerson carries its own written sentence, so its row says so (2A, the optional description). profile has one rule that refuses nothing: its row says a break is a defect.\nThe lifecycle carries no mark for rules (3A). The Errors list says what decides each refusal: a rule, the machine, or the handler.\nPro: Widget, ItemCardGroup, ItemCard. HeroUI: Tabs, Chip.\nFacts from examples/plugged-in/generated: docs/handle/index.md and docs/profile/index.md (rules, sentences), api/src/errors.ts (codes, HTTP status, exit), portal/blueprint.json (states, moves)."},
+    "nRulesOp": {"fill": "blue", "w": 700, "x": 3040, "y": 1760, "text": "Group: an operation's page. Every refusal a rule owns reads as the rule's sentence and links to the rule's row on the thing's page (2A). The spine gains a rules stop between the move and the commit, only for an operation that can break a rule (4A).\nclaim can break two rules, so it has the stop. release only leaves claimed, so it has none; its other refusals have no rule and no link.\nPro: Widget, Timeline, ItemCard. HeroUI: Tabs, Chip.\nFacts from examples/plugged-in/generated: docs/handle/claim.md and release.md (refusals, steps, journeys), api/src/errors.ts, portal/blueprint.json (operations.<op>.invariants)."}
+  }
+}

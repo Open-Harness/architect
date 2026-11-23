@@ -1,0 +1,2 @@
+# `--env test` refuses `--report` ("--json and --report require --env local", exit 2), so the test half of the check can only read prove's lines. This test requires the report in test; when a builder gives test one it passes, and this entry comes off.
+stage1/01-plugged-in-journeys.test.ts > --env test > `--env test` reports its run as data

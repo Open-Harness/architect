@@ -1,0 +1,7 @@
+$ pnpm nx sync:check
+# commit 892851a · 2026-11-18T22:41:04Z · exit 0 (expected 0) · 2.1s
+
+
+ NX   The workspace is up to date
+
+[@orthograph/generators:sync]: All files are up to date.

@@ -29,6 +29,26 @@ Read one organization by its id: name, owner, state.
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of the organization; the handler never runs |
 
+## Worked examples
+
+### an agent passes the owner rule
+
+Starts from the world `founded`.
+
+- **ada's agent reads her organisation.** `ada` (role organization.owner) calls and sends id the world's organization, and gets back `Acme Demo` and gets back the cast's ada person.
+
+### an owner makes an api key
+
+Starts from the world `founded`.
+
+- **ada can't read bob's organisation.** `ada` (role organization.owner) calls and sends id the last call's organization, and is refused with NotAllowed, AR-001.
+
+### invite and accept
+
+Starts from the world `founded`.
+
+- **ada reads her organisation.** `ada` (role organization.owner) calls and sends id the world's organization, and gets back `Acme Demo` and gets back the cast's ada person and gets back `active`.
+
 ## How to call
 
 ```sh

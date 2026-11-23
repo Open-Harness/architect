@@ -1,0 +1,209 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/02-runtime-and-closures
+# commit b39b30d · 2026-11-18T20:20:15Z · exit 1 (expected 1) · 13.6s
+
+
+ RUN  v4.1.12 ./e2e
+
+ × m1/02-runtime-and-closures.test.ts > 02 runtime: the plugin's handler answers in a real world > the typed SDK and HTTP both answer from the feature's handler; the generated SDK is typed and holds no plugin source 2439ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/02-runtime-and-closures.test.ts > 02 runtime: the plugin's handler answers in a real world > a changed pick changes the answer, and the model records it 948ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/02-runtime-and-closures.test.ts > 02 runtime: the plugin's handler answers in a real world > a fresh worker's first call may be MCP: the plugin's mount is provided before anything else warms it 944ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/02-runtime-and-closures.test.ts > 02 runtime: the plugin's handler answers in a real world > prove runs the feature's own journey beside the app's, with every operation's nine evals 951ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/02-runtime-and-closures.test.ts > 02 closures: the import rule on the real import closure > api and sdk hold the descriptor and blueprint/* of the plugin only; the worker never holds a .node.js or .browser.js entry 1277ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ ✓ m1/02-runtime-and-closures.test.ts > 02 closures: the import rule on the real import closure > the check can see: a planted client importing a Node entry is caught, node:crypto and all (a control: nothing is mounted) 148ms
+ × m1/02-runtime-and-closures.test.ts > 02 closures: the import rule on the real import closure > a client importing the plugin's handler is caught too: src/* is for the host it runs on, and a client is no host 1127ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/02-runtime-and-closures.test.ts > 02 failures: a handler that is empty or dies fails the feature's own journey > the empty-handler variant makes prove fail, naming what happened 1988ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/02-runtime-and-closures.test.ts > 02 failures: a handler that is empty or dies fails the feature's own journey > the defect-handler variant makes prove fail, naming what happened 2069ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/02-runtime-and-closures.test.ts > 02 runtime: the plugin's handler answers in a real world > the typed SDK and HTTP both answer from the feature's handler; the generated SDK is typed and holds no plugin source
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ ready m1/02-runtime-and-closures.test.ts:26:3
+ ❯ m1/02-runtime-and-closures.test.ts:47:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  m1/02-runtime-and-closures.test.ts > 02 runtime: the plugin's handler answers in a real world > a changed pick changes the answer, and the model records it
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ ready m1/02-runtime-and-closures.test.ts:26:3
+ ❯ m1/02-runtime-and-closures.test.ts:63:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  m1/02-runtime-and-closures.test.ts > 02 runtime: the plugin's handler answers in a real world > a fresh worker's first call may be MCP: the plugin's mount is provided before anything else warms it
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ ready m1/02-runtime-and-closures.test.ts:26:3
+ ❯ m1/02-runtime-and-closures.test.ts:75:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  m1/02-runtime-and-closures.test.ts > 02 runtime: the plugin's handler answers in a real world > prove runs the feature's own journey beside the app's, with every operation's nine evals
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ ready m1/02-runtime-and-closures.test.ts:26:3
+ ❯ m1/02-runtime-and-closures.test.ts:91:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  m1/02-runtime-and-closures.test.ts > 02 closures: the import rule on the real import closure > api and sdk hold the descriptor and blueprint/* of the plugin only; the worker never holds a .node.js or .browser.js entry
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ ready m1/02-runtime-and-closures.test.ts:26:3
+ ❯ m1/02-runtime-and-closures.test.ts:104:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  m1/02-runtime-and-closures.test.ts > 02 closures: the import rule on the real import closure > a client importing the plugin's handler is caught too: src/* is for the host it runs on, and a client is no host
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ ready m1/02-runtime-and-closures.test.ts:26:3
+ ❯ m1/02-runtime-and-closures.test.ts:133:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  m1/02-runtime-and-closures.test.ts > 02 failures: a handler that is empty or dies fails the feature's own journey > the empty-handler variant makes prove fail, naming what happened
+ FAIL  m1/02-runtime-and-closures.test.ts > 02 failures: a handler that is empty or dies fails the feature's own journey > the defect-handler variant makes prove fail, naming what happened
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ ready m1/02-runtime-and-closures.test.ts:26:3
+ ❯ m1/02-runtime-and-closures.test.ts:144:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 1 passed (9)
+   Start at  20:20:02
+   Duration  13.00s (transform 463ms, setup 0ms, import 960ms, tests 11.93s, environment 0ms)

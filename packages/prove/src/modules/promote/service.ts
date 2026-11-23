@@ -8,7 +8,7 @@ import type { Up } from "#modules/environments/types.js";
 import { Build } from "#modules/build/service.js";
 import { Prove } from "#modules/prove/service.js";
 import { Releases } from "#modules/releases/service.js";
-import type { Env } from "#modules/verdicts/types.js";
+import type { Env, Held } from "#modules/verdicts/types.js";
 import { Verdicts } from "#modules/verdicts/service.js";
 import { PromoteFailed, type PromoteApi, type Promoted, type Target } from "./types.ts";
 import { runningOn } from "./internal/environment.ts";
@@ -21,10 +21,13 @@ const live = (root: string, target: Target, up: Up, built: Built) => Environment
 const stable = (root: string, target: Target, up: Up, built: Built) => Build.unchanged(root, built.commit).pipe(Effect.mapError(failed), Effect.flatMap(() => live(root, target, up, built)));
 
 /** Retry completes only missing or hash-mismatched carried facts; complete facts are not duplicated. */
-const carry = ({ root, up, built, logbook, env, model }: { root: string; up: Up; built: Built; logbook: string; env: Env; model: Model }) => Effect.gen(function* () {
+const carry = ({ root, up, built, logbook, env, model, earned }: { root: string; up: Up; built: Built; logbook: string; env: Env; model: Model; earned: ReadonlyArray<Held> }) => Effect.gen(function* () {
   const held = yield* Verdicts.latest({ logbook, revision: built.revision, environment: "production", ref: "refs/heads/main" }).pipe(Effect.mapError(failed));
   const complete = new Set(held.filter((v) => v.verdict === "pass" && v.sha256 === built.sha256).map((v) => v.operation));
-  const missing = Object.keys(model.operations).filter((operation) => !complete.has(operation)).map((operation) => ({ operation, verdict: "pass" as const }));
+  const missing = Object.keys(model.operations).filter((operation) => !complete.has(operation)).map((operation) => {
+    const journeys = earned.find((row) => row.operation === operation)?.journeys;
+    return { operation, verdict: "pass" as const, ...(journeys ? { journeys } : {}) };
+  });
   yield* live(root, "production", up, built);
   if (missing.length === 0) return;
   const token = yield* Verdicts.sourceOf(env).pipe(Effect.flatMap(Verdicts.mint), Effect.mapError(failed));
@@ -57,7 +60,7 @@ const to: PromoteApi["to"] = ({ root, env, target, say }) =>
     const logbook = yield* Releases.locate({ root, env }).pipe(Effect.mapError(failed));
     if (logbook === undefined) return yield* new PromoteFailed({ message: "no logbook: start one with `ortho env up logbook`, or set ORTHO_LOGBOOK_URL" });
     const from = earnedIn(target, environment);
-    yield* verdictsIn(logbook, model, revision, from, built.sha256);
+    const earned = yield* verdictsIn(logbook, model, revision, from, built.sha256);
     yield* say(`${target} from ${from} ${revision} sha256:${built.sha256}`);
 
     const up = yield* runningOn(root, target, built);
@@ -89,7 +92,7 @@ const to: PromoteApi["to"] = ({ root, env, target, say }) =>
       // A retry verifies existing package bytes before reporting the prior release as recovered.
       yield* productionRelease({ root, env, say, version: last.version, revision: built.commit });
       yield* live(root, target, up, built);
-      yield* carry({ root, up, built, logbook, env, model });
+      yield* carry({ root, up, built, logbook, env, model, earned });
       yield* say(`release ${last.version} already recorded for ${revision}`);
       for (const line of skipped(environment)) yield* say(line);
       return { revision, sha256: built.sha256, passed: true, version: last.version } satisfies Promoted;
@@ -102,7 +105,7 @@ const to: PromoteApi["to"] = ({ root, env, target, say }) =>
     yield* say(`released ${version}`);
     // Nobody runs journeys in production: its verdict is staging's, carried to the same bundle the environment just reported. It
     // is what puts production in the logbook beside staging, so a change that unproves an operation stales it there too.
-    yield* carry({ root, up, built, logbook, env, model });
+    yield* carry({ root, up, built, logbook, env, model, earned });
     for (const line of skipped(environment)) yield* say(line);
     return { revision, sha256: built.sha256, passed: true, version } satisfies Promoted;
   });

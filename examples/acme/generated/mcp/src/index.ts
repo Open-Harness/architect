@@ -1,4 +1,4 @@
-// Generated from the blueprint. Do not edit.
+// Generated from blueprint/projections/mcp.ts. Do not edit.
 import type { McpEntry } from "@orthograph/language-effect";
 import { declaration as allowanceGet } from "../../api/src/allowance/get.ts";
 import { declaration as allowanceGrant } from "../../api/src/allowance/grant.ts";
@@ -18,17 +18,17 @@ import { declaration as systemHealth } from "../../api/src/system/health.ts";
 
 /** One tool per operation and read, named as the operation is. */
 export const catalog = {
-  "allowance.get": { description: "Read one allowance by its id: organization, member, limit, spent, state.", operation: allowanceGet },
-  "allowance.grant": { description: "Let a member spend from the organisation, up to a limit each month.", operation: allowanceGrant },
-  "allowance.revoke": { description: "Stop an allowance. Nothing more can be spent from it.", operation: allowanceRevoke },
-  "allowance.spend": { description: "Spend from what is left of this month's allowance.", operation: allowanceSpend },
+  "allowance.get": { description: "Read one allowance by its id: organization, member, limit, spent, state.", operation: allowanceGet, states: ["active","exhausted","revoked"] },
+  "allowance.grant": { description: "Let a member spend from the organisation, up to a limit each month.", operation: allowanceGrant, states: ["active","exhausted","revoked"], move: {"key":"grant","from":[],"to":["active"],"emits":"AllowanceGranted"} },
+  "allowance.revoke": { description: "Stop an allowance. Nothing more can be spent from it.", operation: allowanceRevoke, states: ["active","exhausted","revoked"], move: {"key":"revoke","from":["active","exhausted"],"to":["revoked"],"emits":"AllowanceRevoked"} },
+  "allowance.spend": { description: "Spend from what is left of this month's allowance.", operation: allowanceSpend, states: ["active","exhausted","revoked"], move: {"key":"spend","from":["active"],"to":["active","exhausted"],"emits":"AllowanceSpent"} },
   "api-key.create": { description: "Create an API key in an organisation. The key itself is shown once.", operation: apiKeyCreate },
-  "invitation.accept": { description: "Accept an invitation and become a member of its organisation.", operation: invitationAccept },
-  "invitation.revoke": { description: "Withdraw an invitation that hasn't been accepted.", operation: invitationRevoke },
-  "invitation.send": { description: "Invite someone to an organisation by email.", operation: invitationSend },
+  "invitation.accept": { description: "Accept an invitation and become a member of its organisation.", operation: invitationAccept, states: ["pending","accepted","revoked"], move: {"key":"accept","from":["pending"],"to":["accepted"],"emits":"InvitationAccepted"} },
+  "invitation.revoke": { description: "Withdraw an invitation that hasn't been accepted.", operation: invitationRevoke, states: ["pending","accepted","revoked"], move: {"key":"revoke","from":["pending"],"to":["revoked"],"emits":"InvitationRevoked"} },
+  "invitation.send": { description: "Invite someone to an organisation by email.", operation: invitationSend, states: ["pending","accepted","revoked"], move: {"key":"send","from":[],"to":["pending"],"emits":"InvitationSent"} },
   "membership.get": { description: "Read one membership by its id: organization, person, role.", operation: membershipGet },
-  "organization.create": { description: "Found an organisation with its cap. Whoever founds it owns it, and is its first member.", operation: organizationCreate },
-  "organization.get": { description: "Read one organization by its id: name, owner, state.", operation: organizationGet },
+  "organization.create": { description: "Found an organisation with its cap. Whoever founds it owns it, and is its first member.", operation: organizationCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"OrganizationCreated"} },
+  "organization.get": { description: "Read one organization by its id: name, owner, state.", operation: organizationGet, states: ["active"] },
   "person.sign-up": { description: "Sign up with an email address and a password.", operation: personSignUp },
   "session.show": { description: "Who is signed in.", operation: sessionShow },
   "session.sign-in": { description: "Sign in with email and password. The token is the bearer for every later call.", operation: sessionSignIn },

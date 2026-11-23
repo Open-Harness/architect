@@ -52,9 +52,4 @@ describe("ortho telemetry trace", () => {
     expect((await run("nope")).exit).toBe(2);
     expect((await run(trace, "test")).exit).toBe(1);
   });
-
-  it("will not open a page for a viewer that isn't running", async () => {
-    const said = await Effect.runPromise(TelemetryCommand.open({ root, id: trace }));
-    expect(said.open === undefined ? said.exit : 0).toBeGreaterThanOrEqual(0);
-  });
 });

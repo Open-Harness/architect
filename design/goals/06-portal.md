@@ -5,11 +5,11 @@ milestone: "Goal 6: the new portal"
 release: beta
 branch: goal/portal
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex | opencode, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | amp | codex | opencode, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-22    # the date it started
 done_check: nx run e2e:portal-next
 owns:
   - packages/theme/
@@ -35,6 +35,11 @@ slices:
   - "12 · Cutover (after 7, 8, 9, 10, 11)"
 ---
 # Goal 6: the new portal, on our own components and the app's map
+
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
 
 Branch `goal/portal`, cut from `goal/stage-1`. Written 21 November 2026 with K31, on terms agreed with the conductor the same day.
 
@@ -146,6 +151,7 @@ want this to be able to run in parallel to the other work that's actually runnin
   | `.oxlintrc.json` | the module-boundary tags `scope:theme`, `scope:shell` and `scope:portal-next`, for `packages/theme/`, `packages/shell/` and `packages/portal-next/` |
   | `e2e/served-portal/` | the checks author's `PORTAL_CLIENT=old|next` switch, the old client the default |
   | `e2e/project.json`, `e2e/package.json` | the `portal-next` target and the new packages as workspace dependencies |
+  | `e2e/tsconfig.json` | `portal-next/**` in its `include`, so this goal's checks are typechecked |
   | `.github/workflows/ci.yml` | one job that runs the portal checks against the new client, not yet blocking |
   | `pnpm-lock.yaml` | what `pnpm install` writes for the above |
   | `design/handoff.md`, `STATE.md`, the board, `design/milestones.md` | this goal's own lines |
@@ -304,7 +310,7 @@ thing.
 
 | # | Slice | Done when |
 |---|---|---|
-| 12 | **Cutover (ST1.27)**, after the cut-off (the protocol, point 5). Check 15 rewritten first by a checks author (ST1.28); then one pull request into `goal/stage-1` that serves `portal-next` at `/portal`, deletes the old client, `@orthograph/portal-ui`, HeroUI and the licence machinery (`pro.mjs`, `sheets.mjs`, the CI step and cache, `ortho/no-pro-outside-portal-ui`), folds `e2e:portal-next` into the normal portal checks, and rewrites every live doc line that still names `portal-ui` or HeroUI as current (`git grep -n "portal-ui\|HeroUI"` outside `design/decisions/`, `design/history/` and `design/process/`: the `portal-design` skill, `design/walkthrough/journey.md`, `design/ui/heroui-inventory.md` section 8, `portal.md`, `packages.md`), with a Supersedes list. It merges after the freeze, with Goal 3's lead's yes and a 🔍 pass | every portal check passes on the one client; check 15 passes; the portal builds with `HEROUI_AUTH_TOKEN` unset |
+| 12 | **Cutover (ST1.27)**, after the cut-off (the protocol, point 5). Check 15 rewritten first by a checks author (ST1.28); then one pull request into `goal/stage-1` that serves `portal-next` at `/portal`, deletes the old client, `@orthograph/portal-ui`, HeroUI and the licence machinery (`pro.mjs`, `sheets.mjs`, the CI step and cache, `ortho/no-pro-outside-portal-ui`), folds `e2e:portal-next` into the normal portal checks, and rewrites every live doc line that still names `portal-ui` or HeroUI as current (`git grep -n "portal-ui\|HeroUI"` outside `design/decisions/`, `design/history/` and `design/process/`: the `portal-design` skill, `design/history/retired-2026-11-23/walkthrough/journey.md`, `design/ui/heroui-inventory.md` section 8, `portal.md`, `packages.md`), with a Supersedes list. It merges after the freeze, with Goal 3's lead's yes and a 🔍 pass | every portal check passes on the one client; check 15 passes; the portal builds with `HEROUI_AUTH_TOKEN` unset |
 
 ## Decision IDs
 
@@ -315,6 +321,7 @@ started, since it crosses goals.
 | ID | File | Taken by |
 |---|---|---|
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
+| MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
 
 ## The done check
 
@@ -349,3 +356,7 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 4 hours. All: about 36 to 52 hours, with slice 12 waiting on the cut-off.
 
 ## Where it stands
+
+22 November 2026. The theme is built: one shared look on UI SDK, light and dark, taken from today's portal so nothing
+changes in feel, and its check passes in a real browser with no HeroUI key. Next it lands in stage 1 on its own, so
+the UI layer's screens can use it. The map's checks are being written now; the map itself comes after them.

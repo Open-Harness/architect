@@ -218,9 +218,13 @@ Three rules come with it:
    "agent"` and is refused by `notVia("agent")`, not by accident. Today it is refused only because `getSession` does
    not understand an OAuth JWT and answers anonymous (`service.ts:19-21`); the first agent that uses the SDK would get
    through every `signedIn` operation.
+   Superseded by M2-auth, 21 November 2026: an OAuth token's audience is `/mcp` only, so on the HTTP API it is
+   `anonymous`; at `/mcp` every credential makes an agent (`M2-auth.md`, fork 2).
 3. **`via` is the credential, not the species.** An agent handed a person's API key is `via: "key"`. `notVia("agent")`
    stops tokens issued to agents through OAuth consent; to stop keys too, write `.via("session", "device")`. The
    generated docs say this on every narrowed operation.
+   Superseded by M2-auth, 21 November 2026: a key made for an agent is an agent, so `.notVia(Via.agent)` stops it; a
+   person's own key stays `via: "key"` (`M2-auth.md`, fork 2, option A and its rubric).
 
 ### 1.4 The generation rule
 
@@ -237,8 +241,8 @@ readonly surfaces: ReadonlyArray<"server" | "sdk" | "cli" | "mcp">;             
 | Surface | Gets the operation when | How it runs there |
 |---|---|---|
 | server | `runs: "server"` (plus every inbound entry and runtime piece of every mount) | a route, as today |
-| SDK | reach admits `session` or `key` | a server op is an HTTP call; a client op is local code |
-| CLI | reach admits `device` or `key` (`ACME_TOKEN` already carries either, `cli-session.ts:2`) | the same; client ops run in the CLI process |
+| SDK | reach admits `session` or `key` (Superseded by M2-auth, 21 November 2026: not filtered by reach in M2) | a server op is an HTTP call; a client op is local code |
+| CLI | reach admits `device` or `key` (`ACME_TOKEN` already carries either, `cli-session.ts:2`) (Superseded by M2-auth, 21 November 2026: not filtered by reach in M2) | the same; client ops run in the CLI process |
 | MCP | reach admits `agent` **and** it does not run on the client (an agent has no device) | a tool, as today |
 | docs, portal | always | each page says where it runs and who may reach it, by which kinds |
 

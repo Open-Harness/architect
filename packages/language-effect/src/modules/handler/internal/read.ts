@@ -4,8 +4,11 @@ import { Access } from "#modules/access/service.js";
 import { Unit } from "#modules/records/service.js";
 import { Records, Store, type Unit as UnitOf } from "#modules/records/types.js";
 import { answerAttributes, payloadAttributes, principalAttributes } from "./attributes.ts";
+import { CALL_ID, newCallId } from "./call-id.ts";
+import { measureCall } from "./call-metrics.ts";
 import { spanned } from "./span.ts";
 import type { ReadAnswer, ReadPayload, ReadsApi } from "../types.ts";
+import { defectAttributes } from "./defect.ts";
 
 type AnyCodec = Schema.Codec<object, unknown>;
 
@@ -22,6 +25,8 @@ const byId = (read: Read<any, any, any>, payload: ReadPayload, unit: UnitOf) =>
 
 /** A cursor is the position of the last instance of the page before; anything else is not one this read handed out. */
 const CURSOR = /^[0-9]{1,15}$/;
+const refusals = new Set(["NotAllowed"]);
+const callRefusals = new Set([...refusals, "SchemaError"]);
 
 /** A page: the instances matching the filters the caller gave, `page` of them, in the read's order. */
 const byList = (read: Read<any, any, any>, payload: ReadPayload) =>
@@ -43,14 +48,15 @@ const byList = (read: Read<any, any, any>, payload: ReadPayload) =>
 
 /** Reads are served beside operations: the same role check, the same span, no handler. */
 export const Reads: ReadsApi = {
-  serve: ({ name, read }) => {
+  serve: ({ name, read, mounts }) => {
     const decode = Schema.decodeUnknownEffect(read.payloadSchema as unknown as AnyCodec);
     const check = Schema.encodeEffect(read.answerSchema as unknown as AnyCodec);
     const run = (payload: ReadPayload, principal: Principal) =>
-      Effect.gen(function* () {
+      Effect.flatMap(newCallId, (callId) => Effect.gen(function* () {
         const unit = yield* Unit.make(yield* Store);
-        yield* Access.check({ allowed: read.allowed, payloadFields: read.payload, payload, principal, thing: read.thing }).pipe(
+        yield* Access.check({ allowed: read.allowed, payloadFields: read.payload, payload, principal, thing: read.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
           Effect.provideService(Records, unit.records),
+          Effect.withTracerEnabled(false),
         );
         return yield* Effect.gen(function* () {
           yield* Effect.annotateCurrentSpan(payloadAttributes(payload, read.payload));
@@ -60,14 +66,15 @@ export const Reads: ReadsApi = {
           return answer;
         }).pipe(
           // A refusal is written on the span as the handler wrapper does, and ends it ok (O1).
-          Effect.tapCause((cause) => (Cause.hasDies(cause) ? Effect.annotateCurrentSpan({ defect: Cause.pretty(cause).split("\n")[0] ?? "" }) : Effect.annotateCurrentSpan({ refusal: tagOf(Cause.squash(cause)) }))),
-          spanned(name, { operation: name, ...principalAttributes(principal) }),
+          Effect.tapCause((cause) => (Cause.hasDies(cause) ? Effect.annotateCurrentSpan(defectAttributes(cause)) : Effect.annotateCurrentSpan({ refusal: tagOf(Cause.squash(cause)) }))),
+          spanned(name, { operation: name, [CALL_ID]: callId, ...principalAttributes(principal) }),
         );
-      });
+      }));
     return {
       name,
-      run,
-      call: (raw, principal) => decode(raw).pipe(Effect.flatMap((p) => run(p as ReadPayload, principal))),
+      operation: read,
+      run: (payload, principal) => run(payload, principal).pipe(measureCall(name, principal, refusals)),
+      call: (raw, principal) => decode(raw).pipe(Effect.flatMap((p) => run(p as ReadPayload, principal)), measureCall(name, principal, callRefusals)),
     };
   },
 };

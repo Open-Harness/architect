@@ -16,6 +16,17 @@ const loggedBefore = (node: Node, text: (n: Node) => string): boolean => {
   return false;
 };
 
+/**
+ * A call step's failure mapping, `steps.price([...], (failure) => new PriceUnavailable({}))`: the step itself logs what
+ * decided the refusal, naming it and never the foreign failure, so the mapping has no place for a log of its own.
+ */
+const mappingOfACall = (node: Node, text: (n: Node) => string): boolean => {
+  let at = node.parent;
+  while (at && !FUNCTION.has(at.type)) at = at.parent;
+  const call = at?.parent;
+  return call?.type === "CallExpression" && /^steps\.\w+$/.test(text(call["callee"] as Node));
+};
+
 export const refusalHasLog: Rule = {
   meta: { schema: SCHEMA, docs: { description: "A handler logs why before it refuses, so the refusal explains itself." } },
   create: (context) => {
@@ -26,7 +37,8 @@ export const refusalHasLog: Rule = {
     return {
       NewExpression: (node) => {
         const name = constructed(node);
-        if (name && errors.has(name) && !loggedBefore(node, (n) => context.sourceCode.getText(n))) {
+        const text = (n: Node) => context.sourceCode.getText(n);
+        if (name && errors.has(name) && !loggedBefore(node, text) && !mappingOfACall(node, text)) {
           context.report({ node, message: `${name} is refused with no Effect.log* before it saying why` });
         }
       },

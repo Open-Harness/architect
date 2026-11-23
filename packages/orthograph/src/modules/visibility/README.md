@@ -4,9 +4,8 @@ Owns `Blueprint.visibility.secret`, `.private` and `.public`: who may see a fiel
 carry a `visibility`, `public` unless a blueprint says otherwise; `secret` and `private(roles)` are marked in the
 blueprint, never guessed from a field's name.
 
-Invariants: marking returns a copy of the same kind (the original is untouched), so a marked value is still a value and
-a marked field is still the thing's field, with its `of`, `key` and `from`. Only a `public` field's value may be a span
-attribute, a log line, a journal field or evidence; the runtime, prove and the Collector all read it from here (through
-the compiler's model).
+Marking returns a copy of the same kind. A marked field keeps its `of`, `key` and `from`. Public fields may be journalled.
+For telemetry, `traceable` also requires an explicit `Blueprint.traced(valueOrField)` mark on public text. Reusing a
+marked field in another declaration carries the mark forward.
 
 Test: `visibility.test.ts`.

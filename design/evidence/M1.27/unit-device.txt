@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/language-effect src/modules/handler
+# commit f1a09c64 · 2026-11-18T23:56:18Z · exit 0 (expected 0) · 1.1s
+
+
+ RUN  v4.1.12 ./packages/language-effect
+
+
+ Test Files  6 passed (6)
+      Tests  27 passed (27)
+   Start at  23:56:18
+   Duration  556ms (transform 575ms, setup 0ms, import 1.89s, tests 166ms, environment 0ms)

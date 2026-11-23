@@ -1,27 +1,24 @@
+import { Effect } from "effect";
+import { emptyServer, renderHandlerScaffold } from "@orthograph/projections/shared";
 import { PortalRender } from "#modules/portal/service.js";
 import type { RenderApi } from "./types.ts";
-import { renderApi } from "./internal/api.ts";
-import { renderCli } from "./internal/cli.ts";
-import { renderDocs, renderEdges } from "./internal/docs.ts";
-import { renderMcp } from "./internal/mcp.ts";
-import { renderHandlerScaffold } from "./internal/scaffold.ts";
-import { renderSdk } from "./internal/sdk.ts";
-import { renderServer } from "./internal/server.ts";
+import { renderDocs } from "./internal/docs.ts";
+import { filesOf, mountedIn } from "./internal/mounted.ts";
 
 export const Render: RenderApi = {
-  files: ({ name, model }) => {
-    const docs = renderDocs(model, name);
-    return [
-      { path: "generated/model/model.json", content: JSON.stringify(model, null, 2) + "\n", scaffold: false },
-      renderEdges(model),
-      ...docs,
-      ...PortalRender.files({ name, model, docs }),
-      ...renderApi(model, name),
-      ...renderServer(model, name),
-      ...renderMcp(model),
-      ...renderSdk(model, name),
-      ...renderCli(model, name),
-      ...Object.values(model.operations).filter((op) => op.kind === "operation").map(renderHandlerScaffold),
-    ];
-  },
+  files: ({ name, model, root }) =>
+    Effect.gen(function* () {
+      // What a mount makes is what a projection renders from it: the model, the api, the server, the sdk, the cli and the mcp are mounted (M1.11, M1.12).
+      const mounted = yield* mountedIn(root, model);
+      const made = yield* Effect.forEach(mounted, (m) => filesOf(name, model, m));
+      const docs = renderDocs(model, name);
+      return [
+        ...made.flat(),
+        ...docs,
+        ...PortalRender.files({ name, model, docs }),
+        // A plugin's handlers are in its package: the project's src/ gains nothing for them (M1-plugins section 8).
+        ...Object.values(model.operations).filter((op) => op.kind === "operation" && op.from.kind === "app").map((op) => renderHandlerScaffold(op, undefined, model)),
+      ];
+    }),
+  emptyServer: ({ name, model }) => emptyServer(model, name),
 };

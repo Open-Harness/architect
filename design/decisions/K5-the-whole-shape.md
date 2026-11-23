@@ -138,7 +138,7 @@ export const Revision = Blueprint.thing({
 export const Proposal = Blueprint.thing({
   description: "A question put to the members, decided by one vote each.",
   fields: { id: ProposalId, digest: Digest, yes: Votes, no: Votes, closesAt: Blueprint.time() },
-  lives: Blueprint.chain({ contract: "Governance", per: "workshop" }),   // new: M6.10, shape from K7
+  lives: Blueprint.chain({ contract: "Governance", per: "workshop" }),   // new: M6.10, shape from K7; superseded by K25, 20 November 2026: a chain store file
 });
 
 // blueprint/things/proposal/machine.ts
@@ -194,17 +194,17 @@ export default Blueprint.operation(Draft, {
 - **Portal shows:** the thing's page, starting with its lifecycle (the machine), then its operations, events, errors
   and notes. A store's binding shows per environment.
 
-A chain is a host. The store kind that runs on it is `chain`, supplied by `language-solidity` (K3 item 2). "Pending
-until mined" belongs to the caller, so a server call that sends a transaction is a workflow (seam 6).
+A chain is a host. The store kind that runs on it is `chain`, supplied by `language-solidity` (K3 item 2) (superseded by K27, 20 November 2026: supplied by `Host.chain`, written for by `language-solidity`). "Pending
+until mined" belongs to the caller (superseded by K7, 18 November 2026: a chain store's own commit may answer late, with a submission), so a server call that sends a transaction is a workflow (seam 6).
 
 ### 3. An Effect operation: editing a draft
 
 **What the scaffold writes.** `ortho` writes the handler once, as a real function, already wired. Each declared step
 is in place, in declared order (the order eval 6 checks, `packages/prove/src/modules/evals/internal/calls.ts:114`).
 The move is in place when one is declared, and so is a stub for each declared refusal. Every hole is a
-`Handlers.blank`, so the file compiles, and `ortho prove --empty` shows each blank as a red step (M1.16). Today the
-scaffold writes all of this only as comments (`packages/generators/src/modules/render/internal/scaffold.ts:8-13`,
-`:26`). New slice M1.26 makes it the function below.
+`Handlers.blank`, so the file compiles, and `ortho prove --empty` names the reached blank on each red journey step
+(M1.16). M1.26 wires those calls in the generated scaffold. The example below shows how the draft's handler can
+name those holes.
 
 ```ts
 // src/draft/edit.ts. Scaffolded from blueprint/things/draft/verbs/edit.ts. Yours from now on.
@@ -280,7 +280,7 @@ export default Blueprint.operation(Proposal, {
   move: machine.moves.vote,           // from passed or failed: ProposalNotOpen, the generated refusal
   errors: [AlreadyVoted],             // K7: NotAMember dropped; `allowed: [member]` already refuses with NotAllowed
   allowed: [member],
-  runs: "chain",                      // new: refused by the compiler today, M6.10
+  runs: "chain",                      // new: refused by the compiler today, M6.10 (superseded by K25, 20 November 2026: worked out, never written)
 });
 ```
 
@@ -692,3 +692,13 @@ These notes sit at the end so the canon's line-numbered quotes of this record st
 - **The actions sketch in seam 5 is corrected** by K9's "Agent-native compatibility" (from
   `spikes/agent-native-compat/`): its `run` does not compile against agent-native's `ctx`, `retrySafe: true` is
   harmful, and the module exports `options(host)` for the host to wrap. The sketch stays as written.
+
+## Builder-run checks, audited (author, 18 November 2026)
+
+M1.16 and M1.26's checks (`e2e/m1/10-empty-and-scaffold.test.ts`, the `optional-edit` fixture, and eval 6's optional case in `calls.ts` and `evals.test.ts`) were committed as fea6bf6 by the same Codex run that built 9d0ad5a and 03d710e. AGENTS.md wants a different agent to write them, so a ✍️ author who wrote none of it audited the commit against the M1.16 and M1.26 rows, this record (seams 3 and the two "Decided" paragraphs above) and `e2e/m1/README.md`. The author ran check 10 on fea6bf6 (the builder's parent) and on the PR head.
+
+- **Red before the builder.** On fea6bf6 all four tests failed, each at the unbuilt surface: `Unrecognized flag: --empty` (M1.16); a scaffold whose body is one `Handlers.blank("this handler is not written yet")` (M1.26 wiring); the model's `save` step carrying no `optional` (the fixture); `ortho check` printing no warning (the unused step). On the PR head all four pass, and eval 6's 19 unit tests pass.
+- **`10-empty-and-scaffold.test.ts`: accept with change.** Each done-when is tested against real output: acme's `revoke then spend` is `✘ 1/3` with exactly the two named red steps, the third `✔ ... proved by the description`, the handlers byte for byte unchanged and nothing left running; fresh scaffolds go through `generate` and the real `tsc`, with the step order, refusal and move read from the source and the reached blank named per red step; the optional `save` is read back from the model, reported one-way, then passes eval 6 beside the unchanged journey. Two gaps, fixed on `m1-author-audit`: the warning test had no control (an unconditional warning would pass it), and K5 says an optional step that *no* journey ran is reported too, while only the always-ran direction was tested. The branch adds a control (acme as shipped and an optional step the handler never calls both give no warning) and the never-ran direction (only `keep the limit`).
+- **The `optional-edit` fixture: accept as authored.** One verb, one handler, two journeys, copied over a real acme copy; the handler really compares `limit` before saving, and the keep journey asserts `noEvents()` and `spans({ absent: ["allowance.edit.save"] })`, so a pass proves the skip happened. The answer echoes the payload's `limit` (weak alone), but the span and event assertions carry the check. No mocks.
+- **Eval 6 in `calls.ts` and its unit test: accept as authored.** It is a sharpening, not a weakening: only a step marked `optional` may be absent; a required step with no span still fails, the order check still covers every step that ran, and a refused or replayed call is still exempt. The unit test fails on the old line (the absent `save` was a failure), includes the out-of-order and missing-required cases, and was written before the builder's code. One cosmetic point, not a change: `"optional" in s && s.optional === true` was a type guard from before the model type carried `optional`, and can be `s.optional === true` now.
+- **Left open.** `10` has no README row on the PR head (added on the branch); the README's red-test counts describe the state of M1.02 and were not renumbered.

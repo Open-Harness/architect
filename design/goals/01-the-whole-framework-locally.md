@@ -150,7 +150,7 @@ viem import.
 
 D5, target-solidity (types, the compiled machine, EIP-712 signatures, generated Foundry tests, the contract scaffold,
 and the fuzz cross-check against the TypeScript machine), the contract's Effect client, the signing flow through the
-relayer, worlds with a vault per organisation on Anvil, and contracts redeployed per local environment only when the
+relayer, worlds with a Safe per organisation, enabling the budgets module (K25), on Anvil, and contracts redeployed per local environment only when the
 bytecode changes.
 
 **Works when:** `nx run e2e:layer4` passes: `forge test` on the generated tests passes, the journeys pass on Anvil

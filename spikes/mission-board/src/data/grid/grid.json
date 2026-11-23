@@ -4,10 +4,10 @@
   "record": "design/decisions/K14-the-grid.md",
   "goal": {
     "title": "Everything falls out of the blueprint, for every building block in every output",
-    "summary": "Thirteen building blocks by nine outputs, 117 cards, each an eval with a stated green and stated evidence. Done is every card green or agreed not needed, then one story proves it whole: a fresh folder, the real ortho command, a new project, and the Plugged In app grown through its four stages.",
+    "summary": "Fourteen building blocks by nine outputs, 126 cards, each an eval with a stated green and stated evidence. Done is every card green or agreed not needed, then one story proves it whole: a fresh folder, the real ortho command, a new project, and the Plugged In app grown through its four stages.",
     "writeUp": [
       "**What Orthograph promises.** You write a blueprint: the things your app keeps, the operations that change them, the steps each operation takes, the machine each thing moves through, the events a move emits, the errors a call can be refused with, the roles allowed to call, which fields are private or secret, the environments and stores it runs in, the plugins it mounts, where an operation runs, and the journeys that prove it works. Everything else falls out of that one declaration for free: the model, the HTTP API, the server, the SDK, the CLI, the MCP tools, the docs, the portal and the telemetry. Nothing is configured twice, and nothing an output shows is written by hand.",
-      "**Why a grid measures it.** \"Falls out for free\" is a claim about every pair of building block and output. The coverage audit of 19 November (K12) drew that as a grid of 13 building blocks by 9 outputs, 117 cells, and found the claim fully true only for operations. A promise that holds for one row is not yet the promise. So the grid is the goal: each row is a lane, each cell in it is a card, and each card is an eval. A card says, in one or two sentences, what green means for that building block in that output, and names the evidence that proves it: an e2e check, a journey run through that output, or a view in the portal. A card is green only when its evidence runs in CI and passes. A card that exists in code but has no evidence is not green; it is \"built, unproved\", and the board shows it amber.",
+      "**Why a grid measures it.** \"Falls out for free\" is a claim about every pair of building block and output. The coverage audit of 19 November (K12) drew that as a grid of 14 building blocks (13 at the audit, and invariants, G5) by 9 outputs, 126 cells, and found the claim fully true only for operations. A promise that holds for one row is not yet the promise. So the grid is the goal: each row is a lane, each cell in it is a card, and each card is an eval. A card says, in one or two sentences, what green means for that building block in that output, and names the evidence that proves it: an e2e check, a journey run through that output, or a view in the portal. A card is green only when its evidence runs in CI and passes. A card that exists in code but has no evidence is not green; it is \"built, unproved\", and the board shows it amber.",
       "**What \"done\" looks like.** Every card is green, or Aaron has agreed it is not needed by design. A \"not needed\" card is not deleted: it stays on the board, greyed, with the one-line reason, so nobody reopens it by accident and anyone can see the grid is whole. Where an absence is itself a safety property (no secret field leaves through any output, no step leaks into a client's contract), the card stays live and its evidence proves the absence. When the last card turns green, the end-to-end story below runs from a fresh folder through all four stages of the Plugged In app, and the grid stays green after it.",
       "**How it relates to the gates.** The grid does not replace the milestones; it is how we see them. Gate M1 (M1.15) is the first band: the basics of things, operations, steps, machines, events and errors in every output (K13's 5 by 5, M1.41 and M1.42), one visibility rule (M1.35), telemetry that carries the model (M1.36), and the portal as a viewer (M1.13). Gate M2, \"workable\" (M2.12, also the stage 1 gate), is the second: roles and principals (M2.01 to M2.07), secrets by declaration (M2.04), journeys run through the SDK, CLI and MCP (M2.08) so those three columns are proved by journeys rather than by hand-picked calls, `ortho new` (M2.09) so the story can start from nothing, and `ortho add` for the blocks that edit files in place (M2.14 to M2.16). The v1.0 stages fill the rest: stage 2 (ST2.06) the device lane and the adapter half of the mount lane, stage 3 (ST3.08) stores on a chain and workflows, stage 4 (ST4.08) the visibility lane at its hardest, a club whose members never show. The lanes this grid does not have yet (workflows, views, agents, chains as stores) join it as rows when their milestone's decision slice names their outputs; until then they are listed under \"Rows still to come\".",
       "**How we use it.** The board shows one lane per row, its cards left to right in the column order below, each card green, amber (built, unproved), red (missing) or grey (not needed, agreed). Work is picked by lane, not by cell: a lane is climbed until it is fully green, so at each step we know exactly which building block is whole. The order is under \"Hill-climb order\"."
@@ -270,6 +270,26 @@
       ],
       "absentFrom": [],
       "audiencesBecause": "The caller runs a device operation in its own process; the builder declares it, the operator sees its spans (ST2.07)."
+    },
+    {
+      "id": "invariant",
+      "name": "Invariants (unique rules, G5)",
+      "summary": "A thing's rule that stays true among many records of it: `Blueprint.invariant.unique(field or tuple, { while, refuse, description })` in `things/<thing>/invariants.ts`; the runtime refuses for the handler.",
+      "order": 14,
+      "endState": {
+        "kind": "portal-view",
+        "title": "The thing's page and the operation's page show the rules",
+        "description": "A rule is declared once in `invariants.ts`, and every output says it: each operation that can break it lists the rule's refusal, the runtime refuses and the span names the rule, the docs and the MCP tool say why in one sentence, and the portal's page for the thing shows a Rules section that each refusal links back to.",
+        "ref": null
+      },
+      "proof": "Check 25 (the model, the compiler's refusals, a real world, the outputs) and its package halves; check 31 (S-19, a value moving between holders); `ortho prove` on Plugged In's claim journey, which refuses both rules; ST1.22's Chromium check on the portal's Rules section.",
+      "audiences": [
+        "caller",
+        "builder",
+        "operator"
+      ],
+      "absentFrom": [],
+      "audiencesBecause": "The caller meets the rule's refusal in every client; the builder declares it and reads its sentence in the docs; the operator sees which rule refused in the spans and the portal."
     }
   ],
   "outputs": [
@@ -1415,7 +1435,7 @@
       "today": "✗",
       "todayRef": "packages/language-effect/src/modules/mcp/internal/tool.ts:32",
       "todayNote": "Reads keep `state` in list items and the machine refusal exposes `state` as public, but tool schemas carry no state enum and nothing lists allowed moves.",
-      "greenMeans": "A tool's description says which states it moves from and to, and its output schema types the state.",
+      "greenMeans": "A tool states which states it moves from and to in what the framework emits for it (its input and output schemas, annotations and metadata (`_meta`)), never in its description, which is the author's and must equal the model's (operation.mcp); its output schema types the state. Changed by #150: the old wording, \"description\", contradicted operation.mcp's exact-description rule.",
       "evidence": [
         {
           "kind": "check",
@@ -2008,7 +2028,7 @@
       "today": "✗",
       "todayRef": "packages/generators/src/modules/render/internal/docs.ts:1",
       "todayNote": "Docs render things and operations only; the journeys that exercise an operation are not rendered as examples or pages, though the model holds them.",
-      "greenMeans": "Each operation's page lists the journeys that cover it, as worked examples drawn from the model.",
+      "greenMeans": "Each operation's page shows each journey that calls it as a worked example: every step that calls the operation, with who calls, the payload and the answer or refusal, drawn from the model's journeys (W2).",
       "evidence": [
         {
           "kind": "check",
@@ -2998,6 +3018,192 @@
         }
       ],
       "owner": "new slice needed: device spans to the environment's sink (portal.md gap 4, ledger `LAH-02`), proposed ST2.07 before ST2.03",
+      "question": null
+    },
+    {
+      "id": "invariant.model",
+      "block": "invariant",
+      "output": "model",
+      "state": "partly",
+      "today": "~",
+      "todayRef": "packages/compiler/src/modules/model/types.ts:51",
+      "todayNote": "G4's per-field `unique` is in the model with its `while`. There is no `invariants`, no named rule, no `refuse` or `description`, and no operation `invariants` map.",
+      "greenMeans": "`things.<t>.invariants` carries each rule (kind, fields, while, refuse, description) with the thing's hash, and `operations.<op>.invariants` maps each refusal an operation can make to its rule.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/25-unique-fields.test.ts",
+          "ref": "e2e/m1/25-unique-fields.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.15 (compiler and model)",
+      "question": null
+    },
+    {
+      "id": "invariant.api",
+      "block": "invariant",
+      "output": "api",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/projections/src/modules/api/internal/api.ts:22",
+      "todayNote": "An operation's errors in the API come from its `errors:` and the project's refusal table; a rule's refusal is in neither, so a claim cannot say `HandleTaken` unless its handler lists it.",
+      "greenMeans": "Each operation that can break a rule has the rule's refusal among its API errors, with the fields filled from the caller's own row.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/25-unique-fields.test.ts",
+          "ref": "e2e/m1/25-unique-fields.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.15 (breakers into `refusals`)",
+      "question": null
+    },
+    {
+      "id": "invariant.server",
+      "block": "invariant",
+      "output": "server",
+      "state": "partly",
+      "today": "~",
+      "todayRef": "packages/host-cloudflare/src/modules/store/internal/commit.ts:39",
+      "todayNote": "The store holds G4's index and turns a lost unique into a conflict and a retry; the handler still checks and refuses by hand. No invariants stop on the spine, no index named per rule.",
+      "greenMeans": "The runtime refuses between the move and the commit, with the rule's own refusal; D1 holds one index per rule; a missed breaker dies naming the rule and the operation.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/25-unique-fields.test.ts",
+          "ref": "e2e/m1/25-unique-fields.test.ts",
+          "passing": null
+        },
+        {
+          "kind": "check",
+          "label": "e2e/m1/31-s19-moving-a-value.test.ts",
+          "ref": "e2e/m1/31-s19-moving-a-value.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.12 (write order), ST1.16 (runtime and stores)",
+      "question": null
+    },
+    {
+      "id": "invariant.sdk",
+      "block": "invariant",
+      "output": "sdk",
+      "state": "partly",
+      "today": "~",
+      "todayRef": "packages/language-effect/src/modules/handler/service.ts:54",
+      "todayNote": "The SDK's error union reads an operation's refusals, so a hand-written refusal reaches it; a rule's would once the model lists it.",
+      "greenMeans": "A call that breaks a rule fails with the rule's typed refusal, in the union of every operation that can break it.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/25-unique-fields.test.ts",
+          "ref": "e2e/m1/25-unique-fields.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.15, ST1.16",
+      "question": null
+    },
+    {
+      "id": "invariant.cli",
+      "block": "invariant",
+      "output": "cli",
+      "state": "partly",
+      "today": "~",
+      "todayRef": "packages/language-effect/src/modules/handler/service.ts:54",
+      "todayNote": "The CLI's exits and `[code] Tag` lines come from the refusal table and an operation's refusals, so a hand-written refusal reaches it; a rule's would once the model lists it.",
+      "greenMeans": "A call that breaks a rule prints `[code] Tag` and exits with the refusal's exit.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/25-unique-fields.test.ts",
+          "ref": "e2e/m1/25-unique-fields.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.15, ST1.16",
+      "question": null
+    },
+    {
+      "id": "invariant.mcp",
+      "block": "invariant",
+      "output": "mcp",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/language-effect/src/modules/mcp/internal/tool.ts:30",
+      "todayNote": "A tool's refusals come from the project's table; its description says nothing of a rule, so an agent cannot know why a claim refuses.",
+      "greenMeans": "The tool lists the rule's refusal and the same sentence as the docs: the rule's `description`, or one generated from it.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/25-unique-fields.test.ts",
+          "ref": "e2e/m1/25-unique-fields.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.17 (outputs)",
+      "question": null
+    },
+    {
+      "id": "invariant.docs",
+      "block": "invariant",
+      "output": "docs",
+      "state": "partly",
+      "today": "~",
+      "todayRef": "packages/generators/src/modules/render/internal/docs.ts:90",
+      "todayNote": "A thing's page lists `## Unique` with its scope (G4); no `## Invariants`, no rule-owned refusal with a reason, nothing on the operation page.",
+      "greenMeans": "A thing's page has an `## Invariants` section, and each refusal a rule owns has a 'why' cell with the rule's `description` or a generated sentence.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/25-unique-fields.test.ts",
+          "ref": "e2e/m1/25-unique-fields.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.17 (outputs)",
+      "question": null
+    },
+    {
+      "id": "invariant.portal",
+      "block": "invariant",
+      "output": "portal",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/portal/src/modules/wire/types.ts:43",
+      "todayNote": "The wire has no invariants and the thing's page no Rules section; a refusal does not link to a rule.",
+      "greenMeans": "The thing's page has a Rules section under its lifecycle, each refusal's sentence links to its rule's row, and the spine has a 'rules' stop between the move and the commit.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/28-st1-22-rules-in-the-portal.test.ts",
+          "ref": "e2e/m1/28-st1-22-rules-in-the-portal.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.22 (the portal)",
+      "question": null
+    },
+    {
+      "id": "invariant.telemetry",
+      "block": "invariant",
+      "output": "telemetry",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/language-effect/src/modules/handler/service.ts:137",
+      "todayNote": "A refusal's span carries `refusal` and `refusal.code`; no `refusal.invariant`, and no deciding log line written by the runtime.",
+      "greenMeans": "The operation span carries `refusal.invariant: <thing>.<rule>`, and the runtime writes the deciding log line itself.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m1/25-unique-fields.test.ts",
+          "ref": "e2e/m1/25-unique-fields.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "ST1.16 (runtime)",
       "question": null
     }
   ],

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Generated from the blueprint. Do not edit.
+// Generated from blueprint/projections/cli.ts. Do not edit.
 // `acme <thing> <verb> --<field> <value>`. Talks to ACME_URL, signed in with ACME_TOKEN when set.
 import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Effect, Layer } from "effect";

@@ -1,28 +1,27 @@
 // L2.02's done-when checks, on a copy of acme under git: `prove --env test` posts verdicts the logbook reads back and
 // leaves no world; a run killed mid-way (SIGKILL) with a 20 s lifetime leaves a world that `worlds reap` removes after
 // its lifetime. Real wrangler and workerd for the logbook and the test environment, a real collector and a real OIDC
-// server (mock-oauth2-server, pinned by digest) in Docker.
+// issuer (an @orthograph/services process), each on a free port.
 import { freePorts } from "../../../test/ports.ts";
 import { spawn, spawnSync } from "node:child_process";
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import { Effect, Redacted } from "effect";
+import { Effect, Exit, Redacted, Scope } from "effect";
+import { Issuer } from "@orthograph/services";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Environments } from "#modules/environments/service.js";
 import { Prove } from "#modules/prove/service.js";
 import { Verdicts } from "#modules/verdicts/service.js";
 import { TestWorlds } from "./service.ts";
 
-const ISSUER_IMAGE = "ghcr.io/navikt/mock-oauth2-server:6.1.4@sha256:647dd8c78a54f0e6fcd58d79c884e612f8f998a0662276f3e1db22e464a50192";
 const PORTS = freePorts("logbook", "test", "issuer");
 const acme = resolve(import.meta.dirname, "../../../../../examples/acme");
 const cli = resolve(import.meta.dirname, "../../../../cli/src/main.ts");
 const trusted = { repository: "acme/acme", ref: "refs/heads/main", workflow: "ortho" };
-const container = `ortho-l202-issuer-${process.pid}`;
+const services = Effect.runSync(Scope.make());
 const visible = (from: string) => !basename(from).startsWith(".");
-const docker = (...args: ReadonlyArray<string>) => spawnSync("docker", args, { encoding: "utf8" });
 const run = <A, E>(effect: Effect.Effect<A, E>) => Effect.runPromise(effect);
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -80,13 +79,7 @@ const total = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a
 beforeAll(async () => {
   const dir = join(project.parent, "issuer");
   mkdirSync(dir);
-  const config = join(dir, "issuer.json");
-  writeFileSync(config, JSON.stringify(scenarios));
-  chmodSync(config, 0o644);
-  docker("rm", "-f", container);
-  const started = docker("run", "-d", "--name", container, "-p", `127.0.0.1:${PORTS.issuer}:8080`, "-e", "JSON_CONFIG_PATH=/config/issuer.json", "-v", `${config}:/config/issuer.json:ro`, ISSUER_IMAGE);
-  expect(started.status, started.stderr).toBe(0);
-  for (let i = 0; i < 300 && !(await fetch(`${issuer}/.well-known/openid-configuration`).then((r) => r.ok, () => false)); i++) await sleep(200);
+  await run(Issuer.start({ port: PORTS.issuer, dir, config: scenarios }).pipe(Scope.provide(services)));
   const up = await run(Environments.up({ root, name: "logbook", port: PORTS.logbook, policy: { issuer, repository: trusted.repository, refs: [trusted.ref], workflows: [trusted.workflow] } }));
   expect(up.url).toBe(logbook);
   expect((await run(Environments.up({ root, name: "test", port: PORTS.test }))).url).toBe(testUrl);
@@ -94,7 +87,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const name of ["test", "logbook"]) await run(Environments.down({ root, name }));
-  docker("rm", "-f", container);
+  await run(Scope.close(services, Exit.void));
   project.remove();
 });
 

@@ -11,7 +11,7 @@ status: specified
 milestone: M1
 slices: [M1.17, M1.24, M5.05, M5.06]
 decisions: [K3, K5]
-links: [things, stores, views, adapters, portal, workflows, languages-and-hosts]
+links: [things, stores, invariants, views, adapters, portal, workflows, languages-and-hosts]
 ---
 
 ## The idea
@@ -76,17 +76,36 @@ workshop, from layer 4.
 
 ### A thing lives in a store
 
-`lives` is the one place a declaration says where a thing's state is. Today it takes one of two built-in kinds, and
-the default is a D1 row:
+`lives` is the one place a declaration says where a thing's state is. It takes a built-in kind or a declared store,
+and the default is a D1 row:
 
-```ts file=packages/orthograph/src/modules/things/types.ts name=Thing,Lives lines=26-32
-  /** Who owns its state: a D1 row with a version column (the default), or a Durable Object per instance (D1 #1). */
-  readonly lives: Lives;
+```ts file=packages/orthograph/src/modules/things/types.ts name=Thing,Lives lines=36-61
+  /** Type only, never present: the declared fields, so a machine and a rule can tell this thing from another (G5). */
+  readonly "~fields"?: F;
+  /** The kind of place its state is kept: a D1 row with a version column (the default), or a Durable Object per instance (D1 #1). */
+  readonly lives: StoreKind;
+  /** The declared store it lives in (K3), when `lives` named one; absent for the project's default store. */
+  readonly store: Store | undefined;
   /** The prefix of this thing's refusal codes (`AL` in `[AL-002]`); the compiler takes two letters of its name when unset. */
   readonly code: string | undefined;
+  /** The runtime's refusal when a call names an instance of this thing that isn't there (K16, M1.46): `<Thing>NotFound`. */
+  readonly notFound: NotFound;
 }
 
-export type Lives = "database" | "actor";
+/**
+ * The runtime's own refusal of a missing instance, generated as `<Thing>NotFound` (or the thing's declared error of that
+ * name). A journey names it as `Person.notFound`, the way it names a machine's `notFrom`.
+ */
+export interface NotFound {
+  readonly kind: "not-found";
+  readonly thing: Thing;
+}
+
+/** The kinds of store; open, because a host or a language supplies more (`chain`). */
+export type StoreKind = "database" | "actor" | (string & {});
+
+/** What `lives` takes: a word for a built-in kind, or a declared store. Nothing means the project's default store. */
+export type Lives = "database" | "actor" | Store;
 ```
 
 K3 opens that list: a store is declared under `blueprint/stores/`, named by its path, and `lives` takes it. A
@@ -101,10 +120,12 @@ import ledger from "../../stores/ledger.ts";
 export default Blueprint.thing({ description: "…", fields: { … }, lives: ledger });
 ```
 
-The kinds are supplied by hosts and languages ([languages-and-hosts](languages-and-hosts.mdx)): `database` (D1) and
-`actor` (a Durable Object per instance) by the Cloudflare host. A chain is a host too, and the store kind that runs
-on it is `chain`, supplied by the Solidity language. How a thing that lives on a chain is declared, and what its
-commit looks like, waits on K7.
+The kinds are supplied by hosts, and a language writes for them ([languages-and-hosts](languages-and-hosts.mdx)):
+`database` (D1) and `actor` (a Durable Object per instance) by the Cloudflare host. A chain is a host too, and the store
+kind that runs on it is `chain`, supplied by `Host.chain` and written for by the Solidity language (K27). A thing lives
+on a chain by living in a chain store, a file such as `blueprint/stores/budgets.ts` that says
+`Blueprint.store.chain.evm()` (K7 Q4, K25). Its commit answers late, with a submission, not `committed` or `conflict` on
+the spot (K7). Both are built in M6.10; [chains-and-wallets](chains-and-wallets.mdx) has the whole of it.
 
 ### What crosses the edge of a store
 
@@ -112,6 +133,27 @@ One call commits to one store: the compiler refuses an operation whose steps wri
 changes two stores, or a store and a chain, is a [workflow](workflows.mdx), with a waiting state between the two
 commits (K5 seam 6). A source is never migrated and never committed to. A handler only calls it, through a step the
 operation declares, so the call shows in the trace with its declared errors (K3 item 8).
+
+### What stays true among many records
+
+A store holds one row per instance, and some things must be true among all the rows of a thing: one holder per name.
+That is declared on the thing, as a rule ([invariants](invariants.mdx)), not on the place it lives, so it moves with the
+thing. The store holds it as an index of its own, per rule, generated from the model. Plugged In's two handle rules and
+its profile rule become three indexes, the first two on `handle`:
+
+```sql file=examples/plugged-in/generated/server/migrations/0001_things.sql lines=10-11
+CREATE UNIQUE INDEX "handle_oneHolderPerName" ON "handle" ("name") WHERE "state" IN ('claimed');
+CREATE UNIQUE INDEX "handle_oneNamePerPerson" ON "handle" ("owner") WHERE "state" IN ('claimed');
+```
+
+and the third, on `profile`, with no states to name:
+
+```sql file=examples/plugged-in/generated/server/migrations/0001_things.sql lines=27
+CREATE UNIQUE INDEX "profile_onePagePerHandle" ON "profile" ("handle");
+```
+
+A rule is about the records of one thing, which live in one store. A thing that lives as actors has no table to hold
+one, so the compiler refuses a rule on it.
 
 ### A projection's own state
 
@@ -142,6 +184,7 @@ migrations, every source with its adapter, calls and stand-in, and every view (K
   and kinds in depth are on [stores](stores.mdx), in layer 4.
 - **Not a "home".** That word is retired: a thing lives in a store (K3, ledger `G-03`).
 - **Not a cache, KV or R2.** None of them can take an atomic commit, so no thing lives in one (K3 item 3).
+- **Not what stays true among records.** That is a rule, on [invariants](invariants.mdx).
 - **Not how a field is hidden.** Who may see a field is visibility, on [things](things.mdx).
 
 ## Where it lives
@@ -150,6 +193,7 @@ migrations, every source with its adapter, calls and stand-in, and every view (K
 |---|---|---|
 | `lives` today | `packages/orthograph/src/modules/things/types.ts:32` | built |
 | the store port: find, list, commit | `packages/language-effect/src/modules/records/types.ts:62` | built |
+| a rule's index, generated beside the table | `examples/plugged-in/generated/server/migrations/0001_things.sql:10` | built |
 | the D1 schema, generated from the model | `examples/signup/generated/server/migrations/0001_things.sql:3` | built |
 | declared stores, `lives` taking one | `blueprint/stores/` | planned, M1.17 |
 | the portal's notes and threads in its own store | the portal feature | planned, M1.24 |
@@ -168,7 +212,7 @@ migrations, every source with its adapter, calls and stand-in, and every view (K
 | a projection's own state, in its own store | specified | M1.24 | K3 item 7, K5 seam 10 |
 | sources through adapters | specified | M5.07 | K3 item 8 |
 | views | specified | M5.05 | K3 item 9 |
-| a thing on a chain | waits on K7 | M6.10 | |
+| a thing on a chain | specified | M6.10 | K7, K25 |
 
 ## Notes
 
@@ -176,8 +220,10 @@ migrations, every source with its adapter, calls and stand-in, and every view (K
 its commit. Anything else is a source, reached through an adapter. The word "home" is retired (ledger `G-03`).</Note>
 
 <Note kind="decision" decision="K5">A chain is a host, and its store kind is `chain`. A server call that sends a
-transaction writes two stores, so it is a workflow. Everything else about chain data (how a thing is declared on one,
-what its commit returns to a caller, where private state fits, ledger `G-04`, `STO-02` and `X-18`) waits on K7.</Note>
+transaction writes two stores, so it is a workflow. K7 settled the rest of chain data: a thing is declared on one by living
+in a chain store (K25); its commit returns a submission, because a chain store may answer late; and private state is a
+capability of one kind, Aztec's `private`, while a public chain store refuses a secret or private field (ledger `G-04`,
+`STO-02` and `X-18`).</Note>
 
 <Note kind="question" id="kind-capabilities" slice="M1.17">A store kind is to declare what it can serve (lists,
 search, private state), so the compiler can refuse a read it can't serve. No shape for that declaration exists yet

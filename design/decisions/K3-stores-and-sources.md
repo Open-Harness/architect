@@ -34,7 +34,7 @@ that does all of that can be where a thing lives.
 ## Decided
 
 1. **A thing lives in a store.** `lives` takes a declared store, or nothing for the project's default store. The word
-   forms stay as shorthands for the built-in kinds: `lives: "actor"`, and `lives: Blueprint.chain({ … })` from L4.01.
+   forms stay as shorthands for the built-in kinds: `lives: "actor"`, and `lives: Blueprint.chain({ … })` from L4.01. (Superseded by K25, 20 November 2026: a chain store file, `Blueprint.store.chain.evm()`.)
    A one-database app changes nothing.
 
    ```ts
@@ -55,6 +55,8 @@ that does all of that can be where a thing lives.
    | `actor` | `@formants/host-cloudflare` | a Durable Object per instance, its own SQLite, its outbox | no: use a view |
    | `chain` | `@formants/language-solidity` | a contract or program (M6 for `evm`) | through views |
 
+   (Superseded by K27, 20 November 2026: the host supplies a store kind and a language writes for it; `chain.evm` is
+   supplied by `Host.chain`, and `language-solidity` writes for it.)
    `chain` is a family of kinds, one per chain: `evm`, `solana` and `aztec`, each from its language package, with
    the capabilities `pending`, `accounts` and `private` (K7 Q4, 18 November 2026).
 
@@ -136,8 +138,62 @@ the rule above sorts it.
 - **Store names in environments.** The `stores:` keys are identifiers checked against generated types, not free
   strings. If that ever reads as writing a declared name by hand, the fallback is `Store.bind(ledger, …)`.
 
+## What M1.17 built, and the calls it made (18 November 2026)
+
+Evidence: [`../evidence/M1.17/`](../evidence/M1.17/). Items 1, 2, 4 (checked by the compiler), 5, 6 and 7 are built; where
+the build had to choose, the choice is here. None of it changes what Aaron decided above.
+
+1. **`lives` keeps its meaning, and a thing gains `store`.** `Thing.lives` is still the *kind* of place (`"database"`,
+   `"actor"`, or a kind a host supplies), so everything that asks `thing.lives === "actor"` is unchanged. Writing
+   `lives: ledger` sets `lives` to the store's kind and `Thing.store` to the declared store (`packages/orthograph/src/modules/things/service.ts`).
+   The model's thing has `lives` as before and `store: "<name>"` only when a store was named, so acme's model, its
+   hashes and everything generated from it are byte for byte what they were (`sync:check`, the acme snapshot, and
+   `packages/generators/src/modules/render/stores.test.ts`).
+2. **The kinds are open at the declaration, closed at the host.** `Blueprint.store.database()`, `.actor()` and
+   `.kind("chain")` return `{ kind: "store", of }`. The compiler refuses a store whose kind the project's host doesn't
+   supply (`STORE_KINDS` in `packages/compiler/src/modules/model/internal/stores.ts`: `database` and `actor`, from
+   `@orthograph/host-cloudflare`); a host or language that supplies another adds its name there when it lands (`chain`, M6).
+3. **A mounted store is always named `<mount>-<store>`.** Unlike a thing, which keeps its name when the mount has the
+   plugin's own name, a store is always prefixed, so the project never sees a plugin's bare store name and two
+   plugins' `main` stores never meet. A clash with the project's own store is refused naming the mount file.
+4. **How the compiler knows an operation writes two stores.** A handler is opaque to it, so a write is declared on
+   the step: `Blueprint.step.database({ writes: [Entry, Note] })` (default: the operation's own thing). An operation's
+   stores are those of its `move`, of each `database` step with no `writes` (its own thing), and of every thing a step
+   `writes`. Two stores, counting "the default store" and "the actor store" (`lives: "actor"` without a declared
+   store) as stores, is refused with the operation, the file and what writes where. The runtime refuses it too, as a
+   defect, for a handler that writes what its steps didn't say (`StoreD1.commit`).
+5. **One database per database store, bound beside `DB`.** The generated `wrangler.jsonc` gains
+   `{ binding: "DB_<STORE>", database_name: "<app>-<store>", database_id: "…000<n>", migrations_dir: "migrations/<store>" }`.
+   The placeholder ids differ per store: with one id for all, a local `wrangler dev` would open one database for
+   every binding. `generated/server/migrations/<store>/0001_things.sql` holds the store's tables and its own
+   `_journal` and `_requests`: a commit writes its journal entries and request key where its tables are. The
+   default migration is the things in no declared store. `prove` applies each database's migrations
+   (`packages/prove/src/modules/world/internal/wrangler.ts`). `StoreD1.layer({ tables, stores })` reads and commits a thing in its store's
+   binding; `answered(key)` asks every database; `JournalD1.across` and `/_world/facts/*` read across them.
+6. **Environments bind a store only when it differs.** `stores: { ledger: Cloud.d1.local() }` is in the model
+   (`environments.<name>.stores`) and the compiler refuses a name that isn't a declared store, or a binding of a store that isn't a
+   database store. The keys are checked by the compiler, not typed in TypeScript: typing them needs a generated
+   registry that the project's own `blueprint/` imports before it has been generated, and the fallback K3 already names
+   (`Store.bind(ledger, …)`) stays open (`STO-15`). Binding a store in a real cloud environment is the deploy slice's.
+7. **STO-23 is fixed in the host.** `rows.ts` keeps an array or struct field as its JSON text and reads it back; the
+   field's schema decides, never the text. `packages/host-cloudflare/src/modules/store/store.test.ts` binds an array and a
+   struct to a real local D1 and reads them back; with the fix off, the same test fails with `D1_TYPE_ERROR`. The
+   work-real branch's version is not imported: the fix is rewritten in the host.
+
+Left open, on purpose:
+
+- **Worlds with lifetimes reset only the default database.** `leases.ts` marks and deletes the tables of `DB` alone, so
+  in a test environment that hosts worlds a declared store's rows survive a world's end. `prove` and `ortho dev` start
+  from a fresh state folder and are not affected. Per-store leases are the next step before a feature's store is
+  used in a test environment.
+- **Migrations after the first.** A store's first migration is generated like the default's; migrations between
+  versions, from the model diff per store (item 6), land with the default's (`STO-17`), and `Compare` does not yet list a
+  store.
+- **Actor stores share one Durable Object namespace.** A declared store of kind `actor` is accepted and its things go to
+  `ACTORS` by table name; a namespace of its own per actor store is not made.
+
 ## Where it lands
 
-- M1.17: stores in the model, and in the compiler and runtime (items 1, 2, 4, 5, 6, 7).
+- M1.17: stores in the model, and in the compiler and runtime (items 1, 2, 4, 5, 6, 7). Built; see above.
 - M5.13: an adapter over a database we don't own, after the workerd spike (items 8, 9).
 - M5.06: the data map lists stores and sources (item 10).

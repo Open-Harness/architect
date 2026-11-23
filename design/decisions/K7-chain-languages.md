@@ -255,7 +255,7 @@ vote happened" are different facts.
 
 ---
 
-## Q4. Where state lives, and what `lives: Blueprint.chain(...)` means
+## Q4. Where state lives, and what `lives: Blueprint.chain(...)` means (superseded by K25, 20 November 2026)
 
 **In plain words.** A thing that lives on chain keeps its facts somewhere: in contract storage, in accounts, or in
 private notes. The client may have to know where they are before it can even make the call. K3 named one store kind,
@@ -272,7 +272,7 @@ private notes. The client may have to know where they are before it can even mak
 | A limit the blueprint must respect | gas | 1,232 bytes per transaction (the measured vote is 452), and an account limit per transaction not measured here; rent; every vote write-locks the same Proposal account (not measured) | proving time; note growth |
 
 **Decided.**
-- **`chain` is a family, and each chain is a store kind**, supplied by its language package (K3 item 2's open list):
+- **`chain` is a family, and each chain is a store kind**, supplied by its language package (K3 item 2's open list) (superseded by K27, 20 November 2026: supplied by its host, `Host.chain` for `evm`, and written for by its language):
   - `evm`, from `@orthograph/language-solidity`;
   - `solana`, from `@orthograph/language-solana` (Anchor 1.2.2);
   - `aztec`, from `@orthograph/language-noir`.
@@ -282,7 +282,7 @@ private notes. The client may have to know where they are before it can even mak
   - `solana`: `accounts`, meaning every operation has an account list and rent;
   - `aztec`: `private`, meaning notes, nullifiers and device-local reads. This defines ledger row `G-04`.
 - **`lives` names the kind:** `lives: Blueprint.chain.evm({ contract: "Governance", per: "workshop" })`, and likewise
-  `.solana(...)` and `.aztec(...)`. `Blueprint.chain({...})` alone means `evm`, so K5's sketch still reads right.
+  `.solana(...)` and `.aztec(...)`. `Blueprint.chain({...})` alone means `evm`, so K5's sketch still reads right. (Superseded by K25, 20 November 2026: a chain store file, `Blueprint.store.chain.evm()`.)
 - **On Solana the account list is part of the client contract.** The manifest holds each operation's accounts and
   their derivation, and the generated client is an account resolver plus an encoder (`solana#11`). An account that is
   needed only sometimes, like the gate token, is declared in the blueprint, because the IDL can't say when.
@@ -611,6 +611,21 @@ Kept from the frame:
 
 What goes in the first version, and where it sits in the milestones, are forks for Aaron (F3 and F4 below).
 
+**As built in M1.29** (18 to 19 November 2026; the full account is [M1-plugins section 8.2](M1-plugins.md)). What K7 left open, and what the
+building decided, with the evidence in `design/evidence/M1.29/`:
+- **The device half is built, the linked half is not** (M2.13). `create`, `import`, `keys`, `sign` and `send` are `runs: "client"`,
+  with a signer per host: `node` (a Web3 v3 file), `browser` (EIP-1193), `keystore` (a server's key store, in M1 only a
+  world-generated test key, used by a server operation through `Server.keystore`) and `world`. A host that has no such signer
+  refuses as `KeyLocked`, saying why. F5 holds: each wallet says where its key lives (`signer`), and no key is ever in a binding, a
+  commit or a log (a secret is `Redacted` from its first line, and `import`'s `source` is a secret field).
+- **`confirmed` for a plain transfer** (Q3): no declared event exists to wait for, so the intent is the transfer itself,
+  included and not reverted at depth one, a local chain's level. A real environment sets its level (`safe`) with its other
+  settings when M6 gives the wallet its first event-bearing send.
+- **The port is used as a library, not as a call step**: `send` imports `@orthograph/chain-evm/device` (the package without
+  `Anvil`, plus `Keys`), so `prepare`, `simulate`, `sign`, `submit` and `track` are the port's own and the receipt spans are its own.
+  Simulation is not an option anywhere in the wallet; the port refuses to sign what has not simulated.
+- **Values**: `eip155:<chain>:<address>` is the only namespace built; a Solana or Aztec account is `None` from `Account.parse`.
+
 ---
 
 ## Decided here
@@ -620,7 +635,7 @@ The building agent's calls, with the evidence above. Aaron can overrule any of t
 1. Our programs are stores and theirs are sources (K3's rule on chain). A chain store answers a commit late, as a
    submission (`STO-02`, `X-18`).
 2. Our contracts are scaffolded in one opinionated shape, with roles generated in (OpenZeppelin-style `onlyRole`,
-   generated rather than imported). Every external function is reachable from the generated clients, the developer's
+   generated rather than imported; superseded by K25, 20 November 2026: behind OpenZeppelin's `IAccessControl`). Every external function is reachable from the generated clients, the developer's
    own included. A hand-written external function that changes state uses a generated role modifier, and `ortho check`
    warns when one has none (F1, Aaron's direction, 18 November 2026; this replaces the manifest-and-refuse version).
 3. An outside program is an adapter typed from its interface. A call into it is a declared step with one declared
@@ -694,7 +709,7 @@ The chain slices are building-agent calls. The wallet's moves followed Aaron's a
 | M6.06 | **Changed.** Anvil runs `--silent`; reorg journeys use `anvil_reorg` |
 | M6.08 | **Changed.** Simulation is mandatory before every send, in the SDK, not optional |
 | M6.09 | **Changed.** The checkpoint is a block-hash window; it emits `<Event>Corrected { wasConfirmed }` |
-| M6.10 | **Changed.** Also lands `Blueprint.chain.evm(...)` (`chain` as a family of store kinds) and `blueprint/refusals.lock`, for every language |
+| M6.10 | **Changed.** Also lands `Blueprint.chain.evm(...)` (`chain` as a family of store kinds; superseded by K25, 20 November 2026: chain store files) and `blueprint/refusals.lock`, for every language |
 | M6.11 | **Changed.** Also emits `generated/solidity/surface.json`; `ortho check` classifies the compiled ABI against it |
 | M6.13 | **Changed.** The cross-check uses the reference machine generated from the blueprint, drives the generated client, and carries a planted mutant |
 | M6.15 | **Changed.** The submission lifecycle (Q3); `confirmed` matches the intent, not the transaction |

@@ -1,4 +1,4 @@
-// The token policy on its own, with tokens signed by a key of the test's own (the issuer-in-Docker run is local/local.test.ts).
+// The token policy on its own, with tokens signed by a key of the test's own (the issuer-process run is local/local.test.ts).
 import { Effect, Exit, Cause } from "effect";
 import { SignJWT, createLocalJWKSet, exportJWK, generateKeyPair } from "jose";
 import { beforeAll, describe, expect, it } from "vitest";

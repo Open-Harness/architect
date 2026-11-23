@@ -31,6 +31,7 @@ Drop a milestone from its mission's scope. Its tasks leave the board; the burn-d
 | refusal | exit | code | when |
 |---|---|---|---|
 | MilestoneNotActive | 52 | ML-900 | the milestone is in a state drop can't start from; carries `state` |
+| MilestoneNotFound | 4 | ML-901 | nothing has the id in milestone; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |
 
 ## How to call

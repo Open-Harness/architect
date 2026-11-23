@@ -14,6 +14,12 @@ const Field = Schema.Struct({
   named: Schema.optionalKey(Schema.String),
   ref: Schema.optionalKey(Schema.String),
   optional: Schema.optionalKey(Schema.Boolean),
+  /** What the field is, in the declaration's own words (`Blueprint.described`; M1.42). */
+  description: Schema.optionalKey(Schema.String),
+  /** Who may see its value, as the model has it: `"secret"`, or `{ private: [roles] }`; absent means public. The wire holds declarations, never values. */
+  visibility: Schema.optionalKey(Schema.Union([Schema.Literal("secret"), Schema.Struct({ private: Schema.Array(Schema.String) })])),
+  /** A secret answer field handed to its caller once (`Blueprint.issued`). */
+  issued: Schema.optionalKey(Schema.Literal(true)),
 });
 const Fields = Schema.Record(Schema.String, Field);
 
@@ -42,12 +48,22 @@ const Operation = Schema.Struct({
   answer: Fields,
   move: Schema.NullOr(Schema.Struct({ key: Schema.String, from: Schema.Array(Schema.String), to: Schema.Array(Schema.String), emits: Schema.String })),
   errors: Schema.Array(Schema.String),
+  /** Each refusal the runtime makes for a rule, to the rule's full name (`HandleTaken` to `handle.oneHolderPerName`, G5); absent when the operation breaks none. These refusals are also in `refusals`. */
+  invariants: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
+  /** Every rule the operation can break, as `<thing>.<rule>`, whether or not it owns a refusal (S31); absent on an older wire. */
+  breaks: Schema.optionalKey(Schema.Array(Schema.String)),
   refusals: Schema.Array(Schema.String),
   allowed: Schema.Array(Schema.Struct({ kind: Schema.String, role: Schema.optionalKey(Schema.String), path: Schema.optionalKey(Schema.String) })),
   steps: Schema.Record(Schema.String, Schema.Struct({ name: Schema.String, type: Schema.String })),
   idempotent: Schema.NullOr(Schema.Literal("request")),
   budget: Schema.NullOr(Schema.Struct({ p95Ms: Schema.Number })),
   hash: Schema.String,
+  /** The file that declares it, which is its owner (K18); absent on a wire older than M1.49. */
+  file: Schema.optionalKey(Schema.String),
+  /** Where it lives and how it is tested and run (M1.42). */
+  from: Schema.optionalKey(Schema.Unknown),
+  runs: Schema.optionalKey(Schema.String),
+  test: Schema.optionalKey(Schema.String),
 });
 
 const Thing = Schema.Struct({
@@ -62,9 +78,81 @@ const Thing = Schema.Struct({
   })),
   roles: Schema.Array(Schema.String),
   hash: Schema.String,
+  /** The model's own (M1.42): the code prefix, the events with their fields, and each error with its fields, exit and code. */
+  code: Schema.optionalKey(Schema.String),
+  events: Schema.optionalKey(Schema.Record(Schema.String, Fields)),
+  errors: Schema.optionalKey(Schema.Record(Schema.String, Schema.Struct({ fields: Fields, exit: Schema.Number, code: Schema.String }))),
+  /** Its rules by name (G5): what stays true among its instances. A rule's hash is the thing's `hash`, which they are part of. Absent when it has none. */
+  invariants: Schema.optionalKey(Schema.Record(Schema.String, Schema.Struct({
+    kind: Schema.Literal("unique"),
+    fields: Schema.Array(Schema.String),
+    while: Schema.optionalKey(Schema.Array(Schema.String)),
+    refuse: Schema.optionalKey(Schema.String),
+    description: Schema.optionalKey(Schema.String),
+  }))),
 });
 
-const Environment = Schema.Struct({ name: Schema.String, runs: Schema.String, promotesFrom: Schema.NullOr(Schema.String), lifetimeMs: Schema.NullOr(Schema.Number) });
+const Environment = Schema.Struct({
+  name: Schema.String,
+  runs: Schema.String,
+  promotesFrom: Schema.NullOr(Schema.String),
+  lifetimeMs: Schema.NullOr(Schema.Number),
+  identity: Schema.optionalKey(Schema.String),
+  cloud: Schema.optionalKey(Schema.NullOr(Schema.Record(Schema.String, Schema.Unknown))),
+  database: Schema.optionalKey(Schema.NullOr(Schema.String)),
+  secrets: Schema.optionalKey(Schema.Record(Schema.String, Schema.Unknown)),
+  telemetry: Schema.optionalKey(Schema.Array(Schema.Record(Schema.String, Schema.Unknown))),
+  file: Schema.optionalKey(Schema.String),
+  deploy: Schema.optionalKey(Schema.Record(Schema.String, Schema.Unknown)),
+  publish: Schema.optionalKey(Schema.Record(Schema.String, Schema.Unknown)),
+  hash: Schema.optionalKey(Schema.String),
+});
+
+/** A journey as the compiler writes it: its cast, where it starts, and its declared steps (never read from spans). Checks are kept as written. */
+const JourneyStep = Schema.Union([
+  Schema.Struct({
+    title: Schema.String,
+    call: Schema.Struct({ actor: Schema.String, operation: Schema.String, payload: Schema.optionalKey(Schema.Unknown), request: Schema.optionalKey(Schema.String) }),
+    checks: Schema.Array(Schema.Unknown),
+  }),
+  /** A step whose operation is outside the model (`storiesOf`): it names why it was not drawn, and has no call and no checks. */
+  Schema.Struct({ title: Schema.String, skipped: Schema.String }),
+]);
+const Journey = Schema.Struct({
+  name: Schema.String,
+  file: Schema.String,
+  cast: Schema.Record(Schema.String, Schema.Unknown),
+  starts: Schema.NullOr(Schema.String),
+  steps: Schema.Array(JourneyStep),
+  sourceHash: Schema.optionalKey(Schema.String),
+});
+
+const StartingWorld = Schema.Struct({
+  name: Schema.String,
+  file: Schema.String,
+  from: Schema.NullOr(Schema.String),
+  cast: Schema.Record(Schema.String, Schema.Unknown),
+  makes: Schema.Array(Schema.Unknown),
+  gives: Schema.Record(Schema.String, Schema.Unknown),
+  sourceHash: Schema.optionalKey(Schema.String),
+});
+
+const Mount = Schema.Struct({ kind: Schema.String, package: Schema.String, version: Schema.String, file: Schema.String, chosen: Schema.Record(Schema.String, Schema.Unknown), integrity: Schema.optionalKey(Schema.String), hash: Schema.optionalKey(Schema.String) });
+
+/** One burn alert of an objective: it fires when the objective burns at `burn` or more over both windows, long then short. */
+const BurnAlert = Schema.Struct({ name: Schema.String, burn: Schema.Number, windowsMs: Schema.Array(Schema.Number), severity: Schema.String });
+/** One alert condition the compiler derives (K18, M1.49): the labels are `environment` (`*` for every one), the subject, `severity` and `owner`. */
+const AlertRule = Schema.Struct({
+  id: Schema.String,
+  kind: Schema.Literals(["latency", "defect", "anomaly", "verdict"]),
+  labels: Schema.Record(Schema.String, Schema.String),
+  target: Schema.optionalKey(Schema.Number),
+  windowDays: Schema.optionalKey(Schema.Number),
+  thresholdMs: Schema.optionalKey(Schema.Number),
+  minCalls: Schema.optionalKey(Schema.Number),
+  alerts: Schema.optionalKey(Schema.Array(BurnAlert)),
+});
+export type AlertRuleWire = typeof AlertRule.Type;
 
 /** The compiler's model as far as the portal reads it. The digest is over the whole document, so what it does not read is still what it holds. */
 export const ModelSchema = Schema.Struct({
@@ -72,6 +160,13 @@ export const ModelSchema = Schema.Struct({
   operations: Schema.Record(Schema.String, Operation),
   environments: Schema.optionalKey(Schema.Record(Schema.String, Environment)),
   blanks: Schema.optionalKey(Schema.Record(Schema.String, Schema.Array(Schema.String))),
+  /** Refusal name to its code (HandleTaken to HN-001): the table the calls table and the refusal-codes page map names through. */
+  refusals: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
+  journeys: Schema.optionalKey(Schema.Record(Schema.String, Journey)),
+  startingWorlds: Schema.optionalKey(Schema.Record(Schema.String, StartingWorld)),
+  mounts: Schema.optionalKey(Schema.Record(Schema.String, Mount)),
+  /** The alert rules the model implies (K18): what the monitor evaluates over the window. Absent on a wire older than M1.49. */
+  alertRules: Schema.optionalKey(Schema.Array(AlertRule)),
 });
 export type ModelWire = typeof ModelSchema.Type;
 export type OperationWire = ModelWire["operations"][string];

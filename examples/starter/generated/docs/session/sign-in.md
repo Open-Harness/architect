@@ -31,6 +31,15 @@ Sign in with email and password. The token is the bearer for every later call.
 |---|---|---|---|
 | SessionCredentialsWrong | 10 | SE-001 | declared in errors.ts |
 
+## Worked examples
+
+### sign up and sign in
+
+Starts from an empty world.
+
+- **a wrong password is refused.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password { redacted: true }, and is refused with SessionCredentialsWrong, SE-001.
+- **the right password answers a session and a token.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, and gets back an answer matching `^ses_[0-9a-z]+$` and gets back an answer matching `^.+$`.
+
 ## How to call
 
 ```sh

@@ -12,12 +12,33 @@ export type McpOperation = Operation | Read<Thing, unknown, unknown>;
 export interface McpEntry {
   readonly description: string;
   readonly operation: McpOperation;
+  /** The states of the thing's machine, when it has one: a `state` in the answer is one of them. */
+  readonly states?: ReadonlyArray<string>;
+  /** The move the operation makes, when it makes one: the tool lists it, so an agent knows which states a call moves between. */
+  readonly move?: McpMove;
 }
 
-/** The refusals of a project: each one's code, and the declared error's fields (a machine's own refusal has none declared). */
+/** A move of the thing's machine, as a tool lists it. */
+export interface McpMove {
+  readonly key: string;
+  readonly from: ReadonlyArray<string>;
+  readonly to: ReadonlyArray<string>;
+  readonly emits: string;
+}
+
+/** One refusal's row of the generated `refusals` table: its code, the CLI's exit and the HTTP status (K16, M1.47). */
+export interface McpRefusalRow {
+  readonly code: string;
+  readonly exit: number;
+  readonly status: number;
+}
+
+/** The refusals of a project: each one's code, the declared error's fields (a machine's own refusal has none declared), and the table. */
 export interface McpRefusals {
   readonly codes: { readonly [tag: string]: string };
   readonly declared: { readonly [tag: string]: { readonly fields: FieldsInput } };
+  /** The generated `refusals` table: a refusal's result carries its row, so an agent tells a refusal from a defect without parsing. */
+  readonly table?: { readonly [tag: string]: McpRefusalRow };
 }
 
 /** What a tool answers: MCP content, `isError` for a refusal. */
@@ -25,6 +46,7 @@ export interface McpResult {
   readonly isError: boolean;
   /** The answer as one line of JSON (bigints as text), or the refusal's `[AL-001] Name { field: value }`. */
   readonly text: string;
+  /** The answer's shown fields; for a refusal, `{ refusal, code, exit, status }` and the fields the caller may see. */
   readonly structured?: { readonly [field: string]: unknown };
 }
 
@@ -33,8 +55,14 @@ export interface McpTool<R> {
   readonly description: string;
   /** JSON Schema of the arguments: the operation's payload, from the model's declaration, its public fields only. */
   readonly input: { readonly [key: string]: unknown };
+  /** JSON Schema of the answer an agent is shown (M1.37); absent when the answer has no fields. */
+  readonly output?: { readonly [key: string]: unknown };
+  /** The move the call makes (`_meta` in `tools/list`), when it makes one. */
+  readonly move?: McpMove;
   /** A read changes nothing. */
   readonly readOnly: boolean;
+  /** Some `allowed` entry admits an agent: only then is an agent shown the tool. Absent: shown. */
+  readonly agentTool?: boolean;
   /** Never fails: a refusal is a result, and a defect is told as `[AR-500]` without its detail. */
   readonly call: (args: { readonly [field: string]: unknown }, principal: Principal) => Effect.Effect<McpResult, never, R>;
 }

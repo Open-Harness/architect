@@ -1,4 +1,4 @@
-// Telemetry for prove: a real OpenTelemetry Collector in Docker, its file exporter read back by trace id
+// Telemetry for prove: a real OpenTelemetry Collector as a pinned binary, its file exporter read back by trace id
 // (spikes/otlp-from-workerd). What a call did is read from here, never from what the server says about itself.
 import { Data, type Effect, type Scope } from "effect";
 import type { Env, Reader } from "#modules/sinks/types.js";
@@ -46,6 +46,11 @@ export interface Wanted {
   readonly parent: string;
   /** The caller's span is itself in the trace (the journey's `journey.<name>`): complete only once it is. */
   readonly rooted?: boolean;
+  /**
+   * The server may send nothing for this call: it refused the caller before any span opened (O2, gap 3). An empty
+   * trace is then whole. One with spans is still waited for, so a span that should be absent is seen.
+   */
+  readonly mayBeEmpty?: boolean;
 }
 
 /**
@@ -68,26 +73,44 @@ export interface TraceSource {
   readonly window: (since: number, now?: number) => Effect.Effect<ReadonlyMap<string, Trace>, SourceFailed>;
 }
 
+/** One series of a metric over a window: its labels, and how much it grew in the window. */
+export interface MetricPoint {
+  readonly name: string;
+  readonly labels: Readonly<Record<string, string>>;
+  readonly value: number;
+}
+
+/** Where metrics are read from, beside `TraceSource` (portal.md hole 2): `ortho.calls` counted in the last `since` ms before `now`. History past the window is M7.14. */
+export interface MetricsSource {
+  readonly window: (since: number, now: number) => Effect.Effect<ReadonlyArray<MetricPoint>, SourceFailed>;
+}
+
+export interface FileMetricsApi {
+  /** Read the counters in `metrics.jsonl` of these folders, as one source. Missing files are no points, not a failure. */
+  readonly open: (dirs: string | ReadonlyArray<string>) => MetricsSource;
+}
+
 export interface Collector extends TraceSource {
   /** The OTLP/HTTP base URL the Worker exports to. */
   readonly url: string;
 }
 
 export interface CollectorsApi {
+  /** A scoped loopback OTLP/HTTP receiver, writing scrubbed OTLP JSON lines to `dir`. */
+  readonly local: (dir: string, strip: ReadonlyArray<string>) => Effect.Effect<Collector, CollectorFailed, Scope.Scope>;
   /**
-   * Start a collector in Docker writing to `dir`; removed when the scope closes. First removes every collector whose
-   * owner process is gone (a killed prove's leak), and exports to the local viewer too if it is running. `strip` are
-   * attribute keys its `attributes` processor deletes from every span and log (L2.P): the keys the model says may carry
-   * a non-public value.
+   * Start a collector process writing to `dir`, owned by this one: stopped when the scope closes. First stops every collector whose
+   * owner process is gone (a killed prove's leak). `strip` are attribute keys its `attributes` processor deletes from every span
+   * and log (L2.P): the keys the model says may carry a non-public value.
    */
   readonly start: (dir: string, options?: { readonly strip?: ReadonlyArray<string> }) => Effect.Effect<Collector, CollectorFailed, Scope.Scope>;
   /**
-   * A collector that outlives this process, for an environment that has one of its own: a container `name` writing to
-   * a fresh `dir`, on a port Docker picks. Returns its OTLP/HTTP URL. Whoever launches it stops it.
+   * A collector that outlives this process, for an environment that has one of its own: a detached process writing to a fresh
+   * `dir`, on a port the system picks, its marker kept in `dir`. Returns its OTLP/HTTP URL. Whoever launches it stops it.
    */
-  readonly launch: (options: { readonly dir: string; readonly name: string; readonly strip?: ReadonlyArray<string> }) => Effect.Effect<string, CollectorFailed>;
-  /** Remove the container `name`. Nothing to remove is not an error. */
-  readonly stop: (name: string) => Effect.Effect<void>;
+  readonly launch: (options: { readonly dir: string; readonly strip?: ReadonlyArray<string> }) => Effect.Effect<string, CollectorFailed>;
+  /** Stop the collector launched in `dir`, if it still runs what was launched. Nothing to stop is not an error. */
+  readonly stop: (dir: string) => Effect.Effect<void>;
   /** Read what some collector wrote to `dir`, by trace id. */
   readonly read: (dir: string) => TraceSource;
 }

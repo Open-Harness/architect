@@ -24,6 +24,12 @@ States: pending, accepted, revoked. A move from the wrong state is refused Invit
 | accept | pending | accepted | InvitationAccepted |
 | revoke | pending | revoked | InvitationRevoked |
 
+## Events
+
+- `InvitationAccepted`: carries invitation (invitation.id), membership (membership.id); emitted by the move accept
+- `InvitationRevoked`: carries invitation (invitation.id); emitted by the move revoke
+- `InvitationSent`: carries invitation (invitation.id), email (invitation.email); emitted by the move send
+
 ## Roles
 
 - invitee

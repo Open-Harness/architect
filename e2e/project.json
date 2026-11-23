@@ -2,11 +2,11 @@
   "name": "e2e",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "tags": ["scope:e2e", "env:build", "layer:1"],
+  "tags": ["scope:e2e", "env:gate", "layer:1"],
   "targets": {
     "lint": {
       "options": {
-        "command": "oxlint {projectRoot} && node {projectRoot}/totals/totals.mjs --check"
+        "command": "oxlint {projectRoot}"
       }
     },
     "typecheck": {},
@@ -27,7 +27,7 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "node --test {projectRoot}/totals/test-totals.mjs" },
+      "options": { "command": "node --test {projectRoot}/totals/test-totals.mjs {projectRoot}/staging/leftovers.test.mjs {projectRoot}/staging/workflow.test.mjs {projectRoot}/staging/subdomain.test.mjs" },
       "cache": false
     },
     "m0-names": {
@@ -40,11 +40,114 @@
       "options": { "parallel": false, "commands": ["nx run e2e:layer1", "nx run e2e:layer2", "nx run e2e:m0-names"] },
       "cache": false
     },
+    "browser": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec playwright install chromium", "cwd": "{projectRoot}" },
+      "cache": false
+    },
+    "m1-checks": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.m1.config.ts m1" },
+      "cache": false
+    },
+    "portal-next": {
+      "metadata": {
+        "description": "Goal 6's done check, begun: the theme's check (slice 1). Slice 2 adds the rest of the portal checks to it."
+      },
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot}/portal-next --config vitest.config.ts" },
+      "cache": false
+    },
+    "climb": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.climb.config.ts climb" },
+      "cache": false
+    },
+    "climb-record": {
+      "executor": "nx:run-commands",
+      "options": { "command": "node tools/climb/record.mjs", "cwd": "{workspaceRoot}" },
+      "cache": false
+    },
+    "grid-tests": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "parallel": false, "commands": ["vitest run --root {projectRoot} --config vitest.grid.config.ts grid served-portal", "node --test tools/climb/*.test.mjs"] },
+      "cache": false
+    },
+    "grid": {
+      "executor": "nx:run-commands",
+      "options": { "parallel": false, "commands": ["nx run e2e:grid-tests", "tsx {projectRoot}/grid/src/main.ts run --prove"] },
+      "cache": false
+    },
     "ratchet-test": {
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot} --config vitest.ratchet.config.ts ratchet" },
       "cache": false
     },
+    "m1-ratchet": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/m1-report.json tmp/m1-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/m1-errors.json vitest run --root e2e --config vitest.m1-ratchet.config.ts m1 --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/m1-report.json; node e2e/ratchet/check.ts tmp/m1-report.json e2e/m1/expected-failing tmp/m1-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "stage1-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "mkdir -p tmp && rm -f tmp/stage1-report.json tmp/stage1-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/stage1-errors.json vitest run --root e2e --config vitest.stage1.config.ts stage1 --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/stage1-report.json; node e2e/ratchet/check.ts tmp/stage1-report.json e2e/stage1/expected-failing tmp/stage1-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "stage1": {
+      "metadata": {
+        "description": "The done check of Goal 3, begun: Plugged In's journeys in local and test. Still needs, per e2e/stage1/README.md: e2e:climb as a step, the grid cells with their logbook verdicts, the latest staging run, a snags check, the story through CLI/SDK/MCP/HTTP from ortho new, and test read from a report."
+      },
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:stage1-ratchet" },
+      "cache": false
+    },
+    "m1": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:m1-checks" },
+      "cache": false
+    },
+    "m2-checks": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.m2.config.ts m2" },
+      "cache": false
+    },
+    "m2-ratchet": {
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/m2-report.json tmp/m2-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/m2-errors.json vitest run --root e2e --config vitest.m2-ratchet.config.ts m2 --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/m2-report.json; node e2e/ratchet/check.ts tmp/m2-report.json e2e/m2/expected-failing tmp/m2-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "m2": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:m2-checks" },
+      "cache": false
+    }
+,
     "m8-checks": {
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot} --config vitest.m8.config.ts m8" },

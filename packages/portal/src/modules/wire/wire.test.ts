@@ -1,8 +1,11 @@
 // L2.10a: the wire projection is versioned and deterministic, and the decoder rejects what it does not know.
+import { readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
 import { Wire } from "./service.ts";
 import { acmeDocs, acmeModel, blueprintOf, withBudget } from "./testing.ts";
+import type { ModelWire } from "./types.ts";
 
 const decode = (json: unknown) => Effect.runPromise(Effect.result(Wire.decode(json)));
 
@@ -33,6 +36,22 @@ describe("the blueprint wire", () => {
     const wire = blueprintOf();
     const decoded = await decode(JSON.parse(JSON.stringify(wire)));
     expect(decoded._tag, JSON.stringify(decoded)).toBe("Success");
+  });
+
+  it("carries a thing's rules and the refusals an operation makes for them, and decoding keeps both (G5)", async () => {
+    const model = acmeModel();
+    const rule = { kind: "unique" as const, fields: ["name"], while: ["open"], refuse: "AllowanceTaken", description: "that name is taken" };
+    const ruled: ModelWire = {
+      ...model,
+      things: { ...model.things, allowance: { ...model.things["allowance"]!, invariants: { oneHolderPerName: rule }, hash: "with-a-rule" } },
+      operations: { ...model.operations, "allowance.spend": { ...model.operations["allowance.spend"]!, invariants: { AllowanceTaken: "allowance.oneHolderPerName" }, hash: "with-its-refusal" } },
+    };
+    const wire = blueprintOf(ruled);
+    expect(wire.digest).not.toBe(blueprintOf().digest);
+    const decoded = await Effect.runPromise(Wire.decode(JSON.parse(JSON.stringify(wire))));
+    expect(decoded.model.things["allowance"]?.invariants).toEqual({ oneHolderPerName: rule });
+    expect(decoded.model.operations["allowance.spend"]?.invariants).toEqual({ AllowanceTaken: "allowance.oneHolderPerName" });
+    expect(decoded.model.things["person"]).not.toHaveProperty("invariants");
   });
 
   it("rejects an unknown schema version, naming it", async () => {
@@ -87,5 +106,29 @@ describe("a proof's dependencies, from the model's JSON alone", () => {
   it("refuse a model shape they do not know (unavailable, never guessed)", async () => {
     expect((await Effect.runPromise(Effect.result(Wire.core({ operations: 3 })))) ._tag).toBe("Failure");
     expect((await Effect.runPromise(Effect.result(Wire.core(null))))._tag).toBe("Failure");
+  });
+});
+
+describe("what the compiler writes is what the decoder keeps (M1.13)", () => {
+  it("keeps Plugged In's refusals, events, errors, journeys, starting worlds, environments and mounts exactly", async () => {
+    const file = join(resolve(import.meta.dirname, "../../../../.."), "examples/plugged-in/generated/portal/blueprint.json");
+    const raw = JSON.parse(readFileSync(file, "utf8")) as { model: Record<string, any> };
+    const model = (await Effect.runPromise(Wire.decode(raw))).model as unknown as Record<string, any>;
+    for (const key of ["refusals", "journeys", "startingWorlds", "mounts"]) expect(model[key], key).toEqual(raw.model[key]);
+    expect(model["things"]["handle"]).toMatchObject({ code: "HN", events: raw.model["things"]["handle"].events, errors: raw.model["things"]["handle"].errors });
+    for (const [name, env] of Object.entries(raw.model["environments"] as Record<string, any>)) {
+      expect(model["environments"][name], name).toEqual(env);
+    }
+    expect(model["operations"]["handle.claim"]).toMatchObject({ test: "unit", runs: "server", from: { kind: "app" } });
+  });
+
+  it("decodes a journey step the compiler skipped (its operation is outside the model): a title and why, no call and no checks", async () => {
+    const file = join(resolve(import.meta.dirname, "../../../../.."), "examples/plugged-in/generated/portal/blueprint.json");
+    const { digest: _, ...unsigned } = JSON.parse(readFileSync(file, "utf8")) as { model: { journeys: Record<string, { steps: Array<unknown> }> }; digest: string };
+    const first = Object.values(unsigned.model.journeys)[0]!;
+    first.steps.push({ title: "a step of an operation the model lacks", skipped: "operation is outside the model" });
+    const wire = await Effect.runPromise(Wire.decode({ ...unsigned, digest: Wire.digestOf(unsigned) }));
+    const steps = Object.values((wire.model as unknown as { journeys: Record<string, { steps: ReadonlyArray<unknown> }> }).journeys)[0]!.steps;
+    expect(steps[steps.length - 1]).toEqual({ title: "a step of an operation the model lacks", skipped: "operation is outside the model" });
   });
 });

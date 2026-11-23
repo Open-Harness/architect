@@ -1,0 +1,701 @@
+{
+  "cells": [
+    {
+      "cell": "error.api",
+      "subjects": [
+        "HandleTaken",
+        "LinkNeedsHandle",
+        "NotAllowed",
+        "LinkAlreadyRemoved",
+        "LinkNotListed",
+        "HandleNotFound",
+        "ProfileNotFound",
+        "HandleAlreadyOwned",
+        "HandleNotClaimed"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "error.docs",
+      "subjects": [
+        "HandleTaken",
+        "LinkNeedsHandle",
+        "NotAllowed",
+        "LinkAlreadyRemoved",
+        "LinkNotListed",
+        "HandleNotFound",
+        "ProfileNotFound",
+        "HandleAlreadyOwned",
+        "HandleNotClaimed"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "error.model",
+      "subjects": [
+        "HandleTaken",
+        "LinkNeedsHandle",
+        "NotAllowed",
+        "LinkAlreadyRemoved",
+        "LinkNotListed",
+        "HandleNotFound",
+        "ProfileNotFound",
+        "HandleAlreadyOwned",
+        "HandleNotClaimed"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "error.portal",
+      "subjects": [
+        "HandleTaken",
+        "LinkNeedsHandle",
+        "NotAllowed",
+        "LinkAlreadyRemoved",
+        "LinkNotListed",
+        "HandleNotFound",
+        "ProfileNotFound",
+        "HandleAlreadyOwned",
+        "HandleNotClaimed"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "error.sdk",
+      "subjects": [
+        "HandleTaken",
+        "LinkNeedsHandle",
+        "NotAllowed",
+        "LinkAlreadyRemoved",
+        "LinkNotListed",
+        "HandleNotFound",
+        "ProfileNotFound",
+        "HandleAlreadyOwned",
+        "HandleNotClaimed"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "error.server",
+      "subjects": [
+        "HandleTaken",
+        "LinkNeedsHandle",
+        "NotAllowed",
+        "LinkAlreadyRemoved",
+        "LinkNotListed",
+        "HandleNotFound",
+        "ProfileNotFound",
+        "HandleAlreadyOwned",
+        "HandleNotClaimed"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "error.telemetry",
+      "subjects": [
+        "HandleTaken",
+        "LinkNeedsHandle",
+        "NotAllowed",
+        "LinkAlreadyRemoved",
+        "LinkNotListed",
+        "HandleNotFound",
+        "ProfileNotFound",
+        "HandleAlreadyOwned",
+        "HandleNotClaimed"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "event.docs",
+      "subjects": [
+        "HandleClaimed",
+        "HandleReleased",
+        "LinkAdded",
+        "LinkRemoved"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "event.model",
+      "subjects": [
+        "HandleClaimed",
+        "HandleReleased",
+        "LinkAdded",
+        "LinkRemoved"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "event.portal",
+      "subjects": [
+        "HandleClaimed",
+        "HandleReleased",
+        "LinkAdded",
+        "LinkRemoved"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "event.server",
+      "subjects": [
+        "HandleClaimed",
+        "HandleReleased",
+        "LinkAdded",
+        "LinkRemoved"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "event.telemetry",
+      "subjects": [
+        "HandleClaimed",
+        "HandleReleased",
+        "LinkAdded",
+        "LinkRemoved"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "journey.docs",
+      "subjects": [
+        "a name is claimed once",
+        "a stranger cannot edit a page",
+        "add, order and remove a link",
+        "anyone reads a public page",
+        "claim a handle",
+        "release a handle",
+        "a person claims a page and shares it"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "journey.model",
+      "subjects": [
+        "a name is claimed once",
+        "a stranger cannot edit a page",
+        "add, order and remove a link",
+        "anyone reads a public page",
+        "claim a handle",
+        "release a handle",
+        "a person claims a page and shares it"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "journey.portal",
+      "subjects": [
+        "a name is claimed once",
+        "a stranger cannot edit a page",
+        "add, order and remove a link",
+        "anyone reads a public page",
+        "claim a handle",
+        "release a handle",
+        "a person claims a page and shares it"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "journey.server",
+      "subjects": [
+        "a name is claimed once",
+        "a stranger cannot edit a page",
+        "add, order and remove a link",
+        "anyone reads a public page",
+        "claim a handle",
+        "release a handle",
+        "a person claims a page and shares it"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "journey.telemetry",
+      "subjects": [
+        "a name is claimed once",
+        "a stranger cannot edit a page",
+        "add, order and remove a link",
+        "anyone reads a public page",
+        "claim a handle",
+        "release a handle",
+        "a person claims a page and shares it"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.api",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.cli",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.docs",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.mcp",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.model",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.portal",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.sdk",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.server",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "machine.telemetry",
+      "subjects": [
+        "handle",
+        "link"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.api",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.cli",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.docs",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.mcp",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.model",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.portal",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.sdk",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.server",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "operation.telemetry",
+      "subjects": [
+        "handle.claim",
+        "handle.resolve",
+        "handle.release",
+        "link.add",
+        "link.order",
+        "link.remove",
+        "profile.get"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.api",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.cli",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.docs",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.mcp",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.model",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.portal",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.sdk",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.server",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "step.telemetry",
+      "subjects": [
+        "handle.claim.record",
+        "handle.resolve.load",
+        "handle.release.record",
+        "link.add.load",
+        "link.add.record",
+        "link.order.load",
+        "link.order.record",
+        "link.remove.record",
+        "profile.get.load"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.api",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.cli",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.docs",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.mcp",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.model",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.portal",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.sdk",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.server",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "thing.telemetry",
+      "subjects": [
+        "handle",
+        "link",
+        "profile"
+      ],
+      "switchedBy": "a name is claimed once"
+    },
+    {
+      "cell": "invariant.model",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    },
+    {
+      "cell": "invariant.api",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    },
+    {
+      "cell": "invariant.server",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    },
+    {
+      "cell": "invariant.sdk",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    },
+    {
+      "cell": "invariant.mcp",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    },
+    {
+      "cell": "invariant.docs",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    },
+    {
+      "cell": "invariant.portal",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    },
+    {
+      "cell": "invariant.telemetry",
+      "subjects": [
+        "handle.oneHolderPerName",
+        "handle.oneNamePerPerson",
+        "profile.onePagePerHandle"
+      ],
+      "switchedBy": "claim a handle"
+    }
+  ]
+}

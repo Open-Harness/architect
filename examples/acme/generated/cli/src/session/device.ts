@@ -1,4 +1,4 @@
-// Generated from the blueprint. Do not edit.
+// Generated from blueprint/projections/cli.ts. Do not edit.
 // Signing in by device code (RFC 8628) against Better Auth, and the session this machine keeps for each environment.
 import { Config, Console, Data, Duration, Effect, FileSystem, Option, Path, Schedule, Schema } from "effect";
 import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";

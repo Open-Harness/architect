@@ -1,22 +1,17 @@
-// The services around Gate 2's environments, each started and stopped by the check that needs it: the local OIDC issuer
-// (D3 #8), Verdaccio (D3 #9, as tools/e2e/starter.sh starts it) and the logbook and environments through ortho itself.
-import { generateKeyPairSync, createSign, randomBytes } from "node:crypto";
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+// The services around Gate 2's environments, each a process of @orthograph/services that the stack starts and stops (K10 section 8,
+// M1.33: no Docker): the local OIDC issuer (D3 #8), Verdaccio (D3 #9) and the logbook and environments through ortho itself.
+import { generateKeyPairSync, createSign } from "node:crypto";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { Effect, Exit, Scope } from "effect";
+import { Issuer, Registry, type IssuerConfig } from "@orthograph/services";
 import { expect } from "vitest";
-import { type Ports, nothingRunning, ports, repo, run, sleep, until } from "./support.ts";
+import { type Ports, nothingRunning, ports, repo, run, sleep } from "./support.ts";
 
-const ISSUER_IMAGE = "ghcr.io/navikt/mock-oauth2-server:6.1.4@sha256:647dd8c78a54f0e6fcd58d79c884e612f8f998a0662276f3e1db22e464a50192";
-const REGISTRY_IMAGE = "verdaccio/verdaccio:6.11.1";
-
-const docker = (...args: ReadonlyArray<string>) => spawnSync("docker", args, { encoding: "utf8" });
-const remove = (name: string) => void docker("rm", "-f", name);
-
-/** The claims a GitHub Actions job would carry for `ortho-logbook`, per scenario (D3 #8). */
-const scenarios = {
-  interactiveLogin: false,
+/** The claims a CI job would carry for `ortho-logbook`, per scenario (D3 #8). */
+const scenarios: IssuerConfig = {
   tokenCallbacks: [{
     issuerId: "ortho",
     tokenExpiry: 600,
@@ -29,19 +24,6 @@ const scenarios = {
 };
 
 export const trusted = { repository: "acme/acme", ref: "refs/heads/main", workflow: "ortho" };
-
-/** A real OIDC server: a scenario is a client id, and a token for it carries that scenario's claims. */
-export const startIssuer = async (name: string, port: number, dir: string) => {
-  const config = join(dir, "issuer.json");
-  writeFileSync(config, JSON.stringify(scenarios));
-  chmodSync(config, 0o644);
-  remove(name);
-  const started = docker("run", "-d", "--name", name, "-p", `127.0.0.1:${port}:8080`, "-e", "JSON_CONFIG_PATH=/config/issuer.json", "-v", `${config}:/config/issuer.json:ro`, ISSUER_IMAGE);
-  expect(started.status, started.stderr).toBe(0);
-  const url = `http://127.0.0.1:${port}/ortho`;
-  await until(`issuer ${url}`, () => fetch(`${url}/.well-known/openid-configuration`).then((r) => r.ok, () => false), 60_000);
-  return url;
-};
 
 /** A token the issuer mints for a scenario (client credentials; the server does not check the secret). */
 export const mintToken = async (issuer: string, client = "ci-main") => {
@@ -62,27 +44,6 @@ export const forge = (token: string) => {
   return `${header}.${payload}.${signature}`;
 };
 
-/** Verdaccio, with the project's own names never proxied to npm; and an npmrc holding a throwaway token, kept in `dir`. */
-export const startRegistry = async (name: string, port: number, dir: string) => {
-  const storage = join(dir, "registry");
-  mkdirSync(storage, { recursive: true });
-  chmodSync(storage, 0o777);
-  remove(name);
-  const started = docker("run", "-d", "--name", name, "-p", `127.0.0.1:${port}:4873`,
-    "-v", `${join(import.meta.dirname, "verdaccio.yaml")}:/verdaccio/conf/config.yaml:ro`, "-v", `${storage}:/verdaccio/storage`, REGISTRY_IMAGE);
-  expect(started.status, started.stderr).toBe(0);
-  const url = `http://localhost:${port}/`;
-  await until(`registry ${url}`, () => fetch(`${url}-/ping`).then((r) => r.ok, () => false), 90_000);
-  // The token goes to a file and nowhere else: not to the output, not to a command line.
-  const password = randomBytes(16).toString("hex");
-  const created = await fetch(`${url}-/user/org.couchdb.user:e2e`, {
-    method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "e2e", password }) });
-  expect(created.status).toBeLessThan(300);
-  const npmrc = join(dir, "npmrc");
-  writeFileSync(npmrc, `//localhost:${port}/:_authToken=${((await created.json()) as { token: string }).token}\n`, { mode: 0o600 });
-  return { url, npmrc };
-};
-
 export type Stack = {
   readonly ports: Ports;
   /** The environment variables a command needs: issuer, trusted claims, and the registry when there is one. */
@@ -96,41 +57,38 @@ export type Stack = {
   readonly up: (environment: "test" | "staging" | "production", extra?: Readonly<Record<string, string>>) => void;
   readonly down: (environment: "test" | "staging" | "production") => void;
   /** Stop everything this stack started and remove what it made; the problems it met, empty when all went clean. */
-  readonly stop: () => ReadonlyArray<string>;
+  readonly stop: () => Promise<ReadonlyArray<string>>;
 };
 
 /** The local OIDC issuer, the logbook (`ortho env up logbook`) and, if asked, a rogue second issuer and Verdaccio. */
 export const startStack = async (root: string, check: number, options: { readonly registry?: boolean; readonly rogue?: boolean; readonly env?: Readonly<Record<string, string>> } = {}): Promise<Stack> => {
   const p = ports();
   const dir = mkdtempSync(join(tmpdir(), "ortho-gate2-"));
-  const id = `${process.pid}-${check}`;
-  const containers = [`ortho-l2-issuer-${id}`, `ortho-l2-rogue-${id}`, `ortho-l2-registry-${id}`];
+  // Each service is a process of this scope: closing it stops them, in reverse, and a leaked one is the teardown's to find.
+  const services = Effect.runSync(Scope.make());
   const running = new Set<string>();
   const problems: Array<string> = [];
-  const stop = () => {
+  const stop = async () => {
     for (const name of [...running].reverse()) {
       const down = run(root, env, "env", "down", name);
       if (down.status !== 0) problems.push(`env down ${name}: ${down.out.slice(-500)}`);
     }
     running.clear();
-    // Verdaccio owns its mounted files on Linux. Empty only this stack's live registry before removing it,
-    // as the publishing fixture does; absent/no-registry and failed-start stacks still remove their own containers.
-    if (options.registry) {
-      const registry = docker("inspect", "-f", "{{.State.Running}}", containers[2]!);
-      if (registry.status === 0 && registry.stdout.trim() === "true") {
-        const emptied = docker("exec", containers[2]!, "sh", "-c", "rm -rf /verdaccio/storage/*");
-        if (emptied.status !== 0) problems.push(`registry storage cleanup: ${emptied.stderr.trim()}`);
-      }
-    }
-    for (const name of containers) remove(name);
+    await Effect.runPromise(Scope.close(services, Exit.void));
     rmSync(dir, { recursive: true, force: true });
     return problems;
   };
   const env: Record<string, string> = {};
   try {
-    const issuer = await startIssuer(containers[0]!, p.issuer, dir);
-    const rogue = options.rogue ? await startIssuer(containers[1]!, p.rogue, dir) : undefined;
-    const registry = options.registry ? await startRegistry(containers[2]!, p.registry, dir) : undefined;
+    const start = <A, E>(effect: Effect.Effect<A, E, Scope.Scope>) => Effect.runPromise(effect.pipe(Scope.provide(services)));
+    const issuing = (name: string, port: number) => {
+      const at = join(dir, name);
+      mkdirSync(at);
+      return start(Issuer.start({ port, dir: at, config: scenarios })).then((issued) => issued.url);
+    };
+    const issuer = await issuing("issuer", p.issuer);
+    const rogue = options.rogue ? await issuing("rogue", p.rogue) : undefined;
+    const registry = options.registry ? await start(Registry.start({ dir, port: p.registry })) : undefined;
     Object.assign(env, {
       ORTHO_OIDC_ISSUER: issuer, ORTHO_OIDC_CLIENT: "ci-main",
       ORTHO_OIDC_REPOSITORY: trusted.repository, ORTHO_OIDC_REF: trusted.ref, ORTHO_OIDC_WORKFLOW: trusted.workflow,
@@ -155,14 +113,14 @@ export const startStack = async (root: string, check: number, options: { readonl
       stop,
     };
   } catch (error) {
-    stop();
+    await stop();
     throw error;
   }
 };
 
 /** What an afterAll does for a check: stop the stack, then see that nothing of this copy still runs. */
 export const finish = async (root: string, stack: Stack | undefined) => {
-  const problems = stack?.stop() ?? [];
+  const problems = (await stack?.stop()) ?? [];
   await sleep(500);
   nothingRunning(root);
   expect(problems).toEqual([]);

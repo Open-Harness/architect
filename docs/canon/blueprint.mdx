@@ -10,7 +10,7 @@ status: specified
 milestone: M1
 slices: [M1.03, M1.06]
 decisions: [K5, K2, D2]
-links: [orthograph, things, operations, journeys, plugins, handlers, data]
+links: [orthograph, things, invariants, operations, journeys, plugins, handlers, data]
 ---
 
 ## The idea
@@ -41,7 +41,9 @@ The sign-up sheet's blueprint, and the name each file gives:
 | `examples/signup/blueprint/starting-worlds/opened.ts` | a starting world | read by prove, not the compiler |
 
 The sign-up sheet has no roles, because anyone may call. A role would sit in the thing's `roles.ts`, named by its
-export, as acme's `allowance.grantee` is.
+export, as acme's `allowance.grantee` is. It has no rules either, because nothing in it is held by one record. A rule
+would sit in the thing's `invariants.ts`, named by its export, as Plugged In's `handle.oneHolderPerName` is
+(`examples/plugged-in/blueprint/things/handle/invariants.ts`, and [invariants](invariants.mdx)).
 
 The operation's file never says its own name. It imports everything else it means, so each name it uses is a
 reference the compiler can follow:
@@ -70,27 +72,27 @@ This is what the model says about it, rendered from the sign-up sheet's compiled
 3. **The path says what a file is.** `readLayout` splits each path and decides from it alone. Under `blueprint/things/`,
    the folder is the thing's name, and the rest of the path says which part of it the file holds:
 
-```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=54-61
+```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=134-141
 if (parts[0] !== "things" || parts.length < 3) {
-  layout.problems.push(`blueprint/${path}: not a place the blueprint reads (values/<file>.ts, environments/<name>.ts or things/<thing>/...)`);
+  layout.problems.push(`${at(path)}: not a place the blueprint reads (values/<file>.ts, environments/<name>.ts, stores/<name>.ts, things/<thing>/..., or a mount in features/, adapters/ or projections/)`);
   continue;
 }
 const name = parts[1]!;
-if (!NAME.test(name)) layout.problems.push(`blueprint/${path}: thing folder "${name}" must be lowercase words joined by dashes`);
+if (!NAME.test(name)) layout.problems.push(`${at(path)}: thing folder "${name}" must be lowercase words joined by dashes`);
 const t = thingFiles(name);
 const file = parts.slice(2).join("/");
 ```
 
    A file in a thing's `verbs` folder is one operation, named by its file and nothing else:
 
-```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=77-83
+```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=159-165
 } else if (parts[2] === "verbs" && parts.length === 4) {
-const verb = parts[3]!;
-if (!NAME.test(verb)) layout.problems.push(`blueprint/${path}: verb "${verb}" must be lowercase words joined by dashes`);
-const d = exports["default"];
-const kind = kindOf(d);
-if (kind !== "operation" && kind !== "read") layout.problems.push(`blueprint/${path}: the default export must be a Blueprint.operation or a Blueprint.read`);
-else t.verbs.set(verb, { file: `blueprint/${path}`, declaration: d as Operation | Read });
+  const verb = parts[3]!;
+  if (!NAME.test(verb)) layout.problems.push(`${at(path)}: verb "${verb}" must be lowercase words joined by dashes`);
+  const d = exports["default"];
+  const kind = kindOf(d);
+  if (kind !== "operation" && kind !== "read") layout.problems.push(`${at(path)}: the default export must be a Blueprint.operation or a Blueprint.read`);
+  else t.verbs.set(verb, { file: at(path), declaration: d as Operation | Read });
 ```
 
 4. **Names are joined.** The model names an operation `thing.verb` and each of its steps `thing.verb.step`
@@ -109,22 +111,32 @@ declaration instead.
 
 ### The model
 
-The model is the one contract every projection is made from (K5, seam 1). Today it has six parts. This is its type:
+The model is the one contract every projection is made from (K5, seam 1). Today it has eleven parts. This is its type:
 
-```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=112-125
+```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=272-295
 export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;
   readonly values: Readonly<Record<string, ValueMeta>>;
+  /** The declared stores, by name: present only when the blueprint (or a mount) declares any. */
+  readonly stores?: Readonly<Record<string, StoreModel>>;
   readonly things: Readonly<Record<string, ThingModel>>;
   readonly operations: Readonly<Record<string, OperationModel>>;
+  readonly journeys: Readonly<Record<string, JourneyModel>>;
+  readonly startingWorlds: Readonly<Record<string, StartingWorldModel>>;
+  /** Incomplete operations are described here and have no generated entry points. */
+  readonly blankOperations?: Readonly<Record<string, BlankOperationModel>>;
   /**
    * What is still `Blueprint.todo`, by declaration (`allowance`, `allowance.spend`): present only when something is.
-   * An operation with a blank is left out of `operations`, so nothing is generated for it until it is filled.
+   * An incomplete operation is described under `blankOperations` until its blanks are filled.
    */
   readonly blanks?: Readonly<Record<string, ReadonlyArray<string>>>;
   /** Where the application runs, by name: present only when the blueprint has an `environments/` folder. */
   readonly environments?: Readonly<Record<string, EnvironmentModel>>;
+  /** Each mount, by its name: present only when the blueprint has a mount. */
+  readonly mounts?: Readonly<Record<string, MountModel>>;
+  /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
+  readonly alertRules: ReadonlyArray<AlertRuleModel>;
 }
 ```
 
@@ -176,7 +188,7 @@ called in its handler ([handlers](handlers.mdx)).
 | a thing | `blueprint/things/` then the thing's folder, `thing.ts` | yes, exactly one |
 | its machine | `machine.ts` in the thing's folder | yes, exactly one |
 | an operation or a read | the thing's `verbs` folder, one file per verb | yes, the default export |
-| roles, events, errors | `roles.ts`, `events.ts`, `errors.ts` in the thing's folder | no, each export is one |
+| roles, events, errors, rules | `roles.ts`, `events.ts`, `errors.ts`, `invariants.ts` in the thing's folder | no, each export is one |
 | values | any file in `blueprint/values/` | no, each export is one |
 | an environment | `blueprint/environments/`, one file per environment | yes, the default export |
 | a starting world | `blueprint/starting-worlds/` | read by prove |
@@ -211,7 +223,7 @@ hold.
 | `ortho check` | `packages/cli/src/modules/check/service.ts:17` | built |
 | blanks, found and printed | `packages/cli/src/modules/check/internal/blanks.ts:7` | built |
 | `no-name-as-string` | `packages/lint/src/modules/rules/internal/names.ts:5` | built |
-| journeys, starting worlds and role rules in the model | `packages/compiler/src/modules/model/service.ts:9` | planned, M1.03 |
+| journeys, starting worlds and role rules in the model | `packages/compiler/src/modules/model/internal/describe.ts` | built in M1.03 |
 | mounts read from the blueprint | `blueprint/features/` | planned, M1.06 |
 
 ## Status
@@ -227,7 +239,7 @@ hold.
 | a name written as a string is refused | proved | | `packages/cli/src/modules/check/check.test.ts:76`, the `name-as-string` fixture |
 | `ortho check` on a clean project | proved | | `check.test.ts:57`, "passes clean acme" |
 | `ortho check` names each blank | proved | | `packages/cli/src/modules/add/add.test.ts:41` |
-| blanks, journeys, starting worlds and role rules in the model | specified | M1.03 | `ortho describe --json` on acme and work lists them all |
+| blanks, journeys, starting worlds and role rules in the model | proved | M1.03 | `ortho describe --json` on acme and work lists them all |
 | plugin mounts in the blueprint | specified | M1.06 | check `01` |
 
 ## Notes
@@ -236,11 +248,7 @@ hold.
 portal. Seam 1: one declaration per file, named by its path; from M1.03 the model also holds journeys, starting
 worlds, role rules and blanks.</Note>
 
-<Note kind="question" id="model-completeness" slice="M1.03">Blanks, journeys, starting worlds and role rules aren't in
-the compiled model yet (`BLU-04`). Today an operation with a blank is left out of `operations` altogether
-(`describe.ts:99`), and only its name appears under `blanks`, so an unfinished model looks smaller instead of
-unfinished (`BLU-01`). M1.03 must say how a marked blank sits in the model, and what a projection makes for an
-operation that has one.</Note>
+
 
 <Note kind="status" slice="M1.03">Journeys have two places (`BLU-02`). Prove reads both `blueprint/journeys/` and a
 `journeys` folder at the project's root (`packages/prove/src/modules/journeys/internal/load.ts:36`). The design and

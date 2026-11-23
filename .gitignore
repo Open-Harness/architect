@@ -15,3 +15,6 @@ packages/preset/files/
 .claude/worktrees/
 # The canon's preview: built by `nx run canon:preview`, never committed.
 docs/canon/.preview/
+# HeroUI Pro build kept for the CI cache between runs: never committed.
+.cache/
+.alchemy/

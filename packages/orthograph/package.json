@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./server": "./src/server.ts"
+    "./server": "./src/server.ts",
+    "./sentences": "./src/sentences.ts"
   },
   "dependencies": {
     "effect": "4.1.4"
@@ -25,6 +26,10 @@
       "./server": {
         "types": "./dist/server.d.ts",
         "default": "./dist/server.js"
+      },
+      "./sentences": {
+        "types": "./dist/sentences.d.ts",
+        "default": "./dist/sentences.js"
       }
     },
     "imports": {

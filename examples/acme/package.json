@@ -7,6 +7,7 @@
     "orthograph": "workspace:*",
     "@orthograph/host-cloudflare": "workspace:*",
     "@orthograph/portal": "workspace:*",
+    "@orthograph/projections": "workspace:*",
     "@orthograph/language-effect": "workspace:*",
     "@effect/platform-node": "4.1.4",
     "@effect/sql-d1": "4.1.4",

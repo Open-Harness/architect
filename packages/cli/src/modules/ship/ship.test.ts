@@ -1,23 +1,23 @@
 // L2.04's done-when through the commands' own code: `version --next` and `impact` against the real logbook (workerd behind
-// wrangler) and a real OIDC server in Docker.
+// wrangler) and a real OIDC issuer (an @orthograph/services process), each on a free port.
 //   - adding allowance.list gives `next 1.1.0` and `stale none` against a logbook holding a 1.0.0 release;
 //   - a budget edit keeps it a patch and makes exactly spend stale in staging and production;
 //   - without a logbook, `impact` is what Gate 1 had and `version --next` says how to start one.
 import { freePorts } from "../../../test/ports.ts";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, relative, resolve } from "node:path";
 import { Effect, Exit, Scope } from "effect";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Logbook } from "@orthograph/logbook";
+import { Issuer, type IssuerConfig } from "@orthograph/services";
 import { Releases } from "@orthograph/prove";
 import type { Model } from "@orthograph/compiler";
 import { Ship } from "./service.ts";
 
-const IMAGE = "ghcr.io/navikt/mock-oauth2-server:6.1.4@sha256:647dd8c78a54f0e6fcd58d79c884e612f8f998a0662276f3e1db22e464a50192";
 const PORTS = freePorts("logbook", "issuer", "gone");
-const container = `ship-test-issuer-${process.pid}`;
+const services = Effect.runSync(Scope.make());
 const REPO = "acme/acme";
 
 const acme = resolve(import.meta.dirname, "../../../../../examples/acme");
@@ -25,16 +25,14 @@ const compiler = resolve(import.meta.dirname, "../../../../compiler/src/main.ts"
 const scratch = join(acme, "test/tmp/ship");
 const visible = (from: string) => !basename(from).startsWith(".");
 
-const issuerConfig = JSON.stringify({
-  interactiveLogin: false,
+const issuerConfig: IssuerConfig = {
   tokenCallbacks: [{ issuerId: "ortho", tokenExpiry: 600, requestMappings: [{
     requestParam: "client_id", match: "ci-main",
     claims: { sub: `repo:${REPO}:ref:refs/heads/main`, aud: ["ortho-logbook"], repository: REPO, ref: "refs/heads/main", workflow: "ortho", event_name: "push",
       sha: "0123456789abcdef0123456789abcdef01234567", job_workflow_ref: `${REPO}/.github/workflows/ortho.yml@refs/heads/main` },
   }] }],
-});
+};
 
-const docker = (...args: string[]) => spawnSync("docker", args, { encoding: "utf8" });
 let dir = "";
 let issuer = "";
 let logbook = "";
@@ -64,11 +62,8 @@ const lines = (said: { out: string }) => said.out.split("\n");
 beforeAll(async () => {
   dir = mkdtempSync(join(tmpdir(), "ship-test-"));
   rmSync(scratch, { recursive: true, force: true });
-  docker("rm", "-f", container);
-  const started = docker("run", "-d", "--name", container, "-p", `127.0.0.1:${PORTS.issuer}:8080`, "-e", `JSON_CONFIG=${issuerConfig}`, IMAGE);
-  expect(started.status, started.stderr).toBe(0);
+  await Effect.runPromise(Issuer.start({ config: issuerConfig, port: PORTS.issuer }).pipe(Scope.provide(services)));
   issuer = `http://127.0.0.1:${PORTS.issuer}/ortho`;
-  for (let i = 0; i < 300 && !(await fetch(`${issuer}/.well-known/openid-configuration`).then((r) => r.ok, () => false)); i++) await new Promise((r) => setTimeout(r, 200));
   const scope = Effect.runSync(Scope.make());
   await Effect.runPromise(Logbook.start({
     port: PORTS.logbook, state: join(dir, "state"), log: join(dir, "wrangler.log"),
@@ -81,7 +76,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await stop?.();
-  docker("rm", "-f", container);
+  await Effect.runPromise(Scope.close(services, Exit.void));
   rmSync(dir, { recursive: true, force: true });
   rmSync(scratch, { recursive: true, force: true });
 }, 60_000);

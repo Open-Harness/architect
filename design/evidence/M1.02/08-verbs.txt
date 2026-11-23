@@ -1,0 +1,263 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/08-verbs
+# commit b39b30d · 2026-11-18T20:21:16Z · exit 1 (expected 1) · 10.3s
+
+
+ RUN  v4.1.12 ./e2e
+
+ × m1/08-verbs.test.ts > 08 verbs: omit > an omitted operation is not in the model, and nothing is generated for it 1969ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: omit > the world serves what is left and no route for what was omitted 931ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: omit > a journey that runs an omitted operation is skipped and named by prove, which still passes 911ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: omit > omitting an operation that isn't the plugin's is refused, naming the mount file 748ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: narrow > records the kept ways in on the mount and the operation, and the operation is still served 723ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: narrow > is still served over HTTP and the SDK, and the MCP door refuses it 951ms
+   → can't load blueprint/features/echo.ts: SyntaxError: The requested module 'orthograph' does not provide an export named 'Via'
+
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: narrow > with no ways in left it is refused, naming the mount file: omit is how an operation goes 706ms
+   → can't load blueprint/features/echo.ts: SyntaxError: The requested module 'orthograph' does not provide an export named 'Via'
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: narrow > narrowing an operation that isn't the plugin's is refused, naming the mount file 711ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: choose > takes the first option of an unpicked choice, and records what was picked 700ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/08-verbs.test.ts > 08 verbs: choose > two picks from one choice are refused, naming the mount file 746ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: omit > an omitted operation is not in the model, and nothing is generated for it
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/08-verbs.test.ts:30:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: omit > the world serves what is left and no route for what was omitted
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/08-verbs.test.ts:51:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: omit > a journey that runs an omitted operation is skipped and named by prove, which still passes
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/08-verbs.test.ts:65:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: omit > omitting an operation that isn't the plugin's is refused, naming the mount file
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/08-verbs.test.ts:80:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: narrow > records the kept ways in on the mount and the operation, and the operation is still served
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/08-verbs.test.ts:90:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: narrow > is still served over HTTP and the SDK, and the MCP door refuses it
+AssertionError: can't load blueprint/features/echo.ts: SyntaxError: The requested module 'orthograph' does not provide an export named 'Via'
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/08-verbs.test.ts:107:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: narrow > with no ways in left it is refused, naming the mount file: omit is how an operation goes
+AssertionError: can't load blueprint/features/echo.ts: SyntaxError: The requested module 'orthograph' does not provide an export named 'Via'
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/08-verbs.test.ts:129:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: narrow > narrowing an operation that isn't the plugin's is refused, naming the mount file
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/08-verbs.test.ts:137:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: choose > takes the first option of an unpicked choice, and records what was picked
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/08-verbs.test.ts:147:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  m1/08-verbs.test.ts > 08 verbs: choose > two picks from one choice are refused, naming the mount file
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/08-verbs.test.ts:160:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed (10)
+   Start at  20:21:06
+   Duration  9.85s (transform 315ms, setup 0ms, import 660ms, tests 9.10s, environment 0ms)

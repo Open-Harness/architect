@@ -1,0 +1,5 @@
+# The fixture's ratchet list for alpha: one key per line, `demo/<file> > describe > test`.
+demo/alpha.test.ts > alpha > is red until its slice lands
+demo/alpha.test.ts > alpha > is red too
+demo/alpha.test.ts > alpha > was deleted long ago
+demo/alpha.test.ts > alpha > [suite error]

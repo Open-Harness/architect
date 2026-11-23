@@ -1,0 +1,9 @@
+# CI: e2e-m1 job on PR #63 (head be2bd40), https://github.com/AaronAbuUsama/architect/actions/runs/44419934673/job/135209924695
+# Excerpt: check 09. The control (empty server handlers) passes: every wallet journey runs to its first step and fails there, naming BlankReached.
+# The other two wait on M1.27 (client operations) and M1.29 (the plugin), as their titles say.
+ ❯ m1/09-wallet-journeys.test.ts (5 tests | 2 failed) 32024ms
+     ✓ there are exactly four, node, browser, keystore and world, each running every operation and both outcomes of a send 3ms
+     ✓ M1.29's copy, once there is one, is byte for byte these 0ms
+     ✓ a control that works today: with an empty server handler per operation, each journey runs to its first step and fails there  30107ms
+     × the stand-in as M1.29 will ship it (client operations, empty node, browser and world entries): each journey fails, naming its step 1885ms
+     × fails closed, naming what is missing, until the chain adapter (M1.30) and Anvil in a world (M1.31) exist 10ms

@@ -1,0 +1,33 @@
+$ bash <scratch>/acme-diff.sh
+# commit 15491548 · 2026-11-19T07:30:43Z · exit 0 (expected 0) · 0.1s
+
+ .../generated/api/src/allowance/grant.handler.ts   |  2 +-
+ .../generated/api/src/allowance/revoke.handler.ts  |  2 +-
+ .../generated/api/src/allowance/spend.handler.ts   |  2 +-
+ .../generated/api/src/api-key/create.handler.ts    |  2 +-
+ examples/acme/generated/api/src/errors.ts          |  2 +-
+ examples/acme/generated/api/src/events.ts          |  2 +-
+ examples/acme/generated/api/src/index.ts           |  2 +-
+ .../generated/api/src/invitation/accept.handler.ts |  2 +-
+ .../generated/api/src/invitation/revoke.handler.ts |  2 +-
+ .../generated/api/src/invitation/send.handler.ts   |  2 +-
+ .../api/src/organization/create.handler.ts         |  2 +-
+ .../generated/api/src/person/sign-up.handler.ts    |  2 +-
+ .../acme/generated/api/src/session/show.handler.ts |  2 +-
+ .../generated/api/src/session/sign-in.handler.ts   |  2 +-
+ .../generated/api/src/system/health.handler.ts     |  2 +-
+ examples/acme/generated/model/model.json           | 29 ++++++++++++++++++++
+ examples/acme/generated/portal/blueprint.json      | 31 +++++++++++++++++++++-
+ examples/acme/generated/server/main.ts             |  2 +-
+ examples/acme/generated/server/wrangler.jsonc      |  2 +-
+ 19 files changed, 76 insertions(+), 18 deletions(-)
+
+# every changed line under generated/server and generated/api, counted (only first lines may differ):
+  15 +// Generated from blueprint/projections/api.ts. Do not edit.
+   2 +// Generated from blueprint/projections/server.ts. Do not edit.
+  17 -// Generated from the blueprint. Do not edit.
+
+# the same, for the files that are not server or api:
+ examples/acme/generated/model/model.json      | 29 +++++++++++++++++++++++++
+ examples/acme/generated/portal/blueprint.json | 31 ++++++++++++++++++++++++++-
+ 2 files changed, 59 insertions(+), 1 deletion(-)

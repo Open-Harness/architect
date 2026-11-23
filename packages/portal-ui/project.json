@@ -1,0 +1,37 @@
+{
+  "name": "portal-ui",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/portal-ui/src",
+  "projectType": "library",
+  "tags": [
+    "scope:portal-ui",
+    "env:runtime",
+    "layer:2"
+  ],
+  "targets": {
+    "lint": {},
+    "test": {},
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node {projectRoot}/tools/pro.mjs @heroui-pro/react gate tsc -p {projectRoot}/tsconfig.json"
+      },
+      "cache": false
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p {projectRoot}/tsconfig.build.json"
+      },
+      "cache": true,
+      "inputs": [
+        "production",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/tsconfig.build.base.json"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
+    }
+  }
+}

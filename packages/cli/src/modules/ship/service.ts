@@ -12,7 +12,7 @@ const refused = (err: string): Said => ({ out: "", err: `${err.trimEnd()}\n`, ex
 /** The logbook's word on the working model; undefined when there is no logbook to ask. */
 const shipping = ({ root, env }: ShipOptions, model: Model) =>
   Releases.locate({ root, env }).pipe(
-    Effect.flatMap((logbook) => (logbook === undefined ? Effect.succeed(undefined) : Releases.shipping(logbook, model))),
+    Effect.flatMap((logbook) => (logbook === undefined ? Effect.succeed(undefined) : Releases.shipping(logbook, model, root))),
   );
 
 const next: ShipApi["next"] = (options) =>

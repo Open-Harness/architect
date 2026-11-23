@@ -5,12 +5,22 @@ import { BadRequest } from "../types.ts";
 const Revision = Schema.String.check(Schema.isPattern(/^[0-9A-Za-z][0-9A-Za-z._-]{0,99}$/));
 const Name = Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(200));
 
+const Hash = Schema.String.check(Schema.isPattern(/^[0-9a-f]{64}$/));
+const Verdict = Schema.Literals(["pass", "fail"]);
+const JourneyVerdict = Schema.Struct({
+  journey: Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(512)),
+  modelHash: Hash,
+  handlerHash: Schema.NullOr(Hash),
+  verdict: Verdict,
+});
+
 export const VerdictBody = Schema.Struct({
   revision: Revision,
   environment: Name,
   operation: Name,
-  verdict: Schema.Literals(["pass", "fail"]),
-  sha256: Schema.optionalKey(Schema.String.check(Schema.isPattern(/^[0-9a-f]{64}$/))),
+  verdict: Verdict,
+  sha256: Schema.optionalKey(Hash),
+  journeys: Schema.optionalKey(Schema.Array(JourneyVerdict)),
 });
 
 export const ReleaseBody = Schema.Struct({

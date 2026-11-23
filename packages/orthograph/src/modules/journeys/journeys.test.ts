@@ -27,8 +27,16 @@ describe("journeys", () => {
   it("describes steps without running anything", () => {
     const steps = journey.steps(Scripting.script(journey.cast) as never);
     want(steps).toHaveLength(1);
-    want(steps[0]!.call.actor).toBe("ada");
+    want((steps[0]!.call as { readonly actor: string }).actor).toBe("ada");
     want(steps[0]!.checks.map((c) => c.kind)).toEqual(["emits", "is-in"]);
+  });
+
+  it("keeps a cast member named clock, and gives it the world's clock controls beside its run", () => {
+    const s = Scripting.script({ clock: Roles.signedIn, ada: Roles.signedIn }) as any;
+    want(s.clock.run).toBeTypeOf("function");
+    want(s.clock.advance("1 month")).toEqual({ kind: "clock-call", move: { advance: "1 month" } });
+    want(s.clock.moveTo("2027-02-01T00:00:00.000Z")).toEqual({ kind: "clock-call", move: { moveTo: "2027-02-01T00:00:00.000Z" } });
+    want((Scripting.script({ ada: Roles.signedIn }) as any).clock.run).toBeUndefined();
   });
 
   it("reads refs once the world has said them, and names the ones it hasn't", () => {

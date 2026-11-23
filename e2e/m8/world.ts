@@ -26,7 +26,7 @@ export const inWorld = <A>(root: string, name: string, use: (world: World) => Pr
  * Imported by path (and `TimersLive` with it): on a branch without them this throws, naming what is missing.
  */
 const standChain = async (): Promise<Effect.Effect<unknown, unknown, never>> => {
-  const evm = (await import(pathToFileURL(join(repo, "packages/chain-evm/src/index.ts")).href)) as { readonly Anvil: { readonly start: (o: object) => Effect.Effect<{ readonly rpcUrl: string; readonly chainId: number; readonly accounts: ReadonlyArray<unknown> }, unknown, never> } };
+  const evm = (await import(pathToFileURL(join(repo, "packages/chain-evm/src/main.ts")).href)) as { readonly Anvil: { readonly start: (o: object) => Effect.Effect<{ readonly rpcUrl: string; readonly chainId: number; readonly accounts: ReadonlyArray<unknown> }, unknown, never> } };
   const language = (await import(pathToFileURL(join(repo, "packages/language-effect/src/index.ts")).href)) as { readonly TimersLive: never };
   return evm.Anvil.start({ accounts: 1 }).pipe(
     Effect.provide(language.TimersLive),

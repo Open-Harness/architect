@@ -25,6 +25,12 @@ States: active, exhausted, revoked. A move from the wrong state is refused Allow
 | spend | active | active, exhausted | AllowanceSpent |
 | revoke | active, exhausted | revoked | AllowanceRevoked |
 
+## Events
+
+- `AllowanceGranted`: carries allowance (allowance.id), limit (Amount); emitted by the move grant
+- `AllowanceRevoked`: carries allowance (allowance.id); emitted by the move revoke
+- `AllowanceSpent`: carries allowance (allowance.id), amount (Amount), memo (Memo), remaining (Amount); emitted by the move spend
+
 ## Roles
 
 - grantee

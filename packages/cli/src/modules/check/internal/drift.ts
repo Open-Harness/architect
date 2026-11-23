@@ -1,13 +1,17 @@
 // The drift part, which is also the rule no-edited-output: generated/ must be exactly what the blueprint renders.
 import { existsSync, readFileSync } from "node:fs";
 import { basename, join, relative } from "node:path";
+import { Effect } from "effect";
 import type { Model } from "@orthograph/compiler";
 import { Render } from "@orthograph/generators/render";
 import type { Finding } from "../types.ts";
 import { allFiles } from "./files.ts";
 
-export const drift = (root: string, model: Model): ReadonlyArray<Finding> => {
-  const wanted = Render.files({ name: basename(root), model }).filter((f) => !f.scaffold);
+export const drift = (root: string, model: Model): Effect.Effect<ReadonlyArray<Finding>> => Effect.gen(function* () {
+  // A projection that can't be loaded or won't render is drift too: nothing it should make can be compared.
+  const rendered = yield* Render.files({ name: basename(root), model, root }).pipe(Effect.result);
+  if (rendered._tag === "Failure") return [{ part: "drift", rule: "no-edited-output", file: "generated", message: rendered.failure.message } satisfies Finding];
+  const wanted = rendered.success.filter((f) => !f.scaffold);
   const edited = wanted.flatMap((f): ReadonlyArray<Finding> => {
     const at = join(root, f.path);
     if (!existsSync(at)) return [{ part: "drift", rule: "no-edited-output", file: f.path, message: "is missing: run ortho generate" }];
@@ -18,4 +22,4 @@ export const drift = (root: string, model: Model): ReadonlyArray<Finding> => {
   const orphans = allFiles(join(root, "generated")).map((f) => relative(root, f)).filter((p) => !known.has(p) && !p.split("/").some((part) => part.startsWith(".")))
     .map((p): Finding => ({ part: "drift", rule: "no-edited-output", file: p, message: "is in generated/ but the blueprint doesn't generate it" }));
   return [...edited, ...orphans];
-};
+});

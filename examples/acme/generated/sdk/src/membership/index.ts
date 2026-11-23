@@ -1,2 +1,2 @@
-// Generated from the blueprint. Do not edit.
+// Generated from blueprint/projections/sdk.ts. Do not edit.
 export { get } from "./get.ts";

@@ -137,13 +137,16 @@ close.ts     // the sandbox and every world in it destroyed; idempotent
 
 **Where a run executes.** The run's loop is in its own Durable Object (`@orthograph/agents`). The workspace is in a
 sandbox the Durable Object drives, keeping only the sandbox's id (`spikes/e2b-sandbox`). Sandbox providers are
-adapters of `@orthograph/workspaces`, chosen at the mount:
+adapters of `@orthograph/workspaces`, chosen at the mount (_Superseded by K40, 22 November 2026: the sandbox is its own
+adapter, `packages/sandbox`, Pi's `ExecutionEnv` over pi-env, and workspaces use it_):
 
 | Choice | When | Status |
 |---|---|---|
 | `localCopy` | journeys, CI, and a person's machine; free and keyless | first rung: check 4's throwaway copy, made a provider |
 | `e2b` | real runs, from the portal, with the machine off and many at once (Aaron, Q4 = A) | spiked in workerd (`spikes/e2b-sandbox`); needs our template |
 | `cloudflare` | if E2B ever falls short | later; not spiked |
+
+Superseded by K39, 22 November 2026: `localCopy` and `e2b` are now the `local` and `e2b` choices of `@orthograph/sandbox`, the plain machine adapter; `@orthograph/workspaces` opens a sandbox and adds `ortho` on top.
 
 **How a sandbox gets the project.** The E2B template holds Node 24, pnpm and a warm clone of the project at its default
 branch, with its store already installed. `workspace.open` fetches the revision and checks out a new branch. The local
@@ -290,7 +293,7 @@ is no faker than what it replaces. The Grafana viewer goes: the portal's own tra
 | **Aaron's Mac** | workerd, Node, and the services as processes: Collector, Verdaccio, the OIDC issuer, Anvil. `ortho check`, `prove` and `dev` work offline | none |
 | **Sandboxes (E2B)** | the factory's workspaces (section 3); a whole project's `prove` and the gates before a push, many at once, with the laptop shut. The same processes in our template | none |
 | **CI (GitHub Actions)** | the gates, unchanged until the process forms land; then the same processes, so CI, the Mac and the sandbox run one setup | the runner image has Docker preinstalled; after M1.33 no step uses it |
-| **Staging (Cloudflare)** | the deployed Workers, D1, Durable Objects and R2, on a dedicated `orthograph-staging` account; Cloudflare Containers where a service must be a container there; the real OTLP sink. A spike now, then real staging after Gate M2 (round 2) | n/a |
+| **Staging (Cloudflare)** | the deployed Workers, D1, Durable Objects and R2, on a dedicated `orthograph-staging` account; Cloudflare Containers where a service must be a container there; the real OTLP sink. (The dedicated account: superseded by M7-cloud's addendum, 20 November 2026; one prefixed account serves every environment for now.) A spike now, then real staging after Gate M2 (round 2) | n/a |
 
 **The rule holds for stand-ins still to come**: M5's stripe-mock, Mailpit and real MariaDB (M5.08, M5.09, M5.13) are
 each a process, or run in a sandbox, never a local container. The Docker sandbox for agents (A7) is dropped.
@@ -306,6 +309,10 @@ everywhere. `spikes/workspace-e2b` now also checks that the process forms run in
 in M7: `spikes/staging-pass` any time, then M7.01, M7.03 and M7.04 for staging alone after Gate M2. npm, Homebrew
 and the rest of M7 still wait on the stage 4 gate (_Superseded by K28, 21 November 2026: npm's `latest` tag, Homebrew and the rest of M7 wait on the stage 4 gate; the preview under `next` is M1.51_).
 
+**Built (M1.33, 19 November):** the Collector, Verdaccio and the OIDC issuer are processes, owned by PID and swept by PID, and
+the Grafana viewer is gone; the calls and their evidence are in [`M1-processes.md`](M1-processes.md). Where the table above says a
+service needs Docker, that is how it was before M1.33.
+
 ## 7. The order: floor, spikes, later
 
 **Spikes, any time, off every gate:**
@@ -320,7 +327,7 @@ and the rest of M7 still wait on the stage 4 gate (_Superseded by K28, 21 Novemb
 **Floor, built soon and small, in this order:**
 
 1. The `review` verdict kind (M3.20) and the `github` adapter for pull requests (M4.25), each small.
-2. `@orthograph/workspaces` with `localCopy`, after Gate M2 (it needs plugins and the `agent` and person principals).
+2. `@orthograph/workspaces` with `localCopy` (superseded by K39, 22 November 2026: on `@orthograph/sandbox`'s `local` choice), after Gate M2 (it needs plugins and the `agent` and person principals).
    People and Claude Code sessions use it over MCP and the CLI before any Pi agent exists.
 3. The `e2b` choice, after its spike.
 4. `@orthograph/factory`'s floor: `Experiment`, `brief.of`, the roster as data. Experiments work for people and our own
@@ -341,7 +348,7 @@ are reused, not duplicated. M4.13 is K11's. Run's reference to any thing is M1.0
 3. "Any function" is `toolsOf(operations)` over the generated actions, called as `agent for <person>`, as M4.07 has it.
 4. `ortho`'s steps are operations of `Workspace`, so each is an action, a CLI command, an MCP tool and an agent tool.
 5. Building agents have no shell. They write only their allowed paths, and leave only through `workspace.push`.
-6. A workspace is a sandbox driven by the run's Durable Object, through adapters: `localCopy`, then `e2b`.
+6. A workspace is a sandbox driven by the run's Durable Object, through adapters: `localCopy`, then `e2b` (superseded by K39, 22 November 2026: the `local` and `e2b` choices of `@orthograph/sandbox`).
 7. `review` is a logbook verdict kind, built early (M3.20). Staging is automatic after prove and review; production is a person's yes.
 8. An experiment is a plugin in its own workspace. It is kept only as a package plus one mount file. Spikes are the
    other lane.

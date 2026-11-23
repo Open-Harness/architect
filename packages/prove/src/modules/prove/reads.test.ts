@@ -1,12 +1,12 @@
 // L2.04: a read that lists, on a real world (workerd, D1, the generated server). `where`, `order` and `page` work, roles are
 // enforced as for any read, and every eval covers it.
-import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { Effect } from "effect";
 import { afterAll, describe, expect, it } from "vitest";
 import { FsTree, flushChanges } from "nx/src/generators/tree.js";
 import { Sync } from "@orthograph/generators/sync";
+import { Owned } from "@orthograph/services";
 import { Prove } from "./service.ts";
 
 const visible = (from: string) => !basename(from).startsWith(".");
@@ -92,7 +92,7 @@ export default Blueprint.read(Allowance, {
 `;
 
 describe("a read that lists, on a real world", () => {
-  // These include generation, Docker and workerd startup plus every journey. CI's cold services once exceeded 240 s;
+  // These include generation and workerd startup plus every journey. CI's cold services once exceeded 240 s;
   // use the integration-test budget, without changing any operation's performance eval or its declared budget.
   it("the author's allowance.list passes every eval, and its journey's answers are pages", { timeout: 600_000 }, async () => {
     const root = await project("authors", { from: "list.ts" }, { "an-owner-lists-allowances.ts": readFileSync(join(fixtures, "an-owner-lists-allowances.ts"), "utf8") });
@@ -101,7 +101,7 @@ describe("a read that lists, on a real world", () => {
     expect(report.lines).toContain("journey an owner lists allowances ✔ 3/3 steps");
     expect(report.lines.some((l) => l.startsWith("allowance.list 9 evals ✔ p50 "))).toBe(true);
     expect(report.lines.at(-1)).toBe("prove ✔");
-    expect(spawnSync("docker", ["ps", "--format", "{{.Names}}"], { encoding: "utf8" }).stdout).not.toContain(`ortho-collector-${process.pid}-`);
+    expect(Owned.leaks().filter((m) => m.owner === process.pid)).toEqual([]);
   });
 
   it("filters, orders and pages, and refuses who is not the owner", { timeout: 600_000 }, async () => {

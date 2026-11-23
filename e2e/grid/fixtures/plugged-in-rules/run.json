@@ -1,0 +1,1999 @@
+{
+ "cli": {},
+ "mcp": [
+  {
+   "name": "handle.claim",
+   "description": "Claim a free name and make it the address of your public page, with its profile. Refuses HandleTaken when another claimed handle holds this name. Refuses HandleAlreadyOwned when you already hold a name.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page."
+     }
+    },
+    "required": [
+     "name"
+    ],
+    "additionalProperties": false
+   },
+   "_meta": {
+    "move": {
+     "key": "claim",
+     "from": [],
+     "to": [
+      "claimed"
+     ],
+     "emits": "HandleClaimed"
+    }
+   },
+   "outputSchema": {
+    "type": "object",
+    "anyOf": [
+     {
+      "type": "object",
+      "properties": {
+       "handle": {
+        "type": "string",
+        "description": "The handle's own id."
+       }
+      },
+      "required": [
+       "handle"
+      ],
+      "additionalProperties": true
+     },
+     {
+      "type": "object",
+      "properties": {
+       "refusal": {
+        "type": "string"
+       },
+       "code": {
+        "type": "string"
+       },
+       "exit": {
+        "type": "integer"
+       },
+       "status": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "refusal",
+       "code",
+       "exit",
+       "status"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "handle.release",
+   "description": "Free your name and take its public page offline. Anyone may claim the name afterwards.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "handle": {
+      "type": "string",
+      "description": "The handle's own id."
+     }
+    },
+    "required": [
+     "handle"
+    ],
+    "additionalProperties": false
+   },
+   "_meta": {
+    "move": {
+     "key": "release",
+     "from": [
+      "claimed"
+     ],
+     "to": [
+      "released"
+     ],
+     "emits": "HandleReleased"
+    }
+   }
+  },
+  {
+   "name": "handle.resolve",
+   "description": "Find the handle that holds a claimed name. A released or unclaimed name has none.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page."
+     }
+    },
+    "required": [
+     "name"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "anyOf": [
+     {
+      "type": "object",
+      "properties": {
+       "handle": {
+        "type": "string",
+        "description": "The handle's own id."
+       }
+      },
+      "required": [
+       "handle"
+      ],
+      "additionalProperties": true
+     },
+     {
+      "type": "object",
+      "properties": {
+       "refusal": {
+        "type": "string"
+       },
+       "code": {
+        "type": "string"
+       },
+       "exit": {
+        "type": "integer"
+       },
+       "status": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "refusal",
+       "code",
+       "exit",
+       "status"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "link.add",
+   "description": "Append a link to your own public page. You need a claimed name first.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "What the link shows on the page, up to 120 characters."
+     },
+     "url": {
+      "type": "string",
+      "maxLength": 2048,
+      "description": "Where the link goes: a web address starting with http:// or https://, up to 2048 characters."
+     }
+    },
+    "required": [
+     "title",
+     "url"
+    ],
+    "additionalProperties": false
+   },
+   "_meta": {
+    "move": {
+     "key": "add",
+     "from": [],
+     "to": [
+      "listed"
+     ],
+     "emits": "LinkAdded"
+    }
+   },
+   "outputSchema": {
+    "type": "object",
+    "anyOf": [
+     {
+      "type": "object",
+      "properties": {
+       "link": {
+        "type": "string",
+        "description": "The link's own id."
+       }
+      },
+      "required": [
+       "link"
+      ],
+      "additionalProperties": true
+     },
+     {
+      "type": "object",
+      "properties": {
+       "refusal": {
+        "type": "string"
+       },
+       "code": {
+        "type": "string"
+       },
+       "exit": {
+        "type": "integer"
+       },
+       "status": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "refusal",
+       "code",
+       "exit",
+       "status"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "link.order",
+   "description": "Move a link to a zero-based position. A position past the end puts it last.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "link": {
+      "type": "string",
+      "description": "The link's own id."
+     },
+     "position": {
+      "type": "string",
+      "pattern": "^-?\\d+$",
+      "description": "Its place in the page's list of links: 0 is first."
+     }
+    },
+    "required": [
+     "link",
+     "position"
+    ],
+    "additionalProperties": false
+   }
+  },
+  {
+   "name": "link.remove",
+   "description": "Remove a link from a public page.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "link": {
+      "type": "string",
+      "description": "The link's own id."
+     }
+    },
+    "required": [
+     "link"
+    ],
+    "additionalProperties": false
+   },
+   "_meta": {
+    "move": {
+     "key": "remove",
+     "from": [
+      "listed"
+     ],
+     "to": [
+      "removed"
+     ],
+     "emits": "LinkRemoved"
+    }
+   }
+  },
+  {
+   "name": "profile.get",
+   "description": "Read a claimed name's public page and its links in display order.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "handle": {
+      "type": "string",
+      "description": "A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page."
+     }
+    },
+    "required": [
+     "handle"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "anyOf": [
+     {
+      "type": "object",
+      "properties": {
+       "handle": {
+        "type": "string",
+        "description": "A name of up to 32 lowercase letters and digits, starting with a letter: the address of a public page."
+       },
+       "links": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "id": {
+           "type": "string"
+          },
+          "title": {
+           "type": "string",
+           "minLength": 1,
+           "maxLength": 120
+          },
+          "url": {
+           "type": "string",
+           "maxLength": 2048
+          }
+         },
+         "required": [
+          "id",
+          "title",
+          "url"
+         ],
+         "additionalProperties": true
+        }
+       }
+      },
+      "required": [
+       "handle",
+       "links"
+      ],
+      "additionalProperties": true
+     },
+     {
+      "type": "object",
+      "properties": {
+       "refusal": {
+        "type": "string"
+       },
+       "code": {
+        "type": "string"
+       },
+       "exit": {
+        "type": "integer"
+       },
+       "status": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "refusal",
+       "code",
+       "exit",
+       "status"
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "spans": [
+  {
+   "name": "handle.claim.record",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "handle.claim.commit",
+   "attrs": {
+    "step.kind": "commit",
+    "commit.writes": 2,
+    "commit.entries": 1,
+    "commit.outcome": "committed",
+    "event.name": "HandleClaimed"
+   }
+  },
+  {
+   "name": "handle.claim",
+   "attrs": {
+    "operation": "handle.claim",
+    "attempt": 1,
+    "call.id": "call_svh9q9v0wyh1hlc6",
+    "principal.person": "per_mzsspcn9hdjj1267",
+    "payload.name": "claimedname",
+    "environment": "local",
+    "store": "database",
+    "move.name": "claim",
+    "move.to": "claimed",
+    "answer.handle": "hdl_2mk74t363gwhqeoi"
+   }
+  },
+  {
+   "name": "journey.a name is claimed once",
+   "attrs": {
+    "journey": "a name is claimed once",
+    "journey.step": "starting world claimed",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "handle.claim",
+   "attrs": {
+    "operation": "handle.claim",
+    "attempt": 1,
+    "call.id": "call_wijn0hsbp4co47c6",
+    "principal.person": "per_mzsspcn9hdjj1267",
+    "payload.name": "claimedname",
+    "environment": "local",
+    "store": "database",
+    "request.replayed": true
+   }
+  },
+  {
+   "name": "journey.a name is claimed once",
+   "attrs": {
+    "journey": "a name is claimed once",
+    "journey.step": "the same request again answers the same handle and claims nothing",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "handle.claim",
+   "attrs": {
+    "operation": "handle.claim",
+    "attempt": 1,
+    "call.id": "call_rlkn14tcd5zlyghg",
+    "principal.person": "per_ukc0fjdpt5hqfs3i",
+    "payload.name": "claimedname",
+    "environment": "local",
+    "store": "database",
+    "move.name": "claim",
+    "move.to": "claimed",
+    "answer.handle": "hdl_1mvdw0g12rvmcxro",
+    "refusal.invariant": "handle.oneHolderPerName",
+    "refusal": "HandleTaken",
+    "refusal.code": "HN-001",
+    "refusal.log": "handle.oneHolderPerName: another instance already holds this key"
+   }
+  },
+  {
+   "name": "journey.a name is claimed once",
+   "attrs": {
+    "journey": "a name is claimed once",
+    "journey.step": "a taken name is refused",
+    "operation": "handle.claim",
+    "http.status_code": 422
+   }
+  },
+  {
+   "name": "journey.a name is claimed once",
+   "attrs": {
+    "journey": "a name is claimed once",
+    "journey.step": "another person's request key is not aaron's: still refused",
+    "operation": "handle.claim",
+    "http.status_code": 422
+   }
+  },
+  {
+   "name": "handle.resolve.load",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "handle.resolve.commit",
+   "attrs": {
+    "step.kind": "commit",
+    "commit.writes": 0,
+    "commit.entries": 0,
+    "commit.outcome": "committed"
+   }
+  },
+  {
+   "name": "handle.resolve",
+   "attrs": {
+    "operation": "handle.resolve",
+    "attempt": 1,
+    "call.id": "call_vvapkvy151dx8ydh",
+    "principal.kind": "anonymous",
+    "payload.name": "claimedname",
+    "environment": "local",
+    "store": "database",
+    "answer.handle": "hdl_2mk74t363gwhqeoi"
+   }
+  },
+  {
+   "name": "journey.a name is claimed once",
+   "attrs": {
+    "journey": "a name is claimed once",
+    "journey.step": "the name still resolves to aaron's handle",
+    "operation": "handle.resolve",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.a name is claimed once",
+   "attrs": {
+    "journey": "a name is claimed once",
+    "journey.step": "the refusal left bob free to claim a name of his own",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "starting world page-to-guard",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "link.add.load",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "link.add.record",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "link.add.commit",
+   "attrs": {
+    "step.kind": "commit",
+    "commit.writes": 2,
+    "commit.entries": 1,
+    "commit.outcome": "committed",
+    "event.name": "LinkAdded"
+   }
+  },
+  {
+   "name": "link.add",
+   "attrs": {
+    "operation": "link.add",
+    "attempt": 1,
+    "call.id": "call_e7kozs6hkplbi775",
+    "principal.person": "per_ittlwqc3bxf5hdnj",
+    "payload.url": "https://github.com/aaron",
+    "environment": "local",
+    "store": "database",
+    "move.name": "add",
+    "move.to": "listed",
+    "answer.link": "lnk_n2sdpcrtfohuq6ah"
+   }
+  },
+  {
+   "name": "link.add",
+   "attrs": {
+    "operation": "link.add",
+    "attempt": 1,
+    "call.id": "call_dud2w5tceb718bc5",
+    "principal.person": "per_5he02hf2jw9c0jif",
+    "payload.url": "https://bob.example.com",
+    "environment": "local",
+    "store": "database",
+    "refusal": "LinkNeedsHandle",
+    "refusal.code": "LN-001",
+    "refusal.log": "the caller holds no claimed handle"
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "bob has no page, so he has nowhere to add a link",
+    "operation": "link.add",
+    "http.status_code": 422
+   }
+  },
+  {
+   "name": "link.order.refused",
+   "attrs": {
+    "operation": "link.order",
+    "attempt": 1,
+    "call.id": "call_1ovq5oknegh8zdij",
+    "principal.kind": "person",
+    "refusal": "NotAllowed",
+    "refusal.code": "AR-001"
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "bob cannot move aaron's link, and the handler never runs",
+    "operation": "link.order",
+    "http.status_code": 403
+   }
+  },
+  {
+   "name": "link.remove.refused",
+   "attrs": {
+    "operation": "link.remove",
+    "attempt": 1,
+    "call.id": "call_uu4qh18m99969u0l",
+    "principal.kind": "person",
+    "refusal": "NotAllowed",
+    "refusal.code": "AR-001"
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "bob cannot remove aaron's link",
+    "operation": "link.remove",
+    "http.status_code": 403
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "someone who is not signed in cannot remove it either",
+    "operation": "link.remove",
+    "http.status_code": 403
+   }
+  },
+  {
+   "name": "handle.claim.refused",
+   "attrs": {
+    "operation": "handle.claim",
+    "attempt": 1,
+    "call.id": "call_eur3ur9adqqh7rs4",
+    "principal.kind": "anonymous",
+    "refusal": "NotAllowed",
+    "refusal.code": "AR-001"
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "someone who is not signed in cannot claim a name",
+    "operation": "handle.claim",
+    "http.status_code": 403
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "aaron's name resolves, for anyone",
+    "operation": "handle.resolve",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "handle.release.refused",
+   "attrs": {
+    "operation": "handle.release",
+    "attempt": 1,
+    "call.id": "call_gmmwp3kvweklmqng",
+    "principal.kind": "person",
+    "refusal": "NotAllowed",
+    "refusal.code": "AR-001"
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "bob cannot release aaron's name",
+    "operation": "handle.release",
+    "http.status_code": 403
+   }
+  },
+  {
+   "name": "profile.get.load",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "profile.get.commit",
+   "attrs": {
+    "step.kind": "commit",
+    "commit.writes": 0,
+    "commit.entries": 0,
+    "commit.outcome": "committed"
+   }
+  },
+  {
+   "name": "profile.get",
+   "attrs": {
+    "operation": "profile.get",
+    "attempt": 1,
+    "call.id": "call_g2qim0qu0nhl5ggx",
+    "principal.kind": "anonymous",
+    "payload.handle": "guardpage",
+    "environment": "local",
+    "store": "database",
+    "answer.handle": "guardpage",
+    "answer.links": "[{\"id\":\"lnk_n2sdpcrtfohuq6ah\",\"title\":\"GitHub\",\"url\":\"https://github.com/aaron\"}]"
+   }
+  },
+  {
+   "name": "journey.a stranger cannot edit a page",
+   "attrs": {
+    "journey": "a stranger cannot edit a page",
+    "journey.step": "aaron's page is exactly as he left it",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "starting world page-to-edit",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "the page starts with the three links aaron put on it, in order",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "aaron adds a fourth link",
+    "operation": "link.add",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "it goes at the end, with its title and address",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "link.order.load",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "link.order.record",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "link.order.commit",
+   "attrs": {
+    "step.kind": "commit",
+    "commit.writes": 1,
+    "commit.entries": 0,
+    "commit.outcome": "committed"
+   }
+  },
+  {
+   "name": "link.order",
+   "attrs": {
+    "operation": "link.order",
+    "attempt": 1,
+    "call.id": "call_k8hi1ls5h6scd4av",
+    "principal.person": "per_my70jt0i9z7iq68k",
+    "payload.link": "lnk_ry2ziwbjgfib962e",
+    "payload.position": "0",
+    "environment": "local",
+    "store": "database"
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "aaron moves the newsletter to the top",
+    "operation": "link.order",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "the page shows the new order",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "a position past the end puts a link last",
+    "operation": "link.order",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "the page shows GitHub last",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "link.remove.record",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "link.remove.commit",
+   "attrs": {
+    "step.kind": "commit",
+    "commit.writes": 2,
+    "commit.entries": 1,
+    "commit.outcome": "committed",
+    "event.name": "LinkRemoved"
+   }
+  },
+  {
+   "name": "link.remove",
+   "attrs": {
+    "operation": "link.remove",
+    "attempt": 1,
+    "call.id": "call_84al5z2hbf9gkn1y",
+    "principal.person": "per_my70jt0i9z7iq68k",
+    "payload.link": "lnk_4yaljqzcff9ia7z5",
+    "environment": "local",
+    "store": "database",
+    "move.name": "remove",
+    "move.to": "removed",
+    "move.from": "listed"
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "aaron removes the talks link",
+    "operation": "link.remove",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "the page no longer lists it, and keeps the order of the rest",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "link.remove",
+   "attrs": {
+    "operation": "link.remove",
+    "attempt": 1,
+    "call.id": "call_83quqcob9mzqirsj",
+    "principal.person": "per_my70jt0i9z7iq68k",
+    "payload.link": "lnk_4yaljqzcff9ia7z5",
+    "environment": "local",
+    "store": "database",
+    "refusal": "LinkNotListed",
+    "refusal.code": "LN-900"
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "he cannot remove it twice",
+    "operation": "link.remove",
+    "http.status_code": 409
+   }
+  },
+  {
+   "name": "link.order",
+   "attrs": {
+    "operation": "link.order",
+    "attempt": 1,
+    "call.id": "call_o1cn9jtpr18ilfhm",
+    "principal.person": "per_my70jt0i9z7iq68k",
+    "payload.link": "lnk_4yaljqzcff9ia7z5",
+    "payload.position": "0",
+    "environment": "local",
+    "store": "database",
+    "refusal": "LinkAlreadyRemoved",
+    "refusal.code": "LN-002",
+    "refusal.log": "the link is removed, so it has no place on the page"
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "he cannot move a removed link",
+    "operation": "link.order",
+    "http.status_code": 422
+   }
+  },
+  {
+   "name": "journey.add, order and remove a link",
+   "attrs": {
+    "journey": "add, order and remove a link",
+    "journey.step": "the page is as the removal left it",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.anyone reads a public page",
+   "attrs": {
+    "journey": "anyone reads a public page",
+    "journey.step": "starting world page-with-links",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.anyone reads a public page",
+   "attrs": {
+    "journey": "anyone reads a public page",
+    "journey.step": "a visitor resolves the name to a handle",
+    "operation": "handle.resolve",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.anyone reads a public page",
+   "attrs": {
+    "journey": "anyone reads a public page",
+    "journey.step": "a visitor reads the page: the name and every link, in order",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "profile.get",
+   "attrs": {
+    "operation": "profile.get",
+    "attempt": 1,
+    "call.id": "call_9t8t5iyjixw6min3",
+    "principal.person": "per_0bechgoz598vexpt",
+    "payload.handle": "linkpage",
+    "environment": "local",
+    "store": "database",
+    "answer.handle": "linkpage",
+    "answer.links": "[{\"id\":\"lnk_c6hkxn3fs3iz6etp\",\"title\":\"GitHub\",\"url\":\"https://github.com/aaron\"},{\"id\":\"lnk_bx63tjg5g2r038xy\",\"title\":\"Blog\",\"url\":\"https://aaron.example.com/blog\"},{\"id\":\"lnk_aq84l1h33jngt6vp\",\"title\":\"Talks\",\"url\":\"https://aaron.example.com/talks\"}]"
+   }
+  },
+  {
+   "name": "journey.anyone reads a public page",
+   "attrs": {
+    "journey": "anyone reads a public page",
+    "journey.step": "a signed-in person who is not the owner reads the same page",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "profile.get",
+   "attrs": {
+    "operation": "profile.get",
+    "attempt": 1,
+    "call.id": "call_thyqzuuy2a5ku5s7",
+    "principal.kind": "anonymous",
+    "payload.handle": "nosuchpage",
+    "environment": "local",
+    "store": "database",
+    "refusal": "ProfileNotFound",
+    "refusal.code": "PR-001",
+    "refusal.log": "no claimed handle holds this name, so it has no page"
+   }
+  },
+  {
+   "name": "journey.anyone reads a public page",
+   "attrs": {
+    "journey": "anyone reads a public page",
+    "journey.step": "a name nobody claimed has no page",
+    "operation": "profile.get",
+    "http.status_code": 404
+   }
+  },
+  {
+   "name": "handle.resolve",
+   "attrs": {
+    "operation": "handle.resolve",
+    "attempt": 1,
+    "call.id": "call_ogdwsllkw70e8rm5",
+    "principal.kind": "anonymous",
+    "payload.name": "nosuchpage",
+    "environment": "local",
+    "store": "database",
+    "refusal": "HandleNotFound",
+    "refusal.code": "HN-003",
+    "refusal.log": "no claimed handle holds this name"
+   }
+  },
+  {
+   "name": "journey.anyone reads a public page",
+   "attrs": {
+    "journey": "anyone reads a public page",
+    "journey.step": "a name nobody claimed does not resolve",
+    "operation": "handle.resolve",
+    "http.status_code": 404
+   }
+  },
+  {
+   "name": "journey.claim a handle",
+   "attrs": {
+    "journey": "claim a handle",
+    "journey.step": "a name nobody has claimed does not resolve",
+    "operation": "handle.resolve",
+    "http.status_code": 404
+   }
+  },
+  {
+   "name": "journey.claim a handle",
+   "attrs": {
+    "journey": "claim a handle",
+    "journey.step": "an unclaimed name has no public page",
+    "operation": "profile.get",
+    "http.status_code": 404
+   }
+  },
+  {
+   "name": "journey.claim a handle",
+   "attrs": {
+    "journey": "claim a handle",
+    "journey.step": "aaron cannot add a link before he has a page",
+    "operation": "link.add",
+    "http.status_code": 422
+   }
+  },
+  {
+   "name": "journey.claim a handle",
+   "attrs": {
+    "journey": "claim a handle",
+    "journey.step": "aaron claims the free name",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.claim a handle",
+   "attrs": {
+    "journey": "claim a handle",
+    "journey.step": "the name now resolves to a handle",
+    "operation": "handle.resolve",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.claim a handle",
+   "attrs": {
+    "journey": "claim a handle",
+    "journey.step": "the claim made a public page, with no links yet",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "handle.claim",
+   "attrs": {
+    "operation": "handle.claim",
+    "attempt": 1,
+    "call.id": "call_7xto1byzo4q6ww0e",
+    "principal.person": "per_oe25vylnj69xv8ej",
+    "payload.name": "secondpage",
+    "environment": "local",
+    "store": "database",
+    "move.name": "claim",
+    "move.to": "claimed",
+    "answer.handle": "hdl_5i8dwdo6pnisfli2",
+    "refusal.invariant": "handle.oneNamePerPerson",
+    "refusal": "HandleAlreadyOwned",
+    "refusal.code": "HN-002",
+    "refusal.log": "handle.oneNamePerPerson: another instance already holds this key"
+   }
+  },
+  {
+   "name": "journey.claim a handle",
+   "attrs": {
+    "journey": "claim a handle",
+    "journey.step": "aaron cannot claim a second name while he holds one",
+    "operation": "handle.claim",
+    "http.status_code": 422
+   }
+  },
+  {
+   "name": "journey.claim a handle",
+   "attrs": {
+    "journey": "claim a handle",
+    "journey.step": "the refused second name is still free",
+    "operation": "handle.resolve",
+    "http.status_code": 404
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "starting world claimed-to-release",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "aaron puts a link on his page before he lets the name go",
+    "operation": "link.add",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "bob cannot release aaron's name",
+    "operation": "handle.release",
+    "http.status_code": 403
+   }
+  },
+  {
+   "name": "handle.release.record",
+   "attrs": {
+    "step.kind": "database"
+   }
+  },
+  {
+   "name": "handle.release.commit",
+   "attrs": {
+    "step.kind": "commit",
+    "commit.writes": 1,
+    "commit.entries": 1,
+    "commit.outcome": "committed",
+    "event.name": "HandleReleased"
+   }
+  },
+  {
+   "name": "handle.release",
+   "attrs": {
+    "operation": "handle.release",
+    "attempt": 1,
+    "call.id": "call_qhpmb7as6hp5f4fk",
+    "principal.person": "per_03w2w252zf7375a2",
+    "payload.handle": "hdl_clykwi9lmyae8vfe",
+    "environment": "local",
+    "store": "database",
+    "move.name": "release",
+    "move.to": "released",
+    "move.from": "claimed"
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "aaron releases his name",
+    "operation": "handle.release",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "handle.release",
+   "attrs": {
+    "operation": "handle.release",
+    "attempt": 1,
+    "call.id": "call_byduvoq3d1p103lh",
+    "principal.person": "per_03w2w252zf7375a2",
+    "payload.handle": "hdl_clykwi9lmyae8vfe",
+    "environment": "local",
+    "store": "database",
+    "refusal": "HandleNotClaimed",
+    "refusal.code": "HN-900"
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "he cannot release it twice",
+    "operation": "handle.release",
+    "http.status_code": 409
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "the released name no longer resolves",
+    "operation": "handle.resolve",
+    "http.status_code": 404
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "the released name has no public page",
+    "operation": "profile.get",
+    "http.status_code": 404
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "aaron has no page to add a link to any more",
+    "operation": "link.add",
+    "http.status_code": 422
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "someone else claims the released name",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "the new page has none of the old owner's links",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "the old handle is not bob's: he cannot release it, and it stays released",
+    "operation": "handle.release",
+    "http.status_code": 403
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "aaron can claim again: a released handle does not count as one he holds",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "aaron can add a link again, to his new page",
+    "operation": "link.add",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.release a handle",
+   "attrs": {
+    "journey": "release a handle",
+    "journey.step": "his new page has only the new link, and the old name's page is still bob's and empty",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.a person claims a page and shares it",
+   "attrs": {
+    "journey": "a person claims a page and shares it",
+    "journey.step": "aaron claims @aaron",
+    "operation": "handle.claim",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.a person claims a page and shares it",
+   "attrs": {
+    "journey": "a person claims a page and shares it",
+    "journey.step": "aaron adds his GitHub",
+    "operation": "link.add",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.a person claims a page and shares it",
+   "attrs": {
+    "journey": "a person claims a page and shares it",
+    "journey.step": "aaron adds his blog",
+    "operation": "link.add",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.a person claims a page and shares it",
+   "attrs": {
+    "journey": "a person claims a page and shares it",
+    "journey.step": "aaron adds his talks",
+    "operation": "link.add",
+    "http.status_code": 200
+   }
+  },
+  {
+   "name": "journey.a person claims a page and shares it",
+   "attrs": {
+    "journey": "a person claims a page and shares it",
+    "journey.step": "anyone sees his public page at @aaron: three links in the order he added them",
+    "operation": "profile.get",
+    "http.status_code": 200
+   }
+  }
+ ],
+ "prove": {
+  "schemaVersion": 1,
+  "passed": true,
+  "totals": {
+   "journeys": 7,
+   "journeysPassed": 7,
+   "steps": 56,
+   "stepsPassed": 56,
+   "evalsFailed": 0,
+   "failing": 0
+  },
+  "seconds": 3.378,
+  "journeys": [
+   {
+    "name": "a name is claimed once",
+    "verdict": "pass",
+    "steps": [
+     {
+      "name": "the same request again answers the same handle and claims nothing",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 1
+     },
+     {
+      "name": "a taken name is refused",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 6
+     },
+     {
+      "name": "another person's request key is not aaron's: still refused",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 5
+     },
+     {
+      "name": "the name still resolves to aaron's handle",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.resolve",
+      "handlerFile": "src/handle/resolve.ts",
+      "declarationFile": "blueprint/things/handle/verbs/resolve.ts",
+      "ms": 3
+     },
+     {
+      "name": "the refusal left bob free to claim a name of his own",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 6
+     }
+    ],
+    "skipped": [],
+    "ms": 21
+   },
+   {
+    "name": "a stranger cannot edit a page",
+    "verdict": "pass",
+    "steps": [
+     {
+      "name": "bob has no page, so he has nowhere to add a link",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 2
+     },
+     {
+      "name": "bob cannot move aaron's link, and the handler never runs",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.order",
+      "handlerFile": "src/link/order.ts",
+      "declarationFile": "blueprint/things/link/verbs/order.ts",
+      "ms": null
+     },
+     {
+      "name": "bob cannot remove aaron's link",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.remove",
+      "handlerFile": "src/link/remove.ts",
+      "declarationFile": "blueprint/things/link/verbs/remove.ts",
+      "ms": null
+     },
+     {
+      "name": "someone who is not signed in cannot remove it either",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.remove",
+      "handlerFile": "src/link/remove.ts",
+      "declarationFile": "blueprint/things/link/verbs/remove.ts",
+      "ms": null
+     },
+     {
+      "name": "someone who is not signed in cannot claim a name",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": null
+     },
+     {
+      "name": "aaron's name resolves, for anyone",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.resolve",
+      "handlerFile": "src/handle/resolve.ts",
+      "declarationFile": "blueprint/things/handle/verbs/resolve.ts",
+      "ms": 3
+     },
+     {
+      "name": "bob cannot release aaron's name",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.release",
+      "handlerFile": "src/handle/release.ts",
+      "declarationFile": "blueprint/things/handle/verbs/release.ts",
+      "ms": null
+     },
+     {
+      "name": "aaron's page is exactly as he left it",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 8
+     }
+    ],
+    "skipped": [],
+    "ms": 13
+   },
+   {
+    "name": "add, order and remove a link",
+    "verdict": "pass",
+    "steps": [
+     {
+      "name": "the page starts with the three links aaron put on it, in order",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 8
+     },
+     {
+      "name": "aaron adds a fourth link",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 8
+     },
+     {
+      "name": "it goes at the end, with its title and address",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 11
+     },
+     {
+      "name": "aaron moves the newsletter to the top",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.order",
+      "handlerFile": "src/link/order.ts",
+      "declarationFile": "blueprint/things/link/verbs/order.ts",
+      "ms": 3
+     },
+     {
+      "name": "the page shows the new order",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 8
+     },
+     {
+      "name": "a position past the end puts a link last",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.order",
+      "handlerFile": "src/link/order.ts",
+      "declarationFile": "blueprint/things/link/verbs/order.ts",
+      "ms": 3
+     },
+     {
+      "name": "the page shows GitHub last",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 8
+     },
+     {
+      "name": "aaron removes the talks link",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.remove",
+      "handlerFile": "src/link/remove.ts",
+      "declarationFile": "blueprint/things/link/verbs/remove.ts",
+      "ms": 3
+     },
+     {
+      "name": "the page no longer lists it, and keeps the order of the rest",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 8
+     },
+     {
+      "name": "he cannot remove it twice",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.remove",
+      "handlerFile": "src/link/remove.ts",
+      "declarationFile": "blueprint/things/link/verbs/remove.ts",
+      "ms": 0
+     },
+     {
+      "name": "he cannot move a removed link",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.order",
+      "handlerFile": "src/link/order.ts",
+      "declarationFile": "blueprint/things/link/verbs/order.ts",
+      "ms": 3
+     },
+     {
+      "name": "the page is as the removal left it",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 12
+     }
+    ],
+    "skipped": [],
+    "ms": 75
+   },
+   {
+    "name": "anyone reads a public page",
+    "verdict": "pass",
+    "steps": [
+     {
+      "name": "a visitor resolves the name to a handle",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.resolve",
+      "handlerFile": "src/handle/resolve.ts",
+      "declarationFile": "blueprint/things/handle/verbs/resolve.ts",
+      "ms": 10
+     },
+     {
+      "name": "a visitor reads the page: the name and every link, in order",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 9
+     },
+     {
+      "name": "a signed-in person who is not the owner reads the same page",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 8
+     },
+     {
+      "name": "a name nobody claimed has no page",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 3
+     },
+     {
+      "name": "a name nobody claimed does not resolve",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.resolve",
+      "handlerFile": "src/handle/resolve.ts",
+      "declarationFile": "blueprint/things/handle/verbs/resolve.ts",
+      "ms": 2
+     }
+    ],
+    "skipped": [],
+    "ms": 32
+   },
+   {
+    "name": "claim a handle",
+    "verdict": "pass",
+    "steps": [
+     {
+      "name": "a name nobody has claimed does not resolve",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.resolve",
+      "handlerFile": "src/handle/resolve.ts",
+      "declarationFile": "blueprint/things/handle/verbs/resolve.ts",
+      "ms": 3
+     },
+     {
+      "name": "an unclaimed name has no public page",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 2
+     },
+     {
+      "name": "aaron cannot add a link before he has a page",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 2
+     },
+     {
+      "name": "aaron claims the free name",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 6
+     },
+     {
+      "name": "the name now resolves to a handle",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.resolve",
+      "handlerFile": "src/handle/resolve.ts",
+      "declarationFile": "blueprint/things/handle/verbs/resolve.ts",
+      "ms": 3
+     },
+     {
+      "name": "the claim made a public page, with no links yet",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 4
+     },
+     {
+      "name": "aaron cannot claim a second name while he holds one",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 4
+     },
+     {
+      "name": "the refused second name is still free",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.resolve",
+      "handlerFile": "src/handle/resolve.ts",
+      "declarationFile": "blueprint/things/handle/verbs/resolve.ts",
+      "ms": 2
+     }
+    ],
+    "skipped": [],
+    "ms": 26
+   },
+   {
+    "name": "release a handle",
+    "verdict": "pass",
+    "steps": [
+     {
+      "name": "aaron puts a link on his page before he lets the name go",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 8
+     },
+     {
+      "name": "bob cannot release aaron's name",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.release",
+      "handlerFile": "src/handle/release.ts",
+      "declarationFile": "blueprint/things/handle/verbs/release.ts",
+      "ms": null
+     },
+     {
+      "name": "aaron releases his name",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.release",
+      "handlerFile": "src/handle/release.ts",
+      "declarationFile": "blueprint/things/handle/verbs/release.ts",
+      "ms": 2
+     },
+     {
+      "name": "he cannot release it twice",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.release",
+      "handlerFile": "src/handle/release.ts",
+      "declarationFile": "blueprint/things/handle/verbs/release.ts",
+      "ms": 0
+     },
+     {
+      "name": "the released name no longer resolves",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.resolve",
+      "handlerFile": "src/handle/resolve.ts",
+      "declarationFile": "blueprint/things/handle/verbs/resolve.ts",
+      "ms": 2
+     },
+     {
+      "name": "the released name has no public page",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 1
+     },
+     {
+      "name": "aaron has no page to add a link to any more",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 2
+     },
+     {
+      "name": "someone else claims the released name",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 5
+     },
+     {
+      "name": "the new page has none of the old owner's links",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 6
+     },
+     {
+      "name": "the old handle is not bob's: he cannot release it, and it stays released",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.release",
+      "handlerFile": "src/handle/release.ts",
+      "declarationFile": "blueprint/things/handle/verbs/release.ts",
+      "ms": null
+     },
+     {
+      "name": "aaron can claim again: a released handle does not count as one he holds",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 5
+     },
+     {
+      "name": "aaron can add a link again, to his new page",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 13
+     },
+     {
+      "name": "his new page has only the new link, and the old name's page is still bob's and empty",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 7
+     }
+    ],
+    "skipped": [],
+    "ms": 51
+   },
+   {
+    "name": "a person claims a page and shares it",
+    "verdict": "pass",
+    "steps": [
+     {
+      "name": "aaron claims @aaron",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "handle.claim",
+      "handlerFile": "src/handle/claim.ts",
+      "declarationFile": "blueprint/things/handle/verbs/claim.ts",
+      "ms": 7
+     },
+     {
+      "name": "aaron adds his GitHub",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 9
+     },
+     {
+      "name": "aaron adds his blog",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 8
+     },
+     {
+      "name": "aaron adds his talks",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "link.add",
+      "handlerFile": "src/link/add.ts",
+      "declarationFile": "blueprint/things/link/verbs/add.ts",
+      "ms": 8
+     },
+     {
+      "name": "anyone sees his public page at @aaron: three links in the order he added them",
+      "verdict": "pass",
+      "failures": [],
+      "operation": "profile.get",
+      "handlerFile": "src/profile/get.ts",
+      "declarationFile": "blueprint/things/profile/verbs/get.ts",
+      "ms": 8
+     }
+    ],
+    "skipped": [],
+    "ms": 40
+   }
+  ],
+  "lines": [
+   "journey a name is claimed once \u2714 5/5 steps",
+   "journey a stranger cannot edit a page \u2714 8/8 steps",
+   "journey add, order and remove a link \u2714 12/12 steps",
+   "journey anyone reads a public page \u2714 5/5 steps",
+   "journey claim a handle \u2714 8/8 steps",
+   "journey release a handle \u2714 13/13 steps",
+   "journey a person claims a page and shares it \u2714 5/5 steps",
+   "handle.claim answer shape \u2714",
+   "handle.claim declared errors \u2714",
+   "handle.claim machine path \u2714",
+   "handle.claim events \u2714",
+   "handle.claim who may call \u2714",
+   "handle.claim steps \u2714",
+   "handle.claim performance \u2714 p50 5ms p95 16ms budget p95 150ms",
+   "handle.claim coverage \u2714",
+   "handle.claim explainability \u2714",
+   "handle.claim 9 evals \u2714 p50 5ms p95 16ms budget p95 150ms",
+   "handle.release answer shape \u2714",
+   "handle.release declared errors \u2714",
+   "handle.release machine path \u2714",
+   "handle.release events \u2714",
+   "handle.release who may call \u2714",
+   "handle.release steps \u2714",
+   "handle.release performance \u2714 p50 0ms p95 2ms budget p95 150ms",
+   "handle.release coverage \u2714",
+   "handle.release explainability \u2714",
+   "handle.release 9 evals \u2714 p50 0ms p95 2ms budget p95 150ms",
+   "handle.resolve answer shape \u2714",
+   "handle.resolve declared errors \u2714",
+   "handle.resolve machine path \u2714",
+   "handle.resolve events \u2714",
+   "handle.resolve who may call \u2714",
+   "handle.resolve steps \u2714",
+   "handle.resolve performance \u2714 p50 3ms p95 10ms budget p95 150ms",
+   "handle.resolve coverage \u2714",
+   "handle.resolve explainability \u2714",
+   "handle.resolve 9 evals \u2714 p50 3ms p95 10ms budget p95 150ms",
+   "link.add answer shape \u2714",
+   "link.add declared errors \u2714",
+   "link.add machine path \u2714",
+   "link.add events \u2714",
+   "link.add who may call \u2714",
+   "link.add steps \u2714",
+   "link.add performance \u2714 p50 8ms p95 18ms budget p95 150ms",
+   "link.add coverage \u2714",
+   "link.add explainability \u2714",
+   "link.add 9 evals \u2714 p50 8ms p95 18ms budget p95 150ms",
+   "link.order answer shape \u2714",
+   "link.order declared errors \u2714",
+   "link.order machine path \u2714",
+   "link.order events \u2714",
+   "link.order who may call \u2714",
+   "link.order steps \u2714",
+   "link.order performance \u2714 p50 3ms p95 3ms budget p95 150ms",
+   "link.order coverage \u2714",
+   "link.order explainability \u2714",
+   "link.order 9 evals \u2714 p50 3ms p95 3ms budget p95 150ms",
+   "link.remove answer shape \u2714",
+   "link.remove declared errors \u2714",
+   "link.remove machine path \u2714",
+   "link.remove events \u2714",
+   "link.remove who may call \u2714",
+   "link.remove steps \u2714",
+   "link.remove performance \u2714 p50 0ms p95 3ms budget p95 150ms",
+   "link.remove coverage \u2714",
+   "link.remove explainability \u2714",
+   "link.remove 9 evals \u2714 p50 0ms p95 3ms budget p95 150ms",
+   "profile.get answer shape \u2714",
+   "profile.get declared errors \u2714",
+   "profile.get machine path \u2714",
+   "profile.get events \u2714",
+   "profile.get who may call \u2714",
+   "profile.get steps \u2714",
+   "profile.get performance \u2714 p50 8ms p95 12ms budget p95 150ms",
+   "profile.get coverage \u2714",
+   "profile.get explainability \u2714",
+   "profile.get 9 evals \u2714 p50 8ms p95 12ms budget p95 150ms",
+   "coverage \u2714 moves 4/4 \u00b7 outcomes 4/4 \u00b7 refusals 4/4 \u00b7 runtime refusals 8/9 (not counted: IdempotencyConflict, which no journey can cause: a step cannot send a second payload under a held request key)",
+   "prove \u2714"
+  ]
+ }
+}

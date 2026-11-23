@@ -1,0 +1,132 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/04-adapter-calls
+# commit b39b30d · 2026-11-18T20:20:35Z · exit 1 (expected 1) · 8.7s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ✓ m1/04-adapter-calls.test.ts > 04 control: the instrument > a runner that releases counted work before the held request settles is rejected by the held-request observation 1515ms
+ × m1/04-adapter-calls.test.ts > 04 Promise mode: a plain Promise callable, called lazily, mapped once > success answers; a rejection and a synchronous throw reach the one mapping and become the declared refusal; nothing foreign leaks 941ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/04-adapter-calls.test.ts > 04 Promise mode: a plain Promise callable, called lazily, mapped once > the raw wait is counted work that outlives a client which goes away: the service sees no early close until it answers 901ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/04-adapter-calls.test.ts > 04 Effect mode: the callable's typed failure and its services are kept; only the typed failure is mapped > success carries the adapter layer's setting; a typed failure becomes the declared refusal; a defect and an interruption are not mapped 1784ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/04-adapter-calls.test.ts > 04 the one blank: an unmapped or mismapped failure is a defect, never a refusal made up > a defect mapper makes the rejected call a defect, not a PriceUnavailable 1037ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/04-adapter-calls.test.ts > 04 the one blank: an unmapped or mismapped failure is a defect, never a refusal made up > an unselected mapper makes the rejected call a defect, not a PriceUnavailable 1307ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/04-adapter-calls.test.ts > 04 Promise mode: a plain Promise callable, called lazily, mapped once > success answers; a rejection and a synchronous throw reach the one mapping and become the declared refusal; nothing foreign leaks
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ readyAdapter m1/adapters.ts:72:3
+ ❯ fresh m1/04-adapter-calls.test.ts:24:27
+ ❯ m1/04-adapter-calls.test.ts:65:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  m1/04-adapter-calls.test.ts > 04 Promise mode: a plain Promise callable, called lazily, mapped once > the raw wait is counted work that outlives a client which goes away: the service sees no early close until it answers
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ readyAdapter m1/adapters.ts:72:3
+ ❯ fresh m1/04-adapter-calls.test.ts:24:27
+ ❯ m1/04-adapter-calls.test.ts:84:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  m1/04-adapter-calls.test.ts > 04 Effect mode: the callable's typed failure and its services are kept; only the typed failure is mapped > success carries the adapter layer's setting; a typed failure becomes the declared refusal; a defect and an interruption are not mapped
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ readyAdapter m1/adapters.ts:72:3
+ ❯ fresh m1/04-adapter-calls.test.ts:24:27
+ ❯ m1/04-adapter-calls.test.ts:104:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  m1/04-adapter-calls.test.ts > 04 the one blank: an unmapped or mismapped failure is a defect, never a refusal made up > a defect mapper makes the rejected call a defect, not a PriceUnavailable
+ FAIL  m1/04-adapter-calls.test.ts > 04 the one blank: an unmapped or mismapped failure is a defect, never a refusal made up > an unselected mapper makes the rejected call a defect, not a PriceUnavailable
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ readyAdapter m1/adapters.ts:72:3
+ ❯ fresh m1/04-adapter-calls.test.ts:24:27
+ ❯ m1/04-adapter-calls.test.ts:124:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 1 passed (6)
+   Start at  20:20:26
+   Duration  8.14s (transform 292ms, setup 0ms, import 556ms, tests 7.50s, environment 0ms)

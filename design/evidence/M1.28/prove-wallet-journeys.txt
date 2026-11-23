@@ -1,0 +1,40 @@
+$ node packages/prove/test/device-journeys.ts wallets
+# commit 7bcc81b0 · 2026-11-19T07:45:53Z · exit 0 (expected 0) · 11.8s
+
+[07:45:48.422] INFO (#1): a browser signer imports an account its wallet holds, written eip155:<chain>:<address>
+[07:45:48.437] INFO (#1): no account labelled nobody on the browser signer
+[07:45:48.445] INFO (#1): no account labelled nobody on the browser signer
+[07:45:49.049] INFO (#1): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+[07:45:49.588] INFO (#1): the secret is no key: it must be 0x and 64 hex digits
+[07:45:49.592] INFO (#1): no key labelled nobody on this signer
+[07:45:49.595] INFO (#1): no key labelled nobody on this signer
+[07:45:50.153] INFO (#1): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+[07:45:50.684] INFO (#1): nowhere is no signer: it is one of node, browser, keystore, world
+[07:45:50.687] INFO (#1): nowhere is no signer: it is one of node, browser, keystore, world
+[07:45:50.689] INFO (#1): nowhere is no signer: it is one of node, browser, keystore, world
+[07:45:50.691] INFO (#1): nowhere is no signer: it is one of node, browser, keystore, world
+[07:45:50.694] INFO (#1): nowhere is no signer: it is one of node, browser, keystore, world
+[07:45:50.700] INFO (#1): the secret is no key: it must be 0x and 64 hex digits
+[07:45:50.703] INFO (#1): no key labelled nobody on the node signer
+[07:45:50.705] INFO (#1): no key labelled nobody on the node signer
+[07:45:51.517] INFO (#1): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+[07:45:52.099] INFO (#1): the secret is no key: it must be 0x and 64 hex digits
+[07:45:52.102] INFO (#1): no key labelled nobody on this signer
+[07:45:52.106] INFO (#1): no key labelled nobody on this signer
+[07:45:52.666] INFO (#1): the chain's simulation refused the transfer before anything was signed or sent (funds: EVM RPC request failed)
+journey wallet refusals on the browser signer ✔ 3/3 steps
+journey wallet on the browser signer ✔ 8/8 steps
+journey wallet refusals on the keystore signer ✔ 3/3 steps
+journey wallet on the keystore signer ✔ 8/8 steps
+journey wallet refusals on no signer ✔ 5/5 steps
+journey wallet refusals on the node signer ✔ 3/3 steps
+journey wallet on the node signer ✔ 8/8 steps
+journey wallet refusals on the world signer ✔ 3/3 steps
+journey wallet on the world signer ✔ 8/8 steps
+wallet.create 9 evals ✔ p50 1ms p95 56ms (no budget)
+wallet.import 9 evals ✔ p50 0ms p95 53ms (no budget)
+wallet.keys 9 evals ✔ p50 0ms p95 1ms (no budget)
+wallet.send 9 evals ✔ p50 58ms p95 569ms (no budget)
+wallet.sign 9 evals ✔ p50 1ms p95 53ms (no budget)
+prove ✘ 15 failing
+RESULT {"notes":[],"journeys":["journey wallet refusals on the browser signer ✔ 3/3 steps","journey wallet on the browser signer ✔ 8/8 steps","journey wallet refusals on the keystore signer ✔ 3/3 steps","journey wallet on the keystore signer ✔ 8/8 steps","journey wallet refusals on no signer ✔ 5/5 steps","journey wallet refusals on the node signer ✔ 3/3 steps","journey wallet on the node signer ✔ 8/8 steps","journey wallet refusals on the world signer ✔ 3/3 steps","journey wallet on the world signer ✔ 8/8 steps"],"evals":["wallet.create answer shape ✔","wallet.create declared errors ✔","wallet.create machine path ✔","wallet.create events ✔","wallet.create who may call ✔","wallet.create steps ✔","wallet.create performance ✔ p50 1ms p95 56ms (no budget)","wallet.create coverage ✔","wallet.create explainability ✔","wallet.create 9 evals ✔ p50 1ms p95 56ms (no budget)","wallet.import answer shape ✔","wallet.import declared errors ✔","wallet.import machine path ✔","wallet.import events ✔","wallet.import who may call ✔","wallet.import steps ✔","wallet.import performance ✔ p50 0ms p95 53ms (no budget)","wallet.import coverage ✔","wallet.import explainability ✔","wallet.import 9 evals ✔ p50 0ms p95 53ms (no budget)","wallet.keys answer shape ✔","wallet.keys declared errors ✔","wallet.keys machine path ✔","wallet.keys events ✔","wallet.keys who may call ✔","wallet.keys steps ✔","wallet.keys performance ✔ p50 0ms p95 1ms (no budget)","wallet.keys coverage ✔","wallet.keys explainability ✔","wallet.keys 9 evals ✔ p50 0ms p95 1ms (no budget)","wallet.send answer shape ✔","wallet.send declared errors ✔","wallet.send machine path ✔","wallet.send events ✔","wallet.send who may call ✔","wallet.send steps ✔","wallet.send performance ✔ p50 58ms p95 569ms (no budget)","wallet.send coverage ✔","wallet.send explainability ✔","wallet.send 9 evals ✔ p50 58ms p95 569ms (no budget)","wallet.sign answer shape ✔","wallet.sign declared errors ✔","wallet.sign machine path ✔","wallet.sign events ✔","wallet.sign who may call ✔","wallet.sign steps ✔","wallet.sign performance ✔ p50 1ms p95 53ms (no budget)","wallet.sign coverage ✔","wallet.sign explainability ✔","wallet.sign 9 evals ✔ p50 1ms p95 53ms (no budget)"],"closing":{"line":"prove ✘ 15 failing","passed":false}}

@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/projections
+# commit 15491548 · 2026-11-19T07:42:37Z · exit 0 (expected 0) · 1.4s
+
+
+ RUN  v4.1.12 ./packages/projections
+
+
+ Test Files  5 passed (5)
+      Tests  9 passed (9)
+   Start at  07:42:36
+   Duration  825ms (transform 314ms, setup 0ms, import 3.01s, tests 28ms, environment 0ms)

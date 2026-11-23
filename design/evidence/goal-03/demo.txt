@@ -1,0 +1,50 @@
+$ tools/demo/m1-plugin.sh
+# commit 1e0c8d6 · 2026-11-18T22:50:19Z · exit 0 (expected 0) · 9.5s
+
+
+$ ortho add feature @fixture/echo
+wrote blueprint/features/echo.ts
+pinned @fixture/echo 1.0.0 (local: no registry release to age)
+needs none
+next ortho generate, then ortho check
+
+$ cat blueprint/features/echo.ts
+// Scaffolded from @fixture/echo 1.0.0. Yours from now on.
+import { Blueprint } from "orthograph";
+import echo from "@fixture/echo";
+
+export default Blueprint.use(echo, (p) => [p.choose(p.choices.style.plain)]);
+
+$ ortho generate
+updated generated/model/model.json
+updated generated/model/edges.json
+created generated/docs/echo/index.md
+created generated/docs/echo/repeat.md
+created generated/docs/echo/shout.md
+updated generated/portal/blueprint.json
+updated generated/api/src/errors.ts
+updated generated/api/src/index.ts
+created generated/api/src/echo/repeat.ts
+created generated/api/src/echo/repeat.handler.ts
+created generated/api/src/echo/shout.ts
+created generated/api/src/echo/shout.handler.ts
+updated generated/server/main.ts
+updated generated/server/migrations/0001_things.sql
+updated generated/mcp/src/index.ts
+updated generated/sdk/src/index.ts
+created generated/sdk/src/echo/index.ts
+created generated/sdk/src/echo/repeat.ts
+created generated/sdk/src/echo/shout.ts
+updated generated/cli/src/main.ts
+created generated/cli/src/echo/repeat.ts
+created generated/cli/src/echo/shout.ts
+
+$ ortho check
+blanks left 0
+types ✔
+rules ✔
+drift ✔
+ratchets 0
+check ✔
+
+(ortho prove needs the Collector container until M1.33; it is proved in CI: the e2e-m1 job, check 02)

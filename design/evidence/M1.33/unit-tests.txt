@@ -1,0 +1,348 @@
+$ bash <scratch>/nodocker.sh pnpm nx run-many -t test --outputStyle=static --skip-nx-cache
+# commit 2cbb81aa · 2026-11-19T08:30:01Z · exit 0 (expected 0) · 628.4s
+
+
+ NX   Running target test for 20 projects:
+
+- language-solidity
+- host-cloudflare
+- language-effect
+- projections
+- generators
+- orthograph
+- chain-evm
+- compiler
+- services
+- logbook
+- starter
+- wallets
+- portal
+- preset
+- signup
+- prove
+- acme
+- lint
+- work
+- cli
+
+
+
+> nx run orthograph:test
+
+> vitest run --root packages/orthograph --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/orthograph
+
+
+ Test Files  20 passed (20)
+      Tests  47 passed (47)
+   Start at  08:19:34
+   Duration  1.57s (transform 1.19s, setup 0ms, import 6.51s, tests 125ms, environment 1ms)
+
+
+> nx run services:test
+
+> vitest run --root packages/services --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/services
+
+
+ Test Files  3 passed (3)
+      Tests  6 passed (6)
+   Start at  08:19:34
+   Duration  3.68s (transform 351ms, setup 0ms, import 1.99s, tests 5.17s, environment 0ms)
+
+
+> nx run language-effect:test
+
+> vitest run --root packages/language-effect --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/language-effect
+
+
+ Test Files  22 passed (22)
+      Tests  69 passed (69)
+   Start at  08:19:36
+   Duration  2.66s (transform 4.83s, setup 0ms, import 16.07s, tests 901ms, environment 1ms)
+
+
+> nx run portal:test
+
+> vitest run --root packages/portal --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/portal
+
+
+ Test Files  5 passed (5)
+      Tests  54 passed (54)
+   Start at  08:19:38
+   Duration  5.07s (transform 624ms, setup 0ms, import 2.20s, tests 4.48s, environment 0ms)
+
+
+> nx run projections:test
+
+> vitest run --root packages/projections --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/projections
+
+
+ Test Files  5 passed (5)
+      Tests  9 passed (9)
+   Start at  08:19:44
+   Duration  1.01s (transform 486ms, setup 0ms, import 3.78s, tests 30ms, environment 0ms)
+
+
+> nx run compiler:test
+
+> vitest run --root packages/compiler --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/compiler
+
+
+ Test Files  7 passed (7)
+      Tests  48 passed (48)
+   Start at  08:19:39
+   Duration  6.67s (transform 9.37s, setup 0ms, import 7.03s, tests 9.62s, environment 0ms)
+
+
+> nx run generators:test
+
+> vitest run --root packages/generators --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/generators
+
+
+ Test Files  5 passed (5)
+      Tests  27 passed (27)
+   Start at  08:19:46
+   Duration  2.90s (transform 3.23s, setup 0ms, import 4.54s, tests 6.07s, environment 0ms)
+
+
+> nx run chain-evm:test
+
+> vitest run --root packages/chain-evm --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/chain-evm
+
+
+ Test Files  7 passed | 1 skipped (8)
+      Tests  16 passed | 2 skipped (18)
+   Start at  08:19:50
+   Duration  1.66s (transform 1.55s, setup 0ms, import 7.81s, tests 390ms, environment 0ms)
+
+
+> nx run logbook:test
+
+> vitest run --root packages/logbook --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/logbook
+
+
+ Test Files  4 passed (4)
+      Tests  26 passed (26)
+   Start at  08:19:34
+   Duration  18.63s (transform 777ms, setup 0ms, import 2.25s, tests 27.07s, environment 0ms)
+
+
+> nx run lint:test
+
+> vitest run --root packages/lint --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/lint
+
+
+ Test Files  2 passed (2)
+      Tests  10 passed (10)
+   Start at  08:19:53
+   Duration  5.60s (transform 38ms, setup 0ms, import 69ms, tests 6.40s, environment 0ms)
+
+
+> nx run signup:test
+
+> vitest run --root examples/signup --passWithNoTests
+
+
+ RUN  v4.1.12 ./examples/signup
+
+No test files found, exiting with code 0
+
+include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+exclude:  **/node_modules/**, **/.git/**
+
+
+> nx run cli:test
+
+> vitest run --root packages/cli --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/cli
+
+
+ Test Files  9 passed (9)
+      Tests  30 passed (30)
+   Start at  08:19:59
+   Duration  19.45s (transform 23.18s, setup 0ms, import 22.03s, tests 68.78s, environment 1ms)
+
+
+> nx run wallets:test
+
+> vitest run --root packages/wallets --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/wallets
+
+(node:55982) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  9 passed | 2 skipped (11)
+      Tests  39 passed | 7 skipped (46)
+   Start at  08:20:19
+   Duration  4.14s (transform 3.50s, setup 0ms, import 15.65s, tests 4.77s, environment 1ms)
+
+
+> nx run preset:test
+
+> vitest run --root packages/preset --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/preset
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  08:20:24
+   Duration  833ms (transform 243ms, setup 0ms, import 721ms, tests 4ms, environment 0ms)
+
+
+> nx run acme:test
+
+> vitest run --root examples/acme --passWithNoTests
+
+
+ RUN  v4.1.12 ./examples/acme
+
+No test files found, exiting with code 0
+
+include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+exclude:  **/node_modules/**, **/.git/**
+
+
+> nx run language-solidity:test
+
+> vitest run --root packages/language-solidity --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/language-solidity
+
+No test files found, exiting with code 0
+
+include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+exclude:  **/node_modules/**, **/.git/**
+
+
+> nx run starter:test
+
+> vitest run --root examples/starter --passWithNoTests
+
+
+ RUN  v4.1.12 ./examples/starter
+
+No test files found, exiting with code 0
+
+include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+exclude:  **/node_modules/**, **/.git/**
+
+
+> nx run work:test
+
+> vitest run --root examples/work --passWithNoTests
+
+
+ RUN  v4.1.12 ./examples/work
+
+No test files found, exiting with code 0
+
+include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+exclude:  **/node_modules/**, **/.git/**
+
+
+> nx run host-cloudflare:test
+
+> vitest run --root packages/host-cloudflare --passWithNoTests
+
+
+=======================================================================================
+WARNING: @cloudflare/vitest-pool-workers has been renamed to @cloudflare/vitest-plugin.
+This package will not receive future updates.
+Run `npx @cloudflare/codemods vitest:pool-workers-to-vitest-plugin` to migrate.
+=======================================================================================
+
+
+ RUN  v4.1.12 ./packages/host-cloudflare
+
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/index.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-compat.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/types.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/interfaces.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-json-schema-compat.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/validation/ajv-provider.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/server.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/helpers.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/webStandardStreamableHttp.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/mediaType.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/requestBody.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/sseKeepAlive.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/validation/cfworker-provider.js" points to missing source files
+
+ Test Files  8 passed (8)
+      Tests  29 passed (29)
+   Start at  08:19:46
+   Duration  41.62s (transform 123.84s, setup 301.91s, import 882ms, tests 3.93s, environment 1ms)
+
+
+> nx run prove:test
+
+> vitest run --root packages/prove --passWithNoTests
+
+
+ RUN  v4.1.12 ./packages/prove
+
+
+ Test Files  32 passed | 3 skipped (35)
+      Tests  137 passed | 5 skipped (142)
+   Start at  08:19:52
+   Duration  609.04s (transform 13.67s, setup 0ms, import 20.23s, tests 1193.09s, environment 2ms)
+
+
+
+
+ NX   Successfully ran target test for 20 projects
+
+
+
+ NX   Nx detected a flaky task
+
+  wallets:test
+
+Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+
+  Run duration:      10m 27s
+  Cache:             Skipped (--skip-nx-cache)
+  Critical path:     10m 10s (1 task)
+  Recoverable time:  17.7s (3% of the run)
+
+  Recommendations:
+    - Cache: drop --skip-nx-cache to restore unchanged tasks instantly.
+    - Speed up or split the longest tasks on the critical path:
+        prove:test    10m 10s

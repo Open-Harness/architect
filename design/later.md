@@ -36,6 +36,21 @@ belongs to, and why it waits.
   `machine.moves` with its `from`, `to` and `emits`, scaffold the operation that makes it, and regenerate. The graph
   stays a view of the file, never a second source. It waits because the portal is read-only until the editor exists,
   and because an editor needs elk in the browser (a worker), where `Graph` today gets positions from the generator.
+- **A machine's `from` kept as a tuple** (K16, #76 commit 27f64555, ledger `MAC-08`). A machine move's `from` reaches the
+  handler types as an array, so `CreatedId` reads every machine move as "may mint" and types `context.id` as an id even
+  on a move from a state, where it is `undefined` at runtime (`prehandle.ts` mints only from `[]`). Keeping `from` a
+  tuple through `Blueprint.machine` restores the exact type. It waits because the runtime is right and nothing reads
+  that `id` today; a type test pinning a non-creating machine move's `id` to `undefined` comes with it.
+- **Invariants beyond `unique`** ([G5](decisions/G5-invariants.md) §7), each with a decision step before the slice that
+  first needs it:
+  - `Blueprint.invariant.requires`, a rule across things: Plugged In's `LinkNeedsHandle` and work's four `Mission*`
+    refusals. It waits on two questions: a key that comes from the caller (`link.add` carries no owner), and whether
+    the rule holds only when a record is made or always, in which case releasing a handle must refuse or cascade.
+  - A bound on one record (`taken + people ≤ places`): `SheetFull`, `AllowanceExceeded`, `SoldOut`. It waits because
+    those refusals carry a computed `left`, which a declared bound would have to produce.
+  - An early refusal before the handler, for a creating move whose payload carries the key; field-level `writes` on
+    database steps, so an operation that can break a rule is known exactly; `ortho add invariant`.
+  - Caseless keys belong in the value (K9's `names.lowercase` choice), never in a key function no index can hold.
 
 - **A plugin that hangs on the app's own thing** (K22 option D, "slots"): the plugin declares a slot and the app binds
   its own thing to it, so the app keeps its central thing and the plugin brings what points at it. Waits until
@@ -114,6 +129,87 @@ belongs to, and why it waits.
 
 ## From the factory (K10)
 
-- **A `cloudflare` sandbox choice** for `@orthograph/workspaces`, beside `localCopy` and `e2b`, if E2B falls short. Not spiked.
+- **A `cloudflare` sandbox choice** for `@orthograph/sandbox`, beside `local` and `e2b` (K39, K40), if E2B falls short. Not spiked.
 - **A person's feedback on a run** (HeroUI Pro's Rating and Emoji Reaction Button on a run's answer) as input to the bench (H2). Waits until the bench reports exist (M4.14).
 - **Experiments shared between projects**: a kept experiment's plugin published for another app to mount. Waits on plugins published from their own CI (M2.10).
+
+## From the grid (#154)
+
+- **A list read's item samples.** When a list read lands (the model has no list marker today, and neither example has one), the MCP output-schema eval builds each
+  item's sample from the declared fields, or reports the item unjudged. Items rebuilt from telemetry lack the untraced public fields and would be a false red.
+
+## The portal's pages on portal-ui components (website builder, 20 November 2026)
+
+- **Plain elements today.** The portal's pages are plain elements with `data-portal` hooks (and `Card` for cards), because the grid's evals and check 21 read the rendered DOM by its headings, tables, list items and hooks, and the HeroUI Pro licence is only in CI. `design/portal.md`'s component inventory maps every data shape to a named component (Widget, `CallsMeter`, `CallsBars`, DataGrid and so on), so the pages are a gap from the design.
+- **Next:** swap each block for its component, one page at a time, built where the licence is. The `data-portal` hooks and the headings, tables and list items the evals read must survive each swap; check 21 and the grid are the guard.
+
+## From prove's coverage (the eval 8 line, G3)
+
+- **A "reachable from a journey" flag on the model's refusals.** Prove's coverage line leaves out the runtime refusals no journey can cause by name:
+  every refusal coded under the runtime's prefix (`AR`) except `NotAllowed` (`packages/prove/src/modules/evals/internal/run.ts`, `unreachable`). That is
+  inferred, so the next runtime refusal is classed by its prefix, right or wrong. When one arrives, the model should say per refusal whether a journey can
+  cause it, and prove should read that. Waits on the next runtime refusal (121 to 125 are held for them, G3).
+## From the grid (error.portal, #168)
+
+- **`error.portal` can't see whether the portal really has a metrics source.** A page that always shows the `not-yet` marker
+  (`data-hole="metrics"`) and never writes a count passes, even when refused spans exist, because the grid has no metrics source at
+  M1.13 and the marker is not tied to a surface. When the portal gets a source in the grid, the eval must check the marker against
+  the source (a marker with a source is wrong), and require the marker to sit on, or be visible next to, the refusal surface it
+  excuses. Waits on a metrics source in the grid's portal data (M1.13's metrics reader, M7.14 for history).
+- **Faster proving, the rest of track A** ([`research/speed-and-vitest-proposal.md`](research/speed-and-vitest-proposal.md)),
+  after ST1.23 and ST1.24, one at a time:
+  - A3, reuse a signed verdict keyed by handler hashes, journey text, model slice and framework version. Each key input needs a planted change of its own first.
+  - A4, starting worlds as D1-plus-Durable-Object snapshots. Needs a spike.
+  - A5, journeys at the same time. The performance eval must run apart.
+  - A6, prove receives telemetry itself, without a collector process.
+  - A7, load each command's code only when it runs.
+- **Our own tests by what changed** (proposal B2, B3): tests that only need prove's result call it in process, and suites that start `ortho` carry a tag; CI then picks suites from a table of changed path to tag. It waits because nothing in CI may use `vitest --changed` before B2 (it would skip the climbability check).
+- **Vitest for this repository** (proposal C2; spike `spikes/vitest-fixtures`, #189): world-starting checks on shared fixtures and report matchers, one config with named projects, the ratchet as a reporter, a slow-file budget. The checks author's work, after stage 1.
+- **Vitest as a generated output for users** (proposal C1): each journey a suite, each step a test, run by prove's engine, with an Orthograph reporter and the journey checks as matchers. It waits for the framework session with Aaron.
+- **One Cloudflare account per environment** (`decisions/M7-cloud.md`, addendum): today one account holds every environment, each resource prefixed by app, environment and run. When production holds real data, each environment gets its own account and token. It waits because nothing in that account matters yet (Aaron, 20 November 2026).
+
+## From Codex's review of #159 (website builder, 20 November 2026)
+
+- **The plugins page draws a `default` store, and no declared one.** The wire carries neither `model.stores` nor an environment's `stores` bindings
+  (the compiler writes both: `packages/compiler/src/modules/model/stores.test.ts`), so `plugins.tsx` cannot tell a blueprint with no store from one
+  with `ledger` and `rooms`. Plugged In declares none, and check 21 H expects the one `default` row. When the wire keeps stores, the page draws the
+  declared ones and the `default` row only for a blueprint that declares none. Waits on the wire (the telemetry builder's `wire/**`).
+- **Three edge cases in the calls reader (`packages/portal/src/modules/telemetry/internal/calls.ts`, `service.ts`).** (1) Several independent calls to
+  one operation inside one trace (a journey calling `handle.claim` twice under one trace) group into one row; a call's own context should separate them.
+  (2) `FileSource.window` returns whole traces, so a long trace's calls from before the window are listed and their moves counted while the metrics
+  exclude them; calls should be cut at `since`. (3) A move counts when an answered call's attempt carries `move.name`, even if that attempt lost its
+  commit race and a retry replayed a cached answer; it should wait for a committed `commit.outcome`. None is reachable from Plugged In's journeys
+  today; each belongs to the telemetry reader, not the pages.
+
+## From the snag triage (Goal 3 lead, 21 November 2026)
+
+Each is a parked snag in `design/goals/03-snags.md`, with its trigger.
+
+- **Journey language, five small gaps** (S-05 to S-09): a starting world parameterised per journey or minting names per run; a world's `gives` naming more than the last answer; a step comparing against the previous answer; stating (or changing) what `s.last` holds after a refusal; a raw payload step that can reach `InvalidPayload`. Plugged In's journeys route around each. Waits until a journey needs one: a world shared by two journeys, or a payload the operation does not declare.
+- **Journey redaction as one rule** (S-14, ledger `HAN-12`): a completed operation's payload and `refuses` hide only declared non-public fields, so an undeclared key shows in the portal and `describe`. One rule shared with the visibility module (M1.35), check first. Waits on S-09's raw payload step, the only way a journey sends an undeclared key, and must be done before the release pass M7.13.
+- **Wallet items for stage 2** (S-13 ledger `HAN-11`, S-15, S-17's `HAN-14`): a send that never reaches depth as a typed `SendRefused` failure; `Blueprint.error` deriving `_tag` from the declaring export so `packages/wallets/src/modules/submit/internal/names.ts` goes; the device SDK typing a redacted answer as partial. All three need S-18's chain settings or the browser path, and stage 1 has neither. Taken when ST2.01 starts.
+- **Prove's report counts an unwritten journey** (S-21): a journey whose starting world fails reports `total: 0`, so the climb curve reads 0 of 0. The report gives it its real step count with `green: 0`. Waits until M2.07's tenancy journeys, which start from the `founded` and `invited` worlds, are climbed from red.
+- **`--only` should not count coverage against the journeys it excluded, and the climber's worktree needs `pnpm install` said** (S-24): coverage lines ("reached by no journey") fail a one-journey run while every step is green; the goal's prompt says nothing of the install. Taken at the lessons step (loop step 5 of Goal 3). The scaffold half of S-24 is ST1.17's.
+- **Declared names as constants, and a check that no state name is a string outside `generated/`** (S-26): `subject.state === "removed"` (`examples/plugged-in/src/link/order.ts:46`) and `refuses(machine.notFrom, { state: "removed" })` in two journeys move onto `machine.states.<state>` (ST1.14), then a lint or canon check pins it. Waits for a blueprint that renames a state.
+- **The model records a value's pattern** (S-28): `Values.email`'s pattern lives only in its Schema, so the grid's output-schema eval uses a `max === 254` stopgap (`e2e/grid/src/modules/output-schema/internal/sample.ts`). The model carries a pattern or format, and the stopgap is deleted. Waits for a second pattern-bearing value, or a sample the heuristic cannot give.
+- **Check 40's page judge: three counts and labels it does not read** (M1.50, round 3): a count made by a CSS `counter()` beside a state (`counter-increment` and `content: counter(n)`, which no text node holds); a label split into two `<text>` nodes, one of them far from the line; and whether labels drawn by React Flow's `EdgeLabelRenderer` (portalled outside the edge's `<g>`) should be judged at all, now that the judge expects `BaseEdge`'s `label`. Taken if a builder draws any of them.
+
+## From check 39 (M1.49's monitor, 21 November 2026)
+
+Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three; the fixed shapes are in the addendum of `design/decisions/K18-monitoring-falls-out.md`.
+
+- **An anomaly and a verdict actually firing**: the rules are derived and listed, but check 39 judges only the burn alerts' firing. A check that makes a refusal-code spike fire its anomaly, and a failed journey fire its verdict.
+- **Nested declared steps, the deepest wins**: an issue's step is the deepest declared step span that errored with the failed attempt's own `error.tag` (an adapter's span is never chosen; a step that errored and was recovered is passed over when it carries a different tag; no such step is `-`, the operation itself; a call that ran out of tries is `commit`); check 39 plants one level (`link.add.record`). A defect two declared steps down, and the `-` and out-of-tries cases, are not judged.
+- **The constructor-name fallback for `error.tag`**: a thrown error with no `_tag` takes its constructor's name; check 39 plants only a tagged error whose class name differs from its tag.
+
+## From M2-auth (Goal 3 lead, 21 November 2026)
+
+- **SDK and CLI reach filtering** (`decisions/M2-auth.md`, small calls 16; replaces `decisions/K1-kits.md`'s table at
+  `:240-241`). In M2 only MCP tools are hidden by reach. The SDK and the CLI carry every operation, and the role check
+  refuses what a credential may not do. K1 meant the SDK to carry only operations a session or a key can reach,
+  and the CLI only those a device session or a key can reach. **Trigger:** a generated client's refusal on a call its credential
+  could never make is reported as confusing in a journey or by a user, or the second app ships a CLI with an operation
+  only `Via.agent` reaches.
+- **A nonce lane shared across processes** (`decisions/W1-wallet-send-lanes.md`, Open). Today one process keeps one lock
+  per account and chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
+  key from more than one process or Worker, or a journey sends from one account in two processes at once.

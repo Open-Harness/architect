@@ -1,0 +1,11 @@
+$ pnpm exec vitest run packages/language-effect/src/modules/calls packages/compiler/src/modules/mounts packages/compiler/src/modules/compare packages/orthograph/src/modules/plugins packages/generators/src/modules/render
+# commit 14aedb7 · 2026-11-18T23:03:12Z · exit 0 (expected 0) · 6.4s
+
+
+ RUN  v4.1.12 .
+
+
+ Test Files  7 passed (7)
+      Tests  40 passed (40)
+   Start at  23:03:06
+   Duration  5.22s (transform 3.65s, setup 0ms, import 13.07s, tests 5.04s, environment 4ms)

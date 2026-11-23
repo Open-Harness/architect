@@ -6,6 +6,7 @@
     "orthograph": "workspace:*",
     "@orthograph/compiler": "workspace:*",
     "@orthograph/portal": "workspace:*",
+    "@orthograph/projections": "workspace:*",
     "@nx/devkit": "24.0.3",
     "effect": "4.1.4"
   },

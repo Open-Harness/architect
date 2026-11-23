@@ -62,5 +62,7 @@ export interface SnapshotApi {
     readonly bundleRevision: string | null;
     /** Default `refs/heads/main`. */
     readonly ref?: string;
+    /** When given, `observedAt` is this instant (the portal's `now`) and no clock is read. */
+    readonly now?: number;
   }) => Effect.Effect<PortalSnapshot>;
 }
