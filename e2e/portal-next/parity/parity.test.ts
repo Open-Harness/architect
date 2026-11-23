@@ -19,7 +19,9 @@ const verdict = (statuses: Record<string, "passed" | "failed">, listed: Readonly
   const report = { testResults: [{ name: join(e2e, FILE), status: "failed", assertionResults: Object.entries(statuses).map(([title, status]) => ({ ancestorTitles: ["A the portal"], title, status })) }] };
   writeFileSync(join(dir, "report.json"), JSON.stringify(report));
   writeFileSync(join(dir, "expected-failing.txt"), `# parity list\n${listed.map((t) => `${FILE} > A the portal > ${t}`).join("\n")}\n`);
-  const run = spawnSync(process.execPath, [main, join(dir, "report.json"), join(dir, "expected-failing.txt")], { encoding: "utf8" });
+  // Off GitHub Actions, so main.ts writes `ERROR:` and not `::error::` on any runner.
+  const env = { ...process.env, GITHUB_ACTIONS: "" };
+  const run = spawnSync(process.execPath, [main, join(dir, "report.json"), join(dir, "expected-failing.txt")], { encoding: "utf8", env });
   return { status: run.status, out: `${run.stdout}${run.stderr}` };
 };
 
