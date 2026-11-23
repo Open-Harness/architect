@@ -3,6 +3,7 @@
 import { Blueprint } from "orthograph";
 import { describe, expect, it } from "vitest";
 import type { FieldModel, Model } from "#modules/model/types.js";
+import { allowedOf } from "./internal/known.ts";
 import { cycles, duplicateRoutes, offerProblems, routeProblems, twiceProblems, type PageFacts } from "./internal/checks.ts";
 import { App } from "./service.ts";
 
@@ -90,5 +91,16 @@ describe("app", () => {
     expect(out[0]).toContain("a.ts, b.ts");
     expect(out[0]).not.toContain("c.ts");
     expect(cycles(new Map([["a", "b"]]), files)).toEqual([]);
+  });
+
+  it("a page is never allowed to the system or the keeper, and a narrowed entry is the entry it narrows", () => {
+    const known = { operations: new Map(), roles: new Map(), things: new Map(), values: new Map() };
+    const problems: Array<string> = [];
+    allowedOf({ kind: "keeper" }, known, "blueprint/app/pages/p.ts", problems);
+    allowedOf({ kind: "system" }, known, "blueprint/app/pages/p.ts", problems);
+    expect(problems).toHaveLength(2);
+    expect(problems[0]).toContain("blueprint/app/pages/p.ts");
+    const narrowed = { kind: "narrowed", entry: { kind: "signed-in" }, via: ["web"] } as never;
+    expect(allowedOf(narrowed, known, "f", [])).toEqual({ kind: "signed-in" });
   });
 });

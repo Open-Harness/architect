@@ -70,3 +70,10 @@ kind, without matching prose that a rewording would break. The file stays first,
 problems do and `Mounts.attributed` and the CLI treat it alike; the tag is a stable name for the kind, like a refusal code. It is
 new to the compiler, so it is recorded here rather than assumed: the tags are `app-route-param`, `app-offer-uncallable`,
 `app-undeclared-page`, `app-parent-cycle`, `app-duplicate-route` and `app-named-twice`. Plain problems of the map (see 5) carry none.
+
+## Who may open a page, now that `allowed` has more kinds (22 November 2026, after merging `goal/stage-1`)
+
+`Allowed` gained `system`, `keeper`, a role made for an outside service, and `narrowed` (an entry with its ways in kept). A page
+is opened by the caller of a request, so: `system` and `keeper` have no credential and never open a page, and a service role
+admits one outside mount, never a person at a page; each is a problem naming the page's file (untagged: it is none of the six).
+A `narrowed` entry is the entry it narrows, since a page has no ways in of its own, and the model holds the plain entry.
