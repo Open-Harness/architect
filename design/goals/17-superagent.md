@@ -605,8 +605,15 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
 
 ## Where it stands
 
-22 November 2026. Slice 1 is on `main` (#515), and K40 is decided (#529). The lead is Claude Code on
-`claude-opus-5-5`. It brought the brief, K39 and K40 onto this branch, with the word changes they make to the live
-docs. Real model runs go through VibeProxy, with Pi Durable running the agents (GOAL17-model-endpoint), so slice 12
-needs no model key. The milestone `Goal 17: the superagent` (#18) and the label `goal-17` exist. Slices 2 and 3 can
-start.
+23 November 2026. Slice 1 is on `main` (#515), and K40 is decided (#529). The lead is Claude Code on `claude-opus-5-5`.
+The brief, K39, K40 and GOAL17-model-endpoint reached this branch by #578: real model runs go through VibeProxy, with
+Pi Durable running the agents. Slice 2 is the four seam records (#583), passed by 🔍 after five rounds, with a "Two
+writers, one guard" table in GOAL17-executor-slots. Slice 3's checks are being written. Slice 4 starts when they land.
+
+What slice 5's and slice 8's authors take from slice 2's last review, beyond the records:
+
+- `ticket.stop` after a handoff closes the executor's current Assignment on the Agent too, with a journey step.
+- The Input row gains `retryAt` and `refusals`, and `superagent.boot` joins the Superagent's operations.
+- Slice 8 adds a restart check that two sweeps don't double-start an Assignment, the refusal cycle's row bound,
+  reap then restart then redeliver, and a chatty ticket's `Ticket.seq` contention.
+- The Agent's closed-Assignment memory states its window.
