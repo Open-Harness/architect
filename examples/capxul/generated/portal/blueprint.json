@@ -5,8 +5,20 @@
   "model": {
     "refusals": {
       "CompanyNotActive": "CO-900",
+      "DepartmentNameTaken": "DE-001",
+      "DepartmentNotActive": "DE-900",
+      "DepartmentNotFound": "DE-901",
+      "DepartmentNotInCompany": "EM-002",
+      "DesignationNameTaken": "DS-001",
+      "DesignationNotActive": "DS-900",
+      "DesignationNotFound": "DS-901",
+      "DesignationNotInCompany": "EM-003",
+      "EmployeeAlreadyHired": "EM-001",
+      "EmployeeNotActive": "EM-900",
       "IdempotencyConflict": "AR-002",
-      "NotAllowed": "AR-001"
+      "JoinedBeforeBorn": "EM-004",
+      "NotAllowed": "AR-001",
+      "RelievedBeforeJoined": "EM-005"
     },
     "values": {
       "Abbr": {
@@ -19,6 +31,13 @@
       },
       "CurrencyCode": {
         "type": "schema"
+      },
+      "Day": {
+        "type": "schema"
+      },
+      "Gender": {
+        "type": "text",
+        "max": 60
       },
       "Name": {
         "type": "text",
@@ -137,6 +156,422 @@
           "kind": "app"
         },
         "hash": "5f3d7650eefb9381"
+      },
+      "department": {
+        "name": "department",
+        "identifier": "Department",
+        "code": "DE",
+        "description": "A part of a company that its employees work in.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "dep"
+            }
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "company.id"
+          },
+          "departmentName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name"
+          }
+        },
+        "lives": "database",
+        "invariants": {
+          "oneNamePerCompany": {
+            "kind": "unique",
+            "fields": [
+              "company",
+              "departmentName"
+            ],
+            "refuse": "DepartmentNameTaken"
+          }
+        },
+        "machine": {
+          "states": [
+            "active"
+          ],
+          "moves": {
+            "create": {
+              "from": [],
+              "to": [
+                "active"
+              ],
+              "emits": "DepartmentCreated"
+            }
+          },
+          "notFrom": {
+            "error": "DepartmentNotActive",
+            "exit": 40,
+            "code": "DE-900"
+          }
+        },
+        "events": {
+          "DepartmentCreated": {
+            "department": {
+              "value": {
+                "type": "id",
+                "prefix": "dep"
+              },
+              "ref": "department.id"
+            },
+            "company": {
+              "value": {
+                "type": "id",
+                "prefix": "com"
+              },
+              "ref": "department.company"
+            }
+          }
+        },
+        "errors": {
+          "DepartmentNameTaken": {
+            "fields": {
+              "departmentName": {
+                "value": {
+                  "type": "text",
+                  "max": 140
+                },
+                "named": "Name"
+              }
+            },
+            "exit": 41,
+            "code": "DE-001"
+          }
+        },
+        "notFound": {
+          "error": "DepartmentNotFound",
+          "exit": 4,
+          "code": "DE-901"
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "70a62d157ea92c81"
+      },
+      "designation": {
+        "name": "designation",
+        "identifier": "Designation",
+        "code": "DS",
+        "description": "A job title a company gives its employees.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "dsg"
+            }
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "company.id"
+          },
+          "designationName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name"
+          }
+        },
+        "lives": "database",
+        "invariants": {
+          "oneNamePerCompany": {
+            "kind": "unique",
+            "fields": [
+              "company",
+              "designationName"
+            ],
+            "refuse": "DesignationNameTaken"
+          }
+        },
+        "machine": {
+          "states": [
+            "active"
+          ],
+          "moves": {
+            "create": {
+              "from": [],
+              "to": [
+                "active"
+              ],
+              "emits": "DesignationCreated"
+            }
+          },
+          "notFrom": {
+            "error": "DesignationNotActive",
+            "exit": 40,
+            "code": "DS-900"
+          }
+        },
+        "events": {
+          "DesignationCreated": {
+            "designation": {
+              "value": {
+                "type": "id",
+                "prefix": "dsg"
+              },
+              "ref": "designation.id"
+            },
+            "company": {
+              "value": {
+                "type": "id",
+                "prefix": "com"
+              },
+              "ref": "designation.company"
+            }
+          }
+        },
+        "errors": {
+          "DesignationNameTaken": {
+            "fields": {
+              "designationName": {
+                "value": {
+                  "type": "text",
+                  "max": 140
+                },
+                "named": "Name"
+              }
+            },
+            "exit": 41,
+            "code": "DS-001"
+          }
+        },
+        "notFound": {
+          "error": "DesignationNotFound",
+          "exit": 4,
+          "code": "DS-901"
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "e8e38d92bb6471e1"
+      },
+      "employee": {
+        "name": "employee",
+        "identifier": "Employee",
+        "code": "EM",
+        "description": "A person a company employs.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            }
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "company.id"
+          },
+          "person": {
+            "value": {
+              "type": "id",
+              "prefix": "per"
+            },
+            "description": "The person employed, who signs in as themselves."
+          },
+          "firstName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name"
+          },
+          "gender": {
+            "value": {
+              "type": "text",
+              "max": 60
+            },
+            "named": "Gender"
+          },
+          "dateOfBirth": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day"
+          },
+          "dateOfJoining": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day"
+          },
+          "department": {
+            "value": {
+              "type": "id",
+              "prefix": "dep"
+            },
+            "ref": "department.id"
+          },
+          "designation": {
+            "value": {
+              "type": "id",
+              "prefix": "dsg"
+            },
+            "ref": "designation.id"
+          }
+        },
+        "lives": "database",
+        "invariants": {
+          "onePlacePerPerson": {
+            "kind": "unique",
+            "fields": [
+              "company",
+              "person"
+            ],
+            "while": [
+              "active"
+            ],
+            "refuse": "EmployeeAlreadyHired"
+          }
+        },
+        "machine": {
+          "states": [
+            "active",
+            "left"
+          ],
+          "moves": {
+            "hire": {
+              "from": [],
+              "to": [
+                "active"
+              ],
+              "emits": "EmployeeHired"
+            },
+            "relieve": {
+              "from": [
+                "active"
+              ],
+              "to": [
+                "left"
+              ],
+              "emits": "EmployeeRelieved"
+            }
+          },
+          "notFrom": {
+            "error": "EmployeeNotActive",
+            "exit": 40,
+            "code": "EM-900"
+          }
+        },
+        "events": {
+          "EmployeeHired": {
+            "employee": {
+              "value": {
+                "type": "id",
+                "prefix": "emp"
+              },
+              "ref": "employee.id"
+            },
+            "company": {
+              "value": {
+                "type": "id",
+                "prefix": "com"
+              },
+              "ref": "employee.company"
+            },
+            "person": {
+              "value": {
+                "type": "id",
+                "prefix": "per"
+              },
+              "ref": "employee.person",
+              "description": "The person employed, who signs in as themselves."
+            }
+          },
+          "EmployeeRelieved": {
+            "employee": {
+              "value": {
+                "type": "id",
+                "prefix": "emp"
+              },
+              "ref": "employee.id"
+            },
+            "relievingDate": {
+              "value": {
+                "type": "schema"
+              },
+              "named": "Day"
+            }
+          }
+        },
+        "errors": {
+          "EmployeeAlreadyHired": {
+            "fields": {
+              "person": {
+                "value": {
+                  "type": "id",
+                  "prefix": "per"
+                },
+                "ref": "employee.person",
+                "description": "The person employed, who signs in as themselves."
+              }
+            },
+            "exit": 41,
+            "code": "EM-001"
+          },
+          "DepartmentNotInCompany": {
+            "fields": {},
+            "exit": 42,
+            "code": "EM-002"
+          },
+          "DesignationNotInCompany": {
+            "fields": {},
+            "exit": 43,
+            "code": "EM-003"
+          },
+          "JoinedBeforeBorn": {
+            "fields": {
+              "dateOfBirth": {
+                "value": {
+                  "type": "schema"
+                },
+                "named": "Day"
+              }
+            },
+            "exit": 44,
+            "code": "EM-004"
+          },
+          "RelievedBeforeJoined": {
+            "fields": {
+              "dateOfJoining": {
+                "value": {
+                  "type": "schema"
+                },
+                "named": "Day"
+              }
+            },
+            "exit": 45,
+            "code": "EM-005"
+          }
+        },
+        "roles": [
+          "self"
+        ],
+        "roleRules": {
+          "self": "(employee, caller) => employee.person === caller.person"
+        },
+        "from": {
+          "kind": "app"
+        },
+        "hash": "a2627df8b7120d80"
       }
     },
     "operations": {
@@ -319,9 +754,1577 @@
           "p95Ms": 50
         },
         "hash": "b640ec48ed59bbd8"
+      },
+      "department.create": {
+        "kind": "operation",
+        "name": "department.create",
+        "thing": "department",
+        "verb": "create",
+        "identifier": "create",
+        "file": "blueprint/things/department/verbs/create.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Add a department to a company.",
+        "payload": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "department.company"
+          },
+          "departmentName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "department.departmentName"
+          }
+        },
+        "answer": {
+          "department": {
+            "value": {
+              "type": "id",
+              "prefix": "dep"
+            },
+            "ref": "department.id"
+          }
+        },
+        "move": {
+          "key": "create",
+          "from": [],
+          "to": [
+            "active"
+          ],
+          "emits": "DepartmentCreated"
+        },
+        "errors": [],
+        "invariants": {
+          "DepartmentNameTaken": "department.oneNamePerCompany"
+        },
+        "breaks": [
+          "department.oneNamePerCompany"
+        ],
+        "refusals": [
+          "DepartmentNameTaken",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "company": "company"
+        },
+        "mints": "department",
+        "steps": {
+          "insert": {
+            "name": "department.create.insert",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "2ab7b702f6cd5ae7"
+      },
+      "department.get": {
+        "kind": "read",
+        "name": "department.get",
+        "thing": "department",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/department/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one department by its id: company, departmentName, state.",
+        "payload": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "dep"
+            },
+            "ref": "department.id"
+          }
+        },
+        "answer": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "department.company"
+          },
+          "departmentName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "department.departmentName"
+          },
+          "state": {
+            "value": {
+              "type": "text",
+              "max": 64
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "department.company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 50
+        },
+        "hash": "e080f6db61d65ed0"
+      },
+      "designation.create": {
+        "kind": "operation",
+        "name": "designation.create",
+        "thing": "designation",
+        "verb": "create",
+        "identifier": "create",
+        "file": "blueprint/things/designation/verbs/create.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Add a job title to a company.",
+        "payload": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "designation.company"
+          },
+          "designationName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "designation.designationName"
+          }
+        },
+        "answer": {
+          "designation": {
+            "value": {
+              "type": "id",
+              "prefix": "dsg"
+            },
+            "ref": "designation.id"
+          }
+        },
+        "move": {
+          "key": "create",
+          "from": [],
+          "to": [
+            "active"
+          ],
+          "emits": "DesignationCreated"
+        },
+        "errors": [],
+        "invariants": {
+          "DesignationNameTaken": "designation.oneNamePerCompany"
+        },
+        "breaks": [
+          "designation.oneNamePerCompany"
+        ],
+        "refusals": [
+          "DesignationNameTaken",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "company": "company"
+        },
+        "mints": "designation",
+        "steps": {
+          "insert": {
+            "name": "designation.create.insert",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "19ee2766a84f1c65"
+      },
+      "designation.get": {
+        "kind": "read",
+        "name": "designation.get",
+        "thing": "designation",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/designation/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one designation by its id: company, designationName, state.",
+        "payload": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "dsg"
+            },
+            "ref": "designation.id"
+          }
+        },
+        "answer": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "designation.company"
+          },
+          "designationName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "designation.designationName"
+          },
+          "state": {
+            "value": {
+              "type": "text",
+              "max": 64
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "designation.company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 50
+        },
+        "hash": "98f6ee02514a7d04"
+      },
+      "employee.get": {
+        "kind": "read",
+        "name": "employee.get",
+        "thing": "employee",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/employee/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.",
+        "payload": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            },
+            "ref": "employee.id"
+          }
+        },
+        "answer": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "employee.company"
+          },
+          "person": {
+            "value": {
+              "type": "id",
+              "prefix": "per"
+            },
+            "ref": "employee.person",
+            "description": "The person employed, who signs in as themselves."
+          },
+          "firstName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "employee.firstName"
+          },
+          "gender": {
+            "value": {
+              "type": "text",
+              "max": 60
+            },
+            "named": "Gender",
+            "ref": "employee.gender"
+          },
+          "dateOfBirth": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day",
+            "ref": "employee.dateOfBirth"
+          },
+          "dateOfJoining": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day",
+            "ref": "employee.dateOfJoining"
+          },
+          "department": {
+            "value": {
+              "type": "id",
+              "prefix": "dep"
+            },
+            "ref": "employee.department"
+          },
+          "designation": {
+            "value": {
+              "type": "id",
+              "prefix": "dsg"
+            },
+            "ref": "employee.designation"
+          },
+          "state": {
+            "value": {
+              "type": "text",
+              "max": 64
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role",
+            "role": "employee.self"
+          },
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "employee.company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 50
+        },
+        "hash": "6008b1f38605aefa"
+      },
+      "employee.hire": {
+        "kind": "operation",
+        "name": "employee.hire",
+        "thing": "employee",
+        "verb": "hire",
+        "identifier": "hire",
+        "file": "blueprint/things/employee/verbs/hire.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Hire a person into a company, placed in one of its departments under one of its job titles.",
+        "payload": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "employee.company"
+          },
+          "person": {
+            "value": {
+              "type": "id",
+              "prefix": "per"
+            },
+            "ref": "employee.person",
+            "description": "The person employed, who signs in as themselves."
+          },
+          "firstName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "employee.firstName"
+          },
+          "gender": {
+            "value": {
+              "type": "text",
+              "max": 60
+            },
+            "named": "Gender",
+            "ref": "employee.gender"
+          },
+          "dateOfBirth": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day",
+            "ref": "employee.dateOfBirth"
+          },
+          "dateOfJoining": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day",
+            "ref": "employee.dateOfJoining"
+          },
+          "department": {
+            "value": {
+              "type": "id",
+              "prefix": "dep"
+            },
+            "ref": "employee.department"
+          },
+          "designation": {
+            "value": {
+              "type": "id",
+              "prefix": "dsg"
+            },
+            "ref": "employee.designation"
+          }
+        },
+        "answer": {
+          "employee": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            },
+            "ref": "employee.id"
+          }
+        },
+        "move": {
+          "key": "hire",
+          "from": [],
+          "to": [
+            "active"
+          ],
+          "emits": "EmployeeHired"
+        },
+        "errors": [
+          "DepartmentNotInCompany",
+          "DesignationNotInCompany",
+          "JoinedBeforeBorn"
+        ],
+        "invariants": {
+          "EmployeeAlreadyHired": "employee.onePlacePerPerson"
+        },
+        "breaks": [
+          "employee.onePlacePerPerson"
+        ],
+        "refusals": [
+          "DepartmentNotInCompany",
+          "DesignationNotInCompany",
+          "JoinedBeforeBorn",
+          "EmployeeAlreadyHired",
+          "DepartmentNotFound",
+          "DesignationNotFound",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "company": "company",
+          "department": "department",
+          "designation": "designation"
+        },
+        "notFound": {
+          "department": "DepartmentNotFound",
+          "designation": "DesignationNotFound"
+        },
+        "mints": "employee",
+        "steps": {
+          "load": {
+            "name": "employee.hire.load",
+            "type": "database"
+          },
+          "insert": {
+            "name": "employee.hire.insert",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 200
+        },
+        "hash": "770ffef979712da8"
+      },
+      "employee.relieve": {
+        "kind": "operation",
+        "name": "employee.relieve",
+        "thing": "employee",
+        "verb": "relieve",
+        "identifier": "relieve",
+        "file": "blueprint/things/employee/verbs/relieve.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Record that an employee has left the company, on the day they were relieved.",
+        "payload": {
+          "employee": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            },
+            "ref": "employee.id"
+          },
+          "relievingDate": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day"
+          }
+        },
+        "answer": {
+          "employee": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            },
+            "ref": "employee.id"
+          },
+          "relievingDate": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day"
+          }
+        },
+        "move": {
+          "key": "relieve",
+          "from": [
+            "active"
+          ],
+          "to": [
+            "left"
+          ],
+          "emits": "EmployeeRelieved"
+        },
+        "errors": [
+          "RelievedBeforeJoined"
+        ],
+        "breaks": [],
+        "refusals": [
+          "RelievedBeforeJoined",
+          "EmployeeNotActive",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "employee.company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "employee": "employee"
+        },
+        "steps": {
+          "load": {
+            "name": "employee.relieve.load",
+            "type": "database"
+          },
+          "update": {
+            "name": "employee.relieve.update",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "7c1133cc15b01f7d"
       }
     },
     "journeys": {
+      "journeys/an-employee-leaves.ts": {
+        "name": "an employee leaves",
+        "file": "journeys/an-employee-leaves.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "an employee",
+        "steps": [
+          {
+            "title": "Olga can't relieve herself",
+            "call": {
+              "actor": "olga",
+              "operation": "employee.relieve",
+              "payload": {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "relievingDate": "2026-11-30"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "is-in",
+                "thing": "employee",
+                "id": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "employee.relieve",
+                  "employee.relieve.update"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Ada can't relieve her the day before she joined",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.relieve",
+              "payload": {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "relievingDate": "2026-01-04"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "RelievedBeforeJoined",
+                "fields": {
+                  "dateOfJoining": "2026-01-05"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "is-in",
+                "thing": "employee",
+                "id": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "employee.relieve.update"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Ada relieves her on 30 November",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.relieve",
+              "payload": {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "relievingDate": "2026-11-30"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "2026-11-30"
+                ]
+              },
+              {
+                "kind": "emits",
+                "event": "EmployeeRelieved",
+                "fields": {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "relievingDate": "2026-11-30"
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "employee",
+                "id": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "state": "left"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "employee.relieve",
+                  "employee.relieve.load",
+                  "employee.relieve.update"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "she can't be relieved twice",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.relieve",
+              "payload": {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "relievingDate": "2026-12-01"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "employee.notFrom",
+                "fields": {
+                  "state": "left"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "employee.relieve.update"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Olga still reads her old record, which shows she has left",
+            "call": {
+              "actor": "olga",
+              "operation": "employee.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "2026-01-05",
+                  "left"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada may hire her again, as a new employee",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.hire",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "person"
+                  ]
+                },
+                "firstName": "Olga",
+                "gender": "Female",
+                "dateOfBirth": "1994-03-17",
+                "dateOfJoining": "2027-02-01",
+                "department": {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^emp_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "EmployeeHired",
+                "fields": {
+                  "employee": {
+                    "ref": [
+                      "last",
+                      "employee"
+                    ]
+                  },
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "olga",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "employee",
+                "id": {
+                  "ref": [
+                    "last",
+                    "employee"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "is-in",
+                "thing": "employee",
+                "id": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "state": "left"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "640cbce7a74c401a486b35abcbab5dc54ca750d1ffd7f66dc27f51954b4c7d42"
+      },
+      "journeys/another-companys-department-is-refused.ts": {
+        "name": "another company's department is refused",
+        "file": "journeys/another-companys-department-is-refused.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "a team",
+        "steps": [
+          {
+            "title": "Bo sets up a company of his own",
+            "call": {
+              "actor": "bo",
+              "operation": "company.create",
+              "payload": {
+                "companyName": "Bo Ltd",
+                "abbr": "BL",
+                "country": "Kenya",
+                "defaultCurrency": "KES"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^com_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Bo adds Sales to it",
+            "call": {
+              "actor": "bo",
+              "operation": "department.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "departmentName": "Sales"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^dep_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Ada can't place Olga in Bo's department",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.hire",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "person"
+                  ]
+                },
+                "firstName": "Olga",
+                "gender": "Female",
+                "dateOfBirth": "1994-03-17",
+                "dateOfJoining": "2026-01-05",
+                "department": {
+                  "ref": [
+                    "last",
+                    "department"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "DepartmentNotInCompany",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "employee.hire",
+                  "employee.hire.load"
+                ],
+                "absent": [
+                  "employee.hire.insert"
+                ]
+              }
+            ]
+          }
+        ],
+        "sourceHash": "7b9580bfe0249ef52bbcd45267a7b8c29b795d730f17b608c7ddb4cdec8abe8a"
+      },
+      "journeys/another-companys-job-title-is-refused.ts": {
+        "name": "another company's job title is refused",
+        "file": "journeys/another-companys-job-title-is-refused.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "a team",
+        "steps": [
+          {
+            "title": "Bo sets up a company of his own",
+            "call": {
+              "actor": "bo",
+              "operation": "company.create",
+              "payload": {
+                "companyName": "Bo Ltd",
+                "abbr": "BL",
+                "country": "Kenya",
+                "defaultCurrency": "KES"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^com_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Bo adds the job title Clerk to it",
+            "call": {
+              "actor": "bo",
+              "operation": "designation.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "designationName": "Clerk"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^dsg_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Ada can't make Olga a clerk under Bo's title",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.hire",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "person"
+                  ]
+                },
+                "firstName": "Olga",
+                "gender": "Female",
+                "dateOfBirth": "1994-03-17",
+                "dateOfJoining": "2026-01-05",
+                "department": {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "last",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "DesignationNotInCompany",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "employee.hire",
+                  "employee.hire.load"
+                ],
+                "absent": [
+                  "employee.hire.insert"
+                ]
+              }
+            ]
+          }
+        ],
+        "sourceHash": "446ba8d99f487a774c780d2365659c52047bfe604d3d6f7b9174a0ee11ec9a3b"
+      },
+      "journeys/hire-an-employee.ts": {
+        "name": "hire an employee",
+        "file": "journeys/hire-an-employee.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "a team",
+        "steps": [
+          {
+            "title": "Ada hires Olga as an engineer in Engineering",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.hire",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "person"
+                  ]
+                },
+                "firstName": "Olga",
+                "gender": "Female",
+                "dateOfBirth": "1994-03-17",
+                "dateOfJoining": "2026-01-05",
+                "department": {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^emp_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "EmployeeHired",
+                "fields": {
+                  "employee": {
+                    "ref": [
+                      "last",
+                      "employee"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "olga",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "employee",
+                "id": {
+                  "ref": [
+                    "last",
+                    "employee"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "employee.hire",
+                  "employee.hire.load",
+                  "employee.hire.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Olga's record",
+            "call": {
+              "actor": "bo",
+              "operation": "employee.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "employee"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada can't hire Olga again while she works there",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.hire",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "person"
+                  ]
+                },
+                "firstName": "Olga",
+                "gender": "Female",
+                "dateOfBirth": "1994-03-17",
+                "dateOfJoining": "2026-02-01",
+                "department": {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "EmployeeAlreadyHired",
+                "fields": {
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "olga",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't hire anyone into Ada's company",
+            "call": {
+              "actor": "bo",
+              "operation": "employee.hire",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "firstName": "Bo",
+                "gender": "Male",
+                "dateOfBirth": "1990-06-01",
+                "dateOfJoining": "2026-01-05",
+                "department": {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "employee.hire",
+                  "employee.hire.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Ada can't hire Bo with a joining day before his birthday",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.hire",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "firstName": "Bo",
+                "gender": "Male",
+                "dateOfBirth": "1990-06-01",
+                "dateOfJoining": "1990-05-31",
+                "department": {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "JoinedBeforeBorn",
+                "fields": {
+                  "dateOfBirth": "1990-06-01"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "employee.hire.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Olga reads her own record, with every field Ada typed",
+            "call": {
+              "actor": "olga",
+              "operation": "employee.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "employee"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "cast",
+                      "olga",
+                      "person"
+                    ]
+                  },
+                  "Olga",
+                  "Female",
+                  "1994-03-17",
+                  "2026-01-05",
+                  {
+                    "ref": [
+                      "world",
+                      "department"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "designation"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "3281a484ac9f8c0337f5c0a1fad2220e4a882e624b3ef302c58e8791bd3fbd44"
+      },
       "journeys/set-up-a-company.ts": {
         "name": "set up a company",
         "file": "journeys/set-up-a-company.ts",
@@ -453,6 +2456,404 @@
           }
         ],
         "sourceHash": "393f7d35ebda9f19854e388206910feb2d39886a4bdb1235b8a78a8d1e23e825"
+      },
+      "journeys/set-up-departments-and-job-titles.ts": {
+        "name": "set up departments and job titles",
+        "file": "journeys/set-up-departments-and-job-titles.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "a company",
+        "steps": [
+          {
+            "title": "Ada adds Engineering",
+            "call": {
+              "actor": "ada",
+              "operation": "department.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "departmentName": "Engineering"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^dep_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "DepartmentCreated",
+                "fields": {
+                  "department": {
+                    "ref": [
+                      "last",
+                      "department"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "department",
+                "id": {
+                  "ref": [
+                    "last",
+                    "department"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "department.create",
+                  "department.create.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Ada's department",
+            "call": {
+              "actor": "bo",
+              "operation": "department.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "department"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada can't add a second Engineering",
+            "call": {
+              "actor": "ada",
+              "operation": "department.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "departmentName": "Engineering"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "DepartmentNameTaken",
+                "fields": {
+                  "departmentName": "Engineering"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't add a department to Ada's company",
+            "call": {
+              "actor": "bo",
+              "operation": "department.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "departmentName": "Sales"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "department.create",
+                  "department.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Ada reads Engineering back",
+            "call": {
+              "actor": "ada",
+              "operation": "department.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "department"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Engineering",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada adds the job title Engineer",
+            "call": {
+              "actor": "ada",
+              "operation": "designation.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "designationName": "Engineer"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^dsg_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "DesignationCreated",
+                "fields": {
+                  "designation": {
+                    "ref": [
+                      "last",
+                      "designation"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "designation",
+                "id": {
+                  "ref": [
+                    "last",
+                    "designation"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "designation.create",
+                  "designation.create.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "Ada can't add Engineer twice",
+            "call": {
+              "actor": "ada",
+              "operation": "designation.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "designationName": "Engineer"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "DesignationNameTaken",
+                "fields": {
+                  "designationName": "Engineer"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Ada's job title",
+            "call": {
+              "actor": "bo",
+              "operation": "designation.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada reads Engineer back",
+            "call": {
+              "actor": "ada",
+              "operation": "designation.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Engineer",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo sets up a company of his own",
+            "call": {
+              "actor": "bo",
+              "operation": "company.create",
+              "payload": {
+                "companyName": "Bo Ltd",
+                "abbr": "BL",
+                "country": "Kenya",
+                "defaultCurrency": "KES"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^com_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Bo's company may have its own Engineering, because names are unique within a company",
+            "call": {
+              "actor": "bo",
+              "operation": "department.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "departmentName": "Engineering"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^dep_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "DepartmentCreated",
+                "fields": {
+                  "department": {
+                    "ref": [
+                      "last",
+                      "department"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "sourceHash": "67e699469cdd773674fc06e4b96081c078c988a24ca17c32ef7fe73fcc195dca"
       }
     },
     "startingWorlds": {
@@ -484,6 +2885,172 @@
             "ref": [
               "last",
               "company"
+            ]
+          }
+        }
+      },
+      "a department": {
+        "name": "a department",
+        "file": "blueprint/starting-worlds/a-department.ts",
+        "from": "a company",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "254bc59511a4290a083e54b247a5d8e625a47ae5f5f6d558da679f379cc87c5e",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "department.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "departmentName": "Engineering"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "department": {
+            "ref": [
+              "last",
+              "department"
+            ]
+          }
+        }
+      },
+      "a team": {
+        "name": "a team",
+        "file": "blueprint/starting-worlds/a-team.ts",
+        "from": "a department",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "1bd8054965ff6350e296858e6f21d75cb4c38ee1081588f4c28cb8dfa263f0d1",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "designation.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "designationName": "Engineer"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "department": {
+            "ref": [
+              "world",
+              "department"
+            ]
+          },
+          "designation": {
+            "ref": [
+              "last",
+              "designation"
+            ]
+          }
+        }
+      },
+      "an employee": {
+        "name": "an employee",
+        "file": "blueprint/starting-worlds/an-employee.ts",
+        "from": "a team",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          }
+        },
+        "sourceHash": "8e4529bba4cd93830280f6293a4f33690ae689d47d9b4bf33687af5aab0aef60",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "employee.hire",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "person": {
+                "ref": [
+                  "cast",
+                  "olga",
+                  "person"
+                ]
+              },
+              "firstName": "Olga",
+              "gender": "Female",
+              "dateOfBirth": "1994-03-17",
+              "dateOfJoining": "2026-01-05",
+              "department": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              },
+              "designation": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "department": {
+            "ref": [
+              "world",
+              "department"
+            ]
+          },
+          "designation": {
+            "ref": [
+              "world",
+              "designation"
+            ]
+          },
+          "employee": {
+            "ref": [
+              "last",
+              "employee"
             ]
           }
         }
@@ -542,6 +3109,126 @@
         }
       },
       {
+        "id": "anomaly:DE-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "DE-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/department/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:DE-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "DE-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:DE-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "DE-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:DS-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "DS-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/designation/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:DS-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "DS-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:DS-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "DS-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:EM-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EM-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/employee/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EM-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EM-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/employee/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EM-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EM-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/employee/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EM-004",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EM-004",
+          "severity": "ticket",
+          "owner": "blueprint/things/employee/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EM-005",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EM-005",
+          "severity": "ticket",
+          "owner": "blueprint/things/employee/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EM-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EM-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
         "id": "defect:company.create",
         "kind": "defect",
         "labels": {
@@ -591,6 +3278,300 @@
           "operation": "company.get",
           "severity": "page",
           "owner": "blueprint/things/company/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:department.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "department.create",
+          "severity": "page",
+          "owner": "blueprint/things/department/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:department.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "department.get",
+          "severity": "page",
+          "owner": "blueprint/things/department/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:designation.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "designation.create",
+          "severity": "page",
+          "owner": "blueprint/things/designation/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:designation.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "designation.get",
+          "severity": "page",
+          "owner": "blueprint/things/designation/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:employee.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "employee.get",
+          "severity": "page",
+          "owner": "blueprint/things/employee/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:employee.hire",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "employee.hire",
+          "severity": "page",
+          "owner": "blueprint/things/employee/verbs/hire.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:employee.relieve",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "employee.relieve",
+          "severity": "page",
+          "owner": "blueprint/things/employee/verbs/relieve.ts"
         },
         "target": 0.999,
         "windowDays": 28,
@@ -712,6 +3693,347 @@
         ]
       },
       {
+        "id": "latency:department.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "department.create",
+          "severity": "page",
+          "owner": "blueprint/things/department/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:department.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "department.get",
+          "severity": "page",
+          "owner": "blueprint/things/department/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:designation.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "designation.create",
+          "severity": "page",
+          "owner": "blueprint/things/designation/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:designation.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "designation.get",
+          "severity": "page",
+          "owner": "blueprint/things/designation/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:employee.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "employee.get",
+          "severity": "page",
+          "owner": "blueprint/things/employee/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:employee.hire",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "employee.hire",
+          "severity": "page",
+          "owner": "blueprint/things/employee/verbs/hire.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:employee.relieve",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "employee.relieve",
+          "severity": "page",
+          "owner": "blueprint/things/employee/verbs/relieve.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "verdict:an employee leaves:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "an employee leaves",
+          "severity": "page",
+          "owner": "journeys/an-employee-leaves.ts"
+        }
+      },
+      {
+        "id": "verdict:another company's department is refused:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "another company's department is refused",
+          "severity": "page",
+          "owner": "journeys/another-companys-department-is-refused.ts"
+        }
+      },
+      {
+        "id": "verdict:another company's job title is refused:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "another company's job title is refused",
+          "severity": "page",
+          "owner": "journeys/another-companys-job-title-is-refused.ts"
+        }
+      },
+      {
+        "id": "verdict:hire an employee:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "hire an employee",
+          "severity": "page",
+          "owner": "journeys/hire-an-employee.ts"
+        }
+      },
+      {
         "id": "verdict:set up a company:local",
         "kind": "verdict",
         "labels": {
@@ -719,6 +4041,16 @@
           "journey": "set up a company",
           "severity": "page",
           "owner": "journeys/set-up-a-company.ts"
+        }
+      },
+      {
+        "id": "verdict:set up departments and job titles:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "set up departments and job titles",
+          "severity": "page",
+          "owner": "journeys/set-up-departments-and-job-titles.ts"
         }
       }
     ]
@@ -731,12 +4063,63 @@
     "company.get": {
       "operation:company.get": "b640ec48ed59bbd8",
       "thing:company": "5f3d7650eefb9381"
+    },
+    "department.create": {
+      "operation:department.create": "2ab7b702f6cd5ae7",
+      "thing:company": "5f3d7650eefb9381",
+      "thing:department": "70a62d157ea92c81"
+    },
+    "department.get": {
+      "operation:department.get": "e080f6db61d65ed0",
+      "thing:company": "5f3d7650eefb9381",
+      "thing:department": "70a62d157ea92c81"
+    },
+    "designation.create": {
+      "operation:designation.create": "19ee2766a84f1c65",
+      "thing:company": "5f3d7650eefb9381",
+      "thing:designation": "e8e38d92bb6471e1"
+    },
+    "designation.get": {
+      "operation:designation.get": "98f6ee02514a7d04",
+      "thing:company": "5f3d7650eefb9381",
+      "thing:designation": "e8e38d92bb6471e1"
+    },
+    "employee.get": {
+      "operation:employee.get": "6008b1f38605aefa",
+      "thing:company": "5f3d7650eefb9381",
+      "thing:department": "70a62d157ea92c81",
+      "thing:designation": "e8e38d92bb6471e1",
+      "thing:employee": "a2627df8b7120d80"
+    },
+    "employee.hire": {
+      "operation:employee.hire": "770ffef979712da8",
+      "thing:company": "5f3d7650eefb9381",
+      "thing:department": "70a62d157ea92c81",
+      "thing:designation": "e8e38d92bb6471e1",
+      "thing:employee": "a2627df8b7120d80"
+    },
+    "employee.relieve": {
+      "operation:employee.relieve": "7c1133cc15b01f7d",
+      "thing:company": "5f3d7650eefb9381",
+      "thing:department": "70a62d157ea92c81",
+      "thing:designation": "e8e38d92bb6471e1",
+      "thing:employee": "a2627df8b7120d80"
     }
   },
   "docs": {
-    "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
+    "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
     "company/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.get\n\nRead one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n\n**Who may call:** the owner of the company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | company.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| companyName | company.companyName |  |\n| abbr | company.abbr |  |\n| country | company.country |  |\n| defaultCurrency | company.defaultCurrency |  |\n| owner | company.owner | The person who set the company up, and runs it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the company; the handler never runs |\n\n## Worked examples\n\n### set up a company\n\nStarts from an empty world.\n\n- **Bo can't read a company he doesn't run.** `bo` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, with her as its owner.** `ada` (signed in) calls and sends id the last call's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n\n## How to call\n\n```sh\ncapxul company get --id <id>\n```\n\nHTTP: `POST /company/get` with the payload as JSON. SDK: `Sdk.company.get(payload)`.\n",
-    "company/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company\n\nA business that keeps its books, people and payroll in Capxul.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| companyName | Name |  |\n| abbr | Abbr |  |\n| country | Country |  |\n| defaultCurrency | CurrencyCode |  |\n| owner | id | The person who set the company up, and runs it. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused CompanyNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | CompanyCreated |\n\n## Invariants\n\n- `company.oneAbbr`: another company holds this abbr. Unique on abbr, in every state; refuses nothing, a break is a defect.\n- `company.oneName`: another company holds this company name. Unique on companyName, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `CompanyCreated`: carries company (company.id), owner (company.owner: The person who set the company up, and runs it.); emitted by the move create\n\n## Roles\n\n- owner\n\n## Operations\n\n- [company.create](create.md): Set up a company; the person who sets it up runs it.\n- [company.get](get.md): Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n"
+    "company/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company\n\nA business that keeps its books, people and payroll in Capxul.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| companyName | Name |  |\n| abbr | Abbr |  |\n| country | Country |  |\n| defaultCurrency | CurrencyCode |  |\n| owner | id | The person who set the company up, and runs it. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused CompanyNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | CompanyCreated |\n\n## Invariants\n\n- `company.oneAbbr`: another company holds this abbr. Unique on abbr, in every state; refuses nothing, a break is a defect.\n- `company.oneName`: another company holds this company name. Unique on companyName, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `CompanyCreated`: carries company (company.id), owner (company.owner: The person who set the company up, and runs it.); emitted by the move create\n\n## Roles\n\n- owner\n\n## Operations\n\n- [company.create](create.md): Set up a company; the person who sets it up runs it.\n- [company.get](get.md): Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n",
+    "department/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.create\n\nAdd a department to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n\n## Answer\n\n| field | value |\n|---|---|\n| department | department.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DepartmentCreated.\n\n## Steps\n\n- `department.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNameTaken | 41 | DE-001 | another department holds this company and department name; by the rule department.oneNamePerCompany, carrying departmentName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo adds Sales to it.** `bo` (signed in) calls and sends company the last call's company, departmentName `Sales`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds Engineering.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Ada can't add a second Engineering.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and is refused with DepartmentNameTaken, DE-001, carrying departmentName `Engineering`.\n- **Bo can't add a department to Ada's company.** `bo` (signed in) calls and sends company the world's company, departmentName `Sales`, and is refused with NotAllowed, AR-001.\n- **Bo's company may have its own Engineering, because names are unique within a company.** `bo` (signed in) calls and sends company the last call's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul department create --company <company> --departmentName <departmentName>\n```\n\nHTTP: `POST /department/create` with the payload as JSON. SDK: `Sdk.department.create(payload)`.\n",
+    "department/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.get\n\nRead one department by its id: company, departmentName, state.\n\n**Who may call:** the owner of its department.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | department.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its department.company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's department.** `bo` (signed in) calls and sends id the last call's department, and is refused with NotAllowed, AR-001.\n- **Ada reads Engineering back.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Engineering`, `active`].\n\n## How to call\n\n```sh\ncapxul department get --id <id>\n```\n\nHTTP: `POST /department/get` with the payload as JSON. SDK: `Sdk.department.get(payload)`.\n",
+    "department/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department\n\nA part of a company that its employees work in.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| departmentName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused DepartmentNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | DepartmentCreated |\n\n## Invariants\n\n- `department.oneNamePerCompany`: another department holds this company and department name. Unique on company, departmentName, in every state; refused DepartmentNameTaken.\n\n## Events\n\n- `DepartmentCreated`: carries department (department.id), company (department.company); emitted by the move create\n\n## Operations\n\n- [department.create](create.md): Add a department to a company.\n- [department.get](get.md): Read one department by its id: company, departmentName, state.\n",
+    "designation/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.create\n\nAdd a job title to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n\n## Answer\n\n| field | value |\n|---|---|\n| designation | designation.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DesignationCreated.\n\n## Steps\n\n- `designation.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DesignationNameTaken | 41 | DS-001 | another designation holds this company and designation name; by the rule designation.oneNamePerCompany, carrying designationName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo adds the job title Clerk to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds the job title Engineer.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n- **Ada can't add Engineer twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.\n\n## How to call\n\n```sh\ncapxul designation create --company <company> --designationName <designationName>\n```\n\nHTTP: `POST /designation/create` with the payload as JSON. SDK: `Sdk.designation.create(payload)`.\n",
+    "designation/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.get\n\nRead one designation by its id: company, designationName, state.\n\n**Who may call:** the owner of its designation.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | designation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its designation.company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's job title.** `bo` (signed in) calls and sends id the last call's designation, and is refused with NotAllowed, AR-001.\n- **Ada reads Engineer back.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Engineer`, `active`].\n\n## How to call\n\n```sh\ncapxul designation get --id <id>\n```\n\nHTTP: `POST /designation/get` with the payload as JSON. SDK: `Sdk.designation.get(payload)`.\n",
+    "designation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation\n\nA job title a company gives its employees.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| designationName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused DesignationNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | DesignationCreated |\n\n## Invariants\n\n- `designation.oneNamePerCompany`: another designation holds this company and designation name. Unique on company, designationName, in every state; refused DesignationNameTaken.\n\n## Events\n\n- `DesignationCreated`: carries designation (designation.id), company (designation.company); emitted by the move create\n\n## Operations\n\n- [designation.create](create.md): Add a job title to a company.\n- [designation.get](get.md): Read one designation by its id: company, designationName, state.\n",
+    "employee/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.get\n\nRead one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n\n**Who may call:** the self of the employee, or the owner of its employee.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | employee.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of the employee, or the owner of its employee.company; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga still reads her old record, which shows she has left.** `olga` (signed in) calls and sends id the world's employee, and gets back [`2026-01-05`, `left`].\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Bo can't read Olga's record.** `bo` (signed in) calls and sends id the last call's employee, and is refused with NotAllowed, AR-001.\n- **Olga reads her own record, with every field Ada typed.** `olga` (signed in) calls and sends id the last call's employee, and gets back [the world's company, the cast's olga person, `Olga`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `active`].\n\n## How to call\n\n```sh\ncapxul employee get --id <id>\n```\n\nHTTP: `POST /employee/get` with the payload as JSON. SDK: `Sdk.employee.get(payload)`.\n",
+    "employee/hire.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.hire\n\nHire a person into a company, placed in one of its departments under one of its job titles.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n\n## Move\n\n`hire`: from nothing (it creates) to active, emitting EmployeeHired.\n\n## Steps\n\n- `employee.hire.load` (database)\n- `employee.hire.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNotInCompany | 42 | EM-002 | declared in errors.ts |\n| DesignationNotInCompany | 43 | EM-003 | declared in errors.ts |\n| JoinedBeforeBorn | 44 | EM-004 | declared in errors.ts, carrying dateOfBirth |\n| EmployeeAlreadyHired | 41 | EM-001 | another active employee holds this company and person; by the rule employee.onePlacePerPerson, carrying person |\n| DepartmentNotFound | 4 | DE-901 | nothing has the id in department; the handler never runs; carries `id` |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in designation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Ada may hire her again, as a new employee.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2027-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Ada can't place Olga in Bo's department.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the last call's department, designation the world's designation, and is refused with DepartmentNotInCompany, EM-002.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Ada can't make Olga a clerk under Bo's title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Ada hires Olga as an engineer in Engineering.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n- **Ada can't hire Olga again while she works there.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and is refused with EmployeeAlreadyHired, EM-001, carrying person the cast's olga person.\n- **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.\n- **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.\n\n## How to call\n\n```sh\ncapxul employee hire --company <company> --person <person> --firstName <firstName> --gender <gender> --dateOfBirth <dateOfBirth> --dateOfJoining <dateOfJoining> --department <department> --designation <designation>\n```\n\nHTTP: `POST /employee/hire` with the payload as JSON. SDK: `Sdk.employee.hire(payload)`.\n",
+    "employee/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee\n\nA person a company employs.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| person | id | The person employed, who signs in as themselves. |\n| firstName | Name |  |\n| gender | Gender |  |\n| dateOfBirth | Day |  |\n| dateOfJoining | Day |  |\n| department | department.id |  |\n| designation | designation.id |  |\n\n## Machine\n\nStates: active, left. A move from the wrong state is refused EmployeeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| hire | (creates) | active | EmployeeHired |\n| relieve | active | left | EmployeeRelieved |\n\n## Invariants\n\n- `employee.onePlacePerPerson`: another active employee holds this company and person. Unique on company, person, while active; refused EmployeeAlreadyHired.\n\n## Events\n\n- `EmployeeHired`: carries employee (employee.id), company (employee.company), person (employee.person: The person employed, who signs in as themselves.); emitted by the move hire\n- `EmployeeRelieved`: carries employee (employee.id), relievingDate (Day); emitted by the move relieve\n\n## Roles\n\n- self\n\n## Operations\n\n- [employee.get](get.md): Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n- [employee.hire](hire.md): Hire a person into a company, placed in one of its departments under one of its job titles.\n- [employee.relieve](relieve.md): Record that an employee has left the company, on the day they were relieved.\n",
+    "employee/relieve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.relieve\n\nRecord that an employee has left the company, on the day they were relieved.\n\n**Who may call:** the owner of its employee.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Move\n\n`relieve`: from active to left, emitting EmployeeRelieved.\n\n## Steps\n\n- `employee.relieve.load` (database)\n- `employee.relieve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RelievedBeforeJoined | 45 | EM-005 | declared in errors.ts, carrying dateOfJoining |\n| EmployeeNotActive | 40 | EM-900 | the employee is in a state relieve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its employee.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga can't relieve herself.** `olga` (signed in) calls and sends employee the world's employee, relievingDate `2026-11-30`, and is refused with NotAllowed, AR-001.\n- **Ada can't relieve her the day before she joined.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-01-04`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2026-01-05`.\n- **Ada relieves her on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back [the world's employee, `2026-11-30`].\n- **she can't be relieved twice.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-12-01`, and is refused with EmployeeNotActive, EM-900, carrying state `left`.\n\n## How to call\n\n```sh\ncapxul employee relieve --employee <employee> --relievingDate <relievingDate>\n```\n\nHTTP: `POST /employee/relieve` with the payload as JSON. SDK: `Sdk.employee.relieve(payload)`.\n"
   },
   "extensions": {
     "journeys": {
@@ -752,5 +4135,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "1d99cef5f501056e55c99e087534259a646ac14dcc8745c65a894a640419d9b3"
+  "digest": "9845ded003396d54b5cb9b6f9250163dc6c91d4fc22be5564eb5073a1e5abd24"
 }
