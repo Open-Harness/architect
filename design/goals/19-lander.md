@@ -86,8 +86,9 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 ## Where it stands
 
 23 November 2026, 18:30 UTC. The lead is the Amp lander loop, which runs a round every 30 minutes for Aaron (the
-thread in `lead:`). A second lead in Claude Code started this goal and owns #707. Each pull request has one owner, and
-neither lead pushes to the other's (#707, comment of 18:25).
+thread in `lead:`). A second lead in Claude Code started this goal and owns #707, which it is working. The Amp lead's
+comment on #707 (18:22) gives each pull request one owner. If #707 goes a round with no activity from its lead, the Amp
+lead takes it over and says so there. The Claude Code lead hasn't replied yet.
 
 - **Slice 1, `goal/stage-1` into `main`: under way.** #690 (secrets by declaration) and #697 (the map) are in
   `goal/stage-1`, at f6462537. #707 (owned by the Claude Code lead) has merged both and `main` at 7f87cc28, and is
@@ -98,7 +99,9 @@ neither lead pushes to the other's (#707, comment of 18:25).
   `goal/stage-1` is merged into #707 again. The job isn't required.
 - **Protections.** `e2e-stage1` runs its steps and is green on `main`'s push runs (7f87cc28, 727bc47a). Adding it to
   `main`'s required checks waits on Aaron's written yes (CI-main-stage1 has the command; the token gets 403).
-- **Not in this landing:** #696 (Goal 9, timers) is red on `e2e-m0` and has two Codex P1s open. It goes to `main`
-  after `goal/stage-1` retires. #737 (Goal 3 parks) is open into `goal/stage-1`.
+- **#696 (Goal 9, timers) may still make it.** Goal 9 pushed 56d17af3 at 18:27 and resolved both Codex P1s. Its 🔍
+  passed at 18:28, and Codex was clean at 18:30. Its CI is pending, and `e2e-m0` was last red at ce83e6d4. If it merges
+  into `goal/stage-1` before #707 lands, it comes along. If not, it is retargeted to `main` once `goal/stage-1` retires.
+  #737 (Goal 3 parks) is open into `goal/stage-1`.
 - **Next:** land #754, then #707. Ask Aaron to retire `goal/stage-1`, then tell every goal to base on `main`. Slice 2
   starts with `goal/time`.
