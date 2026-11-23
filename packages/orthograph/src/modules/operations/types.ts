@@ -55,7 +55,7 @@ export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E e
   readonly steps?: St;
   readonly idempotent?: "request";
   readonly budget?: Budget;
-  /** Where it runs. Only `server` is accepted until a target supports another (N1). */
+  /** Where it runs. `server` for a thing in a database or actor store; an operation of a chain-stored thing runs on the `chain`, worked out by the compiler, never written (K25 item 6). */
   readonly runs?: Runs;
   /** A target can say a guarantee needs a network test; defaults to `unit`. */
   readonly test?: TestKind;
@@ -84,6 +84,8 @@ export interface Operation<
   readonly idempotent: "request" | undefined;
   readonly budget: Budget | undefined;
   readonly runs: Runs;
+  /** Whether the author wrote `runs`, and what: the compiler refuses it on an operation of a chain-stored thing, where it is worked out. */
+  readonly runsDeclared: Runs | undefined;
   readonly test: TestKind;
 }
 

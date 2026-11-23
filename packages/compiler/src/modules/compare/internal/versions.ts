@@ -3,6 +3,8 @@
 import { canonical } from "#modules/model/service.js";
 import type { Model } from "#modules/model/types.js";
 import type { Bump, Change, Release, Versioned } from "../types.ts";
+import { assetBumps } from "./assets.ts";
+import { thingBumps } from "./chain.ts";
 import { diff } from "./diff.ts";
 
 const RANK: Readonly<Record<Bump, number>> = { patch: 0, minor: 1, major: 2 };
@@ -34,7 +36,9 @@ const detailOf = (part: string, before: unknown, after: unknown): string | undef
 const entriesOf = (change: Change, before: Model, after: Model): ReadonlyArray<Versioned> => {
   if (change.kind !== "operation") {
     // A thing or a value moves nothing a caller sees by itself: what an operation takes or gives shows in its own entry.
-    return [{ kind: change.change, what: `${change.kind === "thing" ? "thing:" : "value:"}${change.name}`, bump: "patch" }];
+    // On a chain it does: a row's states and amounts are what it means for good (M6-chain item 2).
+    const quiet: Versioned = { kind: change.change, what: `${change.kind === "thing" ? "thing:" : "value:"}${change.name}`, bump: "patch" };
+    return change.kind === "thing" && change.change === "changed" ? [quiet, ...thingBumps(change.name, before, after)] : [quiet];
   }
   if (change.change === "added") return [{ kind: "added", what: change.name, bump: "minor" }];
   if (change.change === "removed") return [{ kind: "removed", what: change.name, bump: "major" }];
@@ -61,7 +65,7 @@ const movedCodes = (before: Model, after: Model): ReadonlyArray<Versioned> =>
  * Nothing different still makes a release (a rebuilt revision, never an identical version), so it is a patch.
  */
 export const release = (before: Model, after: Model): Release => {
-  const changes = [...diff(before, after).flatMap((c) => entriesOf(c, before, after)), ...movedCodes(before, after)];
+  const changes = [...diff(before, after).flatMap((c) => entriesOf(c, before, after)), ...movedCodes(before, after), ...assetBumps(before, after)];
   const bump = changes.reduce<Bump>((top, c) => (RANK[c.bump] > RANK[top] ? c.bump : top), "patch");
   return { bump, changes };
 };

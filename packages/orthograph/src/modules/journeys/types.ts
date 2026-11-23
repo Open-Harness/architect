@@ -54,6 +54,8 @@ export interface Step {
  */
 export interface Actor {
   readonly person: any;
+  /** The CAIP-10 account of the key the world made and funded for them, when the app is on a chain (M6-chain item 10). */
+  readonly account: any;
   readonly email: any;
   readonly password: any;
   readonly run: {

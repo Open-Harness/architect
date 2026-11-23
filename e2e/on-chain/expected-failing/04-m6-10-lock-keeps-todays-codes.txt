@@ -1,3 +1,0 @@
-# slice 3 (M6.10): no lock yet. Comes off when that slice's builder turns it green.
-on-chain/04-m6-10-lock-keeps-todays-codes.test.ts > examples/acme: the first lock keeps today's codes and today's generated files > generate writes a lock of exactly the checked-in refusals, and generated/ byte for byte; a second generate changes neither
-on-chain/04-m6-10-lock-keeps-todays-codes.test.ts > examples/plugged-in: the first lock keeps today's codes and today's generated files > generate writes a lock of exactly the checked-in refusals, and generated/ byte for byte; a second generate changes neither

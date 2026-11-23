@@ -1,8 +1,0 @@
-# slice 3 (M6.10): who roles do not exist yet. Comes off when that slice's builder turns it green.
-on-chain/04-m6-10-who-roles.test.ts > a creating move is decided on the payload's field of the same name > a grant whose payload has no safe cannot be decided, and is refused naming the operation and the field
-on-chain/04-m6-10-who-roles.test.ts > a creating move is decided on the payload's field of the same name > grant, allowed to treasury, carries safe in its payload, and compiles
-on-chain/04-m6-10-who-roles.test.ts > a role reached .of(path) from another thing's payload compiles and keeps its path > note.write, allowed to grantee.of("allowance")
-on-chain/04-m6-10-who-roles.test.ts > a who role on a field that is no account, on a chain store, is refused when an operation allows it > who: the id
-on-chain/04-m6-10-who-roles.test.ts > a who role on a field that is no account, on a chain store, is refused when an operation allows it > who: the limit
-on-chain/04-m6-10-who-roles.test.ts > a who role on an account field compiles and is recorded as declared > the role's field is the thing's own: a who on another field is recorded with that field
-on-chain/04-m6-10-who-roles.test.ts > a who role on an account field compiles and is recorded as declared > treasury (who: safe) and grantee (who: member): listed, recorded with their fields, and named by the operations that allow them

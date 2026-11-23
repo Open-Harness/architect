@@ -168,8 +168,8 @@ export const MACHINE_NUMBER = 900;
 /** The runtime's refusal for a request key reused with another payload: its name, written once. */
 export const IDEMPOTENCY_CONFLICT = "IdempotencyConflict";
 
-/** Refusals the runtime makes for every thing, numbered in the order it gained them: who may call (before any handler runs), then a request key reused with another payload. */
-export const RUNTIME_CODES = { NotAllowed: "AR-001", [IDEMPOTENCY_CONFLICT]: "AR-002" } as const;
+/**
+ * Refusals the runtime makes, numbered in the order it gained them: who may call (before any handler runs), a request key
 ```
 
 A code is the thing's prefix and a number. Declared errors, a rule's among them, are 1, 2, 3 in the order `errors.ts` declares them, the

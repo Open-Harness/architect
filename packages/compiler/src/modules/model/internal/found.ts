@@ -2,7 +2,6 @@
 // that holds some thing's id is read and handed in (`refs`). A missing one is refused `NotAllowed` when every way in is a
 // role check that reads it (a stranger learns nothing about what exists), and `<Thing>NotFound` otherwise.
 import type { Allowed, Field, FieldsInput, Operation, Thing } from "orthograph";
-import { codeOf } from "./codes.ts";
 
 /** A generated not-found refusal: after the machine's (900) in a thing's codes. */
 export const NOT_FOUND_NUMBER = 901;
@@ -53,14 +52,14 @@ export const foundOf = (op: Operation): Found => {
   return { refs, notFound };
 };
 
-/** A thing's not-found refusal: the one it declares under that name, else generated at `<XX>-901`, exit 4. */
+/** A thing's not-found refusal: the one it declares under that name, else generated at `<XX>-901` (`generated` is that code, from the lock), exit 4. */
 export const notFoundOf = (
-  identifier: string, prefix: string,
+  identifier: string, generated: string,
   errors: Readonly<Record<string, { readonly exit: number; readonly code: string }>>,
 ): { readonly error: string; readonly exit: number; readonly code: string } => {
   const error = `${identifier}NotFound`;
   const declared = errors[error];
-  return declared ? { error, exit: declared.exit, code: declared.code } : { error, exit: NOT_FOUND_EXIT, code: codeOf(prefix, NOT_FOUND_NUMBER) };
+  return declared ? { error, exit: declared.exit, code: declared.code } : { error, exit: NOT_FOUND_EXIT, code: generated };
 };
 
 /** An operation's part of the model: `refs` and `notFound` by payload field, each present only when it has any. */

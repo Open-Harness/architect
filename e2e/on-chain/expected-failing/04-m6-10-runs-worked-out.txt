@@ -1,2 +1,0 @@
-# slice 3 (M6.10): chain stores do not exist yet. Comes off when that slice's builder turns it green.
-on-chain/04-m6-10-runs-worked-out.test.ts > runs is worked out for an operation on a chain-stored thing > grant, spend and revoke run on chain; open and close, of a database thing in the same project, run on the server
