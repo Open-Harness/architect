@@ -144,8 +144,10 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | the warm reset | **was open** | it also forgets the count, so a token nobody will give back cannot hold up the next move (`timers.test.ts`) |
     | a move refused at planning | no gap | the plan is inside the lock and fails before anything moves |
 
-    Not bounded: a timer that sets itself again at the current instant for ever keeps the walk going, which is the same fault as work that
-    never ends; the quiet limit does not catch it, because each wait ends. It is not guarded here.
+    *Bounded:* a timer that sets itself again at the instant it fired at would keep the walk going for ever, because each quiet wait
+    ends. One move fires at most `ORTHO_FIRE_LIMIT` timers at one instant (10 000 when unset, beside `ORTHO_QUIET_MS`). Past it
+    the move fails as `NeverQuiet`, `busy` naming each owner still registering timers due then, and the clock stands where the walk
+    reached, as call 11 says (`settled.test.ts`).
 
 ## Evidence
 

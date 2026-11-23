@@ -7,11 +7,13 @@ import { makeCount } from "./internal/count.ts";
 import { makeTable } from "./internal/table.ts";
 
 const DEFAULT_QUIET_MS = 5_000;
+/** The most timers one move fires at one instant (`ORTHO_FIRE_LIMIT`): a timer that sets itself again at that instant would never end. */
+const DEFAULT_FIRE_LIMIT = 10_000;
 
 /** The limit in real milliseconds; anything that is not a positive number is the default. */
-const limitOf = (text: string | undefined): number => {
+const limitOf = (text: string | undefined, fallback = DEFAULT_QUIET_MS): number => {
   const n = Number(text);
-  return text !== undefined && Number.isFinite(n) && n > 0 ? n : DEFAULT_QUIET_MS;
+  return text !== undefined && Number.isFinite(n) && n > 0 ? n : fallback;
 };
 
 export const WorldTimers = {
@@ -46,7 +48,7 @@ export const WorldTimers = {
         timersSleeping: () => table.sleeping(),
         timersDurable: () => table.durable(),
       },
-      controller: makeController({ clock, table, count, limit: limitOf(env.ORTHO_QUIET_MS) }),
+      controller: makeController({ clock, table, count, limit: limitOf(env.ORTHO_QUIET_MS), fireLimit: limitOf(env.ORTHO_FIRE_LIMIT, DEFAULT_FIRE_LIMIT) }),
       nextAlarm: () => {
         const due = real ? table.earliest() : undefined;
         return due === undefined ? undefined : Math.max(due, retryAt ?? 0);

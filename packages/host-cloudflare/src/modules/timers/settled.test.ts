@@ -40,7 +40,7 @@ describe("settled means quiet and nothing due, together", () => {
         }
         return count.quiet(limit);
       } };
-      const controller = makeController({ clock, table, count: slipping, limit: 150 });
+      const controller = makeController({ clock, table, count: slipping, limit: 150, fireLimit: 10_000 });
       const done = await Effect.runPromise(Effect.result(controller.settle(() => ({ ok: true, target: START + DAY }))));
       expect(done._tag).toBe("Success");
       expect([woke, table.rows()]).toEqual([1, []]);
@@ -89,5 +89,29 @@ describe("a firing is one uninterruptible step", () => {
       expect(world!.held()).toEqual([]);
       expect(world!.rpc.timersDurable()).toHaveLength(1);
     }, () => Effect.never);
+  });
+});
+
+describe("a timer that sets itself again at the instant it fired at", () => {
+  it("fails the move as NeverQuiet naming it, with the clock where the walk reached", async () => {
+    let world: WorldTimersState | undefined;
+    let fired = 0;
+    await runInDurableObject(env.WORLD.get(env.WORLD.idFromName("timers-spinning")), async (_instance, state) => {
+      const clock = WorldClock.state(state.storage.sql, STEPPED);
+      world = WorldTimers.state({
+        sql: state.storage.sql, clock, env: { ORTHO_QUIET_MS: "150", ORTHO_FIRE_LIMIT: "50" }, changed: () => undefined,
+        wakes: () => Effect.sync(() => {
+          fired += 1;
+          world!.rpc.timerSet(clock.now(), "keeper/membership.renew/mem_1", "due", { kind: "keeper", payload: String(fired) });
+        }),
+      });
+      world.rpc.timerSet(START + DAY, "keeper/membership.renew/mem_1", "due", { kind: "keeper", payload: "0" });
+      const stuck = await Effect.runPromise(Effect.result(world.controller.settle(() => ({ ok: true, target: START + 2 * DAY }))));
+      expect(stuck).toMatchObject({ _tag: "Failure", failure: { _tag: "NeverQuiet", busy: ["keeper/membership.renew/mem_1"] } });
+      // Bounded, and the clock stands at the instant it was spinning at.
+      expect(fired).toBeGreaterThanOrEqual(50);
+      expect(fired).toBeLessThan(60);
+      expect(new RealDate(clock.now()).toISOString()).toBe(new RealDate(START + DAY).toISOString());
+    });
   });
 });

@@ -13,6 +13,8 @@ export interface WorldEnv {
   readonly ORTHO_ENVIRONMENT?: string;
   /** How long a move waits for the world to be quiet, in real milliseconds, before it fails as `NeverQuiet` (M8.07). Five seconds when unset. */
   readonly ORTHO_QUIET_MS?: string;
+  /** The most timers one move may fire at one instant before it fails as `NeverQuiet`, naming who keeps registering them. 10 000 when unset. */
+  readonly ORTHO_FIRE_LIMIT?: string;
 }
 
 /**

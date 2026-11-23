@@ -4,7 +4,7 @@
 // wait that runs past its real-time limit fails as `NeverQuiet`, naming who is busy. If that is the first wait, nothing has moved.
 import { Effect, Semaphore } from "effect";
 import type { ClockState, ClockTimer, Controller } from "#modules/clock/types.js";
-import type { Count } from "./count.ts";
+import { NeverQuiet, type Count } from "./count.ts";
 import type { Table } from "./table.ts";
 
 const iso = (millis: number) => new Date(millis).toISOString();
@@ -15,9 +15,11 @@ export interface ControllerOptions {
   readonly count: Count;
   /** How long a quiet wait may take in real time, in milliseconds. */
   readonly limit: number;
+  /** The most timers one move may fire at one instant before it gives up: a timer that sets itself again at the instant it fired at never ends. */
+  readonly fireLimit: number;
 }
 
-export const makeController = ({ clock, table, count, limit }: ControllerOptions): Controller => {
+export const makeController = ({ clock, table, count, limit, fireLimit }: ControllerOptions): Controller => {
   // One move at a time: a second waits its turn rather than walking the clock under the first.
   const one = Semaphore.makeUnsafe(1);
   return {
@@ -27,6 +29,8 @@ export const makeController = ({ clock, table, count, limit }: ControllerOptions
       if (!planned.ok) return yield* Effect.fail({ _tag: "Refused" as const, status: planned.status, body: planned.body });
       const target = planned.target;
       const fired: Array<ClockTimer> = [];
+      // How many have fired at the instant the walk is at: past the bound, something keeps registering timers due at it.
+      let here = { at: Number.NaN, fired: 0 };
       yield* count.quiet(limit);
       // Settled means quiet and nothing due at the target, both at once: a request that registers an already-due timer while a
       // quiet wait is under way (a zero-length sleep at the new instant) is seen on the next turn, so the walk goes on until a
@@ -38,8 +42,15 @@ export const makeController = ({ clock, table, count, limit }: ControllerOptions
         const at = next === undefined ? target : Math.max(next, clock.now());
         clock.moveTo(iso(at));
         if (next !== undefined) {
-          for (const row of yield* table.fire(at, clock.source())) {
+          const batch = yield* table.fire(at, clock.source());
+          for (const row of batch) {
             if (row.durable) fired.push({ due: iso(row.at), owner: row.owner, name: row.name });
+          }
+          here = { at, fired: here.at === at ? here.fired + batch.length : batch.length };
+          if (here.fired > fireLimit) {
+            // The clock stays where the walk reached (call 11); the owners still registering timers due now are named.
+            const again = new Set([...table.rows().filter((r) => r.at <= Math.max(at, target)).map((r) => r.owner), ...batch.map((r) => r.owner)]);
+            return yield* Effect.fail(new NeverQuiet({ busy: [...again].sort() }));
           }
         }
         yield* count.quiet(limit);

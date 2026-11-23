@@ -53,7 +53,7 @@ export interface WorldTimersOptions {
   readonly sql: SqlStorage;
   readonly clock: ClockState;
   /** `ORTHO_QUIET_MS`: how long a quiet wait may take in real time before the move fails as `NeverQuiet`. Five seconds when unset. */
-  readonly env: { readonly ORTHO_QUIET_MS?: string };
+  readonly env: { readonly ORTHO_QUIET_MS?: string; readonly ORTHO_FIRE_LIMIT?: string };
   /** How a durable row reaches the code that set it; with none, firing one fails the step, naming it (M8.10 and Goals 8 and 10 route kinds). */
   readonly wakes?: (timer: DurableTimer) => Effect.Effect<void>;
   /** A row was set or taken: a real world moves its alarm. */
