@@ -48,6 +48,18 @@ test("a row that does not read is an error naming it, never a silent skip", () =
   assert.match(parseBoard("# no map\n").errors[0], /no section/);
 });
 
+test("fail closed: a table in the map whose header is misspelt is an error, and the legend is the one table allowed", () => {
+  const good = row("a", "x", "built", "framework", "—", "—", "none", "—", "—", "");
+  const misspelt = page(good).replace("| Stage |", "| Stag |");
+  const { errors } = parseBoard(misspelt);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /header is not the board's columns/);
+  const legend = page(good).replace("Prose.", "| Column | What it holds |\n|---|---|\n| id | a name |\n\nProse.");
+  assert.deepEqual(parseBoard(legend).errors, []);
+  assert.equal(parseBoard(legend).rows.length, 1);
+  assert.match(parseBoard(page(good).replace("Prose.", "| Colum | What |\n|---|---|\n| x | y |")).errors[0], /header is not the board's columns/);
+});
+
 test("the split and the releases: a framework row has no app milestone, and K42 decides the release", () => {
   const bad = (line) => parseBoard(page(line)).errors.join("\n");
   assert.match(bad(row("a", "x", "built", "framework", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by framework/);

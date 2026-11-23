@@ -8,6 +8,7 @@ export const BOARD_COLUMNS = ["id", "Item", "Stage", "Pulled by", "Release", "Mi
 export const STAGES = ["provisional", "spiked", "scaffoldable", "building", "built", "extracted"];
 export const PULLED_BY = ["superagent", "Capxul", "framework"];
 export const RELEASES = ["preview", "beta", "1.0"];
+const LEGEND_COLUMNS = ["Column", "What it holds"];
 export const NOT_YET_NEEDED = "Not yet needed";
 
 /** The apps' milestones (K42, section 5), by the key a row's Milestone column holds. */
@@ -62,7 +63,14 @@ export const parseBoard = (text) => {
   if (end === -1) end = lines.length;
   const rows = [];
   for (let i = start; i < end; i++) {
-    if (!lines[i].startsWith("|") || cells(lines[i]).join("|") !== BOARD_COLUMNS.join("|")) continue;
+    if (!lines[i].startsWith("|")) continue;
+    if (cells(lines[i]).join("|") !== BOARD_COLUMNS.join("|")) {
+      // Fail closed: a table here with a misspelt or missing column would otherwise drop its items from the board.
+      // The one other table is the page's own legend of the columns.
+      if (cells(lines[i]).join("|") !== LEGEND_COLUMNS.join("|")) errors.push(`line ${i + 1}: a table in the capability map whose header is not the board's columns (${BOARD_COLUMNS.join(", ")}): ${lines[i]}`);
+      while (i + 1 < end && lines[i + 1].startsWith("|")) i++;
+      continue;
+    }
     for (i += 2; i < end && lines[i].startsWith("|"); i++) {
       const at = `line ${i + 1}`;
       const c = cells(lines[i]);
