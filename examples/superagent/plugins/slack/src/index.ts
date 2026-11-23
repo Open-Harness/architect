@@ -10,6 +10,7 @@ export default Blueprint.adapter({
     "chatPostMessage": Blueprint.call(),
     "conversationsHistory": Blueprint.call(),
     "conversationsReplies": Blueprint.call(),
+    "usergroupsUsersList": Blueprint.call(),
   },
   events: {
     ...written,

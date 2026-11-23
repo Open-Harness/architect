@@ -78,6 +78,23 @@ export interface CallTree {
 export interface AdapterEvent<P = unknown> {
   readonly kind: "event";
   readonly schema: Schema.Schema<P>;
+  /** The identity of one change to what the event is about: the same from a door and from a poll, so one change settles once (GOAL17-connections A, B, D). */
+  readonly id?: (payload: P) => string;
+  /** The outside account that sent it, or `undefined` for none (K40 fix 1). */
+  readonly actor?: (payload: P) => EventActor | undefined;
+}
+
+/** An outside account as an event names it: the service's stable id, a name for people, and whether it is a bot. */
+export interface EventActor {
+  readonly id: string;
+  readonly name: string;
+  readonly bot: boolean;
+}
+
+/** What `Blueprint.incoming` is given beside the schema: both are pure functions of the decoded payload. */
+export interface EventIdentity<P> {
+  readonly id: (payload: P) => string;
+  readonly actor: (payload: P) => EventActor | undefined;
 }
 
 /** What an adapter's `calls` answers for a name it has no call by (dotted, inside a group): a mount's `include` and a step name it, and the compiler refuses. */
@@ -229,7 +246,7 @@ export interface PluginsApi {
   readonly choice: <const O extends Readonly<Record<string, string>>>(options: O) => Choice<keyof O & string>;
   readonly need: (plugin: Feature<any> | Adapter<any, any, any>, spec?: { readonly when?: Option<any> }) => NeedWhen;
   /** An event an adapter's door receives: the Effect schema of its payload. */
-  readonly incoming: <P>(schema: Schema.Schema<P>) => AdapterEvent<P>;
+  readonly incoming: <P>(schema: Schema.Schema<P>, identity?: EventIdentity<P>) => AdapterEvent<P>;
   readonly call: <const M extends "promise" | "effect" = "promise">(spec?: { readonly mode?: M; readonly errors?: ReadonlyArray<AnyErrorClass> }) => Call<M>;
   readonly setting: {
     readonly one: (value: Value) => Setting;

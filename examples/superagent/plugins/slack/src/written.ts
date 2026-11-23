@@ -34,9 +34,22 @@ const message: JsonSchema = {
   ],
 };
 
+type Envelope = { readonly event: { readonly channel: string; readonly ts: string; readonly user?: string; readonly bot_id?: string } };
+
+/** One message is one event (GOAL17-connections B): its channel and `ts`, whatever the envelope's id or time, a retry, or the event's kind. */
+const identity = {
+  id: (raw: unknown) => { const e = (raw as Envelope).event; return `${e.channel}:${e.ts}`; },
+  /** A bot's message has its `bot_id` as its account; a person's has the user's id (Slack's events carry no names). */
+  actor: (raw: unknown) => {
+    const { user, bot_id } = (raw as Envelope).event;
+    if (bot_id !== undefined) return { id: bot_id, name: bot_id, bot: true };
+    return user === undefined ? undefined : { id: user, name: user, bot: false };
+  },
+};
+
 export const events = {
-  appMention: Blueprint.incoming(schemaOf({}, envelope(appMention))),
-  message: Blueprint.incoming(schemaOf({}, envelope(message))),
+  appMention: Blueprint.incoming(schemaOf({}, envelope(appMention)), identity),
+  message: Blueprint.incoming(schemaOf({}, envelope(message)), identity),
 };
 
 export const standIn = Stand.process("a small server over channel C024BE91L that answers Slack's Web API as Slack does");

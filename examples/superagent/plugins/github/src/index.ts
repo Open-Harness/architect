@@ -35,6 +35,7 @@ export default Blueprint.adapter({
     "repos": {
       "delete": Blueprint.call(),
       "get": Blueprint.call(),
+      "listCollaborators": Blueprint.call(),
       "update": Blueprint.call(),
     },
   },
