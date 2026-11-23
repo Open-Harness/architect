@@ -12,6 +12,17 @@ import { Mcp, type McpResult, type ShownOperation } from "@orthograph/language-e
 import { Api, Errors } from "../api/src/index.ts";
 import * as portal from "../portal/main.ts";
 import { catalog } from "../mcp/src/index.ts";
+import * as bankAccountClose from "../api/src/bank-account/close.ts";
+import * as bankAccountGet from "../api/src/bank-account/get.ts";
+import * as bankAccountOpen from "../api/src/bank-account/open.ts";
+import * as bridgeBusinessApprove from "../api/src/bridge-business/approve.ts";
+import * as bridgeBusinessGet from "../api/src/bridge-business/get.ts";
+import * as bridgeBusinessReject from "../api/src/bridge-business/reject.ts";
+import * as bridgeBusinessStart from "../api/src/bridge-business/start.ts";
+import * as bridgeIndividualApprove from "../api/src/bridge-individual/approve.ts";
+import * as bridgeIndividualGet from "../api/src/bridge-individual/get.ts";
+import * as bridgeIndividualReject from "../api/src/bridge-individual/reject.ts";
+import * as bridgeIndividualStart from "../api/src/bridge-individual/start.ts";
 import * as companyCreate from "../api/src/company/create.ts";
 import * as companyGet from "../api/src/company/get.ts";
 import * as departmentCreate from "../api/src/department/create.ts";
@@ -21,15 +32,29 @@ import * as designationGet from "../api/src/designation/get.ts";
 import * as employeeGet from "../api/src/employee/get.ts";
 import * as employeeHire from "../api/src/employee/hire.ts";
 import * as employeeRelieve from "../api/src/employee/relieve.ts";
+import bankAccountCloseHandler from "../../src/bank-account/close.ts";
+import bankAccountOpenHandler from "../../src/bank-account/open.ts";
+import bridgeBusinessApproveHandler from "../../src/bridge-business/approve.ts";
+import bridgeBusinessRejectHandler from "../../src/bridge-business/reject.ts";
+import bridgeBusinessStartHandler from "../../src/bridge-business/start.ts";
+import bridgeIndividualApproveHandler from "../../src/bridge-individual/approve.ts";
+import bridgeIndividualRejectHandler from "../../src/bridge-individual/reject.ts";
+import bridgeIndividualStartHandler from "../../src/bridge-individual/start.ts";
 import companyCreateHandler from "../../src/company/create.ts";
 import departmentCreateHandler from "../../src/department/create.ts";
 import designationCreateHandler from "../../src/designation/create.ts";
 import employeeHireHandler from "../../src/employee/hire.ts";
 import employeeRelieveHandler from "../../src/employee/relieve.ts";
+import * as bankAccountThing from "../../blueprint/things/bank-account/thing.ts";
+import * as bridgeBusinessThing from "../../blueprint/things/bridge-business/thing.ts";
+import * as bridgeIndividualThing from "../../blueprint/things/bridge-individual/thing.ts";
 import * as companyThing from "../../blueprint/things/company/thing.ts";
 import * as departmentThing from "../../blueprint/things/department/thing.ts";
 import * as designationThing from "../../blueprint/things/designation/thing.ts";
 import * as employeeThing from "../../blueprint/things/employee/thing.ts";
+import * as bankAccountInvariants from "../../blueprint/things/bank-account/invariants.ts";
+import * as bridgeBusinessInvariants from "../../blueprint/things/bridge-business/invariants.ts";
+import * as bridgeIndividualInvariants from "../../blueprint/things/bridge-individual/invariants.ts";
 import * as companyInvariants from "../../blueprint/things/company/invariants.ts";
 import * as departmentInvariants from "../../blueprint/things/department/invariants.ts";
 import * as designationInvariants from "../../blueprint/things/designation/invariants.ts";
@@ -37,6 +62,17 @@ import * as employeeInvariants from "../../blueprint/things/employee/invariants.
 
 export { World } from "@orthograph/host-cloudflare";
 
+const bankAccountCloseServed = Handlers.serve({ name: "bank-account.close", operation: bankAccountClose.declaration, handler: bankAccountCloseHandler, notFrom: "BankAccountNotOpen", codes: Errors.codes });
+const bankAccountGetServed = Reads.serve({ name: "bank-account.get", read: bankAccountGet.declaration });
+const bankAccountOpenServed = Handlers.serve({ name: "bank-account.open", operation: bankAccountOpen.declaration, handler: bankAccountOpenHandler, invariants: { BankAccountNameTaken: "bank-account.oneNamePerCompany" }, codes: Errors.codes });
+const bridgeBusinessApproveServed = Handlers.serve({ name: "bridge-business.approve", operation: bridgeBusinessApprove.declaration, handler: bridgeBusinessApproveHandler, notFrom: "BridgeBusinessNotStarted", notFound: { business: "BridgeBusinessNotFound" }, invariants: { KybAlreadyStarted: "bridge-business.oneKybPerCompany" }, codes: Errors.codes });
+const bridgeBusinessGetServed = Reads.serve({ name: "bridge-business.get", read: bridgeBusinessGet.declaration });
+const bridgeBusinessRejectServed = Handlers.serve({ name: "bridge-business.reject", operation: bridgeBusinessReject.declaration, handler: bridgeBusinessRejectHandler, notFrom: "BridgeBusinessNotStarted", notFound: { business: "BridgeBusinessNotFound" }, invariants: { KybAlreadyStarted: "bridge-business.oneKybPerCompany" }, codes: Errors.codes });
+const bridgeBusinessStartServed = Handlers.serve({ name: "bridge-business.start", operation: bridgeBusinessStart.declaration, handler: bridgeBusinessStartHandler, invariants: { KybAlreadyStarted: "bridge-business.oneKybPerCompany" }, codes: Errors.codes });
+const bridgeIndividualApproveServed = Handlers.serve({ name: "bridge-individual.approve", operation: bridgeIndividualApprove.declaration, handler: bridgeIndividualApproveHandler, notFrom: "BridgeIndividualNotStarted", notFound: { individual: "BridgeIndividualNotFound" }, invariants: { KycAlreadyStarted: "bridge-individual.oneKycPerPerson" }, codes: Errors.codes });
+const bridgeIndividualGetServed = Reads.serve({ name: "bridge-individual.get", read: bridgeIndividualGet.declaration });
+const bridgeIndividualRejectServed = Handlers.serve({ name: "bridge-individual.reject", operation: bridgeIndividualReject.declaration, handler: bridgeIndividualRejectHandler, notFrom: "BridgeIndividualNotStarted", notFound: { individual: "BridgeIndividualNotFound" }, invariants: { KycAlreadyStarted: "bridge-individual.oneKycPerPerson" }, codes: Errors.codes });
+const bridgeIndividualStartServed = Handlers.serve({ name: "bridge-individual.start", operation: bridgeIndividualStart.declaration, handler: bridgeIndividualStartHandler, invariants: { KycAlreadyStarted: "bridge-individual.oneKycPerPerson" }, codes: Errors.codes });
 const companyCreateServed = Handlers.serve({ name: "company.create", operation: companyCreate.declaration, handler: companyCreateHandler, invariants: { CompanyAbbrTaken: "company.oneAbbrPerOwner", CompanyNameTaken: "company.oneNamePerOwner" }, codes: Errors.codes });
 const companyGetServed = Reads.serve({ name: "company.get", read: companyGet.declaration });
 const departmentCreateServed = Handlers.serve({ name: "department.create", operation: departmentCreate.declaration, handler: departmentCreateHandler, invariants: { DepartmentNameTaken: "department.oneNamePerCompany" }, codes: Errors.codes });
@@ -48,10 +84,10 @@ const employeeHireServed = Handlers.serve({ name: "employee.hire", operation: em
 const employeeRelieveServed = Handlers.serve({ name: "employee.relieve", operation: employeeRelieve.declaration, handler: employeeRelieveHandler, notFrom: "EmployeeNotActive", codes: Errors.codes });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"]] as const;
+const tables = [[thingIn(bankAccountThing), "bank-account"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants)] as const;
+const rules = [...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
@@ -69,6 +105,32 @@ const call = <P extends object>(served: { readonly run: Run; readonly operation:
     refusals,
   ) as Effect.Effect<never, never, Services>;
 
+const BankAccountLive = HttpApiBuilder.group(CallApi, "bank-account", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("close", ({ payload, request }) => call(bankAccountCloseServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(bankAccountGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("open", ({ payload, request }) => call(bankAccountOpenServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const BridgeBusinessLive = HttpApiBuilder.group(CallApi, "bridge-business", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("approve", ({ payload, request }) => call(bridgeBusinessApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(bridgeBusinessGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reject", ({ payload, request }) => call(bridgeBusinessRejectServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("start", ({ payload, request }) => call(bridgeBusinessStartServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const BridgeIndividualLive = HttpApiBuilder.group(CallApi, "bridge-individual", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("approve", ({ payload, request }) => call(bridgeIndividualApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(bridgeIndividualGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reject", ({ payload, request }) => call(bridgeIndividualRejectServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("start", ({ payload, request }) => call(bridgeIndividualStartServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
 const CompanyLive = HttpApiBuilder.group(CallApi, "company", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
   const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
@@ -120,6 +182,14 @@ export interface Env {
 
 /** Which steps each operation runs, by the operation's name: the server's own record, never in the API package (the caller's contract names no step, K14). */
 export const steps = {
+  "bank-account.close": ["bank-account.close.update"],
+  "bank-account.open": ["bank-account.open.load", "bank-account.open.insert"],
+  "bridge-business.approve": ["bridge-business.approve.update"],
+  "bridge-business.reject": ["bridge-business.reject.update"],
+  "bridge-business.start": ["bridge-business.start.insert"],
+  "bridge-individual.approve": ["bridge-individual.approve.update"],
+  "bridge-individual.reject": ["bridge-individual.reject.update"],
+  "bridge-individual.start": ["bridge-individual.start.insert"],
   "company.create": ["company.create.insert"],
   "department.create": ["department.create.insert"],
   "designation.create": ["designation.create.insert"],
@@ -135,7 +205,7 @@ const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
-      Layer.provide([CompanyLive, DepartmentLive, DesignationLive, EmployeeLive]),
+      Layer.provide([BankAccountLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive]),
       Layer.provideMerge(CallTelemetry.layer),
       Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
       Layer.provideMerge(Database.d1(env.DB)),
@@ -160,7 +230,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed },
+  served: { "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 
