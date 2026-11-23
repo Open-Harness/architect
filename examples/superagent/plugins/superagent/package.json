@@ -1,0 +1,30 @@
+{
+  "name": "@orthograph/superagent",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Superagent and its Proposals: one always-on agent, stored as data.",
+  "type": "module",
+  "orthograph": {
+    "kind": "feature",
+    "blueprint": "blueprint",
+    "src": "src"
+  },
+  "nx": {
+    "tags": [
+      "scope:plugin"
+    ]
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./blueprint/*.js": "./blueprint/*.ts",
+    "./blueprint/*": "./blueprint/*",
+    "./src/*.js": "./src/*.ts",
+    "./src/*": "./src/*"
+  },
+  "dependencies": {
+    "effect": "4.1.4",
+    "orthograph": "workspace:*",
+    "@orthograph/language-effect": "workspace:*",
+    "@orthograph/agents": "workspace:*"
+  }
+}

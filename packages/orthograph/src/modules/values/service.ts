@@ -42,6 +42,14 @@ export const Values: ValuesApi = {
       declaration: Schema.String.check(Schema.isPattern(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/)),
       id: Schema.String.check(Schema.isMinLength(1)),
     }), { type: "schema", format: "ref-any" }),
+  bool: () => described(Schema.Boolean, { type: "schema", format: "bool" }),
+  oneOf: (options) => described(Schema.Literals(options), { type: "schema", format: "choice", options: [...options] }),
+  // A list of structs says the names of its rows' fields, so a reader of the model sees what each row holds.
+  list: (item) => {
+    const fields = (item.schema as { readonly fields?: object }).fields;
+    return described(Schema.Array(item.schema), { type: "schema", format: "list", ...(fields === undefined ? {} : { fields: Object.keys(fields) }) });
+  },
+  optional: (v) => Object.freeze({ ...v, schema: Schema.optionalKey(v.schema), optional: true as const }),
   email: () => described(Schema.String.check(Schema.isMaxLength(254), Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)), { type: "text", max: 254 }),
 };
 

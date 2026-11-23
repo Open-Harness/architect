@@ -1,0 +1,32 @@
+{
+  "name": "@orthograph/intake",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Source, Account, Trigger, Thread, Correlation, Eval, Decision and Policy: what a superagent hears, and who may ask.",
+  "type": "module",
+  "orthograph": {
+    "kind": "feature",
+    "blueprint": "blueprint",
+    "src": "src"
+  },
+  "nx": {
+    "tags": [
+      "scope:plugin"
+    ]
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./blueprint/*.js": "./blueprint/*.ts",
+    "./blueprint/*": "./blueprint/*",
+    "./src/*.js": "./src/*.ts",
+    "./src/*": "./src/*"
+  },
+  "dependencies": {
+    "effect": "4.1.4",
+    "orthograph": "workspace:*",
+    "@orthograph/language-effect": "workspace:*",
+    "@orthograph/superagent": "workspace:*",
+    "@orthograph/github": "workspace:*",
+    "@orthograph/slack": "workspace:*"
+  }
+}

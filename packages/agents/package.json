@@ -1,0 +1,29 @@
+{
+  "name": "@orthograph/agents",
+  "version": "0.0.0",
+  "private": true,
+  "description": "An agent is its own thing, living in its own actor and told through the outbox (K40 fix 3).",
+  "type": "module",
+  "orthograph": {
+    "kind": "feature",
+    "blueprint": "blueprint",
+    "src": "src"
+  },
+  "nx": {
+    "tags": [
+      "scope:plugin"
+    ]
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./blueprint/*.js": "./blueprint/*.ts",
+    "./blueprint/*": "./blueprint/*",
+    "./src/*.js": "./src/*.ts",
+    "./src/*": "./src/*"
+  },
+  "dependencies": {
+    "effect": "4.1.4",
+    "orthograph": "workspace:*",
+    "@orthograph/language-effect": "workspace:*"
+  }
+}

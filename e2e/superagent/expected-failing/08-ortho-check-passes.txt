@@ -1,3 +1,0 @@
-# Written before slice 5. Red until slice 5 builds examples/superagent, its plugins and its checked-in generated/; due before slice 5 merges.
-superagent/08-ortho-check-passes.test.ts > 08 ortho check passes on examples/superagent > `ortho check` exits 0 and says each of its stages passed: types, rules, drift, and the whole
-superagent/08-ortho-check-passes.test.ts > 08 ortho check passes on examples/superagent > the example is there: a blueprint, its generated/ checked in, and its plugins

@@ -238,8 +238,84 @@ importers:
         specifier: 5.20261101.1
         version: 5.20261101.1
 
+  examples/superagent:
+    dependencies:
+      '@effect/platform-node':
+        specifier: 4.1.4
+        version: 4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0))
+      '@effect/sql-d1':
+        specifier: 4.1.4
+        version: 4.1.4(effect@4.1.4)
+      '@orthograph/agents':
+        specifier: workspace:*
+        version: link:../../packages/agents
+      '@orthograph/github':
+        specifier: workspace:*
+        version: link:plugins/github
+      '@orthograph/host-cloudflare':
+        specifier: workspace:*
+        version: link:../../packages/host-cloudflare
+      '@orthograph/intake':
+        specifier: workspace:*
+        version: link:plugins/intake
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../../packages/language-effect
+      '@orthograph/portal':
+        specifier: workspace:*
+        version: link:../../packages/portal
+      '@orthograph/posthog':
+        specifier: workspace:*
+        version: link:plugins/posthog
+      '@orthograph/projections':
+        specifier: workspace:*
+        version: link:../../packages/projections
+      '@orthograph/prompts':
+        specifier: workspace:*
+        version: link:plugins/prompts
+      '@orthograph/slack':
+        specifier: workspace:*
+        version: link:plugins/slack
+      '@orthograph/superagent':
+        specifier: workspace:*
+        version: link:plugins/superagent
+      '@orthograph/tickets':
+        specifier: workspace:*
+        version: link:plugins/tickets
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../../packages/orthograph
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: 5.20261101.1
+        version: 5.20261101.1
+
   examples/superagent/plugins/github:
     dependencies:
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../../../../packages/orthograph
+
+  examples/superagent/plugins/intake:
+    dependencies:
+      '@orthograph/github':
+        specifier: workspace:*
+        version: link:../github
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../../../../packages/language-effect
+      '@orthograph/slack':
+        specifier: workspace:*
+        version: link:../slack
+      '@orthograph/superagent':
+        specifier: workspace:*
+        version: link:../superagent
       effect:
         specifier: 4.1.4
         version: 4.1.4
@@ -256,8 +332,59 @@ importers:
         specifier: workspace:*
         version: link:../../../../packages/orthograph
 
+  examples/superagent/plugins/prompts:
+    dependencies:
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../../../../packages/language-effect
+      '@orthograph/superagent':
+        specifier: workspace:*
+        version: link:../superagent
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../../../../packages/orthograph
+
   examples/superagent/plugins/slack:
     dependencies:
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../../../../packages/orthograph
+
+  examples/superagent/plugins/superagent:
+    dependencies:
+      '@orthograph/agents':
+        specifier: workspace:*
+        version: link:../../../../packages/agents
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../../../../packages/language-effect
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../../../../packages/orthograph
+
+  examples/superagent/plugins/tickets:
+    dependencies:
+      '@orthograph/agents':
+        specifier: workspace:*
+        version: link:../../../../packages/agents
+      '@orthograph/intake':
+        specifier: workspace:*
+        version: link:../intake
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../../../../packages/language-effect
+      '@orthograph/superagent':
+        specifier: workspace:*
+        version: link:../superagent
       effect:
         specifier: 4.1.4
         version: 4.1.4
@@ -292,6 +419,18 @@ importers:
       '@cloudflare/workers-types':
         specifier: 5.20261101.1
         version: 5.20261101.1
+
+  packages/agents:
+    dependencies:
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../language-effect
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
 
   packages/chain-evm:
     dependencies:

@@ -51,4 +51,10 @@ describe("values", () => {
     expect(Told.schema).toBe(Title.schema);
     expect(Told.meta).toEqual(Title.meta);
   });
+
+  it("a list of structs says the names of its rows' fields, so the model shows what each row holds", () => {
+    const Row = Values.value(Schema.Struct({ revision: Schema.Number, at: Schema.Number }));
+    expect(Values.list(Row).meta).toEqual({ type: "schema", format: "list", fields: ["revision", "at"] });
+    expect(Values.list(Values.text()).meta).toEqual({ type: "schema", format: "list" });
+  });
 });
