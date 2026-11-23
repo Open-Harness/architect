@@ -10,6 +10,7 @@
     "@orthograph/projections": "workspace:*",
     "@orthograph/language-effect": "workspace:*",
     "@orthograph/agents": "workspace:*",
+    "@orthograph/stand-in-model": "workspace:*",
     "@orthograph/superagent": "workspace:*",
     "@orthograph/intake": "workspace:*",
     "@orthograph/tickets": "workspace:*",

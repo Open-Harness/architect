@@ -17,6 +17,7 @@
   },
   "exports": {
     ".": "./index.ts",
+    "./probes": "./src/probes.ts",
     "./blueprint/*.js": "./blueprint/*.ts",
     "./blueprint/*": "./blueprint/*",
     "./src/*.js": "./src/*.ts",

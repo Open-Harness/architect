@@ -1,0 +1,15 @@
+{
+  "name": "stand-in-model",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/stand-in-model/src",
+  "projectType": "library",
+  "tags": [
+    "scope:plugin",
+    "env:runtime"
+  ],
+  "targets": {
+    "lint": {},
+    "typecheck": {},
+    "test": {}
+  }
+}

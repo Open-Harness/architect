@@ -276,6 +276,9 @@ importers:
       '@orthograph/slack':
         specifier: workspace:*
         version: link:plugins/slack
+      '@orthograph/stand-in-model':
+        specifier: workspace:*
+        version: link:../../packages/stand-in-model
       '@orthograph/superagent':
         specifier: workspace:*
         version: link:plugins/superagent
@@ -853,6 +856,15 @@ importers:
       verdaccio:
         specifier: 6.11.1
         version: 6.11.1(supports-color@10.2.2)(typanion@3.14.0)
+
+  packages/stand-in-model:
+    dependencies:
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
 
   packages/theme: {}
 
