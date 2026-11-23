@@ -12,6 +12,7 @@ export interface Description {
 
 export interface Param { readonly name: string; readonly in: "path" | "query" | "body"; readonly required: boolean; readonly schema: Node }
 export interface Op {
+  readonly id: string;
   readonly parts: ReadonlyArray<string>;
   readonly method: "get" | "post" | "put" | "patch" | "delete";
   readonly path: string;
@@ -48,7 +49,8 @@ const paramsOf = (d: Description, item: Node, op: Node): ReadonlyArray<Param> =>
   const found: Array<Param> = [];
   for (const p of [...(item["parameters"] ?? []), ...(op["parameters"] ?? [])].map((x: Node) => deref(d, x))) {
     // the token is the client's, sent as a bearer and never as a field
-    if (p["in"] === "header" || p["name"] === "token") continue;
+    // (a path parameter that happens to be called `token` is a field like any other)
+    if (p["in"] === "header" || (p["name"] === "token" && p["in"] !== "path")) continue;
     if (p["in"] === "body") {
       const { properties, required } = fieldsOf(d, p["schema"] ?? {});
       for (const [name, schema] of Object.entries<Node>(properties)) found.push({ name, in: "body", required: required.includes(name), schema });
@@ -63,7 +65,7 @@ const paramsOf = (d: Description, item: Node, op: Node): ReadonlyArray<Param> =>
     const { properties, required } = fieldsOf(d, body);
     for (const [name, schema] of Object.entries<Node>(properties)) found.push({ name, in: "body", required: required.includes(name), schema });
   }
-  return found.filter((p, i) => found.findIndex((q) => q.name === p.name) === i);
+  return found.filter((p, i) => found.findIndex((q) => q.name === p.name && q.in === p.in) === i);
 };
 
 /** Every operation that has an `operationId`, in the description's order. */
@@ -78,7 +80,7 @@ export const operationsOf = (d: Description): ReadonlyArray<Op> => {
       const response = statuses[0] === undefined ? undefined : deref(d, op["responses"][String(statuses[0])]);
       const schema = response === undefined ? undefined : d.swagger ? response["schema"] : response["content"]?.["application/json"]?.["schema"];
       found.push({
-        parts: nameParts(op["operationId"]), method, path: base + path, params: paramsOf(d, item, op),
+        id: op["operationId"], parts: nameParts(op["operationId"]), method, path: base + path, params: paramsOf(d, item, op),
         success: statuses[0] === undefined || schema === undefined ? null : { status: statuses[0], schema },
       });
     }

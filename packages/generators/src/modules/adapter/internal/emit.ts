@@ -29,7 +29,7 @@ interface Tree { [name: string]: Tree | null }
 
 /** The calls as nested groups. A name that is both a call and a group has no one place in the tree: it is told to the caller. */
 export const treeOf = (ops: ReadonlyArray<Op>): { readonly tree: Tree; readonly clashes: ReadonlyArray<string> } => {
-  const tree: Tree = {};
+  const tree: Tree = Object.create(null) as Tree;
   const clashes: Array<string> = [];
   for (const op of byParts(ops)) {
     let at = tree;
@@ -37,7 +37,7 @@ export const treeOf = (ops: ReadonlyArray<Op>): { readonly tree: Tree; readonly 
     const last = op.parts[op.parts.length - 1]!;
     const blocked = path.findIndex((part) => {
       if (at[part] === null) return true;
-      at = (at[part] ??= {});
+      at = (at[part] ??= Object.create(null) as Tree);
       return false;
     });
     if (blocked >= 0) clashes.push(op.parts.slice(0, blocked + 1).join("."));
@@ -47,10 +47,13 @@ export const treeOf = (ops: ReadonlyArray<Op>): { readonly tree: Tree; readonly 
   return { tree, clashes };
 };
 
+/** A key as an object literal writes it: `__proto__` must be computed, or it would set the prototype instead of a property. */
+const key = (name: string) => (name === "__proto__" ? `[${JSON.stringify(name)}]` : JSON.stringify(name));
+
 const callsText = (tree: Tree, indent: string): string =>
   Object.entries(tree).map(([name, sub]) => sub === null
-    ? `${indent}${JSON.stringify(name)}: Blueprint.call(),`
-    : `${indent}${JSON.stringify(name)}: {\n${callsText(sub, `${indent}  `)}\n${indent}},`).join("\n");
+    ? `${indent}${key(name)}: Blueprint.call(),`
+    : `${indent}${key(name)}: {\n${callsText(sub, `${indent}  `)}\n${indent}},`).join("\n");
 
 export const indexFile = (head: string, title: string, version: string, tree: Tree, events: ReadonlyArray<Event>) => [
   head, `import { Blueprint } from "orthograph";`,

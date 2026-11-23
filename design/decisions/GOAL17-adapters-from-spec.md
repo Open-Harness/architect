@@ -43,6 +43,8 @@ builds M5.07 (`ortho new adapter --from-openapi`) on the integration branch, as 
 ## Supersedes
 
 - `design/decisions/GOAL17-source-from.md`: "Goal 11's (M5.03) typed event; today an adapter's `events` are `unknown`" → "adapter events are typed (`AdapterEvent`) and built by `Blueprint.incoming(schema)`; Goal 11's `Blueprint.on` reads them".
+- `design/decisions/GOAL17-source-from.md`: "`Blueprint.event(…, { id, actor })`" → "`Blueprint.incoming(schema)`, which slice 11 widens with `{ id, actor }`".
+- `design/decisions/GOAL17-source-from.md`: "Goal 11's `Blueprint.event` has `id`" → "`Blueprint.incoming` has `id`".
 - `design/goals/17-superagent.md`: "Slice 3's checks are being written. Slice 4 starts when they land." → "Slice 4 is built on `goal-17/s4-adapters-from-spec-build`."
 
 ## Not done
@@ -51,4 +53,6 @@ builds M5.07 (`ortho new adapter --from-openapi`) on the integration branch, as 
 - The door's signature check, `catchUp` and `lend` (slices 10 and 11).
 - The generator reads its runtime from its own source folder at run time, so a published `dist` build of `@orthograph/generators`
   would need `internal/runtime/*.ts` shipped beside it.
-- Swagger's and OpenAPI's non-JSON request bodies: a body is sent as JSON.
+- Swagger's and OpenAPI's non-JSON request bodies: a body is sent as JSON. Array and object query values are stringified (`String(value)`), not encoded by the spec's `style` and `explode`.
+- Events are generated GitHub-shaped only: from a webhook's `x-github.subcategory`. A description that lists webhooks another way gets no events from the generator; they are written by hand in `src/written.ts`.
+- A path parameter and a body field of one name (GitHub's `actions/update-org-variable` has `name` in both, PostHog's `update` has `id`) can't be one flat input: the generator keeps both, so the whole spec still generates, and the client refuses that call before sending, naming the field, rather than merging them; a `token` in the query or body is the client's bearer and never a field, but a `token` in the path is a field.

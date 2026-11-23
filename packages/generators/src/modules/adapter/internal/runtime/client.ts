@@ -30,6 +30,10 @@ const numberish = (schema: JsonSchema) => schema["type"] === "number" || schema[
 
 const refuse = (call: string, components: Components, op: Operation, input: unknown): ReadonlyArray<string> => {
   if (!isRecord(input)) return [`${call}: takes one object of fields, not ${input === null ? "null" : typeof input}`];
+  // The real specs have a few (GitHub's `actions/update-org-variable`: `name` in the path and in the body). The input is one
+  // flat object and can't say which is meant, so such a call is refused whole, naming the field, rather than merged.
+  const twice = op.params.find((p, i) => op.params.findIndex((q) => q.name === p.name) !== i);
+  if (twice !== undefined) return [`${call}: ${twice.name} is both ${op.params.filter((p) => p.name === twice.name).map((p) => `a ${p.in} field`).join(" and ")}, and a call's input is one flat object that can't tell them apart`];
   const given = Object.entries(input).filter(([, v]) => v !== undefined);
   const known = new Map(op.params.map((p) => [p.name, p]));
   return [
@@ -45,7 +49,7 @@ const refuse = (call: string, components: Components, op: Operation, input: unkn
 
 const request = (op: Operation, input: Input, baseUrl: string, token: string | undefined) => {
   const of = (where: Param["in"]) => op.params.filter((p) => p.in === where && input[p.name] !== undefined);
-  const path = op.path.replace(/\{(\w+)\}/g, (_, k: string) => encodeURIComponent(String(input[k])));
+  const path = op.path.replace(/\{([^}]+)\}/g, (_, k: string) => encodeURIComponent(String(input[k])));
   const query = new URLSearchParams(of("query").map((p) => [p.name, String(input[p.name])] as [string, string])).toString();
   const body = of("body");
   return {
@@ -84,9 +88,10 @@ const promised = <A, E>(effect: Effect.Effect<A, E>): Promise<A> =>
 
 /** The client of a spec's calls: each is a function of its input, grouped as the descriptor's calls are. */
 export const makeClient = (operations: ReadonlyArray<Operation>, components: Components, options: ClientOptions): { readonly calls: Tree } => {
-  const calls: Tree = {};
+  // Trees have no prototype, so a call or group named `constructor` or `toString` is just a name.
+  const calls: Tree = Object.create(null) as Tree;
   for (const op of operations) {
-    const group = op.name.slice(0, -1).reduce<Tree>((tree, part) => (tree[part] ??= {}) as Tree, calls);
+    const group = op.name.slice(0, -1).reduce<Tree>((tree, part) => (tree[part] ??= Object.create(null) as Tree) as Tree, calls);
     group[op.name[op.name.length - 1]!] = (input?: Input) => promised(call(components, op, options, input));
   }
   return { calls };

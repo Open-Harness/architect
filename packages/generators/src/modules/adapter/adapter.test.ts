@@ -42,7 +42,62 @@ describe("Adapter.generate", () => {
   });
 });
 
+const files = (input: unknown) => {
+  const r = made(input);
+  if (r._tag !== "Success") throw new Error(r.failure.message);
+  return r.success.files;
+};
+const one = (id: string, path: string, parameters: ReadonlyArray<unknown>, extra: object = {}) => ({
+  openapi: "3.1.0", info: { title: "T", version: "1" },
+  paths: { [path]: { post: { operationId: id, parameters, responses: { "200": { description: "ok" } }, ...extra } } },
+});
+
+describe("what the generator keeps and refuses", () => {
+  it("keeps a path parameter called token, and drops one in the query", () => {
+    const data = (spec: unknown) => files(spec).find((f) => f.path === "src/spec/operations.ts")!.content;
+    expect(data(one("invites/accept", "/invites/{token}", [{ name: "token", in: "path", required: true, schema: { type: "string" } }]))).toContain('\\"name\\":\\"token\\",\\"in\\":\\"path\\"');
+    expect(data(one("invites/list", "/invites", [{ name: "token", in: "query", schema: { type: "string" } }]))).not.toContain("token");
+  });
+
+  it("keeps a path parameter and a body field of one name, for the client to refuse that call by name", async () => {
+    const spec = one("a/b", "/a/{id}", [{ name: "id", in: "path", required: true, schema: { type: "string" } }], { requestBody: { content: { "application/json": { schema: { type: "object", properties: { id: { type: "string" } } } } } } });
+    expect(files(spec).find((f) => f.path === "src/spec/operations.ts")!.content).toContain('\\"in\\":\\"body\\"');
+    const { makeClient } = await import("./internal/runtime/client.ts");
+    const clash = makeClient([{ name: ["a", "b"], method: "post", path: "/a/{id}", params: [{ name: "id", in: "path", required: true, schema: {} }, { name: "id", in: "body", required: false, schema: {} }], success: null }], {}, { baseUrl: "http://127.0.0.1:1" });
+    await expect((clash.calls["a"] as Record<string, (i: unknown) => Promise<unknown>>)["b"]!({ id: "x" })).rejects.toMatchObject({ _tag: "InputRefused", problems: [expect.stringMatching(/id is both a path field and a body field/)] });
+  });
+
+  it("holds a call or group named like an Object method as a plain name", () => {
+    const spec = { ...one("constructor/toString", "/x", []), paths: { "/x": { get: { operationId: "constructor/toString", responses: { "200": { description: "ok" } } } }, "/y": { get: { operationId: "constructor/valueOf", responses: { "200": { description: "ok" } } } } } };
+    const index = files(spec).find((f) => f.path === "src/index.ts")!.content;
+    expect(index).toContain('"constructor": {');
+    expect(index).toContain('"toString": Blueprint.call()');
+    expect(index).toContain('"valueOf": Blueprint.call()');
+  });
+});
+
 describe("the client a plugin carries", () => {
+  it("refuses NaN and Infinity as numbers, honours exclusive bounds, and substitutes {a-b} in a path", async () => {
+    const { problems } = await import("./internal/runtime/json-schema.ts");
+    const number = { type: "number" };
+    expect(problems({}, number, Number.NaN)).not.toEqual([]);
+    expect(problems({}, number, Number.POSITIVE_INFINITY)).not.toEqual([]);
+    expect(problems({}, {}, Number.NaN)).not.toEqual([]);
+    expect(problems({}, number, 1.5)).toEqual([]);
+    expect(problems({}, { type: "integer", minimum: 1, exclusiveMinimum: true }, 1)).not.toEqual([]);
+    expect(problems({}, { type: "integer", exclusiveMinimum: 1 }, 2)).toEqual([]);
+    expect(problems({}, { type: "integer", exclusiveMaximum: 5 }, 5)).not.toEqual([]);
+    const { makeClient } = await import("./internal/runtime/client.ts");
+    const seen: Array<string> = [];
+    const server = createServer((req, res) => { seen.push(String(req.url)); res.writeHead(200, { "content-type": "application/json" }); res.end("{}"); });
+    await new Promise<void>((ready) => server.listen(0, "127.0.0.1", ready));
+    const calls = makeClient([{ name: ["constructor", "toString"], method: "get", path: "/a/{x-y}", params: [{ name: "x-y", in: "path", required: true, schema: { type: "string" } }], success: null }], {}, { baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}` }).calls;
+    await (calls["constructor"] as Record<string, (i: unknown) => Promise<unknown>>)["toString"]!({ "x-y": "q" });
+    expect(seen).toEqual(["/a/q"]);
+    server.closeAllConnections();
+    server.close();
+  });
+
   it("sends the request the description says, refuses a wrong input or answer, and fails with what the server said", async () => {
     const { makeClient } = await import("./internal/runtime/client.ts");
     const seen: Array<string> = [];

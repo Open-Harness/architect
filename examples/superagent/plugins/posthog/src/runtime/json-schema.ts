@@ -29,7 +29,8 @@ const resolve = (components: Components, schema: JsonSchema): JsonSchema => {
   return at;
 };
 
-const kindOf = (value: unknown): string => (Array.isArray(value) ? "array" : value === null ? "null" : typeof value === "number" ? (Number.isInteger(value) ? "integer" : "number") : typeof value);
+/** NaN and Infinity are not JSON numbers: they have a kind of their own, which no schema allows. */
+const kindOf = (value: unknown): string => (Array.isArray(value) ? "array" : value === null ? "null" : typeof value === "number" ? (!Number.isFinite(value) ? "non-finite" : Number.isInteger(value) ? "integer" : "number") : typeof value);
 
 const stringProblems = (node: JsonSchema, value: string, at: string): ReadonlyArray<string> => {
   const found: Array<string> = [];
@@ -60,13 +61,18 @@ export const problems = (components: Components, schema: JsonSchema, value: unkn
   const kinds = declared.length === 1 && declared[0] === "null" && (node["allOf"] !== undefined || node["properties"] !== undefined) ? [] : declared;
   if (value === null) return kinds.includes("null") || node["nullable"] === true || kinds.length === 0 ? found : [...found, `${at}: null`];
   const kind = kindOf(value);
+  if (kind === "non-finite") return [...found, `${at}: ${String(value)} is not a JSON number`];
   if (kinds.length > 0 && !kinds.some((k) => k === kind || (k === "number" && kind === "integer"))) return [...found, `${at}: ${kind}, not ${kinds.join("|")}`];
   if (Array.isArray(node["enum"]) && !node["enum"].some((e) => e === value)) found.push(`${at}: ${JSON.stringify(value)} not in the enum`);
   if (node["const"] !== undefined && node["const"] !== value) found.push(`${at}: not ${JSON.stringify(node["const"])}`);
   if (typeof value === "string") found.push(...stringProblems(node, value, at));
   if (typeof value === "number") {
-    if (typeof node["minimum"] === "number" && value < node["minimum"]) found.push(`${at}: under ${node["minimum"]}`);
-    if (typeof node["maximum"] === "number" && value > node["maximum"]) found.push(`${at}: over ${node["maximum"]}`);
+    // `exclusiveMinimum` is a number (OpenAPI 3.1) or a flag on `minimum` (3.0 and Swagger)
+    const [lower, upper] = [node["exclusiveMinimum"], node["exclusiveMaximum"]];
+    if (typeof node["minimum"] === "number" && (value < node["minimum"] || (lower === true && value === node["minimum"]))) found.push(`${at}: ${lower === true ? "not over" : "under"} ${node["minimum"]}`);
+    if (typeof node["maximum"] === "number" && (value > node["maximum"] || (upper === true && value === node["maximum"]))) found.push(`${at}: ${upper === true ? "not under" : "over"} ${node["maximum"]}`);
+    if (typeof lower === "number" && value <= lower) found.push(`${at}: not over ${lower}`);
+    if (typeof upper === "number" && value >= upper) found.push(`${at}: not under ${upper}`);
   }
   if (Array.isArray(value)) {
     if (typeof node["minItems"] === "number" && value.length < node["minItems"]) found.push(`${at}: fewer than ${node["minItems"]} items`);

@@ -429,7 +429,7 @@ Orthograph's packages once they have worked.
 
 | Dependent | Why it cares |
 |---|---|
-| Goal 11 (M5.03, `catchUp`) | a typed `events` on `Adapter` and `ViewOf`; `include` of events; `Blueprint.event(…, { id, actor })`; `meta.actor`; the door's `Inbox.accept` storing the actor. This record is the first user of all of them. |
+| Goal 11 (M5.03, `catchUp`) | a typed `events` on `Adapter` and `ViewOf`; `include` of events; `Blueprint.incoming(schema)` (slice 4), which slice 11 widens with `{ id, actor }` (Superseded by GOAL17-adapters-from-spec, 23 November 2026: was `Blueprint.event(…, { id, actor })`); `meta.actor`; the door's `Inbox.accept` storing the actor. This record is the first user of all of them. |
 | Goal 3 (M2.03, K40 fix 1) | the `service` caller's `actor`, and the role form `actor:`, which gains `within`. `Account.source` is the mount's name, and the key is `(superagent, source, id)`. |
 | `17-superagent.md`, slice 4 | the generator emits `events` as typed values with a `MissingEvent` sentinel, and an event's `id` and `actor` slots (by hand); its conformance checks every `reply` and `history` call against the stand-in |
 | Slice 7 (intake handlers) | `trigger.receive`, `account.seen`, `thread.closed` and the gate take `Mapped` and `TriggerView`; journeys call `trigger.receive` directly with a mapped payload |
@@ -456,7 +456,7 @@ Orthograph's packages once they have worked.
   Nothing in `Source.from` blocks either answer.
 - **An id for every `on` event.** An event with no stable object id (`checks`) cannot be both a door and a poll event.
   K40 already lists this; it holds here as "every key of `on` needs an `id`", which the compiler can check once
-  Goal 11's `Blueprint.event` has `id`.
+  `Blueprint.incoming` has `id` (slice 11 widens it; it was written `Blueprint.event` here, Superseded by GOAL17-adapters-from-spec, 23 November 2026).
 - **Mapping functions are code.** A bad `thread` string is persisted forever. The compiler can't prove stability, so
   each source gets a fixture of recorded events in its journeys and a test that the same event twice gives the same
   `thread`.
