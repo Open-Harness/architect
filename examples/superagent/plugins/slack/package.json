@@ -1,0 +1,20 @@
+{
+  "name": "@orthograph/slack",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Slack Web API 1.7.0, as an Orthograph adapter, generated from its published description; its events are written by hand.",
+  "type": "module",
+  "orthograph": {
+    "kind": "adapter",
+    "blueprint": "blueprint",
+    "standIn": "src/stand-in/main.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "dependencies": {
+    "effect": "4.1.4",
+    "orthograph": "workspace:*"
+  }
+}

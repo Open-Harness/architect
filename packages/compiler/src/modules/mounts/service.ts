@@ -59,7 +59,7 @@ export const Mounts: MountsApi = {
       problems.push(...picks);
       const files = yield* source.pluginFiles(plugin.name).pipe(Effect.result);
       if (files._tag === "Failure") { problems.push(`${file}: ${files.failure.message}`); continue; }
-      let verbs: Pick<MountModel, "omitted" | "narrowed" | "calls" | "layer" | "standIn"> = {};
+      let verbs: Pick<MountModel, "omitted" | "narrowed" | "calls" | "events" | "layer" | "standIn"> = {};
       if (me.kind === "feature" || me.kind === "adapter") {
         // An adapter adds no operations, but its errors are declared in its things, which the model names like a feature's.
         const own = readLayout(files.success.files.filter((f) => f.path.startsWith("things/") || (me.kind === "feature" && (f.path.startsWith("journeys/") || f.path.startsWith("stores/")))), (path) => `${plugin.name}/blueprint/${path}`);
@@ -90,7 +90,7 @@ export const Mounts: MountsApi = {
         problems.push(...reached.problems);
         for (const [call, reach] of reached.reach) calls.set(call, reach);
         const stand = standInOf(mount.plugin);
-        verbs = { ...verbs, ...(reached.included.length > 0 ? { calls: reached.included } : {}), ...(files.success.layer ? { layer: true as const } : {}), ...(stand ? { standIn: stand } : {}) };
+        verbs = { ...verbs, ...(reached.included.length > 0 ? { calls: reached.included } : {}), ...(reached.events.length > 0 ? { events: reached.events } : {}), ...(files.success.layer ? { layer: true as const } : {}), ...(stand ? { standIn: stand } : {}) };
       }
       const needs = needsOf(me, matched, plugins);
       problems.push(...needs.problems);

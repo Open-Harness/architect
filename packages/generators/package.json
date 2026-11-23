@@ -20,6 +20,7 @@
   "exports": {
     ".": "./src/main.ts",
     "./sync": "./src/modules/sync/service.ts",
+    "./adapter": "./src/modules/adapter/service.ts",
     "./package.json": "./package.json",
     "./render": "./src/modules/render/service.ts"
   },
@@ -36,6 +37,10 @@
       "./sync": {
         "types": "./dist/modules/sync/service.d.ts",
         "default": "./dist/modules/sync/service.js"
+      },
+      "./adapter": {
+        "types": "./dist/modules/adapter/service.d.ts",
+        "default": "./dist/modules/adapter/service.js"
       },
       "./package.json": "./package.json",
       "./render": {
