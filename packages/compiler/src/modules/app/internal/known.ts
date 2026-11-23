@@ -44,8 +44,11 @@ export const paramOf = (p: RouteParam, known: Known, where: string, problems: Ar
   const thing = p.kind === "field" ? known.things.get(p.of) : undefined;
   if (p.kind === "field" && thing === undefined) problems.push(`${where}: uses a field of a thing that isn't in the blueprint`);
   const description = p.description;
+  const meta = value.meta;
+  // An address carries text, never an amount and its asset (M6-money): a money parameter is refused, and the placeholder never reaches a model.
+  if (meta.type === "money") problems.push(`${where}: a route parameter can't be money: an address carries an id or text, not an amount and its asset`);
   return {
-    value: value.meta,
+    value: meta.type === "money" ? { type: "text", max: 0 } : meta,
     ...(named ? { named } : {}),
     ...(p.kind === "field" && thing ? { ref: `${thing}.${p.key}` } : {}),
     ...(description === undefined ? {} : { description }),

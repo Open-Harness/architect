@@ -92,3 +92,7 @@ A `narrowed` entry is the entry it narrows, since a page has no ways in of its o
 A route other than `/` may not have an empty segment: `/account/` and `/a//b` are refused as `[app-route-param]`, naming the page's
 file, because the shell's router drops empty segments and the page would answer at another page's address. So no two routes the
 compiler accepts can collide after the router normalizes them, and the duplicate check needs no normalizing of its own.
+
+A route parameter may not be money (M6-money, from stage 1 on 23 November 2026): an address carries an id or text, never an amount
+and its asset, so `paramOf` refuses it, naming the page's file. The money value's declared meta (an asset object) and the model's
+(the asset's name) differ, and no page needs the conversion.
