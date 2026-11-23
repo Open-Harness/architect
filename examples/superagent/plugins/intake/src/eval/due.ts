@@ -1,5 +1,7 @@
 import { Clock, Effect } from "effect";
 import { Ids, Records, Store, type Handler, type Instance } from "@orthograph/language-effect";
+import { Superagent } from "@orthograph/superagent/blueprint/things/superagent/thing.ts";
+import { activeClock } from "../modules/clock/service.ts";
 import type declaration from "../../blueprint/things/eval/verbs/due.ts";
 import { Eval } from "../../blueprint/things/eval/thing.ts";
 import { Trigger } from "../../blueprint/things/trigger/thing.ts";
@@ -35,7 +37,10 @@ const all = (superagent: unknown, thing: typeof Eval | typeof Trigger | typeof T
 const due: Handler<typeof declaration, Records | Store> = ({ superagent }) =>
   Effect.gen(function* () {
     const records = yield* Records;
-    const now = BigInt(yield* Clock.currentTimeMillis);
+    const owner = yield* records.find(Superagent, superagent);
+    const wall = BigInt(yield* Clock.currentTimeMillis);
+    // An eval's clock is the superagent's active one (GOAL17-pause): the time it spent paused does not count against an eval that spans it.
+    const now = owner === undefined ? wall : activeClock({ state: String(owner.state), pausedAt: owner["pausedAt"] as bigint | undefined, pausedFor: owner["pausedFor"] as bigint }, wall);
     const evals = yield* all(superagent, Eval, "oldest");
     const overdue = (e: Instance) => e.state === "delivered" && e["deliveredAt"] !== undefined && (e["deliveredAt"] as bigint) + (e["timeoutMs"] as bigint) <= now;
     for (const e of evals.filter(overdue)) yield* records.update(Eval, String(e["id"]), {}, "unavailable");

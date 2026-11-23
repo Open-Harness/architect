@@ -32,8 +32,8 @@ export interface Unique<F extends FieldsInput = FieldsInput, Key = unknown> exte
   readonly refuse: AnyErrorClass | undefined;
   /** Words that replace the sentence generated from the rule. */
   readonly description: string | undefined;
-  /** The framework's own rule (a thing with versions holds one): a save that breaks it lost a race, so it is refused as stale, never as a defect. Absent on a declared rule. */
-  readonly framework?: true;
+  /** Breaking it means the call lost a race (a second save of a version, a second eval on a thread): the call runs again and meets what the winner made, never a defect. `refuse` is then not needed. */
+  readonly retry?: true;
   readonly "~key"?: Key;
 }
 
@@ -42,6 +42,8 @@ export interface UniqueOptions<F extends FieldsInput, Ks extends string, E exten
   readonly while?: ReadonlyArray<State<string, F>>;
   readonly refuse?: ErrorClass<E> & ([Exclude<keyof E & string, Ks>] extends [never] ? unknown : never);
   readonly description?: string;
+  /** Breaking it means a lost race: the call runs again and meets what the winner made. For a rule no caller names a refusal for. */
+  readonly retry?: true;
 }
 
 export interface InvariantsApi {

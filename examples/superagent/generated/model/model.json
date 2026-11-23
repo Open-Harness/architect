@@ -1405,6 +1405,18 @@
         }
       },
       "lives": "database",
+      "invariants": {
+        "oneLiveEvalPerThread": {
+          "kind": "unique",
+          "fields": [
+            "thread"
+          ],
+          "while": [
+            "queued",
+            "delivered"
+          ]
+        }
+      },
       "machine": {
         "states": [
           "queued",
@@ -1528,7 +1540,7 @@
         "version": "0.0.0",
         "thing": "eval"
       },
-      "hash": "cb2bdb98ee308abb"
+      "hash": "07cccbf8098cb160"
     },
     "input": {
       "name": "input",
@@ -5128,7 +5140,9 @@
           "thing": "eval"
         }
       ],
-      "breaks": [],
+      "breaks": [
+        "eval.oneLiveEvalPerThread"
+      ],
       "refusals": [
         "EvalNotQueued",
         "EvalNotFound",
@@ -5151,7 +5165,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "1fddde75e7d27c02"
+      "hash": "370d30168f40fc86"
     },
     "eval.due": {
       "kind": "operation",
@@ -5428,7 +5442,9 @@
         "emits": "EvalStarted"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "eval.oneLiveEvalPerThread"
+      ],
       "refusals": [
         "NotAllowed"
       ],
@@ -5444,7 +5460,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "7a4010b5ebcb1162"
+      "hash": "d8fcfd706b639037"
     },
     "input.delivered": {
       "kind": "operation",
@@ -14416,9 +14432,9 @@
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-qsz5mlQFAQpD2+R0Np5T+e9h/YFWNfhwi8HSRLajR3o=",
+      "integrity": "sha256-ZIAhRWmfb75mbi+6xBAAJtf4qRPVlNsywVCvKuqO1Lc=",
       "chosen": {},
-      "hash": "fb63b06b5569f4d3"
+      "hash": "6cd4dbc0883d6532"
     },
     "posthog": {
       "kind": "adapter",
@@ -14490,9 +14506,9 @@
       "file": "blueprint/features/tickets.ts",
       "package": "@orthograph/tickets",
       "version": "0.0.0",
-      "integrity": "sha256-MYJy9LmLJKpiOplj7W1+Fwm1YJPQ1Gb8KSYqPWrKQL4=",
+      "integrity": "sha256-61lN6KZx3yulQcvX6wyH/0J5v3iIlNemBF9wypw5w9w=",
       "chosen": {},
-      "hash": "39d4a5fdcd36efac"
+      "hash": "c0d5ee27abf08b5c"
     }
   }
 }

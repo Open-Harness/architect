@@ -71,6 +71,12 @@ the old value back. The gate does not read this row (it reads the policy's cells
   generated server hands the runtime `Versions.rulesOf(...)`. The second of two first saves conflicts at commit, runs again, and is refused as stale. `settings.save` has the same rule with no code of its own.
 - **A lost race at that rule is a retry, not a defect.** `versionRule` marks the rule `framework`; a call whose pre-commit check finds it broken by another save that already committed goes
   through `settleViolation` as the call's retry (`Conflict`), so it reruns and is refused `StaleRevision { current }`. Test: the first attempt reads no version, the rival commits its revision 1, the check finds it.
+- **Codex's three findings on #756.**
+  - **`records.update`'s `state` was dropped** by the watching wrapper every served handler is given (`handler/internal/decided.ts` forwarded three arguments). So `ticket.stop` left the mandate held and the
+    assignment pending, and `eval.due` never saved its expirations. It is forwarded now; tests go through `Handlers.serve` (`state-update.test.ts`, `ticket/stop.test.ts`, `eval/due.test.ts`). No journey caught it:
+    check 19 has no ticket, and no step of it reads a mandate, an assignment or an eval's state back. The steps that would are `22`'s "a stop withdraws the mandate" and "a stop cancels or closes from the state it reads", which wait on the harness's doors.
+  - **An eval's clock is the superagent's active clock** (GOAL17-pause): `eval.delivered` records the wall clock less `pausedFor`, and `eval.due` judges overdue on the same (`modules/clock`), standing still while paused. An eval that spans a pause does not expire for it.
+  - **One live eval per thread is enforced at commit** (`oneLiveEvalPerThread`, a partial unique index over queued and delivered). A rule may say `retry: true` (it replaces call 10's `framework` flag on the rule): breaking it is a lost race, the call reruns and meets what the winner made. A pass that loses makes nothing.
 - **A derived list checks its cursor** with the same `CURSOR` check as a plain list (`NotAllowed`).
 - **`eval.due` reads each kind to its end,** a page of 100 at a time, where it read the oldest 1000. Test: 1100 triggers already covered, then one new one (`due.test.ts`).
 - **The migration is `0009_columns.sql`** (`0008_inbox.sql` is another's).

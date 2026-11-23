@@ -16,5 +16,5 @@ export const versionRule = (thing: Thing): Unique | undefined => {
   const revision = thing.fields["revision"];
   if (key === undefined || revision === undefined) return undefined;
   const own = thing.fields[key];
-  return Object.freeze({ ...makeUnique(key === "id" || own === undefined ? [revision] : [own, revision]), framework: true as const });
+  return makeUnique(key === "id" || own === undefined ? [revision] : [own, revision], { retry: true });
 };

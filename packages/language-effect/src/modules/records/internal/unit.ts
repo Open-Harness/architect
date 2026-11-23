@@ -97,7 +97,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
           const id = String(after["id"]);
           const other = yield* holder(rule, after, id, index);
           if (other !== undefined) {
-            return { rule: rule.name, refuse: rule.declared?.refuse, row: after, own: heldFor(rule.thing, String(other["id"])) !== undefined, framework: rule.declared?.framework === true } satisfies Violation;
+            return { rule: rule.name, refuse: rule.declared?.refuse, row: after, own: heldFor(rule.thing, String(other["id"])) !== undefined, retry: rule.declared?.retry === true } satisfies Violation;
           }
         }
       }

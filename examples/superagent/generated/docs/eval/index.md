@@ -28,6 +28,10 @@ States: queued, delivered, decided, unavailable. A move from the wrong state is 
 | decided | delivered | decided | EvalDecided |
 | expired | delivered | unavailable | EvalExpired |
 
+## Invariants
+
+- `eval.oneLiveEvalPerThread`: another queued or delivered eval holds this thread. Unique on thread, while queued or delivered; refuses nothing, a break is a defect.
+
 ## Events
 
 - `EvalDecided`: carries eval (eval.id); emitted by the move decided

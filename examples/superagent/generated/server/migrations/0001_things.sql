@@ -58,6 +58,7 @@ CREATE TABLE "eval" (
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "eval_oneLiveEvalPerThread" ON "eval" ("thread") WHERE "state" IN ('queued', 'delivered');
 CREATE TABLE "input" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
