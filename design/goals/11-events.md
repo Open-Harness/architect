@@ -108,8 +108,8 @@ Its open slices go back to the board as items at their stage; no lead holds them
   it is answered in the next pull request on this design.
 - **Open, as board items:**
   - Slice 3, events in (#389): signed doors, including the GitHub-style webhook (HMAC-SHA256 over the raw body, an event
-    id for idempotency), and `on:`. Nothing written. Its build needs Goal 3's service principal (M2.03, #297) and the
-    engine seams asked in #480. Goal 12 asked for it early (#477).
+    id for idempotency), and `on:`. Nothing written. Goal 3's service principal (M2.03, #297) has landed on
+    `goal/stage-1`, after `goal/events`' last base merge; its build needs that merged in and the engine seams asked in #480. Goal 12 asked for it early (#477).
   - Slice 4, the outbox for every move (#390): after slice 3; seams in #480.
   - Slice 2, journeys for payments and notifications (#388): after the beta (Aaron, 22 November). Draft #498 holds
     `design/decisions/M5-checks.md`, a `builder-paths` change making `e2e/events/expected-failing/` shrink-only, and
@@ -118,4 +118,4 @@ Its open slices go back to the board as items at their stage; no lead holds them
 - **Asks still open:** #480 (Goal 3, the engine seams), #481 (Goal 4, the follower through `Inbox.accept`), #462
   (Goal 8, M3.01 early). #501 passed a Codex finding on Goal 3's staging code to Goal 3.
 - **Next, for whoever takes slice 3:** merge the integration branch in, write the signed-door and `on:` checks from
-  #498's start, then build once #297 and the #480 seams have landed, and land it early for Goal 12.
+  #498's start, then build once the #480 seams have landed, and land it early for Goal 12.
