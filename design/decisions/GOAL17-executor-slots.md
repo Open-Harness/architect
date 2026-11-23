@@ -129,7 +129,7 @@ export const slots: Slots = {
 };
 ```
 
-- **The order is the order the rows were made in**, read with `order: "oldest"` (`operations/types.ts:96`: "the order
+- **The order is the order the rows were made in**, read with `order: "oldest"` and `first: { why: "person" }` (GOAL17-slice9-build call 2; `operations/types.ts:96`: "the order
   rows were made in, never a clock"). No timestamp is read, so a restart, a pause and a replay all keep it.
 - **A person goes before a launch or a CI result**; within each group, first come first served. This is the
   prototype's "takes the next free slot before a new launch".

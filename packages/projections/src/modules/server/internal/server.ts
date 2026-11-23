@@ -9,24 +9,10 @@ import { notFromOf } from "./not-from.ts";
 import { doorsOf } from "./doors.ts";
 import { renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 import { actorOptionOf } from "./actors.ts";
+import { peopleOf } from "./people.ts";
 import { staleOf, versioned } from "./versioned.ts";
 
 const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
-
-/**
- * Where the identity keeps its users: Better Auth's table, today the identity behind `AuthD1`. Named here, in what the
- * generated server says, never in host code; the identity plugin (M2.05) will own it.
- */
-const IDENTITY_USERS = "auth_user";
-/**
- * The thing the identity keeps, bound explicitly: the identity's users are what a `Principal` calls a `person`, so its
- * thing is the one named `person` (K16 review, 22.1). Never found by its id prefix: an app thing may use `per_` too.
- */
-const IDENTITY_THING = "person";
-const peopleOf = (model: Model) => {
-  const people = model.things[IDENTITY_THING];
-  return people ? `, people: { thing: thingIn(${camel(people.name)}Thing), table: "${IDENTITY_USERS}" }` : "";
-};
 
 const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const ops = Object.values(model.operations);
