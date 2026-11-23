@@ -145,7 +145,7 @@ when its move ends in one of the rule's `while` states, or one of its database s
 thing has no machine and the operation has a database step that leaves `writes` unset. A step that says `writes: []`
 reads only and breaks nothing:
 
-```ts file=packages/compiler/src/modules/model/internal/invariants.ts name=breakersOf lines=107-115
+```ts file=packages/compiler/src/modules/model/internal/invariants.ts name=breakersOf lines=116-124
 for (const [name, rule] of Object.entries(t.invariants ?? {})) {
   const own = op.thing === thing;
   const byMove = own && op.move !== null && (rule.while === undefined || op.move.to.some((s) => rule.while!.includes(s)));
@@ -174,7 +174,7 @@ for an owner field ("another claimed handle has this owner") reads poorly.
 A rule is one stop on the path every call runs. It comes after the handler has answered and the move is made, because
 the move is what puts a handle into `claimed`, and before the commit:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=129-131
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=133-135
 // Every rule this call's rows could break, after the move and before the commit: the store's own index then catches the race.
 const broken = yield* unit.check;
 if (broken !== undefined) return yield* settleViolation(name, invariants, logs)(broken);

@@ -419,12 +419,32 @@ these; changing one is the author's, with a reason.
 - **The route.** `GET /_portal/v1/monitor?digest=<digest>`, guarded as `snapshot` is (400 without a digest, 409 for another blueprint's, 404 without a live source), answers
   `{ environment, now, alerts, issues }` evaluated over `live.source.window(ms, now)` and `live.metrics.window(ms, now)` for each window an alert names. The portal reads no
   clock and sends nothing from local.
-- **Issues.** One per (operation, step, `error.tag`), the step being the deepest failing step span; a refusal opens none; `occurrences` counts calls, never evaluations.
+- **Issues.** One per (operation, step, `error.tag`), the step being the deepest failing step span; a refusal opens none; `occurrences` counts calls, never evaluations. *Superseded by M1-49-issue-attribution, 21 November 2026 (the step is a declared step).*
   The defect span carries `error.tag` (the error's `_tag`, else its constructor name).
 - **The ledger.** `PortalContext.ledger?: { get(key): Effect<unknown>, put(key, value): Effect<void> }`, opaque JSON by key. `firstSeen` and `lastSeen` are the call's
   start and the operation's declaration hash (`model.operations[op].hash`) in the wire in force then; `regressed` is the two hashes differing.
 - **The pages.** `/portal/monitor/alerts`, `/portal/monitor/issues` and the worst-first list on `/portal`, with the `data-portal` hooks listed at the head of
   `e2e/m1/monitor-judge.ts`. An issue row also shows its occurrences and first and last seen, and an alert row its state, as text a person reads.
+
+## Addendum, 21 November 2026 (M1.49, the builder): where the issues are kept, and what the build chose
+
+Nothing above changes; this records what the row left to the builder.
+
+- **Where M1.49 keeps issues** (`portal.md` hole 7, "Stored data and leaks", item 3). In the portal's own issue book: one key, `monitor/issues`, of the ledger the portal
+  is handed (`PortalContext.ledger`). A Worker's ledger is `env.PORTAL_LEDGER`, a key-value binding (the shape of Workers KV); without one, a book that lives as long as the
+  isolate does. A portal handed no ledger keeps nothing and shows the window's issues only. The book holds, per issue, its key, count, first and last seen with their hashes,
+  and the calls still inside the window by id (pruned as they leave it, which is what makes a call count once). It holds no payload, no person and no log: a trace id, an
+  operation, a step, a tag and a hash. Nothing in the generated wrangler config binds `PORTAL_LEDGER` yet, and no slice
+  owned it: snag #438 does (the binding, planned and destroyed by staging, and the key scoped by environment); until then a deployed portal's issues last as long
+  as its isolate. The read-modify-write is not atomic across requests, so two requests racing can lose a count, never invent one.
+- **Calls come from spans.** Windows are counted from the calls the spans of `live.source.window(ms, now)` hold (the telemetry module's, so a retry is one call and its
+  duration is the extent of its attempts). A refusal that opened no span (the door's) is counted by `ortho.calls` and is not a call to the monitor; the monitor does not
+  read `live.metrics`. An anomaly or a verdict has no burn to read: its row is `unknown`, never `ok` (check 39 does not judge their firing).
+- **The wire.** `model.alertRules` is in the wire's schema, and `operations[op].file` too (the owner of an issue is the declaring file).
+- **The pages.** `/portal/monitor/alerts` and `/portal/monitor/issues` (the Monitor panel lists these two), `/portal/monitor` keeps a page that links to both, and the
+  worst-first list is on `/portal`. The portal reads `GET /_portal/v1/monitor` once with the blueprint and the snapshot, and says `not yet` where it has none. The latency
+  objective block on the Metrics tab (the table above) is not part of this slice's check and is not built.
+- **Not built, and said so.** `slo` (Q2's override), `alert: false` and `groupBy` are not in the declaration API, so every rule carries the defaults.
 
 ## At a glance
 

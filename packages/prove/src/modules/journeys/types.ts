@@ -25,6 +25,10 @@ export interface CallRecord {
   readonly journal: ReadonlyArray<{ readonly event: string; readonly move: string; readonly subject: string; readonly fields: Readonly<Record<string, unknown>> }>;
   /** For an answered call whose operation moves: the stored state of what it moved, read right after the call. */
   readonly stored?: string | undefined;
+  /** The call listed the MCP door's tools (`.tools()`): it ran no operation, so no span of its own comes, and `body` is `{ tools }`. */
+  readonly tools?: true;
+  /** The step moved the world's clock (`s.clock.advance`, `.moveTo`): no operation ran and no span comes; `body` is the door's `{ now, fired }` or its refusal. */
+  readonly clock?: true;
 }
 
 export type { D1Access } from "./internal/d1-facts.ts";
@@ -83,6 +87,8 @@ export interface Project {
   readonly startingWorlds: ReadonlyMap<string, StartingWorld>;
   /** Each operation a mount omits, by its declaration: a journey's step that runs one is skipped. */
   readonly omitted?: ReadonlyMap<unknown, { readonly operation: string; readonly file: string }>;
+  /** Each adapter's mount by the name it is mounted under: what a `service` role in a declaration is read against, and what a journey's service cast member is called by. */
+  readonly mounts?: ReadonlyMap<unknown, string>;
   /** The journeys skipped because they still hold blanks (stubs from `ortho add journeys`), by file (K16 e). */
   readonly unfinished?: ReadonlyArray<string>;
 }

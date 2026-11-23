@@ -16,6 +16,8 @@ interface Held extends AuthInstance {
    */
   readonly auth: (origin?: string) => Promise<BetterAuth>;
   readonly db: D1Database;
+  readonly secret: string;
+  readonly worlds: boolean;
 }
 
 /** The origins one server answers on are a handful; a caller can't make more (the Host header is the platform's). */
@@ -27,6 +29,8 @@ export const instance = (o: AuthOptions): AuthInstance => {
   const held: Held = {
     kind: "auth-d1",
     db: o.db,
+    secret: o.secret,
+    worlds: o.worlds === true,
     auth: (origin) =>
       (tables ??= o.db.batch(SCHEMA.map((s) => o.db.prepare(s)))).then(() => {
         const key = origin ?? "";

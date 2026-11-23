@@ -17,3 +17,11 @@ follow to inclusion.
 
 `withProvider` is for a browser's wallet, which signs and sends in one step: the simulation runs here first, so a doomed
 transfer is refused before the person is asked to approve it.
+
+**Overlapping sends.** `withKey` takes the account's lock (`Chain.lock`) from `prepare` until `submit` returns, then
+follows the transfer outside it, so the next send's own port reads a pending nonce that counts this one. Each send makes
+its own port; none is kept. Any exit before the broadcast that is not a success hands the reservation back, as tidiness on a
+port being thrown away. `withProvider` takes no lock: a real wallet picks and queues its own nonces, and a lock held across a
+person's approval could hang every later send. The world's test wallet queues its own sends, as a real one does. A browser
+signer also asks its wallet `eth_chainId` right before `eth_sendTransaction` and refuses a mismatch (`KeyLocked`, both
+chains named in the log).

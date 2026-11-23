@@ -1,0 +1,8 @@
+Run 2's node errors, from its console log (the log itself is git-ignored). Each line cut at 200 characters.
+[08:04:57.545] ERROR: node:l1-tx-utils Failed to send L1 transaction: L1 RPC request failed: FormattedViemError: L1 RPC request failed
+[08:04:57.548] ERROR: node:publisher All available publishers exhausted (tried 1), failed to publish bundled transactions: FormattedViemError: L1 RPC request failed
+[08:05:43.525] ERROR: kv-store:lmdb-v2 Failed to commit transaction: BlockAlreadyCheckpointedError: Block 1 has already been checkpointed with the same content
+[08:05:43.555] ERROR: kv-store:lmdb-v2 Failed to commit transaction: ProposedCheckpointNotSequentialError: Proposed checkpoint 1 is not sequential: expected 2 (latest tip + 1, where tip is highest of 
+[08:05:43.555] ERROR: archiver Failed to add checkpoint 1 to store: Proposed checkpoint 1 is not sequential: expected 2 (latest tip + 1, where tip is highest of confirmed or pending): ProposedCheckpoi
+[08:05:43.557] ERROR: node:automine-sequencer Mempool-driven build failed: ProposedCheckpointNotSequentialError: Proposed checkpoint 1 is not sequential: expected 2 (latest tip + 1, where tip is highe
+[08:34:58.871] ERROR: archiver:l1-sync Latest L1 block 52 timestamp 1795335610 is too old. Make sure your Ethereum node is synced.: {

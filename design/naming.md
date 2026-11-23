@@ -110,7 +110,7 @@ what the app keeps, not the app.
 | Today | Becomes | Who |
 |---|---|---|
 | no npm org | `@orthograph` | Aaron creates it; the sweep can land before, but nothing publishes until it exists |
-| GitHub repository `AaronAbuUsama/architect` | Aaron's call: keep it, or rename it to `orthograph` | renaming is outward-facing; GitHub redirects the old URL |
+| GitHub repository `Open-Harness/orthograph` | moved from `AaronAbuUsama/architect` into Open-Harness and renamed `orthograph` by Aaron, 21 November 2026 (K33) | GitHub redirects both old addresses |
 | GitHub org | `orthograph` is taken; `orthograph-dev` was free | only if Aaron wants one |
 | local folder `~/projects/architect` | unchanged until the repository moves | — |
 

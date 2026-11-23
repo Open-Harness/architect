@@ -1,0 +1,51 @@
+{
+  "routes": [
+    {
+      "page": "handle",
+      "path": "/things/handle",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "A public name that belongs to one person until they release it, and is the address of a public page."
+    },
+    {
+      "page": "home",
+      "path": "/",
+      "params": [],
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "The things plugged-in is made of."
+    },
+    {
+      "page": "link",
+      "path": "/things/link",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "A title and web address on a public page."
+    },
+    {
+      "page": "profile",
+      "path": "/things/profile",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "A claimed name's public page, with its links in the order they were put."
+    }
+  ]
+}

@@ -13,7 +13,7 @@ import { startLogbook } from "./internal/logbook.ts";
 import { choosePort, files, launchOnFreePort, reap, writePort } from "./internal/process.ts";
 import { NAME, dirOf, failed, io, status } from "./internal/status.ts";
 import { verify } from "./internal/identity.ts";
-import { ensureSecrets } from "./internal/secrets.ts";
+import { ensureSecrets, generatedNames } from "./internal/secrets.ts";
 
 /** The environment as the blueprint declares it, and only one a long-lived workerd can run the revision's bundle for. */
 const declared = (root: string, name: string) =>
@@ -72,7 +72,7 @@ const up: EnvironmentsApi["up"] = ({ root: given, name, port, revision, policy, 
       : undefined;
     const portal = portalOf(built);
     yield* io(`${dir}`, () => {
-      ensureSecrets(f.secrets, Object.keys(environment.secrets));
+      ensureSecrets(f.secrets, generatedNames(environment.secrets));
       writeFileSync(f.config, environmentConfig(root, readFileSync(base, "utf8"), {
         name, revision: built.revision, sha256: built.sha256, main: built.main, ...(portal === undefined ? {} : { portal }), ...(otlp ? { otlp } : {}), ...(hosts ? { worlds: true } : {}), ...(logbook ? { logbook } : {}),
       }));

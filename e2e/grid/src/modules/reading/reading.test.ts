@@ -71,6 +71,16 @@ describe("a portal page", () => {
     expect(Reading.htmlSection(html2, 2, "A")).toBe("<p>a</p><h3>B</h3><p>b</p>");
     expect(Reading.htmlSection(html2, 3, "B")).toBe("<p>b</p>");
   });
+  it("reads no text out of a script or a style: a page shows what a person reads, not its search index", () => {
+    const index = '<script type="application/json" data-portal="search-index">[{"kind":"journey","name":"a name is claimed once"}]</script>';
+    const page = `<style>.a-name-is-claimed-once{color:red}</style><h1>handle</h1><p>no journey here</p>${index}`;
+    expect(Reading.htmlText(page)).not.toContain("a name is claimed once");
+    expect(Reading.htmlText(page)).not.toContain("color:red");
+    expect(Reading.htmlText(page)).toBe("handle no journey here");
+    expect(Reading.htmlText(page.replace("no journey here", "a name is claimed once"))).toContain("a name is claimed once");
+    expect(Reading.htmlText(`<SCRIPT>x one</SCRIPT ><p>kept</p><script src="a.js"></script>`)).toBe("kept");
+    expect(Reading.htmlLines(`<ul><li>real</li></ul>${index}`)).toEqual(["- real"]);
+  });
   it("turns entities back into text", () => {
     expect(Reading.htmlText("<p>can&#39;t &amp; won&#39;t &lt;x&gt;</p>")).toBe("can't & won't <x>");
   });

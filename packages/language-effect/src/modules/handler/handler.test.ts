@@ -1,9 +1,9 @@
-import { Cause, Effect, Exit, Layer, Tracer } from "effect";
+import { Cause, Deferred, Effect, Exit, Fiber, Layer, Tracer } from "effect";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { Blueprint } from "orthograph";
 import { ErrorNames } from "orthograph/server";
-import { Busy } from "#modules/work/types.js";
-import { BusyLive } from "#modules/work/service.js";
+import { Busy, WorldCount, makeBox } from "#modules/work/types.js";
+import { BusyLive, BusyReporting } from "#modules/work/service.js";
 import { storeMemory } from "#modules/records/service.js";
 import { Records, Store } from "#modules/records/types.js";
 import { EventNames } from "orthograph/server";
@@ -40,7 +40,7 @@ const recording = () => {
   const store = storeMemory();
   return { spans, store, layer: Layer.mergeAll(BusyLive, store.layer, Layer.succeed(Tracer.Tracer, tracer)) };
 };
-const ada = { kind: "person", person: "per_ada" } as const;
+const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 const served = Handlers.serve({ name: "allowance.grant", operation: grant, handler });
 
 describe("handler wrapper", () => {
@@ -332,5 +332,49 @@ describe("a move with a machine: the race, the machine's refusal, all or nothing
     await Effect.runPromiseExit(dying.call({ allowance: "alw_1", amount: "10" }, ada).pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))));
     expect(memory.rows[0]!.instance["spent"]).toBe(0n);
     expect(memory.entries).toEqual([]);
+  });
+});
+
+describe("counted work spans the whole operation (M8.07)", () => {
+  it("holds the operation's token through its commit, so a world with a commit pending is not quiet", async () => {
+    const { layer } = recording();
+    const seen = await Effect.runPromise(Effect.provide(Effect.gen(function* () {
+      const busy = yield* Busy;
+      const base = yield* Store;
+      const gate = yield* Deferred.make<void>();
+      const slow = { ...base, commit: (c: Parameters<typeof base.commit>[0]) => Effect.andThen(Deferred.await(gate), base.commit(c)) };
+      const fiber = yield* Effect.forkChild(Effect.provideService(served.call({ member: "per_olga", limit: "500" }, ada), Store, slow));
+      for (let i = 0; i < 20; i++) yield* Effect.yieldNow;
+      const during = yield* busy.held;
+      yield* Deferred.succeed(gate, undefined);
+      yield* Fiber.join(fiber);
+      return { during, after: yield* busy.held };
+    }), layer));
+    expect(seen).toEqual({ during: ["allowance.grant"], after: [] });
+  });
+});
+
+describe("the commit is a write section (M8.07)", () => {
+  it("a request the world no longer holds is interrupted at its commit, and nothing is committed; one it holds commits inside the section", async () => {
+    const run = async (open: boolean) => {
+      const rec = recording();
+      const sections: Array<string> = [];
+      const request = makeBox("entry:/allowance/grant", { id: "0.0", pinned: true });
+      const world = Layer.succeed(WorldCount, WorldCount.of({
+        enter: () => Effect.succeed("0.1"), leave: () => Effect.void, valid: () => Effect.succeed(open),
+        section: (id) => Effect.sync(() => { sections.push(`open ${id}`); return open; }),
+        sectionEnd: (id) => Effect.sync(() => void sections.push(`end ${id}`)),
+        request: Effect.succeed(request),
+      }));
+      let commits = 0;
+      const exit = await Effect.runPromiseExit(Effect.gen(function* () {
+        const base = yield* Store;
+        const counted = { ...base, commit: (c: Parameters<typeof base.commit>[0]) => Effect.suspend(() => { commits += 1; return base.commit(c); }) };
+        return yield* Effect.provideService(served.call({ member: "per_olga", limit: "500" }, ada), Store, counted);
+      }).pipe(Effect.provide(Layer.mergeAll(BusyReporting.pipe(Layer.provide(world)), rec.store.layer))));
+      return { ok: Exit.isSuccess(exit), commits, sections };
+    };
+    expect(await run(false)).toEqual({ ok: false, commits: 0, sections: [] });
+    expect(await run(true)).toEqual({ ok: true, commits: 1, sections: ["open 0.0", "end 0.0"] });
   });
 });

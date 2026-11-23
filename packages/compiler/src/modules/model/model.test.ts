@@ -10,7 +10,9 @@ import { Compiler } from "./service.ts";
 const visible = (from: string) => !basename(from).startsWith(".");
 
 const acme = resolve(import.meta.dirname, "../../../../../examples/acme");
-const scratch = resolve(import.meta.dirname, "../../../test/tmp");
+// This file's own folder: test/tmp also holds other files' scratch copies, which removing test/tmp as a whole deleted
+// while they loaded (design/decisions/CI-compiler-test-speed.md, "The scratch-folder race").
+const scratch = resolve(import.meta.dirname, "../../../test/tmp/model");
 const modelOf = (root: string) => Effect.runPromiseExit(Effect.provide(Compiler.model, nodeSource(root)));
 
 /** A copy of acme's blueprint inside the package, so its imports still resolve. */

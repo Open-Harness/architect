@@ -1,0 +1,2 @@
+# ST1.26 (Goal 5, slice 2): a release waits for a person's yes. Written before the web projection (ST1.25, slice 4): no piece exists, so the file stops in its beforeAll, which names the missing files.
+ui-layer/06-a-release-waits-for-a-persons-yes.test.ts > [file error]

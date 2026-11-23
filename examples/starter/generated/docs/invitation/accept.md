@@ -3,7 +3,7 @@
 
 Accept an invitation and become a member of its organisation.
 
-**Who may call:** the invitee of the invitation.
+**Who may call:** the invitee of the invitation by device or key or session.
 
 **Budget:** p95 200ms.
 
@@ -33,7 +33,7 @@ Accept an invitation and become a member of its organisation.
 | refusal | exit | code | when |
 |---|---|---|---|
 | InvitationNotPending | 40 | IN-900 | the invitation is in a state accept can't start from; carries `state` |
-| NotAllowed | 3 | AR-001 | the caller isn't the invitee of the invitation; the handler never runs |
+| NotAllowed | 3 | AR-001 | the caller isn't the invitee of the invitation by device or key or session; the handler never runs |
 
 ## Worked examples
 

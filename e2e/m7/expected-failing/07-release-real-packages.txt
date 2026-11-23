@@ -1,0 +1,3 @@
+# Written before M7.02 is built. Red until tools/release/release.mjs exists, and `ortho --version` prints the package's version.
+m7/07-release-real-packages.test.ts > 07: the repository's own packages, released to a registry and installed from it (M7.02) > their versions agree with one tag: `check` on this repository, with no RELEASE_ROOT, passes at that version and refuses at another
+m7/07-release-real-packages.test.ts > 07: the repository's own packages, released to a registry and installed from it (M7.02) > a release at 9.8.7 > [suite error]

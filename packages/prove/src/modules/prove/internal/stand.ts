@@ -13,6 +13,9 @@ import { Worlds } from "#modules/world/service.js";
 import { ProveFailed } from "../types.ts";
 import { deviceHost, needsDevice, standChain } from "./device-host.ts";
 
+/** The longest window a derived alert names (3 days): the most history a world's feed supplies for monitoring, apart from the Calls page's display window. */
+export const PORTAL_HISTORY_MS = 3 * 24 * 60 * 60_000;
+
 /** The portal reads a world's last half hour: check 21's window, and the portal's own default. */
 export const PORTAL_WINDOW_MS = 30 * 60_000;
 
@@ -60,7 +63,7 @@ const ownWorld = ({ world, model, port, empty, env }: Wanted): Effect.Effect<Sta
     // A plugin that runs operations on the device gets a chain in the world (Anvil as a process, K7 Q7), released after the Worker.
     const stood = yield* standChain(model);
     // The world's portal reads this run's telemetry through a feed this process answers (the Worker cannot open the collector's files).
-    const feed = yield* PortalFeed.serve({ source: collector, metrics: FileMetrics.open(dir), environment: "local", windowMs: PORTAL_WINDOW_MS }).pipe(Effect.mapError(failed));
+    const feed = yield* PortalFeed.serve({ source: collector, metrics: FileMetrics.open(dir), environment: "local", windowMs: PORTAL_WINDOW_MS, historyMs: PORTAL_HISTORY_MS }).pipe(Effect.mapError(failed));
     const { url, chain } = yield* Worlds.start({ root: world, port, name: "prove", otlp: collector.url, portalFeed: feed.url, environment: "local", secretEnv: sinks.secretEnv, ...(stood.chain ? { chain: Effect.succeed(stood.chain) } : {}) }).pipe(Effect.mapError(failed));
     const device = needsDevice(model) ? yield* deviceHost(world, collector.url, chain).pipe(Effect.mapError(failed)) : undefined;
     return { url, collector, otlp: collector.url, device, notes: [...sinks.notes, ...stood.notes] };

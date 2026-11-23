@@ -168,8 +168,8 @@ export const MACHINE_NUMBER = 900;
 /** The runtime's refusal for a request key reused with another payload: its name, written once. */
 export const IDEMPOTENCY_CONFLICT = "IdempotencyConflict";
 
-/** Refusals the runtime makes for every thing, numbered in the order it gained them: who may call (before any handler runs), then a request key reused with another payload. */
-export const RUNTIME_CODES = { NotAllowed: "AR-001", [IDEMPOTENCY_CONFLICT]: "AR-002" } as const;
+/**
+ * Refusals the runtime makes, numbered in the order it gained them: who may call (before any handler runs), a request key
 ```
 
 A code is the thing's prefix and a number. Declared errors, a rule's among them, are 1, 2, 3 in the order `errors.ts` declares them, the
@@ -206,7 +206,7 @@ Three rules decide what a step is (K5, seam 3):
   and all, up to a fixed number of times. The call is named once, before its first attempt, and each attempt's span carries that name
   as `call.id`:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=165-173
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=173-181
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
   attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
@@ -225,7 +225,7 @@ what does the work. `database` is the store's, `wait` is a timer's. The kinds ar
 
 **Every required step must run, in order.** Eval 6 checks it on every answered call; an `optional` step may be absent:
 
-```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=134-147
+```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=139-152
 /** 6. Every required step of an answered call ran in its own span; all observed steps ran in declared order. */
 export const steps: PerOperation = (op, evidence) =>
   verdict("steps", op.name, evidence.flatMap((e) => {
@@ -303,7 +303,7 @@ A client that retries after a timeout doesn't know if the first call landed. `id
 answers what it answered the first time and changes nothing. No step runs, no event is written, and the span says
 `request.replayed`:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=102-110
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=106-114
         // The same request key from the same caller is one call: answer what was answered, and change nothing.
         const kept = key === undefined ? undefined : yield* store.answered(key);
         if (kept !== undefined) {
@@ -317,9 +317,10 @@ answers what it answered the first time and changes nothing. No step runs, no ev
 
 The key is the operation, the caller and the request together, so one caller's key never answers another's call:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=160-162
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=167-170
 // Keyed by operation and caller as well, so one caller's key never answers another's call.
-const who = principal.kind === "person" ? principal.person : "anonymous";
+// Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
+const who = "person" in principal ? `${principal.kind}:${principal.person}` : principal.kind === "service" ? `service:${principal.mount}` : principal.kind;
 const key = op.idempotent === "request" && request !== undefined ? `${name}|${who}|${request}` : undefined;
 ```
 
@@ -524,7 +525,7 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
   signup's included (`examples/signup/generated/api/src/errors.ts:18`), from
   `packages/projections/src/modules/api/internal/api.ts:56`. In acme, `AllowanceExceeded` is `AL-001` and carries
   `remaining`, not `limit`. The design docs also show `Blueprint.error("AllowanceExceeded", …)` with a name string
-  (`design/docs/index.html:373`); the code takes no name, because names come from paths and identifiers. Both should
+  (`design/history/retired-2026-11-23/docs/index.html:373`); the code takes no name, because names come from paths and identifiers. Both should
   match the code. Ledger: OPS-06.
 </Note>
 

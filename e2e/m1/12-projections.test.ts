@@ -2,14 +2,14 @@
 // `blueprint/projections/`, from `@orthograph/projections`; `ortho generate` then writes `generated/server` exactly as it did
 // when a fixed list of renderers wrote it, and the model records the mounts.
 //
-// Assumptions beyond M1-plugins (sections 1, 2, 3, 15), frame/projections.md (sections 1 and 2) and milestones M1.11 ("acme
+// Assumptions beyond M1-plugins (sections 1, 2, 3, 15), design/history/retired-2026-11-23/frame/projections.md (sections 1 and 2) and milestones M1.11 ("acme
 // mounts them; its `generated/server` is unchanged", risk 2: "only header paths may differ"), where the design is silent:
 //  1. The package is `@orthograph/projections` (M1-plugins section 15, X-10), a dependency of acme (`workspace:*`, as acme's
 //     other workspace packages are), and its root export has one named projection descriptor per mount: `model`, `api` and
 //     `server`. Each is `Blueprint.projection(...)`'s frozen object: `kind: "projection"` and a `render` function.
 //  2. Acme mounts them as `blueprint/projections/{model,api,server}.ts`, each the one line of section 3,
 //     `export default Blueprint.use(<name>, (p) => [...])`, with no verb needed. The mount's name is its file's name and its
-//     folder follows (`generated/model/`, `generated/api/`, `generated/server/`; frame/projections.md section 2), so the
+//     folder follows (`generated/model/`, `generated/api/`, `generated/server/`; design/history/retired-2026-11-23/frame/projections.md section 2), so the
 //     model projection writes `generated/model/`, as the fixed list did.
 //  3. "Unchanged" means every file of `generated/server/` and `generated/api/` byte for byte, with one allowance: the first
 //     line may say `// Generated from the blueprint. Do not edit.` (as today) or `// Generated from
@@ -126,8 +126,9 @@ describe("12 M1.11: acme mounts the model, the api and the server", () => {
       expect(model.mounts?.[name], `mounts.${name}`).toMatchObject({ kind: "projection", file: mountPath(name), package: "@orthograph/projections" });
       expect(model.mounts?.[name]?.hash, `mounts.${name}.hash`).toEqual(expect.any(String));
     }
-    // Part two (check 14, M1.12) mounts the sdk, cli and mcp beside these: they are allowed here, nothing else is.
-    const partTwo = ["sdk", "cli", "mcp"];
+    // Part two (check 14, M1.12) mounts the sdk, cli and mcp beside these, and M1.22 the actions projection
+    // (design/decisions/WEB-actions-projection.md): they are allowed here, nothing else is.
+    const partTwo = ["sdk", "cli", "mcp", "actions"];
     expect(Object.keys(model.mounts ?? {}).filter((name) => !mounted.includes(name as typeof mounted[number]) && !partTwo.includes(name)), "nothing else is mounted yet").toEqual([]);
   });
 
