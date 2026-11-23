@@ -1,7 +1,7 @@
 import { Config, Effect } from "effect";
 import { makeChainPort } from "@orthograph/chain-evm/device";
 import type { ChainApi } from "./types.ts";
-import { lane } from "./internal/lanes.ts";
+import { lock } from "./internal/lanes.ts";
 import { CAIP2 } from "./internal/caip2.ts";
 
 /** How often a send looks for its receipt. A local chain mines at once; a real one answers within a few polls. */
@@ -29,6 +29,7 @@ export const Chain: ChainApi = {
     return { chainId, rpcUrl: rpcUrl._tag === "Some" ? rpcUrl.value : undefined, depth: Chain.depthOf(chainId, declared) };
   }),
   depthOf: (chainId, declared) => declared ?? (chainId === LOCAL ? 1 : undefined),
+  lock: lock,
   port: (setting) =>
     Effect.gen(function* () {
       if (setting.rpcUrl === undefined) return yield* Effect.die(new Error("this wallet has no chain to send on: set ORTHO_WALLET_RPC_URL"));
@@ -36,5 +37,4 @@ export const Chain: ChainApi = {
         Effect.catch((fault) => Effect.die(new Error(`the chain at ORTHO_WALLET_RPC_URL is unusable: ${fault.message}`))),
       );
     }),
-  shared: (setting) => lane(setting, Chain.port(setting)),
 };

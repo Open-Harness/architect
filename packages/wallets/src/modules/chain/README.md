@@ -13,8 +13,7 @@ variable), a world with `chain.depth`. Chain id 31337 is local and is depth 1 wi
 none: `fromHost` still answers (keys work on any chain) with `depth` undefined, and a send on it is a defect naming
 `ORTHO_WALLET_DEPTH`, asked before anything is prepared, signed or sent.
 
-**One lane per chain.** `Chain.port` makes a new port, with a new nonce manager, on every call. `Chain.shared(setting)` is
-the port every send uses: the process keeps one per `chainId|rpcUrl` (`internal/lanes.ts`), so two sends in flight from
-one account take distinct nonces even when each came from a signer its host made for that call. It is read and filled
-inside the send; only a port that was made is kept, so an unreachable chain on one send does not fail the next, and sends
-that arrive before any port exists wait on one build. A world's Anvil has its own URL, so worlds stay apart.
+**No nonce state outlives a send.** `Chain.port` makes a port, with its own nonce manager, and a send throws it away: the
+next send's `prepare` reads the pending nonce from the chain, so nothing kept here can drift from it. What a process
+does share is `Chain.lock(setting, from)`: one lock per `chainId|rpcUrl|account`, made in one step on the first ask
+(`internal/lanes.ts`). A keyed send holds it from `prepare` until the node has accepted the broadcast.

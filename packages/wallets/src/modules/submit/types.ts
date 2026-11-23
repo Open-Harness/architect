@@ -1,6 +1,6 @@
 import type { Effect } from "effect";
 import type { Timers } from "@orthograph/language-effect";
-import type { Address, ChainPort, Hash, Signer } from "@orthograph/chain-evm/device";
+import type { Address, Hash, Signer } from "@orthograph/chain-evm/device";
 import type { KeyLocked, SimulationReverted } from "../../../blueprint/things/wallet/errors.js";
 import type { ChainSetting } from "../chain/types.ts";
 
@@ -30,18 +30,15 @@ export interface Handed {
  */
 export type Hand = (to: Address, value: bigint) => Effect.Effect<Handed, KeyLocked>;
 
-/** The process's shared chain port for the setting (`Chain.shared`): every send on that chain goes through it, so they share its nonce lane. */
-export type SharedPort = Effect.Effect<ChainPort, never, Timers>;
-
 export interface SubmitApi {
   /**
    * A transfer from a key held here: prepare, simulate (never skipped; a transfer that fails it is refused with nothing
    * signed or sent, and its nonce handed back), sign, submit, and follow it until it is included.
    */
-  readonly withKey: (setting: ChainSetting, shared: SharedPort, signer: Signer, to: Address, value: bigint) => Effect.Effect<Sent, SendRefused, Timers>;
+  readonly withKey: (setting: ChainSetting, signer: Signer, to: Address, value: bigint) => Effect.Effect<Sent, SendRefused, Timers>;
   /**
    * The same for a provider that holds the key and sends for itself (a browser's wallet): simulated here first, so a
    * doomed transfer is refused before the person is asked to approve anything, then handed over and followed.
    */
-  readonly withProvider: (setting: ChainSetting, shared: SharedPort, from: Address, to: Address, value: bigint, hand: Hand) => Effect.Effect<Sent, SendRefused, Timers>;
+  readonly withProvider: (setting: ChainSetting, from: Address, to: Address, value: bigint, hand: Hand) => Effect.Effect<Sent, SendRefused, Timers>;
 }

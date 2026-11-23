@@ -4,7 +4,6 @@ import { Effect, Option, Redacted } from "effect";
 import { Keys, type Address, type Hash } from "@orthograph/chain-evm/device";
 import { NoSuchKey } from "../../../../blueprint/things/wallet/errors.js";
 import { Account } from "../../account/service.ts";
-import { Chain } from "../../chain/service.ts";
 import { Submit } from "../../submit/service.ts";
 import type { ChainSetting } from "../../chain/types.ts";
 import type { Hand } from "../../submit/types.ts";
@@ -19,8 +18,6 @@ const quantity = (n: bigint) => `0x${n.toString(16)}`;
 const declined = (error: unknown) => typeof error === "object" && error !== null && [4001, 4100].includes((error as { code?: number }).code ?? 0);
 
 export const provided = (name: SignerName, chain: ChainSetting, provider: Eip1193, labels: LabelBook): Signer => {
-  // The process's shared port for this chain, read when a send runs (`Chain.shared`).
-  const port = Chain.shared(chain);
   const ask = (method: string, params: ReadonlyArray<unknown> = []) =>
     Effect.tryPromise({ try: () => provider.request({ method, params }), catch: (error) => error }).pipe(
       Effect.catch((error) => (declined(error) ? locked(`the wallet declined ${method}`) : Effect.die(new Error(`the wallet's provider failed ${method}`)))),
@@ -96,7 +93,7 @@ export const provided = (name: SignerName, chain: ChainSetting, provider: Eip119
             const sent = (yield* ask("eth_getTransactionByHash", [hash])) as { readonly nonce?: string } | null;
             return { hash: hash as Hash, nonce: Number(BigInt(sent?.nonce ?? "0x0")), fromBlock: BigInt(before) };
           });
-        return yield* Submit.withProvider(chain, port, address, to, value, hand);
+        return yield* Submit.withProvider(chain, address, to, value, hand);
       }),
   };
 };
