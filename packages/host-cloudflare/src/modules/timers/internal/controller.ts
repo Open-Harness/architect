@@ -21,8 +21,11 @@ export const makeController = ({ clock, table, count, limit }: ControllerOptions
   // One move at a time: a second waits its turn rather than walking the clock under the first.
   const one = Semaphore.makeUnsafe(1);
   return {
-  settle: (target) =>
+  settle: (plan) =>
     one.withPermits(1)(Effect.gen(function* () {
+      const planned = plan();
+      if (!planned.ok) return yield* Effect.fail({ _tag: "Refused" as const, status: planned.status, body: planned.body });
+      const target = planned.target;
       const fired: Array<ClockTimer> = [];
       yield* count.quiet(limit);
       for (let next = table.earliest(target); next !== undefined; next = table.earliest(target)) {

@@ -43,7 +43,8 @@ export const inWorld = <A>(source: ClockSource, f: () => A): A => store.run({ so
  */
 export const inEntry = <A>(source: ClockSource, owner: string, f: () => Promise<A>, leave: (owner: string) => Promise<unknown>): Promise<A> => {
   const cell: Cell = { source, held: owner };
-  return store.run(cell, f).finally(() => {
+  // A callback that throws before it returns a promise is a rejection like any other, so the cleanup is always attached.
+  return new Promise<A>((resolve) => { resolve(store.run(cell, f)); }).finally(() => {
     const held = cell.held;
     cell.held = undefined;
     return held === undefined ? undefined : leave(held);

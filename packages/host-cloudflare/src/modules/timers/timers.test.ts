@@ -3,7 +3,7 @@ import { env, runInDurableObject } from "cloudflare:test";
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
 import { WorldClock } from "#modules/clock/service.js";
-import type { ClockDeclaration, ClockSource } from "#modules/clock/types.js";
+import type { ClockDeclaration, ClockSource, ClockState } from "#modules/clock/types.js";
 import { WorldTimers } from "./service.ts";
 import type { WorldTimersState } from "./types.ts";
 
@@ -14,13 +14,13 @@ const DAY = 86_400_000;
 const START = ms("2027-01-10T09:00:00.000Z");
 
 /** A world's timers over fresh storage, with a quiet limit short enough to wait out. */
-const inWorld = <A>(name: string, declaration: ClockDeclaration, use: (world: WorldTimersState, sql: SqlStorage) => A | Promise<A>, wakes?: Parameters<typeof WorldTimers.state>[0]["wakes"]) =>
+const inWorld = <A>(name: string, declaration: ClockDeclaration, use: (world: WorldTimersState, sql: SqlStorage, clock: ClockState) => A | Promise<A>, wakes?: Parameters<typeof WorldTimers.state>[0]["wakes"]) =>
   runInDurableObject(env.WORLD.get(env.WORLD.idFromName(name)), (_instance, state) => {
     const clock = WorldClock.state(state.storage.sql, declaration);
-    return use(WorldTimers.state({ sql: state.storage.sql, clock, env: { ORTHO_QUIET_MS: "150" }, ...(wakes === undefined ? {} : { wakes }), changed: () => undefined }), state.storage.sql);
+    return use(WorldTimers.state({ sql: state.storage.sql, clock, env: { ORTHO_QUIET_MS: "150" }, ...(wakes === undefined ? {} : { wakes }), changed: () => undefined }), state.storage.sql, clock);
   });
 
-const settle = (world: WorldTimersState, target: number) => Effect.runPromise(Effect.result(world.controller.settle(target)));
+const settle = (world: WorldTimersState, target: number) => Effect.runPromise(Effect.result(world.controller.settle(() => ({ ok: true, target }))));
 
 /** What a Worker does with a sleeper: wait on its row, note the instant it woke at, and give its token back. */
 const sleeper = (world: WorldTimersState, owner: string, at: number, woke: Array<string>) => {
@@ -101,7 +101,7 @@ describe("a world that is never quiet", () => {
       world.rpc.countEnter("agents/run/run_1");
       const refused = await settle(world, START + DAY);
       expect(refused).toMatchObject({ _tag: "Failure", failure: { _tag: "NeverQuiet", busy: ["agents/run/run_1", "probe.spin"] } });
-      expect(await Effect.runPromise(Effect.result(world.controller.settle(START)))).toMatchObject({ _tag: "Failure" });
+      expect(await settle(world, START)).toMatchObject({ _tag: "Failure" });
       world.rpc.countLeave("probe.spin");
       world.rpc.countLeave("agents/run/run_1");
       expect(await settle(world, START + DAY)).toMatchObject({ _tag: "Success", success: { now: new RealDate(START + DAY).toISOString() } });
@@ -124,6 +124,32 @@ describe("a real world", () => {
       expect(woke).toEqual(["probe.nap"]);
       expect(world.nextAlarm()).toBeUndefined();
     });
+  });
+});
+
+describe("moves that overlap", () => {
+  it("two advances of one month from January end in March: each starts from where the one before ended", async () => {
+    await inWorld("timers-overlap", STEPPED, async (world, _sql, clock) => {
+      const month = () => Effect.runPromise(Effect.result(world.controller.settle(() => clock.plan({ span: "1 month" }))));
+      const both = await Promise.all([month(), month()]);
+      expect(both.map((r) => r._tag)).toEqual(["Success", "Success"]);
+      expect(new RealDate(clock.now()).toISOString()).toBe("2027-03-10T09:00:00.000Z");
+    });
+  });
+});
+
+describe("a wake that fails after setting its own replacement", () => {
+  it("leaves exactly one row pending, the new one", async () => {
+    let world: WorldTimersState | undefined;
+    await inWorld("timers-replaced", STEPPED, async (state) => {
+      world = state;
+      state.rpc.timerSet(START + DAY, "keeper/membership.renew/mem_1", "due", { kind: "keeper", payload: "old" });
+      expect(await settle(state, START + 2 * DAY)).toMatchObject({ _tag: "Failure", failure: { _tag: "WakeFailed" } });
+      expect(state.rpc.timersDurable()).toMatchObject([{ at: START + 10 * DAY, wake: { payload: "new" } }]);
+    }, () => Effect.suspend(() => {
+      world!.rpc.timerSet(START + 10 * DAY, "keeper/membership.renew/mem_1", "due", { kind: "keeper", payload: "new" });
+      return Effect.die("the keeper fell over");
+    }));
   });
 });
 

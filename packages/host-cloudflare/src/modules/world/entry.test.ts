@@ -89,7 +89,7 @@ describe("a request is counted from the moment it arrives", () => {
           return new Response("ok");
         },
       });
-      const settle = () => Effect.runPromise(Effect.result(timers.controller.settle(T + 1000)));
+      const settle = () => Effect.runPromise(Effect.result(timers.controller.settle(() => ({ ok: true, target: T + 1000 }))));
 
       // A read, held before it does anything: nothing but the entry knows it is in flight.
       const read = entry.fetch!(new Request("http://app/portal/x"), at, undefined as never);
@@ -112,6 +112,30 @@ describe("a request is counted from the moment it arrives", () => {
       await spin;
       expect(timers.held()).toEqual([]);
       expect(await settle()).toMatchObject({ _tag: "Success" });
+    });
+  });
+});
+
+describe("an entry whose callback throws", () => {
+  it("gives its token back on every path, so the world stays quiet", async () => {
+    await runInDurableObject(env.WORLD.get(env.WORLD.idFromName("entry-throws")), async (_instance, state) => {
+      const clock = WorldClock.state(state.storage.sql, { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" });
+      const timers = WorldTimers.state({ sql: state.storage.sql, clock, env: { ORTHO_QUIET_MS: "100" }, changed: () => undefined });
+      const stub = {
+        source: () => Promise.resolve(clock.source()),
+        begin: (owner: string) => { timers.rpc.countEnter(owner); return Promise.resolve(clock.source()); },
+        countLeave: (owner: string) => timers.rpc.countLeave(owner),
+      };
+      const at = { ...stepped, WORLD: { idFromName: (name: string) => name, get: () => stub } as unknown as DurableObjectNamespace };
+      const boom = (): never => { throw new Error("boom"); };
+      const entry = WorldEntry.entry<EntryEnv>({ fetch: boom, scheduled: boom, queue: boom });
+      await expect(entry.fetch!(new Request("http://app/x"), at, undefined as never)).rejects.toThrow("boom");
+      await expect(entry.scheduled!({} as never, at, undefined as never)).rejects.toThrow("boom");
+      await expect(entry.queue!({} as never, at, undefined as never)).rejects.toThrow("boom");
+      await expect(WorldEntry.within(at, boom)).rejects.toThrow("boom");
+      await expect(Promise.resolve(WorldEntry.withinNow(at, boom))).rejects.toThrow("boom");
+      expect(timers.held()).toEqual([]);
+      expect(await Effect.runPromise(Effect.result(timers.controller.settle(() => ({ ok: true, target: T + 1000 }))))).toMatchObject({ _tag: "Success" });
     });
   });
 });

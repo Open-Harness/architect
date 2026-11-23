@@ -85,7 +85,8 @@ export const makeTable = (
     // A wake that fails puts its row back, so the timer is not lost and the step that fired it fails, naming it.
     return wakes(timer).pipe(
       Effect.catchCause((cause) => Effect.suspend(() => {
-        insert(r);
+        // Unless the wake already set a replacement under the same (owner, name): then there is still only one, the new one.
+        if (select("WHERE wake IS NOT NULL AND owner = ? AND name = ?", r.owner, r.name).length === 0) insert(r);
         return Effect.fail(new WakeFailed({ owner: r.owner, name: r.name, message: String(cause) }));
       })),
       Effect.ensuring(Effect.sync(() => { if (counting) count.leave(r.owner); })),

@@ -44,14 +44,20 @@ export type Planned = { readonly ok: true; readonly target: number } | Extract<M
 /** Why a move did not settle (M8.07): a process stayed busy past the real-time limit, or a durable timer's wake failed. */
 export type Unsettled =
   | { readonly _tag: "NeverQuiet"; readonly busy: ReadonlyArray<string> }
-  | { readonly _tag: "WakeFailed"; readonly owner: string; readonly name: string; readonly message: string };
+  | { readonly _tag: "WakeFailed"; readonly owner: string; readonly name: string; readonly message: string }
+  /** The move itself was refused when it came to be planned (a real clock, a bad span, a move back). */
+  | { readonly _tag: "Refused"; readonly status: 400 | 409; readonly body: { readonly _tag: string; readonly message: string } };
 
 /**
  * What settles a stepped world's move (the timers module builds it): walks the clock to the target, firing what is due
  * on the way, and answers once the world is quiet there. `fired` lists the durable timers that ran on the way.
  */
 export interface Controller {
-  readonly settle: (target: number) => Effect.Effect<{ readonly now: string; readonly fired: ReadonlyArray<ClockTimer> }, Unsettled>;
+  /**
+   * `plan` is made inside the controller's lock, so a move relative to the instant (`"1 month"`) starts from where the move
+   * before it ended, not from where the world stood when the request arrived.
+   */
+  readonly settle: (plan: () => Planned) => Effect.Effect<{ readonly now: string; readonly fired: ReadonlyArray<ClockTimer> }, Unsettled>;
   readonly timers: () => ReadonlyArray<ClockTimer>;
 }
 

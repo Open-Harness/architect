@@ -14,18 +14,21 @@ const iso = (millis: number) => new Date(millis).toISOString();
 const refusal = (moved: Extract<Moved, { readonly ok: false }>): Response => json(moved.body, moved.status);
 
 const unsettled = (why: Unsettled, now: string): Response =>
-  why._tag === "NeverQuiet"
+  why._tag === "Refused"
+    ? json(why.body, why.status)
+    : why._tag === "NeverQuiet"
     ? json({ _tag: "NeverQuiet", busy: why.busy, now, message: `the world is never quiet: still busy ${why.busy.join(", ")}` }, 409)
     : json({ _tag: "WakeFailed", owner: why.owner, name: why.name, now, message: `the timer ${why.owner} ${why.name} failed to wake: ${why.message}` }, 500);
 
 /** A planned move, made: settled by the controller, or only set when the world has none. */
-const make = (state: ClockState, planned: Planned, controller: Controller | undefined): Promise<Response> => {
-  if (!planned.ok) return Promise.resolve(refusal(planned));
+const make = (state: ClockState, plan: () => Planned, controller: Controller | undefined): Promise<Response> => {
   if (controller === undefined) {
+    const planned = plan();
+    if (!planned.ok) return Promise.resolve(refusal(planned));
     const moved = state.moveTo(iso(planned.target));
     return Promise.resolve(moved.ok ? json({ now: iso(moved.now), fired: [] }) : refusal(moved));
   }
-  return Effect.runPromise(controller.settle(planned.target).pipe(
+  return Effect.runPromise(controller.settle(plan).pipe(
     Effect.match({
       onSuccess: (settled) => json(settled),
       onFailure: (why) => unsettled(why, iso(state.now())),
@@ -43,8 +46,8 @@ export const clockDoor = (state: ClockState, request: Request, controller?: Cont
   return request.json().catch(() => ({})).then((body) => {
     const { span, to } = body as { readonly span?: unknown; readonly to?: unknown };
     if (pathname === "/_world/clock/advance") {
-      return typeof span === "string" ? make(state, state.plan({ span }), controller) : Promise.resolve(json({ _tag: "BadMove", message: "advance names a span: { \"span\": \"1 month\" }" }, 400));
+      return typeof span === "string" ? make(state, () => state.plan({ span }), controller) : Promise.resolve(json({ _tag: "BadMove", message: "advance names a span: { \"span\": \"1 month\" }" }, 400));
     }
-    return typeof to === "string" ? make(state, state.plan({ to }), controller) : Promise.resolve(json({ _tag: "BadMove", message: "move-to names an instant: { \"to\": \"2027-01-10T09:00:00Z\" }" }, 400));
+    return typeof to === "string" ? make(state, () => state.plan({ to }), controller) : Promise.resolve(json({ _tag: "BadMove", message: "move-to names an instant: { \"to\": \"2027-01-10T09:00:00Z\" }" }, 400));
   });
 };
