@@ -54,9 +54,9 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     const env: Record<string, unknown> = { cast: people, ...(device === undefined ? {} : { world: device.given }) };
     const facts = { facts: given ?? doorFacts(url), tableOf: tableOf(project), nameOf: (op: unknown) => nameOfOperation(project, op as Operation | Read) };
     // Time is declared in the language (M8.09) and built later: a clock step or the keeper's call refuses, never pretends.
-    const unbuilt = (call: AnyCall): string | undefined =>
+    const unbuilt = (call: AnyCall, kept: ReadonlySet<string> = keepers): string | undefined =>
       call.kind === "clock-call" ? "time is not built yet: M8.07 (a step that moves the world's clock)"
-      : keepers.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)"
+      : kept.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)"
       : undefined;
     // Each credential the world minted for a cast member's way in, once per journey.
     const minted = new Map<string, string | undefined>();
@@ -122,10 +122,12 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         return { record, missing: resolved.missing };
       });
 
-    for (const w of lineage) {
+    for (const [at, w] of lineage.entries()) {
+      // A starting world's own cast is what its lineage so far says: a later world or the journey may recast a name.
+      const keptHere = keepersIn(names, lineage.slice(0, at + 1).map((x) => x.cast));
       const script = Scripting.script(Object.fromEntries(names.map((n) => [n, Blueprint.signedIn])));
       for (const call of w.makes(script)) {
-        const why = unbuilt(call);
+        const why = unbuilt(call, keptHere);
         if (why !== undefined) return done(`starting world ${w.name}: ${why}`);
         const { record } = yield* make(`starting world ${w.name}`, call as Doable, true);
         if (record.status !== 200) return done(`starting world ${w.name}: ${record.operation} ${record.status === 500 ? "died" : `answered ${record.status}`}: ${show(record.body)}`);
