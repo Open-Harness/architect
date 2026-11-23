@@ -1,5 +1,145 @@
 [
   {
+    "from": "bank-account.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "bank-account.business",
+    "to": "bridge-business.id",
+    "kind": "refers"
+  },
+  {
+    "from": "bridge-business.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "bank-account.close",
+    "to": "bank-account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-account.close",
+    "to": "bank-account.BankAccountClosed",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-account.close",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-account.get",
+    "to": "bank-account",
+    "kind": "reads"
+  },
+  {
+    "from": "bank-account.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-account.open",
+    "to": "bank-account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-account.open",
+    "to": "bank-account.BankAccountOpened",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-account.open",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bridge-business.approve",
+    "to": "bridge-business",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bridge-business.approve",
+    "to": "bridge-business.KybApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "bridge-business.get",
+    "to": "bridge-business",
+    "kind": "reads"
+  },
+  {
+    "from": "bridge-business.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bridge-business.reject",
+    "to": "bridge-business",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bridge-business.reject",
+    "to": "bridge-business.KybRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "bridge-business.start",
+    "to": "bridge-business",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bridge-business.start",
+    "to": "bridge-business.KybStarted",
+    "kind": "emits"
+  },
+  {
+    "from": "bridge-business.start",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bridge-individual.approve",
+    "to": "bridge-individual",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bridge-individual.approve",
+    "to": "bridge-individual.KycApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "bridge-individual.get",
+    "to": "bridge-individual",
+    "kind": "reads"
+  },
+  {
+    "from": "bridge-individual.get",
+    "to": "bridge-individual.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bridge-individual.reject",
+    "to": "bridge-individual",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bridge-individual.reject",
+    "to": "bridge-individual.KycRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "bridge-individual.start",
+    "to": "bridge-individual",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bridge-individual.start",
+    "to": "bridge-individual.KycStarted",
+    "kind": "emits"
+  },
+  {
     "from": "company.create",
     "to": "company",
     "kind": "acts-on"

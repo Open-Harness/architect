@@ -1,15 +1,30 @@
 {
   "refusals": {
+    "BankAccountNameTaken": "BA-002",
+    "BankAccountNotOpen": "BA-900",
+    "BridgeBusinessNotFound": "KB-901",
+    "BridgeBusinessNotStarted": "KB-900",
+    "BridgeIndividualNotFound": "KC-901",
+    "BridgeIndividualNotStarted": "KC-900",
     "CompanyAbbrTaken": "CO-002",
     "CompanyNameTaken": "CO-001",
     "CompanyNotActive": "CO-900",
     "IdempotencyConflict": "AR-002",
+    "KybAlreadyStarted": "KB-001",
+    "KybNotApproved": "BA-001",
+    "KycAlreadyStarted": "KC-001",
     "NotAllowed": "AR-001"
   },
   "values": {
     "Abbr": {
       "type": "text",
       "max": 10
+    },
+    "AccountCurrency": {
+      "type": "schema"
+    },
+    "BridgeLink": {
+      "type": "schema"
     },
     "Country": {
       "type": "text",
@@ -18,12 +33,548 @@
     "CurrencyCode": {
       "type": "schema"
     },
+    "DepositDetail": {
+      "type": "text",
+      "max": 140
+    },
+    "LegalName": {
+      "type": "text",
+      "max": 140
+    },
     "Name": {
       "type": "text",
       "max": 140
+    },
+    "RejectionReason": {
+      "type": "text",
+      "max": 500
     }
   },
   "things": {
+    "bank-account": {
+      "name": "bank-account",
+      "identifier": "BankAccount",
+      "code": "BA",
+      "description": "A bank account a company holds through Bridge, which takes deposits in one currency.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          }
+        },
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "company.id"
+        },
+        "business": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bridge-business.id",
+          "description": "The company's approved KYB the account is opened on."
+        },
+        "accountName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "description": "What the company calls the account (ERPNext's `account_name`)."
+        },
+        "currency": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "AccountCurrency",
+          "description": "The currency it takes deposits in."
+        },
+        "bankName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "description": "The bank that holds it, as Bridge names it."
+        },
+        "accountNumber": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "description": "Its account number, or IBAN, as Bridge gives it."
+        },
+        "routingNumber": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "description": "Its routing number, or BIC, as Bridge gives it."
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneNamePerCompany": {
+          "kind": "unique",
+          "fields": [
+            "company",
+            "accountName"
+          ],
+          "while": [
+            "open"
+          ],
+          "refuse": "BankAccountNameTaken"
+        }
+      },
+      "machine": {
+        "states": [
+          "open",
+          "closed"
+        ],
+        "moves": {
+          "open": {
+            "from": [],
+            "to": [
+              "open"
+            ],
+            "emits": "BankAccountOpened"
+          },
+          "close": {
+            "from": [
+              "open"
+            ],
+            "to": [
+              "closed"
+            ],
+            "emits": "BankAccountClosed"
+          }
+        },
+        "notFrom": {
+          "error": "BankAccountNotOpen",
+          "exit": 40,
+          "code": "BA-900"
+        }
+      },
+      "events": {
+        "BankAccountClosed": {
+          "account": {
+            "value": {
+              "type": "id",
+              "prefix": "bac"
+            },
+            "ref": "bank-account.id"
+          }
+        },
+        "BankAccountOpened": {
+          "account": {
+            "value": {
+              "type": "id",
+              "prefix": "bac"
+            },
+            "ref": "bank-account.id"
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "bank-account.company"
+          },
+          "business": {
+            "value": {
+              "type": "id",
+              "prefix": "kyb"
+            },
+            "ref": "bank-account.business",
+            "description": "The company's approved KYB the account is opened on."
+          },
+          "currency": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "AccountCurrency",
+            "ref": "bank-account.currency",
+            "description": "The currency it takes deposits in."
+          }
+        }
+      },
+      "errors": {
+        "KybNotApproved": {
+          "fields": {},
+          "exit": 41,
+          "code": "BA-001"
+        },
+        "BankAccountNameTaken": {
+          "fields": {
+            "accountName": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "Name",
+              "ref": "bank-account.accountName",
+              "description": "What the company calls the account (ERPNext's `account_name`)."
+            }
+          },
+          "exit": 42,
+          "code": "BA-002"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "65f812f2fb459b71"
+    },
+    "bridge-business": {
+      "name": "bridge-business",
+      "identifier": "BridgeBusiness",
+      "code": "KB",
+      "description": "A company's KYB with Bridge: the check of who the business is, which its bank accounts need.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          }
+        },
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "company.id"
+        },
+        "legalName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "LegalName",
+          "description": "The company's name as it is registered, which Bridge checks."
+        },
+        "email": {
+          "value": {
+            "type": "text",
+            "max": 254
+          },
+          "description": "Where Bridge writes to the business about its KYB."
+        },
+        "kybLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "description": "Bridge's hosted KYB form for this business."
+        },
+        "tosLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "description": "Bridge's terms of service, which the business accepts before it is approved."
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneKybPerCompany": {
+          "kind": "unique",
+          "fields": [
+            "company"
+          ],
+          "refuse": "KybAlreadyStarted"
+        }
+      },
+      "machine": {
+        "states": [
+          "started",
+          "approved",
+          "rejected"
+        ],
+        "moves": {
+          "start": {
+            "from": [],
+            "to": [
+              "started"
+            ],
+            "emits": "KybStarted"
+          },
+          "approve": {
+            "from": [
+              "started"
+            ],
+            "to": [
+              "approved"
+            ],
+            "emits": "KybApproved"
+          },
+          "reject": {
+            "from": [
+              "started"
+            ],
+            "to": [
+              "rejected"
+            ],
+            "emits": "KybRejected"
+          }
+        },
+        "notFrom": {
+          "error": "BridgeBusinessNotStarted",
+          "exit": 40,
+          "code": "KB-900"
+        }
+      },
+      "events": {
+        "KybApproved": {
+          "business": {
+            "value": {
+              "type": "id",
+              "prefix": "kyb"
+            },
+            "ref": "bridge-business.id"
+          }
+        },
+        "KybRejected": {
+          "business": {
+            "value": {
+              "type": "id",
+              "prefix": "kyb"
+            },
+            "ref": "bridge-business.id"
+          },
+          "reason": {
+            "value": {
+              "type": "text",
+              "max": 500
+            },
+            "named": "RejectionReason"
+          }
+        },
+        "KybStarted": {
+          "business": {
+            "value": {
+              "type": "id",
+              "prefix": "kyb"
+            },
+            "ref": "bridge-business.id"
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "bridge-business.company"
+          }
+        }
+      },
+      "errors": {
+        "KybAlreadyStarted": {
+          "fields": {
+            "company": {
+              "value": {
+                "type": "id",
+                "prefix": "com"
+              },
+              "ref": "bridge-business.company"
+            }
+          },
+          "exit": 41,
+          "code": "KB-001"
+        }
+      },
+      "notFound": {
+        "error": "BridgeBusinessNotFound",
+        "exit": 4,
+        "code": "KB-901"
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "d522f5db0c79f857"
+    },
+    "bridge-individual": {
+      "name": "bridge-individual",
+      "identifier": "BridgeIndividual",
+      "code": "KC",
+      "description": "A person's KYC with Bridge: the check of who they are.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "kyc"
+          }
+        },
+        "person": {
+          "value": {
+            "type": "id",
+            "prefix": "per"
+          },
+          "description": "The person checked, who started it."
+        },
+        "fullName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "LegalName",
+          "description": "The person's name as their documents give it, which Bridge checks."
+        },
+        "email": {
+          "value": {
+            "type": "text",
+            "max": 254
+          },
+          "description": "Where Bridge writes to the person about their KYC."
+        },
+        "kycLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "description": "Bridge's hosted KYC form for this person."
+        },
+        "tosLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "description": "Bridge's terms of service, which the person accepts before they are approved."
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneKycPerPerson": {
+          "kind": "unique",
+          "fields": [
+            "person"
+          ],
+          "refuse": "KycAlreadyStarted"
+        }
+      },
+      "machine": {
+        "states": [
+          "started",
+          "approved",
+          "rejected"
+        ],
+        "moves": {
+          "start": {
+            "from": [],
+            "to": [
+              "started"
+            ],
+            "emits": "KycStarted"
+          },
+          "approve": {
+            "from": [
+              "started"
+            ],
+            "to": [
+              "approved"
+            ],
+            "emits": "KycApproved"
+          },
+          "reject": {
+            "from": [
+              "started"
+            ],
+            "to": [
+              "rejected"
+            ],
+            "emits": "KycRejected"
+          }
+        },
+        "notFrom": {
+          "error": "BridgeIndividualNotStarted",
+          "exit": 40,
+          "code": "KC-900"
+        }
+      },
+      "events": {
+        "KycApproved": {
+          "individual": {
+            "value": {
+              "type": "id",
+              "prefix": "kyc"
+            },
+            "ref": "bridge-individual.id"
+          }
+        },
+        "KycRejected": {
+          "individual": {
+            "value": {
+              "type": "id",
+              "prefix": "kyc"
+            },
+            "ref": "bridge-individual.id"
+          },
+          "reason": {
+            "value": {
+              "type": "text",
+              "max": 500
+            },
+            "named": "RejectionReason"
+          }
+        },
+        "KycStarted": {
+          "individual": {
+            "value": {
+              "type": "id",
+              "prefix": "kyc"
+            },
+            "ref": "bridge-individual.id"
+          },
+          "person": {
+            "value": {
+              "type": "id",
+              "prefix": "per"
+            },
+            "ref": "bridge-individual.person",
+            "description": "The person checked, who started it."
+          }
+        }
+      },
+      "errors": {
+        "KycAlreadyStarted": {
+          "fields": {
+            "person": {
+              "value": {
+                "type": "id",
+                "prefix": "per"
+              },
+              "ref": "bridge-individual.person",
+              "description": "The person checked, who started it."
+            }
+          },
+          "exit": 41,
+          "code": "KC-001"
+        }
+      },
+      "notFound": {
+        "error": "BridgeIndividualNotFound",
+        "exit": 4,
+        "code": "KC-901"
+      },
+      "roles": [
+        "self"
+      ],
+      "roleRules": {
+        "self": "(individual, caller) => individual.person === caller.person"
+      },
+      "from": {
+        "kind": "app"
+      },
+      "hash": "032e05582cec1218"
+    },
     "company": {
       "name": "company",
       "identifier": "Company",
@@ -169,6 +720,1030 @@
     }
   },
   "operations": {
+    "bank-account.close": {
+      "kind": "operation",
+      "name": "bank-account.close",
+      "thing": "bank-account",
+      "verb": "close",
+      "identifier": "close",
+      "file": "blueprint/things/bank-account/verbs/close.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Close a company's bank account; it takes no more deposits.",
+      "payload": {
+        "account": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-account.id"
+        }
+      },
+      "answer": {
+        "account": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-account.id"
+        }
+      },
+      "move": {
+        "key": "close",
+        "from": [
+          "open"
+        ],
+        "to": [
+          "closed"
+        ],
+        "emits": "BankAccountClosed"
+      },
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "BankAccountNotOpen",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "account.company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "account": "bank-account"
+      },
+      "steps": {
+        "update": {
+          "name": "bank-account.close.update",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 800
+      },
+      "hash": "cf72f259c850a123"
+    },
+    "bank-account.get": {
+      "kind": "read",
+      "name": "bank-account.get",
+      "thing": "bank-account",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/bank-account/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-account.id"
+        }
+      },
+      "answer": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "bank-account.company"
+        },
+        "business": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bank-account.business",
+          "description": "The company's approved KYB the account is opened on."
+        },
+        "accountName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "bank-account.accountName",
+          "description": "What the company calls the account (ERPNext's `account_name`)."
+        },
+        "currency": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "AccountCurrency",
+          "ref": "bank-account.currency",
+          "description": "The currency it takes deposits in."
+        },
+        "bankName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "ref": "bank-account.bankName",
+          "description": "The bank that holds it, as Bridge names it."
+        },
+        "accountNumber": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "ref": "bank-account.accountNumber",
+          "description": "Its account number, or IBAN, as Bridge gives it."
+        },
+        "routingNumber": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "ref": "bank-account.routingNumber",
+          "description": "Its routing number, or BIC, as Bridge gives it."
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "eccdba12eb056468"
+    },
+    "bank-account.open": {
+      "kind": "operation",
+      "name": "bank-account.open",
+      "thing": "bank-account",
+      "verb": "open",
+      "identifier": "open",
+      "file": "blueprint/things/bank-account/verbs/open.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Open a bank account for a company whose KYB Bridge approved: answers where to send deposits.",
+      "payload": {
+        "business": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bank-account.business",
+          "description": "The company's approved KYB the account is opened on."
+        },
+        "accountName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "bank-account.accountName",
+          "description": "What the company calls the account (ERPNext's `account_name`)."
+        },
+        "currency": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "AccountCurrency",
+          "ref": "bank-account.currency",
+          "description": "The currency it takes deposits in."
+        }
+      },
+      "answer": {
+        "account": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-account.id"
+        },
+        "bankName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "ref": "bank-account.bankName",
+          "description": "The bank that holds it, as Bridge names it."
+        },
+        "accountNumber": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "ref": "bank-account.accountNumber",
+          "description": "Its account number, or IBAN, as Bridge gives it."
+        },
+        "routingNumber": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "DepositDetail",
+          "ref": "bank-account.routingNumber",
+          "description": "Its routing number, or BIC, as Bridge gives it."
+        }
+      },
+      "move": {
+        "key": "open",
+        "from": [],
+        "to": [
+          "open"
+        ],
+        "emits": "BankAccountOpened"
+      },
+      "errors": [
+        "KybNotApproved"
+      ],
+      "invariants": {
+        "BankAccountNameTaken": "bank-account.oneNamePerCompany"
+      },
+      "breaks": [
+        "bank-account.oneNamePerCompany"
+      ],
+      "refusals": [
+        "KybNotApproved",
+        "BankAccountNameTaken",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "business.company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "business": "bridge-business"
+      },
+      "mints": "account",
+      "steps": {
+        "load": {
+          "name": "bank-account.open.load",
+          "type": "database"
+        },
+        "insert": {
+          "name": "bank-account.open.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 800
+      },
+      "hash": "a8897bcc6ef45f27"
+    },
+    "bridge-business.approve": {
+      "kind": "operation",
+      "name": "bridge-business.approve",
+      "thing": "bridge-business",
+      "verb": "approve",
+      "identifier": "approve",
+      "file": "blueprint/things/bridge-business/verbs/approve.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Record that Bridge approved a company's KYB.",
+      "payload": {
+        "business": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bridge-business.id"
+        }
+      },
+      "answer": {
+        "business": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bridge-business.id"
+        }
+      },
+      "move": {
+        "key": "approve",
+        "from": [
+          "started"
+        ],
+        "to": [
+          "approved"
+        ],
+        "emits": "KybApproved"
+      },
+      "errors": [],
+      "invariants": {
+        "KybAlreadyStarted": "bridge-business.oneKybPerCompany"
+      },
+      "breaks": [
+        "bridge-business.oneKybPerCompany"
+      ],
+      "refusals": [
+        "KybAlreadyStarted",
+        "BridgeBusinessNotStarted",
+        "BridgeBusinessNotFound",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "refs": {
+        "business": "bridge-business"
+      },
+      "notFound": {
+        "business": "BridgeBusinessNotFound"
+      },
+      "steps": {
+        "update": {
+          "name": "bridge-business.approve.update",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "b2a7f9f44b643210"
+    },
+    "bridge-business.get": {
+      "kind": "read",
+      "name": "bridge-business.get",
+      "thing": "bridge-business",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/bridge-business/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one bridge-business by its id: company, legalName, email, kybLink, tosLink, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bridge-business.id"
+        }
+      },
+      "answer": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "bridge-business.company"
+        },
+        "legalName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "LegalName",
+          "ref": "bridge-business.legalName",
+          "description": "The company's name as it is registered, which Bridge checks."
+        },
+        "email": {
+          "value": {
+            "type": "text",
+            "max": 254
+          },
+          "ref": "bridge-business.email",
+          "description": "Where Bridge writes to the business about its KYB."
+        },
+        "kybLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "ref": "bridge-business.kybLink",
+          "description": "Bridge's hosted KYB form for this business."
+        },
+        "tosLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "ref": "bridge-business.tosLink",
+          "description": "Bridge's terms of service, which the business accepts before it is approved."
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "17b8ddc451dc491f"
+    },
+    "bridge-business.reject": {
+      "kind": "operation",
+      "name": "bridge-business.reject",
+      "thing": "bridge-business",
+      "verb": "reject",
+      "identifier": "reject",
+      "file": "blueprint/things/bridge-business/verbs/reject.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Record that Bridge turned down a company's KYB, and why.",
+      "payload": {
+        "business": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bridge-business.id"
+        },
+        "reason": {
+          "value": {
+            "type": "text",
+            "max": 500
+          },
+          "named": "RejectionReason"
+        }
+      },
+      "answer": {
+        "business": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bridge-business.id"
+        }
+      },
+      "move": {
+        "key": "reject",
+        "from": [
+          "started"
+        ],
+        "to": [
+          "rejected"
+        ],
+        "emits": "KybRejected"
+      },
+      "errors": [],
+      "invariants": {
+        "KybAlreadyStarted": "bridge-business.oneKybPerCompany"
+      },
+      "breaks": [
+        "bridge-business.oneKybPerCompany"
+      ],
+      "refusals": [
+        "KybAlreadyStarted",
+        "BridgeBusinessNotStarted",
+        "BridgeBusinessNotFound",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "refs": {
+        "business": "bridge-business"
+      },
+      "notFound": {
+        "business": "BridgeBusinessNotFound"
+      },
+      "steps": {
+        "update": {
+          "name": "bridge-business.reject.update",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "1c1f0a35e1db2fdd"
+    },
+    "bridge-business.start": {
+      "kind": "operation",
+      "name": "bridge-business.start",
+      "thing": "bridge-business",
+      "verb": "start",
+      "identifier": "start",
+      "file": "blueprint/things/bridge-business/verbs/start.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Start a company's KYB with Bridge: answers the form the business fills in, and Bridge's terms.",
+      "payload": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "bridge-business.company"
+        },
+        "legalName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "LegalName",
+          "ref": "bridge-business.legalName",
+          "description": "The company's name as it is registered, which Bridge checks."
+        },
+        "email": {
+          "value": {
+            "type": "text",
+            "max": 254
+          },
+          "ref": "bridge-business.email",
+          "description": "Where Bridge writes to the business about its KYB."
+        }
+      },
+      "answer": {
+        "business": {
+          "value": {
+            "type": "id",
+            "prefix": "kyb"
+          },
+          "ref": "bridge-business.id"
+        },
+        "kybLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "ref": "bridge-business.kybLink",
+          "description": "Bridge's hosted KYB form for this business."
+        },
+        "tosLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "ref": "bridge-business.tosLink",
+          "description": "Bridge's terms of service, which the business accepts before it is approved."
+        }
+      },
+      "move": {
+        "key": "start",
+        "from": [],
+        "to": [
+          "started"
+        ],
+        "emits": "KybStarted"
+      },
+      "errors": [],
+      "invariants": {
+        "KybAlreadyStarted": "bridge-business.oneKybPerCompany"
+      },
+      "breaks": [
+        "bridge-business.oneKybPerCompany"
+      ],
+      "refusals": [
+        "KybAlreadyStarted",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "company": "company"
+      },
+      "mints": "business",
+      "steps": {
+        "insert": {
+          "name": "bridge-business.start.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 800
+      },
+      "hash": "57b4edd4b7ed798c"
+    },
+    "bridge-individual.approve": {
+      "kind": "operation",
+      "name": "bridge-individual.approve",
+      "thing": "bridge-individual",
+      "verb": "approve",
+      "identifier": "approve",
+      "file": "blueprint/things/bridge-individual/verbs/approve.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Record that Bridge approved a person's KYC.",
+      "payload": {
+        "individual": {
+          "value": {
+            "type": "id",
+            "prefix": "kyc"
+          },
+          "ref": "bridge-individual.id"
+        }
+      },
+      "answer": {
+        "individual": {
+          "value": {
+            "type": "id",
+            "prefix": "kyc"
+          },
+          "ref": "bridge-individual.id"
+        }
+      },
+      "move": {
+        "key": "approve",
+        "from": [
+          "started"
+        ],
+        "to": [
+          "approved"
+        ],
+        "emits": "KycApproved"
+      },
+      "errors": [],
+      "invariants": {
+        "KycAlreadyStarted": "bridge-individual.oneKycPerPerson"
+      },
+      "breaks": [
+        "bridge-individual.oneKycPerPerson"
+      ],
+      "refusals": [
+        "KycAlreadyStarted",
+        "BridgeIndividualNotStarted",
+        "BridgeIndividualNotFound",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "refs": {
+        "individual": "bridge-individual"
+      },
+      "notFound": {
+        "individual": "BridgeIndividualNotFound"
+      },
+      "steps": {
+        "update": {
+          "name": "bridge-individual.approve.update",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "7db2df243970357e"
+    },
+    "bridge-individual.get": {
+      "kind": "read",
+      "name": "bridge-individual.get",
+      "thing": "bridge-individual",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/bridge-individual/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one bridge-individual by its id: person, fullName, email, kycLink, tosLink, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "kyc"
+          },
+          "ref": "bridge-individual.id"
+        }
+      },
+      "answer": {
+        "person": {
+          "value": {
+            "type": "id",
+            "prefix": "per"
+          },
+          "ref": "bridge-individual.person",
+          "description": "The person checked, who started it."
+        },
+        "fullName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "LegalName",
+          "ref": "bridge-individual.fullName",
+          "description": "The person's name as their documents give it, which Bridge checks."
+        },
+        "email": {
+          "value": {
+            "type": "text",
+            "max": 254
+          },
+          "ref": "bridge-individual.email",
+          "description": "Where Bridge writes to the person about their KYC."
+        },
+        "kycLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "ref": "bridge-individual.kycLink",
+          "description": "Bridge's hosted KYC form for this person."
+        },
+        "tosLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "ref": "bridge-individual.tosLink",
+          "description": "Bridge's terms of service, which the person accepts before they are approved."
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role",
+          "role": "bridge-individual.self"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "18ef48cc7d70704b"
+    },
+    "bridge-individual.reject": {
+      "kind": "operation",
+      "name": "bridge-individual.reject",
+      "thing": "bridge-individual",
+      "verb": "reject",
+      "identifier": "reject",
+      "file": "blueprint/things/bridge-individual/verbs/reject.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Record that Bridge turned down a person's KYC, and why.",
+      "payload": {
+        "individual": {
+          "value": {
+            "type": "id",
+            "prefix": "kyc"
+          },
+          "ref": "bridge-individual.id"
+        },
+        "reason": {
+          "value": {
+            "type": "text",
+            "max": 500
+          },
+          "named": "RejectionReason"
+        }
+      },
+      "answer": {
+        "individual": {
+          "value": {
+            "type": "id",
+            "prefix": "kyc"
+          },
+          "ref": "bridge-individual.id"
+        }
+      },
+      "move": {
+        "key": "reject",
+        "from": [
+          "started"
+        ],
+        "to": [
+          "rejected"
+        ],
+        "emits": "KycRejected"
+      },
+      "errors": [],
+      "invariants": {
+        "KycAlreadyStarted": "bridge-individual.oneKycPerPerson"
+      },
+      "breaks": [
+        "bridge-individual.oneKycPerPerson"
+      ],
+      "refusals": [
+        "KycAlreadyStarted",
+        "BridgeIndividualNotStarted",
+        "BridgeIndividualNotFound",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "refs": {
+        "individual": "bridge-individual"
+      },
+      "notFound": {
+        "individual": "BridgeIndividualNotFound"
+      },
+      "steps": {
+        "update": {
+          "name": "bridge-individual.reject.update",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "e2d965e2393a4589"
+    },
+    "bridge-individual.start": {
+      "kind": "operation",
+      "name": "bridge-individual.start",
+      "thing": "bridge-individual",
+      "verb": "start",
+      "identifier": "start",
+      "file": "blueprint/things/bridge-individual/verbs/start.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Start your own KYC with Bridge: answers the form you fill in, and Bridge's terms.",
+      "payload": {
+        "fullName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "LegalName",
+          "ref": "bridge-individual.fullName",
+          "description": "The person's name as their documents give it, which Bridge checks."
+        },
+        "email": {
+          "value": {
+            "type": "text",
+            "max": 254
+          },
+          "ref": "bridge-individual.email",
+          "description": "Where Bridge writes to the person about their KYC."
+        }
+      },
+      "answer": {
+        "individual": {
+          "value": {
+            "type": "id",
+            "prefix": "kyc"
+          },
+          "ref": "bridge-individual.id"
+        },
+        "kycLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "ref": "bridge-individual.kycLink",
+          "description": "Bridge's hosted KYC form for this person."
+        },
+        "tosLink": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "BridgeLink",
+          "ref": "bridge-individual.tosLink",
+          "description": "Bridge's terms of service, which the person accepts before they are approved."
+        }
+      },
+      "move": {
+        "key": "start",
+        "from": [],
+        "to": [
+          "started"
+        ],
+        "emits": "KycStarted"
+      },
+      "errors": [],
+      "invariants": {
+        "KycAlreadyStarted": "bridge-individual.oneKycPerPerson"
+      },
+      "breaks": [
+        "bridge-individual.oneKycPerPerson"
+      ],
+      "refusals": [
+        "KycAlreadyStarted",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "signed-in"
+        }
+      ],
+      "agentTool": true,
+      "mints": "individual",
+      "steps": {
+        "insert": {
+          "name": "bridge-individual.start.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 800
+      },
+      "hash": "0f008c871ab164bf"
+    },
     "company.create": {
       "kind": "operation",
       "name": "company.create",
@@ -357,6 +1932,1766 @@
     }
   },
   "journeys": {
+    "journeys/bridge-a-bank-account-closes.ts": {
+      "name": "bridge: a bank account closes",
+      "file": "journeys/bridge-a-bank-account-closes.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a bank account",
+      "steps": [
+        {
+          "title": "Ada reads it back with the deposit details she was given",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                },
+                "Operating",
+                "USD",
+                {
+                  "ref": [
+                    "world",
+                    "bankName"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "accountNumber"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "routingNumber"
+                  ]
+                },
+                "open"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't close it",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-account.close",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-account",
+              "id": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "state": "open"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-account.close",
+                "bank-account.close.update"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada closes it",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.close",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            },
+            {
+              "kind": "emits",
+              "event": "BankAccountClosed",
+              "fields": {
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-account",
+              "id": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "state": "closed"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bank-account.close",
+                "bank-account.close.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "it can't be closed twice",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.close",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bank-account.notFrom",
+              "fields": {
+                "state": "closed"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a closed account frees its name for a new one",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "accountName": "Operating",
+              "currency": "USD"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^bac_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BankAccountOpened",
+              "fields": {
+                "account": {
+                  "ref": [
+                    "last",
+                    "account"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "currency": "USD"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-account",
+              "id": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              },
+              "state": "open"
+            }
+          ]
+        },
+        {
+          "title": "the new account is a different one",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "open"
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and the old one stays closed",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Operating",
+                "closed"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "17fb2131c8e8b01db01a792c1caa7f1a9470a09ec4b88a8219421c8a12aaf18b"
+    },
+    "journeys/bridge-a-person-is-checked.ts": {
+      "name": "bridge: a person is checked",
+      "file": "journeys/bridge-a-person-is-checked.ts",
+      "cast": {
+        "ada": {
+          "kind": "signed-in"
+        },
+        "bo": {
+          "kind": "signed-in"
+        },
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "starts": null,
+      "steps": [
+        {
+          "title": "the system can't start a KYC: it is nobody",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-individual.start",
+            "payload": {
+              "fullName": "Nobody At All",
+              "email": "nobody@capxul.test"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada starts her own KYC and gets Bridge's form and terms",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.start",
+            "payload": {
+              "fullName": "Ada Wanjiru Kamau",
+              "email": "ada@acme-trading.test"
+            },
+            "request": "ada-kyc"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kyc_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^https:\\/\\/\\S+$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^https:\\/\\/\\S+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "KycStarted",
+              "fields": {
+                "individual": {
+                  "ref": [
+                    "last",
+                    "individual"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-individual",
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              },
+              "state": "started"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bridge-individual.start",
+                "bridge-individual.start.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's KYC",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada can't approve herself",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.approve",
+            "payload": {
+              "individual": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-individual",
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              },
+              "state": "started"
+            }
+          ]
+        },
+        {
+          "title": "a person has one KYC, so a second start is refused",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.start",
+            "payload": {
+              "fullName": "Ada W. Kamau",
+              "email": "ada.k@acme-trading.test"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "KycAlreadyStarted",
+              "fields": {
+                "person": {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bridge approves her",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-individual.approve",
+            "payload": {
+              "individual": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kyc_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "KycApproved",
+              "fields": {
+                "individual": {
+                  "ref": [
+                    "last",
+                    "individual"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-individual",
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              },
+              "state": "approved"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bridge-individual.approve",
+                "bridge-individual.approve.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "she reads it back as she typed it, approved, with a form and terms that differ",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "Ada Wanjiru Kamau",
+                "ada@acme-trading.test",
+                "approved"
+              ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": false
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo starts his own, which Ada's doesn't block",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-individual.start",
+            "payload": {
+              "fullName": "Bo Otieno",
+              "email": "bo@bo-ltd.test"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kyc_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "KycStarted",
+              "fields": {
+                "individual": {
+                  "ref": [
+                    "last",
+                    "individual"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-individual",
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              },
+              "state": "started"
+            }
+          ]
+        },
+        {
+          "title": "Bridge turns Bo down, with its reason",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-individual.reject",
+            "payload": {
+              "individual": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              },
+              "reason": "selfie does not match the passport"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kyc_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "KycRejected",
+              "fields": {
+                "individual": {
+                  "ref": [
+                    "last",
+                    "individual"
+                  ]
+                },
+                "reason": "selfie does not match the passport"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-individual",
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              },
+              "state": "rejected"
+            }
+          ]
+        },
+        {
+          "title": "a turned-down KYC can't then be approved",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-individual.approve",
+            "payload": {
+              "individual": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bridge-individual.notFrom",
+              "fields": {
+                "state": "rejected"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads his own back, turned down",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "Bo Otieno",
+                "rejected"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "c38616dc4a992c8a79dc4c846d246d704cd7ba746b2872690038553fc432e72b"
+    },
+    "journeys/bridge-kyb-is-decided-by-bridge.ts": {
+      "name": "bridge: kyb is decided by bridge",
+      "file": "journeys/bridge-kyb-is-decided-by-bridge.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        },
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "starts": "kyb started",
+      "steps": [
+        {
+          "title": "Ada can't approve her own company's KYB",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-business.approve",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-business",
+              "id": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "state": "started"
+            }
+          ]
+        },
+        {
+          "title": "nor open a bank account before Bridge approves it",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "accountName": "Operating",
+              "currency": "USD"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "KybNotApproved",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bank-account.open",
+                "bank-account.open.load"
+              ],
+              "absent": [
+                "bank-account.open.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Bridge approves it",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-business.approve",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              }
+            },
+            {
+              "kind": "emits",
+              "event": "KybApproved",
+              "fields": {
+                "business": {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-business",
+              "id": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "state": "approved"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bridge-business.approve",
+                "bridge-business.approve.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "an approved KYB can't be approved again",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-business.approve",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bridge-business.notFrom",
+              "fields": {
+                "state": "approved"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor turned down afterwards",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-business.reject",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "reason": "documents expired"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bridge-business.notFrom",
+              "fields": {
+                "state": "approved"
+              }
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-business",
+              "id": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "state": "approved"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads it back as approved",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-business.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "approved"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo sets up a company of his own",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Bo Ltd",
+              "abbr": "BL",
+              "country": "Kenya",
+              "defaultCurrency": "KES"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo starts its KYB",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-business.start",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "legalName": "Bo Limited",
+              "email": "bo@bo-ltd.test"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kyb_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "KybStarted",
+              "fields": {
+                "business": {
+                  "ref": [
+                    "last",
+                    "business"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "Bo can't turn down his own KYB either",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-business.reject",
+            "payload": {
+              "business": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "reason": "changed my mind"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-business",
+              "id": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "state": "started"
+            }
+          ]
+        },
+        {
+          "title": "Bridge turns Bo's down, with its reason",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-business.reject",
+            "payload": {
+              "business": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "reason": "registration certificate unreadable"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kyb_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "KybRejected",
+              "fields": {
+                "business": {
+                  "ref": [
+                    "last",
+                    "business"
+                  ]
+                },
+                "reason": "registration certificate unreadable"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-business",
+              "id": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "state": "rejected"
+            }
+          ]
+        },
+        {
+          "title": "a turned-down KYB can't then be approved",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-business.approve",
+            "payload": {
+              "business": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bridge-business.notFrom",
+              "fields": {
+                "state": "rejected"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and opens no bank account",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "accountName": "Main",
+              "currency": "EUR"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "KybNotApproved",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-account.open.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada's approval is untouched by Bo's refusal",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-business.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "approved"
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "2d6ab310476794d429fb871f1387cbdce6bba02159737a249c7c33bff2363104"
+    },
+    "journeys/bridge-open-a-bank-account.ts": {
+      "name": "bridge: open a bank account",
+      "file": "journeys/bridge-open-a-bank-account.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "kyb approved",
+      "steps": [
+        {
+          "title": "Bo can't open an account on Ada's company",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "accountName": "Operating",
+              "currency": "USD"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-account.open",
+                "bank-account.open.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada opens a US dollar account and gets where to send deposits",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "accountName": "Operating",
+              "currency": "USD"
+            },
+            "request": "acme-operating"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^bac_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "\\S",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^\\d{4,17}$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^\\d{9}$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BankAccountOpened",
+              "fields": {
+                "account": {
+                  "ref": [
+                    "last",
+                    "account"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "business": {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                },
+                "currency": "USD"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-account",
+              "id": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              },
+              "state": "open"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bank-account.open",
+                "bank-account.open.load",
+                "bank-account.open.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read it",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-account.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the company has one open account by a name",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "accountName": "Operating",
+              "currency": "EUR"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "BankAccountNameTaken",
+              "fields": {
+                "accountName": "Operating"
+              }
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-account.open.commit"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "she opens a euro account under another name",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "world",
+                  "business"
+                ]
+              },
+              "accountName": "Payroll",
+              "currency": "EUR"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^bac_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BankAccountOpened",
+              "fields": {
+                "account": {
+                  "ref": [
+                    "last",
+                    "account"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "business": {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                },
+                "currency": "EUR"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-account",
+              "id": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              },
+              "state": "open"
+            }
+          ]
+        },
+        {
+          "title": "it reads back as the second account, not the first",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "business"
+                  ]
+                },
+                "Payroll",
+                "EUR",
+                "open"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$",
+              "flags": ""
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "91dd9c73b2dfae72d119909ef9486373170bf540bf43e4487baab9dd865342de"
+    },
+    "journeys/bridge-start-a-kyb.ts": {
+      "name": "bridge: start a kyb",
+      "file": "journeys/bridge-start-a-kyb.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a company",
+      "steps": [
+        {
+          "title": "Bo can't start KYB for a company he doesn't run",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-business.start",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "legalName": "Acme Trading Limited",
+              "email": "bo@elsewhere.test"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bridge-business.start",
+                "bridge-business.start.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada starts her company's KYB and gets Bridge's form and terms",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-business.start",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "legalName": "Acme Trading Limited",
+              "email": "finance@acme-trading.test"
+            },
+            "request": "acme-kyb"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kyb_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^https:\\/\\/\\S+$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "^https:\\/\\/\\S+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "KybStarted",
+              "fields": {
+                "business": {
+                  "ref": [
+                    "last",
+                    "business"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-business",
+              "id": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "state": "started"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bridge-business.start",
+                "bridge-business.start.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's KYB",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-business.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a company has one KYB, so a second start is refused",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-business.start",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "legalName": "Acme Trading Ltd",
+              "email": "ops@acme-trading.test"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "KybAlreadyStarted",
+              "fields": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "reading it back shows what she typed, still started, with a form and terms that differ",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-business.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Acme Trading Limited",
+                "finance@acme-trading.test",
+                "started"
+              ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": false
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "2a72b6e9ec5f8c34b2c21980c67da67f05af653ccd387a47ca4cb6318cb56b20"
+    },
     "journeys/companies-are-kept-apart.ts": {
       "name": "companies are kept apart",
       "file": "journeys/companies-are-kept-apart.ts",
@@ -869,6 +4204,73 @@
     }
   },
   "startingWorlds": {
+    "a bank account": {
+      "name": "a bank account",
+      "file": "blueprint/starting-worlds/a-bank-account.ts",
+      "from": "kyb approved",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "7e7a5d53175f115b196386ccf9a69a803f275faa35db8db6da659453fff0414e",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "bank-account.open",
+          "payload": {
+            "business": {
+              "ref": [
+                "world",
+                "business"
+              ]
+            },
+            "accountName": "Operating",
+            "currency": "USD"
+          },
+          "request": "acme-operating"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "business": {
+          "ref": [
+            "world",
+            "business"
+          ]
+        },
+        "account": {
+          "ref": [
+            "last",
+            "account"
+          ]
+        },
+        "bankName": {
+          "ref": [
+            "last",
+            "bankName"
+          ]
+        },
+        "accountNumber": {
+          "ref": [
+            "last",
+            "accountNumber"
+          ]
+        },
+        "routingNumber": {
+          "ref": [
+            "last",
+            "routingNumber"
+          ]
+        }
+      }
+    },
     "a company": {
       "name": "a company",
       "file": "blueprint/starting-worlds/a-company.ts",
@@ -897,6 +4299,142 @@
           "ref": [
             "last",
             "company"
+          ]
+        }
+      }
+    },
+    "kyb approved": {
+      "name": "kyb approved",
+      "file": "blueprint/starting-worlds/kyb-approved.ts",
+      "from": "kyb started",
+      "cast": {
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "sourceHash": "56700313ec72a10aad84cb71ffcabf09f54fd30a86d43110d40420fe46ceca76",
+      "makes": [
+        {
+          "actor": "bridge",
+          "operation": "bridge-business.approve",
+          "payload": {
+            "business": {
+              "ref": [
+                "world",
+                "business"
+              ]
+            }
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "business": {
+          "ref": [
+            "world",
+            "business"
+          ]
+        }
+      }
+    },
+    "kyb started": {
+      "name": "kyb started",
+      "file": "blueprint/starting-worlds/kyb-started.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "5e952d2c3e04fc2b99aaef4415b299f37497d1fc0a6b1f326af37de1fa17a73d",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "bridge-business.start",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "legalName": "Acme Trading Limited",
+            "email": "finance@acme-trading.test"
+          },
+          "request": "acme-kyb"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "business": {
+          "ref": [
+            "last",
+            "business"
+          ]
+        },
+        "kybLink": {
+          "ref": [
+            "last",
+            "kybLink"
+          ]
+        },
+        "tosLink": {
+          "ref": [
+            "last",
+            "tosLink"
+          ]
+        }
+      }
+    },
+    "kyc started": {
+      "name": "kyc started",
+      "file": "blueprint/starting-worlds/kyc-started.ts",
+      "from": null,
+      "cast": {
+        "ada": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "d401fb9be0d571ea26e0747c886b505560a00522564bf1f5864020193403efc5",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "bridge-individual.start",
+          "payload": {
+            "fullName": "Ada Wanjiru Kamau",
+            "email": "ada@acme-trading.test"
+          },
+          "request": "ada-kyc"
+        }
+      ],
+      "gives": {
+        "individual": {
+          "ref": [
+            "last",
+            "individual"
+          ]
+        },
+        "kycLink": {
+          "ref": [
+            "last",
+            "kycLink"
+          ]
+        },
+        "tosLink": {
+          "ref": [
+            "last",
+            "tosLink"
           ]
         }
       }
@@ -945,6 +4483,36 @@
       }
     },
     {
+      "id": "anomaly:BA-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BA-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/bank-account/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:BA-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BA-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/bank-account/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:BA-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BA-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
       "id": "anomaly:CO-001",
       "kind": "anomaly",
       "labels": {
@@ -973,6 +4541,528 @@
         "severity": "ticket",
         "owner": "orthograph"
       }
+    },
+    {
+      "id": "anomaly:KB-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "KB-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/bridge-business/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:KB-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "KB-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:KB-901",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "KB-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:KC-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "KC-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/bridge-individual/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:KC-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "KC-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:KC-901",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "KC-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "defect:bank-account.close",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-account.close",
+        "severity": "page",
+        "owner": "blueprint/things/bank-account/verbs/close.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bank-account.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-account.get",
+        "severity": "page",
+        "owner": "blueprint/things/bank-account/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bank-account.open",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-account.open",
+        "severity": "page",
+        "owner": "blueprint/things/bank-account/verbs/open.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bridge-business.approve",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-business.approve",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-business/verbs/approve.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bridge-business.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-business.get",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-business/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bridge-business.reject",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-business.reject",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-business/verbs/reject.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bridge-business.start",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-business.start",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-business/verbs/start.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bridge-individual.approve",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-individual.approve",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-individual/verbs/approve.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bridge-individual.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-individual.get",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-individual/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bridge-individual.reject",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-individual.reject",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-individual/verbs/reject.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bridge-individual.start",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-individual.start",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-individual/verbs/start.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
     },
     {
       "id": "defect:company.create",
@@ -1027,6 +5117,479 @@
       },
       "target": 0.999,
       "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bank-account.close",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-account.close",
+        "severity": "page",
+        "owner": "blueprint/things/bank-account/verbs/close.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 800,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bank-account.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-account.get",
+        "severity": "page",
+        "owner": "blueprint/things/bank-account/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bank-account.open",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-account.open",
+        "severity": "page",
+        "owner": "blueprint/things/bank-account/verbs/open.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 800,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bridge-business.approve",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-business.approve",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-business/verbs/approve.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bridge-business.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-business.get",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-business/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bridge-business.reject",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-business.reject",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-business/verbs/reject.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bridge-business.start",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-business.start",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-business/verbs/start.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 800,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bridge-individual.approve",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-individual.approve",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-individual/verbs/approve.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bridge-individual.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-individual.get",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-individual/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bridge-individual.reject",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-individual.reject",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-individual/verbs/reject.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bridge-individual.start",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bridge-individual.start",
+        "severity": "page",
+        "owner": "blueprint/things/bridge-individual/verbs/start.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 800,
       "minCalls": 20,
       "alerts": [
         {
@@ -1143,6 +5706,56 @@
           "severity": "ticket"
         }
       ]
+    },
+    {
+      "id": "verdict:bridge: a bank account closes:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: a bank account closes",
+        "severity": "page",
+        "owner": "journeys/bridge-a-bank-account-closes.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: a person is checked:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: a person is checked",
+        "severity": "page",
+        "owner": "journeys/bridge-a-person-is-checked.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: kyb is decided by bridge:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: kyb is decided by bridge",
+        "severity": "page",
+        "owner": "journeys/bridge-kyb-is-decided-by-bridge.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: open a bank account:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: open a bank account",
+        "severity": "page",
+        "owner": "journeys/bridge-open-a-bank-account.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: start a kyb:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: start a kyb",
+        "severity": "page",
+        "owner": "journeys/bridge-start-a-kyb.ts"
+      }
     },
     {
       "id": "verdict:companies are kept apart:local",

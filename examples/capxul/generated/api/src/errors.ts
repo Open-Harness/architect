@@ -1,23 +1,48 @@
 // Generated from the blueprint. Do not edit.
 import { Schema } from "effect";
 import { ErrorNames, wireStruct } from "orthograph/server";
+import * as BankAccount from "../../../blueprint/things/bank-account/errors.ts";
+import * as BridgeBusiness from "../../../blueprint/things/bridge-business/errors.ts";
+import * as BridgeIndividual from "../../../blueprint/things/bridge-individual/errors.ts";
 import * as Company from "../../../blueprint/things/company/errors.ts";
 
 /** Every refusal's code, its exit for the CLI and its HTTP status: one row each, read by the CLI, HTTP and MCP. */
 export const refusals = {
+  KybNotApproved: { code: "BA-001", exit: 41, status: 422 },
+  BankAccountNameTaken: { code: "BA-002", exit: 42, status: 422 },
+  KybAlreadyStarted: { code: "KB-001", exit: 41, status: 422 },
+  KycAlreadyStarted: { code: "KC-001", exit: 41, status: 422 },
   CompanyNameTaken: { code: "CO-001", exit: 41, status: 422 },
   CompanyAbbrTaken: { code: "CO-002", exit: 42, status: 422 },
+  BankAccountNotOpen: { code: "BA-900", exit: 40, status: 409 },
+  BridgeBusinessNotStarted: { code: "KB-900", exit: 40, status: 409 },
+  BridgeIndividualNotStarted: { code: "KC-900", exit: 40, status: 409 },
   CompanyNotActive: { code: "CO-900", exit: 40, status: 409 },
+  BridgeBusinessNotFound: { code: "KB-901", exit: 4, status: 404 },
+  BridgeIndividualNotFound: { code: "KC-901", exit: 4, status: 404 },
   NotAllowed: { code: "AR-001", exit: 3, status: 403 },
   IdempotencyConflict: { code: "AR-002", exit: 120, status: 409 },
 } as const;
 type Refusal = keyof typeof refusals;
 
+ErrorNames.name(BankAccount.KybNotApproved, "KybNotApproved");
+export class KybNotApproved extends Schema.TaggedError<KybNotApproved>()("KybNotApproved", { code: Schema.Literal(refusals.KybNotApproved.code), ...wireStruct(BankAccount.KybNotApproved.fields).fields }, { httpApiStatus: refusals.KybNotApproved.status }) { static readonly code = refusals.KybNotApproved.code; }
+ErrorNames.name(BankAccount.BankAccountNameTaken, "BankAccountNameTaken");
+export class BankAccountNameTaken extends Schema.TaggedError<BankAccountNameTaken>()("BankAccountNameTaken", { code: Schema.Literal(refusals.BankAccountNameTaken.code), ...wireStruct(BankAccount.BankAccountNameTaken.fields).fields }, { httpApiStatus: refusals.BankAccountNameTaken.status }) { static readonly code = refusals.BankAccountNameTaken.code; }
+ErrorNames.name(BridgeBusiness.KybAlreadyStarted, "KybAlreadyStarted");
+export class KybAlreadyStarted extends Schema.TaggedError<KybAlreadyStarted>()("KybAlreadyStarted", { code: Schema.Literal(refusals.KybAlreadyStarted.code), ...wireStruct(BridgeBusiness.KybAlreadyStarted.fields).fields }, { httpApiStatus: refusals.KybAlreadyStarted.status }) { static readonly code = refusals.KybAlreadyStarted.code; }
+ErrorNames.name(BridgeIndividual.KycAlreadyStarted, "KycAlreadyStarted");
+export class KycAlreadyStarted extends Schema.TaggedError<KycAlreadyStarted>()("KycAlreadyStarted", { code: Schema.Literal(refusals.KycAlreadyStarted.code), ...wireStruct(BridgeIndividual.KycAlreadyStarted.fields).fields }, { httpApiStatus: refusals.KycAlreadyStarted.status }) { static readonly code = refusals.KycAlreadyStarted.code; }
 ErrorNames.name(Company.CompanyNameTaken, "CompanyNameTaken");
 export class CompanyNameTaken extends Schema.TaggedError<CompanyNameTaken>()("CompanyNameTaken", { code: Schema.Literal(refusals.CompanyNameTaken.code), ...wireStruct(Company.CompanyNameTaken.fields).fields }, { httpApiStatus: refusals.CompanyNameTaken.status }) { static readonly code = refusals.CompanyNameTaken.code; }
 ErrorNames.name(Company.CompanyAbbrTaken, "CompanyAbbrTaken");
 export class CompanyAbbrTaken extends Schema.TaggedError<CompanyAbbrTaken>()("CompanyAbbrTaken", { code: Schema.Literal(refusals.CompanyAbbrTaken.code), ...wireStruct(Company.CompanyAbbrTaken.fields).fields }, { httpApiStatus: refusals.CompanyAbbrTaken.status }) { static readonly code = refusals.CompanyAbbrTaken.code; }
+export class BankAccountNotOpen extends Schema.TaggedError<BankAccountNotOpen>()("BankAccountNotOpen", { code: Schema.Literal(refusals.BankAccountNotOpen.code), ...{ state: Schema.Literals(["open", "closed"]) } }, { httpApiStatus: refusals.BankAccountNotOpen.status }) { static readonly code = refusals.BankAccountNotOpen.code; }
+export class BridgeBusinessNotStarted extends Schema.TaggedError<BridgeBusinessNotStarted>()("BridgeBusinessNotStarted", { code: Schema.Literal(refusals.BridgeBusinessNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeBusinessNotStarted.status }) { static readonly code = refusals.BridgeBusinessNotStarted.code; }
+export class BridgeIndividualNotStarted extends Schema.TaggedError<BridgeIndividualNotStarted>()("BridgeIndividualNotStarted", { code: Schema.Literal(refusals.BridgeIndividualNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeIndividualNotStarted.status }) { static readonly code = refusals.BridgeIndividualNotStarted.code; }
 export class CompanyNotActive extends Schema.TaggedError<CompanyNotActive>()("CompanyNotActive", { code: Schema.Literal(refusals.CompanyNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.CompanyNotActive.status }) { static readonly code = refusals.CompanyNotActive.code; }
+export class BridgeBusinessNotFound extends Schema.TaggedError<BridgeBusinessNotFound>()("BridgeBusinessNotFound", { code: Schema.Literal(refusals.BridgeBusinessNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeBusinessNotFound.status }) { static readonly code = refusals.BridgeBusinessNotFound.code; }
+export class BridgeIndividualNotFound extends Schema.TaggedError<BridgeIndividualNotFound>()("BridgeIndividualNotFound", { code: Schema.Literal(refusals.BridgeIndividualNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeIndividualNotFound.status }) { static readonly code = refusals.BridgeIndividualNotFound.code; }
 export class NotAllowed extends Schema.TaggedError<NotAllowed>()("NotAllowed", { code: Schema.Literal(refusals.NotAllowed.code), ...{} }, { httpApiStatus: refusals.NotAllowed.status }) { static readonly code = refusals.NotAllowed.code; }
 export class IdempotencyConflict extends Schema.TaggedError<IdempotencyConflict>()("IdempotencyConflict", { code: Schema.Literal(refusals.IdempotencyConflict.code), ...{} }, { httpApiStatus: refusals.IdempotencyConflict.status }) { static readonly code = refusals.IdempotencyConflict.code; }
 
@@ -29,9 +54,13 @@ export const codes = Object.fromEntries(Object.entries(refusals).map(([k, r]) =>
 
 /** The declared errors themselves, by name: their fields say who may see a value (the visibility rule cuts a refusal by them). */
 export const declared = {
+  KybNotApproved: BankAccount.KybNotApproved,
+  BankAccountNameTaken: BankAccount.BankAccountNameTaken,
+  KybAlreadyStarted: BridgeBusiness.KybAlreadyStarted,
+  KycAlreadyStarted: BridgeIndividual.KycAlreadyStarted,
   CompanyNameTaken: Company.CompanyNameTaken,
   CompanyAbbrTaken: Company.CompanyAbbrTaken,
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { CompanyNameTaken, CompanyAbbrTaken, CompanyNotActive, NotAllowed, IdempotencyConflict };
+export const wire = { KybNotApproved, BankAccountNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, BankAccountNotOpen, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, NotAllowed, IdempotencyConflict };

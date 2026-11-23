@@ -43,6 +43,12 @@ Set up a company; the person who sets it up runs it.
 
 ## Worked examples
 
+### bridge: kyb is decided by bridge
+
+Starts from the world `kyb started`.
+
+- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
 ### companies are kept apart
 
 Starts from the world `a company`.
