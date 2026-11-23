@@ -223,5 +223,6 @@ response types, which come from the contract.
   proposal treats it as a declared, labelled stand-in, never silently.
 - Some outside systems publish no machine-readable contract (Resend has an OpenAPI document; many don't). Those
   adapters are hand-written and only as good as their conformance test.
-- Events that arrive out of order or twice: the door keys each event by the object it is about, never by a delivery id, so a webhook and a catch-up poll settle once (K40), and a move
-  that may arrive twice by another path declares `unchanged` (K21).
+- Events that arrive out of order or twice: the door keys each event by the object it is about, never by a delivery
+  id, so a webhook and a catch-up poll settle once (K40), and a move that may arrive twice by another path declares
+  `unchanged` (K21).
