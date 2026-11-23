@@ -57,7 +57,16 @@
               "scope:orthograph",
               "scope:language",
               "scope:host",
-              "scope:projections"
+              "scope:projections",
+              "scope:plugin"
+            ]
+          },
+          {
+            "sourceTag": "scope:plugin",
+            "onlyDependOnLibsWithTags": [
+              "scope:orthograph",
+              "scope:language",
+              "scope:plugin"
             ]
           },
           {

@@ -26,6 +26,7 @@ List proposals, oldest first, 25 to a page, filtered by superagent.
 | refusal | exit | code | when |
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |
+| ReadNotServed | 70 | AR-008 | the proposal is in a state this can't start from; carries `state` |
 
 ## How to call
 

@@ -51,6 +51,7 @@ export const refusals = {
   TriggerNotFound: { code: "TR-901", exit: 4, status: 404 },
   NotAllowed: { code: "AR-001", exit: 3, status: 403 },
   IdempotencyConflict: { code: "AR-002", exit: 120, status: 409 },
+  ReadNotServed: { code: "AR-008", exit: 121, status: 501 },
 } as const;
 type Refusal = keyof typeof refusals;
 
@@ -104,6 +105,7 @@ export class TicketNotFound extends Schema.TaggedError<TicketNotFound>()("Ticket
 export class TriggerNotFound extends Schema.TaggedError<TriggerNotFound>()("TriggerNotFound", { code: Schema.Literal(refusals.TriggerNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.TriggerNotFound.status }) { static readonly code = refusals.TriggerNotFound.code; }
 export class NotAllowed extends Schema.TaggedError<NotAllowed>()("NotAllowed", { code: Schema.Literal(refusals.NotAllowed.code), ...{} }, { httpApiStatus: refusals.NotAllowed.status }) { static readonly code = refusals.NotAllowed.code; }
 export class IdempotencyConflict extends Schema.TaggedError<IdempotencyConflict>()("IdempotencyConflict", { code: Schema.Literal(refusals.IdempotencyConflict.code), ...{} }, { httpApiStatus: refusals.IdempotencyConflict.status }) { static readonly code = refusals.IdempotencyConflict.code; }
+export class ReadNotServed extends Schema.TaggedError<ReadNotServed>()("ReadNotServed", { code: Schema.Literal(refusals.ReadNotServed.code), ...{ read: Schema.String, message: Schema.String } }, { httpApiStatus: refusals.ReadNotServed.status }) { static readonly code = refusals.ReadNotServed.code; }
 
 /** Each refusal's exit code, for the CLI: read from `refusals`. */
 export const exits = Object.fromEntries(Object.entries(refusals).map(([k, r]) => [k, r.exit])) as { readonly [K in Refusal]: (typeof refusals)[K]["exit"] };
@@ -124,4 +126,4 @@ export const declared = {
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { AccountExists, StaleAssignment, NoSeat, SeatTaken, ExecutorAlreadyQueued, AlreadyFollowing, SlotsOutOfRange, StaleRevision, AccountNotSeen, AgentNotIdle, AssignmentNotPending, AttentionNotOpen, DecisionNotRecorded, EvalNotQueued, InputNotWaiting, MandateNotHeld, OutgoingMessageNotPending, PolicyNotCurrent, ProposalNotWaiting, ReportNotProgress, SettingsNotCurrent, SourceNotSetup, SubscriptionNotLive, SuperagentNotObserving, ThreadNotIdle, TicketNotOpen, TriggerNotStored, AccountNotFound, AgentNotFound, AssignmentNotFound, DecisionNotFound, EvalNotFound, InputNotFound, OutgoingMessageNotFound, ProposalNotFound, SourceNotFound, SuperagentNotFound, ThreadNotFound, TicketNotFound, TriggerNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { AccountExists, StaleAssignment, NoSeat, SeatTaken, ExecutorAlreadyQueued, AlreadyFollowing, SlotsOutOfRange, StaleRevision, AccountNotSeen, AgentNotIdle, AssignmentNotPending, AttentionNotOpen, DecisionNotRecorded, EvalNotQueued, InputNotWaiting, MandateNotHeld, OutgoingMessageNotPending, PolicyNotCurrent, ProposalNotWaiting, ReportNotProgress, SettingsNotCurrent, SourceNotSetup, SubscriptionNotLive, SuperagentNotObserving, ThreadNotIdle, TicketNotOpen, TriggerNotStored, AccountNotFound, AgentNotFound, AssignmentNotFound, DecisionNotFound, EvalNotFound, InputNotFound, OutgoingMessageNotFound, ProposalNotFound, SourceNotFound, SuperagentNotFound, ThreadNotFound, TicketNotFound, TriggerNotFound, NotAllowed, IdempotencyConflict, ReadNotServed };

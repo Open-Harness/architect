@@ -47,6 +47,11 @@ const errors = (model: Model): RenderedFile => {
   row("NotAllowed", model.refusals["NotAllowed"] ?? "AR-001", NOT_ALLOWED_EXIT, STATUS.notAllowed);
   body.push(cls(IDEMPOTENCY_CONFLICT, "{}"));
   row(IDEMPOTENCY_CONFLICT, model.refusals[IDEMPOTENCY_CONFLICT] ?? "AR-002", IDEMPOTENCY_CONFLICT_EXIT, STATUS.idempotencyConflict);
+  // A pinned or derived read is served from slice 7 of Goal 17; until then it refuses by name, 501, never as a defect.
+  if ("ReadNotServed" in model.refusals) {
+    body.push(cls("ReadNotServed", "{ read: Schema.String, message: Schema.String }"));
+    row("ReadNotServed", model.refusals["ReadNotServed"]!, 121, 501);
+  }
   const names = rows.map((e) => e.trim().split(":")[0]);
   return file(path, lines(
     GENERATED,

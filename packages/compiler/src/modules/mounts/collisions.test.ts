@@ -50,6 +50,26 @@ describe("a verb added to a thing another plugin brings", () => {
   });
 });
 
+describe("a verb added through a mount under an alias", () => {
+  const plugins = { "@fixture/one": { descriptor: one, files: [echoThing, ...adds("one", "repeat")] }, "@fixture/two": { descriptor: two, files: adds("two", "shout") } };
+  const aliased = (...mounts: ReadonlyArray<readonly [string, typeof one]>) =>
+    Effect.runPromise(Mounts.fold(readLayout(mounts.map(([n, f]) => file(`features/${n}.ts`, { default: Blueprint.use(f) })))).pipe(Effect.provide(sourceOf(plugins))));
+
+  it("finds the thing by identity when the adding plugin is mounted under another name", async () => {
+    const folded = await aliased(["one", one], ["work", two]);
+    expect(folded.problems).toEqual([]);
+    expect([...folded.things.get("echo")!.verbs.keys()].sort()).toEqual(["repeat", "shout"]);
+    expect(folded.things.get("echo")!.verbs.get("shout")!.from).toMatchObject({ kind: "feature", mount: "work", package: "@fixture/two", thing: "echo" });
+    expect(folded.things.has("work-echo")).toBe(false);
+  });
+
+  it("finds the thing by identity when the owner is mounted under another name", async () => {
+    const folded = await aliased(["theirs", one], ["two", two]);
+    expect(folded.problems).toEqual([]);
+    expect([...folded.things.get("theirs-echo")!.verbs.keys()].sort()).toEqual(["repeat", "shout"]);
+  });
+});
+
 describe("a source or an agent named by its file", () => {
   it("is refused when two plugins bring one by that name, naming both files", async () => {
     const same = [file("sources/ticker.js", { ticker: Source.timer }), file("agents/main.js", { default: Blueprint.agent({ model: "m" }) })];
