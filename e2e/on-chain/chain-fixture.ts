@@ -393,9 +393,11 @@ const permute = (s: bigint[]) => {
   }
 };
 /** keccak-256 (the pre-NIST padding Ethereum uses) of text, as hex without `0x`. */
-export const keccak256 = (text: string): string => {
+export const keccak256 = (text: string): string => keccak256Bytes(new TextEncoder().encode(text));
+/** keccak-256 of bytes, as hex without `0x`. */
+export const keccak256Bytes = (input: Uint8Array): string => {
   const rate = 136;
-  const bytes = [...new TextEncoder().encode(text)];
+  const bytes = [...input];
   bytes.push(0x01);
   while (bytes.length % rate !== 0) bytes.push(0);
   bytes[bytes.length - 1]! |= 0x80;
