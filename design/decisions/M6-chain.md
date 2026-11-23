@@ -108,6 +108,7 @@ function _spend_(address by, uint256 nonce, bytes32 allowance, uint128 amount, a
 - **Who sends.** Part 1 (slices 7 and 8): the client sends the direct entry itself through `chain-evm`, after
   simulating. Part 2 (slices 9 and 11): it signs and the relayer sends the signed entry. A wrong signer is refused by
   the simulation before anything is sent, on both paths (M1.32).
+- **On a chain store `allowed` names who signs, nothing else.** A contract sees only the signer, so an operation of a chain-stored thing refuses `.via`/`.notVia`, `Blueprint.system` and a service role, as it refuses a role whose rule is TypeScript only (🔍 on #663, 23 November 2026).
 
 ### 2. Values across languages (the rest of D5)
 

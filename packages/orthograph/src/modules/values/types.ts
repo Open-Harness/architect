@@ -60,7 +60,6 @@ export interface ValuesApi {
   readonly value: <S extends Schema.Constraint>(schema: S | Value<S>) => Value<S>;
   /** An identifier with a short prefix, such as `alw_7f3k`. Ids of different things never mix. */
   readonly id: <const P extends string>(prefix: P) => Value<Schema.brand<Schema.String, P>>;
-  /** A whole number from 0 below 2^bits, carried as a bigint. */
   /** A whole number below 2^bits. In code a `bigint`; on the wire a decimal string, since JSON numbers lose precision. */
   readonly uint: (bits: number) => Value<Schema.BigIntFromString>;
   /** Text, never empty, at most `max` characters (default 200). */
