@@ -497,7 +497,7 @@ saying yes to that session's recommendations as a batch, his answer stands inste
 13. **What Capxul has that Orthograph might borrow.** Each Capxul operation carries its promises, in prose, each with
     its starting world and where it came from (kept, rewritten or dropped from the old stack)
     (`packages/blueprint/src/things/company/verbs/create.ts:122-198`), and its budget says what it leaves out and why
-    (`:80-86`). Orthograph's journeys are separate files; prose stories are designed (`design/frame/skills.md:105`)
+    (`:80-86`). Orthograph's journeys are separate files; prose stories are designed (`design/history/retired-2026-11-23/frame/skills.md:105`)
     and provenance isn't.
 
 ### Where the skills fell short

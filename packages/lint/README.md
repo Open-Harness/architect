@@ -1,6 +1,6 @@
 # @orthograph/lint
 
-Oxlint rules for what types can't see. Arrives in layer 1; see `design/packages.md`. Two sets live here:
+Oxlint rules for what types can't see. Arrives in layer 1; see the package map in `docs/canon/status.md`. Two sets live here:
 
 - **The project rules** (`no-name-as-string`, `refusal-has-log`, `declared-errors-only`, `no-wall-clock`,
   `handler-matches-path`), which `ortho check` runs on a user's project with its `ProjectFacts`.

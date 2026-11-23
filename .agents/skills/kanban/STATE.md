@@ -8,7 +8,7 @@ move with the account. The repository does, so everything needed is here or link
 ## Pick up from here
 
 1. Open a session in a fresh worktree of `Open-Harness/orthograph` from `main`. Read `AGENTS.md`, this file,
-   `design/scope.md` (what is built and what is left), `design/decisions/K28-releases.md` (the three releases), and
+   `docs/canon/status.md` (what is built and what is left), `design/decisions/K28-releases.md` (the three releases), and
    `design/handoff.md`.
 2. You are the 🎛 conductor (`.agents/skills/conductor/`, `.agents/skills/threads/`). List the open pull requests
    (`gh pr list`) and compare them with "The lanes" below. A lane whose lead is gone is restarted from its brief, as
@@ -21,14 +21,19 @@ move with the account. The repository does, so everything needed is here or link
 
 - **Preview:** Gate M1 on `main`, and `@orthograph/*`, `orthograph` and the preset on npm under `next` (M1.51; Aaron
   runs `npm publish`). Goal 3's branch lands on `main` mid-goal once Gate M1's slices are green.
-- **Beta** (stage 1, "workable"): Gate M2 and Goal 3's done check, staging included.
-- **1.0:** the beta, then stages 2 to 4 and the release slices.
+- **Beta:** the framework with every piece the superagent pulled, extracted and published, the superagent running on it (K42).
+- **1.0:** the same for every piece Capxul core pulled (K43), and the release slices (K42).
 
 Aaron's aim (21 November): in about 72 hours, be ready to rebuild Capxul from the ground up on Orthograph, in
 composable pieces (plugins) that another app (Plugged In, the link-in-bio app) also uses. So: parallelise wherever the
 code allows. Narrowed on 22 November: see "The lanes".
 
 ## The lanes
+
+**23 November 2026: replaced by K42.** A goal is one long-running agent. Goal 18 (the framework) always runs and is
+the conductor; Goal 19 (the lander) always runs and brings app work into `main`; Goal 17 (the superagent) goes first
+and Goal 16 (Capxul core) second, as the app goals; every other goal lands what it has in review and stops
+(`design/decisions/K42-goals-are-agents.md`, section 7). The table below is the 22 November index.
 
 **22 November 2026: narrowed to the critical path** (Aaron: "Narrow to the path"). The Beta path and the two long
 poles run at full speed; the other goals finish the slice they were on, set `status: parked` in their brief and stop,
@@ -59,7 +64,7 @@ its retire, merge or keep list.
   world's timers. It answers stage 3's signature collection and the keeper.
 
 - 🗺 The walkthrough board (Aaron's "1 board, 6 zones"): the pitch, the concept map, the tour, swap the example, UI,
-  hard questions; each card tinted by `design/scope.md`. Built; zone 5 (UI) is being filled by the UI thread. Snapshot in
+  hard questions; each card tinted by the scope map (now `docs/canon/status.md`). Built; zone 5 (UI) is being filled by the UI thread. Snapshot in
   `design/history/artifacts-2026-11-21/walkthrough-board.data.json` (open with `design/history/artifacts-2026-11-21/_whiteboard-shell.html`).
 - 📐 The UI thread: K29 (#272), K31 and Goal 6's brief (#285). Both goals started on 22 November.
 - 🧭 "What Orthograph is": done, on `main` (#185, K30, and the goal in `README.md`).

@@ -5,7 +5,7 @@
 //   3. every inline `path:line` reference opens, and has that line;
 //   4. every <Note>, <Scenario>, <Model> and <Scene> points at something that exists;
 //   5. no glossary word is owned by two pages, and every page is in the outline;
-//   6. no retired word or old name, in the pages, the outline or the READMEs;
+//   6. no retired word or old name, in the pages, the outline, the status page or the READMEs;
 //   7. a refusal quoted in design/portal.md (`HandleNotClaimed HN-900 exit 11`) agrees with the generated errors.ts tables.
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -21,7 +21,7 @@ const STATUSES = ["draft", "specified", "proved"];
 const NOTE_KINDS = ["question", "decision", "status"];
 // The visuals skill's scenes, on spike/visual-content (PR #34). Accepted by name until that branch merges.
 const PENDING_SCENES = ["handler-lifecycle", "journey-revoke-then-spend", "trace-waterfall"];
-// Written in pieces so this file doesn't trip its own check (as design/docs/links.mjs does).
+// Written in pieces so this file doesn't trip its own check.
 const RETIRED = [
   ["the plugin word that was renamed to feature and adapter", new RegExp(`(?<!agent[ -])\\b${"ki"}${"ts?"}\\b`, "i")],
   ["the old framework name", new RegExp(`${"archi"}${"tect"}`, "i")],
@@ -230,9 +230,10 @@ for (const name of pages) {
   }
 }
 checkSections(join(canon, "_template.mdx"), read(join(canon, "_template.mdx")));
-const prose = ["README.md", "outline.md", "components/README.md", "_template.mdx", "components/types.ts", ...pages];
+const prose = ["README.md", "outline.md", "status.md", "components/README.md", "_template.mdx", "components/types.ts", ...pages];
 for (const n of prose) checkWords(join(canon, n));
-for (const n of ["README.md", "outline.md", "components/README.md"]) checkLinks(join(canon, n));
+// The status page (K41) is checked like the README: every link resolves and no retired word appears.
+for (const n of ["README.md", "outline.md", "status.md", "components/README.md"]) checkLinks(join(canon, n));
 
 // 7. a refusal's code and exit quoted in design/portal.md match the generated `refusals` tables, where there is one.
 const refusals = loadRefusals(repo);
