@@ -72,10 +72,11 @@ export const intake: PluginNames = {
     account: { states: ["seen", "listed", "unlisted"], fields: ["superagent", "source", "id", "external", "login", "bot"], ops: ["seen", "list", "unlist", "sync"] },
     // Trigger row: never changed, so no machine; receive, requeue, reevaluate
     trigger: { ops: ["receive", "requeue", "reevaluate"] },
-    thread: { states: ["idle", "queued", "evaluating"], ops: ["bind", "closed", "unsubscribe"] },
+    // GOAL17-stage-one call 5: a thread waits or is evaluated by what its triggers and evals say, not by a state of its own
+    thread: { states: ["idle"], ops: ["bind", "closed", "unsubscribe"] },
     correlation: { ops: [] },
     // Eval row (states) and GOAL17-pause (activeAtStart, timeoutMs). `due` is GOAL17-names call 1.
-    eval: { states: ["queued", "delivered", "decided", "unavailable"], fields: ["activeAtStart", "timeoutMs"], ops: ["due", "delivered", "context", "read", "decide"] },
+    eval: { states: ["queued", "delivered", "decided", "unavailable"], fields: ["activeAtStart", "timeoutMs"], ops: ["due", "start", "expire", "delivered", "context", "read", "decide"] },
     decision: { ops: ["route", "dismiss"] },
     // Policy row: a thing with versions; K40 fix 2 (save, get, history, restore) plus sync
     policy: { ops: ["save", "get", "history", "restore", "sync"] },
