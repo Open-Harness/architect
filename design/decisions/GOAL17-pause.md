@@ -96,6 +96,8 @@ export const pausable = processing.holds({
     { event: tickets.events.InputRouted,       to: agent.operations.tell },            // any message, a person's too, to a running executor
     { event: tickets.events.AssignmentQueued,  to: superagent.operations.fill },       // a waiting Assignment gets a seat only through fill
     { event: tickets.events.AssignmentEnded,   to: superagent.operations.fill },       // a freed seat is not refilled
+    { event: tickets.events.AssignmentEnded,   to: input.operations.route },           // an Input that waited behind a closed Assignment queues a new one
+    { event: tickets.events.AssignmentPromoted, to: superagent.operations.fill },      // a person's Input moved a pending Assignment up
     { event: tickets.events.AssignmentStarted, to: agent.operations.tell },            // a launch or a wake: the Input that woke it
     { event: tickets.events.AssignmentStarted, to: input.operations.route },       // the other Inputs that waited for the seat
     { event: tickets.events.ReplyQueued,       to: outgoingMessage.operations.send },  // replies and acknowledgements
@@ -103,6 +105,7 @@ export const pausable = processing.holds({
   unheld: [                                                  // each says why it is not held
     { event: tickets.events.InputStored,          to: input.operations.route,      reason: "rows only: routes an Input or queues an Assignment; the tell and the seat stay held" },
     { event: agents.events.AgentIdled,            to: assignment.operations.turnEnded, reason: "a turn that ends during a pause gives its seat back; fill stays held" },
+    { event: agents.events.AgentClosed,           to: assignment.operations.turnEnded, reason: "the acknowledgement that frees a closing seat, in a pause too" },
     { event: tickets.events.AssignmentInterrupted, to: agent.operations.close,          reason: "a person's stop must reach the Agent during a pause; it moves no work and closes a seat's side" },
     { event: intake.events.TriggerReceived,       to: input.operations.store,          reason: "sources keep recording; the Input's tell stays held" },
     { event: superagent.events.SuperagentCreated, to: eval.operations.due,              reason: "starts the eval pass; a new superagent is never paused" },
@@ -138,7 +141,7 @@ database (`M5-reach-out.md:117-121`: all fan-out runs from D1), where the Supera
 |---|---|---|
 | Evals: `EvalStarted` to `eval.delivered`, `EvalDelivered` to `agent.tell` | the outbox drain's claim | rows stay `pending`; `attempts` does not grow; no Eval is delivered, so none has a clock yet |
 | A message to a running executor, from anyone: `InputRouted` to `agent.tell` | the same claim | the Input is stored and waiting; it is told on resume, in order per executor |
-| Launches and wakes: `AssignmentQueued` and `AssignmentEnded` to `fill`; `AssignmentStarted` to `agent.tell` and `input.route` | the same claim | an Assignment stays `pending` and takes **no seat**; seats already held stay held; there is no half-done launch to park |
+| Launches and wakes: `AssignmentQueued`, `AssignmentPromoted` and `AssignmentEnded` to `fill`; `AssignmentStarted` to `agent.tell` and `input.route` | the same claim | an Assignment stays `pending` and takes **no seat**; seats already held stay held; there is no half-done launch to park |
 | Replies, acknowledgements: `ReplyQueued` to `send` | the same claim | rows stay `pending`; replies keep their order |
 | The eval pass (batching, expiry, waking an ended ticket) | one `Timers.at` chain, ended while paused | no new Eval; no Eval times out; a person's message to an ended ticket waits as an Input |
 | The seat sweep (`reap`, then `fill`), every 30 s | a `Timers.at` chain; `fill` reads the switch on its first line | `reap` frees idle seats; `fill` starts nothing |

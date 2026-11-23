@@ -62,12 +62,14 @@ export const Assignment = Blueprint.thing({
 
 // .../assignment/machine.ts: the brief's three states and moves, plus the one that makes it
 export const machine = Blueprint.machine(Assignment, {
-  states: ["pending", "running", "ended"],
+  states: ["pending", "running", "closing", "ended"],
   moves: {
     queued:      { from: [],                      to: "pending", emits: AssignmentQueued },
+    promoted:    { from: ["pending"],             to: "pending", emits: AssignmentPromoted },    // a person's Input arrived: why becomes "person"
     started:     { from: ["pending"],             to: "running", emits: AssignmentStarted },
-    turnEnded:   { from: ["running"],             to: "ended",   emits: AssignmentEnded },
-    interrupted: { from: ["pending", "running"],  to: "ended",   emits: AssignmentInterrupted },   // its own event: it closes the Agent's side
+    cancelled:   { from: ["pending"],             to: "ended",   emits: AssignmentEnded },       // never seated, never told: nothing to fence
+    interrupted: { from: ["running"],             to: "closing", emits: AssignmentInterrupted },  // a stop, a retire or reap: still holds its seat
+    turnEnded:   { from: ["running", "closing"],  to: "ended",   emits: AssignmentEnded },       // the Agent acknowledged this id: it idled on it, or closed it
   },
   notFrom: { exit: 2 },
 });
@@ -75,11 +77,11 @@ export const machine = Blueprint.machine(Assignment, {
 // .../assignment/invariants.ts: the two rules that make the count honest
 export const oneHolderPerSeat = Blueprint.invariant.unique(
   [Assignment.fields.superagent, Assignment.fields.seat],
-  { while: [machine.states.running], refuse: SeatTaken },
+  { while: [machine.states.running, machine.states.closing], refuse: SeatTaken },     // a closing Assignment still holds its seat
 );
 export const oneLivePerExecutor = Blueprint.invariant.unique(
   Assignment.fields.agent,
-  { while: [machine.states.pending, machine.states.running], refuse: ExecutorAlreadyQueued },
+  { while: [machine.states.pending, machine.states.running, machine.states.closing], refuse: ExecutorAlreadyQueued },
 );
 
 // the executor's declaration (brief :388) says which thing holds its seats, and where the size is
@@ -90,10 +92,14 @@ These forms exist today: a composite `unique` with `while` (`packages/orthograph
 `:51-55`), compiled to one partial unique index per rule (`packages/projections/src/modules/server/internal/worker-config.ts:66-68`,
 "over the rule's key, within its `while` states"). `Blueprint.oneOf`, `Blueprint.agent` and its `slots:` are the
 brief's proposals (slice 5). `seat` is `0` and not empty because every field is a `NOT NULL` column
-(`worker-config.ts:60`); the index covers only `running` rows, so a `0` is never compared.
+(`worker-config.ts:60`); the seat index covers only `running` and `closing` rows, so a `0` is never compared.
 
-The `interrupted` move is the brief's own name. It ends a pending Assignment that never held a seat (`ticket.stop`, a
-retired superagent) and a running one whose turn was stopped or failed. A kill of the runner is not an interruption: the
+**A seat is freed only after the Agent has acknowledged that Assignment id, either by idling on it or by closing it. Never
+before.** The `interrupted` move is the brief's own name. It does **not** end a running Assignment: it moves it to `closing`,
+which still holds its seat, and emits `AssignmentInterrupted`. Its unheld `agent.close` hop fences the opening tell in the
+Agent's own commit (section 5), and the Agent then emits `AgentClosed { assignment }`. That event, or `AgentIdled` for the
+same id, calls `assignment.turnEnded`, which ends the Assignment and frees the seat. `ticket.stop`, a retire and `reap` all
+use this one path. A pending Assignment was never seated or told, so `cancelled` ends it directly. A kill of the runner is not an interruption: the
 turn resumes from its last committed step (brief :452), and the seat stays held.
 
 ### 2. Who is waiting, and in what order
@@ -155,10 +161,12 @@ export default Blueprint.operation(Assignment, {
   `unique.ts:11-21`), so the loser re-reads, finds the seat held and takes the next, or answers `NoSeat`.
 - **Starting twice is refused by the machine.** `started` is only `from: ["pending"]`; the second call gets the
   machine's own refusal, `notFrom` (`machines/types.ts:25-30`).
-- **Giving back is leaving `running`.** `turnEnded` and `interrupted` move the row to `ended`, which the partial
-  index no longer covers, so the seat is free in the same commit that ended the turn. No decrement exists to forget.
-  A handoff to a person does the same: `ticket.report` with `ready`, a question, `blocked` or `failed` ends the
-  Assignment in its own commit, as the prototype frees the slot at once (`003-execution.md:37`).
+- **Giving back is leaving `running` and `closing`.** `turnEnded` moves the row to `ended`, which the partial index no
+  longer covers, so the seat is free in the same commit. No decrement exists to forget. A stop, a retire or `reap` goes
+  through `closing` first, so the seat is freed only once the Agent has acknowledged the id. A handoff to a person
+  (`ticket.report` with `ready`, a question, `blocked` or `failed`) is the executor's own call, so the Agent has
+  already opened that Assignment, and `turnEnded` ends it in the report's commit, as the prototype frees the slot at once
+  (`003-execution.md:37`).
 - **Background work keeps the seat.** The executor's `background: { after: "5 seconds", keep: "30 minutes" }` (brief
   :394) is the Agent's own, and the Agent is `working` while it runs. The seat goes when the Agent goes `idle`.
 - **A restart neither leaks nor double-counts.** Nothing is in memory: the seats are rows. The one way to leak is a
@@ -169,9 +177,13 @@ export default Blueprint.operation(Assignment, {
      matches its `id`. It never asks for "the executor's live Assignment": a late idle for A1 (delayed by backoff, a
      lease overlap or a manual redeliver) must not end A2. A second delivery or a stale one meets `notFrom` and does nothing. It is **unheld** (GOAL17-pause): a turn that ends during a pause
      gives its seat back, and `fill` stays held.
-  2. `superagent.reap` (system, in the same sweep as below, unheld: it moves no work) lists `running` rows and asks each executor's Agent for its
-     state. The actor answers from its own SQLite (`host-cloudflare/src/modules/actors/types.ts:27-29`, `find`). An
-     idle one's Assignment is ended. The Agent is the truth about work; the Assignment only records the seat.
+  2. `superagent.reap` (system, in the same sweep as below, unheld) lists `running` rows and asks each executor's Agent for its
+     state (`host-cloudflare/src/modules/actors/types.ts:27-29`, `find`). An idle one's Assignment is **not** ended by `reap`.
+     An idle Agent may have finished a turn, or may not have received its opening tell yet (`start` committed, the tell hop
+     still on its way), and the two look the same from outside. So `reap` moves it to `closing` (`interrupted`), and the
+     Agent answers `AgentClosed`. If the opening tell was still on its way, the close fences it: the late tell is refused
+     (`StaleAssignment`) and its Input requeued, so the freed seat is never used by an executor that then wakes. The Agent
+     is the truth about work; the Assignment only records the seat.
 
 ### 4. What happens when a slot frees
 
@@ -218,9 +230,9 @@ const fillSeats = (id: SuperagentId) => Effect.gen(function* () {
 - **Pause holds both ends.** `fill`'s hops and the tell hops are in pause's `held` list. A held launch is an
   Assignment that stays `pending`: **it takes no seat**. `fill` also reads the state on its first line, because the sweep
   below is a `Timers` chain and not a hop.
-- **A stop's seat is refilled by the sweep.** `AssignmentInterrupted` has no `fill` delivery: its one delivery is
-  `agent.close`, unheld (a person's stop must work in a pause), and `fill`'s would be held, which would put one event on
-  both of pause's lists. So the seat of a stopped running Assignment is taken again by the next sweep, at most 30 seconds.
+- **A stop's seat is refilled when the close is acknowledged.** `AssignmentInterrupted` has one delivery, `agent.close`,
+  unheld (a person's stop must work in a pause). The seat is held, in `closing`, until `AgentClosed` ends the Assignment;
+  that `AssignmentEnded` then calls `fill` like any freed seat.
 - **The trigger is an event through the outbox**, so a freed seat is acted on after a restart: `AssignmentEnded` is
   committed with the move that ended the turn, and delivered at least once. `fill` is safe to run twice, because a
   second run finds nothing waiting that can start.
@@ -240,9 +252,10 @@ where the seat is checked. Three hops decide what is told, and when:
 
 | Event | Calls | Held? | What it does |
 |---|---|---|---|
-| `InputStored` | `input.route` | no: rows only | by the ticket's live Assignment: **running**, the Input moves to `routed` and `InputRouted` is emitted; **pending**, it waits for the seat; **none**, an Assignment is queued (`why` from the Input, `input` = this Input) and the Input waits |
+| `InputStored` | `input.route` | no: rows only | by the ticket's live Assignment: **running**, the Input moves to `routed` and `InputRouted` is emitted; **pending**, it waits for the seat, and a **person's** Input first promotes the Assignment (below); **closing**, it waits (a new Assignment is queued when this one ends); **none**, an Assignment is queued (`why` from the Input, `input` = this Input) and the Input waits |
 | `InputRouted` | `agent.tell` (a steer) | yes | `requestId` = the Input's id; refused by the Agent if its Assignment is not the current one |
 | `AssignmentStarted` | `agent.tell` (opens the Assignment), and `input.route` | yes, both | the first tells the Assignment's own `input`; the second routes every other Input that waited for the seat, oldest first |
+| `AssignmentEnded` | `input.route` (and `fill`) | yes | an Input that waited behind a `closing` or a handed-off Assignment now queues a new one |
 
 ```ts
 // plugins/tickets/blueprint/things/input/verbs/route.ts
@@ -265,6 +278,18 @@ Blueprint.on(AssignmentStarted, (e) => ({ agent: e.agent, requestId: e.input, in
 Blueprint.on(AssignmentInterrupted, (e) => ({ agent: e.agent, assignment: e.assignment }));   // to: agent.operations.close
 ```
 
+**A person's Input on a pending Assignment promotes it.** A CI result queues an Assignment (`why: "input"`) while the pool is
+full. A person then writes to the same executor. `oneLivePerExecutor` means no second Assignment, so `input.route` runs
+`assignment.promote` in the same commit as it leaves the Input waiting: the move `promoted` (`pending → pending`) sets `why` to
+`person`, and the Assignment row's version guards it against `start`. If `start` won, `route` runs again and finds
+`running`, so it routes the Input directly. If `promote` won, `fill`'s `start` of that Assignment conflicts on the row and
+runs again, reads `person`, and `seatFor` may now give it the reserve seat, with the person's place in the line. `AssignmentPromoted` is
+delivered to `fill` (held), so the promotion is acted on at once. Which Inputs the opening tell carries: the
+Assignment's own `input` (the CI result that queued it), and the person's Input, and any other that waited, are
+routed by `AssignmentStarted` to `input.route`, which emits `InputRouted` for each in Input order. An Input that arrives
+before the start commits joins them that way. One that arrives after routes against `running` and is told directly. No Input is lost, and no
+one waits for a seat twice.
+
 **A tell never wakes an executor without a seat, and the Agent is what says so.** `AgentIdled` to `turnEnded` is unheld,
 so a turn can end, and its seat free, between `input.route` (which saw a running Assignment) and the tell. Two commits
 on two rows cannot be made atomic by a check in the hop, so the check is made where the state lives, inside the
@@ -275,7 +300,8 @@ Agent actor's own commit:
 // accept:   no assignment (the main agent) · opens: true and the id is not closed (sets `current`) · opens: false and assignment === current
 // refuse:   opens: true and the id is closed · opens: false and assignment !== current  →  StaleAssignment (declared), nothing submitted to Pi
 // agent.close({ assignment }): records the id as closed (the Agent keeps its last few hundred; Assignment ids never repeat),
-//   clears `current` if it matches and stops its turn, as `ticket.stop` does
+//   clears `current` if it matches, stops its turn as `ticket.stop` does, and emits AgentClosed { agent, assignment } in that commit
+//   (every close is acknowledged, whether the Agent was working, idle or had never been told)
 // AgentIdled (the same commit as working → idle) clears `current` and names the Assignment it was for
 export class StaleAssignment extends Blueprint.error("StaleAssignment", { assignment: Blueprint.text() }) {}
 ```
@@ -391,14 +417,17 @@ export const InputRouted       = Blueprint.event({ superagent, input, ticket, ag
 export const AssignmentQueued  = Blueprint.event({ superagent, assignment, ticket, input, why: Why });
 export const AssignmentStarted = Blueprint.event({ superagent, assignment, ticket, agent, input, text: Blueprint.text({ max: 65536 }), seat, why: Why });
 export const AssignmentEnded   = Blueprint.event({ superagent, assignment, ticket, seat });                          // a turn ended or a handoff
-export const AssignmentInterrupted = Blueprint.event({ superagent, assignment, ticket, agent, seat });                 // a stop, a retire: closes the Agent's side
+export const AssignmentInterrupted = Blueprint.event({ superagent, assignment, ticket, agent, seat });                 // a stop, a retire, reap: closes the Agent's side
+export const AssignmentPromoted    = Blueprint.event({ superagent, assignment, ticket });                              // a person's Input made a pending one `person`
+// @orthograph/agents: agent.close's own commit; the acknowledgement that frees a closing seat
+export const AgentClosed           = Blueprint.event({ agent: Agent.fields.id, assignment: Blueprint.text() });
 // @orthograph/agents: the Agent's `working → idle` move. It names no superagent, which an agents package knows nothing of
 export const AgentIdled        = Blueprint.event({ agent: Agent.fields.id, about: Blueprint.text(), assignment: Blueprint.text() });   // the Assignment the Agent was working for
 ```
 
 All of them are written to the journal with their move (`language-effect/src/modules/journal/types.ts:4-13`), so
 `prove` finds them by trace. `AssignmentStarted` and `AssignmentEnded` are the brief's own names (:342);
-`InputStored`, `InputRouted`, `AssignmentQueued`, `AssignmentInterrupted` and `AgentIdled` are new, and join the brief's list with `ReplyQueued`
+`InputStored`, `InputRouted`, `AssignmentQueued`, `AssignmentInterrupted`, `AssignmentPromoted`, `AgentIdled` and `AgentClosed` are new, and join the brief's list with `ReplyQueued`
 and `EvalDelivered` from GOAL17-pause. Every one that crosses the outbox is in exactly one of pause's two lists.
 `AgentIdled` is listed unheld although it carries no `superagent`: the compiler accepts a listed event without the
 field, with a NULL `hold`. `InputDelivered` and `InputFailed` are the Input moves' own events and carry no delivery. `seat` is on `AssignmentStarted` and `AssignmentEnded`, so the portal's executor load
@@ -419,8 +448,8 @@ const s = Blueprint.journey("a full pool keeps its slot for a person", { world: 
     emits(AssignmentQueued, { why: "launch" }), noEvents(AssignmentStarted))
   .step("a CI result for an idle fourth also waits", call(input.store, { ticket: 4, from: ci }),
     machine.isIn(s.last.assignment, "pending"))
-  .step("a person writes to the idle fourth: the reserve is used", call(input.store, { ticket: 4, from: octocat }),
-    emits(AssignmentStarted, { seat: 255n, why: "person" }))
+  .step("a person writes to the idle fourth: its pending Assignment is promoted and the reserve is used", call(input.store, { ticket: 4, from: octocat }),
+    emits(AssignmentPromoted), emits(AssignmentStarted, { seat: 255n, why: "person" }))
   .step("a person's status request may use the reserve too", call(ticket.requestStatus, { ticket: 6, as: ann }),
     emits(AssignmentQueued, { why: "person" }))
   .step("a second person's message waits, ahead of the launch", call(input.store, { ticket: 5, from: octocat }),
@@ -454,8 +483,10 @@ lives. This is every such pair across the four records, with its guard. Rows mar
 | `route` for a pending Assignment and `start` | `route` reads `pending` and leaves the Input waiting; `start` writes the Assignment | state only moves forward: `start`'s own `input.route` lists the waiting Inputs after the commit, and an Input stored later routes against `running`. Neither can miss the other |
 | `route`, `requeue` and `delivered` on one Input | each moves the Input | the Input's machine (`from` states) and the row's version |
 | `stop` or a handoff and `start` / `fill` | `stop` reads a pending Assignment; `fill` starts it | both write the Assignment row; `started` is `from: ["pending"]` and `interrupted` from `pending` or `running`, so one refuses |
-| `turnEnded` and `reap`, and a late `AgentIdled` (**fixed**) | each ends an Assignment, and a delayed idle for A1 could arrive after A2 started | `turnEnded` takes the Assignment id from the event (`AgentIdled.assignment`) and matches that `id`, never "the executor's live one"; `reap` ends the id it listed. A stale idle for A1 meets `notFrom` on A1 and cannot end A2 |
-| `stop` and the opening tell (**fixed**) | the opening tell is sent after `start`'s commit; `stop` writes the Assignment | the **Agent actor**: `AssignmentInterrupted` is delivered as `agent.close`, which records the id as closed in the Agent's own commit. An open for a closed id is refused (`StaleAssignment`), and `onRefused` requeues the Input; a close after an open ends the turn it started |
+| `turnEnded`, `reap` and a late `AgentIdled` (**fixed**) | each can end an Assignment, and a delayed idle for A1 could arrive after A2 started | `turnEnded` takes the Assignment id from the event (`AgentIdled.assignment` or `AgentClosed.assignment`) and matches that `id`, never "the executor's live one". A stale one for A1 meets `notFrom` on A1 and cannot end A2. `reap` ends nothing: it only moves to `closing` |
+| `reap` and the opening tell (**fixed**) | `reap` reads an idle Agent and frees a seat; the tell is still on its way | the Agent's own commit: `reap` moves to `closing` (the seat is still held), `agent.close` records the id as closed, and only `AgentClosed` ends the Assignment. A late open is refused. A seat is never freed before the Agent has acknowledged the id |
+| `promote` and `start` (**fixed**) | `route` reads a pending Assignment and writes `why`; `fill` reads `why` and starts it | the Assignment row's version: both write the Assignment, the loser re-reads (`fill` then sees `person`, or `route` then sees `running`) |
+| `stop` and the opening tell (**fixed**) | the opening tell is sent after `start`'s commit; `stop` writes the Assignment | the **Agent actor**: `AssignmentInterrupted` (running to `closing`) is delivered as `agent.close`, which records the id as closed in the Agent's own commit. An open for a closed id is refused (`StaleAssignment`), and `onRefused` requeues the Input; a close after an open ends the turn it started |
 | `withdraw` of a head and `reply` (**fixed**) | `withdraw` drops a head; `reply` reads whether a head exists | `withdraw` bumps `Ticket.seq` too, so the two conflict and the loser re-reads |
 | a refusal cycle and `turnEnded` | the cycle requeues and routes; `turnEnded` ends the Assignment | the Agent's refusal, with `requeue` backing off through `Timers` (section 5) |
 | `reply` and the head's `send` (**fixed**) | `reply` reads "a head exists", `send` reads "a later message exists"; they write different messages | both bump `Ticket.seq`, so any two conflict and the loser re-reads |
@@ -536,8 +567,8 @@ lives. This is every such pair across the four records, with its guard. Rows mar
 
 The lead applied these to the brief with this record.
 
-- `design/goals/17-superagent.md`: "`pending → running → ended` | `started`, `interrupted`, `turnEnded` (system) |" → "`pending → running → ended`; holds a seat while running (GOAL17-executor-slots) | `queued` (system: an accept, an Input or a resume; it names the Input that woke it), `started` (system, from `fill`: takes the seat), `interrupted`, `turnEnded` (system, on `AgentIdled`); `superagent.fill` and `superagent.reap` (system; the app declares them, so tickets imports nothing of superagent) |"
-- `design/goals/17-superagent.md`: "`ticketCreated`, `ticketResumed`, `ticketEnded`, `assignmentStarted`, `assignmentEnded`, `threadSubscribed`," → "`ticketCreated`, `ticketResumed`, `ticketEnded`, `inputStored`, `inputRouted`, `assignmentQueued`, `assignmentStarted`, `assignmentEnded`, `assignmentInterrupted`, `agentIdled`, `replyQueued`, `threadSubscribed`,"
+- `design/goals/17-superagent.md`: "`pending → running → ended` | `started`, `interrupted`, `turnEnded` (system) |" → "`pending → running → closing → ended`; holds a seat while running or closing (GOAL17-executor-slots) | `queued` (system: an accept, an Input or a resume; it names the Input that woke it), `promoted` (system: a person's Input on a pending one), `started` (system, from `fill`: takes the seat), `cancelled` (a pending one), `interrupted` (a stop, a retire or `reap`: closes it, and keeps the seat), `turnEnded` (system, on `AgentIdled` or `AgentClosed`); `superagent.fill` and `superagent.reap` (system; the app declares them, so tickets imports nothing of superagent) |"
+- `design/goals/17-superagent.md`: "`ticketCreated`, `ticketResumed`, `ticketEnded`, `assignmentStarted`, `assignmentEnded`, `threadSubscribed`," → "`ticketCreated`, `ticketResumed`, `ticketEnded`, `inputStored`, `inputRouted`, `assignmentQueued`, `assignmentStarted`, `assignmentEnded`, `assignmentInterrupted`, `assignmentPromoted`, `agentIdled`, `agentClosed`, `replyQueued`, `threadSubscribed`,"
 - `design/goals/17-superagent.md`: "slots: superagent.slots," → "slots: { size: superagent.slots, reserve: 1, held: Assignment },"
 - `design/goals/17-superagent.md`: "a launch is a workflow (prepare the sandbox, open the executor, send its first input); a delivery or relay is" → "a launch is an Assignment: its seat comes first, then `agent.tell` sends its first input, and its sandbox opens on the executor's first tool call (GOAL17-executor-slots); a delivery or relay is"
 - `design/goals/17-superagent.md`: "`attach`, `requestStatus`, `note` (main);" → "`attach`, `note` (main); `requestStatus` (main, or a person, whose request may use the reserve seat: GOAL17-executor-slots);"
