@@ -16,15 +16,27 @@ const traceOf = (request: Request): string => request.headers.get("traceparent")
 /** A span named for the outcome, so a journey reads `in.<mount>.accepted`, `.seen`, `.refused` or `.ignored` (M5-checks call 4). */
 const outcome = (mount: string, name: "accepted" | "seen" | "refused" | "ignored") => Effect.void.pipe(Effect.withSpan(`in.${mount}.${name}`));
 
+/**
+ * The door runs before any connection's configuration is known, so a mapping sees a context that notes every read of its configuration or `me`
+ * (and answers it with nothing a real account has). A mapping that decides by the event alone is believed; an `undefined` from one that read the
+ * context is not, and the delivery is taken, so a context the door made up never drops a real event. The hop to `trigger.receive` maps it again
+ * with the connection's own.
+ */
+const doorContext = () => {
+  const seen = { read: false };
+  const part = (): object => new Proxy({}, { get: () => { seen.read = true; return undefined; } });
+  return { seen, ctx: { config: part(), me: part() } };
+};
+
 /** Whether any active source of the mount takes this delivery: a mapping that makes a trigger, or one that closes a thread. A mapping that fails takes it, so a defect never loses an event. */
 const taken = (door: Door, name: string, payload: unknown): Effect.Effect<boolean> =>
   door.sources.length === 0
     ? Effect.succeed(true)
     : Effect.forEach(door.sources, (kind) => {
         const spec = kind.spec as { readonly on?: Readonly<Record<string, ((e: unknown, c: unknown) => unknown) | undefined>>; readonly closed?: Readonly<Record<string, ((e: unknown) => unknown) | undefined>> } | undefined;
-        const ctx = { config: {}, me: { id: "", login: "" } };
+        const { seen, ctx } = doorContext();
         return Effect.try({
-          try: () => spec?.on?.[name]?.(payload, ctx) !== undefined || spec?.closed?.[name]?.(payload) !== undefined,
+          try: () => spec?.on?.[name]?.(payload, ctx) !== undefined || seen.read || spec?.closed?.[name]?.(payload) !== undefined,
           catch: () => true,
         }).pipe(Effect.catch(() => Effect.succeed(true)));
       }).pipe(Effect.map((each) => each.some(Boolean)));

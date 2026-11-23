@@ -28,6 +28,14 @@ const post = (body: string, headers: Record<string, string>, method = "POST", mo
   Inbound.handle({ doors: [door], db: env.DB, secrets: { NOTES_WEBHOOK_SIGNING: SECRET } }, new Request(`http://door/_in/${mount}`, { method, headers, ...(method === "POST" ? { body } : {}) }))
     .then(async (r) => ({ status: r.status, body: (await r.json()) as unknown }));
 
+// A source whose answer turns on who the connection is: the door cannot know that, so it must take the delivery and leave the call to the hop.
+const mine = { spec: { on: { note: (e: { readonly text: string }, ctx: { readonly me: { readonly id: string } }) => (e.text.includes(`<@${ctx.me.id}>`) ? { text: e.text } : undefined) } } };
+// A source that refuses by the event alone: the door believes it.
+const quiet = { spec: { on: { note: (e: { readonly text: string }) => (e.text === "hi" ? undefined : { text: e.text }) } } };
+const postTo = (d: Door, body: string, headers: Record<string, string>) =>
+  Inbound.handle({ doors: [d], db: env.DB, secrets: { NOTES_WEBHOOK_SIGNING: SECRET } }, new Request("http://door/_in/notes", { method: "POST", headers, body }))
+    .then(async (r) => ({ status: r.status, body: (await r.json()) as unknown }));
+
 const payload = (id: number) => JSON.stringify({ id, text: "hi", sender: { id: 7, login: "ann" } });
 
 describe("inbound doors, in workerd", () => {
@@ -52,6 +60,13 @@ describe("inbound doors, in workerd", () => {
   it("ignores, and does not fail, a payload its schema allows but whose identity cannot be read", async () => {
     const body = JSON.stringify({ id: 4 });
     expect(await post(body, { "x-event": "loose", "x-sig": await sign(body) })).toEqual({ status: 200, body: { ignored: true } });
+  });
+
+  it("takes a delivery whose mapping reads the connection, and ignores one a mapping refuses by the event alone", async () => {
+    const body = payload(11);
+    expect(await postTo({ ...door, sources: [mine] as unknown as Door["sources"] }, body, { "x-event": "note", "x-sig": await sign(body) })).toEqual({ status: 200, body: { accepted: true } });
+    const again = payload(12);
+    expect(await postTo({ ...door, sources: [quiet] as unknown as Door["sources"] }, again, { "x-event": "note", "x-sig": await sign(again) })).toEqual({ status: 200, body: { ignored: true } });
   });
 
   it("ignores an event it does not take, answers 404 for another mount and 405 for another method", async () => {
