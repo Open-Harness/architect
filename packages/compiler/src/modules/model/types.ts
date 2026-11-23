@@ -4,6 +4,7 @@ import type { BlueprintSource, SourceError } from "#modules/source/types.js";
 import type { ClockModel, MoveTimeModel } from "#modules/time/types.js";
 import type { ValueMeta as DeclaredMeta } from "orthograph";
 import type { MountModel } from "#modules/mounts/types.js";
+import type { AppModel } from "#modules/app/types.js";
 
 /** What an amount counts, in the model: an asset file's name (a token or a currency), or the field of the same row that holds the token. */
 export type MoneyAssetModel = { readonly token: string } | { readonly currency: string } | { readonly field: string };
@@ -320,6 +321,8 @@ export interface Model {
   readonly mounts?: Readonly<Record<string, MountModel>>;
   /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
   readonly alertRules: ReadonlyArray<AlertRuleModel>;
+  /** The app's map: its pages, components and navigation (K31, K36). Present only when the blueprint has an `app/` folder. */
+  readonly app?: AppModel;
 }
 
 /** A blueprint the compiler refuses, with every problem found, each naming its file. */

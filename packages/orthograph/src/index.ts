@@ -1,4 +1,5 @@
 // orthograph: the declaration language projects import. `import { Blueprint } from "orthograph"`.
+import { Apps } from "#modules/app/service.js";
 import { Blanks } from "#modules/blanks/service.js";
 import { Cloud } from "#modules/cloud/service.js";
 import { Assets } from "#modules/assets/service.js";
@@ -39,6 +40,7 @@ export const Blueprint = Object.freeze({
   ...Journeys,
   ...Environments,
   ...Plugins,
+  ...Apps,
   ...Secrets,
   config: Configs.config,
   time: Times,
@@ -66,6 +68,7 @@ export { acting } from "#modules/roles/types.js";
 export { admitsAgent } from "#modules/roles/service.js";
 export type { Role, RoleOf, ServiceRole, SignedIn, System, Narrowed, Allowed, Principal, Acting, Way, InstanceOf } from "#modules/roles/types.js";
 export type { Operation, Read, ReadAnswer, Order, Page, ListPayload, ListItem, Steps, OperationSpec, Step, CallStep, StepKind, Runs, TestKind, Budget, PayloadOf, AnswerOf, ErrorOf, StepsOf } from "#modules/operations/types.js";
+export type { App, AppPage, AppComponent, AppLayout, NavGroup, NavGroupSpec, AppSpec, PageSpec, ComponentSpec, Route, RouteParam, LayoutName } from "#modules/app/types.js";
 export type { Blank } from "#modules/blanks/types.js";
 export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, ToolsCall, AnyCall, Ref, Refusal, ClockCall } from "#modules/journeys/types.js";
 export type { Environment, EnvironmentSpec } from "#modules/environments/types.js";
