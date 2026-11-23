@@ -185,6 +185,8 @@ r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agen
 expect "docs-only: the same line beside a markdown file still runs check 15" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "see $pro" > "$r/.agents/skills/x/SKILL.md"; commit "$r"
 expect "docs-only: a markdown page naming Pro is a doc (check 15 exempts *.md)" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/.agents/skills/big"; { echo "import \"$pro\""; seq 1 60000; } > "$r/.agents/skills/big/a.ts"; commit "$r"
+expect "docs-only: a Pro name at the top of a large diff is still found (no SIGPIPE under pipefail)" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/spikes/x"; echo "const x = 1" > "$r/spikes/x/a.ts"; commit "$r"
 expect "docs-only: an inert file that does not name Pro is docs" 0 docs "$r" true
 r=$(repo)

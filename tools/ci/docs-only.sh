@@ -45,14 +45,17 @@ fi
 if [ "$docs_only" = true ]; then
   if grep -qi 'heroui-pro' <<< "$changed"; then
     docs_only=false; echo "docs-only: no, a changed path is named for HeroUI Pro." >&2
-  elif git diff --no-renames -U0 "$base...$head" | grep '^+' | grep -q 'HEROUI_AUTH_TOKEN'; then
+  elif added=$(git diff --no-renames -U0 "$base...$head" | grep '^+' || true); grep -q 'HEROUI_AUTH_TOKEN' <<< "$added"; then
     docs_only=false; echo "docs-only: no, an added line names HEROUI_AUTH_TOKEN." >&2
   else
     # Check 15 exempts docs (design/, docs/, *.md), spikes/ and the kanban data, but not the rest of what counts as docs-only
     # here (the agents', editor and template files). A line naming HeroUI Pro in one of those, even beside a *.md file, runs it.
     while IFS= read -r file; do
       case "$file" in design/* | docs/* | spikes/* | .agents/skills/kanban/data/* | *.md | *.mdx) continue ;; esac   # what check 15 exempts
-      if git diff --no-renames -U0 "$base...$head" -- "$file" | grep '^+' | grep -v '^+++' | grep -qi 'heroui-pro'; then
+      # Read the whole diff into a variable before matching: `grep -q` on a pipe exits at the first hit, the writer gets SIGPIPE,
+      # and under pipefail a match would read as no match.
+      added=$(git diff --no-renames -U0 "$base...$head" -- "$file" | grep '^+' | grep -v '^+++' || true)
+      if grep -qi 'heroui-pro' <<< "$added"; then
         docs_only=false; echo "docs-only: no, an added line in $file names HeroUI Pro." >&2; break
       fi
     done <<< "$changed"
