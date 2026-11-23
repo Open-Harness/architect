@@ -3,8 +3,9 @@
 import { ChainFault, type Standing } from "@orthograph/chain-evm/device";
 import { Effect } from "effect";
 import type { RelayState, RelayStatus, Replaced } from "../types.ts";
-import { adopt, definite, reason } from "./adopt.ts";
+import { adopt, definite, reason, unsent } from "./adopt.ts";
 import type { Parts } from "./live.ts";
+import { capOf } from "./relay.ts";
 import type { Kept, Row } from "./store.ts";
 
 const shown = (state: Kept): RelayState => (state === "lost" ? "dropped" : state === "submitting" ? "submitted" : state);
@@ -56,7 +57,31 @@ const resend = (parts: Parts, row: Row) => Effect.gen(function* () {
   return { id: row.id, nonce: row.nonce, oldHash: row.hash, newHash: next.hash } satisfies Replaced;
 });
 
+/**
+ * A row kept only for its nonce (its call could not be sent): when the node shows the nonce unused, send a zero-value transfer from the
+ * relayer to itself at it, so what is queued behind it goes through. A nonce someone else used needs nothing.
+ */
+const fillNow = (parts: Parts, row: Row) => Effect.gen(function* () {
+  const { live, store } = parts;
+  const { port, key } = live;
+  const now = yield* port.probe({ hash: row.hash, from: key.address, nonce: row.nonce, fromBlock: row.fromBlock, to: key.address, data: "0x", value: 0n });
+  switch (now._tag) {
+    case "Included": store.setState(row.id, "included"); return undefined;
+    case "Reverted": store.setState(row.id, "reverted"); return undefined;
+    case "Replaced": store.setState(row.id, "lost"); return undefined;
+    case "Held": return undefined;
+    case "Dropped": {
+      const signed = yield* port.fill(key.address, row.nonce, key.signer);
+      const submission = yield* port.submit(signed).pipe(Effect.catch((error) => definite(error) ? Effect.fail(error) : Effect.succeed(undefined)));
+      live.sent.set(row.id, signed);
+      store.filled(row.id, signed.hash, signed.serialized, submission?.fromBlock ?? 0n, capOf(signed));
+      return undefined;
+    }
+  }
+});
+
 const settle = (parts: Parts, row: Row) => Effect.gen(function* () {
+  if (unsent(row)) return yield* fillNow(parts, row);
   const now = yield* standing(parts, row);
   switch (now?._tag) {
     case "Included": case "Reverted": {

@@ -22,6 +22,9 @@ interface Script {
   probe: Array<{ _tag: string; [key: string]: unknown }>;
   submit: Array<ChainFault | "ok">;
   resume: Array<Signed | ChainFault>;
+  /** What each `simulate` answers, in order. With `spread`, each `prepare` takes the next nonce from 7 (the calls are concurrent). */
+  simulate: Array<ChainFault | "ok">;
+  spread: boolean;
   /** Every call the port was given, by name: what the relayer asked for. */
   calls: Array<{ name: string; arg?: unknown }>;
   /** What the store held at the moment of each `submit`. */
@@ -31,10 +34,13 @@ interface Script {
 const harness = (store: Store, script: Script, sent: Map<string, Signed> = new Map()): Parts => {
   const next = <A>(list: A[]) => list.length > 1 ? list.shift()! : list[0]!;
   let made = 100;
+  let nonce = 7;
   const port = {
-    prepare: () => Effect.sync(() => { script.calls.push({ name: "prepare" }); return signedAt(7, 1).prepared; }),
-    simulate: () => Effect.void,
-    sign: () => Effect.succeed(signedAt(7, 1)),
+    read: () => Effect.void,
+    prepare: () => Effect.sync(() => { script.calls.push({ name: "prepare" }); return script.spread ? signedAt(nonce++, 30 + nonce).prepared : signedAt(7, 1).prepared; }),
+    simulate: () => Effect.suspend(() => { const out = next(script.simulate); return out === "ok" ? Effect.void : Effect.fail(out); }),
+    sign: (prepared: Signed["prepared"]) => Effect.succeed(script.spread ? signedAt(prepared.transaction.nonce, 30 + prepared.transaction.nonce + 1) : signedAt(7, 1)),
+    fill: (_from: string, at: number) => Effect.sync(() => { script.calls.push({ name: "fill", arg: at }); return signedAt(at, 60 + at); }),
     release: () => Effect.void,
     probe: () => Effect.sync(() => { script.calls.push({ name: "probe" }); return next(script.probe); }),
     resume: () => Effect.suspend(() => { script.calls.push({ name: "resume" }); const out = next(script.resume); return out instanceof ChainFault ? Effect.fail(out) : Effect.succeed(out); }),
@@ -52,7 +58,7 @@ const harness = (store: Store, script: Script, sent: Map<string, Signed> = new M
   const live = { key: { address: FROM, signer: {} }, port: port as unknown as ChainPort, sent } as unknown as Live;
   return { live, store, lock: Semaphore.makeUnsafe(1), arm: Effect.void };
 };
-const script = (over: Partial<Script> = {}): Script => ({ probe: [{ _tag: "Held" }], submit: ["ok"], resume: [], calls: [], atSubmit: [], ...over });
+const script = (over: Partial<Script> = {}): Script => ({ probe: [{ _tag: "Held" }], submit: ["ok"], resume: [], simulate: ["ok"], spread: false, calls: [], atSubmit: [], ...over });
 const inDo = (name: string, body: (store: Store) => Promise<void>) =>
   runInDurableObject(env.RELAYER.getByName(name) as DurableObjectStub<Relayer>, (_relayer, state) => body(makeStore(state.storage.sql)));
 const run = <A>(effect: Effect.Effect<A, unknown>) => Effect.runPromise(effect);
@@ -95,14 +101,17 @@ describe("a submission the relayer has no live copy of", () => {
     expect(parts.live.sent.size).toBe(2);
   }));
 
-  it("whose bytes cannot be read is ended as dropped, and its nonce is held so no call is given it", () => inDo("eip155:14", async (store) => {
+  it("whose bytes cannot be read becomes a fill, since its nonce may be unused, and the alarm fills it", () => inDo("eip155:14", async (store) => {
     store.add(row("e", 9, 3));
-    const s = script({ resume: [new ChainFault({ kind: "signing", message: "not a transaction" })] });
+    const s = script({ probe: [{ _tag: "Dropped" }], resume: [new ChainFault({ kind: "signing", message: "not a transaction" })] });
     const parts = harness(store, s);
-    expect(await run(status(parts, "e"))).toMatchObject({ state: "dropped", problem: "its signed bytes can no longer be read" });
-    expect(s.calls).toContainEqual({ name: "hold", arg: 9 });
-    expect(store.open()).toEqual([]);
+    expect(await run(status(parts, "e"))).toMatchObject({ problem: "its signed bytes can no longer be read" });
+    expect(store.find("e")).toMatchObject({ fill: true, serialized: "0x", state: "submitting" });
+    await run(reconcile(parts));
+    expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 9 }]);
+    expect(store.find("e")).toMatchObject({ state: "submitted", hash: hash(69) });
   }));
+
 });
 
 describe("a call is written down before it is sent", () => {
@@ -118,16 +127,28 @@ describe("a call is written down before it is sent", () => {
   }));
 
   it("and a call refused for good answers its error, keeps its nonce, and the alarm fills it with a zero-value transfer to the relayer", () => inDo("eip155:16", async (store) => {
-    const refused = new ChainFault({ kind: "funds", message: "no funds" });
-    const s = script({ submit: [refused, "ok"], probe: [{ _tag: "Dropped" }], resume: [signedAt(7, 1)] });
+    const s = script({ submit: [new ChainFault({ kind: "funds", message: "no funds" }), "ok"], probe: [{ _tag: "Dropped" }] });
     const parts = harness(store, s);
     await expect(run(relay(parts, call))).rejects.toMatchObject({ message: expect.stringContaining("no funds") });
     const [kept] = store.open();
-    expect(kept).toMatchObject({ nonce: 7, fill: true });
-    expect(s.calls).toContainEqual({ name: "resume" });
-    const done = await run(reconcile(parts));
-    expect(s.calls.filter((c) => c.name === "replace").map((c) => c.arg)).toEqual([{ replaces: hash(1), strategy: "cancel" }]);
-    expect(done.replaced).toEqual([]);
-    expect(store.find(kept!.id)).toMatchObject({ state: "submitted", hash: hash(100), fill: true });
+    expect(kept).toMatchObject({ nonce: 7, fill: true, serialized: "0x", note: "no funds" });
+    expect(s.calls).toContainEqual({ name: "hold", arg: 7 });
+    expect((await run(reconcile(parts))).replaced).toEqual([]);
+    expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 7 }]);
+    expect(store.find(kept!.id)).toMatchObject({ state: "submitted", hash: hash(67), fill: true, note: "" });
+  }));
+
+  it("and so does a call whose simulation fails after its nonce is reserved: of three concurrent calls the middle one is filled, and the third is not left behind it", () => inDo("eip155:17", async (store) => {
+    const s = script({ spread: true, simulate: ["ok", new ChainFault({ kind: "revert", message: "reverted" }), "ok"], probe: [{ _tag: "Dropped" }, { _tag: "Held" }] });
+    const parts = harness(store, s);
+    const [a, b, c] = await Effect.runPromise(Effect.all([relay(parts, call), relay(parts, call), relay(parts, call)].map(Effect.result), { concurrency: "unbounded" }));
+    expect([a?._tag, b?._tag, c?._tag]).toEqual(["Success", "Failure", "Success"]);
+    expect(store.open().map((r) => [r.nonce, r.fill, r.serialized === "0x"])).toEqual([[7, false, false], [8, true, true], [9, false, false]]);
+    // The alarm: the node does not hold the empty nonce, so it is filled; what it holds is left alone.
+    s.probe.splice(0, s.probe.length, { _tag: "Held" });
+    s.probe.unshift({ _tag: "Held" }, { _tag: "Dropped" });
+    await run(reconcile(parts));
+    expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 8 }]);
+    expect(store.open().map((r) => [r.nonce, r.state])).toEqual([[7, "submitted"], [8, "submitted"], [9, "submitted"]]);
   }));
 });

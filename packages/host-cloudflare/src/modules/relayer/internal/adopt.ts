@@ -7,6 +7,12 @@ import type { Row, Store } from "./store.ts";
 
 const DEFINITE = new Set(["funds", "rejected", "revert", "panic", "signing", "configuration", "unsupported"]);
 
+/** The hash a row holds while it has no transaction yet (a fill that is waiting to be sent). */
+export const NO_HASH = `0x${"0".repeat(64)}` as const;
+
+/** A row with no bytes: its nonce is kept for a fill. */
+export const unsent = (row: Row) => row.fill && row.serialized === "0x";
+
 /**
  * A failure that sending again cannot cure: the call itself is refused (a revert, no funds). Anything else, a transport error, a
  * timeout, or a fault the node did not explain, may have left the transaction on the node or may be gone tomorrow, so the alarm
@@ -22,17 +28,20 @@ export const reason = (error: unknown): string =>
 
 /**
  * The live signed transaction for a row, taking it back from the store's bytes when there is none. Bytes that can no longer be read
- * end the row (`lost`, answered as `dropped`), and its nonce is held so no new call is given it until the node's count has passed it.
- * Another failure (the nonce is reserved by something else) leaves the row for the next look.
+ * turn the row into a fill: the nonce may be unused on the chain, so it is kept and plugged, not given up. Another failure (the nonce
+ * is reserved by something else) leaves the row for the next look. A row waiting for its fill has no bytes; its nonce is held.
  */
 export const adopt = (live: Live, store: Store, row: Row): Effect.Effect<Signed | undefined> => Effect.gen(function* () {
   const held = live.sent.get(row.id);
   if (held !== undefined) return held;
+  if (unsent(row)) {
+    yield* live.port.hold(live.key.address, row.nonce).pipe(Effect.ignore);
+    return undefined;
+  }
   const signed = yield* live.port.resume(row.serialized, row.fromBlock).pipe(Effect.catch((error) => Effect.gen(function* () {
     if (error.kind === "signing") {
+      store.toFill(row.id, "its signed bytes can no longer be read");
       yield* live.port.hold(live.key.address, row.nonce).pipe(Effect.ignore);
-      store.setState(row.id, "lost");
-      store.note(row.id, "its signed bytes can no longer be read");
     }
     return undefined;
   })));

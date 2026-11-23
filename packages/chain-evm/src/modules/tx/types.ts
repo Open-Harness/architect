@@ -107,6 +107,12 @@ export interface ChainPort {
    * no longer be read. The hold ends when the node's finalized count passes the nonce. Fails when the nonce is already reserved.
    */
   readonly hold: (from: Address, nonce: number) => Effect.Effect<void, ChainFault>;
+  /**
+   * A zero-value transfer from `from` to itself at `nonce`, signed and ready for `submit`: what plugs a nonce whose call can no longer
+   * be sent, so the nonces after it are not queued behind it. It takes the nonce's reservation as it is (held by a prepared call that
+   * failed, or by a broadcast that must be replaced), or reserves it when it is free. Fails when someone else holds the nonce.
+   */
+  readonly fill: (from: Address, nonce: number, signer: Signer) => Effect.Effect<Signed, ChainFault>;
 }
 
 export interface ReplacementPolicy {

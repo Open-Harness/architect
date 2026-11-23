@@ -63,8 +63,13 @@ export const makeStore = (sql: SqlStorage) => {
     setState: (id: string, state: Kept) => { sql.exec("UPDATE submissions SET state = ? WHERE id = ?", state, id); },
     /** The node accepted it: it is `submitted`, from this block. */
     sent: (id: string, fromBlock: bigint) => { sql.exec("UPDATE submissions SET state = 'submitted', from_block = ?, note = '' WHERE id = ?", fromBlock.toString(), id); },
-    /** The call failed for good: the row keeps its nonce to be filled. */
-    fillIt: (id: string) => { sql.exec("UPDATE submissions SET fill = 1 WHERE id = ?", id); },
+    /** The call can no longer be sent: the row keeps its nonce, without bytes, for the alarm to fill. */
+    toFill: (id: string, note: string) => { sql.exec("UPDATE submissions SET fill = 1, state = 'submitting', serialized = '0x', note = ? WHERE id = ?", note, id); },
+    /** The fill was signed and sent (or may have been): it is the row's transaction now. */
+    filled: (id: string, hash: Hex, serialized: Hex, fromBlock: bigint, cap: bigint) => {
+      sql.exec("UPDATE submissions SET state = 'submitted', hash = ?, serialized = ?, from_block = ?, cap = ?, note = '' WHERE id = ?",
+        hash, serialized, fromBlock.toString(), cap.toString(), id);
+    },
     note: (id: string, note: string) => { sql.exec("UPDATE submissions SET note = ? WHERE id = ?", note, id); },
     /** A new current transaction for the submission: the old hash joins `replaces`. */
     replace: (row: Row, hash: Hex, serialized: Hex, fromBlock: bigint) => {

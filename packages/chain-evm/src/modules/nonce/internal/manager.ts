@@ -39,6 +39,13 @@ export const makeNonceManager = Effect.gen(function* () {
       return [reservation, update(all, address, { ...account, pending })];
     });
 
+  /** What is reserved at a nonce and what was last broadcast there, if anything. */
+  const entryAt = (address: Address, nonce: number) =>
+    Ref.get(state).pipe(Effect.map((all) => {
+      const entry = all.get(keyOf(address))?.pending.get(nonce);
+      return entry === undefined ? undefined : { reservation: entry.reservation, broadcast: entry.broadcast };
+    }));
+
   const release = (reservation: NonceReservation) =>
     Ref.update(state, (all) => {
       const { address, nonce } = reservation;
@@ -95,5 +102,5 @@ export const makeNonceManager = Effect.gen(function* () {
       return update(all, address, { finalized: nextNonce, pending });
     });
 
-  return { reserveNext, release, beginBroadcast, rejectBroadcast, pruneFinalized };
+  return { reserveNext, entryAt, release, beginBroadcast, rejectBroadcast, pruneFinalized };
 });

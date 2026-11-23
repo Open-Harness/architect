@@ -35,6 +35,6 @@ export const makeChainPort = (options: ChainPortOptions): Effect.Effect<ChainPor
       intent === undefined ? undefined : follow(intent.source, level),
       "depth" in level ? level.depth : undefined,
     );
-    return { prepare: manager.prepare, simulate: manager.simulate, read: manager.read, sign: manager.sign, submit: manager.submit, replace: manager.replace, track, follow, release: manager.release, resume: manager.resume, hold: manager.hold,
+    return { prepare: manager.prepare, simulate: manager.simulate, read: manager.read, sign: manager.sign, submit: manager.submit, replace: manager.replace, track, follow, release: manager.release, resume: manager.resume, hold: manager.hold, fill: manager.fill,
       probe: (submission) => probeSubmission(rpc, timers, manager.nonces.nonceAtHead, submission) };
   });

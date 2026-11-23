@@ -137,6 +137,23 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
       }
     });
 
+    const fill: ChainPort["fill"] = (from, nonce, signer) => Effect.gen(function* () {
+      const entry = yield* nonces.entryAt(from, nonce);
+      const reservation = entry?.reservation ?? (yield* nonces.reserveNext(from, nonce));
+      if (reservation.nonce !== nonce) {
+        yield* nonces.release(reservation);
+        return yield* new ChainFault({ kind: "nonce", message: "The nonce to fill is held by another transaction" });
+      }
+      const fees = yield* estimateFees(rpc);
+      const transaction: Transaction = Object.freeze({ chainId: options.chainId, nonce, gas: 21_000n, to: from, value: 0n, ...fees });
+      const prepared: Unsigned = Object.freeze({ from, transaction });
+      const signed = yield* signTransaction(prepared, signer);
+      reservations.set(prepared, { nonce: reservation, send: Semaphore.makeUnsafe(1) });
+      simulated.add(prepared);
+      signedTransactions.set(signed, { transaction, ...(entry?.broadcast === undefined ? {} : { replaces: entry.broadcast.hash }) });
+      return signed;
+    }).pipe(Effect.withSpan("chain.evm.fill", { attributes: { chainId: options.chainId } }));
+
     const release: ChainPort["release"] = (prepared) =>
       Effect.suspend(() => Option.fromUndefinedOr(reservations.get(prepared)?.nonce).pipe(
         Option.match({ onNone: () => Effect.void, onSome: nonces.release }),
@@ -144,5 +161,5 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
 
     const read = readCall(rpc, options);
 
-    return { prepare, simulate, read, sign, submit, replace, release, resume, hold, nonces };
+    return { prepare, simulate, read, sign, submit, replace, release, resume, hold, fill, nonces };
   });
