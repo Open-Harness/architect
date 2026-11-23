@@ -79,7 +79,7 @@ keep the numbers their issues already have.
 | # | Slice | After |
 |---|---|---|
 | 1 | Capxul's plugins mapped, the first map: #487 lands with K43's superseded marks | — |
-| 2 | The first feature, one person gets paid (`M7-capxul.md`, section 4): a sales invoice with a pay link, paid from any wallet, settled only by the chain, with the ledger lines posted | 6 |
+| 2 | The first feature, one person gets paid, which is the beta (K42; `M7-capxul.md`, section 4): a sales invoice with a pay link, paid from any wallet, settled only by the chain, with the ledger lines posted | 6 |
 | 3 | The grill, with Aaron by voice: what is core, what is a module, what is paid and how a self-hosted Capxul reaches it, which licence Capxul carries, and K43's open list. A lawyer's read on the licence comes afterwards, by Aaron's call, and blocks nothing | — |
 | 4 | Spike: can Orthograph things, machines and journeys be scaffolded from ERPNext's record-type files (Sales Invoice, Payment Entry, GL Entry first)? If so, it becomes a scaffolder in the framework, built under K42's collision rule | — |
 | 5 | Spike: `ortho new adapter --from-openapi` on Bridge's published description; customers, KYC links, virtual accounts and transfers, against a stand-in | — |

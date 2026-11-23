@@ -70,7 +70,7 @@ Milestone `Goal 18: the framework`, label `release:1.0`.
 |---|---|---|
 | 1 | `goal/stage-1` lands in `main` once it is green, and is retired. Every goal branch is then cut from, and merges in, `main`. First check that `main` requires each protection `goal/stage-1` has (its CI jobs, `builder-paths`, resolved threads) | — |
 | 2 | The goals K42 stops, wound down: each lands what it has in review (K42, section 7), sets `status: parked` and stops. Its open slices become board items, and the 33 open Ask issues are sorted | — |
-| 3 | The board: the capability map in `docs/canon/status.md` rewritten as one row per item, with its stage, who pulled it and its release. `tools/github/sync.mjs` writes one issue per row and fills the Project's fields and views from them (K42, section 5). The `conductor` and `github` skills rewritten to match | — |
+| 3 | The board: the capability map in `docs/canon/status.md` rewritten as one row per item, with its stage, who pulled it and its release. `tools/github/sync.mjs` writes one issue per row and fills the Project's fields and views from them (K42, section 5): milestones as app features, a framework piece in the milestone of the first app feature that pulls it, "Not yet needed" for the rest, and a roadmap whose dates are computed every round. The `conductor` and `github` skills rewritten to match | — |
 | 4 | The loop (K42, section 4), run from then on | 1, 2, 3 |
 
 ## The loop
@@ -84,7 +84,7 @@ Each round:
    2. it is on Capxul's next feature;
    3. it makes scaffolding better for every app;
    4. it keeps `main` green and CI fast;
-   5. everything else on the 1.0 path.
+   5. a piece no app has pulled yet, and only with capacity to spare.
 4. Start workers from the top, as many as CI holds (20 jobs at once; at most two ready pull requests per goal).
 5. Merge what is green and reviewed. Rebuild the board. Send every running goal what landed and what was decided,
    grills included.

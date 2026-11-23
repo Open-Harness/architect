@@ -60,7 +60,7 @@ adds the slices no milestone had (ids `ST<stage>.<n>`), and gives each stage its
 Codex's branch `links/stage-1` (#56) keeps its name. [`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md).
 
 **Three releases** ([`decisions/K28-releases.md`](decisions/K28-releases.md), Aaron, 21 November 2026). The **preview** is Gate M1 on `main` and
-the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is stage 1: Gate M2 (M2.12) and Goal 3's staging run. **v1.0** is
+the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is Capxul's first feature, one person gets paid, in Capxul's staging (K42). **v1.0** is
 the beta plus Capxul core (K43) and the release (K42), as the next paragraph says.
 
 **v1.0** is Capxul core on Orthograph (K42, K43), plus the release: M7.01 to M7.04, M7.06 and M7.13 (the cloud passes for staging and for the release, the npm

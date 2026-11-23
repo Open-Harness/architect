@@ -16,7 +16,7 @@ for the same picture in a page; this file keeps the standing directions, the lin
 listed under "Every open line", and Gate M1 (M1.15) is not run yet. Plugged In's seven journeys run green in CI, in
 local and in test (`e2e-stage1`, a required check), and the climb is green: 331 of 331 cell-and-subject pairs. Goal 4 (on-chain)
 has started on `goal/on-chain`. K28 (21 November) cut three releases: the preview (Gate M1 on `main` plus npm under
-`next`, slice M1.51), the beta (stage 1: Gate M2 plus the staging run) and 1.0 (Capxul core, K42). K29 (`design/decisions/K29-*.md`, PR #272) decides the UI layer, under Aaron's standing authority of 21 November; Goal 5 builds from it.
+`next`, slice M1.51), the beta (Capxul gets paid, K42) and 1.0 (Capxul core, K42). K29 (`design/decisions/K29-*.md`, PR #272) decides the UI layer, under Aaron's standing authority of 21 November; Goal 5 builds from it.
 
 **Renamed by K15** (19 November 2026, Aaron): the example app is **Plugged In** (`plugged-in`), no longer `links`. Rows below that say `links` predate it;
 `milestones.md` is renamed in place ([`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md)).
@@ -48,7 +48,7 @@ thread's branch, its PR, its PR comments. To steer a thread, comment on its PR, 
 ### The goal
 
 **Workable at the end of M2:** plugins mounted and proved, auth and organizations as plugins, the new principals,
-secrets by declaration ([`milestones.md`](milestones.md)). That is the beta (K28), the end of stage 1. Then Aaron builds
+secrets by declaration ([`milestones.md`](milestones.md)). That was the beta under K28; K42 makes the beta Capxul's first feature. Then Aaron builds
 Capxul's plugins on it. Everything below is judged by whether it gets us there sooner and truer.
 
 ### The direction (Aaron, 17 and 18 November)
@@ -148,7 +148,7 @@ plugins and extensions; most won't stick, the kept ones are refactored, and prod
 
 ### Next on the critical path
 
-The beta (K28) is the critical path. On `goal/stage-1`, the order is the goal file's "Where it stands": land the open pull requests and the builders for the merged checks; when M1's slices are green, the preview merge (one pull request from `goal/stage-1` to `main`, Gate M1 passing on it), then M1.51 and Aaron's npm publish. Then M2.03 to M2.08, `npm create orthograph` (M2.09), Gate M2 (M2.12) and the staging run. Beside it, Goal 4
+Capxul's next feature is the critical path (K42). On `goal/stage-1`, the order is the goal file's "Where it stands": land the open pull requests and the builders for the merged checks; when M1's slices are green, the preview merge (one pull request from `goal/stage-1` to `main`, Gate M1 passing on it), then M1.51 and Aaron's npm publish. Then M2.03 to M2.08, `npm create orthograph` (M2.09), Gate M2 (M2.12) and the staging run. Beside it, Goal 4
 runs stage 2 and 3 work, and Goal 5 builds the UI layer from K29.
 
 ### Open questions carried by threads

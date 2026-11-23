@@ -8,8 +8,9 @@ description: How Orthograph's work lives on GitHub (K33), for every agent in any
 > **K42 (23 November 2026) changes three things here**, and Goal 18's slice 3 rewrites this skill to match. A gap is
 > **claimed**, not asked for: the `lane:goal-<n>` label on its issue and a "Touches" line naming its paths; an Ask is
 > only for two goals' overlapping claims. The board's truth becomes the capability map in `docs/canon/status.md`, one row per item with its stage
-> (provisional, spiked, scaffoldable, building, built, extracted). Milestones become the releases (Preview, Beta,
-> 1.0), each goal's milestone closing as its goal stops. Until slice 3 lands, the sync below runs as it is.
+> (provisional, spiked, scaffoldable, building, built, extracted). Milestones become app features (Preview; Capxul
+> getting paid, the beta; the books; people and payroll; banking; 1.0), a framework piece taking the milestone of the
+> first app feature that pulls it, and the roadmap's dates are computed (K42, section 5). Until slice 3 lands, the sync below runs as it is.
 
 The files are the truth and GitHub is where the work is seen ([K33](../../../design/decisions/K33-github-native.md),
 on top of [K32](../../../design/decisions/K32-goals-coordinate-themselves.md)). Every agent here, whatever its harness,

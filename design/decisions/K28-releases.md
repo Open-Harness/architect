@@ -16,7 +16,7 @@ every goal argued its own priority, and Goal 4 could not tell whether it was on 
 | Release | A person outside can… | Done when |
 |---|---|---|
 | **Preview** | install Orthograph from npm, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 (M1.15) passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` (M1.51, new) |
-| **Beta** | start an app with `npm create orthograph`, sign people in, claim `@name` on a real page, deploy it to Cloudflare and tear it down | Gate M2 (M2.12), the stage 1 gate, and Goal 3's done check with its staging run |
+| **Beta** | start an app with `npm create orthograph`, sign people in, claim `@name` on a real page, deploy it to Cloudflare and tear it down | Gate M2 (M2.12), the stage 1 gate, and Goal 3's done check with its staging run. Superseded by K42, 23 November 2026: the beta is Capxul's first feature, one person gets paid, in Capxul's staging |
 | **1.0** | wallets and pay by handle; a Safe with budgets, agents and time; a private club on Aztec | the beta, then the stage 2, 3 and 4 gates on `main`, plus M7.01 to M7.04, M7.06 and M7.13: all four stage gates, as `milestones.md` already said. Superseded by K42, 23 November 2026: 1.0 is Capxul core on Orthograph (K43) and the release slices |
 
 Options weighed: wallets inside the beta (stage 2 joins it), and no preview with the beta first. Both were set aside.

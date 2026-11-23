@@ -21,7 +21,7 @@ Status words: **Built** (in `packages/`, with a check that passes), **Partial** 
 | Release | A person outside can… | Done when | Left to build |
 |---|---|---|---|
 | **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last piece, the machine graphs (M1.50, check 40 still red); the npm preview itself (publish refuses npmjs today); Goal 3's branch landing on `main` |
-| **Beta** (stage 1, "workable") | start an app with `npm create orthograph`, sign people in, claim `@name` on a real page, and deploy it to Cloudflare and tear it down | Gate M2 (M2.12) and Goal 3's done check (`e2e:stage1`, staging included) | all of milestone 2 (kinds of caller, auth and organizations as plugins, secrets, `ortho new`), the handles plugin, actions and the pieces on UI SDK, the three screens, a live staging run |
+| **Beta** (Capxul gets paid, K42) | raise an invoice in Capxul with a pay link, have anyone pay it from any wallet, and see the chain settle it and the books record it, in Capxul's staging | Capxul's first feature's journeys green in Capxul's staging (Goal 16, slice 2) | whatever that feature pulls from the framework: the pieces Plugged In's stage 1 planned (sign-in and organisations as plugins, secrets, `ortho new`, the screens) are built when an app needs them, not as a release |
 | **1.0** (Capxul core, K42) | run Capxul's books, HR and payroll for free, and buy identity checks (KYC, KYB) and a bank account through Bridge | Capxul core's journeys green in Capxul's staging, plus M7.01 to M7.04, M7.06 and M7.13 | Capxul core and whatever it pulls from the framework; the real release |
 
 Since K42 (23 November 2026), 1.0 is Capxul core on Orthograph (K43). The stage headings below (stages 2 to 4) are
@@ -60,7 +60,7 @@ core everything else uses.
 | A Node host | None | the server runs only as a Cloudflare Worker; no slice | none (Goal 4 slice 1 names `Host.node`) |
 | npm preview of the framework | None | publish goes only to Verdaccio | M1.51 |
 
-### Stage 1: workable (beta)
+### Stage 1: workable (Plugged In's first stage)
 
 | Capability | Status | Evidence, or what is missing | Slices |
 |---|---|---|---|
@@ -80,7 +80,7 @@ core everything else uses.
 | The infra projection and `ortho env up` / `destroy` staging | Built | checks 37 and 41, run here with no credential and no network (K41, clash 6) | M7.03, M7.04 |
 | A live staging run: deploy, run the story, destroy | Partial | the staging workflow (`.github/workflows/staging.yml`) runs it; five clean runs in `spikes/staging-pass` before it | M7.01, M7.04 |
 
-### App UI (beta for the screens, then 1.0)
+### App UI (built as an app needs it)
 
 The UI is pieces, not hooks (K29, K41 clash 2): one UI SDK piece per operation, in place of the React hooks ST1.01
 once planned.

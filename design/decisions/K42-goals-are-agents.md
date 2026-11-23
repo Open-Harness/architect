@@ -41,6 +41,11 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
 6. **Lanes are for live agents.** "Each orchestra or Manager kinda has its own lane but I think that those should be
    for active long-running agents."
 7. **1.0 is Capxul core.** Asked "Is 1.0 'Capxul core runs on Orthograph'?", he answered: "And yes".
+8. **Releases are what the apps can do; plugins come when an app needs them.** Hearing that the beta was still a list
+   of framework plugins: "Why are the plugins still on that line? The plugins should be as and when they're needed,
+   right? Whatever application is first and needs it, it builds it ... some of this stuff ... it's important to do, but
+   it's not the highest urgency thing ... the whole point of doing the projects first is that it's like a forcing
+   function ... how do we know that plugins work? ... We're supposed to be building it all like that."
 
 ## The decision
 
@@ -67,7 +72,7 @@ Every item on the board is at one stage:
    (`ortho add`, `ortho add journeys`, `ortho new adapter`), with the journeys red.
 4. **Building.** Handlers until the journeys pass. Authors and builders keep their rules (`AGENTS.md`, the `author`
    skill).
-5. **Built.** Green on `main`.
+5. **Built.** Green on `main`, and proved by the journeys of the app that pulled it.
 6. **Extracted.** Moved from the app's `plugins/` into `packages/` once it works. K39's call 7 now applies to every
    app.
 
@@ -100,7 +105,7 @@ Each round:
    3. it makes scaffolding better for every app (today: `ortho new` for an app, M2.09; `ortho add` for events,
       errors, roles and moves, M2.14 and M2.15; adapters from an ABI, #474);
    4. it keeps `main` green and CI fast;
-   5. everything else on the 1.0 path.
+   5. a piece no app has pulled yet, and only with capacity to spare.
 4. Start workers from the top, as many as CI holds: 20 jobs at once on the free plan, and at most two ready pull
    requests per goal (CI-drafts).
 5. Merge what is green and reviewed. Rebuild the board from the repository. Tell every running goal what landed and
@@ -114,18 +119,33 @@ Each round:
   remember to close an issue.
 - **Fields:** Stage, Pulled by (Capxul, superagent or framework), Release, Lane (the claiming goal), and Kind
   (capability, gap, grill or snag).
-- **Views:** the road to 1.0 (by release, then stage), by app, now (by lane), and grills (`needs-aaron`).
-- **Milestones become the releases:** Preview, Beta and 1.0. Each goal's milestone closes when its goal stops.
+- **Views:** the roadmap by milestone, the roadmap by goal, by app, now (by lane), and grills (`needs-aaron`).
+- **Milestones are app features** (section 6), in order: Preview; Capxul, getting paid (the beta); Capxul, the books;
+  Capxul, people and payroll; Capxul, banking; then 1.0, the release. Beside them, the superagent's two: the coding
+  agent end to end, and the triage agent made from data. A framework piece has no milestone of its own: it takes the
+  milestone of the first app feature that pulls it. A piece no app has pulled sits in "Not yet needed", with no date.
+  Each goal's milestone closes when its goal stops.
+- **The roadmap is computed, never typed.** An item's Start is the day a goal claims it and its End the day it is
+  built; the sync writes both. For an item not yet started, Goal 18 forecasts both every round from what needs what
+  and the pace measured so far (about 140 pull requests merged on 21 to 23 November). A milestone's target date is the
+  forecast end of its last item, so a slip shows where it comes from. Fixed one-day blocks were the other choice;
+  they hide how the work really flows.
 
 ### 6. The releases
 
-The preview and the beta stay as K28 has them. **1.0 changes:** Capxul core runs on Orthograph, in Capxul's
-staging. That means the books, HR and payroll in ERPNext's shapes, and the paid services (KYC and KYB, and bank
-accounts through Bridge), as K43 sets out. The release slices (M7.01 to M7.04, M7.06 and M7.13) stay in 1.0. Plugged
-In's stages 2 to 4 (wallets, the vault, the club on Aztec) leave 1.0's definition. Whatever Capxul pulls from them is
-built when Capxul pulls it.
+A release is what an app can do, never a list of framework parts (Aaron's call 8). A plugin is proved by the app
+that needed it first, which is the forcing function.
 
-This is Aaron's call 7.
+- **Preview** stays as K28 has it: the framework on npm under `next`, the baseline every app builds on.
+- **Beta:** Capxul's first feature, one person gets paid (Goal 16, slice 2), running in Capxul's staging.
+- **1.0:** Capxul core runs on Orthograph, in Capxul's staging. That means the books, HR and payroll in ERPNext's
+  shapes, and the paid services (KYC and KYB, and bank accounts through Bridge), as K43 sets out, plus the release
+  slices (M7.01 to M7.04, M7.06 and M7.13). This is Aaron's call 7.
+
+K28's beta, Gate M2 (other kinds of caller, sign-in and organisations as plugins, secrets, `ortho new`, the handles
+plugin, the screens), is no longer a release. Each of those pieces takes the milestone of the first app feature that
+pulls it, and the rest wait in "Not yet needed". Plugged In's stages 2 to 4 (wallets, the vault, the club on Aztec)
+leave 1.0's definition the same way. The superagent's milestones gate no release.
 
 ### 7. Winding down today's goals
 
@@ -192,6 +212,14 @@ Each line is one phrase that sat on one line of a live doc; `tools/ci/supersedes
 - `docs/canon/status.md`: "and Capxul on Orthograph (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43)"
 - `docs/canon/README.md`: "in the four stages 1.0 is" → "in the four stages it is"
 - `docs/canon/outline.md`: "the app 1.0 is built as" → "the app the canon is built around"
+- `.agents/skills/kanban/STATE.md`: "**Beta** (stage 1, "workable"): Gate M2 and Goal 3's done check, staging included." → "**Beta:** Capxul's first feature, one person gets paid, in Capxul's staging (K42)."
+- `docs/canon/status.md`: "| **Beta** (stage 1, "workable") |" → "| **Beta** (Capxul gets paid, K42) |"
+- `docs/canon/status.md`: "### Stage 1: workable (beta)" → "### Stage 1: workable (Plugged In's first stage)"
+- `docs/canon/status.md`: "### App UI (beta for the screens, then 1.0)" → "### App UI (built as an app needs it)"
+- `design/milestones.md`: "The **beta** is stage 1: Gate M2 (M2.12) and Goal 3's staging run." → "The **beta** is Capxul's first feature, one person gets paid, in Capxul's staging (K42)."
+- `design/handoff.md`: "the beta (stage 1: Gate M2 plus the staging run)" → "the beta (Capxul gets paid, K42)"
+- `design/handoff.md`: "That is the beta (K28), the end of stage 1." → "That was the beta under K28; K42 makes the beta Capxul's first feature."
+- `design/handoff.md`: "The beta (K28) is the critical path." → "Capxul's next feature is the critical path (K42)."
 - `design/milestones.md`: "the beta plus stages 2 to 4 and the release" → "the beta plus Capxul core (K43) and the release (K42)"
 - `design/milestones.md`: "**v1.0** is the four stage gates on `main`, plus the release" → "**v1.0** is Capxul core on Orthograph (K42, K43), plus the release"
 - `design/milestones.md`: "and Capxul (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43)"
