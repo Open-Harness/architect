@@ -1,0 +1,174 @@
+// node --test tools/github/board.test.mjs
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { APP_MILESTONES, BOARD_COLUMNS, NOT_YET_NEEDED, boardCounts, boardPlan, claimOverlaps, itemBody, itemLabels, itemMarker, issueOfRow, parseBoard } from "./board.mjs";
+import { LABELS, typeOf } from "./plan.mjs";
+import { boardValues, projectFields, projectPlan } from "./project.mjs";
+
+const head = `| ${BOARD_COLUMNS.join(" | ")} |\n|${BOARD_COLUMNS.map(() => "---").join("|")}|`;
+const page = (...lines) => `# Status\n\n## 1. The releases\n\n| id | other |\n|---|---|\n| x | y |\n\n## 2. The capability map\n\nProse.\n\n### A group\n\n${head}\n${lines.join("\n")}\n\n## 3. Holes\n`;
+const row = (id, item, stage, by, release, milestone, lane, touches, needs, evidence) =>
+  `| ${[id, item, stage, by, release, milestone, lane, touches, needs, evidence].join(" | ")} |`;
+
+const sample = page(
+  row("secrets", "Secrets by declaration: per environment only", "building", "superagent", "beta", "coding agent", "goal-17", "`packages/host-cloudflare`, `packages/orthograph/src/modules/secrets`", "—", "#690; slice M2.04"),
+  row("things", "Things, fields, machines", "built", "framework", "preview", "—", "none", "`packages/orthograph/src/modules/things`", "—", "slice M1.03"),
+  row("sign-in", "Sign-in as the auth plugin (`@orthograph/auth`: people, sessions): Better Auth", "provisional", "superagent", "1.0", "launch", "none", "`packages/auth`", "secrets, things", "slices M2.05"),
+  row("reports", "Reports: the books' statements", "provisional", "Capxul", "1.0", "books", "none", "`packages/projections`", "things", "K42"),
+  row("gap-node-host", "A Node host: the server runs only as a Worker", "provisional", "framework", "—", "—", "none", "—", "—", "no slice"),
+);
+
+test("the page's rows: every column read, the kind from the id, the name from the item, the tables outside section 2 ignored", () => {
+  const { rows, errors } = parseBoard(sample);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(rows.map((r) => r.id), ["secrets", "things", "sign-in", "reports", "gap-node-host"]);
+  const secrets = rows[0];
+  assert.deepEqual([secrets.kind, secrets.name, secrets.stage, secrets.pulledBy, secrets.release, secrets.milestone, secrets.lane], ["capability", "Secrets by declaration", "building", "superagent", "beta", "coding agent", "goal-17"]);
+  assert.deepEqual(secrets.touches, ["packages/host-cloudflare", "packages/orthograph/src/modules/secrets"]);
+  assert.equal(rows[2].name, "Sign-in as the auth plugin (`@orthograph/auth`: people, sessions)", "a colon inside parentheses is not the end of the name");
+  assert.deepEqual(rows[2].needs, ["secrets", "things"]);
+  assert.equal(rows[4].kind, "gap");
+  assert.deepEqual([rows[4].release, rows[4].milestone, rows[4].lane, rows[4].touches], [null, null, null, []]);
+  assert.deepEqual(boardCounts(rows).byPulledBy, { superagent: 2, Capxul: 1, framework: 2 });
+  assert.equal(boardCounts(rows).byStage.provisional, 3);
+});
+
+test("a row that does not read is an error naming it, never a silent skip", () => {
+  const bad = (line) => parseBoard(page(line)).errors.join("\n");
+  assert.match(bad(row("A_b", "x", "building", "framework", "—", "—", "none", "—", "—", "")), /id is not lowercase/);
+  assert.match(bad(row("a", "x", "half-built", "framework", "—", "—", "none", "—", "—", "")), /stage 'half-built'/);
+  assert.match(bad(row("a", "x", "built", "everyone", "—", "—", "none", "—", "—", "")), /pulled by 'everyone'/);
+  assert.match(bad(row("a", "x", "built", "framework", "2.0", "—", "none", "—", "—", "")), /release '2.0'/);
+  assert.match(bad(row("a", "x", "built", "framework", "—", "someday", "none", "—", "—", "")), /milestone 'someday'/);
+  assert.match(bad(row("a", "x", "built", "framework", "—", "—", "team-4", "—", "—", "")), /lane 'team-4'/);
+  assert.match(bad(row("a", "x", "built", "framework", "—", "—", "none", "packages/x", "—", "")), /touches is not a list/);
+  assert.match(bad(row("a", "x", "built", "framework", "—", "—", "none", "—", "ghost", "")), /needs 'ghost', which is no row/);
+  assert.match(bad("| a | too | few |"), /3 cells/);
+  assert.match(parseBoard("# no map\n").errors[0], /no section/);
+});
+
+test("the split and the releases: a framework row has no app milestone, and K42 decides the release", () => {
+  const bad = (line) => parseBoard(page(line)).errors.join("\n");
+  assert.match(bad(row("a", "x", "built", "framework", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by framework/);
+  assert.match(bad(row("a", "x", "built", "superagent", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by superagent/);
+  assert.match(bad(row("a", "x", "built", "Capxul", "beta", "books", "none", "—", "—", "")), /only Capxul pulls ships in 1.0/);
+  assert.match(bad(row("a", "x", "built", "superagent", "1.0", "coding agent", "none", "—", "—", "")), /ships in beta/);
+  assert.match(bad(row("a", "x", "built", "superagent", "beta", "launch", "none", "—", "—", "")), /ships in 1.0/);
+  const twice = page(row("a", "x", "built", "framework", "—", "—", "none", "—", "—", ""), row("a", "y", "built", "framework", "—", "—", "none", "—", "—", ""));
+  assert.match(parseBoard(twice).errors.join(), /duplicate id/);
+  const circle = page(row("a", "x", "built", "framework", "—", "—", "none", "—", "b", ""), row("b", "y", "built", "framework", "—", "—", "none", "—", "a", ""));
+  assert.match(parseBoard(circle).errors.join(), /run in a circle/);
+});
+
+test("the real status page reads, every id is unique, and every app milestone is used by its own app", () => {
+  const { rows, errors } = parseBoard(readFileSync("docs/canon/status.md", "utf8"));
+  assert.deepEqual(errors, []);
+  assert.ok(rows.length > 60);
+  for (const r of rows) if (r.milestone) assert.equal(APP_MILESTONES[r.milestone].app, r.pulledBy);
+  // K42's split: what the superagent pulls and what Capxul pulls.
+  const by = (id) => rows.find((r) => r.id === id).pulledBy;
+  for (const id of ["versions", "timers", "safe-repeats", "events-in", "outbox", "secrets", "webhook-doors", "pages", "sign-in", "live-deploy"]) assert.equal(by(id), "superagent", id);
+  for (const id of ["reports", "lists", "trees", "dates"]) assert.equal(by(id), "Capxul", id);
+  assert.notEqual(by("teams"), by("companies"), "organisations are separate (K42, call 10)");
+  assert.deepEqual(claimOverlaps(rows), []);
+});
+
+const empty = { labels: [], milestones: [], issues: [], ownerType: "Organization", types: [] };
+const url = "https://example.test/status.md";
+const plan = (rows, state) => boardPlan({ rows, state, statusUrl: url, typeOf });
+const { rows } = parseBoard(sample);
+
+test("from nothing: the lane label, every milestone, an issue per row in the first milestone that pulls it, the built ones closed", () => {
+  const steps = plan(rows, empty);
+  assert.deepEqual(steps.filter((s) => s.do === "createLabel").map((s) => s.name), ["lane:goal-17"]);
+  assert.deepEqual(steps.filter((s) => s.do === "createMilestone").map((s) => s.title), [...Object.values(APP_MILESTONES).map((m) => m.title), NOT_YET_NEEDED]);
+  const issues = steps.filter((s) => s.do === "createIssue");
+  assert.equal(issues.length, rows.length);
+  const secrets = issues.find((s) => s.key === "item secrets");
+  assert.deepEqual([secrets.title, secrets.milestone, secrets.type], ["Secrets by declaration", "Superagent: the coding agent end to end", "Capability"]);
+  assert.deepEqual(secrets.labels, ["kind:capability", "release:beta", "lane:goal-17"]);
+  assert.ok(secrets.body.startsWith(itemMarker("secrets")) && secrets.body.includes("**Touches:** `packages/host-cloudflare`"));
+  assert.equal(issues.find((s) => s.key === "item gap-node-host").milestone, NOT_YET_NEEDED);
+  assert.equal(issues.find((s) => s.key === "item gap-node-host").type, "Gap");
+  assert.deepEqual(issues.find((s) => s.key === "item reports").labels, ["kind:capability", "release:1.0"]);
+  assert.deepEqual(steps.filter((s) => s.do === "closeIssue").map((s) => s.issue), ["item things"], "a built row's issue is closed");
+});
+
+const held = (rows, over = {}) => ({
+  labels: [...LABELS, { name: "lane:goal-17", color: "c2e0c6", description: "Claimed by Goal 17: it works this item and its paths (K42, section 3)" }],
+  milestones: Object.values(APP_MILESTONES).map((m, k) => ({ number: k + 1, ...m })).concat([{ number: 99, title: NOT_YET_NEEDED, description: "Board items no app has pulled yet, with no date (K42, section 5)." }]),
+  ownerType: "Organization",
+  types: [],
+  issues: rows.map((r, k) => ({
+    number: 100 + k, title: r.name, body: itemBody(r, url), state: r.stage === "built" ? "closed" : "open", trusted: true, pullRequest: false,
+    labels: itemLabels(r), milestone: r.milestone ? APP_MILESTONES[r.milestone].title : NOT_YET_NEEDED, ...over,
+  })),
+});
+
+test("run twice: once GitHub holds every row, there is nothing to do, even with other labels on an issue", () => {
+  const state = held(rows);
+  assert.deepEqual(plan(rows, state), []);
+  state.issues[0].labels.push("harness:amp");
+  assert.deepEqual(plan(rows, state), [], "a label the board does not own is left alone");
+});
+
+test("a row that changed: the issue is rewritten, its labels and milestone moved, and it is closed when built", () => {
+  const state = held(rows);
+  const moved = rows.map((r) => (r.id === "secrets" ? { ...r, stage: "built", lane: null, release: "1.0", milestone: "launch" } : r));
+  state.issues[0].labels.push("harness:amp");
+  const [step, ...rest] = plan(moved, state);
+  assert.equal(rest.length, 0);
+  assert.deepEqual([step.do, step.number, step.state, step.milestone], ["updateIssue", 100, "closed", "Superagent: launch"]);
+  assert.deepEqual(step.labels, ["harness:amp", "kind:capability", "release:1.0"], "its own labels stay; the lane is dropped");
+  assert.ok(step.body.includes("**Stage:** built"));
+});
+
+test("a built row reopened when its stage goes back, and a stray copy or an outsider's issue is never taken for the row's", () => {
+  const state = held(rows);
+  const back = rows.map((r) => (r.id === "things" ? { ...r, stage: "building" } : r));
+  assert.deepEqual(plan(back, state).map((s) => [s.number, s.state]), [[101, "open"]]);
+  const dup = { ...state.issues[1], number: 500, trusted: true };
+  assert.equal(issueOfRow(rows[1], [dup, state.issues[1]]).number, 101, "the oldest wins");
+  assert.equal(issueOfRow(rows[1], [{ ...state.issues[1], trusted: false }]), undefined);
+  assert.equal(issueOfRow(rows[1], [{ ...state.issues[1], pullRequest: true }]), undefined);
+  assert.equal(issueOfRow(rows[1], [{ ...state.issues[1], labels: [] }]), undefined, "an issue without a board kind is not the row's");
+});
+
+test("the beta label says the beta of K42, and the board's kind has a label and an issue type", () => {
+  assert.equal(LABELS.find((l) => l.name === "release:beta").description, "Ships in the beta: the framework the superagent proves (K42)");
+  assert.ok(LABELS.some((l) => l.name === "kind:capability"));
+  assert.equal(typeOf("capability", { ownerType: "User" }), "Task");
+});
+
+test("claims: two goals on one path are named, the same goal or a finished item is not", () => {
+  const mk = (id, lane, stage, ...touches) => ({ id, lane, stage, touches });
+  assert.equal(claimOverlaps([mk("a", "goal-17", "building", "packages/cli"), mk("b", "goal-16", "building", "packages/cli/src")]).length, 1);
+  assert.equal(claimOverlaps([mk("a", "goal-17", "building", "packages/cli"), mk("b", "goal-17", "building", "packages/cli")]).length, 0);
+  assert.equal(claimOverlaps([mk("a", "goal-17", "built", "packages/cli"), mk("b", "goal-16", "building", "packages/cli")]).length, 0);
+  assert.equal(claimOverlaps([mk("a", "goal-17", "building", "packages/cli"), mk("b", "goal-16", "building", "packages/cli-two")]).length, 0, "a sibling prefix is not a parent");
+});
+
+const goal = { number: 17, milestone: "Goal 17: the superagent", release: "beta", status: "running", lead: {} };
+test("the Project: Stage, Pulled by and Lane join the fields, the board's items are set and cleared, and no fields change without the board", () => {
+  const withBoard = projectFields([goal], rows).map((f) => f.name);
+  assert.deepEqual(withBoard.slice(-3), ["Stage", "Pulled by", "Lane"]);
+  assert.deepEqual(projectFields([goal]).map((f) => f.name).length, 9);
+  assert.deepEqual(projectFields([goal], rows).find((f) => f.name === "Kind").options.map((o) => o.name).slice(-2), ["capability", "grill"]);
+  const state = held(rows);
+  const steps = projectPlan({ goals: [goal], issues: state.issues.map((i) => ({ ...i, nodeId: `I${i.number}` })), project: null, rows });
+  const set = (n, f) => steps.find((s) => s.do === "setValue" && s.number === n && s.field === f)?.value;
+  assert.deepEqual([set(100, "Stage"), set(100, "Pulled by"), set(100, "Release"), set(100, "Lane"), set(100, "Kind"), set(100, "Goal")], ["building", "superagent", "beta", "goal-17", "capability", "Goal 17"]);
+  assert.equal(set(101, "Status"), "Done");
+  assert.ok(!steps.some((s) => s.number === 104 && s.field === "Release"), "a row with no release sets none");
+  assert.deepEqual(boardValues(rows[4], { state: "open" }, [goal]).Release, null);
+});
+
+test("the Project, run twice: once it holds each board item's fields there is nothing to do", () => {
+  const state = held(rows);
+  const issues = state.issues.map((i) => ({ ...i, nodeId: `I${i.number}` }));
+  const fields = projectFields([goal], rows).map((f) => ({ id: `F-${f.name}`, name: f.name, dataType: f.dataType, options: f.options.map((o, k) => ({ id: `${f.name}${k}`, name: o.name })) }));
+  const items = rows.map((r, k) => ({ id: `T${k}`, number: 100 + k, values: Object.fromEntries(Object.entries(boardValues(r, issues[k], [goal])).filter(([, v]) => v !== null && v !== undefined)) }));
+  const views = projectPlan({ goals: [goal], issues, project: null, rows }).filter((s) => s.do === "createView").map((s, k) => ({ id: `V${k}`, name: s.name, layout: s.layout, filter: s.filter }));
+  assert.deepEqual(projectPlan({ goals: [goal], issues, project: { id: "P", fields, items, views }, rows }), []);
+});

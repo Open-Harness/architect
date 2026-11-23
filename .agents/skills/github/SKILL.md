@@ -123,6 +123,31 @@ node tools/github/sync.mjs --goal-branches --project            # what it would 
 node tools/github/sync.mjs --goal-branches --project --apply    # needs the token's project scope
 ```
 
+## The board (K42)
+
+The capability map in `docs/canon/status.md` (its section 2) is the truth of the items: one table row per item, with an
+id, the item in plain words, its stage, who pulled it, its release, its app milestone, its lane, the paths it touches,
+the ids it needs and its evidence. `--board` reads the rows and plans one issue per row, found by the marker
+`<!-- orthograph:item=<id> -->` in its body (never by title), so a row is never made twice and nothing is deleted:
+
+- **Labels:** `kind:capability` (or `kind:gap` for an id that starts `gap-`), `release:<r>` and, once a goal has claimed
+  it, `lane:goal-<n>`.
+- **Milestone:** the first app milestone that pulls it (the superagent's coding agent, triage agent, extraction and
+  launch; Capxul's getting paid, books, people and payroll, and banking), or "Not yet needed".
+- **State:** closed when the row is built or extracted, open at any other stage.
+- **Project fields** (with `--project`): Stage, Pulled by, Release, Lane and Kind.
+
+You change an item by changing its row in the pull request that changes the item. A row the sync can't read stops the
+run (exit 2) before any step. Claim an item by setting its lane and naming its paths; the sync prints any two goals'
+claims that overlap, for Goal 18 to settle.
+
+```bash
+node tools/github/sync.mjs --board --dry-run              # the plan for the rows, and the counts by stage and by who pulled them
+node tools/github/sync.mjs --board --project --dry-run    # and the Project's fields
+node tools/github/sync.mjs --board --apply                # do it
+node --test tools/github/board.test.mjs                   # its tests
+```
+
 ## Working a slice
 
 1. At the start: merge your base in; read the open issues in your milestone with `kind:ask` (asks to you) and answer
