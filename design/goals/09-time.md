@@ -126,5 +126,10 @@ settled as a second service, `DurableTimers` (#483, `design/decisions/M8-timers-
 pick up when they resume (#464, #467). M8.09, moves made by time in the language, is done (#517), and it also brought
 `Blueprint.clock` on environments forward from M8.06 (`design/decisions/M8-09-time-in-the-language.md`). It landed
 early in `goal/stage-1` for Goal 4's M6.21 (#600, #443 closed), and `goal/stage-1` is merged back into `goal/time`.
-Next: M8.06, the world holds the clock; then M8.07, timers on the world's table, which lands early for Goals 8 and 10.
-M8.17 waits on Goal 4's M6.09 (#442), and M8.18 on Gate M2.
+M8.06, the world holds the clock, is done (#615, `design/decisions/M8-06-world-holds-the-clock.md`). M8.07, timers on
+the world's table and the quiet check, is done (#626, `design/decisions/M8-07-timers-and-quiet.md`). Its call 12 holds
+the five invariants every site keeps (counted work, a reset fences by generation, one owner per timer row, every wait
+bounded, a resume reads the world's clock) and the table of sites an independent 🔍 audited. Still open: a Worker
+isolate that dies while it holds a parked request leaves the world `NeverQuiet` until a reset (a lease per token
+would fix it). M8.07 lands early in `goal/stage-1` for Goals 8 and 10 (#464, #467). Next: M8.10, the keeper, then
+M8.08, M8.11, M8.12, M8.13 and M8.15. M8.17 waits on Goal 4's M6.09 (#442), and M8.18 on Gate M2.
