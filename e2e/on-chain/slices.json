@@ -1,0 +1,17 @@
+{
+  "_": "The check each slice of design/goals/04-on-chain.md must add to e2e/on-chain/ (its checks author, red first), by number prefix: NN-<name>.test.ts. `nx run e2e:on-chain` fails while a listed check file is missing, so 'every slice's check is green' cannot pass by there being none. Written by the checks author; a builder never edits this file.",
+  "slices": [
+    { "slice": 3, "milestone": "M6.10", "prefix": "04", "what": "the chain store and values" },
+    { "slice": 4, "milestone": "M6.11", "prefix": "05", "what": "the Solidity language renders the base contract and surface.json" },
+    { "slice": 5, "milestone": "M6.12", "prefix": "06", "what": "the scaffold and the Foundry tests" },
+    { "slice": 6, "milestone": "M6.13", "prefix": "07", "what": "the user fills the hook; the fuzz" },
+    { "slice": 7, "milestone": "M6.16 (early)", "prefix": "08", "what": "Host.chain and the safe adapter" },
+    { "slice": 8, "milestone": "M6.14", "prefix": "09", "what": "the client from surface.json" },
+    { "slice": 9, "milestone": "M6.07", "prefix": "10", "what": "the relayer actor" },
+    { "slice": 10, "milestone": "M6.09", "prefix": "11", "what": "the follower actor" },
+    { "slice": 11, "milestone": "M6.15", "prefix": "12", "what": "the signing flow and the submission lifecycle" },
+    { "slice": 12, "milestone": "M6.16", "prefix": "13", "what": "worlds with a chain" },
+    { "slice": 12, "milestone": "M6.17", "prefix": "14", "what": "redeploy on new bytecode only" },
+    { "slice": 12, "milestone": "M6.18", "prefix": "15", "what": "key hygiene" }
+  ]
+}

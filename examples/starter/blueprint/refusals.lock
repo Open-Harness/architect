@@ -1,0 +1,85 @@
+{
+  "generated": "Generated from blueprint/. Append-only. Do not edit.",
+  "lockVersion": 1,
+  "refusals": {
+    "AR-001": {
+      "name": "NotAllowed",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotAllowed"
+        }
+      },
+      "earlier": []
+    },
+    "AR-002": {
+      "name": "IdempotencyConflict",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "IdempotencyConflict"
+        }
+      },
+      "earlier": []
+    },
+    "IN-900": {
+      "name": "InvitationNotPending",
+      "owner": "invitation",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InvitationNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "OR-900": {
+      "name": "OrganizationNotActive",
+      "owner": "organization",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "OrganizationNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "PE-001": {
+      "name": "PersonEmailTaken",
+      "owner": "person",
+      "from": "blueprint/things/person/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PersonEmailTaken"
+        }
+      },
+      "earlier": []
+    },
+    "SE-001": {
+      "name": "SessionCredentialsWrong",
+      "owner": "session",
+      "from": "blueprint/things/session/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SessionCredentialsWrong"
+        }
+      },
+      "earlier": []
+    }
+  },
+  "retired": {}
+}

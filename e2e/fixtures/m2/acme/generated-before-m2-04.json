@@ -1,5 +1,5 @@
 {
- "note": "sha256 of every file of examples/acme/generated at goal/stage-1 dc471c87, before M2.04. M2.04 must leave every one as it is (milestones.md, M2.04): checks 12, 14 and 21 stay green with no baseline recaptured.",
+ "note": "sha256 of every file of examples/acme/generated, before M2.04's build (first captured at goal/stage-1 dc471c87; recaptured at M1.51's licence change on goal-3/m1-51-licence-check, hash lines only: the package hashes and digest in generated/model/model.json and generated/portal/blueprint.json). M2.04 must leave every one as it is (milestones.md, M2.04): checks 12, 14 and 21 stay green with no baseline recaptured.",
  "files": {
   "generated/api/src/allowance/get.ts": "e5fa906c7e2d6cbe3f53305ab8c1a9ad6e6043ba7e12fd9a3a6e33fa44887bf1",
   "generated/api/src/allowance/grant.handler.ts": "84bd7f9b3a34cc821c184a9a60f854ebb4d90f8994302fdc869d0c7ade90b097",
@@ -74,8 +74,8 @@
   "generated/docs/system/index.md": "58629ac43bb005705ae59b53bd16fc62d3393349d41c42bc6b898b29b8f676f5",
   "generated/mcp/src/index.ts": "2f4e1f133aabf63219ff5ce4d69e93fe0ef129cf6e2edf169b4a8acd8daebde1",
   "generated/model/edges.json": "07e87dcfe228913980e7660a32a51ef4cb194257766c6f7cbc7283f73c549573",
-  "generated/model/model.json": "5df605befa6698a9a29e57b86003d9d8c53105e9d22f6a6ff3767bd8ea5b9fb7",
-  "generated/portal/blueprint.json": "d662a2b87fc82b421d33c97d2652993c6d2b921062d66c14f4ae3e3bf9210f8f",
+  "generated/model/model.json": "bc9e2cd7288b1d206551c8e30914b7dc0388aace5ddf67ab8525d17e3b590022",
+  "generated/portal/blueprint.json": "438c9f17c71617d4bf5153695f0348173e1ec8785a98c402415ff0d75852a753",
   "generated/portal/main.ts": "005ceedeeddb3e310ce7a5e06d271503cea8fa2bdcb84a56a83344d1df9a78ad",
   "generated/sdk/src/allowance/get.ts": "4943396d3f7a83cc905d2fcddafacc9b32f3e29595f786ed89cc0138170c99a3",
   "generated/sdk/src/allowance/grant.ts": "c5a65911a8af93cebfa0b3276fdc0c618ea0b0bd1b5aba0160c523bc0ac29c5e",

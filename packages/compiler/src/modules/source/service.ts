@@ -56,6 +56,7 @@ export const nodeSource = (given: string) => {
         .map((f) => `../journeys/${f.name}`) : []),
     ].sort()),
     load: (path) => loadFile(path, join(root, path), path.startsWith("../") ? path.slice(3) : `blueprint/${path}`),
+    lock: sync("can't read blueprint/refusals.lock", () => (existsSync(join(root, "refusals.lock")) ? readFileSync(join(root, "refusals.lock"), "utf8") : undefined)),
     plugins: Effect.gen(function* () {
       const manifest = yield* sync("can't read the project's package.json", () => readManifest(join(projectRoot, "package.json")));
       const found = yield* Effect.forEach(dependenciesOf(manifest), plugin);
