@@ -315,6 +315,8 @@ Live docs, rewritten in this change:
 - design/docs/index.html: "acme run start --agent support" → "(none: an agent is made by an operation and told through the outbox)"
 - design/milestones.md: "Run, its machine, start, steer, cancel, the system's moves" → "`Agent` is a thing living in its own actor (machine idle ⇄ working, and stopped)"
 - .agents/skills/kanban/data/tasks.json: "Run, its machine, start, steer, cancel, the system's moves" → "Agent is a thing living in its own actor (machine idle ⇄ working, and stopped)"
+- design/milestones.md: "keyed by event id. Move-event delivery as `system` follows in M5.04" → "each event keyed by the change to its object, and the door's caller carrying the sender's outside account (K40 fixes 1 and 5)"
+- design/milestones.md: "| M5.12 | **Gate M5** | M5.02 to M5.11, M5.13 to M5.15 |" → "| M5.12 | **Gate M5** | M5.02 to M5.11, M5.13 to M5.16 |"
 - design/frame/questions.md: "**A**: an agent starting agents spends money with no person." → "K40 (22 November 2026) replaces all three: an agent is its own thing, made by any operation allowed to create one, under that operation's roles."
 
 ## Dated records
@@ -325,13 +327,15 @@ A "Superseded by K40, 22 November 2026" note is added beside these words, which 
   adapter, `packages/sandbox`, and workspaces use it).
 - `M4-agents.md`, calls 1 and 2: the Run as a row started only by a person, and one SQLite Durable Object per run
   (added at the goal/agents landing, #793, once Goal 10 had parked with Ask #535 open).
+- `M5-reach-out.md`, Q2 calls 1, 3 and 4 (events keyed by delivery; a poll "is the same") and Q4 (the `service` caller
+  with only its mount) (added at the goal/events landing, #794, once Goal 11 had parked with Asks #536 and #538 open).
 - `K2-forman-frame.md`, S15's line, "only a person starts a run unless the mount allows agents" (now an agent is its
   own thing).
 
 ## Left to their owners
 
 These are on other goals' branches, so each goes by Ask, never by an edit here: M4-agents calls 1 and 2 and the M4.10
-row (Goal 10; done at the goal/agents landing, #793, after Goal 10 parked); M5-reach-out Q2.1 and Q4 (Goal 11); M2-auth's `service` and `agent` kinds and K20's role forms (Goal 3).
+row (Goal 10; done at the goal/agents landing, #793, after Goal 10 parked); M5-reach-out Q2.1 and Q4 (Goal 11; done at the goal/events landing, #794, after Goal 11 parked, with M5.03 and a new M5.16 for `catchUp`); M2-auth's `service` and `agent` kinds and K20's role forms (Goal 3).
 
 The Asks, filed 22 November 2026: Goal 3, #531 (the outside account and `actor:`), #532 (versions), #533 (an agent
 caller with no person, and `agent:`), #534 (a lent token); Goal 10, #535 (an agent is its own thing; its `env`);
