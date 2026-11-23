@@ -815,7 +815,7 @@
   "what": "Live steps (K5 seam 10): a step signal as each step starts and ends, sent under waitUntil, not at dispose; committed events read from the journal for the portal"
  },
  "M1-22": {
-  "doneWhen": "an action's run refused by the role check returns the same typed refusal as the SDK; an operation .notVia(Via.agent) has no agent tool; a type test checks each generated options(host) against the field list and the no-write error's fields recorded from agent-native 0.228.2, with no agent-native package installed; every generated action advertises non-empty parameters",
+  "doneWhen": "an action's run refused by the role check returns the same typed refusal as the SDK; an operation .notVia(Via.agent) has no agent tool; a type test checks each generated options(host) against the field list and the no-write error's fields recorded from agent-native 0.228.2, with no agent-native package installed; every action whose payload has fields advertises non-empty parameters",
   "history": [
    {
     "at": "2026-11-19T09:00:00Z",
