@@ -31,6 +31,26 @@ describe("server", () => {
     expect(String(made._tag === "Failure" ? (made.failure as { readonly message?: string }).message : "")).toContain("mount it as blueprint/projections/server.ts");
   });
 
+  it("wraps its entry in the world's time, and sets ORTHO_CLOCKS, only for a stepped or scaled environment (M8.06); no clock, or a real one, is what it always was", async () => {
+    const withClock = (clock?: NonNullable<Model["environments"]>[string]["clock"]): Model => ({
+      ...model,
+      environments: { ...model.environments, local: { ...model.environments!["local"]!, ...(clock ? { clock } : {}) } },
+    });
+    const rendered = (m: Model) => Effect.runPromise(server.render({ name: "acme", model: m, mount: "server", mounts: m.mounts ?? {} }));
+    const file = (files: ReadonlyArray<{ readonly path: string; readonly content: string }>, path: string) => files.find((f) => f.path === path)!.content;
+    const plain = await rendered(model);
+    for (const same of [withClock(), withClock({ kind: "real" })]) expect(await rendered(same)).toEqual(plain);
+    expect(file(plain, "main.ts")).not.toContain("WorldEntry");
+    expect(file(plain, "wrangler.jsonc")).not.toContain("ORTHO_CLOCKS");
+
+    const stepped = await rendered(withClock({ kind: "stepped", starts: "2027-01-10T09:00:00.000Z" }));
+    expect(file(stepped, "main.ts")).toContain("export default WorldEntry.entry<Env>({");
+    expect(file(stepped, "main.ts")).toContain("import { AuthD1, Database, JournalD1, StoreD1, Telemetry, WorldEntry, toWorld }");
+    expect(file(stepped, "wrangler.jsonc")).toContain(`"ORTHO_CLOCKS": "{\\"local\\":{\\"kind\\":\\"stepped\\",\\"starts\\":\\"2027-01-10T09:00:00.000Z\\"}}"`);
+    // Only those two files differ.
+    expect(stepped.filter((f) => f.content !== plain.find((p) => p.path === f.path)?.content).map((f) => f.path).sort()).toEqual(["main.ts", "wrangler.jsonc"]);
+  });
+
   it("has an empty twin for prove, with a scaffold for each operation the project writes", () => {
     const files = emptyServer(model, "acme");
     expect(files.filter((f) => f.scaffold).length).toBe(Object.values(model.operations).filter((o) => o.kind === "operation").length);

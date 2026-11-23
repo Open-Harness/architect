@@ -5,7 +5,7 @@ import type { Model, OperationModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
 import { callImports, renderHandlerScaffold, wired } from "#modules/handlers/service.js";
 import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, pascal, storeFileAt, thingFileAt, toRoot } from "#modules/names/service.js";
-import { renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
+import { clocksOf, renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 
 const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
 
@@ -37,6 +37,7 @@ const peopleOf = (model: Model) => {
 
 const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const ops = Object.values(model.operations);
+  const timed = Object.keys(clocksOf(model)).length > 0;
   const actors = Object.values(model.things).some((t) => t.lives === "actor");
   const handled = ops.filter((o) => o.kind === "operation");
   const groups = [...new Set(ops.map((o) => o.thing))];
@@ -89,7 +90,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `import { HttpApiBuilder } from "effect/http-api";`,
       `import { SqlClient } from "effect/sql";`,
       `import type { Principal } from "${Names.frontDoor}";`,
-      `import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "${Names.pkg("host-cloudflare")}";`,
+      `import { AuthD1, Database, JournalD1, StoreD1, Telemetry, ${timed ? "WorldEntry, " : ""}toWorld } from "${Names.pkg("host-cloudflare")}";`,
       `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, Wire, ${ruled.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
       `import { Mcp, type McpResult, type ShownOperation } from "${Names.pkg("language-effect")}";`,
       `import { Api, Errors } from "../api/src/index.ts";`,
@@ -232,7 +233,8 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `    return Mcp.handle({ name: "${name}", version: env.ORTHO_REVISION ?? "0.0.0", tools, principal: who.principal, run }, request);`,
       "  });",
       "",
-      "export default {",
+      // An environment with a stepped or scaled clock (K23): the entry reads its world's instant and runs each request in it (M8.06).
+      timed ? ["/** Each request runs in its world's time: `Date` and Effect's `Clock` read the instant its world keeps (stepped and scaled worlds only). */", "export default WorldEntry.entry<Env>({"] : "export default {",
       "  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {",
       "    // Closed before anything reads it: outside worlds there is no door to cast, to read facts, or to register a world.",
       "    if (new URL(request.url).pathname.startsWith(\"/_world/\") && !hostsWorlds(env)) return Promise.resolve(Response.json({ error: \"not found\" }, { status: 404 }));",
@@ -256,14 +258,14 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "    Telemetry.configure({ sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT });",
       `    return Telemetry.serve({ url: env.OTLP_URL || undefined, service: "${name}", handler: app.handler, waitUntil: (p) => ctx.waitUntil(p) }, request);`,
       "  },",
-      "};",
+      timed ? "});" : "};",
     ),
   };
 };
 
 export const renderServer = (model: Model, name: string, empty = false): ReadonlyArray<RenderedFile> => [
   main(model, name, empty),
-  renderWrangler(name, Object.values(model.things).some((t) => t.lives === "actor"), databaseStores(model)),
+  renderWrangler(name, Object.values(model.things).some((t) => t.lives === "actor"), databaseStores(model), clocksOf(model)),
   renderMigration(model),
   ...renderStoreMigrations(model),
   ...(empty ? Object.values(model.operations).filter((o) => o.kind === "operation").map((o) => renderHandlerScaffold(o, `generated/server/${emptyPath(o)}`, model)) : []),

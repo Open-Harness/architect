@@ -2,6 +2,8 @@ import { DurableObject } from "cloudflare:workers";
 import type { Committed } from "@orthograph/language-effect";
 import type { ActorApi, ActorEntry, ActorRow, ActorWrite } from "./types.ts";
 import { SCHEMA } from "./internal/tables.ts";
+import { WorldEntry } from "#modules/world/service.js";
+import type { EntryEnv } from "#modules/world/types.js";
 
 interface Stored { readonly row: string; readonly state: string | null; readonly version: number }
 
@@ -11,8 +13,11 @@ interface Stored { readonly row: string; readonly state: string | null; readonly
  * run between the version check and the write, and a failed write rolls the whole commit back.
  */
 export class Actor extends DurableObject implements ActorApi {
+  private readonly world: EntryEnv;
+
   constructor(ctx: DurableObjectState, env: unknown) {
     super(ctx, env as never);
+    this.world = env as EntryEnv;
     for (const statement of SCHEMA) ctx.storage.sql.exec(statement);
   }
 
@@ -20,12 +25,21 @@ export class Actor extends DurableObject implements ActorApi {
     return this.ctx.storage.sql.exec<Stored & Record<string, SqlStorageValue>>("SELECT row, state, version FROM instance").toArray()[0];
   }
 
-  find(): ActorRow | null {
+  /** Each entry runs in its world's time (M8.06); a real world answers at once, as before. */
+  find(): ActorRow | null | Promise<ActorRow | null> {
+    return WorldEntry.withinNow(this.world, () => this.read());
+  }
+
+  commit(writes: ReadonlyArray<ActorWrite>, entries: ReadonlyArray<ActorEntry>): Committed | Promise<Committed> {
+    return WorldEntry.withinNow(this.world, () => this.write(writes, entries));
+  }
+
+  private read(): ActorRow | null {
     const s = this.stored();
     return s ? { row: JSON.parse(s.row) as Record<string, unknown>, state: s.state, version: s.version } : null;
   }
 
-  commit(writes: ReadonlyArray<ActorWrite>, entries: ReadonlyArray<ActorEntry>): Committed {
+  private write(writes: ReadonlyArray<ActorWrite>, entries: ReadonlyArray<ActorEntry>): Committed {
     const sql = this.ctx.storage.sql;
     return this.ctx.storage.transactionSync((): Committed => {
       const now = this.stored();

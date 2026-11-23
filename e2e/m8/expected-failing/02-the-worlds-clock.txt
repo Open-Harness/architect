@@ -1,10 +1,7 @@
 # Written before M8 is built. Red until the world holds the clock (M8.06) and timers and quiet follow it (M8.07).
 # The chain test also needs the chain to move with the world (M8.08, on stage one's chain-evm); the follower
 # test needs the follower (M8.17, after M6.09). All due before M8's gate.
-m8/02-the-worlds-clock.test.ts > 02 M8.03: one clock drives the world > Better Auth refuses a session after its life by the world's time, and still signs people in
 m8/02-the-worlds-clock.test.ts > 02 M8.03: one clock drives the world > a busy process makes a move fail as NeverQuiet, naming it, and moves nothing; once quiet, the move goes
-m8/02-the-worlds-clock.test.ts > 02 M8.03: one clock drives the world > a world on the real clock reads the wall clock and refuses every move
 m8/02-the-worlds-clock.test.ts > 02 M8.03: one clock drives the world > at each month of a year, the chain's latest block has the world's instant, one block mined per step
 m8/02-the-worlds-clock.test.ts > 02 M8.03: one clock drives the world > at each month of a year, the follower's checkpoint is the chain's head at the world's instant (waits for M6.09)
 m8/02-the-worlds-clock.test.ts > 02 M8.03: one clock drives the world > at each month of a year, the server's clock, a time passed to the database and a Timers sleep read the world's instant
-m8/02-the-worlds-clock.test.ts > 02 M8.03: one clock drives the world > ortho check refuses a stepped clock on staging, which promotes to production, and passes a real one

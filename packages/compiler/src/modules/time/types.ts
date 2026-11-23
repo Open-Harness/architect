@@ -52,8 +52,12 @@ export interface TimesApi {
     readonly move: Move | undefined;
     readonly allowed: ReadonlyArray<{ readonly kind: string }>;
   }) => ReadonlyArray<string>;
-  /** An environment's clock, or the problems with it. */
-  readonly clock: (spec: { readonly file: string; readonly clock: Clock }) => {
+  /**
+   * An environment's clock, or the problems with it. `promotes` says the environment is in a promotion chain (it promotes
+   * from another, or another promotes from it): only a real clock may be there, since a stepped or scaled one is for worlds
+   * that are made and thrown away (K23 section 1).
+   */
+  readonly clock: (spec: { readonly file: string; readonly clock: Clock; readonly environment?: string; readonly promotes?: boolean }) => {
     readonly clock: ClockModel | undefined;
     readonly problems: ReadonlyArray<string>;
   };
