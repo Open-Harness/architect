@@ -29,8 +29,8 @@ Decided 22 November 2026, Goal 6 slice 5 (framework builder). Builds K31 section
 5. **What the caller sees is the rule the generated `palette.ts` carries**, written once more in `modules/palette`. Why not read the generated one: `palette.ts` is project code the shell never imports, and its
    `visibleTo(caller)` does not narrow operations to the page shown, which the palette must (K31 section 4), so the shell would filter again anyway.
    Handing the function in would add a prop for no saving. The copy is eight lines; `e2e/portal-next/shell` checks its lists against the projection's, and
-   `map/projection` checks the generated rule, so drift fails a check. The rule: an anonymous caller passes only `anyone`; a person passes any non-empty
-   `allowed`; an operation also needs its page open, and is listed only on its own page.
+   `map/projection` checks the generated rule, so drift fails a check. The rule (as `visibleTo(caller, roles?)` has it): an anonymous caller passes only `anyone`; a person passes `anyone` and
+   `signed-in`, and a role only when the app's `roles` prop holds it (none given: none held, so role-only entries are hidden); nobody passes an empty `allowed`; an operation also needs its page open, and is listed only on its own page.
 6. **The layouts draw the same parts in their own places.** `sidebar`: the sidebar holds `header`, `switcher`, `nav`, `footer`; the main column
    has a bar with the breadcrumb, the palette's button and `actions`. `topNav`: the top bar holds `header`, `switcher`, `nav`, the button and
    `actions`; `footer` sits under the page. `none`: only the page, with no region, slot or breadcrumb, and no palette button; the keyboard
@@ -54,6 +54,22 @@ Decided 22 November 2026, Goal 6 slice 5 (framework builder). Builds K31 section
     new, no router, no HeroUI. `.oxlintrc.json` gains `scope:shell`: it may depend on `scope:theme`, and import `react`, `react-dom`,
     `@ui-sdk/core` and `@ui-sdk/react`, and nothing else. `exports` points at `src/index.ts` as `packages/portal` does, with
     `publishConfig` for `dist`.
+
+## Added for the portal's client (snags #665, #666, 23 November 2026)
+
+12. **Extra palette rows (`extra`, #665).** A client reads things, operations and refusal codes from its data API at run time, so the map's
+    `palette.json` cannot hold them. `props.extra` is a typed source, `{ read(): ExtraEntry[]; subscribe(listener) }` (the shell reads it with
+    `useSyncExternalStore`, so `read` returns the same array until the rows change), of `{ name, group, description?, allowed, href?, run? }`.
+    Rows are listed after the map's own, under a heading per `group` in the order groups first appear; `href` navigates, `run` calls the app, and
+    both close the palette. Each row's `allowed` goes through the same rule as a map entry (`Palette.visibleExtra`, with `caller` and `roles`), so a
+    role-only row is hidden unless `roles` holds it. A row is `data-kind="extra"` with `data-group` and `data-name`; its value is `group:name`, so two
+    groups may share a name.
+13. **The app's own 404 (`notFound`, #666).** `props.notFound` is a `PageFn` painted into the shell's 404 element, which keeps its hooks
+    (`data-shell="page"`, `data-page=""`, `data-status="404"`); without it the shell's "Page not found" text stays. The shell knows no name the
+    app marks itself ready with. The body is painted again when the unmatched address changes.
+14. **The query (`search`).** A `PageFn` takes a third argument, the address's `URLSearchParams` (read-only by convention), so a page does not read
+    `location`. `History` gained `search()`. The router still matches the pathname only, so a query never changes which page it is; a change
+    of query paints the page body again, since the page read it when it painted (the portal's `?tab=`).
 
 ## What the agent reads
 

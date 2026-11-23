@@ -1,11 +1,17 @@
 // The frame: the React parts that draw the shell (K31 section 3) over what the other modules decide. The whole contract of `mountShell` is `ShellProps`.
 import type { History } from "../history/types.ts";
 import type { NavigationData } from "../navigation/types.ts";
-import type { Caller, OperationEntry, PaletteEntry } from "../palette/types.ts";
+import type { Caller, ExtraSource, OperationEntry, PaletteEntry } from "../palette/types.ts";
 import type { Params, RouteTable } from "../router/types.ts";
 
-/** A page paints itself into the element the shell gives it; the look is the page's own code (K31 section 2). What it returns runs when the page is left. */
-export type PageFn = (el: HTMLElement, params: Params) => void | (() => void);
+/**
+ * A page paints itself into the element the shell gives it; the look is the page's own code (K31 section 2). `params` are the route's, decoded;
+ * `search` is the address's query (read-only: it moves with a navigation, which paints the page again). What it returns runs when the page is left.
+ */
+export type PageFn = (el: HTMLElement, params: Params, search: URLSearchParams) => void | (() => void);
+
+/** What the app paints in place of the shell's own 404 text. The element keeps the shell's hooks (`data-status="404"`, `data-page=""`); `params` is empty. */
+export type NotFoundFn = PageFn;
 
 /** A mounted feature fills a slot the same way. The navigation is the shell's own, so `nav` is not one a caller fills. */
 export type SlotFn = (el: HTMLElement) => void | (() => void);
@@ -30,8 +36,14 @@ export interface ShellProps {
   readonly palette: ReadonlyArray<PaletteEntry>;
   /** What the palette lists: an anonymous caller, or a person. */
   readonly caller: Caller;
+  /** The names of the roles the caller holds (such as `link.linkOwner`); a role-only page or operation is listed only when its role is here. None given means none held. */
+  readonly roles?: ReadonlyArray<string>;
   /** A body for each page, by the page's name. */
   readonly pages: Readonly<Record<string, PageFn>>;
+  /** The 404 body, when the app draws its own (so it can mark itself ready). Without it the shell says "Page not found". */
+  readonly notFound?: NotFoundFn;
+  /** Rows the app adds to the palette at run time, beside the map's. The same "who may open and call" rule applies to their `allowed`. */
+  readonly extra?: ExtraSource;
   readonly slots?: Slots;
   /** Called when a person picks an operation in the palette. The shell calls nothing itself: running an operation is the app's. */
   readonly onOperation?: (entry: OperationEntry) => void;

@@ -33,7 +33,12 @@ describe("History.browser", () => {
     const win = fakeWindow("/things?x=1");
     const history = History.browser(win);
     expect(history.path()).toBe("/things");
+    expect(history.search()).toBe("?x=1");
+    history.push("/things?tab=proof");
+    expect(history.search()).toBe("?tab=proof");
+    win.back();
+    expect(history.search()).toBe("?x=1");
     history.push("/things?x=1");
-    expect(win.entries()).toEqual(["/things?x=1"]);
+    expect(win.entries()).toEqual(["/things?x=1", "/things?tab=proof"]);
   });
 });

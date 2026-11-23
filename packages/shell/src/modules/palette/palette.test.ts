@@ -18,9 +18,25 @@ const entries: ReadonlyArray<PaletteEntry> = [
 ];
 const names = (caller: "anonymous" | "person", on: string | undefined) => Palette.visible(entries, caller, on).map((e) => e.name);
 
+describe("visibleExtra", () => {
+  const extras = [
+    { name: "handle", group: "Things", allowed: [anyone] },
+    { name: "link", group: "Things", allowed: [signedIn] },
+    { name: "HANDLE_TAKEN", group: "Refusal codes", allowed: [owner] },
+    { name: "nobody", group: "Things", allowed: [] },
+  ];
+  it("applies the map's rule to the rows the app adds", () => {
+    expect(Palette.visibleExtra(extras, "anonymous").map((e) => e.name)).toEqual(["handle"]);
+    expect(Palette.visibleExtra(extras, "person").map((e) => e.name)).toEqual(["handle", "link"]);
+    expect(Palette.visibleExtra(extras, "person", ["link.linkOwner"]).map((e) => e.name)).toEqual(["handle", "link", "HANDLE_TAKEN"]);
+  });
+});
+
 describe("visible", () => {
   it("lists a person every page, then the operations of the page they are on, in the index's order", () => {
-    expect(names("person", "profile")).toEqual(["account", "edit", "home", "profile", "link.add", "profile.get"]);
+    expect(names("person", "profile")).toEqual(["account", "edit", "home", "profile", "profile.get"]);
+    expect(Palette.visible(entries, "person", "profile", ["link.linkOwner"]).map((e) => e.name)).toEqual(["account", "edit", "home", "profile", "link.add", "profile.get"]);
+    expect(Palette.visible(entries, "anonymous", "profile", ["link.linkOwner"]).map((e) => e.name)).toEqual(["home", "profile", "profile.get"]);
     expect(names("person", "home")).toEqual(["account", "edit", "home", "profile", "handle.claim"]);
   });
 

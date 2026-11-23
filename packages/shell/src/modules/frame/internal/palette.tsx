@@ -4,11 +4,13 @@
 import { Command, CommandEmpty, CommandGroup, CommandGroupLabel, CommandInput, CommandItem, CommandList } from "@ui-sdk/react/command";
 import { Dialog, DialogBackdrop, DialogContent, DialogTitle, DialogTrigger } from "@ui-sdk/react/dialog";
 import { useContext, useEffect, useState } from "react";
-import type { OperationEntry, PaletteEntry } from "../../palette/types.ts";
+import type { ExtraEntry, OperationEntry, PaletteEntry } from "../../palette/types.ts";
 import { NavigateContext } from "./link.tsx";
 
 export interface PaletteProps {
   readonly entries: ReadonlyArray<PaletteEntry>;
+  /** Rows the app added, already filtered for the caller. */
+  readonly extra: ReadonlyArray<ExtraEntry>;
   /** Where a page is from here, or `undefined` when this route lacks a parameter it needs: the row is drawn, and cannot be chosen. */
   readonly hrefOf: (page: string) => string | undefined;
   readonly onOperation: ((entry: OperationEntry) => void) | undefined;
@@ -18,7 +20,7 @@ export interface PaletteProps {
 
 const isMac = (): boolean => typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent);
 
-export const Palette = ({ entries, hrefOf, onOperation, trigger }: PaletteProps) => {
+export const Palette = ({ entries, extra, hrefOf, onOperation, trigger }: PaletteProps) => {
   const [open, setOpen] = useState(false);
   const navigate = useContext(NavigateContext);
   useEffect(() => {
@@ -56,6 +58,26 @@ export const Palette = ({ entries, hrefOf, onOperation, trigger }: PaletteProps)
       {entry.name}
     </CommandItem>
   );
+  const groups = [...new Set(extra.map((e) => e.group))];
+  const extraRow = (entry: ExtraEntry) => (
+    <CommandItem
+      key={`extra:${entry.group}:${entry.name}`}
+      value={`${entry.group}:${entry.name}`}
+      label={entry.name}
+      keywords={entry.description === undefined ? [] : [entry.description]}
+      data-shell="palette-item"
+      data-kind="extra"
+      data-name={entry.name}
+      data-group={entry.group}
+      onSelect={() => {
+        setOpen(false);
+        if (entry.href !== undefined) navigate(entry.href);
+        entry.run?.();
+      }}
+    >
+      {entry.name}
+    </CommandItem>
+  );
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger ? (
@@ -83,6 +105,12 @@ export const Palette = ({ entries, hrefOf, onOperation, trigger }: PaletteProps)
                 {operations.map(row)}
               </CommandGroup>
             )}
+            {groups.map((group) => (
+              <CommandGroup key={group}>
+                <CommandGroupLabel>{group}</CommandGroupLabel>
+                {extra.filter((e) => e.group === group).map(extraRow)}
+              </CommandGroup>
+            ))}
           </CommandList>
         </Command>
       </DialogContent>
