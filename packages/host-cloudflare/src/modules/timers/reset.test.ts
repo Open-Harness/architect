@@ -75,6 +75,24 @@ describe("a move that a reset overtakes", () => {
   });
 });
 
+describe("a move queued behind another when the world is reset", () => {
+  it("fails as WorldReset too: its generation was taken when it was submitted, not when it got the lock, and the clock stays at the reset start", async () => {
+    await inWorld("reset-queued-move", STEPPED, {}, async (world, clock) => {
+      world.rpc.countEnter("probe.spin");
+      const first = settle(world, START + 30 * DAY);
+      await pause(20);
+      // The second is submitted while the first holds the lock, waiting on the busy owner.
+      const second = settle(world, START + 60 * DAY);
+      await pause(20);
+      clock.reset();
+      world.reset();
+      expect(await first).toMatchObject({ _tag: "Failure", failure: { _tag: "WorldReset" } });
+      expect(await second).toMatchObject({ _tag: "Failure", failure: { _tag: "WorldReset" } });
+      expect(clock.now()).toBe(START);
+    });
+  });
+});
+
 describe("a wake that is running when the world is reset", () => {
   it("is ended, so no row of the old run exists afterwards, and nothing is left counted", async () => {
     let world: WorldTimersState | undefined;

@@ -37,7 +37,9 @@ export class World extends DurableObject<WorldEnv> {
     const wakes = kinds === undefined ? undefined : WorldTimers.route(kinds);
     this.timers = WorldTimers.state({
       sql: ctx.storage.sql, clock: this.clock, env, changed: () => { if (this.clock.kind === "real") void this.schedule(); },
-      ...(wakes === undefined ? {} : { wakes: (timer) => Effect.promise(() => this.inTime(() => Effect.runPromise(wakes(timer)))) }),
+      // The wake runs in a runtime of its own (`runPromise`), so the abort must cross: interrupting this fiber (a reset, the bound) aborts
+      // `signal`, which interrupts the inner one, and a wake that was ended performs no write afterwards.
+      ...(wakes === undefined ? {} : { wakes: (timer) => Effect.promise((signal) => this.inTime(() => Effect.runPromise(wakes(timer), { signal }))) }),
     });
     // A wake the world died in the middle of is pending again (the table recovers it); a real world sets its alarm for it.
     if (this.clock.kind === "real") void this.schedule();

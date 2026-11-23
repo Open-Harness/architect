@@ -196,13 +196,42 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | limits (`ORTHO_QUIET_MS`, `ORTHO_FIRE_LIMIT`) | n/a | n/a | n/a | ✓ whole numbers above nought, no longer than 2^31-2 ms (a longer timer would fire at once) | n/a |
     | instants and payloads into SQL | n/a | n/a | ✓ refused before SQL (finite, within a Date's range, JSON) | n/a | n/a |
 
+    **Runtime bridges** (a second runtime, a promise, an RPC: a place where an interrupt on one side must reach the other). Cancellation flows
+    both ways, or the callee is fenced by generation and token. Found by grepping `runPromise`, `runFork`, `Effect.promise`, `tryPromise` and
+    `new Promise` in `host-cloudflare/{world,timers,clock}`, `language-effect/{timers,work,handler}` and the generated Worker.
+
+    | Bridge | How it holds |
+    |---|---|
+    | the world's wake: `Effect.promise` over `Effect.runPromise(wake)` (`world/service.ts`) | **was open**: the inner runtime kept running after its fiber was interrupted. Now `Effect.promise((signal) => ... runPromise(wake, { signal }))`: interrupting the outer fiber (a reset, the quiet bound) aborts the signal and interrupts the inner one, so a wake that was ended performs no write and sets no row (`world/wake-bridge.test.ts`, through the world's own wake path) |
+    | the Worker's RPCs to the world (`work.ts` `call`) | the callee cannot be aborted, so it is fenced: `timerAdd` and `timerSet` carry the request's token and are refused when the world no longer holds it; `countEnter`, `leave`, `name`, `has` and `cancel` are idempotent by id and generation; `timerWait` only waits, writes nothing, and ends `forgotten` after a reset |
+    | `timerWait`: `Effect.runPromise(table.wait(id))` | pure wait, no write; resolved by fire, cancel or reset |
+    | the clock door: `Effect.runPromise(controller.settle(...))` | a move is not cancelled by its caller disconnecting: it must finish or fail by its own bounds (quiet, fire limit, generation); it carries its generation from submission and fails `WorldReset` rather than move a reset world |
+    | the front door: `Effect.runPromise(frontDoor(...))` | a request of the world's own, counted for its whole life; a reset (itself a front-door request) clears the count under it and its release is a stale no-op |
+    | the real alarm: `Effect.runPromise(fireDue())` | not cancellable (an alarm runs to its end); its wakes are never timed out in a real world, so none is abandoned and run twice |
+    | the entry: `new Promise(store.run(...)).finally(end)` and `Effect.runPromise(box.gate...)` | the end is attached to every path (a throw is a rejection); it runs under the box's gate and is short |
+    | `Effect.promise` over D1 (`leases.ts`, `reset.ts`, `facts.ts`, `worlds.ts`) | reads and the reset's own writes of the world's registry; none is a wake or a request's work, so none outlives a token |
+    | `language-effect` `timers`, `work`, `handler` | no `runPromise`, `tryPromise` or `new Promise`: they are Effect throughout, so interruption is the runtime's own |
+
+    **Where a generation, epoch or token is recorded: at the moment the work starts, never after a wait.**
+
+    | Place | Where it is taken |
+    |---|---|
+    | the controller's move | when the move is **submitted** (`Effect.suspend` before the semaphore); re-checked after the lock is held, after every quiet wait and every fire, before every `moveTo`. Planning of a relative target stays inside the lock. A second move queued behind a busy first, with a reset in between, fails `WorldReset` too (`timers/reset.test.ts`) |
+    | `fireOne` (take a row, enter a token) | one uninterruptible step; the wake's source is read when the wake runs |
+    | a wake's clock source | read when the wake starts (`inTime`), not when it was queued |
+    | `timerAdd`, `timerSet` | the request's token is read before the world's stub is looked up (`Effect.suspend`), so a lookup that waits cannot carry a later token |
+    | `sync` | the box's id is read inside the gate, where it is used |
+    | the entry's take (`begin`) | the token and the source come in one RPC, before the callback runs |
+    | the front door | the token is taken when the route starts, before anything is awaited |
+    | `countHas`, `leave`, `cancel` | by the id the caller holds; a later generation cannot answer for it |
+
     **What a violation would look like, and where it is tested.** I1: `world/entry.test.ts` (a request held before its handler, a retry's gap, a
     spawn that outlives the response, a throwing callback), `work/world-count.test.ts` (the pinned token is never released between attempts; a
     sleep lends it out and reclaims). I2: `timers/generation.test.ts` (a stale-generation `leave`), `timers/reset.test.ts` (two counts never share an id; a rebuilt DO does not honour
     the old object's ids; a reset during a move fails `WorldReset` and the clock stays at the reset start; a reset during a running wake leaves no
     row of the old run; a call with an old token is refused), `timers/timers.test.ts` and `timers/settled.test.ts` (a reset tells parked
     sleepers they were forgotten), `world/work.test.ts` and `timers/world.test.ts` (the forgotten sleeper is interrupted and commits nothing),
-    `work/world-count.test.ts` (a box with a stale id takes a fresh token), `world/front-door.test.ts` (the front door is counted), `world/entry.test.ts` (an entry that ends while a release is checking its id, after a reset, leaves nothing counted), `timers/world.test.ts` (a forgotten row ends a whole `within` call and an `at` waiter). I3: `timers/reset.test.ts` (a failing head row does not starve the rows after it), `timers/crash.test.ts` (a firing survives a rebuild; replacement wins; success leaves no record), `timers/settled.test.ts` (a wake
+    `work/world-count.test.ts` (a box with a stale id takes a fresh token), `world/front-door.test.ts` (the front door is counted), `world/wake-bridge.test.ts` (a wake aborted across the runtime bridge by a reset and by the bound writes nothing), `world/entry.test.ts` (an entry that ends while a release is checking its id, after a reset, leaves nothing counted), `timers/world.test.ts` (a forgotten row ends a whole `within` call and an `at` waiter). I3: `timers/reset.test.ts` (a failing head row does not starve the rows after it), `timers/crash.test.ts` (a firing survives a rebuild; replacement wins; success leaves no record), `timers/settled.test.ts` (a wake
     that clears its sibling; a replacement set during a failing wake). I4: `timers/reset.test.ts` (a real-world wake slower than the quiet bound fires once; the alarm sweep is bounded; the limits), `timers/settled.test.ts` (a wake that never acknowledges fails
     `NeverQuiet` within the bound, its row recoverable and nothing counted; the lock frees; a self re-registering timer is bounded). I5:
     `world/work.test.ts` (parked with a two-day deadline, the world advances a day, the request reads day +1), `world/entry.test.ts` (a sleeping request wakes on the instant the world moved to).

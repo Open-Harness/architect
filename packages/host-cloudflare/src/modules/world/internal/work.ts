@@ -37,7 +37,10 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
   }));
   const table = Layer.succeed(WorldTable, WorldTable.of({
     // A call carries the request's own token: one the world no longer holds is from a run a reset ended, and is refused.
-    add: (owner, name, at, holder) => call(env, (keeper) => keeper.timerAdd(owner, name, at, holder, WorldClock.box()?.id)),
+    add: (owner, name, at, holder) => Effect.suspend(() => {
+      const token = WorldClock.box()?.id;
+      return call(env, (keeper) => keeper.timerAdd(owner, name, at, holder, token));
+    }),
     // The wake is the instant the world fired the row at: this request's own clock is pointed at it before the code goes on.
     // A row a reset forgot ends its sleeper: the request belongs to a run that is over, so it is interrupted, never resumed to commit into
     // what the reset is wiping. The sleep's own cleanup (reclaim, acknowledge) still runs.
@@ -46,7 +49,10 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
     // Giving a row up is where a request that parked takes its token back: it resumes on the world's clock as it is now.
     cancel: (id) => call(env, (keeper) => keeper.timerCancel(id)).pipe(Effect.tap(() => resumed(env))),
     sleeping: call(env, (keeper) => keeper.timersSleeping()),
-    set: (at, owner, name, wake) => call(env, (keeper) => keeper.timerSet(at, owner, name, wake, WorldClock.box()?.id)),
+    set: (at, owner, name, wake) => Effect.suspend(() => {
+      const token = WorldClock.box()?.id;
+      return call(env, (keeper) => keeper.timerSet(at, owner, name, wake, token));
+    }),
     clear: (owner, name) => call(env, (keeper) => keeper.timerClear(owner, name)),
     durable: call(env, (keeper) => keeper.timersDurable()),
   }));

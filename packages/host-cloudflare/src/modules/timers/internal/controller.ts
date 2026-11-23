@@ -23,13 +23,17 @@ export const makeController = ({ clock, table, count, limit, fireLimit }: Contro
   // One move at a time: a second waits its turn rather than walking the clock under the first.
   const one = Semaphore.makeUnsafe(1);
   return {
+  // The generation is read when the move is submitted, before it waits for the lock: a move queued behind another and overtaken by a reset
+  // belongs to the world it was asked of, and must not carry on in the next one.
   settle: (plan) =>
-    one.withPermits(1)(Effect.gen(function* () {
+    Effect.suspend(() => {
+      const born = count.generation();
+      return one.withPermits(1)(Effect.gen(function* () {
+      if (count.generation() !== born) return yield* Effect.fail({ _tag: "WorldReset" as const });
       const planned = plan();
       if (!planned.ok) return yield* Effect.fail({ _tag: "Refused" as const, status: planned.status, body: planned.body });
       const target = planned.target;
-      // The walk belongs to the generation it began in: a reset ends it, and it must not move the clock the reset just put back.
-      const born = count.generation();
+      // A reset ends the walk, and it must not move the clock the reset just put back.
       const reset = Effect.suspend(() => (count.generation() === born ? Effect.void : Effect.fail({ _tag: "WorldReset" as const })));
       const fired: Array<ClockTimer> = [];
       // How many have fired at the instant the walk is at: past the bound, something keeps registering timers due at it.
@@ -63,7 +67,8 @@ export const makeController = ({ clock, table, count, limit, fireLimit }: Contro
         yield* reset;
       }
       return { now: iso(clock.now()), fired };
-    })),
+    }));
+    }),
   timers: () => table.rows().map((r) => ({ due: iso(r.at), owner: r.owner, name: r.name })),
   };
 };
