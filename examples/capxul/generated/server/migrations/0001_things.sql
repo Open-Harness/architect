@@ -25,6 +25,7 @@ CREATE TABLE "bridge-business" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "bridge-business_oneKybPerCompany" ON "bridge-business" ("company");
+CREATE UNIQUE INDEX "bridge-business_oneKybPerForm" ON "bridge-business" ("kybLink");
 CREATE TABLE "bridge-individual" (
   "id" TEXT PRIMARY KEY,
   "person" TEXT NOT NULL,
@@ -35,6 +36,7 @@ CREATE TABLE "bridge-individual" (
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "bridge-individual_oneKycPerForm" ON "bridge-individual" ("kycLink");
 CREATE UNIQUE INDEX "bridge-individual_oneKycPerPerson" ON "bridge-individual" ("person");
 CREATE TABLE "company" (
   "id" TEXT PRIMARY KEY,

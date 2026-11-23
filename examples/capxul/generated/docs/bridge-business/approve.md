@@ -43,12 +43,12 @@ Record that Bridge approved a company's KYB.
 
 ### bridge: kyb is decided by bridge
 
-Starts from the world `kyb started`.
+Starts from the world `two kybs started`.
 
 - **Ada can't approve her own company's KYB.** `ada` (role company.owner) calls and sends business the world's business, and is refused with NotAllowed, AR-001.
 - **Bridge approves it.** `bridge` (system) calls and sends business the world's business, and gets back the world's business.
 - **an approved KYB can't be approved again.** `bridge` (system) calls and sends business the world's business, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `approved`.
-- **a turned-down KYB can't then be approved.** `bridge` (system) calls and sends business the last call's business, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `rejected`.
+- **a turned-down KYB can't then be approved.** `bridge` (system) calls and sends business the world's boBusiness, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `rejected`.
 
 ## How to call
 

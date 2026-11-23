@@ -54,10 +54,10 @@ Starts from the world `two bank accounts`.
 
 ### bridge: kyb is decided by bridge
 
-Starts from the world `kyb started`.
+Starts from the world `two kybs started`.
 
 - **nor open a bank account before Bridge approves it.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, and is refused with KybNotApproved, BA-001.
-- **and opens no bank account.** `bo` (signed in) calls and sends business the last call's business, accountName `Main`, currency `EUR`, and is refused with KybNotApproved, BA-001.
+- **and opens no bank account.** `bo` (signed in) calls and sends business the world's boBusiness, accountName `Main`, currency `EUR`, and is refused with KybNotApproved, BA-001.
 
 ### bridge: open a bank account
 
@@ -66,7 +66,7 @@ Starts from the world `kyb approved`.
 - **Bo can't open an account on Ada's company.** `bo` (signed in) calls and sends business the world's business, accountName `Operating`, currency `USD`, and is refused with NotAllowed, AR-001.
 - **Ada opens a US dollar account and gets where to send deposits.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, with the request key `acme-operating`, and gets back an answer matching `^bac_[0-9a-z]+$` and gets back an answer matching `\S` and gets back an answer matching `^\d{4,17}$` and gets back an answer matching `^\d{9}$`.
 - **the company has one open account by a name.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `EUR`, and is refused with BankAccountNameTaken, BA-002, carrying accountName `Operating`.
-- **she opens a euro account under another name.** `ada` (role company.owner) calls and sends business the world's business, accountName `Payroll`, currency `EUR`, and gets back an answer matching `^bac_[0-9a-z]+$` and gets back an answer matching `^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$` and gets back an answer matching `^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$`.
+- **she opens a euro account under another name.** `ada` (role company.owner) calls and sends business the world's business, accountName `Payroll`, currency `EUR`, and gets back an answer matching `^bac_[0-9a-z]+$` and gets back an answer matching `\S` and gets back an answer matching `^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$` and gets back an answer matching `^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$`.
 
 ## How to call
 

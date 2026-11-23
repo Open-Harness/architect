@@ -296,6 +296,12 @@
             "company"
           ],
           "refuse": "KybAlreadyStarted"
+        },
+        "oneKybPerForm": {
+          "kind": "unique",
+          "fields": [
+            "kybLink"
+          ]
         }
       },
       "machine": {
@@ -405,7 +411,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "d522f5db0c79f857"
+      "hash": "246b83887f7efa44"
     },
     "bridge-individual": {
       "name": "bridge-individual",
@@ -458,6 +464,12 @@
       },
       "lives": "database",
       "invariants": {
+        "oneKycPerForm": {
+          "kind": "unique",
+          "fields": [
+            "kycLink"
+          ]
+        },
         "oneKycPerPerson": {
           "kind": "unique",
           "fields": [
@@ -579,7 +591,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "032e05582cec1218"
+      "hash": "a6231cd0b2a6b504"
     },
     "company": {
       "name": "company",
@@ -1081,7 +1093,8 @@
         "KybAlreadyStarted": "bridge-business.oneKybPerCompany"
       },
       "breaks": [
-        "bridge-business.oneKybPerCompany"
+        "bridge-business.oneKybPerCompany",
+        "bridge-business.oneKybPerForm"
       ],
       "refusals": [
         "KybAlreadyStarted",
@@ -1114,7 +1127,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "b2a7f9f44b643210"
+      "hash": "e199be25f6d7e84f"
     },
     "bridge-business.get": {
       "kind": "read",
@@ -1258,7 +1271,8 @@
         "KybAlreadyStarted": "bridge-business.oneKybPerCompany"
       },
       "breaks": [
-        "bridge-business.oneKybPerCompany"
+        "bridge-business.oneKybPerCompany",
+        "bridge-business.oneKybPerForm"
       ],
       "refusals": [
         "KybAlreadyStarted",
@@ -1291,7 +1305,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "1c1f0a35e1db2fdd"
+      "hash": "19c775ffd22d2f71"
     },
     "bridge-business.start": {
       "kind": "operation",
@@ -1368,7 +1382,8 @@
         "KybAlreadyStarted": "bridge-business.oneKybPerCompany"
       },
       "breaks": [
-        "bridge-business.oneKybPerCompany"
+        "bridge-business.oneKybPerCompany",
+        "bridge-business.oneKybPerForm"
       ],
       "refusals": [
         "KybAlreadyStarted",
@@ -1399,7 +1414,7 @@
       "budget": {
         "p95Ms": 800
       },
-      "hash": "57b4edd4b7ed798c"
+      "hash": "4c14c19740d29697"
     },
     "bridge-individual.approve": {
       "kind": "operation",
@@ -1445,6 +1460,7 @@
         "KycAlreadyStarted": "bridge-individual.oneKycPerPerson"
       },
       "breaks": [
+        "bridge-individual.oneKycPerForm",
         "bridge-individual.oneKycPerPerson"
       ],
       "refusals": [
@@ -1478,7 +1494,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "7db2df243970357e"
+      "hash": "39e48d0fcdbc0e3d"
     },
     "bridge-individual.get": {
       "kind": "read",
@@ -1622,6 +1638,7 @@
         "KycAlreadyStarted": "bridge-individual.oneKycPerPerson"
       },
       "breaks": [
+        "bridge-individual.oneKycPerForm",
         "bridge-individual.oneKycPerPerson"
       ],
       "refusals": [
@@ -1655,7 +1672,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "e2d965e2393a4589"
+      "hash": "379eca87a689a441"
     },
     "bridge-individual.start": {
       "kind": "operation",
@@ -1725,6 +1742,7 @@
         "KycAlreadyStarted": "bridge-individual.oneKycPerPerson"
       },
       "breaks": [
+        "bridge-individual.oneKycPerForm",
         "bridge-individual.oneKycPerPerson"
       ],
       "refusals": [
@@ -1751,7 +1769,7 @@
       "budget": {
         "p95Ms": 800
       },
-      "hash": "0f008c871ab164bf"
+      "hash": "ded6219f710835f7"
     },
     "company.create": {
       "kind": "operation",
@@ -3283,7 +3301,7 @@
           "kind": "system"
         }
       },
-      "starts": "kyb started",
+      "starts": "two kybs started",
       "steps": [
         {
           "title": "Ada can't approve her own company's KYB",
@@ -3528,62 +3546,6 @@
           ]
         },
         {
-          "title": "Bo sets up a company of his own",
-          "call": {
-            "actor": "bo",
-            "operation": "company.create",
-            "payload": {
-              "companyName": "Bo Ltd",
-              "abbr": "BL",
-              "country": "Kenya",
-              "defaultCurrency": "KES"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^com_[0-9a-z]+$",
-              "flags": ""
-            }
-          ]
-        },
-        {
-          "title": "Bo starts its KYB",
-          "call": {
-            "actor": "bo",
-            "operation": "bridge-business.start",
-            "payload": {
-              "company": {
-                "ref": [
-                  "last",
-                  "company"
-                ]
-              },
-              "legalName": "Bo Limited",
-              "email": "bo@bo-ltd.test"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^kyb_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "KybStarted",
-              "fields": {
-                "business": {
-                  "ref": [
-                    "last",
-                    "business"
-                  ]
-                }
-              }
-            }
-          ]
-        },
-        {
           "title": "Bo can't turn down his own KYB either",
           "call": {
             "actor": "bo",
@@ -3591,8 +3553,8 @@
             "payload": {
               "business": {
                 "ref": [
-                  "last",
-                  "business"
+                  "world",
+                  "boBusiness"
                 ]
               },
               "reason": "changed my mind"
@@ -3612,8 +3574,8 @@
               "thing": "bridge-business",
               "id": {
                 "ref": [
-                  "last",
-                  "business"
+                  "world",
+                  "boBusiness"
                 ]
               },
               "state": "started"
@@ -3628,8 +3590,8 @@
             "payload": {
               "business": {
                 "ref": [
-                  "last",
-                  "business"
+                  "world",
+                  "boBusiness"
                 ]
               },
               "reason": "registration certificate unreadable"
@@ -3647,8 +3609,8 @@
               "fields": {
                 "business": {
                   "ref": [
-                    "last",
-                    "business"
+                    "world",
+                    "boBusiness"
                   ]
                 },
                 "reason": "registration certificate unreadable"
@@ -3659,8 +3621,8 @@
               "thing": "bridge-business",
               "id": {
                 "ref": [
-                  "last",
-                  "business"
+                  "world",
+                  "boBusiness"
                 ]
               },
               "state": "rejected"
@@ -3675,8 +3637,8 @@
             "payload": {
               "business": {
                 "ref": [
-                  "last",
-                  "business"
+                  "world",
+                  "boBusiness"
                 ]
               }
             }
@@ -3702,8 +3664,8 @@
             "payload": {
               "business": {
                 "ref": [
-                  "last",
-                  "business"
+                  "world",
+                  "boBusiness"
                 ]
               },
               "accountName": "Main",
@@ -3736,8 +3698,8 @@
             "payload": {
               "id": {
                 "ref": [
-                  "last",
-                  "business"
+                  "world",
+                  "boBusiness"
                 ]
               }
             }
@@ -3748,8 +3710,24 @@
               "value": [
                 "Bo Limited",
                 "bo@bo-ltd.test",
+                {
+                  "ref": [
+                    "world",
+                    "boKybLink"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "boTosLink"
+                  ]
+                },
                 "rejected"
               ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": false
             },
             {
               "kind": "no-events"
@@ -3781,7 +3759,7 @@
           ]
         }
       ],
-      "sourceHash": "746a5f15f0fc85d2157d36d57eaf0ecf8098da9e327e24ba42088b10f9b4e9f8"
+      "sourceHash": "ea959e7719e902ad16aac334c455a44e099fbd16afbcf6744cc3917cde4c6e99"
     },
     "journeys/bridge-open-a-bank-account.ts": {
       "name": "bridge: open a bank account",
@@ -4002,6 +3980,11 @@
             },
             {
               "kind": "expect",
+              "match": "\\S",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
               "match": "^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$",
               "flags": ""
             },
@@ -4094,7 +4077,7 @@
           ]
         }
       ],
-      "sourceHash": "91dd9c73b2dfae72d119909ef9486373170bf540bf43e4487baab9dd865342de"
+      "sourceHash": "44a1aaf61349ec8138eaa1c5093ccb086a3f5ac072830005d19f364f29b2c00b"
     },
     "journeys/bridge-start-a-kyb.ts": {
       "name": "bridge: start a kyb",
@@ -4316,6 +4299,147 @@
         }
       ],
       "sourceHash": "2a72b6e9ec5f8c34b2c21980c67da67f05af653ccd387a47ca4cb6318cb56b20"
+    },
+    "journeys/bridge-two-kycs-are-each-their-own.ts": {
+      "name": "bridge: two kycs are each their own",
+      "file": "journeys/bridge-two-kycs-are-each-their-own.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "bridge-individual.self"
+        },
+        "bo": {
+          "kind": "role",
+          "role": "bridge-individual.self"
+        }
+      },
+      "starts": "two kycs started",
+      "steps": [
+        {
+          "title": "Bo reads his back whole, with his own form and terms",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "boIndividual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "Bo Otieno",
+                "bo@bo-ltd.test",
+                {
+                  "ref": [
+                    "world",
+                    "boKycLink"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "boTosLink"
+                  ]
+                },
+                "started"
+              ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": false
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads hers back whole, unchanged by his",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "Ada Wanjiru Kamau",
+                "ada@acme-trading.test",
+                {
+                  "ref": [
+                    "world",
+                    "kycLink"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "tosLink"
+                  ]
+                },
+                "started"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "neither reads the other's",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "boIndividual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "0db11b55e413181d86f309cd40d74accf92c6854d53771e60eace5d64f9f834a"
     },
     "journeys/companies-are-kept-apart.ts": {
       "name": "companies are kept apart",
@@ -5243,6 +5367,149 @@
           "ref": [
             "last",
             "routingNumber"
+          ]
+        }
+      }
+    },
+    "two kybs started": {
+      "name": "two kybs started",
+      "file": "blueprint/starting-worlds/two-kybs-started.ts",
+      "from": "kyb started",
+      "cast": {
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "ed28cf86e63a45fc03f9c2daa9c50bd6b6aa0207b349758046df58d00a5ff685",
+      "makes": [
+        {
+          "actor": "bo",
+          "operation": "company.create",
+          "payload": {
+            "companyName": "Bo Ltd",
+            "abbr": "BL",
+            "country": "Kenya",
+            "defaultCurrency": "KES"
+          },
+          "request": "bo-ltd"
+        },
+        {
+          "actor": "bo",
+          "operation": "bridge-business.start",
+          "payload": {
+            "company": {
+              "ref": [
+                "last",
+                "company"
+              ]
+            },
+            "legalName": "Bo Limited",
+            "email": "bo@bo-ltd.test"
+          },
+          "request": "bo-kyb"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "business": {
+          "ref": [
+            "world",
+            "business"
+          ]
+        },
+        "kybLink": {
+          "ref": [
+            "world",
+            "kybLink"
+          ]
+        },
+        "tosLink": {
+          "ref": [
+            "world",
+            "tosLink"
+          ]
+        },
+        "boBusiness": {
+          "ref": [
+            "last",
+            "business"
+          ]
+        },
+        "boKybLink": {
+          "ref": [
+            "last",
+            "kybLink"
+          ]
+        },
+        "boTosLink": {
+          "ref": [
+            "last",
+            "tosLink"
+          ]
+        }
+      }
+    },
+    "two kycs started": {
+      "name": "two kycs started",
+      "file": "blueprint/starting-worlds/two-kycs-started.ts",
+      "from": "kyc started",
+      "cast": {
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "1cdf25a1f905808ada9b0f7b4e5a64d29b307a17f63503da4c072c378ad0692b",
+      "makes": [
+        {
+          "actor": "bo",
+          "operation": "bridge-individual.start",
+          "payload": {
+            "fullName": "Bo Otieno",
+            "email": "bo@bo-ltd.test"
+          },
+          "request": "bo-kyc"
+        }
+      ],
+      "gives": {
+        "individual": {
+          "ref": [
+            "world",
+            "individual"
+          ]
+        },
+        "kycLink": {
+          "ref": [
+            "world",
+            "kycLink"
+          ]
+        },
+        "tosLink": {
+          "ref": [
+            "world",
+            "tosLink"
+          ]
+        },
+        "boIndividual": {
+          "ref": [
+            "last",
+            "individual"
+          ]
+        },
+        "boKycLink": {
+          "ref": [
+            "last",
+            "kycLink"
+          ]
+        },
+        "boTosLink": {
+          "ref": [
+            "last",
+            "tosLink"
           ]
         }
       }
@@ -6603,6 +6870,16 @@
         "journey": "bridge: start a kyb",
         "severity": "page",
         "owner": "journeys/bridge-start-a-kyb.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: two kycs are each their own:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: two kycs are each their own",
+        "severity": "page",
+        "owner": "journeys/bridge-two-kycs-are-each-their-own.ts"
       }
     },
     {

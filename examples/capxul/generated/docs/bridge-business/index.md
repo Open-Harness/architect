@@ -29,6 +29,7 @@ States: started, approved, rejected. A move from the wrong state is refused Brid
 ## Invariants
 
 - `bridge-business.oneKybPerCompany`: another bridge business holds this company. Unique on company, in every state; refused KybAlreadyStarted.
+- `bridge-business.oneKybPerForm`: another bridge business holds this kyb link. Unique on kybLink, in every state; refuses nothing, a break is a defect.
 
 ## Events
 

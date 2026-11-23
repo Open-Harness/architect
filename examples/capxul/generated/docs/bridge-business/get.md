@@ -42,10 +42,10 @@ Starts from the world `kyb started`.
 
 ### bridge: kyb is decided by bridge
 
-Starts from the world `kyb started`.
+Starts from the world `two kybs started`.
 
 - **Ada reads it back approved, with everything else as it was started.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, the world's kybLink, the world's tosLink, `approved`].
-- **Bo reads his back turned down, as he typed it.** `bo` (signed in) calls and sends id the last call's business, and gets back [`Bo Limited`, `bo@bo-ltd.test`, `rejected`].
+- **Bo reads his back turned down, as he typed it.** `bo` (signed in) calls and sends id the world's boBusiness, and gets back [`Bo Limited`, `bo@bo-ltd.test`, the world's boKybLink, the world's boTosLink, `rejected`] and gets back false.
 - **Ada's approval is untouched by Bo's refusal.** `ada` (role company.owner) calls and sends id the world's business, and gets back `approved`.
 
 ### bridge: start a kyb

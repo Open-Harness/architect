@@ -50,11 +50,11 @@ Starts from the world `kyb started`.
 
 ### bridge: kyb is decided by bridge
 
-Starts from the world `kyb started`.
+Starts from the world `two kybs started`.
 
 - **nor turned down afterwards.** `bridge` (system) calls and sends business the world's business, reason `documents expired`, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `approved`.
-- **Bo can't turn down his own KYB either.** `bo` (signed in) calls and sends business the last call's business, reason `changed my mind`, and is refused with NotAllowed, AR-001.
-- **Bridge turns Bo's down, with its reason.** `bridge` (system) calls and sends business the last call's business, reason `registration certificate unreadable`, and gets back an answer matching `^kyb_[0-9a-z]+$`.
+- **Bo can't turn down his own KYB either.** `bo` (signed in) calls and sends business the world's boBusiness, reason `changed my mind`, and is refused with NotAllowed, AR-001.
+- **Bridge turns Bo's down, with its reason.** `bridge` (system) calls and sends business the world's boBusiness, reason `registration certificate unreadable`, and gets back an answer matching `^kyb_[0-9a-z]+$`.
 
 ## How to call
 

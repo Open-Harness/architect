@@ -4,11 +4,9 @@
 // system's calls (README.md, "Who speaks for Bridge").
 import { Blueprint, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
-import { KybApproved, KybRejected, KybStarted } from "../blueprint/things/bridge-business/events.ts";
+import { KybApproved, KybRejected } from "../blueprint/things/bridge-business/events.ts";
 import { machine } from "../blueprint/things/bridge-business/machine.ts";
 import { KybNotApproved } from "../blueprint/things/bank-account/errors.ts";
-import createCompany from "../blueprint/things/company/verbs/create.ts";
-import start from "../blueprint/things/bridge-business/verbs/start.ts";
 import approve from "../blueprint/things/bridge-business/verbs/approve.ts";
 import reject from "../blueprint/things/bridge-business/verbs/reject.ts";
 import get from "../blueprint/things/bridge-business/verbs/get.ts";
@@ -16,7 +14,7 @@ import open from "../blueprint/things/bank-account/verbs/open.ts";
 
 export default Blueprint.journey("bridge: kyb is decided by bridge", {
   cast: { ada: owner, bo: Blueprint.signedIn, bridge: Blueprint.system },
-  starts: "kyb started",
+  starts: "two kybs started",
   steps: (s) => [
     s.step(
       "Ada can't approve her own company's KYB",
@@ -67,47 +65,43 @@ export default Blueprint.journey("bridge: kyb is decided by bridge", {
       noEvents(),
     ),
     s.step(
-      "Bo sets up a company of his own",
-      s.bo.run(createCompany, { companyName: "Bo Ltd", abbr: "BL", country: "Kenya", defaultCurrency: "KES" }),
-      expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
-    ),
-    s.step(
-      "Bo starts its KYB",
-      s.bo.run(start, { company: s.last.company, legalName: "Bo Limited", email: "bo@bo-ltd.test" }),
-      expect((a) => a.business).toMatch(/^kyb_[0-9a-z]+$/),
-      emits(KybStarted, { business: s.last.business }),
-    ),
-    s.step(
       "Bo can't turn down his own KYB either",
-      s.bo.run(reject, { business: s.last.business, reason: "changed my mind" }),
+      s.bo.run(reject, { business: s.world.boBusiness, reason: "changed my mind" }),
       refuses(Blueprint.NotAllowed),
       noEvents(),
-      machine.isIn(s.last.business, "started"),
+      machine.isIn(s.world.boBusiness, "started"),
     ),
     s.step(
       "Bridge turns Bo's down, with its reason",
-      s.bridge.run(reject, { business: s.last.business, reason: "registration certificate unreadable" }),
+      s.bridge.run(reject, { business: s.world.boBusiness, reason: "registration certificate unreadable" }),
       expect((a) => a.business).toMatch(/^kyb_[0-9a-z]+$/),
-      emits(KybRejected, { business: s.last.business, reason: "registration certificate unreadable" }),
-      machine.isIn(s.last.business, "rejected"),
+      emits(KybRejected, { business: s.world.boBusiness, reason: "registration certificate unreadable" }),
+      machine.isIn(s.world.boBusiness, "rejected"),
     ),
     s.step(
       "a turned-down KYB can't then be approved",
-      s.bridge.run(approve, { business: s.last.business }),
+      s.bridge.run(approve, { business: s.world.boBusiness }),
       refuses(machine.notFrom, { state: "rejected" }),
       noEvents(),
     ),
     s.step(
       "and opens no bank account",
-      s.bo.run(open, { business: s.last.business, accountName: "Main", currency: "EUR" }),
+      s.bo.run(open, { business: s.world.boBusiness, accountName: "Main", currency: "EUR" }),
       refuses(KybNotApproved),
       noEvents(),
       spans({ absent: ["bank-account.open.insert"] }),
     ),
     s.step(
       "Bo reads his back turned down, as he typed it",
-      s.bo.run(get, { id: s.last.business }),
-      expect((a) => [a.legalName, a.email, a.state]).toEqual(["Bo Limited", "bo@bo-ltd.test", "rejected"]),
+      s.bo.run(get, { id: s.world.boBusiness }),
+      expect((a) => [a.legalName, a.email, a.kybLink, a.tosLink, a.state]).toEqual([
+        "Bo Limited",
+        "bo@bo-ltd.test",
+        s.world.boKybLink,
+        s.world.boTosLink,
+        "rejected",
+      ]),
+      expect((a) => a.kybLink === a.tosLink).toBe(false),
       noEvents(),
     ),
     s.step(

@@ -48,6 +48,7 @@ export default Blueprint.journey("bridge: open a bank account", {
       "she opens a euro account under another name",
       s.ada.run(open, { business: s.world.business, accountName: "Payroll", currency: "EUR" }),
       expect((a) => a.account).toMatch(/^bac_[0-9a-z]+$/),
+      expect((a) => a.bankName).toMatch(/\S/),
       expect((a) => a.accountNumber).toMatch(/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/),
       expect((a) => a.routingNumber).toMatch(/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/),
       emits(BankAccountOpened, { account: s.last.account, company: s.world.company, business: s.world.business, currency: "EUR" }),

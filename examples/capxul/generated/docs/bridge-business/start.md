@@ -43,12 +43,6 @@ Start a company's KYB with Bridge: answers the form the business fills in, and B
 
 ## Worked examples
 
-### bridge: kyb is decided by bridge
-
-Starts from the world `kyb started`.
-
-- **Bo starts its KYB.** `bo` (signed in) calls and sends company the last call's company, legalName `Bo Limited`, email `bo@bo-ltd.test`, and gets back an answer matching `^kyb_[0-9a-z]+$`.
-
 ### bridge: start a kyb
 
 Starts from the world `a company`.

@@ -28,6 +28,7 @@ States: started, approved, rejected. A move from the wrong state is refused Brid
 
 ## Invariants
 
+- `bridge-individual.oneKycPerForm`: another bridge individual holds this kyc link. Unique on kycLink, in every state; refuses nothing, a break is a defect.
 - `bridge-individual.oneKycPerPerson`: another bridge individual holds this person. Unique on person, in every state; refused KycAlreadyStarted.
 
 ## Events
