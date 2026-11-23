@@ -3,13 +3,13 @@
 export { makeChainPort } from "./modules/tx/service.ts";
 export type {
   Call, ChainPort, ChainPortOptions, ConfirmationLevel, Intent, ReplacementPolicy,
-  Signed, Signer, Submission, Transaction, TxState, Unsigned,
+  Signed, Signer, Standing, Submission, Transaction, TxState, Unsigned,
 } from "./modules/tx/types.ts";
 export { Abi } from "./modules/abi/service.ts";
 export type {
   AbiApi, AbiConstructor, AbiDocument, AbiError, AbiEvent, AbiFunction, AbiParameter,
 } from "./modules/abi/types.ts";
-export { decodeRevert, mapRpcError } from "./modules/faults/service.ts";
+export { decodeRevert, isDefinite, mapRpcError } from "./modules/faults/service.ts";
 export { ChainFault, ChainRefusal, type ChainError, type FaultKind, type RefusalLockEntry } from "./modules/faults/types.ts";
 export { makeEventSource } from "./modules/events/service.ts";
 export type {
@@ -17,4 +17,5 @@ export type {
 } from "./modules/events/types.ts";
 export { Keys } from "./modules/keys/service.ts";
 export type { Key, KeysApi } from "./modules/keys/types.ts";
+export type { NonceReservation } from "./modules/nonce/types.ts";
 export type { Address, Hash, Hex, TransactionReceipt } from "viem";

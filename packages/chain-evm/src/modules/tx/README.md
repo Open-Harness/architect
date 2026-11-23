@@ -15,3 +15,9 @@ timeout means the observer exhausted its budget. RPC requests are cancelled by
 the timer when the per-request or remaining tracking budget expires.
 Each observed receipt gets a span. Tracking and the follower run as the caller's
 counted work. The host supplies the signer. Simulation (M1.32) is an `eth_call` that `sign` and `submit` require first.
+
+`probe` reads where one submission stands now (held, included, reverted, dropped, or its nonce taken by a different
+call) with no waiting; a same-call replacement that was mined reads as included under its own hash. `resume` takes a
+transaction back from its signed bytes after a restart, reserving its nonce again so it can still be replaced. The
+relayer actor (`host-cloudflare`) is built on both, with `hold`, `fill` and `submit` (it sends a dropped transaction again, the same bytes, and
+does not use `replace`: `design/decisions/M6-relayer-rebroadcast.md`).

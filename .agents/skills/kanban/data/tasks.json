@@ -3828,7 +3828,7 @@
   "what": "Moved to M1.31 (K7 F4: the wallet is the first plugin)"
  },
  "M6-07": {
-  "doneWhen": "100 concurrent submissions, nonces 0 to 99, a dropped one replaced",
+  "doneWhen": "100 concurrent submissions, nonces 0 to 99, a dropped one rebroadcast (replacing it with a higher fee is later)",
   "history": [],
   "id": "M6-07",
   "kind": "build",
