@@ -59,3 +59,37 @@ means a `why` text the model supplies, so each of the five gains an optional `wh
 ## Open risks
 
 - A `first` read has no cursor: a line longer than `page` is cut at the tail, not paged. For `assignment.waiting` the page is the largest line a pool can have.
+
+## Second stretch (the coordinator's order of 23 November): the harness surface, the model stand-in, the agent caller
+
+### 4. The journey surface (GOAL17-check-harness, call 0)
+
+- **`orthograph`:** `RunnerCall`, `StandCall`, `WorldCall`, `TogetherCall`; `s.runner.kill/start/restart`, `s.together`, `s.clock.settle` (`advance("0 seconds")`); `Stand.command` and `Stand.common`, `Probe.read/send`, and the `outbox` descriptors (`probes.ts`). `runner` and `together` are script words a cast member may not take.
+- **`prove`:** `Worlds.start` leads the Worker's own process group and returns a `Runner` (`kill`, `start` on the same state, port, secret and vars) and the `stands` it was given; each stand-in (`internal/stands.ts`: `node <orthograph.standIn> --port 0 --dir <tmp>`, address from its first line) belongs to the world's scope, so a killed runner leaves it running.
+  A journey run takes a `Harness { runner, stands }`; a step through a door records a `CallRecord` with no trace; a non-200 from a stand-in or probe fails the step; `together` runs its calls concurrently and answers `{ answers }`. Only the stand-ins a journey commands are started (`Journeys.standsUsed`).
+- **Waits on #696 (Goal 9's M8.07):** `s.clock.advance`, `moveTo` and `settle` still refuse with "time is not built yet: M8.07", and so does the keeper. The outbox probes' handlers (`outbox.rows/hold/release/mark/redeliver`) and the drain on `Timers` are the world's, built with it.
+- **Evidence:** `world/runner.test.ts` (a killed group is gone, a stand-in beside it lives, a restart keeps the cast's tokens and data), `journeys/doors.test.ts` (all four doors, in one journey, on acme), `orthograph` `journeys.test.ts`.
+
+### 5. `@orthograph/stand-in-model`
+
+The scripted OpenAI-compatible model of call 1: `/v1/chat/completions` as SSE, and `/_stand/{script,done,seen,hold,held,release,fail,reset}`; no script is `501 NoScript`, a call to a tool the request did not offer is `500 ToolNotOffered` and leaves its turn unused. The pure part is `modules/script` (matching, `$eval`/`$ticket`, the chunks); the effects are `modules/server`; `main.ts` is the only file that touches a socket. Descriptors are `@orthograph/stand-in-model/stand`. `@orthograph/agents/probes` exports `calls` and `told` (descriptors only).
+
+### 6. The caller that names no person (K40 fixes 1 and 3; Goal 3's M2.03, taken under K42 section 7)
+
+- `Principal` gains `{ kind: "agent", agent, via: "agent" }` and the `service` caller its `actor: { id, name?, bot? }`; `acting()` gives the first no hands, so `signedIn` and every person rule refuse it.
+- `Access` evaluates `actor:` (mount and outside id match the instance, in a state `while` names, the call's `within` equal to the instance's) and `agent:` (the field holds the caller's id); `admitsAgent` (the MCP door) counts neither.
+- The world signs both as tokens (`/_world/credential { service, actor }` and `{ agent }`), spans record `principal.actor` and `principal.agent`, and a request key is scoped by them.
+- `prove` binds a cast member made with such a role to the instance the starting world gave under the role's thing's name (`s.world.account`, `s.world.superagent`, `s.world.ticket`), read from the facts, and mints its credential. A cast member of this kind is not signed up as a person. The facts door answers columns, so `prove` turns a row back into fields as the store does (`columns.ts`).
+- `ticket.accept`'s `account` is `Account.fields.id` (was `Blueprint.id("acc")`): `listed.of("account")` follows the field's thing, and a bare id names none.
+- **Evidence:** `access.test.ts` (eight refusals of the `actor:` form and five of `agent:`); on a real world, `ticket.accept` by the listed account passes in the starting world of slice 8's journeys.
+
+### What the slice 8 checks show now, and an error in them
+
+`e2e/superagent/agents-support.ts`'s `prove(root)` runs `ortho prove` on a copy that has no `generated/` (its `PARTS` leave it out) and never runs `generate`, so every journey stops at "generated/api/src/index.ts couldn't be loaded" before any of this matters. Check 19's `stage-one.ts` runs `generate` after laying files. With `generate` run first (as I did by hand, in a scratch copy), journeys load and run: `one executor per ticket…` gets through its starting worlds and stops at its first step, on `no stand-in is running for the mount "models"`. **Asked of 40's author:** run `generate` in `withJourneys`. A builder may not edit it.
+
+### What is left, in order
+
+1. The app's `models` mount: `@orthograph/openai` as an adapter whose `standIn` is `@orthograph/stand-in-model`, mounted in `blueprint/adapters/models.ts`, and `local.ts` declaring the stepped clock, one seat, and the sandbox and model mounts (the sandbox's descriptors are `packages/sandbox`'s).
+2. #705: `proposes` and the wrapper that records a Proposal for an agent caller (the caller now exists), each of the five operations gaining `itsMain` and a `why`.
+3. `Agent` in its actor on Pi Durable, `agent.tell` through the outbox, slots, pause, the reap sweep, the outbox probes' handlers: all on `Timers` and the outbox hop of #696.
+4. The events slice 7 left unemitted.
