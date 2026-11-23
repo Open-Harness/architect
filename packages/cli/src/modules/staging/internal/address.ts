@@ -3,7 +3,7 @@ import { Effect } from "effect";
 import { resolve } from "node:path";
 import { StagingRefused } from "../types.ts";
 import { appOf } from "./app.ts";
-import { owns, prefixOf, RUN, stagingUrl } from "./plan.ts";
+import { CLOUD, owns, prefixOf, RUN, stagingUrl } from "./plan.ts";
 
 const LABEL = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
 /** This machine only, as `ORTHO_STAGING_API` is for the lister: a stray variable cannot send a proof somewhere else. */
@@ -40,6 +40,6 @@ export const proveAddress = (options: {
     if (at === undefined && (subdomain === undefined || !LABEL.test(subdomain))) {
       return yield* new StagingRefused({ message: `ORTHO_STAGING_SUBDOMAIN is ${subdomain === undefined ? "not set" : `not a subdomain (${JSON.stringify(subdomain)})`}: one label of lower-case letters, digits and dashes, 1 to 63, not starting or ending with a dash` });
     }
-    const prefix = prefixOf(yield* appOf(resolve(options.root)), run);
+    const prefix = prefixOf(yield* appOf(resolve(options.root)), CLOUD.staging, run);
     return { url: at ?? stagingUrl(prefix, subdomain!), label, prefix, owns: (name: string) => owns(prefix, name) };
   });

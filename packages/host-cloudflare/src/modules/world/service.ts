@@ -22,7 +22,7 @@ export class World extends DurableObject<WorldEnv> {
   constructor(ctx: DurableObjectState, env: WorldEnv) {
     super(ctx, env);
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS cast (name TEXT PRIMARY KEY, person TEXT, email TEXT NOT NULL, password TEXT NOT NULL)");
-    this.auth = AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET });
+    this.auth = AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: true });
   }
 
   override fetch(request: Request): Promise<Response> {

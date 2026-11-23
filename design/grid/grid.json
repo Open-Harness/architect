@@ -4,10 +4,10 @@
   "record": "design/decisions/K14-the-grid.md",
   "goal": {
     "title": "Everything falls out of the blueprint, for every building block in every output",
-    "summary": "Fourteen building blocks by nine outputs, 126 cards, each an eval with a stated green and stated evidence. Done is every card green or agreed not needed, then one story proves it whole: a fresh folder, the real ortho command, a new project, and the Plugged In app grown through its four stages.",
+    "summary": "Fifteen building blocks by nine outputs, 135 cards, each an eval with a stated green and stated evidence. Done is every card green or agreed not needed, then one story proves it whole: a fresh folder, the real ortho command, a new project, and the Plugged In app grown through its four stages.",
     "writeUp": [
-      "**What Orthograph promises.** You write a blueprint: the things your app keeps, the operations that change them, the steps each operation takes, the machine each thing moves through, the events a move emits, the errors a call can be refused with, the roles allowed to call, which fields are private or secret, the environments and stores it runs in, the plugins it mounts, where an operation runs, and the journeys that prove it works. Everything else falls out of that one declaration for free: the model, the HTTP API, the server, the SDK, the CLI, the MCP tools, the docs, the portal and the telemetry. Nothing is configured twice, and nothing an output shows is written by hand.",
-      "**Why a grid measures it.** \"Falls out for free\" is a claim about every pair of building block and output. The coverage audit of 19 November (K12) drew that as a grid of 14 building blocks (13 at the audit, and invariants, G5) by 9 outputs, 126 cells, and found the claim fully true only for operations. A promise that holds for one row is not yet the promise. So the grid is the goal: each row is a lane, each cell in it is a card, and each card is an eval. A card says, in one or two sentences, what green means for that building block in that output, and names the evidence that proves it: an e2e check, a journey run through that output, or a view in the portal. A card is green only when its evidence runs in CI and passes. A card that exists in code but has no evidence is not green; it is \"built, unproved\", and the board shows it amber.",
+      "**What Orthograph promises.** You write a blueprint: the things your app keeps, the operations that change them, the steps each operation takes, the machine each thing moves through, the events a move emits, the errors a call can be refused with, the roles allowed to call, which fields are private or secret, the environments and stores it runs in, the plugins it mounts, where an operation runs, the clock and the moves made by time, and the journeys that prove it works. Everything else falls out of that one declaration for free: the model, the HTTP API, the server, the SDK, the CLI, the MCP tools, the docs, the portal and the telemetry. Nothing is configured twice, and nothing an output shows is written by hand.",
+      "**Why a grid measures it.** \"Falls out for free\" is a claim about every pair of building block and output. The coverage audit of 19 November (K12) drew that as a grid of 15 building blocks (13 at the audit, then invariants, G5, and time, K23) by 9 outputs, 135 cells, and found the claim fully true only for operations. A promise that holds for one row is not yet the promise. So the grid is the goal: each row is a lane, each cell in it is a card, and each card is an eval. A card says, in one or two sentences, what green means for that building block in that output, and names the evidence that proves it: an e2e check, a journey run through that output, or a view in the portal. A card is green only when its evidence runs in CI and passes. A card that exists in code but has no evidence is not green; it is \"built, unproved\", and the board shows it amber.",
       "**What \"done\" looks like.** Every card is green, or Aaron has agreed it is not needed by design. A \"not needed\" card is not deleted: it stays on the board, greyed, with the one-line reason, so nobody reopens it by accident and anyone can see the grid is whole. Where an absence is itself a safety property (no secret field leaves through any output, no step leaks into a client's contract), the card stays live and its evidence proves the absence. When the last card turns green, the end-to-end story below runs from a fresh folder through all four stages of the Plugged In app, and the grid stays green after it.",
       "**How it relates to the gates.** The grid does not replace the milestones; it is how we see them. Gate M1 (M1.15) is the first band: the basics of things, operations, steps, machines, events and errors in every output (K13's 5 by 5, M1.41 and M1.42), one visibility rule (M1.35), telemetry that carries the model (M1.36), and the portal as a viewer (M1.13). Gate M2, \"workable\" (M2.12, also the stage 1 gate), is the second: roles and principals (M2.01 to M2.07), secrets by declaration (M2.04), journeys run through the SDK, CLI and MCP (M2.08) so those three columns are proved by journeys rather than by hand-picked calls, `ortho new` (M2.09) so the story can start from nothing, and `ortho add` for the blocks that edit files in place (M2.14 to M2.16). The v1.0 stages fill the rest: stage 2 (ST2.06) the device lane and the adapter half of the mount lane, stage 3 (ST3.08) stores on a chain and workflows, stage 4 (ST4.08) the visibility lane at its hardest, a club whose members never show. The lanes this grid does not have yet (workflows, views, agents, chains as stores) join it as rows when their milestone's decision slice names their outputs; until then they are listed under \"Rows still to come\".",
       "**How we use it.** The board shows one lane per row, its cards left to right in the column order below, each card green, amber (built, unproved), red (missing) or grey (not needed, agreed). Work is picked by lane, not by cell: a lane is climbed until it is fully green, so at each step we know exactly which building block is whole. The order is under \"Hill-climb order\"."
@@ -290,6 +290,26 @@
       ],
       "absentFrom": [],
       "audiencesBecause": "The caller meets the rule's refusal in every client; the builder declares it and reads its sentence in the docs; the operator sees which rule refused in the spans and the portal."
+    },
+    {
+      "id": "time",
+      "name": "Time (the world's clock, moves made by time)",
+      "summary": "One clock per world drives everything in it; a move can be made by time (`every`, `after`) and a journey can step the clock.",
+      "order": 15,
+      "endState": {
+        "kind": "portal-view",
+        "title": "The world's time beside the real one, and each timed move's lateness",
+        "description": "A world has one clock that the server, the database, every Timers wait, the chain and the adapters share. A journey steps it with `s.clock`, `ortho clock` moves it by hand in a dev world, a move declared `by: every` or `after` happens exactly once at its due instant within `late`, and the docs, the MCP tools, the portal and the spans say when.",
+        "ref": null
+      },
+      "proof": "Gate M8 (`nx run e2e:m8`): a month renews once (M8.02), the world's clock reads the same everywhere (M8.03), moves made by time and the on-time eval (M8.04, M8.12); the portal's world bar shows the world's time and each move's lateness (M8.13).",
+      "audiences": [
+        "caller",
+        "builder",
+        "operator"
+      ],
+      "absentFrom": [],
+      "audiencesBecause": "The builder declares the clock and the timed moves and steps it in journeys; the operator runs and watches it; a caller meets it in `ortho clock`, in the tool descriptions that say when a move happens, and in the SDK a journey drives."
     }
   ],
   "outputs": [
@@ -3204,6 +3224,204 @@
         }
       ],
       "owner": "ST1.16 (runtime)",
+      "question": null
+    },
+    {
+      "id": "time.model",
+      "block": "time",
+      "output": "model",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/compiler/src/modules/model/types.ts:150",
+      "todayNote": "EnvironmentModel has no `clock`; a move has no `by` or `late`; no anchor is checked.",
+      "greenMeans": "`environments.<e>.clock`, a move's `by` and `late`, and each anchor (field exists, is a time, zone named) are in the model.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m8/04-time-declarations.test.ts",
+          "ref": "e2e/m8/04-time-declarations.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "M8.06 (`clock`), M8.09 (`by`, `late`, anchors)",
+      "question": null
+    },
+    {
+      "id": "time.api",
+      "block": "time",
+      "output": "api",
+      "state": "red",
+      "today": "✗",
+      "todayRef": null,
+      "todayNote": "No route or document says anything about time; there is no `/_world/clock` and no move made by time.",
+      "greenMeans": "A move made by time has no caller route and the API document says so; a world's clock is not served to callers.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m8/03-moves-made-by-time.test.ts",
+          "ref": "e2e/m8/03-moves-made-by-time.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "M8.09 (the generated API leaves a timed move out)",
+      "question": null
+    },
+    {
+      "id": "time.server",
+      "block": "time",
+      "output": "server",
+      "state": "partly",
+      "today": "~",
+      "todayRef": "packages/language-effect/src/modules/timers/types.ts:13",
+      "todayNote": "`Timers` (at, sleep, due, fire) is built in memory and `Busy` counts work in one process; the no-wall-clock lint holds. The world's Durable Object holds no clock, timer table or count, there is no `/_world/clock`, no keeper, and Better Auth and jose read the wall clock.",
+      "greenMeans": "The world holds the clock, the timer table and the count across processes; the entry's `Clock` and `Date` read it; the keeper fires each move at its due instant; a stepped month settles once.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m8/01-a-month-renews-once.test.ts",
+          "ref": "e2e/m8/01-a-month-renews-once.test.ts",
+          "passing": null
+        },
+        {
+          "kind": "check",
+          "label": "e2e/m8/02-the-worlds-clock.test.ts",
+          "ref": "e2e/m8/02-the-worlds-clock.test.ts",
+          "passing": null
+        },
+        {
+          "kind": "check",
+          "label": "packages/language-effect/src/modules/timers/timers.test.ts",
+          "ref": "packages/language-effect/src/modules/timers/timers.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "M8.06, M8.07, M8.10, M8.11",
+      "question": null
+    },
+    {
+      "id": "time.sdk",
+      "block": "time",
+      "output": "sdk",
+      "state": "red",
+      "today": "✗",
+      "todayRef": null,
+      "todayNote": "A journey has no `s.clock`; it cannot step time.",
+      "greenMeans": "`s.clock.advance`, `s.clock.moveTo` and `s.clock.now` step the world and return once it is quiet at the target.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m8/01-a-month-renews-once.test.ts",
+          "ref": "e2e/m8/01-a-month-renews-once.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "M8.07 (`s.clock`)",
+      "question": null
+    },
+    {
+      "id": "time.cli",
+      "block": "time",
+      "output": "cli",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/cli/src/modules",
+      "todayNote": "No `ortho clock` command and no `ortho dev --speed`.",
+      "greenMeans": "`ortho clock`, `ortho clock advance <span>`, `ortho clock speed <factor>` and `ortho dev --speed` work in a dev world and are refused on a real clock.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "M8.03's by-hand half (stage one's harness)",
+          "ref": "M8.18",
+          "passing": null
+        }
+      ],
+      "owner": "M8.13",
+      "question": null
+    },
+    {
+      "id": "time.mcp",
+      "block": "time",
+      "output": "mcp",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/projections/src/modules/mcp/internal/mcp.ts:1",
+      "todayNote": "A tool's description says nothing about when a move happens; no timed move exists.",
+      "greenMeans": "A tool's description says when a move happens (\"every month from `startedAt`\"), worked out from the model.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m8/04-time-declarations.test.ts",
+          "ref": "e2e/m8/04-time-declarations.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "M8.09",
+      "question": null
+    },
+    {
+      "id": "time.docs",
+      "block": "time",
+      "output": "docs",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/generators/src/modules/render/internal/docs.ts:1",
+      "todayNote": "Docs pages say nothing of a clock or a move made by time.",
+      "greenMeans": "Each page says when a move made by time happens, and the environment's clock.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m8/04-time-declarations.test.ts",
+          "ref": "e2e/m8/04-time-declarations.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "M8.09",
+      "question": null
+    },
+    {
+      "id": "time.portal",
+      "block": "time",
+      "output": "portal",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/portal/src/modules/wire/types.ts:35",
+      "todayNote": "The wire carries no world time, no move `by`, no lateness; no world bar.",
+      "greenMeans": "The world's time shows beside the real one with a move-forward and speed control in dev worlds only, and each timed move shows its lateness.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "M8.13's screenshot",
+          "ref": "M8.13",
+          "passing": null
+        },
+        {
+          "kind": "check",
+          "label": "M8.12 lateness in the portal",
+          "ref": "M8.12",
+          "passing": null
+        }
+      ],
+      "owner": "M8.12 (lateness), M8.13 (the world bar)",
+      "question": null
+    },
+    {
+      "id": "time.telemetry",
+      "block": "time",
+      "output": "telemetry",
+      "state": "red",
+      "today": "✗",
+      "todayRef": "packages/language-effect/src/modules/handler/service.ts:28",
+      "todayNote": "Spans carry no world time, due instant or lateness; the keeper and its spans do not exist.",
+      "greenMeans": "A timed move's span names its due instant, the instant it fired and its lateness, and every span carries the world's time.",
+      "evidence": [
+        {
+          "kind": "check",
+          "label": "e2e/m8/03-moves-made-by-time.test.ts",
+          "ref": "e2e/m8/03-moves-made-by-time.test.ts",
+          "passing": null
+        }
+      ],
+      "owner": "M8.10 (the keeper's spans), M8.12 (the on-time eval)",
       "question": null
     }
   ],

@@ -3,7 +3,6 @@
 import { Names } from "orthograph/server";
 import { Effect } from "effect";
 import { StagingFailed, type Plan } from "../types.ts";
-import { ENVIRONMENT } from "./plan.ts";
 
 interface Server {
   readonly d1_databases?: ReadonlyArray<Record<string, unknown>>;
@@ -39,7 +38,7 @@ export const stackInput = ({ server, plan, built }: Derive): Effect.Effect<strin
     // Only what the plan covers may be bound: a binding of another kind (R2, KV, queues, services...) would be made by `up` and not deleted by `destroy`.
     const odd = Object.keys(server).filter((k) => !COVERED.has(k));
     if (odd.length > 0) {
-      return yield* new StagingFailed({ message: `generated/server/wrangler.jsonc has ${odd.join(", ")}, which the staging plan does not cover: plan it (and its destroy) before it is deployed` });
+      return yield* new StagingFailed({ message: `generated/server/wrangler.jsonc has ${odd.join(", ")}, which the plan does not cover: plan it (and its destroy) before it is deployed` });
     }
     const planned = plan.resources.filter((r) => r.kind === "d1");
     const bound = (server.d1_databases ?? []).map((d) => String(d["binding"]));
@@ -54,7 +53,7 @@ export const stackInput = ({ server, plan, built }: Derive): Effect.Effect<strin
       vars: {
         ...server.vars,
         OTLP_URL: "",
-        [Names.variable("ENVIRONMENT")]: ENVIRONMENT,
+        [Names.variable("ENVIRONMENT")]: plan.environment,
         [Names.variable("REVISION")]: built.revision,
         [Names.variable("BUNDLE_SHA256")]: built.sha256,
       },

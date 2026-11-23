@@ -18,6 +18,9 @@ const suffix = (): string => {
 /** API keys start `ak_`, so a bearer credential says which kind it is. */
 export const KEY_PREFIX = "ak_";
 
+/** The mark on a key made for an agent (`metadata.acts`): a call made with it is an agent's, acting for the key's person (M2-auth, fork 2). */
+export const ACTS_FOR_AN_AGENT = "agent";
+
 /** The device flow's polling interval; a client that polls faster is told `slow_down`. */
 export const DEVICE_INTERVAL = "5s";
 
@@ -72,5 +75,5 @@ export const optionsFor = (cli: string, origin?: string) => ({
   rateLimit: { enabled: false },
   // The jwt plugin's own /token would mint tokens that are not OAuth's; the provider's /oauth2/token is the one.
   disabledPaths: ["/token"],
-  plugins: [bearer(), apiKey({ enableSessionForAPIKeys: true, defaultPrefix: KEY_PREFIX, schema: { apikey: { modelName: "auth_apikey" } } }), deviceClient(cli), ...oauth(origin)],
+  plugins: [bearer(), apiKey({ enableSessionForAPIKeys: true, enableMetadata: true, defaultPrefix: KEY_PREFIX, schema: { apikey: { modelName: "auth_apikey" } } }), deviceClient(cli), ...oauth(origin)],
 }) satisfies Omit<BetterAuthOptions, "database" | "secret">;
