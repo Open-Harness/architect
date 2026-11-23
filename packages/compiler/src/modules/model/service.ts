@@ -6,13 +6,15 @@ import { hashOf } from "./internal/hash.ts";
 import { describe } from "./internal/describe.ts";
 import { readLayout } from "./internal/layout.ts";
 import { Mounts } from "#modules/mounts/service.js";
+import { App } from "#modules/app/service.js";
 
 export const Compiler: CompilerApi = {
   model: Effect.gen(function* () {
     const source = yield* BlueprintSource;
     const paths = yield* source.list;
     const files = yield* Effect.forEach(paths, source.load);
-    const layout = readLayout(files);
+    const { app: appFiles, rest } = App.setAside(files);
+    const layout = readLayout(rest);
     // Each mount's plugin, folded in: its things beside the project's own, under the names the mount gives them.
     const folded = yield* Mounts.fold(layout);
     for (const [name, t] of folded.things) layout.things.set(name, t);
@@ -23,8 +25,11 @@ export const Compiler: CompilerApi = {
     // Errors take their names from their exports; stamping them here lets the loaded classes be used by name.
     for (const t of layout.things.values()) for (const [name, cls] of t.errors) ErrorNames.name(cls, name);
     for (const t of layout.things.values()) for (const [name, event] of t.events) EventNames.name(event, name);
-    const { model, problems } = describe(layout);
+    const described = describe(layout);
+    const { app, problems: appProblems } = App.describe(appFiles, layout, described.model);
+    const problems = [...described.problems, ...appProblems];
     if (problems.length > 0) return yield* new BlueprintInvalid({ problems: Mounts.attributed(problems, folded.mounts) });
+    const model = app ? { ...described.model, app } : described.model;
     return Object.keys(folded.mounts).length > 0 ? { ...narrowed(model, folded.mounts), mounts: folded.mounts } : model;
   }),
 };
