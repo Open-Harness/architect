@@ -5,7 +5,7 @@ milestone: "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys"
 release: beta
 branch: goal/stage-1
 base: main
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude-code
   model: claude-opus-5-5
@@ -300,46 +300,58 @@ K28 decides the preview merge and the three releases: [`K28-releases.md`](../dec
 
 ## Where it stands
 
-Rewritten at every slice merge. Last rewritten on 23 November 2026, at `goal/stage-1` `575fa65e`, after the M1 preview merged into `main` at `0d0c4b31`. A fresh lead in any harness starts here, then reads `design/handoff.md` (the ids and the lines of work), `design/goals/03-snags.md`, and the open issues in milestone "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys". Sessions don't carry over; everything below is in the repository or on GitHub. The repository moved to `Open-Harness/orthograph`; older links below point at `AaronAbuUsama/architect` and redirect.
+**Parked on 23 November 2026 under K42** (`design/decisions/K42-goals-are-agents.md`): goals become agents, and this goal's open slices become items on the board. Last rewritten at `goal/stage-1` after M2.04's build merged. A fresh owner starts here, then reads `design/goals/03-snags.md` and the open issues in milestone "Goal 3: stage 1 of Plugged In, hill-climbed through its journeys". Nothing is running in this lane.
 
-**Where the goal is.** The first of the two landings is done. The M1 preview ([#602](https://github.com/Open-Harness/orthograph/pull/602)) merged `goal/stage-1` into `main` on 23 November, with CI green and a 🔍 of the whole branch. Gate M1's done check is `nx run e2e:m1-ratchet` on `main`, with only check 40 left on its list ([`M1-50-after-cutover`](../decisions/M1-50-after-cutover.md)). M1.50, the one `Graph`, is built in Goal 6 after its cutover. Plugged In's seven journeys are green in local and test, and the climb is green. Staging run 3 went up, passed the story 5 of 5, and destroyed with nothing left. In M2, the decision (M2.01) and the principal journeys with M2.03's build ([#297](https://github.com/Open-Harness/orthograph/pull/297)) are in. The goal carries on from `goal/stage-1` toward the second landing.
+**Where the work is.**
+- **M1 is on `main`.** The M1 preview ([#602](https://github.com/Open-Harness/orthograph/pull/602)) merged on 23 November with Gate M1 green. Only check 40 is left on M1's list. Check 40 is M1.50, the one `Graph`, which is Goal 6's after its cutover ([`M1-50-after-cutover`](../decisions/M1-50-after-cutover.md)).
+- **M1.51, the npm preview, is built on `goal/stage-1`.** The pieces:
+  - checks [#678](https://github.com/Open-Harness/orthograph/pull/678), build [#683](https://github.com/Open-Harness/orthograph/pull/683), and the G12 pair [#702](https://github.com/Open-Harness/orthograph/pull/702);
+  - `node tools/release/preview.mjs --dry-run` lists each public package with version, tag `next`, licence and files. It refuses any other tag on npmjs, makes no connection and sends nothing;
+  - the 16 packages M1.51 covered are Apache-2.0, with a root and a per-package LICENSE ([`L1-apache-2`](../decisions/L1-apache-2.md), Aaron's "Make it all Apache 2.0").
+  - **The dry run refuses today.** Goal 6's #697 added a 17th public package, `@orthograph/shell`, licensed MIT, so the preview ends `refused: @orthograph/shell license is "MIT", not Apache-2.0`. The fix is snag [#753](https://github.com/Open-Harness/orthograph/issues/753): Apache-2.0 and a LICENSE in `packages/shell`. It is Goal 6's or Goal 19's, and must land before #707 does.
 
-**How pull requests run (CI-drafts, #293).** Every pull request opens as a draft, and a draft runs no CI. The 🔍 reads the draft and runs the affected checks locally. Then the pull request is marked ready and CI runs once. At most two of this lane's pull requests are ready at a time. After every push, a background watcher waits for CI to end and merges when it is green with no unresolved thread (`tmp/goal3/automerge.sh`, untracked). A cancelled duplicate run leaves checks named as unexpanded `${{ … }}` expressions that show as failed. They are not required checks, so when the real run is green, merge by hand with `--match-head-commit`.
+  The licence moved each package's recorded hash, so acme's and Plugged In's `generated/` and the baselines were regenerated and recaptured as a G12 pair.
+- **Stage 1 to `main`: [#707](https://github.com/Open-Harness/orthograph/pull/707)** (`goal-3/stage-1-to-main-m1-51`) carries M1.51 to `main`. Its 🔍 of everything since `0d0c4b31` passed at `ba9c50bc`. **Goal 19, the lander, owns it now**: it merges `goal/stage-1` in, runs a delta 🔍, and lands it. Then Aaron signs in and runs `npm publish` under `next`, and publishing moves to Goal 15 ([#542](https://github.com/Open-Harness/orthograph/issues/542), item 1).
+- **M2.** The decision (M2.01), the principal journeys and M2.03's build ([#297](https://github.com/Open-Harness/orthograph/pull/297)) are in. M2.04, secrets by declaration, is built:
+  - checks [#659](https://github.com/Open-Harness/orthograph/pull/659), build [#690](https://github.com/Open-Harness/orthograph/pull/690);
+  - `Blueprint.secret`, `Blueprint.layer` hands `Redacted` values, `ortho secrets` and `ortho secrets set` (stdin only, 0600 file), and `promote` refuses a missing stored secret;
+  - the readings are in [`M2-04-secrets-readings`](../decisions/M2-04-secrets-readings.md);
+  - M2.04 is inert until a plugin declares a secret.
 
-**Merged on 22 and 23 November** (newest first):
-- [#602](https://github.com/Open-Harness/orthograph/pull/602): the M1 preview, `goal/stage-1` into `main` (K28).
-- [#622](https://github.com/Open-Harness/orthograph/pull/622), [#589](https://github.com/Open-Harness/orthograph/pull/589): `main` merged in (CI Part B3, CI-e2e-suites, docs-inert), keeping this branch's `portal-ui` job and its HeroUI Pro guard.
-- [#616](https://github.com/Open-Harness/orthograph/pull/616): wallet send safety, answering two Codex P1s on #602 ([`W1-wallet-send-lanes`](../decisions/W1-wallet-send-lanes.md)). The browser wallet checks `eth_chainId` before it sends. Sends from one account take a per-account lock, and each send reads its nonce from the chain. It took three rounds of product fixes and then a reset: the first two fixes shared nonce state, which went stale.
-- [#619](https://github.com/Open-Harness/orthograph/pull/619) (Goal 5): builder-paths lets a builder shrink every e2e suite's ratchet list (CI-ratchet-suites).
-- [#610](https://github.com/Open-Harness/orthograph/pull/610) (CI Part B): `design/grid/` is no longer docs-only, and the inert paths are (CI-docs-inert).
-- [#605](https://github.com/Open-Harness/orthograph/pull/605): M1.49 marked done in `design/milestones.md`.
-- [#555](https://github.com/Open-Harness/orthograph/pull/555): an operation declares `needsApproval`; `AR-007` is `ApprovalDeclined` (Goal 5's ask #466).
-- [#552](https://github.com/Open-Harness/orthograph/pull/552): monitoring history apart from the Calls page's window (Goal 4's #541).
-- [#550](https://github.com/Open-Harness/orthograph/pull/550): M1-50-after-cutover.
-- [#549](https://github.com/Open-Harness/orthograph/pull/549): `ortho --version` prints the CLI's version (Goal 15's #542, items 2 and 3).
-- [#523](https://github.com/Open-Harness/orthograph/pull/523), [#547](https://github.com/Open-Harness/orthograph/pull/547), [#528](https://github.com/Open-Harness/orthograph/pull/528), [#267](https://github.com/Open-Harness/orthograph/pull/267), [#537](https://github.com/Open-Harness/orthograph/pull/537): `ortho env` for the test environment, the canon's claim quote, S-35's ratio, M2.02's moved journeys, and CI Part B.
+  M2.05 to M2.11, M2.05b and Gate M2 are not started.
+- Plugged In's seven journeys are green in local and test, the climb is green, and staging run 3 passed 5 of 5 and was destroyed.
 
-**In flight.** Nothing is open in this lane.
-
-**Next, in order.**
-1. M1.51, the npm preview under `next` (K28). The conductor prepares the dry run, and Aaron signs in and runs `npm publish`. After that, the publish hand-over to Goal 15 ([#542](https://github.com/Open-Harness/orthograph/issues/542), item 1).
-2. M2.04 to M2.11 in the pairs `design/decisions/M2-auth.md` maps, then M2.05b and Gate M2 (M2.12). When M2.05 merges, tell Goal 4.
-3. The asks from parked goals, after those: #480, #474, #478, #486, #501, and the superagent's #531 to #534.
+**Open slices, now board items** (issues #627 to #647, kind:slice). The ones not done:
+- [#636](https://github.com/Open-Harness/orthograph/issues/636) M2.05 identity, with M2.24 and M2.25. Tell Goal 4 the commit when it merges.
+- [#637](https://github.com/Open-Harness/orthograph/issues/637) M2.06 ways in; [#638](https://github.com/Open-Harness/orthograph/issues/638) M2.07 organizations.
+- [#639](https://github.com/Open-Harness/orthograph/issues/639) to [#642](https://github.com/Open-Harness/orthograph/issues/642): M2.08 to M2.11.
+- [#643](https://github.com/Open-Harness/orthograph/issues/643) M2.05b; [#644](https://github.com/Open-Harness/orthograph/issues/644) stage 1's own slices; [#645](https://github.com/Open-Harness/orthograph/issues/645) M2.13 to M2.22.
+- [#646](https://github.com/Open-Harness/orthograph/issues/646) Gate M2; [#647](https://github.com/Open-Harness/orthograph/issues/647) the staging run and the second landing.
+- Pair map: `design/decisions/M2-auth.md`. A slice that moves acme's wire, model or `generated/` lands as a G12 pair.
+- Parked asks from other goals: #480, #474, #486, #531 to #534.
+- The earlier slice issues, #627 to #635, are done (M1.12a, M1.49, M7.03 and M7.04, S-35, Gate M1 and the preview, M2.02, M2.03, M2.04) and can be closed, except [#629](https://github.com/Open-Harness/orthograph/issues/629), M1.50, which is Goal 6's after its cutover.
 
 **Open snags that matter.**
-- [#446](https://github.com/Open-Harness/orthograph/issues/446): an agent's key can mint a person's key through `/api/auth`. Security; it belongs with M2's auth slices.
-- [#620](https://github.com/Open-Harness/orthograph/issues/620): the wallet's advice from #616. Pass `chainId` in the transaction. A broadcast whose answer was cut can be paid twice on a retry. A lagging load-balanced RPC.
-- [#503](https://github.com/Open-Harness/orthograph/issues/503): a pull request's token can record a production release in the logbook.
-- [#438](https://github.com/Open-Harness/orthograph/issues/438), [#431](https://github.com/Open-Harness/orthograph/issues/431): a deployed portal keeps no issues past its isolate; a failed staging deploy hides what it couldn't find.
-- [#449](https://github.com/Open-Harness/orthograph/issues/449), [#451](https://github.com/Open-Harness/orthograph/issues/451): every API key is refused after 10 calls a day; a commit issue opens for a call still retrying.
-- [#606](https://github.com/Open-Harness/orthograph/issues/606), [#304](https://github.com/AaronAbuUsama/architect/issues/304) (S-36): S-19's write-order ratio is near its bar under load. It failed once on CI, at 16.8 against 16. JOU-13 (no journey can force a race) has no slice.
-- `main`'s branch protection requires five checks. The jobs the preview brought (`e2e-m1`, `portal-ui`, `e2e-climb`, `e2e-grid`) run there, but `main` doesn't require them yet. That is a call for the CI lane (CI-branch-protection).
+- [#446](https://github.com/Open-Harness/orthograph/issues/446): an agent's key can mint a person's key through `/api/auth`. This is security work, and it belongs with M2.05.
+- [#695](https://github.com/Open-Harness/orthograph/issues/695): secrets hardening from M2.04's review. `promote` reads only the local `secrets.env`, which M2.05 must settle. Also the argv echo, a non-atomic write, and the `then` key.
+- [#660](https://github.com/Open-Harness/orthograph/issues/660): how secret names with digits or runs of capitals split.
+- [#753](https://github.com/Open-Harness/orthograph/issues/753): `@orthograph/shell` says MIT, so the preview's dry run refuses on `goal/stage-1`. This blocks #707.
+- [#688](https://github.com/Open-Harness/orthograph/issues/688): the preview's root LICENSE check reads the repository, not `--root`.
+- [#620](https://github.com/Open-Harness/orthograph/issues/620): the wallet advice from #616.
+- [#503](https://github.com/Open-Harness/orthograph/issues/503): a pull request's token can record a production release.
+- [#449](https://github.com/Open-Harness/orthograph/issues/449), [#451](https://github.com/Open-Harness/orthograph/issues/451): the API key's daily limit, and a commit issue for a call still retrying.
+- [#606](https://github.com/Open-Harness/orthograph/issues/606): S-19's write-order ratio near its bar under load.
+- [#588](https://github.com/Open-Harness/orthograph/issues/588): e2e-m2 runs on drafts.
 
-**Agreements with other lanes**
-- **The conductor** owns `.agents/skills/kanban/STATE.md` on `main`. Never edit it here; take main's version at each merge of `main`.
-- **Goal 4** (on-chain, `goal/on-chain`): when M2.05 merges, tell it the commit, as an Ask-free comment on its goal issue.
-- **Goal 5** (the UI layer, `goal/ui-layer`, K29): ST1.25 to ST1.28 and M1.22 and M1.23 are its work. The portal moves off HeroUI there (ST1.27). Don't build portal screens here that it replaces.
-- **Goal 6** (the portal, K31): its cutover asks Goal 3 through a `goal-3` pull request that adds a freeze line, and merging it is the freeze.
-  M1.50, the one `Graph`, is Goal 6's, built in `@orthograph/shell` after cutover; a checks author first moves check 40 to the shell (M1-50-after-cutover).
-- **Aaron's standing authority** (21 November): anything waiting on him goes ahead on the recommendation, and the call is recorded.
-- **M1.37** (the MCP output schema) is left as it is, by the conductor's call.
+**How the work ran here, worth keeping.**
+- Draft first, then a 🔍 that wrote none of it, then ready, with at most two ready per lane. Wait on CI with `tools/ci/watch-required.sh`; any exit but 0 is not green.
+- A cancelled duplicate CI run shows unexpanded `${{ … }}` check names as failed. They aren't required checks; merge by hand with `--match-head-commit`.
+- Never wait with `pgrep -f`: it matches itself. Wait on a PID or a sentinel line.
+- Bring a branch up to date by merging its base, never by rebasing.
+
+**Agreements that carry over.**
+- The conductor owns `.agents/skills/kanban/STATE.md`; take main's version at each merge of `main`.
+- Goal 4: when M2.05 merges, tell it the commit.
+- Goal 5 owns ST1.25 to ST1.28, M1.22 and M1.23, and the portal's move off HeroUI.
+- Goal 6 owns M1.50 after its cutover.
+- M1.37 stays as it is, by the conductor's call.
