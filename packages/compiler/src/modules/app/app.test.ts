@@ -103,4 +103,29 @@ describe("app", () => {
     const narrowed = { kind: "narrowed", entry: { kind: "signed-in" }, via: ["web"] } as never;
     expect(allowedOf(narrowed, known, "f", [])).toEqual({ kind: "signed-in" });
   });
+
+  it("a route segment is literal text with at most one :name at its end: /@:handle is, /:year-:month is not", () => {
+    expect(routeProblems(page({ path: "/@:handle", params: { handle: field() } }), model)).toEqual([]);
+    expect(routeProblems(page({ path: "/a/:id", params: { id: field() } }), model)).toEqual([]);
+    for (const path of ["/:year-:month", "/:a:b", "/:id.json"]) {
+      const out = routeProblems(page({ path, params: {} }), model);
+      expect(out.some((l) => l.includes("[app-route-param]") && l.includes("blueprint/app/pages/p.ts") && l.includes("is not literal text")), path).toBe(true);
+    }
+  });
+
+  it("a role for an outside service never opens a page: plain, scoped, and narrowed then scoped", () => {
+    const service = { kind: "role", service: {} };
+    const scoped = { kind: "role-of", role: service, path: "id" };
+    const known = { operations: new Map(), roles: new Map<unknown, string>([[service, "link.svc"]]), things: new Map(), values: new Map() };
+    for (const a of [service, scoped, { kind: "narrowed", entry: scoped, via: ["web"] }]) {
+      const problems: Array<string> = [];
+      allowedOf(a as never, known, "blueprint/app/pages/p.ts", problems);
+      expect(problems, JSON.stringify(a)).toHaveLength(1);
+      expect(problems[0]).toContain("outside service");
+    }
+    const plain = { kind: "role" };
+    const ok: Array<string> = [];
+    allowedOf({ kind: "role-of", role: plain, path: "id" } as never, { ...known, roles: new Map<unknown, string>([[plain, "a.b"]]) }, "f", ok);
+    expect(ok).toEqual([]);
+  });
 });

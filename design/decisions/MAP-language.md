@@ -77,3 +77,12 @@ new to the compiler, so it is recorded here rather than assumed: the tags are `a
 is opened by the caller of a request, so: `system` and `keeper` have no credential and never open a page, and a service role
 admits one outside mount, never a person at a page; each is a problem naming the page's file (untagged: it is none of the six).
 A `narrowed` entry is the entry it narrows, since a page has no ways in of its own, and the model holds the plain entry.
+
+## Route grammar, and scoped service roles (after Codex's review of #584)
+
+- **One grammar for a route**, for the compiler, the projection and the shell's router: a segment is literal text with at most one
+  `:name` at its end (`@:handle`, `:id`, `about`). `/:year-:month`, `/:a:b` and `/:id.json` are refused as `[app-route-param]`,
+  naming the page's file and the segment, because the router reads everything after the first colon as one parameter and could not
+  match them. `@:handle` stays allowed, not only a whole-segment `:name`, since `/@:handle` is K31's own example and the router reads it.
+- **A scoped service role is still a service role.** `serviceRole.of("id")` is a `role-of`, so the refusal checks the role it
+  scopes, narrowed or not.

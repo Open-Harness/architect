@@ -26,12 +26,17 @@ export interface PageFacts {
 const also = (page: PageFacts, item: Item) => (item.file === page.file ? "" : ` (named in ${item.file})`);
 const tagged = (file: string, tag: string, words: string) => `${file}: [${tag}] ${words}`;
 
+/** A segment is literal text with at most one parameter that ends it (`@:handle`, `:name`): what the shell's router reads. */
+const SEGMENT = /^[^:]*(:[A-Za-z_][A-Za-z0-9_]*)?$/;
+const badSegments = (path: string): ReadonlyArray<string> => path.split("/").filter((s) => !SEGMENT.test(s));
+
 /** The path and its parameters agree; each shown read gets what its payload needs; each parameter is used by one. */
 export const routeProblems = (page: PageFacts, model: Model): ReadonlyArray<string> => {
   const named = paramsOf(page.path);
   const typed = Object.keys(page.params);
   const out: Array<string> = [];
   if (!page.path.startsWith("/")) out.push(tagged(page.file, "app-route-param", `the route "${page.path}" must start with /`));
+  for (const s of badSegments(page.path)) out.push(tagged(page.file, "app-route-param", `the segment "${s}" of the route "${page.path}" is not literal text with at most one :name at its end`));
   for (const p of named.filter((n) => !typed.includes(n))) out.push(tagged(page.file, "app-route-param", `the route "${page.path}" has :${p}, which route.params doesn't type`));
   for (const p of typed.filter((n) => !named.includes(n))) out.push(tagged(page.file, "app-route-param", `route.params types ${p}, which the route "${page.path}" doesn't have`));
   const shown = page.shows.map((item) => ({ item, op: model.operations[item.op] }));

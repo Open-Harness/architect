@@ -32,7 +32,8 @@ export const allowedOf = (a: Allowed, known: Known, file: string, problems: Arra
     return { kind: a.kind };
   }
   const nameOf = (r: unknown) => known.roles.get(r) ?? (problems.push(`${file}: uses a role not exported from a roles.ts`), "?");
-  if (a.kind === "role" && a.service !== undefined) problems.push(`${file}: allows ${nameOf(a)}, a role for an outside service, which never opens a page`);
+  const service = a.kind === "role" ? a.service : a.role.service;
+  if (service !== undefined) problems.push(`${file}: allows ${nameOf(a.kind === "role" ? a : a.role)}, a role for an outside service${a.kind === "role-of" ? ` (scoped by ${a.path})` : ""}, which never opens a page`);
   return a.kind === "role" ? { kind: "role", role: nameOf(a) } : { kind: "role-of", role: nameOf(a.role), path: a.path };
 };
 
