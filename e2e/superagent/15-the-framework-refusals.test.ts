@@ -144,7 +144,14 @@ describe("15 hold: (GOAL17-pause) the lists of what the switch holds", () => {
   it("a hold on a thing that lives in another store than the one producing its events is refused, naming the hold (GOAL17-pause :133)", () => {
     const root = copyApp();
     swapPlugin(root, "superagent", (dir) => edit(dir, "blueprint/things/superagent/thing.ts", (t) => t.replace(/Blueprint\.thing\(\{/, `Blueprint.thing({\n  lives: "actor",`)));
-    refused(root, "processing", /store/);
+    refused(root, /\bprocessing\b/, /\bsuperagent\b/, /store/);
+  });
+
+  it("control: the same fault on a thing the hold does not cover (the Proposal) is not refused for the hold", () => {
+    const root = copyApp();
+    swapPlugin(root, "superagent", (dir) => edit(dir, "blueprint/things/proposal/thing.ts", (t) => t.replace(/Blueprint\.thing\(\{/, `Blueprint.thing({\n  lives: "actor",`)));
+    const v = verdict(root);
+    expect(v.out, "an actor thing the hold does not name must not make the hold's store refusal").not.toMatch(/\bprocessing\b/);
   });
 });
 
@@ -170,10 +177,11 @@ describe("15 sources: (GOAL17-source-from) a source and the mount it maps over",
 });
 
 describe("15 sources: (GOAL17-source-from :325) the variables a source declares, named by the record's rules", () => {
-  it.each([["GITHUB_REPOSITORY_TOKEN", "ends in _TOKEN"], ["REPO", "does not start with the source's own prefix"]])("a variable `%s`, which %s, is refused, naming it", (name) => {
+  // the variable whole (`REPO` is not found inside `GITHUB_REPOSITORY`), and the rule it breaks in the record's own words
+  it.each([["GITHUB_REPOSITORY_TOKEN", "ends in _TOKEN", /never end|ending|ends in|secret|credential/i], ["REPO", "does not start with the source's own prefix", /prefix|start/i]] as const)("a variable `%s`, which %s, is refused, naming it and the rule", (name, _why, rule) => {
     const root = copyApp();
     swapPlugin(root, "intake", (dir) => edit(dir, "blueprint/sources/github.ts", (t) => t.replace(/(variables:\s*\{\s*)GITHUB_REPOSITORY:/, `$1${name}:`)));
-    refused(root, name);
+    refused(root, new RegExp(`\\b${name}\\b`), rule);
   });
 });
 

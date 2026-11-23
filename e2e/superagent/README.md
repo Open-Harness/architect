@@ -165,8 +165,8 @@ changed stops and asks its author.
      `{ kind: "problems" }`; `hash` a string. A read's `only` is the object it pins, beside today's `list: { where, order, page }`
      and `budget: { p95Ms }`; a read with no derive has no `derive` key.
    - `sources.<mount>`: `{ mount, events, calls, variables, kinds }` (GOAL17-source-from, "How a door and a poll both feed it"), `events`
-     and `calls` the dotted names it uses, `variables` an object keyed by the variable's name, `kinds` the sorted distinct `kind:` literals in the results of the
-     source's `on` mappings (the record doesn't say how `kinds` is read; this is the least that can be). Only an active source is there: in slice 5, GitHub and Slack.
+     and `calls` the dotted names it uses, `variables` an object keyed by the variable's name, `kinds` every string literal in the `kind:` expression of the results of the
+     source's `on` mappings, sorted and distinct (Slack's conditional `kind: e.channel_type === "im" ? "direct" : "message"`, with `"mention"`, gives `direct`, `message`, `mention`) (the record doesn't say how `kinds` is read; this is the least that can be). Only an active source is there: in slice 5, GitHub and Slack.
      PostHog has no events until slice 11 (GOAL17-names call 6), so it is not, and the checks say so. `sources.timer` is `{ mount: null, config: { every, says } }`,
      `config` an object keyed by the two fields `Source.timer` takes.
    - `holds.<name>`: `{ thing, key, while, held, unheld }`, `<name>` the identifier the declaration is exported as (`processing`);
