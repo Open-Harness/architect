@@ -12,6 +12,7 @@ import { nodeDisk } from "../disk/service.ts";
 import { Sandboxes } from "./service.ts";
 import type { OpenInput, SandboxesApi } from "./types.ts";
 
+const counter = (prefix: string) => { let k = 0; return () => `${prefix}${++k}`; };
 const CANARY = "ortho-canary-bridge-secret";
 let dir = "";
 let api: SandboxesApi;
@@ -30,7 +31,7 @@ beforeAll(async () => {
   mkdirSync(join(dir, "sandboxes/sbx_planted"), { recursive: true });
   api = await Effect.runPromise(Sandboxes.make({
     dir, limit: 3, daemon: localDaemon(), systemPath: process.env["PATH"] ?? "/usr/bin:/bin", disk: nodeDisk,
-    ids: { id: () => `sbx_${++count}`, token: () => `tok${count}` }, now: () => clock,
+    ids: { id: () => `sbx_${++count}`, token: counter("tok") }, now: () => clock,
   }).pipe(Effect.provide(TimersLive)));
 });
 afterAll(async () => {

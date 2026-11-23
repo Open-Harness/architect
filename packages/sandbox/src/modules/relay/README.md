@@ -3,8 +3,9 @@
 K40 fix 4's "Pi's `ExecutionEnv` over a socket an actor can open". pi-env's daemon speaks length-framed messages on stdin and
 stdout (`@earendil-works/pi-env` `docs/protocol.md`), which a Durable Object cannot spawn. The relay starts one `pi-env serve`
 per sandbox, in the sandbox's folder, with the sandbox's environment, and serves its frames on a loopback TCP socket.
-`address` is `tcp://127.0.0.1:<port>#<token>`: a `socketConnection` connects to the port and treats the fragment as the sync
-token (the relay writes `PI-ENV <token>` itself to each client, so a client may reconnect).
+`address` is `tcp://127.0.0.1:<port>#<client token>`: a `socketConnection` connects to the port and sends the fragment and a newline as its first line (the relay
+answers `PI-ENV <client token>`, and the frames follow). The client token is the sandbox's own, in memory and in `open`'s answer only; the daemon's `--token`, which
+`ps` shows, is another value and opens nothing.
 
 The relay is also where the fence meets Pi's tools. Every request frame is read before it reaches the daemon; one whose
 `path`, `to`, `cwd` or watch targets resolve outside the root is answered by an error frame (`code: "OutsideSandbox"`, a

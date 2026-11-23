@@ -11,6 +11,7 @@ import { Sandboxes } from "../sandboxes/service.ts";
 import type { SandboxesApi } from "../sandboxes/types.ts";
 import { Bridge } from "./service.ts";
 
+const counter = (prefix: string) => { let k = 0; return () => `${prefix}${++k}`; };
 let dir = "";
 let sandboxes: SandboxesApi;
 let n = 0;
@@ -20,7 +21,7 @@ const SECRET = "a-test-secret-not-a-real-one";
 
 beforeAll(async () => {
   dir = realpathSync(mkdtempSync(join(tmpdir(), "ortho-sbx-bridge-")));
-  sandboxes = await Effect.runPromise(Sandboxes.make({ dir, limit: 4, daemon: localDaemon(), systemPath: process.env["PATH"] ?? "/usr/bin:/bin", disk: nodeDisk, ids: { id: () => `sbx_${++n}`, token: () => `t${n}` }, now: () => 5_000 }).pipe(Effect.provide(TimersLive)));
+  sandboxes = await Effect.runPromise(Sandboxes.make({ dir, limit: 4, daemon: localDaemon(), systemPath: process.env["PATH"] ?? "/usr/bin:/bin", disk: nodeDisk, ids: { id: () => `sbx_${++n}`, token: counter("t") }, now: () => 5_000 }).pipe(Effect.provide(TimersLive)));
   const bridge = Bridge.of(sandboxes, SECRET);
   raw = (request) => Effect.runPromise(bridge.handle({ secret: undefined, body: undefined, ...request })) as never;
   call = (path, body, method = "POST") => raw({ method, path, body, secret: SECRET });

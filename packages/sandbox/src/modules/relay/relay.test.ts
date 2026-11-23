@@ -73,7 +73,7 @@ beforeAll(async () => {
   const relay = await Effect.runPromise(Effect.gen(function* () {
     const fence = yield* Fence.of(nodeDisk, root);
     return yield* Relay.start({
-      binary: localDaemon(), cwd: root, token: "cafe0123", blocked: ["sudo"], fence,
+      binary: localDaemon(), cwd: root, token: "cafe0123", daemonToken: "daemon0123", blocked: ["sudo"], fence,
       env: { PATH: `${shims}:/usr/bin:/bin`, HOME: root, SUPERAGENT_DIR: root },
       observe: {
         refused: (r) => Effect.sync(() => void refused.push(r)),
@@ -94,7 +94,7 @@ const alive = (p: number) => { try { process.kill(p, 0); return true; } catch { 
 describe("relay", () => {
   it("starts a real pi-env daemon, in the sandbox's folder, and gives its address and the sync token", async () => {
     expect(address).toMatch(/^tcp:\/\/127\.0\.0\.1:\d+#cafe0123$/);
-    expect(execFileSync("ps", ["-o", "args=", "-p", String(pid)], { encoding: "utf8" })).toContain("serve --token cafe0123");
+    expect(execFileSync("ps", ["-o", "args=", "-p", String(pid)], { encoding: "utf8" })).toContain("serve --token daemon0123");
     const client = await attach(address);
     expect(client.token).toBe("cafe0123");
     const [hello] = await client.ask(1, { op: "hello", protocol: 1 });
@@ -220,7 +220,7 @@ describe("relay", () => {
     mkdirSync(where, { recursive: true });
     const relay = await Effect.runPromise(Effect.gen(function* () {
       const fence = yield* Fence.of(nodeDisk, where);
-      return yield* Relay.start({ binary: localDaemon(), cwd: where, token: "beef", blocked: [], fence, env: { PATH: `${shims}:/usr/bin:/bin` }, observe: { refused: () => Effect.void, started: () => Effect.succeed(0), exited: () => Effect.void } });
+      return yield* Relay.start({ binary: localDaemon(), cwd: where, token: "beef", daemonToken: "daemonbeef", blocked: [], fence, env: { PATH: `${shims}:/usr/bin:/bin` }, observe: { refused: () => Effect.void, started: () => Effect.succeed(0), exited: () => Effect.void } });
     }).pipe(Scope.provide(mine), Effect.provide(TimersLive)));
     expect(alive(relay.pid)).toBe(true);
     await Effect.runPromise(Scope.close(mine, Exit.void));
@@ -236,7 +236,7 @@ describe("relay", () => {
     mkdirSync(where, { recursive: true });
     const result = await Effect.runPromise(Effect.gen(function* () {
       const fence = yield* Fence.of(nodeDisk, where);
-      return yield* Relay.start({ binary: join(base, "no-such-daemon"), cwd: where, token: "x", blocked: [], fence, env: {}, observe: { refused: () => Effect.void, started: () => Effect.succeed(0), exited: () => Effect.void } });
+      return yield* Relay.start({ binary: join(base, "no-such-daemon"), cwd: where, token: "x", daemonToken: "y", blocked: [], fence, env: {}, observe: { refused: () => Effect.void, started: () => Effect.succeed(0), exited: () => Effect.void } });
     }).pipe(Scope.provide(mine), Effect.provide(TimersLive), Effect.result));
     expect(result).toMatchObject({ _tag: "Failure", failure: { _tag: "DaemonFailed", reason: expect.stringContaining("not found") } });
     await Effect.runPromise(Scope.close(mine, Exit.void));

@@ -9,6 +9,8 @@ export interface Disk {
   /** Whether a symbolic link is at this path itself, resolving or not (a dangling or looping one is still a link). */
   readonly isLink: (path: string) => Effect.Effect<boolean>;
   /** Make a folder and the missing ones above it. */
+  /** Write a small file at once, in the same step: for what must be on disk before anything else can happen. A failure is not reported. */
+  readonly writeSync: (path: string, content: string) => Effect.Effect<void>;
   readonly makeDir: (path: string) => Effect.Effect<void, DiskFailed>;
   /** Write a file, making its folder; `mode` is a permission such as 0o755. Answers the bytes written. */
   readonly write: (path: string, content: string, mode?: number) => Effect.Effect<number, DiskFailed>;

@@ -78,11 +78,24 @@ The 🔍 review reproduced each with a real probe; each fix has a test on real p
 - **Symbolic links.** A symbolic link that does not resolve (dangling, or a loop) is not "missing": a write through it creates its target. `fence` refuses it (`disk.isLink`), and a
   path below one. The relay **sends on what the fence checked**: each path in a request is rewritten to the fence's resolved spelling (`linkdir/../x` is `<root>/x`, as the fence
   judged it), never the raw string the kernel would resolve differently.
-- **The socket's token is checked.** A client's first line must equal the sandbox's token (constant time) within 5 seconds; only then does it take the one client slot, and the relay
-  writes `PI-ENV <token>` back. A socket that says nothing or the wrong thing is closed and never blocks the real client. The relay's partial-frame buffer is per client.
-- **The bridge's HTTP needs its secret.** `main.ts` makes 32 random bytes at start and writes them to `<dir>/bridge.secret` (0600, outside `sandboxes/`); every route, `health` and
-  `reset` included, answers 401 without it as `x-bridge-secret` (constant-time compare). It is never configured and never printed.
-- **A hard-killed bridge.** Each sandbox's running `exec` groups are kept in `<dir>/shims/<id>/.pgids` (removed as each ends); the next bridge's sweep kills those groups before it removes
+- **The socket's token is checked, and is not the daemon's.** A client's first line must equal the sandbox's *client token* (constant time) within 5 seconds; only then does it take the
+  one client slot, and the relay writes `PI-ENV <client token>` back. A socket that says nothing or the wrong thing is closed and never blocks the real client. The relay's
+  partial-frame buffer is per client. The daemon's own `--token` is a second random value (`daemonToken`): it is on the daemon's command line, so any process can read it in `ps`, and
+  the relay never accepts it from a client and never echoes it (it swallows the daemon's sync line). The client token is held in memory and returned only in `open`'s `address`
+  (`tcp://127.0.0.1:<port>#<client token>`); it is in no argument, no environment and no file.
+- **The bridge's HTTP needs its secret, which is on stdout and nowhere else.** `main.ts` makes 32 random bytes at start; every route, `health` and `reset` included, answers 401
+  without it as `x-bridge-secret` (constant-time compare). It is never configured, never on disk, never in an argument or the environment. **The launcher reads it from the bridge's
+  stdout, which prints exactly two lines, in this order, each ending `\n`:**
+
+  ```text
+  stand-in secret <64 lowercase hex digits>
+  stand-in listening on http://127.0.0.1:<port>
+  ```
+
+  The second is the line every stand-in prints (`e2e/superagent/servers.ts` matches `^stand-in listening on (http://127\.0\.0\.1:\d+)$` unchanged); the secret line comes first, so a launcher
+  that stops reading at "listening" has already seen it. A launcher sends `x-bridge-secret: <hex>` on every request, `health` included, and keeps the value in memory.
+- **A hard-killed bridge.** Each sandbox's running `exec` groups are kept in `<dir>/shims/<id>/.pgids` as `<pgid> <program>` lines, written in the step that spawns the command and removed
+  as each ends; the next bridge's sweep kills a recorded group only while a process in it is still that program (process ids are reused), then removes the
   folders. SIGHUP and uncaught failures close every sandbox like SIGTERM. A command is started only if the sandbox is open at that instant, so nothing starts after a close's snapshot.
 - **Pi `exec` and blocked names.** The relay applies `firstBlocked` to a Pi `exec`'s argv (or the first word of its shell string): it answers `BlockedCommand: <name>` and exit 126 itself.
 - Small: a non-finite `timeoutSeconds` is refused; `credentialLike` also takes COOKIE, SESSION, DSN, BEARER and JWT; `loans` has an `internal/`.
@@ -115,8 +128,9 @@ The harness surface that loads `e2e/superagent/agent-journeys/` is the other bui
 - A command run by an absolute path, or one that leaves its process group (`setsid`), is outside the shims and the group kill (the prototype's "defaults" caveat). A group-leaving process is not killed by `close`.
 - The relay's fence compares case-folded, as the record says: on a case-sensitive disk two folders differing only in case count as one place.
 - **A blocked name can be run around.** `PATH=/usr/bin sudo ls`, `env PATH=/usr/bin sudo ls`, an absolute path inside a shell string, or a copied binary skip the first-word check and the shims. Not closed here: the real wall is the sandbox, and E2B comes later.
-- **A program in a sandbox can read the bridge's secret file** (`<dir>/bridge.secret`, 0600, the same user): the fence covers the bridge's own file calls and Pi's tools, not a program's own reads. The secret stops other loopback processes driving the bridge unasked; it does not isolate an agent whose shell runs on this Mac. E2B is the isolation.
-- A command's group is written to `.pgids` just after it spawns, so a SIGKILL in that instant can lose one; and a path the fence checked can change before it is used (a link swapped in between). Both need a program already running inside the sandbox.
+- **A link can be swapped between the fence's check and its use** (a time-of-check race): the fence resolves a path, and a program already inside the sandbox could replace a link before the write lands. The fence covers the bridge's own file calls and Pi's tools, not what a program does with its own file descriptors. **E2B is the wall for this and for the PATH bypass above.**
+- **What a sandboxed program on this Mac can still see:** every process's arguments (`ps`), so the daemon's `--token` (which opens nothing: a client must present the sandbox's own token, kept in memory and given only in `open`'s address), and the loopback ports (`lsof`). It cannot see the bridge's secret or a sandbox's client token. It can still reach a socket it can find, and the fence's reads do not stop its own. E2B is the isolation.
+- A command's group is written to `.pgids` in the step that spawns it (no await between), so only a SIGKILL that lands between the spawn and the write can lose one; the sweep kills a recorded group only if a process in it is still the program recorded, so a reused number is left alone, at the cost that a group whose leader has gone and whose other members run other programs is left running.
 - One bridge per state folder: a second bridge on the same `--dir` would sweep the first's sandboxes at start.
 
 ## Supersedes

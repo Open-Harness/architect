@@ -1,7 +1,8 @@
 // A process of the bridge's own `exec` call: in its own process group, tracked by pid (and written to the sandbox's `.pgids` file, so a
 // bridge killed hard cannot lose it), and gone (group and all) when it ends, when its call is interrupted, when it times out, or when its
 // sandbox closes. It is started only while the sandbox is open, in the same step that looks, so nothing starts after a close.
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
+import { basename } from "node:path";
 import { Effect } from "effect";
 import { Timers } from "@orthograph/language-effect";
 import { SandboxGone, type Executed } from "../types.ts";
@@ -16,7 +17,23 @@ export const killGroup = (pid: number): Effect.Effect<void> =>
 export const alive = (pid: number): Effect.Effect<boolean> =>
   Effect.try({ try: () => process.kill(pid, 0), catch: () => "gone" as const }).pipe(Effect.as(true), Effect.orElseSucceed(() => false));
 
-const keep = (text: string, chunk: Buffer): string => (text.length >= KEPT ? text : text + chunk.toString("utf8").slice(0, KEPT - text.length));
+/**
+ * From `.pgids` lines (`<pgid> <program>`), the groups that are still the ones recorded: a process in the group is running that program.
+ * Process ids are reused, so a recorded group whose leader is gone and whose number now belongs to something else is left alone.
+ */
+export const groupsStillOurs = (lines: ReadonlyArray<string>): Effect.Effect<ReadonlyArray<number>> =>
+  Effect.try({ try: () => execFileSync("ps", ["-A", "-o", "pgid=,args="], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }), catch: () => "" }).pipe(
+    Effect.orElseSucceed(() => ""),
+    Effect.map((table) => {
+      const live = table.split("\n").flatMap((l) => { const m = /^\s*(\d+)\s+(\S+)/.exec(l); return m ? [{ pgid: Number(m[1]), program: basename(m[2]!) }] : []; });
+      return lines.flatMap((line) => {
+        const m = /^(\d+) (.+)$/.exec(line);
+        return m && Number(m[1]) > 1 && live.some((p) => p.pgid === Number(m[1]) && p.program === m[2]) ? [Number(m[1])] : [];
+      });
+    }),
+  );
+
+const keep =(text: string, chunk: Buffer): string => (text.length >= KEPT ? text : text + chunk.toString("utf8").slice(0, KEPT - text.length));
 
 export interface Run {
   readonly sandbox: string;
@@ -24,11 +41,12 @@ export interface Run {
   readonly cwd: string;
   readonly env: Readonly<Record<string, string>>;
   readonly running: Set<number>;
+  readonly programs: Map<number, string>;
   readonly timeout: string;
   /** Whether the sandbox is still open: asked at the instant of spawning. */
   readonly open: () => boolean;
-  /** Write the set of running groups where the next bridge will find it. */
-  readonly record: (running: ReadonlySet<number>) => Effect.Effect<void>;
+  /** Write the running groups (`running`, `programs`) where the next bridge will find them. It must finish in the step it is run in. */
+  readonly record: () => Effect.Effect<void>;
 }
 
 interface Started {
@@ -46,6 +64,12 @@ const start = (run: Run): Effect.Effect<Started, SandboxGone> =>
     let notify: () => void = () => undefined;
     const finish = (value: Executed) => { result ??= value; notify(); };
     const child = spawn(program, args, { cwd: run.cwd, env: { ...run.env }, detached: true, stdio: ["ignore", "pipe", "pipe"] });
+    // On disk in the very step that spawned it: nothing, not even an await, sits between the process existing and the file naming it.
+    if (child.pid !== undefined) {
+      run.running.add(child.pid);
+      run.programs.set(child.pid, basename(program));
+      Effect.runSync(run.record());
+    }
     child.stdout?.on("data", (chunk: Buffer) => { out.stdout = keep(out.stdout, chunk); });
     child.stderr?.on("data", (chunk: Buffer) => { out.stderr = keep(out.stderr, chunk); });
     child.once("error", (error: NodeJS.ErrnoException) => finish({ exit: error.code === "ENOENT" ? 127 : 126, stdout: out.stdout, stderr: `${program}: ${error.code === "ENOENT" ? "command not found" : (error.code ?? "could not run")}\n` }));
@@ -63,13 +87,9 @@ export const runTracked = (run: Run): Effect.Effect<Executed, SandboxGone, Timer
     const timers = yield* Timers;
     const started = yield* start(run);
     const { pid } = started;
-    if (pid !== undefined) {
-      run.running.add(pid);
-      yield* run.record(run.running);
-    }
     const timedOut = timers.sleep("sandbox.exec", run.timeout as never).pipe(Effect.map((): Executed => ({ exit: 124, ...started.output(), stderr: `${started.output().stderr}timed out after ${run.timeout}\n` })));
     return yield* Effect.raceFirst(started.exited, timedOut).pipe(
       // Whatever ends the call, the group goes with it and the pid is forgotten, on disk too.
-      Effect.ensuring(Effect.suspend(() => (pid === undefined ? Effect.void : killGroup(pid).pipe(Effect.andThen(Effect.sync(() => void run.running.delete(pid))), Effect.andThen(Effect.suspend(() => run.record(run.running))))))),
+      Effect.ensuring(Effect.suspend(() => (pid === undefined ? Effect.void : killGroup(pid).pipe(Effect.andThen(Effect.sync(() => { run.running.delete(pid); run.programs.delete(pid); })), Effect.andThen(Effect.suspend(run.record)))))),
     );
   });

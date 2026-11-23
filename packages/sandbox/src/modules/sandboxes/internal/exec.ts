@@ -32,7 +32,12 @@ export const execIn = (shared: Shared, input: ExecInput): Effect.Effect<Executed
       return yield* Effect.fail(new BlockedCommand({ command: first }));
     }
 
-    const ran = yield* runTracked({ sandbox: live.id, open: () => live.state === "open", record: (set) => (live.state === "open" ? shared.disk.write(pgidsFile(live.shims), [...set].join("\n")).pipe(Effect.ignore) : Effect.void), argv: input.command, cwd, env: { ...live.processEnv, ...taken.env }, running: live.running, timeout: `${input.timeoutSeconds ?? 120} seconds` });
+    // `.pgids` lists `<pgid> <program>` for each running command, so the next bridge can kill what a SIGKILL left, and only what is still ours.
+    const pgids = () => (live.state === "open" ? shared.disk.writeSync(pgidsFile(live.shims), [...live.programs].map(([pid, program]) => `${pid} ${program}`).join("\n")) : Effect.void);
+    const ran = yield* runTracked({
+      sandbox: live.id, open: () => live.state === "open", record: pgids, argv: input.command, cwd, env: { ...live.processEnv, ...taken.env },
+      running: live.running, programs: live.programs, timeout: `${input.timeoutSeconds ?? 120} seconds`,
+    });
     const refused = yield* readHits(shared, live);
     record.exit = ran.exit;
     // A shim exits 126 after saying its name: that is the command being refused, not a program failing.
