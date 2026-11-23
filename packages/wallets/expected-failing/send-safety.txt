@@ -1,0 +1,3 @@
+# Wallet send safety (PR #602, Codex PRRT_kwDOVwjszM66q_YB): a browser signer sends without asking its wallet eth_chainId, so money moves on whichever chain the wallet is on. Waits on the build; the control passes.
+src/modules/signer/send-safety.test.ts > a browser signer sending while its wallet is on another chain > refuses, naming both chains, and never calls eth_sendTransaction (wallet on 0x1, wallet set for 31337)
+src/modules/signer/send-safety.test.ts > a browser signer sending while its wallet is on another chain > says both chains in the log when it refuses (the wallet's 1 and the setting's 31337)

@@ -1,0 +1,2 @@
+# Wallet send safety (PR #602, Codex PRRT_kwDOVwjszM66q_YE): every send makes its own chain port and nonce manager, so two overlapping sends from one account reserve the same nonce. Waits on the build; the sequential control passes.
+src/modules/submit/nonce-lanes.test.ts > two overlapping sends from one keyed account > take distinct nonces, and both transfers land
