@@ -31,3 +31,7 @@ becomes a no-op.
 ## Supersedes
 
 - `design/goals/17-superagent.md`: "keyed by `(superagent, source, id)`, where `source` is its mount's name" → "keyed by `(superagent, source, external)`, where `source` is its mount's name and `external` the outside account's id (GOAL17-account-key)"
+- `design/decisions/K40-superagent-gaps.md`: "id: Blueprint.text(), login: Blueprint.text()" → "external: Blueprint.text(), login: Blueprint.text()"
+- `design/decisions/K40-superagent-gaps.md`: "actor: { mount: Account.fields.source, id: Account.fields.id }" → "actor: { mount: Account.fields.source, id: Account.fields.external }"
+- `design/decisions/GOAL17-source-from.md`: "`(superagent, source, id)`" → "`(superagent, source, external)`"
+- `design/decisions/GOAL17-executor-slots.md`: "a unique rule on `(superagent, source, id)`" → "a unique rule on `(superagent, source, external)`"
