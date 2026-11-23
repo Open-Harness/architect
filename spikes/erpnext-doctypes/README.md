@@ -8,8 +8,8 @@ starting with Sales Invoice, Payment Entry and GL Entry?
 **Answer.** Yes for the record shapes, with gaps to close first; no for the logic. A 288-line script turns the three
 doctypes and their seven child tables into 10 things with machines, events, roles, operations and reads. The blueprint
 passes `ortho check`, `ortho generate` writes the app, and `ortho add journeys` writes 49 journey stubs. Payment Entry
-and GL Entry then run on the local runtime: two journeys pass, covering create, submit (two ledger lines posted),
-a refused second submit, and cancel. Getting that far took four framework gaps, worked around in the spike (found 4):
+and GL Entry then run on the local runtime: three journeys pass, covering create, submit (both ledger lines posted and
+read back), a refused second submit, and cancel (the move only: the ledger lines aren't reversed). Getting that far took four framework gaps, worked around in the spike (found 4):
 nullable columns, values that only round-trip as text, nullable structs, and Sales Invoice's 130 fields against D1's
 100-column limit. ERPNext's logic (about 15,000 lines of Python behind these three doctypes) can't be scaffolded from
 the JSON and stays a translation by hand.
@@ -17,8 +17,12 @@ the JSON and stays a translation by hand.
 ## How to run it
 
 ```bash
-spikes/erpnext-doctypes/run.sh      # fetch, scaffold, overlay proof/, generate, check, prove; about 35 s
+spikes/erpnext-doctypes/run.sh      # fetch, scaffold, overlay proof/, generate, check, prove; about 15 s once fetched
+./spikes/erpnext-doctypes/fetch.sh --break   # also the 18 doctypes of the run that tries to break it
 ```
+
+`run.sh` exits 1 on a good run: `ortho prove` counts 4 coverage failures (operations no journey reaches, such as
+save and GL Entry's own post and cancel). Read the `journey` lines; all three should pass.
 
 - `fetch.sh` downloads ten doctype JSON files from `frappe/erpnext` at commit `a6f54f9c` (`version-15`, read 23
   November 2026) into `fixtures/`. They are outside data under GPL v3: read, never run, and not committed.
@@ -26,7 +30,7 @@ spikes/erpnext-doctypes/run.sh      # fetch, scaffold, overlay proof/, generate,
   ignores, plus `report.json` (what was kept, dropped and lost). `--roles todo`, the default, leaves who may act as
   `Blueprint.todo`. `--roles open` lets anyone signed in act, so the result runs.
 - `proof/` is the hand-written part laid over `out/pe`: the Payment Entry handlers, a submit that answers its two
-  ledger lines, a GL Entry read, and two journeys.
+  ledger lines, a GL Entry read, and three journeys.
 
 ## What was tried
 
@@ -52,23 +56,29 @@ spikes/erpnext-doctypes/run.sh      # fetch, scaffold, overlay proof/, generate,
    in the same step (`writes: [SalesInvoice, GlEntry]`).
 5. **Trying to break it:** three more doctypes with their child tables (Purchase Invoice, Journal Entry, and HRMS's
    Salary Slip at `frappe/hrms@46b38904`), 18 things in all. Two runs were diffed for sameness. The app was run with
-   `ortho dev` and `ortho prove`, and a bug was planted in a handler.
+   `ortho dev` and `ortho prove`, and three bugs were planted in the submit handler.
 
 ## What was found
 
 1. **The shapes scaffold.** Run on the three doctypes, the scaffolder writes 10 things and 44 files in 0.05 s. Of 210
    Sales Invoice fields it keeps 130 (93 of them nullable), skips 68 layout fields and drops 12. With `--roles open`,
    `ortho generate` (2 s) and `ortho check` give `types ✔ rules ✔ drift ✔ check ✔`. Run on six doctypes, it writes 18
-   things, and `ortho generate` writes 191 files that also pass `check ✔` (4.2 s). Two runs are byte for byte the same.
-2. **Journeys scaffold too.** `ortho add journeys` on the three things writes 49 stubs: each machine path, allowed and
+   things, and `ortho generate` writes 191 files under `generated/` (and 22 handler scaffolds in `src/`) that also pass
+   `check ✔` (4.2 s). Two runs are byte for byte the same.
+2. **Journeys scaffold too.** `ortho add journeys` on the three things writes 49 stubs with `--roles open` and 45
+   in the default mode: each machine path, allowed and
    refused, plus each role. They are red with blanks until a journey author fills them, which is the "scaffoldable"
-   stage in K42. A move only `Blueprint.system` may make gets the file name `gl-entry-cancel-refused-not-.ts`, with
-   nothing after "not": a small bug in `renderJourneyStubs`.
+   stage in K42. A move only `Blueprint.system` may make gets the file names `gl-entry-cancel-refused-not-.ts` and
+   `gl-entry-post-refused-not-.ts`, with nothing after "not": a small bug in `renderJourneyStubs`.
 3. **It runs, once four gaps are worked around.** `ortho prove` on Payment Entry and GL Entry ends
-   `journey a payment is cancelled ✔ 4/4` and `journey a payment is received and posted ✔ 4/4`. In the second journey,
-   1,180.00 at a rate of 1.25 posts a debit read back as `147500n` against `ac_bank`. The other 4 failures are
-   coverage only: operations no journey reaches yet. With the planted bug (the debit sent to the wrong account), the
-   journey fails at the right step: `answer "ac_debtors", expected "ac_bank"`.
+   `journey a payment is cancelled ✔ 4/4`, `journey a payment is received and posted ✔ 4/4` and
+   `journey a payment received posts its credit ✔ 3/3`. 1,180.00 at a rate of 1.25 posts a debit read back as
+   `147500n` against `ac_bank` and a credit of `147500n` against `ac_debtors`. (A journey's `s.last` holds only the
+   latest answer, so each line is read in its own journey, straight after submit.) The other 4 failures are coverage
+   only. Each planted bug fails at the right step:
+   - the debit sent to the wrong account: `answer "ac_debtors", expected "ac_bank"`;
+   - the credit sent to the wrong account: `answer "ac_bank", expected "ac_debtors"`;
+   - the credit never written: the credit read is refused (`refused with NotAllowed`: the role-of finds no line).
 4. **Four framework gaps stopped the runtime before that**, each seen as a failure, in this order:
    1. **No column may be empty.** `packages/projections/src/modules/server/internal/worker-config.ts:60` writes every
       field as `TEXT NOT NULL`, so a `Schema.NullOr` field fails: `NOT NULL constraint failed: payment-entry.costCenter`.
@@ -120,11 +130,11 @@ spikes/erpnext-doctypes/run.sh      # fetch, scaffold, overlay proof/, generate,
 | | Three doctypes (10 things) | Six doctypes (18 things) |
 |---|---|---|
 | Scaffold | 0.05 s, 44 files | 0.08 s, 84 files |
-| `ortho generate` | 2.0 s, 110 files | 2.3 s, 191 files |
+| `ortho generate` | 2.0 s, 100 files in `generated/` and 10 handlers | 2.3 s, 191 files in `generated/` and 22 handlers |
 | `ortho check` | ✔ (`--roles open`); 9 blanks and 2 type errors (default) | ✔ (4.2 s) |
 | Links to things not scaffolded | 51 doctypes | 72 doctypes |
 | Child tables with no fixture, skipped | 5 | 12 |
-| `ortho prove`, Payment Entry and GL Entry | 2 journeys ✔ 8/8 steps, about 30 s | not run (Sales and Purchase Invoice don't fit D1) |
+| `ortho prove`, Payment Entry and GL Entry | 3 journeys ✔ 11/11 steps; the whole `run.sh` about 15 s | not run (Sales and Purchase Invoice don't fit D1) |
 
 ## The decision it supports
 
@@ -147,6 +157,10 @@ For slice 6 and slice 3's grill:
 
 ## Open risks
 
+- Cancel only moves the Payment Entry to cancelled. ERPNext also reverses its ledger lines; finding them needs a list by
+  voucher the scaffold doesn't declare, so `proof/src/payment-entry/cancel.ts` stops at the move.
+- `times()` in the proof rounds half away from zero, checked by hand on negative amounts and rates (-3 × 1.4 = -4,
+  100 × -0.5 = -50), but no journey uses a negative amount, so a return isn't proved.
 - `run.sh` patches the generated migration, a stand-in for gap 4.1. The proof says nothing about migrations.
 - The roles in `--roles open` mean anyone signed in. The proof tests the flow, not who may act.
 - The mapping was checked on 18 doctypes from two apps. Others have field types these don't use (Geolocation,

@@ -5,11 +5,18 @@ import type { Handler } from "../../generated/api/src/payment-entry/create.handl
 import { PaymentEntry } from "../../blueprint/things/payment-entry/thing.ts";
 import { startPaymentEntry } from "../erpnext/payment-entry.start.ts";
 
-/** An amount times an exact decimal rate, rounded half up to a whole smallest unit (ERPNext's flt(x * rate, precision)). */
+/**
+ * An amount times an exact decimal rate, rounded half away from zero to a whole smallest unit (ERPNext's
+ * flt(x * rate, precision)). The sign is taken off first: bigint division truncates toward zero, so a negative
+ * amount (a return) or rate would otherwise round the wrong way.
+ */
 export const times = (amount: bigint, rate: string): bigint => {
-  const [whole, frac = ""] = rate.split(".");
+  const [whole = "", frac = ""] = rate.split(".");
   const scale = 10n ** BigInt(frac.length);
-  return (amount * BigInt(`${whole}${frac}`) * 2n + scale) / (2n * scale);
+  const product = amount * BigInt(`${whole}${frac}`);
+  const size = product < 0n ? -product : product;
+  const rounded = (size * 2n + scale) / (2n * scale);
+  return product < 0n ? -rounded : rounded;
 };
 
 const create: Handler = (payload, { steps, move, id }) =>

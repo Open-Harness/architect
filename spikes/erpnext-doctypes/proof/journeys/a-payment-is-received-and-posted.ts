@@ -26,6 +26,7 @@ export default Blueprint.journey("a payment is received and posted", {
       "ana submits it, and it posts two ledger lines",
       s.ana.run(submit, { paymentEntry: s.last.paymentEntry }),
       expect((a) => a.debit).toMatch(/^gle_[0-9a-z]+$/),
+      expect((a) => a.credit).toMatch(/^gle_[0-9a-z]+$/),
       emits(PaymentEntrySubmitted, { paymentEntry: s.last.paymentEntry }),
       machine.isIn(s.last.paymentEntry, "submitted"),
     ),
