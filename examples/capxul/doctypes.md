@@ -2,11 +2,13 @@
 
 Every ERPNext, Frappe HRMS and Frappe CRM record type (doctype) Capxul takes, in one place, as Aaron asked on 23
 November 2026: "I want to document all the record types that we need, which is pretty much all of them, and then have
-them all together" (`design/decisions/CX-grill.md`, section 2). Goal 16's slice 6 (#712) wrote it, and each part's
-slice keeps it current: a row's notes say what building found, and a row moves to "not taken" only with its reason.
+them all together" (`design/decisions/CX-grill.md`, section 2). Goal 16's slice 6 (#712) wrote it, and each part's slice
+keeps it current: a row's notes say what building found, and a row moves to "not taken" only with its reason.
 
-Read from ERPNext `version-15` at `a6f54f9c`, Frappe HRMS `version-15` at `46b38904` and Frappe CRM `main` at `24a5d5e`, the commits slice 4's spike used (#710, `spikes/erpnext-doctypes`). The doctype files are outside
-data under GPL v3 (ERPNext, HRMS) and AGPL v3 (CRM): read, never run, and not copied here. Each row names its file.
+Read from ERPNext `version-15` at `a6f54f9c`, Frappe HRMS `version-15` at `46b38904` and Frappe CRM `main` at
+`638bf3db`. The ERPNext and HRMS commits are the ones slice 4's spike used (#710, `spikes/erpnext-doctypes`); the spike
+didn't read the CRM, so the CRM is read at its release branch. The doctype files are outside data under GPL v3 (ERPNext,
+HRMS) and AGPL v3 (CRM): read, never run, and not copied here. Each row names its file.
 
 ## How to read it
 
@@ -15,10 +17,11 @@ data under GPL v3 (ERPNext, HRMS) and AGPL v3 (CRM): read, never run, and not co
   background process in Frappe, which becomes an operation or a workflow rather than a thing.
 - **Flags.** `SUB`: submittable, so it gets ERPNext's draft, submitted and cancelled machine. `FX`: it holds an
   exchange rate or a `base_` amount beside a foreign one, which is a question for Orthograph's money units, not a
-  workaround (`CX-grill.md`, section 3). `WIDE`: more than 97 data columns, so it hits D1's 100-column limit once id,
+  workaround (`CX-grill.md`, section 3). `WIDE`: more than 97 stored columns, so it hits D1's 100-column limit once id,
   state and version are added (the spike's gap 4, in #742).
-- **Columns.** The doctype's data fields, without layout fields. The spike kept 130 of Sales Invoice's 142 and dropped
-  12, which point at record types not taken here.
+- **Columns.** The doctype's stored fields: not its layout fields, and not its tables, which become lines. Sales
+  Invoice has 133. The spike counted 142 with its 9 tables, kept 130 and dropped 12 that point at record types not
+  taken here.
 - **Stage.** Every row is provisional (K42, section 2). Slice 4's scaffolder moves a thing to scaffoldable.
 
 ## Summary
@@ -26,12 +29,13 @@ data under GPL v3 (ERPNext, HRMS) and AGPL v3 (CRM): read, never run, and not co
 | Part | Record types | Of which lines | Slice |
 |---|---|---|---|
 | The books | 284 | 133 | 2, then 7 |
-| HR | 122 | 37 | 8 |
+| HR | 124 | 39 | 8 |
 | Payroll | 37 | 15 | 9 |
-| The CRM | 50 | 17 | 11 |
-| **All** | **493** | **202** | |
+| The CRM | 40 | 10 | 11 |
+| **All** | **485** | **197** | |
 
-35 carry exchange rates (`FX`), and 5 are wider than D1 allows (`WIDE`: POS Invoice, Purchase Invoice, Purchase Order, Sales Invoice, Sales Order).
+35 carry exchange rates (`FX`), and 5 are wider than D1 allows (`WIDE`: POS Invoice, Purchase Invoice, Purchase Order,
+Sales Invoice, Sales Order).
 
 ## The books
 
@@ -41,155 +45,155 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 |---|---|---|---|---|---|
 | Account | thing |  | 17 | `erpnext/erpnext/accounts/doctype/account/account.json` |  |
 | Account Closing Balance | thing |  | 13 | `erpnext/erpnext/accounts/doctype/account_closing_balance/account_closing_balance.json` |  |
-| Accounting Dimension | thing |  | 5 | `erpnext/erpnext/accounts/doctype/accounting_dimension/accounting_dimension.json` |  |
-| Accounting Dimension Filter | thing |  | 8 | `erpnext/erpnext/accounts/doctype/accounting_dimension_filter/accounting_dimension_filter.json` |  |
-| Accounting Period | thing |  | 5 | `erpnext/erpnext/accounts/doctype/accounting_period/accounting_period.json` |  |
+| Accounting Dimension | thing |  | 4 | `erpnext/erpnext/accounts/doctype/accounting_dimension/accounting_dimension.json` |  |
+| Accounting Dimension Filter | thing |  | 6 | `erpnext/erpnext/accounts/doctype/accounting_dimension_filter/accounting_dimension_filter.json` |  |
+| Accounting Period | thing |  | 4 | `erpnext/erpnext/accounts/doctype/accounting_period/accounting_period.json` |  |
 | Accounts Settings | settings |  | 56 | `erpnext/erpnext/accounts/doctype/accounts_settings/accounts_settings.json` |  |
 | Activity Cost | thing |  | 7 | `erpnext/erpnext/projects/doctype/activity_cost/activity_cost.json` |  |
 | Activity Type | thing |  | 4 | `erpnext/erpnext/projects/doctype/activity_type/activity_type.json` |  |
 | Advance Payment Ledger Entry | thing |  | 9 | `erpnext/erpnext/accounts/doctype/advance_payment_ledger_entry/advance_payment_ledger_entry.json` |  |
-| Asset | thing | SUB | 54 | `erpnext/erpnext/assets/doctype/asset/asset.json` |  |
+| Asset | thing | SUB | 53 | `erpnext/erpnext/assets/doctype/asset/asset.json` |  |
 | Asset Activity | thing |  | 4 | `erpnext/erpnext/assets/doctype/asset_activity/asset_activity.json` |  |
-| Asset Capitalization | thing | SUB | 31 | `erpnext/erpnext/assets/doctype/asset_capitalization/asset_capitalization.json` |  |
-| Asset Category | thing |  | 5 | `erpnext/erpnext/assets/doctype/asset_category/asset_category.json` |  |
-| Asset Depreciation Schedule | thing | SUB | 19 | `erpnext/erpnext/assets/doctype/asset_depreciation_schedule/asset_depreciation_schedule.json` |  |
-| Asset Maintenance | thing |  | 9 | `erpnext/erpnext/assets/doctype/asset_maintenance/asset_maintenance.json` |  |
-| Asset Maintenance Log | job | SUB | 19 | `erpnext/erpnext/assets/doctype/asset_maintenance_log/asset_maintenance_log.json` |  |
-| Asset Maintenance Team | thing |  | 5 | `erpnext/erpnext/assets/doctype/asset_maintenance_team/asset_maintenance_team.json` |  |
-| Asset Movement | thing | SUB | 7 | `erpnext/erpnext/assets/doctype/asset_movement/asset_movement.json` |  |
-| Asset Repair | thing | SUB | 21 | `erpnext/erpnext/assets/doctype/asset_repair/asset_repair.json` |  |
-| Asset Shift Allocation | thing | SUB | 6 | `erpnext/erpnext/assets/doctype/asset_shift_allocation/asset_shift_allocation.json` |  |
+| Asset Capitalization | thing | SUB | 28 | `erpnext/erpnext/assets/doctype/asset_capitalization/asset_capitalization.json` |  |
+| Asset Category | thing |  | 3 | `erpnext/erpnext/assets/doctype/asset_category/asset_category.json` |  |
+| Asset Depreciation Schedule | thing | SUB | 18 | `erpnext/erpnext/assets/doctype/asset_depreciation_schedule/asset_depreciation_schedule.json` |  |
+| Asset Maintenance | thing |  | 8 | `erpnext/erpnext/assets/doctype/asset_maintenance/asset_maintenance.json` |  |
+| Asset Maintenance Log | thing | SUB | 19 | `erpnext/erpnext/assets/doctype/asset_maintenance_log/asset_maintenance_log.json` |  |
+| Asset Maintenance Team | thing |  | 4 | `erpnext/erpnext/assets/doctype/asset_maintenance_team/asset_maintenance_team.json` |  |
+| Asset Movement | thing | SUB | 6 | `erpnext/erpnext/assets/doctype/asset_movement/asset_movement.json` |  |
+| Asset Repair | thing | SUB | 20 | `erpnext/erpnext/assets/doctype/asset_repair/asset_repair.json` |  |
+| Asset Shift Allocation | thing | SUB | 5 | `erpnext/erpnext/assets/doctype/asset_shift_allocation/asset_shift_allocation.json` |  |
 | Asset Shift Factor | thing |  | 3 | `erpnext/erpnext/assets/doctype/asset_shift_factor/asset_shift_factor.json` |  |
 | Asset Value Adjustment | thing | SUB | 12 | `erpnext/erpnext/assets/doctype/asset_value_adjustment/asset_value_adjustment.json` |  |
 | Authorization Control | settings |  | 0 | `erpnext/erpnext/setup/doctype/authorization_control/authorization_control.json` |  |
 | Authorization Rule | thing |  | 12 | `erpnext/erpnext/setup/doctype/authorization_rule/authorization_rule.json` |  |
-| Bank | thing |  | 5 | `erpnext/erpnext/accounts/doctype/bank/bank.json` |  |
+| Bank | thing |  | 4 | `erpnext/erpnext/accounts/doctype/bank/bank.json` |  |
 | Bank Account | thing |  | 17 | `erpnext/erpnext/accounts/doctype/bank_account/bank_account.json` | Bridge's bank accounts land here (slice 10) |
 | Bank Account Subtype | thing |  | 1 | `erpnext/erpnext/accounts/doctype/bank_account_subtype/bank_account_subtype.json` |  |
 | Bank Account Type | thing |  | 1 | `erpnext/erpnext/accounts/doctype/bank_account_type/bank_account_type.json` |  |
-| Bank Clearance | settings |  | 8 | `erpnext/erpnext/accounts/doctype/bank_clearance/bank_clearance.json` |  |
+| Bank Clearance | job |  | 7 | `erpnext/erpnext/accounts/doctype/bank_clearance/bank_clearance.json` |  |
 | Bank Guarantee | thing | SUB | 24 | `erpnext/erpnext/accounts/doctype/bank_guarantee/bank_guarantee.json` |  |
-| Bank Reconciliation Tool | settings |  | 10 | `erpnext/erpnext/accounts/doctype/bank_reconciliation_tool/bank_reconciliation_tool.json` |  |
+| Bank Reconciliation Tool | job |  | 10 | `erpnext/erpnext/accounts/doctype/bank_reconciliation_tool/bank_reconciliation_tool.json` |  |
 | Bank Statement Import | thing |  | 15 | `erpnext/erpnext/accounts/doctype/bank_statement_import/bank_statement_import.json` |  |
-| Bank Transaction | thing | SUB | 23 | `erpnext/erpnext/accounts/doctype/bank_transaction/bank_transaction.json` | Bridge's transfers land here (slice 10) |
-| Bisect Accounting Statements | settings |  | 10 | `erpnext/erpnext/accounts/doctype/bisect_accounting_statements/bisect_accounting_statements.json` |  |
+| Bank Transaction | thing | SUB | 22 | `erpnext/erpnext/accounts/doctype/bank_transaction/bank_transaction.json` | Bridge's transfers land here (slice 10) |
+| Bisect Accounting Statements | job |  | 10 | `erpnext/erpnext/accounts/doctype/bisect_accounting_statements/bisect_accounting_statements.json` |  |
 | Bisect Nodes | job |  | 9 | `erpnext/erpnext/accounts/doctype/bisect_nodes/bisect_nodes.json` |  |
-| Brand | thing |  | 4 | `erpnext/erpnext/setup/doctype/brand/brand.json` |  |
-| Budget | thing | SUB | 18 | `erpnext/erpnext/accounts/doctype/budget/budget.json` |  |
+| Brand | thing |  | 3 | `erpnext/erpnext/setup/doctype/brand/brand.json` |  |
+| Budget | thing | SUB | 17 | `erpnext/erpnext/accounts/doctype/budget/budget.json` |  |
 | Buying Settings | settings |  | 26 | `erpnext/erpnext/buying/doctype/buying_settings/buying_settings.json` |  |
-| Cashier Closing | thing | SUB | 12 | `erpnext/erpnext/accounts/doctype/cashier_closing/cashier_closing.json` |  |
-| Chart of Accounts Importer | settings |  | 2 | `erpnext/erpnext/accounts/doctype/chart_of_accounts_importer/chart_of_accounts_importer.json` |  |
+| Cashier Closing | thing | SUB | 11 | `erpnext/erpnext/accounts/doctype/cashier_closing/cashier_closing.json` |  |
+| Chart of Accounts Importer | job |  | 2 | `erpnext/erpnext/accounts/doctype/chart_of_accounts_importer/chart_of_accounts_importer.json` |  |
 | Cheque Print Template | thing |  | 26 | `erpnext/erpnext/accounts/doctype/cheque_print_template/cheque_print_template.json` |  |
 | Company | thing |  | 81 | `erpnext/erpnext/setup/doctype/company/company.json` | Capxul's companies, its own organisations (K42, call 10) |
-| Cost Center | job |  | 9 | `erpnext/erpnext/accounts/doctype/cost_center/cost_center.json` |  |
-| Cost Center Allocation | job | SUB | 5 | `erpnext/erpnext/accounts/doctype/cost_center_allocation/cost_center_allocation.json` |  |
+| Cost Center | thing |  | 9 | `erpnext/erpnext/accounts/doctype/cost_center/cost_center.json` |  |
+| Cost Center Allocation | thing | SUB | 4 | `erpnext/erpnext/accounts/doctype/cost_center_allocation/cost_center_allocation.json` |  |
 | Coupon Code | thing |  | 11 | `erpnext/erpnext/accounts/doctype/coupon_code/coupon_code.json` |  |
 | Currency Exchange | thing | FX | 6 | `erpnext/erpnext/setup/doctype/currency_exchange/currency_exchange.json` | a rate between two currencies: money-units question (CX-grill §3) |
-| Currency Exchange Settings | settings |  | 8 | `erpnext/erpnext/accounts/doctype/currency_exchange_settings/currency_exchange_settings.json` | where rates come from; a rate source is an adapter |
-| Customer | thing |  | 47 | `erpnext/erpnext/selling/doctype/customer/customer.json` |  |
-| Customer Group | thing |  | 10 | `erpnext/erpnext/setup/doctype/customer_group/customer_group.json` |  |
-| Dunning | thing | SUB FX | 35 | `erpnext/erpnext/accounts/doctype/dunning/dunning.json` |  |
-| Dunning Type | thing |  | 8 | `erpnext/erpnext/accounts/doctype/dunning_type/dunning_type.json` |  |
-| Email Digest | job |  | 30 | `erpnext/erpnext/setup/doctype/email_digest/email_digest.json` |  |
-| Exchange Rate Revaluation | job | SUB | 8 | `erpnext/erpnext/accounts/doctype/exchange_rate_revaluation/exchange_rate_revaluation.json` | money-units question (CX-grill §3) |
+| Currency Exchange Settings | settings |  | 6 | `erpnext/erpnext/accounts/doctype/currency_exchange_settings/currency_exchange_settings.json` | where rates come from; a rate source is an adapter |
+| Customer | thing |  | 42 | `erpnext/erpnext/selling/doctype/customer/customer.json` |  |
+| Customer Group | thing |  | 8 | `erpnext/erpnext/setup/doctype/customer_group/customer_group.json` |  |
+| Dunning | thing | SUB FX | 34 | `erpnext/erpnext/accounts/doctype/dunning/dunning.json` |  |
+| Dunning Type | thing |  | 7 | `erpnext/erpnext/accounts/doctype/dunning_type/dunning_type.json` |  |
+| Email Digest | job |  | 29 | `erpnext/erpnext/setup/doctype/email_digest/email_digest.json` |  |
+| Exchange Rate Revaluation | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/exchange_rate_revaluation/exchange_rate_revaluation.json` | money-units question (CX-grill §3) |
 | Finance Book | thing |  | 1 | `erpnext/erpnext/accounts/doctype/finance_book/finance_book.json` |  |
-| Fiscal Year | thing |  | 7 | `erpnext/erpnext/accounts/doctype/fiscal_year/fiscal_year.json` |  |
+| Fiscal Year | thing |  | 6 | `erpnext/erpnext/accounts/doctype/fiscal_year/fiscal_year.json` |  |
 | GL Entry | thing |  | 32 | `erpnext/erpnext/accounts/doctype/gl_entry/gl_entry.json` | ledger line; posted only by a voucher's submit (spike #710) |
 | Global Defaults | settings |  | 8 | `erpnext/erpnext/setup/doctype/global_defaults/global_defaults.json` |  |
 | Incoterm | thing |  | 3 | `erpnext/erpnext/setup/doctype/incoterm/incoterm.json` |  |
 | Industry Type | thing |  | 1 | `erpnext/erpnext/selling/doctype/industry_type/industry_type.json` |  |
-| Installation Note | thing | SUB | 18 | `erpnext/erpnext/selling/doctype/installation_note/installation_note.json` |  |
-| Invoice Discounting | thing | SUB | 16 | `erpnext/erpnext/accounts/doctype/invoice_discounting/invoice_discounting.json` |  |
-| Item | thing |  | 77 | `erpnext/erpnext/stock/doctype/item/item.json` |  |
-| Item Group | thing |  | 9 | `erpnext/erpnext/setup/doctype/item_group/item_group.json` |  |
+| Installation Note | thing | SUB | 17 | `erpnext/erpnext/selling/doctype/installation_note/installation_note.json` |  |
+| Invoice Discounting | thing | SUB | 15 | `erpnext/erpnext/accounts/doctype/invoice_discounting/invoice_discounting.json` |  |
+| Item | thing |  | 69 | `erpnext/erpnext/stock/doctype/item/item.json` |  |
+| Item Group | thing |  | 7 | `erpnext/erpnext/setup/doctype/item_group/item_group.json` |  |
 | Item Price | thing |  | 19 | `erpnext/erpnext/stock/doctype/item_price/item_price.json` |  |
-| Item Tax Template | thing |  | 4 | `erpnext/erpnext/accounts/doctype/item_tax_template/item_tax_template.json` |  |
-| Journal Entry | thing | SUB | 42 | `erpnext/erpnext/accounts/doctype/journal_entry/journal_entry.json` |  |
-| Journal Entry Template | thing |  | 7 | `erpnext/erpnext/accounts/doctype/journal_entry_template/journal_entry_template.json` |  |
+| Item Tax Template | thing |  | 3 | `erpnext/erpnext/accounts/doctype/item_tax_template/item_tax_template.json` |  |
+| Journal Entry | thing | SUB | 41 | `erpnext/erpnext/accounts/doctype/journal_entry/journal_entry.json` |  |
+| Journal Entry Template | thing |  | 6 | `erpnext/erpnext/accounts/doctype/journal_entry_template/journal_entry_template.json` |  |
 | Ledger Health | job |  | 5 | `erpnext/erpnext/accounts/doctype/ledger_health/ledger_health.json` |  |
-| Ledger Health Monitor | settings |  | 5 | `erpnext/erpnext/accounts/doctype/ledger_health_monitor/ledger_health_monitor.json` |  |
-| Ledger Merge | job |  | 8 | `erpnext/erpnext/accounts/doctype/ledger_merge/ledger_merge.json` |  |
+| Ledger Health Monitor | job |  | 4 | `erpnext/erpnext/accounts/doctype/ledger_health_monitor/ledger_health_monitor.json` |  |
+| Ledger Merge | job |  | 7 | `erpnext/erpnext/accounts/doctype/ledger_merge/ledger_merge.json` |  |
 | Location | thing |  | 12 | `erpnext/erpnext/assets/doctype/location/location.json` |  |
 | Loyalty Point Entry | thing |  | 11 | `erpnext/erpnext/accounts/doctype/loyalty_point_entry/loyalty_point_entry.json` |  |
-| Loyalty Program | thing |  | 14 | `erpnext/erpnext/accounts/doctype/loyalty_program/loyalty_program.json` |  |
-| Mode of Payment | thing |  | 4 | `erpnext/erpnext/accounts/doctype/mode_of_payment/mode_of_payment.json` |  |
-| Monthly Distribution | thing |  | 3 | `erpnext/erpnext/accounts/doctype/monthly_distribution/monthly_distribution.json` |  |
-| Opening Invoice Creation Tool | settings |  | 6 | `erpnext/erpnext/accounts/doctype/opening_invoice_creation_tool/opening_invoice_creation_tool.json` |  |
-| POS Closing Entry | thing | SUB | 17 | `erpnext/erpnext/accounts/doctype/pos_closing_entry/pos_closing_entry.json` |  |
-| POS Invoice | thing | SUB FX WIDE | 123 | `erpnext/erpnext/accounts/doctype/pos_invoice/pos_invoice.json` |  |
-| POS Invoice Merge Log | job | SUB | 11 | `erpnext/erpnext/accounts/doctype/pos_invoice_merge_log/pos_invoice_merge_log.json` |  |
-| POS Opening Entry | thing | SUB | 11 | `erpnext/erpnext/accounts/doctype/pos_opening_entry/pos_opening_entry.json` |  |
-| POS Profile | thing |  | 39 | `erpnext/erpnext/accounts/doctype/pos_profile/pos_profile.json` |  |
-| POS Settings | settings |  | 2 | `erpnext/erpnext/accounts/doctype/pos_settings/pos_settings.json` |  |
+| Loyalty Program | thing |  | 13 | `erpnext/erpnext/accounts/doctype/loyalty_program/loyalty_program.json` |  |
+| Mode of Payment | thing |  | 3 | `erpnext/erpnext/accounts/doctype/mode_of_payment/mode_of_payment.json` |  |
+| Monthly Distribution | thing |  | 2 | `erpnext/erpnext/accounts/doctype/monthly_distribution/monthly_distribution.json` |  |
+| Opening Invoice Creation Tool | job |  | 5 | `erpnext/erpnext/accounts/doctype/opening_invoice_creation_tool/opening_invoice_creation_tool.json` |  |
+| POS Closing Entry | thing | SUB | 14 | `erpnext/erpnext/accounts/doctype/pos_closing_entry/pos_closing_entry.json` |  |
+| POS Invoice | thing | SUB FX WIDE | 114 | `erpnext/erpnext/accounts/doctype/pos_invoice/pos_invoice.json` |  |
+| POS Invoice Merge Log | job | SUB | 10 | `erpnext/erpnext/accounts/doctype/pos_invoice_merge_log/pos_invoice_merge_log.json` |  |
+| POS Opening Entry | thing | SUB | 10 | `erpnext/erpnext/accounts/doctype/pos_opening_entry/pos_opening_entry.json` |  |
+| POS Profile | thing |  | 35 | `erpnext/erpnext/accounts/doctype/pos_profile/pos_profile.json` |  |
+| POS Settings | settings |  | 0 | `erpnext/erpnext/accounts/doctype/pos_settings/pos_settings.json` |  |
 | Party Link | thing |  | 4 | `erpnext/erpnext/accounts/doctype/party_link/party_link.json` |  |
 | Party Specific Item | thing |  | 4 | `erpnext/erpnext/selling/doctype/party_specific_item/party_specific_item.json` |  |
 | Party Type | thing |  | 2 | `erpnext/erpnext/setup/doctype/party_type/party_type.json` |  |
-| Payment Entry | thing | SUB FX | 67 | `erpnext/erpnext/accounts/doctype/payment_entry/payment_entry.json` | slice 2: the payment that settles an invoice |
+| Payment Entry | thing | SUB FX | 64 | `erpnext/erpnext/accounts/doctype/payment_entry/payment_entry.json` | slice 2: the payment that settles an invoice |
 | Payment Gateway Account | thing |  | 7 | `erpnext/erpnext/accounts/doctype/payment_gateway_account/payment_gateway_account.json` | a card gateway account; Capxul's payments settle on the chain, so only its shape is kept for later |
 | Payment Ledger Entry | thing |  | 20 | `erpnext/erpnext/accounts/doctype/payment_ledger_entry/payment_ledger_entry.json` | ledger line for outstanding amounts |
-| Payment Order | thing | SUB | 10 | `erpnext/erpnext/accounts/doctype/payment_order/payment_order.json` |  |
-| Payment Reconciliation | settings |  | 23 | `erpnext/erpnext/accounts/doctype/payment_reconciliation/payment_reconciliation.json` |  |
-| Payment Request | thing | SUB | 40 | `erpnext/erpnext/accounts/doctype/payment_request/payment_request.json` |  |
+| Payment Order | thing | SUB | 9 | `erpnext/erpnext/accounts/doctype/payment_order/payment_order.json` |  |
+| Payment Reconciliation | job |  | 20 | `erpnext/erpnext/accounts/doctype/payment_reconciliation/payment_reconciliation.json` |  |
+| Payment Request | thing | SUB | 39 | `erpnext/erpnext/accounts/doctype/payment_request/payment_request.json` |  |
 | Payment Term | thing |  | 11 | `erpnext/erpnext/accounts/doctype/payment_term/payment_term.json` |  |
-| Payment Terms Template | thing |  | 3 | `erpnext/erpnext/accounts/doctype/payment_terms_template/payment_terms_template.json` |  |
-| Pegged Currencies | settings |  | 1 | `erpnext/erpnext/accounts/doctype/pegged_currencies/pegged_currencies.json` | money-units question (CX-grill §3) |
+| Payment Terms Template | thing |  | 2 | `erpnext/erpnext/accounts/doctype/payment_terms_template/payment_terms_template.json` |  |
+| Pegged Currencies | settings |  | 0 | `erpnext/erpnext/accounts/doctype/pegged_currencies/pegged_currencies.json` | money-units question (CX-grill §3) |
 | Period Closing Voucher | thing | SUB | 10 | `erpnext/erpnext/accounts/doctype/period_closing_voucher/period_closing_voucher.json` |  |
-| Price List | thing |  | 7 | `erpnext/erpnext/stock/doctype/price_list/price_list.json` |  |
-| Pricing Rule | thing |  | 62 | `erpnext/erpnext/accounts/doctype/pricing_rule/pricing_rule.json` |  |
+| Price List | thing |  | 6 | `erpnext/erpnext/stock/doctype/price_list/price_list.json` |  |
+| Pricing Rule | thing |  | 59 | `erpnext/erpnext/accounts/doctype/pricing_rule/pricing_rule.json` |  |
 | Print Heading | thing |  | 2 | `erpnext/erpnext/setup/doctype/print_heading/print_heading.json` |  |
 | Process Deferred Accounting | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/process_deferred_accounting/process_deferred_accounting.json` |  |
 | Process Payment Reconciliation | job | SUB | 14 | `erpnext/erpnext/accounts/doctype/process_payment_reconciliation/process_payment_reconciliation.json` |  |
-| Process Payment Reconciliation Log | job |  | 8 | `erpnext/erpnext/accounts/doctype/process_payment_reconciliation_log/process_payment_reconciliation_log.json` |  |
-| Process Period Closing Voucher | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/process_period_closing_voucher/process_period_closing_voucher.json` |  |
-| Process Statement Of Accounts | job |  | 39 | `erpnext/erpnext/accounts/doctype/process_statement_of_accounts/process_statement_of_accounts.json` |  |
+| Process Payment Reconciliation Log | job |  | 7 | `erpnext/erpnext/accounts/doctype/process_payment_reconciliation_log/process_payment_reconciliation_log.json` |  |
+| Process Period Closing Voucher | job | SUB | 5 | `erpnext/erpnext/accounts/doctype/process_period_closing_voucher/process_period_closing_voucher.json` |  |
+| Process Statement Of Accounts | job |  | 35 | `erpnext/erpnext/accounts/doctype/process_statement_of_accounts/process_statement_of_accounts.json` |  |
 | Process Subscription | job | SUB | 3 | `erpnext/erpnext/accounts/doctype/process_subscription/process_subscription.json` |  |
-| Product Bundle | thing |  | 4 | `erpnext/erpnext/selling/doctype/product_bundle/product_bundle.json` |  |
-| Project | thing |  | 43 | `erpnext/erpnext/projects/doctype/project/project.json` |  |
-| Promotional Scheme | thing |  | 27 | `erpnext/erpnext/accounts/doctype/promotional_scheme/promotional_scheme.json` |  |
-| Purchase Invoice | thing | SUB FX WIDE | 133 | `erpnext/erpnext/accounts/doctype/purchase_invoice/purchase_invoice.json` |  |
-| Purchase Order | thing | SUB FX WIDE | 104 | `erpnext/erpnext/buying/doctype/purchase_order/purchase_order.json` |  |
-| Purchase Taxes and Charges Template | thing |  | 6 | `erpnext/erpnext/accounts/doctype/purchase_taxes_and_charges_template/purchase_taxes_and_charges_template.json` |  |
-| Quotation | thing | SUB FX | 83 | `erpnext/erpnext/selling/doctype/quotation/quotation.json` |  |
+| Product Bundle | thing |  | 3 | `erpnext/erpnext/selling/doctype/product_bundle/product_bundle.json` |  |
+| Project | thing |  | 42 | `erpnext/erpnext/projects/doctype/project/project.json` |  |
+| Promotional Scheme | thing |  | 15 | `erpnext/erpnext/accounts/doctype/promotional_scheme/promotional_scheme.json` |  |
+| Purchase Invoice | thing | SUB FX WIDE | 125 | `erpnext/erpnext/accounts/doctype/purchase_invoice/purchase_invoice.json` |  |
+| Purchase Order | thing | SUB FX WIDE | 99 | `erpnext/erpnext/buying/doctype/purchase_order/purchase_order.json` |  |
+| Purchase Taxes and Charges Template | thing |  | 5 | `erpnext/erpnext/accounts/doctype/purchase_taxes_and_charges_template/purchase_taxes_and_charges_template.json` |  |
+| Quotation | thing | SUB FX | 76 | `erpnext/erpnext/selling/doctype/quotation/quotation.json` |  |
 | Quotation Lost Reason | thing |  | 1 | `erpnext/erpnext/setup/doctype/quotation_lost_reason/quotation_lost_reason.json` |  |
-| Repost Accounting Ledger | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/repost_accounting_ledger/repost_accounting_ledger.json` |  |
-| Repost Accounting Ledger Settings | settings |  | 1 | `erpnext/erpnext/accounts/doctype/repost_accounting_ledger_settings/repost_accounting_ledger_settings.json` |  |
-| Repost Payment Ledger | job | SUB | 8 | `erpnext/erpnext/accounts/doctype/repost_payment_ledger/repost_payment_ledger.json` |  |
-| Request for Quotation | thing | SUB | 26 | `erpnext/erpnext/buying/doctype/request_for_quotation/request_for_quotation.json` |  |
-| SMS Center | settings |  | 10 | `erpnext/erpnext/selling/doctype/sms_center/sms_center.json` |  |
-| Sales Invoice | thing | SUB FX WIDE | 142 | `erpnext/erpnext/accounts/doctype/sales_invoice/sales_invoice.json` | slice 2 starts here: a pay link, settled by the chain |
-| Sales Order | thing | SUB FX WIDE | 106 | `erpnext/erpnext/selling/doctype/sales_order/sales_order.json` |  |
-| Sales Partner | thing |  | 12 | `erpnext/erpnext/setup/doctype/sales_partner/sales_partner.json` |  |
+| Repost Accounting Ledger | job | SUB | 6 | `erpnext/erpnext/accounts/doctype/repost_accounting_ledger/repost_accounting_ledger.json` |  |
+| Repost Accounting Ledger Settings | job |  | 0 | `erpnext/erpnext/accounts/doctype/repost_accounting_ledger_settings/repost_accounting_ledger_settings.json` |  |
+| Repost Payment Ledger | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/repost_payment_ledger/repost_payment_ledger.json` |  |
+| Request for Quotation | thing | SUB | 24 | `erpnext/erpnext/buying/doctype/request_for_quotation/request_for_quotation.json` |  |
+| SMS Center | job |  | 10 | `erpnext/erpnext/selling/doctype/sms_center/sms_center.json` |  |
+| Sales Invoice | thing | SUB FX WIDE | 133 | `erpnext/erpnext/accounts/doctype/sales_invoice/sales_invoice.json` | slice 2 starts here: a pay link, settled by the chain |
+| Sales Order | thing | SUB FX WIDE | 100 | `erpnext/erpnext/selling/doctype/sales_order/sales_order.json` |  |
+| Sales Partner | thing |  | 11 | `erpnext/erpnext/setup/doctype/sales_partner/sales_partner.json` |  |
 | Sales Partner Type | thing |  | 1 | `erpnext/erpnext/selling/doctype/sales_partner_type/sales_partner_type.json` |  |
-| Sales Person | thing |  | 11 | `erpnext/erpnext/setup/doctype/sales_person/sales_person.json` |  |
-| Sales Taxes and Charges Template | thing |  | 6 | `erpnext/erpnext/accounts/doctype/sales_taxes_and_charges_template/sales_taxes_and_charges_template.json` |  |
+| Sales Person | thing |  | 10 | `erpnext/erpnext/setup/doctype/sales_person/sales_person.json` |  |
+| Sales Taxes and Charges Template | thing |  | 5 | `erpnext/erpnext/accounts/doctype/sales_taxes_and_charges_template/sales_taxes_and_charges_template.json` |  |
 | Selling Settings | settings |  | 25 | `erpnext/erpnext/selling/doctype/selling_settings/selling_settings.json` |  |
 | Share Transfer | thing | SUB | 17 | `erpnext/erpnext/accounts/doctype/share_transfer/share_transfer.json` |  |
 | Share Type | thing |  | 2 | `erpnext/erpnext/accounts/doctype/share_type/share_type.json` |  |
-| Shareholder | thing |  | 7 | `erpnext/erpnext/accounts/doctype/shareholder/shareholder.json` | cap table; Capxul Next's equity contracts were parked |
-| Shipping Rule | thing |  | 11 | `erpnext/erpnext/accounts/doctype/shipping_rule/shipping_rule.json` |  |
-| Subscription | thing |  | 25 | `erpnext/erpnext/accounts/doctype/subscription/subscription.json` | repeating invoices; waits on timers and workflows |
+| Shareholder | thing |  | 6 | `erpnext/erpnext/accounts/doctype/shareholder/shareholder.json` | cap table; Capxul Next's equity contracts were parked |
+| Shipping Rule | thing |  | 9 | `erpnext/erpnext/accounts/doctype/shipping_rule/shipping_rule.json` |  |
+| Subscription | thing |  | 24 | `erpnext/erpnext/accounts/doctype/subscription/subscription.json` | repeating invoices; waits on timers and workflows |
 | Subscription Plan | thing |  | 11 | `erpnext/erpnext/accounts/doctype/subscription_plan/subscription_plan.json` |  |
 | Subscription Settings | settings |  | 3 | `erpnext/erpnext/accounts/doctype/subscription_settings/subscription_settings.json` |  |
-| Supplier | thing |  | 38 | `erpnext/erpnext/buying/doctype/supplier/supplier.json` |  |
-| Supplier Group | thing |  | 8 | `erpnext/erpnext/setup/doctype/supplier_group/supplier_group.json` |  |
-| Supplier Quotation | thing | SUB FX | 72 | `erpnext/erpnext/buying/doctype/supplier_quotation/supplier_quotation.json` |  |
-| Supplier Scorecard | thing |  | 15 | `erpnext/erpnext/buying/doctype/supplier_scorecard/supplier_scorecard.json` |  |
+| Supplier | thing |  | 35 | `erpnext/erpnext/buying/doctype/supplier/supplier.json` |  |
+| Supplier Group | thing |  | 7 | `erpnext/erpnext/setup/doctype/supplier_group/supplier_group.json` |  |
+| Supplier Quotation | thing | SUB FX | 69 | `erpnext/erpnext/buying/doctype/supplier_quotation/supplier_quotation.json` |  |
+| Supplier Scorecard | thing |  | 13 | `erpnext/erpnext/buying/doctype/supplier_scorecard/supplier_scorecard.json` |  |
 | Supplier Scorecard Criteria | thing |  | 4 | `erpnext/erpnext/buying/doctype/supplier_scorecard_criteria/supplier_scorecard_criteria.json` |  |
-| Supplier Scorecard Period | thing | SUB | 9 | `erpnext/erpnext/buying/doctype/supplier_scorecard_period/supplier_scorecard_period.json` |  |
+| Supplier Scorecard Period | thing | SUB | 7 | `erpnext/erpnext/buying/doctype/supplier_scorecard_period/supplier_scorecard_period.json` |  |
 | Supplier Scorecard Standing | thing |  | 11 | `erpnext/erpnext/buying/doctype/supplier_scorecard_standing/supplier_scorecard_standing.json` |  |
 | Supplier Scorecard Variable | thing |  | 5 | `erpnext/erpnext/buying/doctype/supplier_scorecard_variable/supplier_scorecard_variable.json` |  |
-| Task | thing |  | 36 | `erpnext/erpnext/projects/doctype/task/task.json` |  |
+| Task | thing |  | 35 | `erpnext/erpnext/projects/doctype/task/task.json` |  |
 | Tax Category | thing |  | 2 | `erpnext/erpnext/accounts/doctype/tax_category/tax_category.json` |  |
 | Tax Rule | thing |  | 25 | `erpnext/erpnext/accounts/doctype/tax_rule/tax_rule.json` |  |
-| Tax Withholding Category | thing |  | 6 | `erpnext/erpnext/accounts/doctype/tax_withholding_category/tax_withholding_category.json` |  |
+| Tax Withholding Category | thing |  | 4 | `erpnext/erpnext/accounts/doctype/tax_withholding_category/tax_withholding_category.json` |  |
 | Terms and Conditions | thing |  | 6 | `erpnext/erpnext/setup/doctype/terms_and_conditions/terms_and_conditions.json` |  |
-| Territory | thing |  | 8 | `erpnext/erpnext/setup/doctype/territory/territory.json` |  |
-| Timesheet | thing | SUB FX | 28 | `erpnext/erpnext/projects/doctype/timesheet/timesheet.json` |  |
-| Transaction Deletion Record | job | SUB | 13 | `erpnext/erpnext/setup/doctype/transaction_deletion_record/transaction_deletion_record.json` |  |
+| Territory | thing |  | 7 | `erpnext/erpnext/setup/doctype/territory/territory.json` |  |
+| Timesheet | thing | SUB FX | 27 | `erpnext/erpnext/projects/doctype/timesheet/timesheet.json` |  |
+| Transaction Deletion Record | job | SUB | 11 | `erpnext/erpnext/setup/doctype/transaction_deletion_record/transaction_deletion_record.json` |  |
 | UOM | thing |  | 3 | `erpnext/erpnext/setup/doctype/uom/uom.json` |  |
 | UOM Category | thing |  | 1 | `erpnext/erpnext/stock/doctype/uom_category/uom_category.json` |  |
 | UOM Conversion Factor | thing |  | 4 | `erpnext/erpnext/setup/doctype/uom_conversion_factor/uom_conversion_factor.json` |  |
-| Unreconcile Payment | job | SUB | 5 | `erpnext/erpnext/accounts/doctype/unreconcile_payment/unreconcile_payment.json` |  |
+| Unreconcile Payment | job | SUB | 4 | `erpnext/erpnext/accounts/doctype/unreconcile_payment/unreconcile_payment.json` |  |
 | Accounting Dimension Detail | line |  | 7 | `erpnext/erpnext/accounts/doctype/accounting_dimension_detail/accounting_dimension_detail.json` |  |
 | Advance Tax | line |  | 5 | `erpnext/erpnext/accounts/doctype/advance_tax/advance_tax.json` |  |
 | Advance Taxes and Charges | line | FX | 15 | `erpnext/erpnext/accounts/doctype/advance_taxes_and_charges/advance_taxes_and_charges.json` |  |
@@ -330,90 +334,90 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 
 | Doctype | Kind | Flags | Columns | Source | Notes |
 |---|---|---|---|---|---|
-| Appointment Letter | thing |  | 8 | `hrms/hrms/hr/doctype/appointment_letter/appointment_letter.json` |  |
-| Appointment Letter Template | thing |  | 4 | `hrms/hrms/hr/doctype/appointment_letter_template/appointment_letter_template.json` |  |
-| Appraisal | thing | SUB | 23 | `hrms/hrms/hr/doctype/appraisal/appraisal.json` |  |
-| Appraisal Cycle | thing |  | 13 | `hrms/hrms/hr/doctype/appraisal_cycle/appraisal_cycle.json` |  |
-| Appraisal Template | thing |  | 4 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` |  |
+| Appointment Letter | thing |  | 7 | `hrms/hrms/hr/doctype/appointment_letter/appointment_letter.json` |  |
+| Appointment Letter Template | thing |  | 3 | `hrms/hrms/hr/doctype/appointment_letter_template/appointment_letter_template.json` |  |
+| Appraisal | thing | SUB | 20 | `hrms/hrms/hr/doctype/appraisal/appraisal.json` |  |
+| Appraisal Cycle | thing |  | 12 | `hrms/hrms/hr/doctype/appraisal_cycle/appraisal_cycle.json` |  |
+| Appraisal Template | thing |  | 2 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` |  |
 | Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` |  |
 | Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` |  |
 | Branch | thing |  | 1 | `erpnext/erpnext/setup/doctype/branch/branch.json` |  |
 | Compensatory Leave Request | thing | SUB | 11 | `hrms/hrms/hr/doctype/compensatory_leave_request/compensatory_leave_request.json` |  |
 | Daily Work Summary | thing |  | 3 | `hrms/hrms/hr/doctype/daily_work_summary/daily_work_summary.json` |  |
-| Daily Work Summary Group | thing |  | 6 | `hrms/hrms/hr/doctype/daily_work_summary_group/daily_work_summary_group.json` |  |
+| Daily Work Summary Group | thing |  | 5 | `hrms/hrms/hr/doctype/daily_work_summary_group/daily_work_summary_group.json` |  |
 | Department | thing |  | 8 | `erpnext/erpnext/setup/doctype/department/department.json` |  |
 | Designation | thing |  | 2 | `erpnext/erpnext/setup/doctype/designation/designation.json` |  |
-| Driver | thing |  | 11 | `erpnext/erpnext/setup/doctype/driver/driver.json` |  |
-| Employee | thing |  | 69 | `erpnext/erpnext/setup/doctype/employee/employee.json` | a person employed by a company; linked to an Orthograph user |
+| Driver | thing |  | 10 | `erpnext/erpnext/setup/doctype/driver/driver.json` |  |
+| Employee | thing |  | 66 | `erpnext/erpnext/setup/doctype/employee/employee.json` | a person employed by a company; linked to an Orthograph user |
 | Employee Advance | thing | SUB FX | 19 | `hrms/hrms/hr/doctype/employee_advance/employee_advance.json` |  |
-| Employee Attendance Tool | settings |  | 12 | `hrms/hrms/hr/doctype/employee_attendance_tool/employee_attendance_tool.json` |  |
+| Employee Attendance Tool | job |  | 12 | `hrms/hrms/hr/doctype/employee_attendance_tool/employee_attendance_tool.json` |  |
 | Employee Checkin | thing |  | 16 | `hrms/hrms/hr/doctype/employee_checkin/employee_checkin.json` |  |
 | Employee Feedback Criteria | thing |  | 1 | `hrms/hrms/hr/doctype/employee_feedback_criteria/employee_feedback_criteria.json` |  |
 | Employee Grade | thing |  | 3 | `hrms/hrms/hr/doctype/employee_grade/employee_grade.json` |  |
 | Employee Grievance | thing | SUB | 19 | `hrms/hrms/hr/doctype/employee_grievance/employee_grievance.json` |  |
-| Employee Group | thing |  | 2 | `erpnext/erpnext/setup/doctype/employee_group/employee_group.json` |  |
+| Employee Group | thing |  | 1 | `erpnext/erpnext/setup/doctype/employee_group/employee_group.json` |  |
 | Employee Health Insurance | thing |  | 1 | `hrms/hrms/hr/doctype/employee_health_insurance/employee_health_insurance.json` |  |
-| Employee Onboarding | thing | SUB | 17 | `hrms/hrms/hr/doctype/employee_onboarding/employee_onboarding.json` |  |
-| Employee Onboarding Template | thing |  | 6 | `hrms/hrms/hr/doctype/employee_onboarding_template/employee_onboarding_template.json` |  |
-| Employee Performance Feedback | thing | SUB | 16 | `hrms/hrms/hr/doctype/employee_performance_feedback/employee_performance_feedback.json` |  |
-| Employee Promotion | thing | SUB | 10 | `hrms/hrms/hr/doctype/employee_promotion/employee_promotion.json` |  |
+| Employee Onboarding | thing | SUB | 16 | `hrms/hrms/hr/doctype/employee_onboarding/employee_onboarding.json` |  |
+| Employee Onboarding Template | thing |  | 5 | `hrms/hrms/hr/doctype/employee_onboarding_template/employee_onboarding_template.json` |  |
+| Employee Performance Feedback | thing | SUB | 15 | `hrms/hrms/hr/doctype/employee_performance_feedback/employee_performance_feedback.json` |  |
+| Employee Promotion | thing | SUB | 9 | `hrms/hrms/hr/doctype/employee_promotion/employee_promotion.json` |  |
 | Employee Referral | thing | SUB | 20 | `hrms/hrms/hr/doctype/employee_referral/employee_referral.json` |  |
-| Employee Separation | thing | SUB | 15 | `hrms/hrms/hr/doctype/employee_separation/employee_separation.json` |  |
-| Employee Separation Template | thing |  | 6 | `hrms/hrms/hr/doctype/employee_separation_template/employee_separation_template.json` |  |
-| Employee Skill Map | thing |  | 5 | `hrms/hrms/hr/doctype/employee_skill_map/employee_skill_map.json` |  |
-| Employee Transfer | thing | SUB | 11 | `hrms/hrms/hr/doctype/employee_transfer/employee_transfer.json` |  |
+| Employee Separation | thing | SUB | 14 | `hrms/hrms/hr/doctype/employee_separation/employee_separation.json` |  |
+| Employee Separation Template | thing |  | 5 | `hrms/hrms/hr/doctype/employee_separation_template/employee_separation_template.json` |  |
+| Employee Skill Map | thing |  | 3 | `hrms/hrms/hr/doctype/employee_skill_map/employee_skill_map.json` |  |
+| Employee Transfer | thing | SUB | 10 | `hrms/hrms/hr/doctype/employee_transfer/employee_transfer.json` |  |
 | Employment Type | thing |  | 1 | `hrms/hrms/hr/doctype/employment_type/employment_type.json` |  |
-| Exit Interview | thing | SUB | 19 | `hrms/hrms/hr/doctype/exit_interview/exit_interview.json` |  |
-| Expense Claim | thing | SUB | 29 | `hrms/hrms/hr/doctype/expense_claim/expense_claim.json` |  |
-| Expense Claim Type | thing |  | 4 | `hrms/hrms/hr/doctype/expense_claim_type/expense_claim_type.json` |  |
-| Full and Final Statement | thing | SUB | 16 | `hrms/hrms/hr/doctype/full_and_final_statement/full_and_final_statement.json` |  |
+| Exit Interview | thing | SUB | 18 | `hrms/hrms/hr/doctype/exit_interview/exit_interview.json` |  |
+| Expense Claim | thing | SUB | 26 | `hrms/hrms/hr/doctype/expense_claim/expense_claim.json` |  |
+| Expense Claim Type | thing |  | 3 | `hrms/hrms/hr/doctype/expense_claim_type/expense_claim_type.json` |  |
+| Full and Final Statement | thing | SUB | 13 | `hrms/hrms/hr/doctype/full_and_final_statement/full_and_final_statement.json` |  |
 | Goal | thing |  | 17 | `hrms/hrms/hr/doctype/goal/goal.json` |  |
 | Grievance Type | thing |  | 1 | `hrms/hrms/hr/doctype/grievance_type/grievance_type.json` |  |
 | HR Settings | settings |  | 34 | `hrms/hrms/hr/doctype/hr_settings/hr_settings.json` |  |
-| Holiday List | thing |  | 9 | `erpnext/erpnext/setup/doctype/holiday_list/holiday_list.json` |  |
+| Holiday List | thing |  | 8 | `erpnext/erpnext/setup/doctype/holiday_list/holiday_list.json` |  |
 | Identification Document Type | thing |  | 1 | `hrms/hrms/hr/doctype/identification_document_type/identification_document_type.json` |  |
 | Interest | thing |  | 1 | `hrms/hrms/hr/doctype/interest/interest.json` |  |
-| Interview | thing | SUB | 15 | `hrms/hrms/hr/doctype/interview/interview.json` |  |
-| Interview Feedback | thing | SUB | 9 | `hrms/hrms/hr/doctype/interview_feedback/interview_feedback.json` |  |
-| Interview Round | thing |  | 6 | `hrms/hrms/hr/doctype/interview_round/interview_round.json` |  |
+| Interview | thing | SUB | 14 | `hrms/hrms/hr/doctype/interview/interview.json` |  |
+| Interview Feedback | thing | SUB | 8 | `hrms/hrms/hr/doctype/interview_feedback/interview_feedback.json` |  |
+| Interview Round | thing |  | 4 | `hrms/hrms/hr/doctype/interview_round/interview_round.json` |  |
 | Interview Type | thing |  | 1 | `hrms/hrms/hr/doctype/interview_type/interview_type.json` |  |
 | Job Applicant | thing |  | 18 | `hrms/hrms/hr/doctype/job_applicant/job_applicant.json` |  |
 | Job Applicant Source | thing |  | 2 | `hrms/hrms/hr/doctype/job_applicant_source/job_applicant_source.json` |  |
-| Job Offer | thing | SUB | 14 | `hrms/hrms/hr/doctype/job_offer/job_offer.json` |  |
-| Job Offer Term Template | thing |  | 2 | `hrms/hrms/hr/doctype/job_offer_term_template/job_offer_term_template.json` |  |
+| Job Offer | thing | SUB | 13 | `hrms/hrms/hr/doctype/job_offer/job_offer.json` |  |
+| Job Offer Term Template | thing |  | 1 | `hrms/hrms/hr/doctype/job_offer_term_template/job_offer_term_template.json` |  |
 | Job Opening | thing |  | 25 | `hrms/hrms/hr/doctype/job_opening/job_opening.json` |  |
 | Job Opening Template | thing |  | 5 | `hrms/hrms/hr/doctype/job_opening_template/job_opening_template.json` |  |
 | Job Requisition | thing |  | 17 | `hrms/hrms/hr/doctype/job_requisition/job_requisition.json` |  |
 | KRA | thing |  | 2 | `hrms/hrms/hr/doctype/kra/kra.json` |  |
 | Leave Allocation | thing | SUB | 21 | `hrms/hrms/hr/doctype/leave_allocation/leave_allocation.json` |  |
 | Leave Application | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_application/leave_application.json` |  |
-| Leave Block List | thing |  | 6 | `hrms/hrms/hr/doctype/leave_block_list/leave_block_list.json` |  |
-| Leave Control Panel | settings |  | 15 | `hrms/hrms/hr/doctype/leave_control_panel/leave_control_panel.json` |  |
+| Leave Block List | thing |  | 4 | `hrms/hrms/hr/doctype/leave_block_list/leave_block_list.json` |  |
+| Leave Control Panel | job |  | 15 | `hrms/hrms/hr/doctype/leave_control_panel/leave_control_panel.json` |  |
 | Leave Encashment | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_encashment/leave_encashment.json` |  |
 | Leave Ledger Entry | thing | SUB | 14 | `hrms/hrms/hr/doctype/leave_ledger_entry/leave_ledger_entry.json` |  |
 | Leave Period | thing |  | 5 | `hrms/hrms/hr/doctype/leave_period/leave_period.json` |  |
-| Leave Policy | thing | SUB | 3 | `hrms/hrms/hr/doctype/leave_policy/leave_policy.json` |  |
+| Leave Policy | thing | SUB | 2 | `hrms/hrms/hr/doctype/leave_policy/leave_policy.json` |  |
 | Leave Policy Assignment | thing | SUB | 11 | `hrms/hrms/hr/doctype/leave_policy_assignment/leave_policy_assignment.json` |  |
 | Leave Type | thing |  | 23 | `hrms/hrms/hr/doctype/leave_type/leave_type.json` |  |
 | Offer Term | thing |  | 1 | `hrms/hrms/hr/doctype/offer_term/offer_term.json` |  |
 | Purpose of Travel | thing |  | 1 | `hrms/hrms/hr/doctype/purpose_of_travel/purpose_of_travel.json` |  |
 | Shift Assignment | thing | SUB | 12 | `hrms/hrms/hr/doctype/shift_assignment/shift_assignment.json` |  |
-| Shift Assignment Tool | settings |  | 17 | `hrms/hrms/hr/doctype/shift_assignment_tool/shift_assignment_tool.json` |  |
+| Shift Assignment Tool | job |  | 17 | `hrms/hrms/hr/doctype/shift_assignment_tool/shift_assignment_tool.json` |  |
 | Shift Location | thing |  | 5 | `hrms/hrms/hr/doctype/shift_location/shift_location.json` |  |
 | Shift Request | thing | SUB | 10 | `hrms/hrms/hr/doctype/shift_request/shift_request.json` |  |
-| Shift Schedule | thing | SUB | 4 | `hrms/hrms/hr/doctype/shift_schedule/shift_schedule.json` |  |
+| Shift Schedule | thing | SUB | 3 | `hrms/hrms/hr/doctype/shift_schedule/shift_schedule.json` |  |
 | Shift Schedule Assignment | thing |  | 8 | `hrms/hrms/hr/doctype/shift_schedule_assignment/shift_schedule_assignment.json` |  |
 | Shift Type | thing |  | 19 | `hrms/hrms/hr/doctype/shift_type/shift_type.json` |  |
 | Skill | thing |  | 2 | `hrms/hrms/hr/doctype/skill/skill.json` |  |
-| Staffing Plan | thing | SUB | 7 | `hrms/hrms/hr/doctype/staffing_plan/staffing_plan.json` |  |
-| Training Event | thing | SUB | 19 | `hrms/hrms/hr/doctype/training_event/training_event.json` |  |
+| Staffing Plan | thing | SUB | 6 | `hrms/hrms/hr/doctype/staffing_plan/staffing_plan.json` |  |
+| Training Event | thing | SUB | 18 | `hrms/hrms/hr/doctype/training_event/training_event.json` |  |
 | Training Feedback | thing | SUB | 9 | `hrms/hrms/hr/doctype/training_feedback/training_feedback.json` |  |
 | Training Program | thing |  | 9 | `hrms/hrms/hr/doctype/training_program/training_program.json` |  |
-| Training Result | thing | SUB | 4 | `hrms/hrms/hr/doctype/training_result/training_result.json` |  |
-| Travel Request | thing | SUB | 22 | `hrms/hrms/hr/doctype/travel_request/travel_request.json` |  |
+| Training Result | thing | SUB | 3 | `hrms/hrms/hr/doctype/training_result/training_result.json` |  |
+| Travel Request | thing | SUB | 20 | `hrms/hrms/hr/doctype/travel_request/travel_request.json` |  |
 | Upload Attendance | settings |  | 2 | `hrms/hrms/hr/doctype/upload_attendance/upload_attendance.json` |  |
 | Vehicle | thing |  | 20 | `erpnext/erpnext/setup/doctype/vehicle/vehicle.json` |  |
-| Vehicle Log | job | SUB | 14 | `hrms/hrms/hr/doctype/vehicle_log/vehicle_log.json` |  |
+| Vehicle Log | thing | SUB | 13 | `hrms/hrms/hr/doctype/vehicle_log/vehicle_log.json` |  |
 | Vehicle Service Item | thing |  | 1 | `hrms/hrms/hr/doctype/vehicle_service_item/vehicle_service_item.json` |  |
 | Appointment Letter content | line |  | 2 | `hrms/hrms/hr/doctype/appointment_letter_content/appointment_letter_content.json` |  |
 | Appraisal Goal | line |  | 4 | `hrms/hrms/hr/doctype/appraisal_goal/appraisal_goal.json` |  |
@@ -421,6 +425,8 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Appraisal Template Goal | line |  | 2 | `hrms/hrms/hr/doctype/appraisal_template_goal/appraisal_template_goal.json` |  |
 | Appraisee | line |  | 6 | `hrms/hrms/hr/doctype/appraisee/appraisee.json` |  |
 | Daily Work Summary Group User | line |  | 2 | `hrms/hrms/hr/doctype/daily_work_summary_group_user/daily_work_summary_group_user.json` |  |
+| Department Approver | line |  | 1 | `hrms/hrms/hr/doctype/department_approver/department_approver.json` | attached by HRMS through a custom field |
+| Designation Skill | line |  | 1 | `hrms/hrms/hr/doctype/designation_skill/designation_skill.json` | attached by HRMS through a custom field |
 | Driving License Category | line |  | 4 | `erpnext/erpnext/setup/doctype/driving_license_category/driving_license_category.json` |  |
 | Employee Boarding Activity | line |  | 9 | `hrms/hrms/hr/doctype/employee_boarding_activity/employee_boarding_activity.json` |  |
 | Employee Education | line |  | 6 | `erpnext/erpnext/setup/doctype/employee_education/employee_education.json` |  |
@@ -460,27 +466,27 @@ Salary structures, pay runs, slips, benefits and tax. Slice 9.
 | Doctype | Kind | Flags | Columns | Source | Notes |
 |---|---|---|---|---|---|
 | Additional Salary | thing | SUB | 19 | `hrms/hrms/payroll/doctype/additional_salary/additional_salary.json` |  |
-| Bulk Salary Structure Assignment | settings |  | 11 | `hrms/hrms/payroll/doctype/bulk_salary_structure_assignment/bulk_salary_structure_assignment.json` |  |
-| Employee Benefit Application | thing | SUB | 13 | `hrms/hrms/payroll/doctype/employee_benefit_application/employee_benefit_application.json` |  |
+| Bulk Salary Structure Assignment | job |  | 11 | `hrms/hrms/payroll/doctype/bulk_salary_structure_assignment/bulk_salary_structure_assignment.json` |  |
+| Employee Benefit Application | thing | SUB | 12 | `hrms/hrms/payroll/doctype/employee_benefit_application/employee_benefit_application.json` |  |
 | Employee Benefit Claim | thing | SUB | 13 | `hrms/hrms/payroll/doctype/employee_benefit_claim/employee_benefit_claim.json` |  |
 | Employee Incentive | thing | SUB | 9 | `hrms/hrms/payroll/doctype/employee_incentive/employee_incentive.json` |  |
 | Employee Other Income | thing | SUB | 7 | `hrms/hrms/payroll/doctype/employee_other_income/employee_other_income.json` |  |
 | Employee Tax Exemption Category | thing |  | 2 | `hrms/hrms/payroll/doctype/employee_tax_exemption_category/employee_tax_exemption_category.json` | India's income-tax exemption shape; slice 9 decides how to generalise it |
-| Employee Tax Exemption Declaration | thing | SUB | 10 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration/employee_tax_exemption_declaration.json` | as above |
-| Employee Tax Exemption Proof Submission | thing | SUB | 12 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission/employee_tax_exemption_proof_submission.json` | as above |
+| Employee Tax Exemption Declaration | thing | SUB | 9 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration/employee_tax_exemption_declaration.json` | as above |
+| Employee Tax Exemption Proof Submission | thing | SUB | 11 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission/employee_tax_exemption_proof_submission.json` | as above |
 | Employee Tax Exemption Sub Category | thing |  | 3 | `hrms/hrms/payroll/doctype/employee_tax_exemption_sub_category/employee_tax_exemption_sub_category.json` | as above |
 | Gratuity | thing | SUB | 19 | `hrms/hrms/payroll/doctype/gratuity/gratuity.json` |  |
-| Gratuity Rule | thing |  | 7 | `hrms/hrms/payroll/doctype/gratuity_rule/gratuity_rule.json` |  |
-| Income Tax Slab | thing | SUB | 10 | `hrms/hrms/payroll/doctype/income_tax_slab/income_tax_slab.json` | a progressive tax table; check against each country payroll supports |
-| Payroll Entry | thing | SUB FX | 27 | `hrms/hrms/payroll/doctype/payroll_entry/payroll_entry.json` |  |
-| Payroll Period | thing |  | 4 | `hrms/hrms/payroll/doctype/payroll_period/payroll_period.json` |  |
+| Gratuity Rule | thing |  | 5 | `hrms/hrms/payroll/doctype/gratuity_rule/gratuity_rule.json` |  |
+| Income Tax Slab | thing | SUB | 8 | `hrms/hrms/payroll/doctype/income_tax_slab/income_tax_slab.json` | a progressive tax table; check against each country payroll supports |
+| Payroll Entry | thing | SUB FX | 26 | `hrms/hrms/payroll/doctype/payroll_entry/payroll_entry.json` |  |
+| Payroll Period | thing |  | 3 | `hrms/hrms/payroll/doctype/payroll_period/payroll_period.json` |  |
 | Payroll Settings | settings |  | 15 | `hrms/hrms/payroll/doctype/payroll_settings/payroll_settings.json` |  |
 | Retention Bonus | thing | SUB | 10 | `hrms/hrms/payroll/doctype/retention_bonus/retention_bonus.json` |  |
-| Salary Component | thing |  | 26 | `hrms/hrms/payroll/doctype/salary_component/salary_component.json` |  |
-| Salary Slip | thing | SUB FX | 66 | `hrms/hrms/payroll/doctype/salary_slip/salary_slip.json` |  |
-| Salary Structure | thing | SUB | 19 | `hrms/hrms/payroll/doctype/salary_structure/salary_structure.json` |  |
-| Salary Structure Assignment | thing | SUB | 18 | `hrms/hrms/payroll/doctype/salary_structure_assignment/salary_structure_assignment.json` |  |
-| Salary Withholding | thing | SUB | 14 | `hrms/hrms/payroll/doctype/salary_withholding/salary_withholding.json` |  |
+| Salary Component | thing |  | 25 | `hrms/hrms/payroll/doctype/salary_component/salary_component.json` |  |
+| Salary Slip | thing | SUB FX | 62 | `hrms/hrms/payroll/doctype/salary_slip/salary_slip.json` |  |
+| Salary Structure | thing | SUB | 17 | `hrms/hrms/payroll/doctype/salary_structure/salary_structure.json` |  |
+| Salary Structure Assignment | thing | SUB | 17 | `hrms/hrms/payroll/doctype/salary_structure_assignment/salary_structure_assignment.json` |  |
+| Salary Withholding | thing | SUB | 13 | `hrms/hrms/payroll/doctype/salary_withholding/salary_withholding.json` |  |
 | Employee Benefit Application Detail | line |  | 4 | `hrms/hrms/payroll/doctype/employee_benefit_application_detail/employee_benefit_application_detail.json` |  |
 | Employee Cost Center | line |  | 2 | `hrms/hrms/payroll/doctype/employee_cost_center/employee_cost_center.json` |  |
 | Employee Tax Exemption Declaration Category | line |  | 4 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration_category/employee_tax_exemption_declaration_category.json` |  |
@@ -504,22 +510,19 @@ Frappe CRM, the module switched on later. Slice 11.
 | Doctype | Kind | Flags | Columns | Source | Notes |
 |---|---|---|---|---|---|
 | CRM Availability Status | thing |  | 5 | `crm/crm/fcrm/doctype/crm_availability_status/crm_availability_status.json` |  |
-| CRM Booking | thing |  | 16 | `crm/crm/fcrm/doctype/crm_booking/crm_booking.json` |  |
-| CRM Booking Page | thing |  | 23 | `crm/crm/fcrm/doctype/crm_booking_page/crm_booking_page.json` |  |
-| CRM Call Log | job |  | 17 | `crm/crm/fcrm/doctype/crm_call_log/crm_call_log.json` |  |
+| CRM Call Log | thing |  | 16 | `crm/crm/fcrm/doctype/crm_call_log/crm_call_log.json` |  |
 | CRM Communication Status | thing |  | 1 | `crm/crm/fcrm/doctype/crm_communication_status/crm_communication_status.json` |  |
 | CRM Dashboard | thing |  | 4 | `crm/crm/fcrm/doctype/crm_dashboard/crm_dashboard.json` |  |
-| CRM Deal | thing | FX | 55 | `crm/crm/fcrm/doctype/crm_deal/crm_deal.json` |  |
+| CRM Deal | thing | FX | 48 | `crm/crm/fcrm/doctype/crm_deal/crm_deal.json` |  |
 | CRM Deal Status | thing |  | 5 | `crm/crm/fcrm/doctype/crm_deal_status/crm_deal_status.json` |  |
-| CRM Event Reminder Log | job |  | 4 | `crm/crm/fcrm/doctype/crm_event_reminder_log/crm_event_reminder_log.json` |  |
 | CRM Exotel Settings | settings |  | 7 | `crm/crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json` |  |
 | CRM Fields Layout | thing |  | 3 | `crm/crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.json` |  |
 | CRM Form Script | thing |  | 5 | `crm/crm/fcrm/doctype/crm_form_script/crm_form_script.json` |  |
 | CRM Global Settings | thing |  | 3 | `crm/crm/fcrm/doctype/crm_global_settings/crm_global_settings.json` |  |
-| CRM Holiday List | thing |  | 6 | `crm/crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.json` |  |
+| CRM Holiday List | thing |  | 5 | `crm/crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.json` |  |
 | CRM Industry | thing |  | 1 | `crm/crm/fcrm/doctype/crm_industry/crm_industry.json` |  |
 | CRM Invitation | thing |  | 7 | `crm/crm/fcrm/doctype/crm_invitation/crm_invitation.json` |  |
-| CRM Lead | thing |  | 50 | `crm/crm/fcrm/doctype/crm_lead/crm_lead.json` |  |
+| CRM Lead | thing |  | 44 | `crm/crm/fcrm/doctype/crm_lead/crm_lead.json` |  |
 | CRM Lead Source | thing |  | 2 | `crm/crm/fcrm/doctype/crm_lead_source/crm_lead_source.json` |  |
 | CRM Lead Status | thing |  | 4 | `crm/crm/fcrm/doctype/crm_lead_status/crm_lead_status.json` |  |
 | CRM Lost Reason | thing |  | 2 | `crm/crm/fcrm/doctype/crm_lost_reason/crm_lost_reason.json` |  |
@@ -527,23 +530,17 @@ Frappe CRM, the module switched on later. Slice 11.
 | CRM Organization | thing | FX | 14 | `crm/crm/fcrm/doctype/crm_organization/crm_organization.json` |  |
 | CRM Product | thing |  | 7 | `crm/crm/fcrm/doctype/crm_product/crm_product.json` |  |
 | CRM Sales Hierarchy | thing |  | 7 | `crm/crm/fcrm/doctype/crm_sales_hierarchy/crm_sales_hierarchy.json` |  |
-| CRM Service Level Agreement | thing |  | 12 | `crm/crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json` |  |
-| CRM Task | thing |  | 11 | `crm/crm/fcrm/doctype/crm_task/crm_task.json` |  |
-| CRM Telephony Agent | thing |  | 8 | `crm/crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json` |  |
+| CRM Service Level Agreement | thing |  | 10 | `crm/crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json` |  |
+| CRM Task | thing |  | 9 | `crm/crm/fcrm/doctype/crm_task/crm_task.json` |  |
+| CRM Telephony Agent | thing |  | 7 | `crm/crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json` |  |
 | CRM Territory | thing |  | 7 | `crm/crm/fcrm/doctype/crm_territory/crm_territory.json` |  |
 | CRM Twilio Settings | settings |  | 9 | `crm/crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json` |  |
-| CRM View Settings | thing |  | 21 | `crm/crm/fcrm/doctype/crm_view_settings/crm_view_settings.json` |  |
-| ERPNext CRM Settings | settings |  | 10 | `crm/crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json` |  |
+| CRM View Settings | thing |  | 20 | `crm/crm/fcrm/doctype/crm_view_settings/crm_view_settings.json` |  |
+| ERPNext CRM Settings | settings |  | 9 | `crm/crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json` |  |
 | FCRM Note | thing |  | 7 | `crm/crm/fcrm/doctype/fcrm_note/fcrm_note.json` |  |
-| FCRM Settings | settings |  | 21 | `crm/crm/fcrm/doctype/fcrm_settings/fcrm_settings.json` |  |
-| CRM Booking Page Host | line |  | 2 | `crm/crm/fcrm/doctype/crm_booking_page_host/crm_booking_page_host.json` |  |
+| FCRM Settings | settings |  | 15 | `crm/crm/fcrm/doctype/fcrm_settings/fcrm_settings.json` |  |
 | CRM Contacts | line |  | 7 | `crm/crm/fcrm/doctype/crm_contacts/crm_contacts.json` |  |
 | CRM Dropdown Item | line |  | 8 | `crm/crm/fcrm/doctype/crm_dropdown_item/crm_dropdown_item.json` |  |
-| CRM Enrichment Domain | line |  | 1 | `crm/crm/domain_enrichment/doctype/crm_enrichment_domain/crm_enrichment_domain.json` |  |
-| CRM Enrichment Link Priority | line |  | 2 | `crm/crm/domain_enrichment/doctype/crm_enrichment_link_priority/crm_enrichment_link_priority.json` |  |
-| CRM Enrichment Rule Pattern | line |  | 2 | `crm/crm/domain_enrichment/doctype/crm_enrichment_rule_pattern/crm_enrichment_rule_pattern.json` |  |
-| CRM Enrichment Run Change | line |  | 3 | `crm/crm/domain_enrichment/doctype/crm_enrichment_run_change/crm_enrichment_run_change.json` |  |
-| CRM Enrichment Skip Pattern | line |  | 1 | `crm/crm/domain_enrichment/doctype/crm_enrichment_skip_pattern/crm_enrichment_skip_pattern.json` |  |
 | CRM Holiday | line |  | 3 | `crm/crm/fcrm/doctype/crm_holiday/crm_holiday.json` |  |
 | CRM Product Sync Issue | line |  | 5 | `crm/crm/fcrm/doctype/crm_product_sync_issue/crm_product_sync_issue.json` |  |
 | CRM Products | line |  | 8 | `crm/crm/fcrm/doctype/crm_products/crm_products.json` |  |
@@ -552,25 +549,40 @@ Frappe CRM, the module switched on later. Slice 11.
 | CRM Service Level Priority | line |  | 3 | `crm/crm/fcrm/doctype/crm_service_level_priority/crm_service_level_priority.json` |  |
 | CRM Status Change Log | line |  | 9 | `crm/crm/fcrm/doctype/crm_status_change_log/crm_status_change_log.json` |  |
 | CRM Telephony Phone | line |  | 2 | `crm/crm/fcrm/doctype/crm_telephony_phone/crm_telephony_phone.json` |  |
-| Facebook Lead Form Question | line |  | 5 | `crm/crm/lead_syncing/doctype/facebook_lead_form_question/facebook_lead_form_question.json` |  |
 
 ## Not taken
 
 Each with its reason. A link field that points at one of these is dropped from the thing that holds it.
+
+Leaving out stock (warehouses, stock movements, batches and serial numbers) is the goal's reading of "the books, HR and
+payroll", not Aaron's call: the books link Warehouse from Company and many lines, and those links are dropped. He may
+reverse it. Item, its prices and its units are taken, so an invoice can carry goods and services.
 
 ### Inside the modules Capxul takes
 
 | Doctype | Kind | Flags | Columns | Source | Notes |
 |---|---|---|---|---|---|
 | CRM Enrichment Field Mapping | thing |  | 7 | `crm/crm/domain_enrichment/doctype/crm_enrichment_field_mapping/crm_enrichment_field_mapping.json` | an integration (Domain Enrichment); later, if the CRM wants it |
-| CRM Enrichment Rule | thing |  | 8 | `crm/crm/domain_enrichment/doctype/crm_enrichment_rule/crm_enrichment_rule.json` | an integration (Domain Enrichment); later, if the CRM wants it |
-| CRM Enrichment Run | thing |  | 17 | `crm/crm/domain_enrichment/doctype/crm_enrichment_run/crm_enrichment_run.json` | an integration (Domain Enrichment); later, if the CRM wants it |
-| CRM Enrichment Settings | settings |  | 13 | `crm/crm/domain_enrichment/doctype/crm_enrichment_settings/crm_enrichment_settings.json` | an integration (Domain Enrichment); later, if the CRM wants it |
-| Facebook Lead Form | thing |  | 4 | `crm/crm/lead_syncing/doctype/facebook_lead_form/facebook_lead_form.json` | an integration (Lead Syncing); later, if the CRM wants it |
+| CRM Enrichment Rule | thing |  | 7 | `crm/crm/domain_enrichment/doctype/crm_enrichment_rule/crm_enrichment_rule.json` | an integration (Domain Enrichment); later, if the CRM wants it |
+| CRM Enrichment Run | thing |  | 16 | `crm/crm/domain_enrichment/doctype/crm_enrichment_run/crm_enrichment_run.json` | an integration (Domain Enrichment); later, if the CRM wants it |
+| CRM Enrichment Settings | settings |  | 9 | `crm/crm/domain_enrichment/doctype/crm_enrichment_settings/crm_enrichment_settings.json` | an integration (Domain Enrichment); later, if the CRM wants it |
+| Facebook Lead Form | thing |  | 3 | `crm/crm/lead_syncing/doctype/facebook_lead_form/facebook_lead_form.json` | an integration (Lead Syncing); later, if the CRM wants it |
 | Facebook Page | thing |  | 5 | `crm/crm/lead_syncing/doctype/facebook_page/facebook_page.json` | an integration (Lead Syncing); later, if the CRM wants it |
 | Failed Lead Sync Log | job |  | 4 | `crm/crm/lead_syncing/doctype/failed_lead_sync_log/failed_lead_sync_log.json` | an integration (Lead Syncing); later, if the CRM wants it |
 | Lead Sync Source | thing |  | 7 | `crm/crm/lead_syncing/doctype/lead_sync_source/lead_sync_source.json` | an integration (Lead Syncing); later, if the CRM wants it |
 | PWA Notification | thing |  | 6 | `hrms/hrms/hr/doctype/pwa_notification/pwa_notification.json` | Frappe's app notifications; Orthograph's outbox does this |
+| CRM Enrichment Domain | line |  | 1 | `crm/crm/domain_enrichment/doctype/crm_enrichment_domain/crm_enrichment_domain.json` | a line of CRM Enrichment Settings, not taken |
+| CRM Enrichment Link Priority | line |  | 2 | `crm/crm/domain_enrichment/doctype/crm_enrichment_link_priority/crm_enrichment_link_priority.json` | a line of CRM Enrichment Settings, not taken |
+| CRM Enrichment Rule Pattern | line |  | 2 | `crm/crm/domain_enrichment/doctype/crm_enrichment_rule_pattern/crm_enrichment_rule_pattern.json` | a line of CRM Enrichment Rule, not taken |
+| CRM Enrichment Run Change | line |  | 3 | `crm/crm/domain_enrichment/doctype/crm_enrichment_run_change/crm_enrichment_run_change.json` | a line of CRM Enrichment Run, not taken |
+| CRM Enrichment Skip Pattern | line |  | 1 | `crm/crm/domain_enrichment/doctype/crm_enrichment_skip_pattern/crm_enrichment_skip_pattern.json` | a line of CRM Enrichment Settings, not taken |
+| Facebook Lead Form Question | line |  | 5 | `crm/crm/lead_syncing/doctype/facebook_lead_form_question/facebook_lead_form_question.json` | a line of Facebook Lead Form, not taken |
+| Linked Location | line |  | 1 | `erpnext/erpnext/assets/doctype/linked_location/linked_location.json` | a line no record type holds at this commit (left from an older version) |
+| Loyalty Point Entry Redemption | line |  | 3 | `erpnext/erpnext/accounts/doctype/loyalty_point_entry_redemption/loyalty_point_entry_redemption.json` | a line no record type holds at this commit (left from an older version) |
+| Salary Slip Loan | line |  | 8 | `hrms/hrms/payroll/doctype/salary_slip_loan/salary_slip_loan.json` | a loan repayment line; loans are Frappe's lending app, not taken |
+| South Africa VAT Account | line |  | 1 | `erpnext/erpnext/accounts/doctype/south_africa_vat_account/south_africa_vat_account.json` | a line of South Africa VAT Settings, not taken |
+| Subscription Invoice | line |  | 2 | `erpnext/erpnext/accounts/doctype/subscription_invoice/subscription_invoice.json` | a line no record type holds at this commit (left from an older version) |
+| Website Item Group | line |  | 1 | `erpnext/erpnext/setup/doctype/website_item_group/website_item_group.json` | a line no record type holds at this commit (left from an older version) |
 
 ### Linked from a taken record type, but outside Capxul core
 
@@ -589,27 +601,25 @@ Each with its reason. A link field that points at one of these is dropped from t
 | Project Template | Projects | Project | not needed beyond project, task and timesheet |
 | Project Type | Projects | Project | not needed beyond project, task and timesheet |
 | Task Type | Projects | Task | not needed beyond project, task and timesheet |
-| Batch | Stock | Asset Capitalization, Asset Capitalization Stock Item, Item Price and 5 more | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Customs Tariff Number | Stock | Item | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Delivery Note | Stock | POS Invoice Item, Sales Invoice Item | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Delivery Trip | Stock | Expense Claim | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Item Attribute | Stock | Item Variant Attribute | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Manufacturer | Stock | Item, Purchase Invoice Item, Purchase Order Item and 1 more | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Material Request | Stock | Purchase Invoice Item, Purchase Order Item, Request for Quotation Item and 2 more | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Purchase Receipt | Stock | Asset, Purchase Invoice Item | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Quality Inspection | Stock | POS Invoice Item, Purchase Invoice Item, Sales Invoice Item | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Quality Inspection Template | Stock | Item | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Serial and Batch Bundle | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Installation Note Item and 4 more | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Stock Entry | Stock | Journal Entry | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
-| Warehouse | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Company and 21 more | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
+| Batch | Stock | Asset Capitalization, Asset Capitalization Stock Item, Item Price and 5 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Customs Tariff Number | Stock | Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Delivery Note | Stock | POS Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Delivery Trip | Stock | Expense Claim | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Item Attribute | Stock | Item Variant Attribute | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Manufacturer | Stock | Item, Purchase Invoice Item, Purchase Order Item and 1 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Material Request | Stock | Purchase Invoice Item, Purchase Order Item, Request for Quotation Item and 2 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Purchase Receipt | Stock | Asset, Purchase Invoice Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Quality Inspection | Stock | POS Invoice Item, Purchase Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Quality Inspection Template | Stock | Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Serial and Batch Bundle | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Installation Note Item and 4 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Stock Entry | Stock | Journal Entry | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Warehouse | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Company and 21 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
 | Issue | Support | Task | not part of Capxul core |
 
-### Everything else in ERPNext, by module
+### The rest of ERPNext, by module
 
 | ERPNext module | Record types | Why not |
 |---|---|---|
-| Accounts | 3 | a line no taken record type holds (a regional or website table) |
-| Assets | 1 | a line no taken record type holds |
 | Bulk Transaction | 2 | not part of Capxul core |
 | CRM | 21 | ERPNext's own CRM; Frappe CRM replaces it in slice 11 |
 | Communication | 2 | not part of Capxul core |
@@ -620,13 +630,12 @@ Each with its reason. A link field that points at one of these is dropped from t
 | Portal | 5 | not part of Capxul core |
 | Projects | 4 | not needed beyond project, task and timesheet |
 | Quality Management | 16 | not part of Capxul core |
-| Regional | 5 | a country-specific record (India) |
-| Setup | 1 | a line no taken record type holds |
-| Stock | 45 | stock movements and warehouses are not part of the books, HR or payroll; a stock module can be switched on later |
+| Regional | 5 | country-specific records; a country's rules come with the company that needs them |
+| Stock | 45 | stock, left out by the goal's reading (above); a stock module can be switched on later |
 | Subcontracting | 8 | manufacturing is not part of Capxul core |
 | Support | 10 | not part of Capxul core |
 | Telephony | 5 | not part of Capxul core |
-| Utilities | 4 | portal users are Orthograph's sign-in |
+| Utilities | 4 | not part of Capxul core |
 
 ## Frappe's own record types
 
@@ -641,10 +650,9 @@ Orthograph replaces Frappe, so each maps to something Orthograph already has, or
 | Contact | CRM Contacts, CRM Deal, Company and 13 more | Capxul's own thing, in Frappe's shape |
 | Country | Company, Global Defaults, Item and 5 more | a value |
 | Currency | Account, Account Closing Balance, Additional Salary and 63 more | an asset in Orthograph's money (M6-money) |
-| DocType | Accounting Dimension, Accounting Dimension Detail, Additional Salary and 55 more | not taken: Frappe's own metadata; a dynamic link becomes 'Blueprint.refAny()' (spike #710) |
+| DocType | Accounting Dimension, Accounting Dimension Detail, Additional Salary and 54 more | not taken: Frappe's own metadata; a dynamic link becomes 'Blueprint.refAny()' (spike #710) |
 | Email Account | Buying Settings, HR Settings, Payroll Settings and 1 more | Orthograph's outbox |
 | Email Template | HR Settings, Payroll Settings, Request for Quotation | Orthograph's outbox |
-| Event | CRM Booking | a CRM booking: a Capxul thing in slice 11 |
 | Gender | CRM Contacts, CRM Deal, CRM Lead and 2 more | a value |
 | Language | Customer, Dunning, Dunning Letter Text and 1 more | a value |
 | Letter Head | Company, Dunning, Job Offer and 15 more | Orthograph's screens |
@@ -653,5 +661,5 @@ Orthograph replaces Frappe, so each maps to something Orthograph already has, or
 | RQ Job | Repost Accounting Ledger | not taken: Frappe's job queue |
 | Role | Accounts Settings, Authorization Rule, Buying Settings and 5 more | Orthograph roles (who may act) |
 | Salutation | CRM Deal, CRM Lead, Customer and 1 more | a value |
-| User | Asset Activity, Asset Maintenance Task, Asset Maintenance Team and 41 more | Orthograph's sign-in and people |
-| Web Form | CRM Booking Page, HR Settings | Orthograph's screens |
+| User | Asset Activity, Asset Maintenance Task, Asset Maintenance Team and 40 more | Orthograph's sign-in and people |
+| Web Form | HR Settings | Orthograph's screens |
