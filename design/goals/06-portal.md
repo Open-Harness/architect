@@ -365,7 +365,7 @@ Parked on 23 November 2026, as K42 section 7 says. Nobody leads this goal now; i
 **In this goal's branch, `goal/portal`, only.** The checks (slice 2) and the new portal's frame (slice 6, `packages/portal-next`). The frame takes 52 lines off the parity list, so 48 of the portal's checks still fail against the new client; those 48 are what slices 7 to 11 owe. The parity ratchet's self-test now runs the same locally and in CI, and the grid's page reader no longer reads text out of a script or a style, which had made seven cells falsely green.
 
 **Left for the board.**
-- Slices 7 to 12 as the table above gives them, each starting from `goal/portal`. Slice 7's Map tab checks are written and wait as a draft (#708).
+- Slices 7 to 12 as the table above gives them, each starting from `goal/portal`. Slice 7's Map tab checks are written and wait as a draft (#708). Aaron's screen answers stand for them (MAP-screens): the map in its own tab beside the things, the pages as a tree, the worked-out map marked when nobody declared one, and an "As an agent" drawer on every page.
 - Goal 17's ask (#596): derived reads are `Blueprint.read` with `derive:`, shown like any read. Not yet answered; it belongs to whoever takes slice 7 or 11.
 - The canon's model page still says the model has thirteen parts; it has fourteen with `app`. Filed as a snag for Goal 18 (#738).
 
