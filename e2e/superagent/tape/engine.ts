@@ -14,18 +14,6 @@ export interface Plant { readonly name: string; readonly step: string; readonly 
 export interface Tape { readonly world: Record<string, unknown>; readonly steps: Readonly<Record<string, StepData>>; readonly plants: ReadonlyArray<Plant> }
 export interface StepResult { readonly title: string; readonly ok: boolean; readonly why: string }
 
-const same = (a: Json, b: Json): boolean => {
-  if (typeof a === "bigint" || typeof b === "bigint") return a === b;
-  if (Array.isArray(a)) return Array.isArray(b) && a.length === b.length && a.every((x, i) => same(x, b[i]));
-  if (typeof a === "object" && a !== null) {
-    if (typeof b !== "object" || b === null || Array.isArray(b)) return false;
-    const ka = Object.keys(a).filter((k) => (a as Record<string, Json>)[k] !== undefined), kb = Object.keys(b).filter((k) => (b as Record<string, Json>)[k] !== undefined);
-    return ka.length === kb.length && ka.every((k) => same((a as Record<string, Json>)[k], (b as Record<string, Json>)[k]));
-  }
-  return Object.is(a, b);
-};
-const show = (x: Json) => JSON.stringify(x, (_, v) => (typeof v === "bigint" ? `${v}n` : v === undefined ? "undefined" : v));
-
 /** The script a journey sees: the framework's own, with the three words GOAL17-check-harness call 0 adds, as plain data. */
 export const scriptOf = (cast: Record<string, unknown>) => {
   const base = Scripting.script(cast as never) as unknown as Record<string, unknown> & { clock: Record<string, unknown> };
@@ -44,9 +32,18 @@ export const titleOf = (titles: ReadonlyArray<string>, key: string) => (/^#\d+$/
 const payloadsOf = (call: Record<string, unknown>): ReadonlyArray<unknown> =>
   call["kind"] === "call" ? [call["payload"]] : call["kind"] === "stand-call" || call["kind"] === "world-call" ? [call["args"]] : call["kind"] === "together-call" ? (call["calls"] as Array<Record<string, unknown>>).flatMap(payloadsOf) : [];
 
-/** The events a step's own `emits` checks ask for, resolved: what a correct system's journal held for this step. */
-const wanted = (checks: ReadonlyArray<Assertion>, env: Record<string, unknown>) =>
-  checks.flatMap((c) => (c.kind === "emits" ? [[c.event, Scripting.resolve(c.fields, env).value as Record<string, unknown>] as const] : []));
+/**
+ * The judge is prove's own: each step's checks run through `runChecks` of `packages/prove/src/modules/journeys/internal/checks.ts`, on a `CallRecord` the tape
+ * makes (the answer as the body, the journal as the entries the call's trace wrote). So `emits` reads the first journal entry of its name and subset-matches it, and
+ * `expect(...).toBe` compares as prove does (values as they travel: bigints as text, keys in order). The module is not exported by `packages/prove`, so the runner
+ * imports it by its internal path (tape/run.ts), in this check only, and passes it here.
+ */
+export interface Prove { readonly runChecks: (checks: ReadonlyArray<Assertion>, call: unknown, env: Record<string, unknown>, world: unknown) => unknown }
+let prove: Prove | undefined;
+let runSync: ((effect: unknown) => { readonly failures: ReadonlyArray<string> }) | undefined;
+export const useProve = (p: Prove, run: (effect: unknown) => { readonly failures: ReadonlyArray<string> }) => { prove = p; runSync = run; };
+let nameOf: (event: unknown) => string | undefined = () => undefined;
+export const useNames = (f: (event: unknown) => string | undefined) => { nameOf = f; };
 
 export const judge = (journey: Journey, tape: Tape, replace?: { readonly step: string; readonly data: StepData }): ReadonlyArray<StepResult> => {
   const steps = journey.steps(scriptOf(journey.cast) as never);
@@ -59,25 +56,14 @@ export const judge = (journey: Journey, tape: Tape, replace?: { readonly step: s
     // 1. the data the call is given must be there: every ref in its payload names something the world or the step before gave
     const missing = payloadsOf(step.call as never).flatMap((p) => Scripting.resolve(p, before).missing);
     if (missing.length > 0) { results.push({ title: step.title, ok: false, why: `its call names ${missing.join(", ")}, which nothing gave` }); last = answer; continue; }
-    // 2. the checks, seeing this step's own answer as `last`
+    // 2. a step that asks for an event needs a journal written for it: nothing is derived from the check
+    if (step.checks.some((c) => c.kind === "emits") && data.events === undefined) { results.push({ title: step.title, ok: false, why: "the tape holds no journal for a step that asks for an event" }); last = answer; continue; }
+    // 3. the checks, prove's, seeing this step's own answer as `last`
     const env = { world: tape.world, last: answer, cast: {} };
-    const events = data.events ?? wanted(step.checks, env);
-    const fails: Array<string> = [];
-    for (const c of step.checks) {
-      if (c.kind === "expect-equal") {
-        const want = Scripting.resolve(c.value, env).value;
-        try { const got = c.pick(answer); if (!same(got, want)) fails.push(`expected ${show(want)}, got ${show(got)}`); } catch (e) { fails.push(`reading the answer threw: ${String(e)}`); }
-      } else if (c.kind === "expect") {
-        try { const got = String(c.pick(answer)); if (!c.match.test(got)) fails.push(`expected a match of ${c.match}, got ${show(got)}`); } catch (e) { fails.push(`reading the answer threw: ${String(e)}`); }
-      } else if (c.kind === "emits") {
-        const fields = Scripting.resolve(c.fields, env).value as Record<string, unknown>;
-        const hit = events.some(([e, f]) => e === c.event && Object.entries(fields).every(([k, v]) => same(f[k], v)));
-        if (!hit) fails.push(`expected the event ${show(Object.keys(c.event.fields))} with ${show(fields)}, got ${events.length} event(s)`);
-      } else if (c.kind === "no-events") {
-        if (events.length > 0) fails.push(`expected no events, got ${events.length}`);
-      } else throw new Error(`the tape runner does not judge a ${c.kind} check`);
-    }
-    results.push({ title: step.title, ok: fails.length === 0, why: fails.join("; ") });
+    const journal = (data.events ?? []).map(([event, fields]) => ({ event: nameOf(event) ?? "?", move: "tape", subject: "tape", fields }));
+    const call = { journey: journey.name, step: step.title, actor: "tape", person: "per_tape", operation: "tape", payload: {}, status: 200, body: answer, trace: "t", parent: "p", mayCall: true, journal };
+    const done = runSync!(prove!.runChecks(step.checks, call, env, { facts: {}, tableOf: () => undefined, nameOf: () => undefined }));
+    results.push({ title: step.title, ok: done.failures.length === 0, why: done.failures.join("; ") });
     last = answer;
   }
   return results;

@@ -12,7 +12,7 @@ export default Blueprint.journey("two fills at once start an Assignment once", {
   starts: "an-executor-waits",
   steps: (s) => [
     s.step("every fill an Assignment's being queued would cause is parked, so the waiting Assignment stays waiting", outbox.hold({ name: "AssignmentQueued", to: "op:superagent.fill" })),
-    s.step("the executor's turn stays open", models.script({ for: executorOf("ticket/one"), turns: [turnSay("Working.", "before-reply")] })),
+    s.step("the executor answers", models.script({ for: executorOf("ticket/one"), turns: [turnSay("Working.")] })),
     s.step("a mention makes a ticket and a waiting Assignment", s.gh.run(ticketAccept, acceptOf(s, { agent: s.world.executor }))),
     s.step("the world settles: nothing is seated", s.clock.settle()),
     s.step("two fills run at the same instant: one starts it, the other finds it started",

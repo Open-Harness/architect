@@ -248,8 +248,9 @@ A check lays them over a copy of `examples/superagent` (`agents-support.ts`) and
 **Why `ortho prove` cannot yet name a step.** The harness's surface (the three call kinds, `runner`, `together`, `settle`, `Stand.command`, `Probe`) is a
 builder's first pull request, `goal-17/s8-surface-build`, and it is not on `goal/superagent`. Until it is, every journey stops at load, naming the
 package it cannot find (`@orthograph/stand-in-model`). The failure then moves to the first step that needs a door, which is the right reason. The tape runner
-(`tape/`) is how 40 shows the journeys fair meanwhile: it runs each journey's own checks against a recorded world, resolves its refs with the framework's own
-`Scripting.resolve`, and points three imports at throwaway descriptors (`tape/shims/`). It is not a world, and it goes, with the shims, when slice 9 runs the journeys for real.
+(`tape/`) is how 40 shows the journeys fair meanwhile: it runs each journey's own checks against a recorded world through prove's own `runChecks` (imported by its internal path, in this check only:
+`packages/prove` does not export it), on a `CallRecord` the tape makes, with each step's good journal written out in `tapes/<name>.journal.ts`, and points three
+imports at throwaway descriptors (`tape/shims/`). Six calls the review made are in `design/decisions/GOAL17-agents-checks.md`. It is not a world, and it goes, with the shims, when slice 9 runs the journeys for real.
 
 ## What the builder must make, and where the checks read it (slice 8)
 
@@ -264,8 +265,8 @@ package it cannot find (`@orthograph/stand-in-model`). The failure then moves to
    and `superagent.update`'s base after a create is 1. A proposal read answers `{ items: [{ operation, changes, why }], next }`. A sandbox is a clone of `acme/widgets` from the GitHub
    stand-in. `AssignmentStarted` has two deliveries (`agent.tell` and `input.route`) and `AssignmentEnded` two (`input.route` and `fill`): the journeys read each by `to`.
 4. **The record against the blueprint, where they disagree.** `outgoing-message.reply` is allowed to the main agent and the system only: the executor replies through `ticket.ack`,
-   so "two replies at once" is main and main. `policy.save`, `policy.sync`, `account.list`, `settings.save` and `prompts.save` are `signedIn` only in slice 5's build, though the brief
-   lets a main agent call each and record a proposal: 44 fails until each has `itsMain` in `allowed`.
+   so "two replies at once" is main and main (GOAL17-agents-checks, call C). `policy.save`, `policy.sync`, `account.list`, `settings.save` and `prompts.save` are `signedIn` only in slice 5's build, though the brief
+   lets a main agent call each and record a proposal: 44 fails until each has `itsMain` in `allowed` (call D, issue #705). `assignment.waiting` reads person first (call B): slice 9 changes its `order`.
 5. **What no check reaches, and why.**
    - No ticket's id can be named for a ticket made inside a journey (an answer is `s.last` for one step only), so the full pool, `promoted` and the CI journeys read which `why` waits, not which ticket.
    - `Ticket.seq` is read by no operation: the chatty ticket's first count in the record ("the ticket's own `seq` equals the writes that committed") is judged by each write's one answer and one fan-out instead.

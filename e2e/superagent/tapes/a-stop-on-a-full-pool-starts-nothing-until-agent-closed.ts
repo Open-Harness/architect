@@ -9,7 +9,7 @@ export default {
   steps: {
     "#8": { answer: waiting(1) }, "#9": { answer: { started: 0n } },
     "#10": { answer: rows("AssignmentStarted", "op:agent.tell", 1) }, "#11": { answer: rows("AssignmentQueued", "op:superagent.fill", 1) },
-    "#15": { answer: rows("AssignmentQueued", "op:superagent.fill", 3) }, "#16": { answer: rows("AssignmentStarted", "op:agent.tell", 2) },
+    "#16": { answer: rows("AssignmentQueued", "op:superagent.fill", 3) }, "#17": { answer: rows("AssignmentStarted", "op:agent.tell", 2) },
   },
   plants: [
     { name: "REVIEW: the freed seat went to the reserve (255), not the pool seat", step: "#13", with: () => ({ events: [[AgentClosed, { agent: "agt_one" }], [AssignmentEnded, { seat: 1n }], [AssignmentStarted, { agent: "agt_two", seat: 255n }]] }) },
@@ -21,7 +21,7 @@ export default {
     { name: "the seat was freed without the Agent's acknowledgement", step: "#13", with: () => ({ events: [[AssignmentEnded, { seat: 1n }], [AssignmentStarted, { agent: "agt_two", seat: 1n }]] }) },
     { name: "the freed seat was not refilled", step: "#13", with: () => ({ events: [[AssignmentEnded, { seat: 1n }]] }) },
     { name: "the freed seat went to the stopped ticket's executor", step: "#13", with: () => ({ events: [[AssignmentEnded, { seat: 1n }], [AssignmentStarted, { agent: "agt_one", seat: 1n }]] }) },
-    { name: "fill looped after the seat was refilled", step: "#15", with: () => ({ answer: rows("AssignmentQueued", "op:superagent.fill", 9) }) },
-    { name: "the second ticket was seated twice", step: "#16", with: () => ({ answer: rows("AssignmentStarted", "op:agent.tell", 3) }) },
+    { name: "fill looped after the seat was refilled", step: "#16", with: () => ({ answer: rows("AssignmentQueued", "op:superagent.fill", 9) }) },
+    { name: "the second ticket was seated twice", step: "#17", with: () => ({ answer: rows("AssignmentStarted", "op:agent.tell", 3) }) },
   ],
 };

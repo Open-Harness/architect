@@ -7,7 +7,7 @@ import { PLAYBOOK, CONNECTIONS } from "../kit/consts.ts";
 
 export default Blueprint.journey("a main agent's configuration change only records a proposal", {
   cast: { main: itsMain, ann: Blueprint.signedIn },
-  starts: "a-listed-account",
+  starts: "an-account-was-seen",    // seen and not listed, so an applied `account.list` would show
   steps: (s) => [
     s.step("the main agent would raise the pool to nine seats", s.main.run(superagentUpdate, { superagent: s.world.superagent, base: 1n, name: "coder", purpose: "Takes asks.", connections: CONNECTIONS, playbook: PLAYBOOK, slots: 9n }),
       emits(ProposalRecorded, { superagent: s.world.superagent })),

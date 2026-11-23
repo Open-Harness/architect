@@ -17,6 +17,7 @@ export default Blueprint.journey("a stopped ticket does not get a seat back", {
       emits(AssignmentInterrupted, { seat: 1n })),
     s.step("the Agent closed it, and the seat is free", s.clock.settle(), emits(AssignmentEnded, { seat: 1n })),
     s.step("a person writes on the stopped ticket's thread", s.sys.run(inputStore, { superagent: s.world.superagent, thread: SLACK_THREAD, from: "person", text: "please carry on" }), emits(InputStored, { ticket: s.world.ticket })),
+    s.step("the model is let go: nothing is held while the clock moves", models.release({ hold: "all" })),
     s.step("the world settles and a minute passes: the sweep too", s.clock.advance("1 minute")),
     s.step("no Assignment was queued by the message", outbox.rows({ name: "AssignmentQueued", afterSeq: "journey" }), expect((a) => a.rows.length).toBe(0)),
     s.step("nothing waits for a seat", s.sys.run(assignmentWaiting, { superagent: s.world.superagent }), expect((a) => a.items.length).toBe(0)),

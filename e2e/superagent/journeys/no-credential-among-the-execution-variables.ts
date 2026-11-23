@@ -24,7 +24,7 @@ export default Blueprint.journey("no credential among the execution variables", 
         ["GITHUB_NUMBER", "source"], ["GITHUB_REPOSITORY", "source"], ["REGION", "settings"],
         ["SUPERAGENT_BLOCKED_COMMANDS", "built-in"], ["SUPERAGENT_DIR", "built-in"], ["SUPERAGENT_NAME", "built-in"], ["SUPERAGENT_TICKET", "built-in"]])),
     s.step("and their values are the issue's, the settings', the superagent's and the sandbox's own folder", sandbox.seen({}),
-      expect((a) => Object.fromEntries(a.sandboxes[0].env.filter((v: { name: string }) => v.name !== "SUPERAGENT_TICKET" && v.name !== "SUPERAGENT_DIR").map((v: { name: string; value: string }) => [v.name, v.value]))).toEqual({
+      expect((a) => Object.fromEntries(byName(a.sandboxes[0].env).filter((v) => v.name !== "SUPERAGENT_TICKET" && v.name !== "SUPERAGENT_DIR").map((v) => [v.name, v.value]))).toEqual({
         GITHUB_NUMBER: "12", GITHUB_REPOSITORY: "acme/widgets", REGION: "eu-west", SUPERAGENT_BLOCKED_COMMANDS: "", SUPERAGENT_NAME: "coder" }),
       expect((a) => a.sandboxes[0].env.find((v: { name: string }) => v.name === "SUPERAGENT_DIR")?.value === a.sandboxes[0].root).toBe(true)),
     s.step("the canary is nowhere in what the bridge saw", sandbox.seen({}), expect((a) => JSON.stringify(a).includes(CANARY)).toBe(false)),

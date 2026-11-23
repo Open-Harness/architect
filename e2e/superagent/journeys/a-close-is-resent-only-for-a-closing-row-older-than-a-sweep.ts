@@ -10,8 +10,9 @@ export default Blueprint.journey("a close is resent only for a closing row older
   cast: { ann: Blueprint.signedIn },
   starts: "a-paused-ticket",
   steps: (s) => [
-    s.step("the executor's turn stays open", models.script({ for: executorOf("ticket/one"), turns: [turnSay("Working.", "before-reply")] })),
+    s.step("the executor answers at once, and its idle is parked, so the Assignment stays running with no model held", models.script({ for: executorOf("ticket/one"), turns: [turnSay("Working.")] })),
     s.step("the stop's close never lands", outbox.hold({ name: "AssignmentInterrupted", to: "op:agent.close" })),
+    s.step("the Agent's idle never lands either", outbox.hold({ name: "AgentIdled", to: "op:assignment.turnEnded" })),
     s.step("ann resumes the superagent", s.ann.run(superagentResume, { superagent: s.world.superagent })),
     s.step("the executor is running", s.clock.settle()),
     s.step("ann stops the ticket: closing, the seat held", s.ann.run(ticketStop, { superagent: s.world.superagent, ticket: s.world.ticket }), emits(AssignmentInterrupted, { seat: 1n })),

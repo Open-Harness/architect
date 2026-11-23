@@ -7,10 +7,8 @@ import { mkdirSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { registerRoot, registeredRoots } from "./agents-support.ts";
 
-const PREFIX = "ortho-gate1-";
-/** A folder these checks copy the app to: `<tmp>/ortho-gate1-<random>/superagent` (`copyOf` keeps the example's name). */
-const MINE = /ortho-gate1-[^/\s]+\/superagent(\/|\s|$)/;
 interface Proc { readonly pid: number; readonly ppid: number; readonly command: string }
 
 const table = (): ReadonlyArray<Proc> => execFileSync("ps", ["-A", "-o", "pid=,ppid=,command="], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split("\n")
@@ -23,7 +21,8 @@ const mine = (all: ReadonlyArray<Proc>): ReadonlySet<number> => {
   return found;
 };
 
-export const leftovers = (root: string = tmpdir()) => {
+/** What `roots` (the folders this run copied the app to) still hold or run: a sandbox folder with anything in it, a process that names one of them, or a `pi-env serve` or bridge under one. */
+export const leftovers = (roots: ReadonlyArray<string>) => {
   const all = table();
   const ours = mine(all);
   const folders = (dir: string): ReadonlyArray<string> => readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -31,27 +30,34 @@ export const leftovers = (root: string = tmpdir()) => {
     const p = join(dir, e.name);
     return e.name === "sandboxes" ? readdirSync(p).map((s) => join(p, s)) : folders(p);
   });
+  const named = (c: string) => roots.some((r) => c.includes(r));
   return {
-    folders: readdirSync(root).filter((e) => e.startsWith(PREFIX)).flatMap((e) => { try { return folders(join(root, e, "superagent")); } catch { return []; } }),
-    processes: all.filter((p) => p.pid !== process.pid && (ours.has(p.pid) || p.ppid === 1) && (MINE.test(p.command) || /\bpi-env serve\b/.test(p.command) || /sandbox[^ ]*\/stand-in\/(src\/)?main\.ts/.test(p.command)))
+    folders: roots.flatMap((r) => { try { return folders(r); } catch { return []; } }),
+    processes: all.filter((p) => p.pid !== process.pid && (ours.has(p.pid) || p.ppid === 1) && (named(p.command) || (/\bpi-env serve\b|sandbox[^ ]*\/stand-in\/(src\/)?main\.ts/.test(p.command) && named(p.command))))
       .map((p) => `${p.pid} ${p.command}`),
   };
 };
 
 describe("48: nothing is left", () => {
-  it("control: a planted sandbox folder and a planted process under a folder of these checks are both found", async () => {
-    const parent = mkdtempSync(join(tmpdir(), PREFIX));
+  it("control: a planted sandbox folder and a planted process under a folder of this run are both found, and another run's are not", async () => {
+    const parent = mkdtempSync(join(tmpdir(), "ortho-gate1-"));
+    const stranger = mkdtempSync(join(tmpdir(), "ortho-gate1-"));
     mkdirSync(join(parent, "superagent/.ortho/state/sandboxes/sbx_planted"), { recursive: true });
-    const child = spawn(process.execPath, ["-e", "setTimeout(() => {}, 30000)", join(parent, "superagent/bridge")], { stdio: "ignore" });
+    mkdirSync(join(stranger, "superagent/.ortho/state/sandboxes/sbx_other"), { recursive: true });
+    const file = join(tmpdir(), `ortho-s8-roots-control-${process.pid}.txt`);
+    registerRoot(join(parent, "superagent"), file);
+    const mate = spawn(process.execPath, ["-e", "setTimeout(() => {}, 30000)", join(parent, "superagent/bridge")], { stdio: "ignore" });
+    const other = spawn(process.execPath, ["-e", "setTimeout(() => {}, 30000)", join(stranger, "superagent/bridge")], { stdio: "ignore" });
     try {
       await new Promise((r) => setTimeout(r, 300));
-      const found = leftovers();
-      expect(found.folders).toContain(join(parent, "superagent/.ortho/state/sandboxes/sbx_planted"));
-      expect(found.processes.some((p) => p.startsWith(`${child.pid} `))).toBe(true);
-    } finally { child.kill("SIGKILL"); rmSync(parent, { recursive: true, force: true }); }
+      const found = leftovers(registeredRoots(file));
+      expect(found.folders).toEqual([join(parent, "superagent/.ortho/state/sandboxes/sbx_planted")]);
+      expect(found.processes.some((p) => p.startsWith(`${mate.pid} `))).toBe(true);
+      expect(found.processes.some((p) => p.startsWith(`${other.pid} `))).toBe(false);
+    } finally { mate.kill("SIGKILL"); other.kill("SIGKILL"); for (const d of [parent, stranger, file]) rmSync(d, { recursive: true, force: true }); }
   });
 
-  it("no sandbox folder and no process is left by the checks before this one", () => {
-    expect(leftovers()).toEqual({ folders: [], processes: [] });
+  it("no sandbox folder and no process of this run is left by the checks before this one", () => {
+    expect(leftovers(registeredRoots())).toEqual({ folders: [], processes: [] });
   });
 });

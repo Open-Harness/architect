@@ -3,8 +3,8 @@
 // older launch, and when the pool's seat frees it goes to that person, not the launch. Every turn is held at the model, so the pool
 // stays full as long as the script wants and no wall clock is read. No ticket's id is needed: a thread names its ticket.
 import { Blueprint, emits, expect } from "orthograph";
-import { models } from "../kit/doors.ts";
-import { InputStored, AssignmentQueued, AssignmentStarted, AssignmentEnded, AssignmentPromoted, ticketAccept, inputStore, assignmentWaiting, agentOpen, listed } from "../kit/ops.ts";
+import { models, outbox } from "../kit/doors.ts";
+import { InputStored, AssignmentQueued, AssignmentStarted, AssignmentPromoted, ticketAccept, inputStore, assignmentWaiting, agentOpen, listed } from "../kit/ops.ts";
 import { acceptOf, executorOf, turnSay } from "../kit/steps.ts";
 
 const person = (s: { world: Record<string, unknown> }, thread: string, text: string) => ({ superagent: s.world["superagent"], thread, from: "person", text });
@@ -13,7 +13,7 @@ export default Blueprint.journey("a full pool keeps its slot for a person", {
   cast: { gh: listed, sys: Blueprint.system },
   starts: "a-listed-account",
   steps: (s) => [
-    s.step("the turns of the first, then the fourth, then the third ticket stay open at the model", models.script({ for: { kind: "executor" }, turns: [turnSay("a.", "before-reply"), turnSay("m.", "before-reply"), turnSay("l.", "before-reply")] })),
+    s.step("the turns of the first and the fourth ticket stay open at the model, are asked again after the restart, and the third's opens after them", models.script({ for: { kind: "executor" }, turns: [turnSay("a.", "before-reply"), turnSay("m.", "before-reply"), turnSay("a, asked again.", "before-reply"), turnSay("m, asked again.", "before-reply"), turnSay("l.", "before-reply")] })),
     s.step("an executor for the first ticket", s.sys.run(agentOpen, { kind: "executor", about: "ticket/a" })),
     s.step("the first ticket takes the pool's one seat", s.gh.run(ticketAccept, acceptOf(s, { agent: s.last.agent, thread: "issue/1" })), emits(AssignmentQueued, { why: "launch" })),
     s.step("seated at once, in seat one", s.clock.settle(), emits(AssignmentStarted, { seat: 1n, why: "launch" })),
@@ -37,8 +37,8 @@ export default Blueprint.journey("a full pool keeps its slot for a person", {
     s.step("still the person first, then the launch", s.sys.run(assignmentWaiting, { superagent: s.world.superagent }),
       expect((a) => a.items.map((i: { why: string }) => i.why)).toEqual(["person", "launch"])),
     s.step("the models are let go: the first and fourth turns end", models.release({ hold: "all" })),
-    s.step("both seats free, and the pool's seat goes to the person", s.clock.settle(),
-      emits(AssignmentEnded, { seat: 1n }), emits(AssignmentEnded, { seat: 255n }), emits(AssignmentStarted, { seat: 1n, why: "person" })),
+    s.step("the pool's seat goes to the person, not to the older launch", s.clock.settle(), emits(AssignmentStarted, { seat: 1n, why: "person" })),
+    s.step("both seats were freed: the pool's and the reserve", outbox.rows({ name: "AssignmentEnded", to: "op:superagent.fill", afterSeq: "journey" }), expect((a) => a.rows.length).toBe(2)),
     s.step("the older launch is still waiting: the reserve is a person's alone", s.sys.run(assignmentWaiting, { superagent: s.world.superagent }),
       expect((a) => a.items.map((i: { why: string }) => i.why)).toEqual(["launch"])),
   ],

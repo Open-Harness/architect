@@ -1,5 +1,5 @@
 import { AssignmentStarted, EvalExpired, SuperagentResumed } from "../kit/ops.ts";
-import { WORLD, row } from "../tape/tapekit.ts";
+import { WORLD, row, told } from "../tape/tapekit.ts";
 
 const heldRow = (name: string, to: string, o = {}) => row(name, to, { state: "pending", attempts: 0, hold: "sag_1", ...o });
 const HELD = [heldRow("AssignmentQueued", "op:superagent.fill"), heldRow("TicketCreated", "op:outgoing-message.reply")];
@@ -7,7 +7,7 @@ export default {
   world: WORLD,
   steps: {
     "#3": { answer: { trigger: "trg_eve", outcome: "stored" } }, "#4": { answer: { eval: "evl_1" } },
-    "#6": { answer: { held: [{ n: 1 }] } }, "#10": { answer: { agent: "agt_new" } },
+    "#6": { answer: { inputs: [told("evl_1", "submitted", null)] } }, "#10": { answer: { agent: "agt_new" } },
     "#13": { answer: { rows: HELD } }, "#14": { answer: { rows: [] } }, "#17": { answer: { rows: [row("AssignmentQueued", "op:superagent.fill"), row("TicketCreated", "op:outgoing-message.reply")] } },
   },
   plants: [

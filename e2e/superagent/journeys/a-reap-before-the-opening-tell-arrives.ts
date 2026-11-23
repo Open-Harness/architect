@@ -22,7 +22,7 @@ export default Blueprint.journey("a reap before the opening tell arrives never f
     s.step("the Agent refuses it; the Input is requeued and a new Assignment takes the freed seat", s.clock.settle(),
       emits(InputStored, {}), emits(AssignmentQueued, { why: "launch" }), emits(AssignmentStarted, { agent: s.world.executor, seat: 1n })),
     s.step("the refused row carries the error's name and was tried once; the second opening tell was delivered", outbox.rows({ name: "AssignmentStarted", to: "op:agent.tell" }),
-      expect((a) => a.rows.map((r: Row) => [r.state, r.outcome, r.attempts])).toEqual([["delivered", "StaleAssignment", 0], ["delivered", null, 0]])),
+      expect((a) => a.rows.map((r: Row) => [r.state, r.outcome === null ? "no refusal" : r.outcome, r.attempts])).toEqual([["delivered", "StaleAssignment", 0], ["delivered", "no refusal", 0]])),
     s.step("the executor was told its one input, once, as an opening tell", told({ agent: s.world.executor }),
       expect((a) => a.inputs.map((i: Told) => [i.how, i.assignment !== null])).toEqual([["submitted", true]])),
     s.step("one committed round, and one request to the model", calls({ agent: s.world.executor }), expect((a) => a.steps.map((m: ModelStep) => m.round)).toEqual([1])),

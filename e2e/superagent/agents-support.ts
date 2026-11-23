@@ -2,8 +2,10 @@
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { appendFileSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { afterAll, describe, expect, it } from "vitest";
 import { copyApp, lazy, removeCopies, repo, run } from "./app.ts";
 import { JOURNEYS } from "./journeys-table.ts";
@@ -13,9 +15,18 @@ export const here = join(repo, "e2e/superagent");
 /** Every slice 8 journey's file name (without `.ts`): one file in `journeys/` each. */
 export const allJourneys = (): ReadonlyArray<string> => readdirSync(join(here, "journeys")).filter((f) => f.endsWith(".ts")).map((f) => f.slice(0, -3)).sort();
 
+/**
+ * The folders this run copied the app into, kept in a file named for the run (the test runner's own pid, which every file of one run shares), so a
+ * check at the end can tell this run's leftovers from another session's on the same machine.
+ */
+const registry = () => join(tmpdir(), `ortho-s8-roots-${process.ppid}.txt`);
+export const registerRoot = (root: string, file: string = registry()) => appendFileSync(file, `${dirname(root)}\n`);
+export const registeredRoots = (file: string = registry()): ReadonlyArray<string> => { try { return readFileSync(file, "utf8").split("\n").filter((l) => l !== ""); } catch { return []; } };
+
 /** A copy of the app with slice 8's starting worlds, kit and the named journeys laid over it, as an author's files are laid over a builder's app. */
 export const withJourneys = (names: ReadonlyArray<string>, extra: ReadonlyArray<string> = []) => {
   const root = copyApp();
+  registerRoot(root);
   cpSync(join(here, "starting-worlds"), join(root, "blueprint/starting-worlds"), { recursive: true });
   cpSync(join(here, "kit"), join(root, "kit"), { recursive: true });
   mkdirSync(join(root, "journeys"), { recursive: true });
@@ -56,7 +67,7 @@ export const tapeRun = (root: string, name: string): TapeRun => {
     "@orthograph/stand-in-model/stand": pathToFileURL(join(tapeDir, "shims/stand-model.ts")).href,
     "@orthograph/agents/probes": pathToFileURL(join(tapeDir, "shims/agents-probes.ts")).href,
   };
-  const r = spawnSync(process.execPath, ["--import", pathToFileURL(join(tapeDir, "register.mjs")).href, join(tapeDir, "run.ts"), root, name], { cwd: root, encoding: "utf8", env: { ...process.env, TAPE_MAP: JSON.stringify(map) }, maxBuffer: 64 * 1024 * 1024, timeout: 300_000 });
+  const r = spawnSync(process.execPath, ["--import", pathToFileURL(join(tapeDir, "register.mjs")).href, join(tapeDir, "run.ts"), root, name], { cwd: root, encoding: "utf8", env: { ...process.env, TAPE_MAP: JSON.stringify(map), TAPE_REPO: repo }, maxBuffer: 64 * 1024 * 1024, timeout: 300_000 });
   expect(r.status, `the tape runner for ${name}:\n${r.stdout}${r.stderr}`).toBe(0);
   const parsed = JSON.parse(r.stdout.trim().split("\n").at(-1)!) as TapeRun;
   if (process.env["TAPE_DEBUG"]) console.log(JSON.stringify({ name, good: parsed.good, plants: parsed.plants, mutants: parsed.mutantRuns.length, unread: parsed.mutantRuns.filter((m) => !m.read).length, events: parsed.eventRuns.length }));

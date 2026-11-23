@@ -2,7 +2,7 @@
 // GOAL17-pause. An eval is started by hand with a 60 s timeout (a stranger's trigger, so the eval pass starts no other); it is 40 s into its
 // time when the superagent is paused for five minutes; it must not expire during the pause, and must expire 20 active seconds after the resume.
 import { Blueprint, emits, noEvents, expect } from "orthograph";
-import { models, outbox } from "../kit/doors.ts";
+import { models, told, outbox } from "../kit/doors.ts";
 import type { Row } from "../kit/doors.ts";
 import { AssignmentQueued, AssignmentStarted, EvalStarted, EvalExpired, SuperagentPaused, SuperagentResumed, TriggerReceived,
   superagentPause, superagentResume, triggerReceive, evalStart, ticketAccept, agentOpen, listed } from "../kit/ops.ts";
@@ -15,12 +15,12 @@ export default Blueprint.journey("pause holds processing while triggers keep arr
   cast: { ann: Blueprint.signedIn, src: Blueprint.system, gh: listed },
   starts: "a-listed-account",
   steps: (s) => [
-    s.step("the main agent's turn on the eval stays open at the model", models.script({ for: { kind: "main" }, turns: [turnSay("Judged.", "before-reply")] })),
-    s.step("the executor of a later ticket answers, and stays open", models.script({ for: { kind: "executor" }, turns: [turnSay("Hello.", "before-reply")] })),
+    s.step("the main agent answers the eval without deciding it", models.script({ for: { kind: "main" }, turns: [turnSay("Judged.")] })),
+    s.step("the executor of a later ticket answers", models.script({ for: { kind: "executor" }, turns: [turnSay("Hello.")] })),
     s.step("a stranger's trigger is recorded, which the eval pass takes no notice of", s.src.run(triggerReceive, triggerOf(s, { thread: "issue/9", text: "an error report", author: EVE.external, event: "comment:9:created" }))),
     s.step("an eval of it is started, with sixty seconds to run", s.src.run(evalStart, { superagent: s.world.superagent, thread: "issue/9", triggers: [s.last.trigger], timeoutMs: 60000n }), emits(EvalStarted, {})),
     s.step("the eval is delivered to the main agent, whose turn is held: its clock starts", s.clock.settle()),
-    s.step("the main agent is asked, and holds", models.held({ match: { nth: 1 }, count: 1 }), expect((a) => a.held.length).toBe(1)),
+    s.step("the main agent was told the eval, once: nothing is held at a model while the clock moves", told({ agent: s.world.main }), expect((a) => a.inputs.length).toBe(1)),
     s.step("forty seconds of its sixty pass", s.clock.advance("40 seconds"), noEvents()),
     s.step("ann pauses the superagent", s.ann.run(superagentPause, { superagent: s.world.superagent }), emits(SuperagentPaused, { from: "live" })),
     s.step("a trigger keeps arriving, and is recorded", s.src.run(triggerReceive, triggerOf(s, { thread: "issue/10", text: "@agent please look", author: ANN.external, event: "comment:10:created" })), emits(TriggerReceived, { thread: "issue/10" })),
