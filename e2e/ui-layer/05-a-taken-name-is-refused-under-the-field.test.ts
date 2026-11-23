@@ -16,7 +16,7 @@
 // WHAT IT READS: the Name input, the form's button, the refusal element (its text, its box), the page's whole text (for other codes), the bridge's
 // snapshot (the Name input and the verb's `submit`), `act`'s result and its message, the journal and `handle.resolve` before and after.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { act, call, declaredError, inputOf, labelOf, model, needPieces, openSite, snapshot, submitOf, written, type Person, type Site } from "./web-support.ts";
+import { act, call, declaredError, inputOf, labelOf, model, needPieces, openSite, reached, snapshot, submitOf, until, written, type Person, type Site } from "./web-support.ts";
 
 const m = model();
 const claim = m.operations["handle.claim"]!;
@@ -43,6 +43,8 @@ afterAll(async () => { await site?.close(); }, 120_000);
 
 const field = (page: Awaited<ReturnType<Site["open"]>>) => page.getByRole("textbox", { name: labelOf("name"), exact: true });
 
+const doneOf = (page: Awaited<ReturnType<Site["open"]>>) => page.evaluate(() => (window as any).__ortho.done as Array<unknown>);
+
 /** What a person sees after typing `name` and pressing the form's button: the one element that shows the code, and where it is. */
 const press = async (page: Awaited<ReturnType<Site["open"]>>, name: string, code: string) => {
   await field(page).pressSequentially(name);
@@ -66,6 +68,7 @@ describe("05 a person's press on a refused claim", () => {
     expect(shown.box.x < shown.input.x + shown.input.width && shown.box.x + shown.box.width > shown.input.x, "under the field: over the input's width").toBe(true);
     for (const other of REFUSALS.filter((r) => r.name !== taken.name)) expect(shown.body, `${other.name}'s code is not shown for ${taken.name}`).not.toContain(other.code);
     expect(await written(site, "/handle/claim", from), "nothing was written").toEqual([]);
+    expect(await doneOf(page), "onDone is not called for a refusal").toEqual([]);
     expect(await call(site, undefined, "handle.resolve", { name: held.name }), "the name still resolves to its first holder's handle").toEqual({ ok: true, answer: { handle: held.handle } });
     expect(page.problems).toEqual([]);
     await page.close();
@@ -80,6 +83,7 @@ describe("05 a person's press on a refused claim", () => {
     expect(shown.box.y).toBeGreaterThanOrEqual(shown.input.y + shown.input.height - 1);
     for (const other of REFUSALS.filter((r) => r.name !== owned.name)) expect(shown.body, `${other.name}'s code is not shown`).not.toContain(other.code);
     expect(await written(site, "/handle/claim", from)).toEqual([]);
+    expect(await doneOf(page), "onDone is not called for a refusal").toEqual([]);
     expect(await call(site, undefined, "handle.resolve", { name: "anothername" }), "the second name was not claimed").toMatchObject({ ok: false });
     await page.close();
   });
@@ -93,6 +97,43 @@ describe("05 a person's press on a refused claim", () => {
     expect(shown.box.y).toBeGreaterThanOrEqual(shown.input.y + shown.input.height - 1);
     for (const other of REFUSALS.filter((r) => r.name !== denied.name)) expect(shown.body, `${other.name}'s code is not shown`).not.toContain(other.code);
     expect(await written(site, "/handle/claim", from)).toEqual([]);
+    await page.close();
+  });
+});
+
+describe("05 what the form sends and what it keeps", () => {
+  const LONG = `claimed${"x".repeat(25)}`;
+
+  it("a free name of the longest length is sent whole, claims once, and onDone is called once with the world's handle", async () => {
+    expect(LONG.length, "the longest name the model allows (32)").toBe(32);
+    const page = await site.open(bob);
+    const from = site.loop.proxy.seen.length;
+    await field(page).pressSequentially(LONG);
+    await page.getByRole("button").click();
+    await until("the world heard the claim", async () => reached(site, "/handle/claim"), (c) => c >= 1);
+    const resolved = await until("the whole name resolves", () => call<{ handle: string }>(site, undefined, "handle.resolve", { name: LONG }), (r) => r.ok);
+    expect(await written(site, "/handle/claim", from)).toEqual([claim.move!.emits]);
+    const handle = resolved.ok ? resolved.answer.handle : "";
+    expect(await until("onDone is called", () => doneOf(page), (d) => d.length > 0), "once, with what the world answered").toEqual([{ handle }]);
+    expect(await page.locator("body").innerText(), "the page shows the handle the world wrote").toContain(handle);
+    await page.close();
+  });
+
+  it("after a refusal a second press with a free name clears the refusal and shows the new answer", async () => {
+    const taken = REFUSALS[0]!;
+    const carol2 = await site.person("dave");
+    const page = await site.open(carol2);
+    await field(page).pressSequentially(held.name);
+    await page.getByRole("button").click();
+    await page.getByText(taken.code).first().waitFor({ timeout: 15_000 });
+    await field(page).fill("");
+    await field(page).pressSequentially("retryname");
+    await page.getByRole("button").click();
+    const resolved = await until("the retry name resolves", () => call<{ handle: string }>(site, undefined, "handle.resolve", { name: "retryname" }), (r) => r.ok);
+    const handle = resolved.ok ? resolved.answer.handle : "";
+    await until("the page shows the new answer", () => page.locator("body").innerText(), (t) => t.includes(handle));
+    expect(await page.locator("body").innerText(), "the old refusal is gone").not.toContain(taken.code);
+    expect(await doneOf(page), "onDone once, for the claim and not the refusal").toEqual([{ handle }]);
     await page.close();
   });
 });
@@ -117,6 +158,7 @@ describe("05 an agent's step on a refused claim", () => {
     expect(result.error?.message, "the failure names the refusal and its code").toContain(taken.name);
     expect(result.error?.message).toContain(taken.code);
     expect(await page.getByText(taken.code).count(), "the page shows the same refusal").toBeGreaterThan(0);
+    expect(await doneOf(page), "onDone is not called for a refusal").toEqual([]);
     expect(await written(site, "/handle/claim", from)).toEqual([]);
     expect(await call(site, undefined, "handle.resolve", { name: held.name })).toEqual({ ok: true, answer: { handle: held.handle } });
     await page.close();
@@ -137,6 +179,7 @@ describe("05 an agent's step on a refused claim", () => {
     const { page, result, from } = await agentClaims(carol, "carolspage");
     expect(result.ok, JSON.stringify(result)).toBe(true);
     expect(await written(site, "/handle/claim", from)).toEqual([claim.move!.emits]);
+    expect((await doneOf(page)).length, "onDone once for the agent's claim").toBe(1);
     expect(await call(site, undefined, "handle.resolve", { name: "carolspage" })).toMatchObject({ ok: true });
     await page.close();
   });

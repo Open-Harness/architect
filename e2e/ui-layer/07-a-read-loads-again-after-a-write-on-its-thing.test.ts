@@ -72,6 +72,8 @@ describe("07 a read loads again after a write on its thing", () => {
     const recorded = await answerOf();
     expect(recorded!.links.length, "the world holds the link").toBe(1);
     expect(after, "the read shows exactly what the world answers").toEqual(recorded);
+    expect(JSON.stringify(recorded!.links), "the world holds the title and address as typed").toContain("My first link");
+    expect(JSON.stringify(recorded!.links)).toContain("https://aaron.example.com/first");
     expect(seen, "the write, then exactly one more load").toEqual(["/link/add", "/profile/get"]);
     expect(await notReloaded(page), "the page was not reloaded").toEqual({ marker: "this page was not reloaded", navigations: 1 });
     expect(page.problems).toEqual([]);
@@ -95,6 +97,8 @@ describe("07 a read loads again after a write on its thing", () => {
     const recorded = await answerOf();
     expect(recorded!.links.length).toBe(2);
     expect(after).toEqual(recorded);
+    expect(JSON.stringify(recorded!.links), "the world holds the second link as typed").toContain("https://aaron.example.com/second");
+    expect(JSON.stringify(recorded!.links)).toContain("Second");
     expect(seen, "the write, then exactly one more load").toEqual(["/link/add", "/profile/get"]);
     expect(await notReloaded(page)).toEqual({ marker: "this page was not reloaded", navigations: 1 });
     await page.close();
@@ -109,6 +113,13 @@ describe("07 a read loads again after a write on its thing", () => {
     await page.getByRole("textbox", { name: labelOf("url"), exact: true }).pressSequentially("https://stranger.example.com/");
     await page.getByRole("button").click();
     await until("the write was answered", async () => paths(from).includes("/link/add"), Boolean);
+    // What the world refuses a person with no name of their own, recorded through the SDK; the page must show that refusal.
+    const refused = await call(site, stranger, "link.add", { title: "Not mine", url: "https://stranger.example.com/" });
+    expect(refused.ok, "the world refuses the stranger's link").toBe(false);
+    const world = refused.ok ? { error: "", code: "" } : { error: refused.error, code: refused.code ?? "" };
+    expect(Object.keys(m.refusals).includes(world.error) && add.refusals.includes(world.error), "a refusal link.add declares").toBe(true);
+    await until("the page shows the refusal", () => page.locator("body").innerText(), (t) => t.includes(world.code));
+    expect(await page.locator("body").innerText(), "the refusal is named").toContain(world.error);
     expect(await shown(page), "the read shows what profile.get answers").toEqual(await answerOf());
     expect(await shown(page)).toEqual(before);
     await page.close();

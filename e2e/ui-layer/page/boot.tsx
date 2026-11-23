@@ -19,6 +19,8 @@ interface Ortho {
   agent?: ReturnType<typeof createAgent>;
   /** Every sentence the agent bridge asked a person, in order. */
   asked: Array<string>;
+  /** Every answer the form's `onDone` was called with: it must not be called for a refusal. */
+  done: Array<unknown>;
   /** How many times the host (not the bridge) asked: a press the bridge already asked about must never ask again. */
   hostAsked: number;
   /** The question waiting for a person's answer right now, if any. */
@@ -29,6 +31,7 @@ declare global { interface Window { __ortho: Ortho } }
 export const mount = (view: ReactNode) => {
   const ortho = window.__ortho;
   ortho.asked = [];
+  ortho.done = [];
   ortho.hostAsked = 0;
   ortho.asking = null;
   // `?allow=none`: nobody to ask, so a step on a control marked for a person's yes must be refused by the bridge itself.

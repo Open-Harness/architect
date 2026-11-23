@@ -61,14 +61,33 @@ describe("06 a release waits for a person's yes", () => {
   it("the piece's confirming control carries the operation's own description as `data-agent-confirm`", async () => {
     const o = await owner();
     const page = await site.open(o.who, { handle: o.handle });
+    expect(await page.locator("[data-agent-confirm]").count(), "nothing on the page is marked for a person's yes before the dialog opens").toBe(0);
     await page.getByRole("button").first().click();
     await page.getByRole("alertdialog").waitFor({ timeout: 15_000 });
+    expect(await page.locator("[data-agent-confirm]").count(), "one control on the whole page is marked").toBe(1);
     const marked = page.getByRole("alertdialog").locator("[data-agent-confirm]");
     expect(await marked.count(), "exactly one control in the dialog is marked for a person's yes").toBe(1);
     confirm = { text: ((await marked.textContent()) ?? "").trim(), sentence: (await marked.getAttribute("data-agent-confirm")) ?? "" };
     expect(confirm.sentence, "what the person is asked is the operation's description in the model").toBe(release.description);
     expect(confirm.text, "the confirming control's text").not.toBe("");
     expect(await resolves(o.name), "opening the dialog released nothing").toMatchObject({ ok: true });
+    await page.close();
+  });
+
+  it("the dialog's other buttons release nothing: pressing each of them sends no request and asks nobody", async () => {
+    const o = await owner();
+    const page = await site.open(o.who, { handle: o.handle });
+    const from = site.loop.proxy.seen.length;
+    await page.getByRole("button").first().click();
+    const dialog = page.getByRole("alertdialog");
+    await dialog.waitFor({ timeout: 15_000 });
+    const others = await dialog.locator("button:not([data-agent-confirm])").count();
+    expect(others, "the dialog has a way to keep the name").toBeGreaterThanOrEqual(1);
+    await dialog.locator("button:not([data-agent-confirm])").first().click();
+    await dialog.waitFor({ state: "detached", timeout: 15_000 });
+    expect(site.loop.proxy.seen.slice(from).filter((s) => s.path === "/handle/release"), "no request").toEqual([]);
+    expect(await resolves(o.name), "the name still resolves").toMatchObject({ ok: true, answer: { handle: o.handle } });
+    expect(await asked(page)).toEqual([]);
     await page.close();
   });
 
