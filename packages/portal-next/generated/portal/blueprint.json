@@ -1,0 +1,478 @@
+{
+  "schemaVersion": 1,
+  "project": "portal-next",
+  "revision": null,
+  "model": {
+    "refusals": {
+      "IdempotencyConflict": "AR-002",
+      "NotAllowed": "AR-001"
+    },
+    "values": {},
+    "things": {},
+    "operations": {},
+    "journeys": {},
+    "startingWorlds": {},
+    "alertRules": [
+      {
+        "id": "anomaly:AR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-001",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      }
+    ],
+    "app": {
+      "description": "Look inside a project: its things, operations, environments and what they did in the window.",
+      "layout": "none",
+      "home": "home",
+      "nav": [
+        {
+          "title": "things",
+          "pages": [
+            "thing"
+          ],
+          "folded": false
+        },
+        {
+          "title": "proof",
+          "pages": [
+            "environment",
+            "compare",
+            "journeys",
+            "worlds"
+          ],
+          "folded": false
+        },
+        {
+          "title": "reference",
+          "pages": [
+            "access",
+            "refusals",
+            "events",
+            "values",
+            "machines"
+          ],
+          "folded": false
+        },
+        {
+          "title": "plugins",
+          "pages": [
+            "plugins"
+          ],
+          "folded": false
+        },
+        {
+          "title": "monitor",
+          "pages": [
+            "monitor"
+          ],
+          "folded": false
+        }
+      ],
+      "pages": {
+        "access": {
+          "name": "access",
+          "file": "blueprint/app/pages/access.ts",
+          "description": "Who may call what.",
+          "route": {
+            "path": "/portal/reference/access",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "44484ba07177f005"
+        },
+        "compare": {
+          "name": "compare",
+          "file": "blueprint/app/pages/compare.ts",
+          "description": "Every environment side by side.",
+          "route": {
+            "path": "/portal/compare",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "978707e4e8147d9c"
+        },
+        "environment": {
+          "name": "environment",
+          "file": "blueprint/app/pages/environment.ts",
+          "description": "One declared environment: its summary, its fields and its proof.",
+          "route": {
+            "path": "/portal/environments/:name",
+            "params": {
+              "name": {
+                "value": {
+                  "type": "text",
+                  "max": 200
+                }
+              }
+            }
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "5cbb38621917944f"
+        },
+        "events": {
+          "name": "events",
+          "file": "blueprint/app/pages/events.ts",
+          "description": "Every event a thing emits.",
+          "route": {
+            "path": "/portal/reference/events",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "90a6e369a5330c11"
+        },
+        "home": {
+          "name": "home",
+          "file": "blueprint/app/pages/home.ts",
+          "description": "The things as cards in the tree's order, and what each did in the window.",
+          "route": {
+            "path": "/portal",
+            "params": {}
+          },
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "23ecb447b944aa7b"
+        },
+        "journeys": {
+          "name": "journeys",
+          "file": "blueprint/app/pages/journeys.ts",
+          "description": "Every declared journey as a sequence of steps.",
+          "route": {
+            "path": "/portal/journeys",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "ddf1b0aaaaf06411"
+        },
+        "machines": {
+          "name": "machines",
+          "file": "blueprint/app/pages/machines.ts",
+          "description": "Every lifecycle.",
+          "route": {
+            "path": "/portal/reference/machines",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "4b27992d06ebe844"
+        },
+        "monitor": {
+          "name": "monitor",
+          "file": "blueprint/app/pages/monitor.ts",
+          "description": "The alerts, issues and objectives the declarations imply.",
+          "route": {
+            "path": "/portal/monitor",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "208cce33a3f375a1"
+        },
+        "operation": {
+          "name": "operation",
+          "file": "blueprint/app/pages/operation.ts",
+          "description": "One operation, on five tabs: contract, metrics, proof, docs and notes.",
+          "route": {
+            "path": "/portal/operations/:name",
+            "params": {
+              "name": {
+                "value": {
+                  "type": "text",
+                  "max": 200
+                }
+              }
+            }
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [
+            "tab-contract",
+            "tab-metrics",
+            "tab-proof",
+            "tab-docs",
+            "tab-notes"
+          ],
+          "hash": "5e7345433d04be51"
+        },
+        "plugins": {
+          "name": "plugins",
+          "file": "blueprint/app/pages/plugins.ts",
+          "description": "A card per mounted plugin, then the stores and what each runs on.",
+          "route": {
+            "path": "/portal/plugins",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "0ec79371d4113402"
+        },
+        "refusals": {
+          "name": "refusals",
+          "file": "blueprint/app/pages/refusals.ts",
+          "description": "Every refusal code, counted in the window.",
+          "route": {
+            "path": "/portal/reference/refusals",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "d13a0af1644a1995"
+        },
+        "thing": {
+          "name": "thing",
+          "file": "blueprint/app/pages/thing.ts",
+          "description": "One thing: its lifecycle, its operations, its rules, events and errors.",
+          "route": {
+            "path": "/portal/things/:name",
+            "params": {
+              "name": {
+                "value": {
+                  "type": "text",
+                  "max": 200
+                }
+              }
+            }
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "46b8a85f303e82b8"
+        },
+        "trace": {
+          "name": "trace",
+          "file": "blueprint/app/pages/trace.ts",
+          "description": "One call's trace: its structure and timing, never a value.",
+          "route": {
+            "path": "/portal/traces/:id",
+            "params": {
+              "id": {
+                "value": {
+                  "type": "text",
+                  "max": 200
+                }
+              }
+            }
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "93a7ce973db3009a"
+        },
+        "values": {
+          "name": "values",
+          "file": "blueprint/app/pages/values.ts",
+          "description": "Every value a field can take.",
+          "route": {
+            "path": "/portal/reference/values",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "93883d97bc429aae"
+        },
+        "worlds": {
+          "name": "worlds",
+          "file": "blueprint/app/pages/worlds.ts",
+          "description": "The starting worlds, and the journeys that start from each.",
+          "route": {
+            "path": "/portal/starting-worlds",
+            "params": {}
+          },
+          "parent": "home",
+          "allowed": [
+            {
+              "kind": "anyone"
+            }
+          ],
+          "shows": [],
+          "offers": [],
+          "components": [],
+          "hash": "604a56dedd7c5000"
+        }
+      },
+      "components": {
+        "tab-contract": {
+          "name": "tab-contract",
+          "file": "blueprint/app/components/tab-contract.ts",
+          "description": "The contract tab: what the operation takes, answers, refuses and who may call it.",
+          "shows": [],
+          "offers": [],
+          "hash": "fa802b3947558655"
+        },
+        "tab-docs": {
+          "name": "tab-docs",
+          "file": "blueprint/app/components/tab-docs.ts",
+          "description": "The docs tab: the generated docs of the operation.",
+          "shows": [],
+          "offers": [],
+          "hash": "f4410d718103ac04"
+        },
+        "tab-metrics": {
+          "name": "tab-metrics",
+          "file": "blueprint/app/components/tab-metrics.ts",
+          "description": "The metrics tab: the window's tiles, its refusals by code and its calls table.",
+          "shows": [],
+          "offers": [],
+          "hash": "9f696dbe1bd65f79"
+        },
+        "tab-notes": {
+          "name": "tab-notes",
+          "file": "blueprint/app/components/tab-notes.ts",
+          "description": "The notes tab: the notes pinned to the operation.",
+          "shows": [],
+          "offers": [],
+          "hash": "38d13ba3689f49b9"
+        },
+        "tab-proof": {
+          "name": "tab-proof",
+          "file": "blueprint/app/components/tab-proof.ts",
+          "description": "The proof tab: the verdict per environment.",
+          "shows": [],
+          "offers": [],
+          "hash": "80c5a21a7097bbde"
+        }
+      },
+      "hash": "c72bf64d8f59cfa9"
+    },
+    "mounts": {
+      "app": {
+        "kind": "projection",
+        "file": "blueprint/projections/app.ts",
+        "package": "@orthograph/projections",
+        "version": "0.0.0",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
+        "chosen": {},
+        "hash": "d56c3fb839a74896"
+      }
+    }
+  },
+  "dependsOnByOperation": {},
+  "docs": {},
+  "extensions": {
+    "journeys": {
+      "state": "unavailable",
+      "reason": "the compiler's model has no journey projection"
+    },
+    "evals": {
+      "state": "unavailable",
+      "reason": "the logbook stores aggregate verdicts only"
+    },
+    "traces": {
+      "state": "unavailable",
+      "reason": "no trace source is wired to the portal yet"
+    }
+  },
+  "digest": "8a7f32efe9a6167104210c2459deaa9e77e9f7c9eb58d013a648750efd25ee50"
+}

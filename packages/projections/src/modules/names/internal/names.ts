@@ -17,6 +17,9 @@ export const local = (name: string) => (RESERVED.has(name) ? `${name}_` : name);
 /** The line that exports a binding under the verb's own name, when the binding had to be renamed. */
 export const exportedAs = (verb: string): ReadonlyArray<string> => (local(camel(verb)) === camel(verb) ? [] : [`export { ${local(camel(verb))} as ${camel(verb)} };`]);
 
+/** `.create`, or `["sign-in"]` for a name that isn't an identifier: how generated code reaches a thing, a verb or a client member. */
+export const member = (name: string) => (/^[A-Za-z_$][\w$]*$/.test(name) ? `.${name}` : `[${JSON.stringify(name)}]`);
+
 /** The variable an operation goes by in generated code: `allowance.grant` is `allowanceGrant`. */
 export const opVar = (op: OperationModel) => `${camel(op.thing)}${pascal(op.verb)}`;
 

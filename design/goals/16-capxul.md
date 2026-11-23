@@ -4,7 +4,7 @@ title: Capxul core, rebuilt on Orthograph
 milestone: "Goal 16: Capxul on Orthograph"
 release: "1.0"
 branch: goal/capxul
-base: goal/stage-1     # main once the lander's slice 1 retires goal/stage-1
+base: main
 status: running        # ready | running | landing | done | parked
 lead:
   harness: amp         # claude | codex | opencode | amp, set by the lead when it starts

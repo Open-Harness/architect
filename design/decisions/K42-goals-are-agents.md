@@ -291,6 +291,12 @@ Each line is one phrase that sat on one line of a live doc; `tools/ci/supersedes
 - `design/milestones.md`: "the beta plus stages 2 to 4 and the release" → "the same for every piece Capxul core pulled (K43), plus the release (K42)"
 - `design/milestones.md`: "**v1.0** is the four stage gates on `main`, plus the release" → "**v1.0** is the framework with every piece Capxul core pulled, extracted and published (K42, K43), plus the release"
 - `design/milestones.md`: "and Capxul (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) proves 1.0 (K42, K43)"
+- `.agents/skills/github/SKILL.md`: "**An ask** goes in the milestone of the goal that must act" → "**An ask** exists only for case 2: two goals' claims overlap"
+- `.agents/skills/github/SKILL.md`: "an issue, type Ask, `kind:ask`, **the acting goal's** milestone" → "an issue, type Ask, `kind:ask`: two goals' claims overlap, so Goal 18 settles who builds it"
+- `.agents/skills/github/SKILL.md`: "Goal 18's slice 2 rewrites this skill to match" → "The files are the truth and GitHub is where the work is seen (K33, K42)"
+- `.agents/skills/conductor/SKILL.md`: "rewrites this skill whole; until then, where it and K42 disagree, K42 wins." → "where this skill and K42 disagree, K42 wins."
+- `.agents/skills/conductor/SKILL.md`: "and check the step's `needs` are done on `main` (`design/build-plan.md`)" → "and check that what it needs is built or claimed by you"
+- `.agents/skills/conductor/SKILL.md`: "## Landing a layer into main" → "## Landing"
 
 ## What else it touches
 

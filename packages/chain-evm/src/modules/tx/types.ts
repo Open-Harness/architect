@@ -3,6 +3,7 @@ import type { Effect, Stream } from "effect";
 import type { Address, Hash, Hex, TransactionReceipt, TransactionSerializableEIP1559, TransactionSerializableLegacy } from "viem";
 import type { ChainError, ChainFault, RefusalLockEntry } from "../faults/types.ts";
 import type { DecodedEvent, EventFollower, EventSource } from "../events/types.ts";
+import type { NonceReservation } from "../nonce/types.ts";
 
 export interface Call {
   readonly from: Address;
@@ -64,6 +65,17 @@ export type TxState<TEvent extends DecodedEvent = DecodedEvent> =
   | { readonly _tag: "Confirmed"; readonly event: TEvent }
   | { readonly _tag: "Corrected"; readonly event: TEvent; readonly wasConfirmed: boolean };
 
+/** What the chain says about one submission right now (`ChainPort.probe`): one read, no waiting. */
+export type Standing =
+  | { readonly _tag: "Held" }
+  /** Mined. When the same call was sent again at a higher fee and that one was mined, the receipt is its (`receipt.transactionHash`). */
+  | { readonly _tag: "Included"; readonly receipt: TransactionReceipt }
+  | { readonly _tag: "Reverted"; readonly receipt: TransactionReceipt }
+  /** A different call from the sender used the nonce: nothing can send this one at that nonce again. */
+  | { readonly _tag: "Replaced"; readonly hash: Hash }
+  /** No receipt, the node no longer holds it, and the nonce is unused: it can be sent again. */
+  | { readonly _tag: "Dropped" };
+
 export interface ChainPort {
   readonly prepare: (call: Call) => Effect.Effect<Unsigned, ChainError>;
   /** An `eth_call` of the prepared transaction. `sign` and `submit` refuse a transaction that has not passed it. On failure, `release` it. */
@@ -83,6 +95,28 @@ export interface ChainPort {
   ) => EventFollower<TEvent>;
   readonly replace: (tx: Signed, signer: Signer, policy: ReplacementPolicy) => Effect.Effect<Signed, ChainFault>;
   readonly release: (tx: Unsigned) => Effect.Effect<void>;
+  /** Where a submission stands on the chain now. A single read: it never waits for a receipt (`track` does). */
+  readonly probe: (submission: Submission) => Effect.Effect<Standing, ChainFault>;
+  /**
+   * Take back a transaction this sender signed and broadcast before the process restarted, from its signed bytes: the nonce is
+   * reserved again and the result can be replaced like any other. Nothing is sent and nothing is simulated. Resume in nonce
+   * order; a nonce already reserved, or bytes that are not a transaction this port can send, fail.
+   */
+  readonly resume: (serialized: Hex, fromBlock: bigint) => Effect.Effect<Signed, ChainFault>;
+  /**
+   * Reserve a nonce of this sender without sending anything with it, for a call that can no longer be sent (a transaction that cannot be
+   * read, or a fill waiting after a restart). The reservation is the caller's: only it is ever filled or released. It fails when the
+   * nonce is already reserved.
+   */
+  readonly hold: (from: Address, nonce: number) => Effect.Effect<NonceReservation, ChainFault>;
+  /** The reservation a prepared (or resumed, or filled) transaction holds: the owner's handle for `fill`. */
+  readonly reservationOf: (tx: Unsigned) => NonceReservation | undefined;
+  /**
+   * A zero-value transfer from the reservation's sender to itself at its nonce, signed and ready for `submit`: what plugs a nonce whose
+   * call can no longer be sent, so the nonces after it are not queued behind it. It takes the caller's own reservation object, never one
+   * looked up by address: a reservation that is not the one held at its nonce is refused (`ChainFault` of kind `nonce`).
+   */
+  readonly fill: (reservation: NonceReservation, signer: Signer) => Effect.Effect<Signed, ChainFault>;
 }
 
 export interface ReplacementPolicy {
@@ -97,6 +131,11 @@ export interface ChainPortOptions {
   readonly receiptTimeoutMs?: number;
   readonly rpcTimeoutMs?: number;
   readonly refusals?: ReadonlyArray<RefusalLockEntry>;
+  /**
+   * Off by default. When on, a broadcast the node refuses for good leaves its nonce as a plain reservation held by its owner, instead of
+   * giving it back to the allocator, so the owner decides what the nonce is for (a relayer fills it).
+   */
+  readonly keepOnReject?: boolean;
   /** Optional trace provider for recovering data from mined reverts. */
   readonly traceRevert?: (hash: Hash) => Effect.Effect<Hex | undefined, ChainFault>;
 }
