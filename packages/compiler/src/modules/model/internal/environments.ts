@@ -1,7 +1,7 @@
 // Reads the environments into the model: the name comes from the file, never from a string inside it.
 import { Duration, Option } from "effect";
 import type { Publication, Sink } from "orthograph";
-import type { EnvironmentModel, PublicationModel, SinkModel } from "../types.ts";
+import type { EnvironmentModel, PublicationModel, SecretModel, SinkModel } from "../types.ts";
 import { Times } from "#modules/time/service.js";
 import { hashOf } from "./hash.ts";
 import type { Layout } from "./layout.ts";
@@ -16,14 +16,21 @@ const sinkOf = (s: Sink): SinkModel => (s.which === "local" ? { sink: "local" } 
 const publication =(p: Publication): PublicationModel =>
   p.how === "npm" ? { how: "npm", tag: p.tag } : p.how === "homebrew" ? { how: "homebrew", tap: p.tap } : { how: "binaries", on: p.on };
 
-export const environmentsOf = (layout: Layout, problems: Array<string>): Readonly<Record<string, EnvironmentModel>> =>
+/** Every runtime secret of the mounts and the app, in every environment: a release or builder secret never reaches a running place. */
+const runtimeOf = (secrets: Readonly<Record<string, SecretModel>>): ReadonlyArray<readonly [string, SecretModel["how"]]> =>
+  Object.entries(secrets).flatMap(([name, s]) => (s.kind === "runtime" ? [[name, s.how] as const] : []));
+
+export const environmentsOf = (layout: Layout, problems: Array<string>, secrets: Readonly<Record<string, SecretModel>> = {}): Readonly<Record<string, EnvironmentModel>> =>
   Object.fromEntries(byKey([...layout.environments]).map(([name, { file, declaration: e }]) => {
     const lifetime = e.lifetime === undefined ? Option.none() : Duration.fromInput(e.lifetime);
     if (e.lifetime !== undefined && Option.isNone(lifetime)) problems.push(`${file}: lifetime isn't a duration`);
     if (e.promotesFrom !== undefined && (e.promotesFrom === name || !layout.environments.has(e.promotesFrom))) {
       problems.push(`${file}: promotesFrom "${e.promotesFrom}" isn't another environment in blueprint/environments/`);
     }
-    for (const secret of Object.keys(e.secrets ?? {})) if (!SECRET.test(secret)) problems.push(`${file}: secret "${secret}" must be UPPER_SNAKE_CASE`);
+    for (const secret of Object.keys(e.secrets ?? {})) {
+      if (!SECRET.test(secret)) problems.push(`${file}: secret "${secret}" must be UPPER_SNAKE_CASE`);
+      if (secrets[secret]) problems.push(`${file}: secret "${secret}" is declared by a secrets.ts, so an environment doesn't name it too`);
+    }
     if ((e.deploy !== undefined || e.publish !== undefined) && e.cloud === undefined) problems.push(`${file}: deploys or publishes, so it needs a cloud`);
     for (const bound of Object.keys(e.stores ?? {})) {
       const declared = layout.stores.get(bound);
@@ -45,7 +52,7 @@ export const environmentsOf = (layout: Layout, problems: Array<string>): Readonl
       cloud: e.cloud ? { provider: e.cloud.provider, database: e.cloud.database.which } : null,
       database: e.database?.which ?? null,
       ...(e.stores && Object.keys(e.stores).length > 0 ? { stores: Object.fromEntries(byKey(Object.entries(e.stores)).map(([k, d]) => [k, d.which])) } : {}),
-      secrets: Object.fromEntries(byKey(Object.entries(e.secrets ?? {})).map(([k, s]) => [k, s.how])),
+      secrets: Object.fromEntries(byKey([...Object.entries(e.secrets ?? {}).map(([k, s]) => [k, s.how] as const), ...runtimeOf(secrets)])),
       promotesFrom: e.promotesFrom ?? null,
       ...(e.telemetry === undefined ? {} : { telemetry: sinks.map(sinkOf) }),
       deploy: Object.fromEntries(byKey(Object.entries(e.deploy ?? {})).map(([k, d]) => [k, { how: d.how, domain: d.domain }])),

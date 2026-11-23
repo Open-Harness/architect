@@ -19,6 +19,7 @@ export const Compiler: CompilerApi = {
     for (const [call, reach] of folded.calls) layout.calls.set(call, reach);
     for (const [file, journey] of folded.journeys) layout.journeys.set(file, journey);
     for (const [name, s] of folded.stores) layout.stores.set(name, s);
+    layout.mountSecrets.push(...folded.secrets);
     layout.problems.push(...folded.problems);
     // Errors take their names from their exports; stamping them here lets the loaded classes be used by name.
     for (const t of layout.things.values()) for (const [name, cls] of t.errors) ErrorNames.name(cls, name);

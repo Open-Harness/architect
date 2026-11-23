@@ -12,6 +12,7 @@ import { unfillable } from "./fillable.ts";
 import { RUNS_NEEDS, deviceProblems } from "./device.ts";
 import { Times } from "#modules/time/service.js";
 import { environmentsOf } from "./environments.ts";
+import { secretsOf } from "./secrets.ts";
 import { allowedOf } from "./allowed.ts";
 import { storiesOf } from "./journeys.ts";
 import { hashOf } from "./hash.ts";
@@ -254,13 +255,14 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   const refusals = refusalsOf(things, problems);
   problems.push(...exitClashes(things), ...operationExitClashes(things, operations), ...notFoundShapes(things));
   const values = Object.fromEntries([...layout.values].sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => [n, v.meta]));
-  const environments = environmentsOf(layout, problems);
+  const secrets = secretsOf(layout, problems);
+  const environments = environmentsOf(layout, problems, secrets);
   const stores = storesOf(layout, problems);
   const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel, problems);
   const allBlanks = { ...blanks, ...journeyBlanks };
   const alertRules = alertRulesOf({ operations, refusals, things, journeys: stories.journeys, environments });
   return {
-    model: { refusals, values, things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
+    model: { refusals, values, things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(secrets).length > 0 ? { secrets } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
     problems,
   };
 };
