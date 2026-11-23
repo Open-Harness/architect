@@ -108,6 +108,17 @@ describe("the instant a world keeps", () => {
     });
   });
 
+  it("refuses a span or an instant the clock cannot hold, whatever its size, and stays where it was", async () => {
+    await inStorage("clock-huge", (sql) => {
+      const clock = WorldClock.state(sql, STEPPED);
+      for (const span of ["99999999999999 months", "99999999999999 years", "99999999999999999999 days"]) {
+        expect(clock.plan({ span }), span).toMatchObject({ ok: false, status: 400, body: { _tag: "BadMove" } });
+      }
+      expect(clock.plan({ to: "+275760-09-14T00:00:00Z" })).toMatchObject({ ok: false });
+      expect(iso(clock.now())).toBe("2027-01-10T09:00:00.000Z");
+    });
+  });
+
   it("is the wall clock when real, and refuses every move with ClockNotMovable", async () => {
     await inStorage("clock-real", (sql) => {
       const clock = WorldClock.state(sql, { kind: "real" });

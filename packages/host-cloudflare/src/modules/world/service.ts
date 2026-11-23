@@ -39,6 +39,8 @@ export class World extends DurableObject<WorldEnv> {
       sql: ctx.storage.sql, clock: this.clock, env, changed: () => { if (this.clock.kind === "real") void this.schedule(); },
       ...(wakes === undefined ? {} : { wakes: (timer) => Effect.promise(() => this.inTime(() => Effect.runPromise(wakes(timer)))) }),
     });
+    // A wake the world died in the middle of is pending again (the table recovers it); a real world sets its alarm for it.
+    if (this.clock.kind === "real") void this.schedule();
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS cast (name TEXT PRIMARY KEY, person TEXT, email TEXT NOT NULL, password TEXT NOT NULL)");
     this.auth = AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: true });
   }

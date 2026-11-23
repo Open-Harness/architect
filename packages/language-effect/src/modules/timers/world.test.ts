@@ -145,6 +145,17 @@ describe("Timers on the world's table", () => {
     }));
   });
 
+  it("an instant the world cannot hold is a defect before anything reaches the table, whichever way it was asked for", async () => {
+    const world = makeWorld();
+    const refuse = (e: Effect.Effect<unknown, never, Busy | Timers | DurableTimers>) => expect(run(world, e)).rejects.toThrow(/finite instant/);
+    await refuse(Effect.flatMap(Effect.service(Timers), (timers) => timers.sleep("probe.nap", Duration.infinity)));
+    await refuse(Effect.flatMap(Effect.service(Timers), (timers) => timers.at(Number.NaN, "keeper/x", "due", Effect.void)));
+    await refuse(Effect.flatMap(Effect.service(Timers), (timers) => timers.within!("agents/run/r", Duration.infinity, Effect.never)));
+    await refuse(Effect.flatMap(Effect.service(DurableTimers), (durable) => durable.set(Number.POSITIVE_INFINITY, "keeper/x", "due", { kind: "keeper", payload: "x" })));
+    expect(world.rows).toEqual([]);
+    expect(world.durable).toEqual([]);
+  });
+
   it("DurableTimers go to the world's table", async () => {
     const world = makeWorld();
     await run(world, Effect.gen(function* () {

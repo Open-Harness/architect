@@ -5,6 +5,13 @@ import { Clock, Context, Duration, Effect, Layer, Option } from "effect";
 import { Busy, BusyOwner } from "#modules/work/types.js";
 import { DurableTimers, TimerWakes, Timers, WorldTable } from "../types.ts";
 
+/** The furthest instant a `Date` holds either side of the epoch: the world's clock cannot hold more, so nothing past it is set. */
+const MAX_INSTANT = 8.64e15;
+
+/** An instant the world can hold, or a defect naming what asked for it (`Duration.infinity`, `NaN`, a span past the range). */
+const instantOf = (at: number, what: string): Effect.Effect<number> =>
+  Number.isFinite(at) && Math.abs(at) <= MAX_INSTANT ? Effect.succeed(at) : Effect.die(new Error(`${what} needs a finite instant within a Date's range, not ${at}`));
+
 export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | WorldTable> = Layer.effectContext(
   Effect.gen(function* () {
     const busy = yield* Busy;
@@ -19,7 +26,7 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
       // gives the row up (or the token the world counted for it) if it is interrupted while it waits.
       at: (at, owner, name, work) =>
         Effect.uninterruptibleMask((restore) =>
-          Effect.flatMap(table.add(owner, name, at, owner), (id) => {
+          Effect.flatMap(Effect.andThen(instantOf(at, `a timer for ${owner} ${name}`), table.add(owner, name, at, owner)), (id) => {
             const mine = busy.as(owner);
             const woken = restore(table.wait(id)).pipe(
               Effect.onInterrupt(() => Effect.flatMap(table.cancel(id), (removed) => (removed ? Effect.void : Effect.andThen(mine.adopt, mine.leave)))),
@@ -31,7 +38,7 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
           const now = yield* Clock.currentTimeMillis;
           const holder = yield* Effect.service(BusyOwner);
-          const id = yield* table.add(owner, "sleep", now + Duration.toMillis(span), holder);
+          const id = yield* Effect.andThen(instantOf(now + Duration.toMillis(span), `a sleep for ${owner}`), table.add(owner, "sleep", now + Duration.toMillis(span), holder));
           // The row is published before the token goes back, so the world never sees the process idle with no row.
           yield* busy.leave;
           yield* restore(table.wait(id)).pipe(Effect.onInterrupt(() => giveUp(id)));
@@ -41,7 +48,7 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
           const now = yield* Clock.currentTimeMillis;
           const holder = yield* Effect.service(BusyOwner);
-          const id = yield* table.add(owner, "deadline", now + Duration.toMillis(span), holder);
+          const id = yield* Effect.andThen(instantOf(now + Duration.toMillis(span), `a deadline for ${owner}`), table.add(owner, "deadline", now + Duration.toMillis(span), holder));
           yield* busy.leave;
           return yield* restore(Effect.raceFirst(
             Effect.map(wait, Option.some),
@@ -55,7 +62,9 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
     // Rule 6 of M8-timers-shape: nothing could fire a durable timer where no `TimerWakes` is provided, so setting one is a defect.
     const durable = DurableTimers.of({
       set: (at, owner, name, wake) =>
-        Option.isNone(wakes) ? Effect.die(new Error(`no TimerWakes to fire ${owner} ${name}: provide the host's`)) : table.set(at, owner, name, wake),
+        Option.isNone(wakes)
+          ? Effect.die(new Error(`no TimerWakes to fire ${owner} ${name}: provide the host's`))
+          : Effect.andThen(instantOf(at, `a durable timer for ${owner} ${name}`), table.set(at, owner, name, wake)),
       clear: table.clear,
       pending: table.durable,
     });

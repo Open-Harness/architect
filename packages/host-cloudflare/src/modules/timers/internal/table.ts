@@ -46,7 +46,15 @@ interface Stored extends Record<string, SqlStorageValue> {
   readonly wake: string | null;
 }
 
-const SCHEMA = "CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, owner TEXT NOT NULL, name TEXT NOT NULL, holder TEXT, wake TEXT)";
+/** `firing` marks a durable row whose wake has started and not yet returned: it is out of the pending set but not gone, so a crash cannot lose it. */
+const SCHEMA = "CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, owner TEXT NOT NULL, name TEXT NOT NULL, holder TEXT, wake TEXT, firing INTEGER NOT NULL DEFAULT 0)";
+
+/** The furthest instant a `Date` can hold either side of the epoch, in milliseconds: nothing the world's clock cannot hold goes in the table. */
+const MAX_INSTANT = 8.64e15;
+
+/** An instant the table and the clock can hold; anything else is refused (a defect to the caller) before it reaches SQL. */
+const instantOf = (at: number, what: string): number =>
+  Number.isFinite(at) && Math.abs(at) <= MAX_INSTANT ? at : Effect.runSync(Effect.die(new Error(`${what} needs a finite instant within a Date's range, not ${at}`)));
 
 const rowOf = (r: Stored): Row => ({ id: r.id, at: r.at, owner: r.owner, name: r.name });
 
@@ -58,25 +66,43 @@ export const makeTable = (
   counting: boolean,
 ): Table => {
   sql.exec(SCHEMA);
+  if (!sql.exec<{ name: string }>("PRAGMA table_info(timers)").toArray().some((c) => c.name === "firing")) sql.exec("ALTER TABLE timers ADD COLUMN firing INTEGER NOT NULL DEFAULT 0");
   // A sleeping row belongs to a process that is gone with this object's memory.
   sql.exec("DELETE FROM timers WHERE wake IS NULL");
+  // A wake the world died in the middle of is not lost (at least once, M8-timers-shape): its row is pending again, due as it was,
+  // unless a pending row now has the same (owner, name), which wins. Of several firing rows for one key the newest wins.
+  sql.exec("UPDATE timers SET firing = 0 WHERE firing = 1 AND NOT EXISTS (SELECT 1 FROM timers p WHERE p.firing = 0 AND p.wake IS NOT NULL AND p.owner = timers.owner AND p.name = timers.name)");
+  sql.exec("DELETE FROM timers WHERE firing = 1");
+  sql.exec("DELETE FROM timers WHERE wake IS NOT NULL AND firing = 0 AND id < (SELECT MAX(t.id) FROM timers t WHERE t.wake IS NOT NULL AND t.firing = 0 AND t.owner = timers.owner AND t.name = timers.name)");
   const waiting = new Map<number, Deferred.Deferred<ClockSource | undefined>>();
+  /** The pending rows (not firing) that meet `where`, in firing order. */
   const select = (where: string, ...args: Array<SqlStorageValue>) =>
-    sql.exec<Stored>(`SELECT id, at, owner, name, holder, wake FROM timers ${where} ORDER BY at, id, owner`, ...args).toArray();
+    sql.exec<Stored>(`SELECT id, at, owner, name, holder, wake FROM timers WHERE firing = 0${where === "" ? "" : ` AND ${where.replace(/^WHERE /, "")}`} ORDER BY at, id, owner`, ...args).toArray();
   const durableOf = (r: Stored): DurableTimer => ({ ...rowOf(r), wake: JSON.parse(r.wake!) as Wake });
-  const insert = (r: { readonly id?: number; readonly at: number; readonly owner: string; readonly name: string; readonly holder: string | null; readonly wake: string | null }) =>
-    sql.exec<{ id: number }>("INSERT INTO timers (id, at, owner, name, holder, wake) VALUES (?, ?, ?, ?, ?, ?) RETURNING id", r.id ?? null, r.at, r.owner, r.name, r.holder, r.wake).one().id;
-  const forget = (id: number) => sql.exec("DELETE FROM timers WHERE id = ?", id).rowsWritten > 0;
+  const insert = (r: { readonly at: number; readonly owner: string; readonly name: string; readonly holder: string | null; readonly wake: string | null }) =>
+    sql.exec<{ id: number }>("INSERT INTO timers (at, owner, name, holder, wake) VALUES (?, ?, ?, ?, ?) RETURNING id", r.at, r.owner, r.name, r.holder, r.wake).one().id;
+  /** A sleeping row, taken out for good: false when it was already taken. */
+  const forget = (id: number) => sql.exec("DELETE FROM timers WHERE id = ? AND wake IS NULL", id).rowsWritten > 0;
+  /** A durable row, out of the pending set and into `firing`, in one step: false when something else already took it. */
+  const take = (id: number) => sql.exec("UPDATE timers SET firing = 1 WHERE id = ? AND firing = 0", id).rowsWritten > 0;
+  /** The wake has returned: the record goes. */
+  const done = (id: number) => void sql.exec("DELETE FROM timers WHERE id = ?", id);
+  /** The wake did not finish: pending again, unless the wake already set a replacement under the same (owner, name), which stands alone. */
+  const restore = (r: Stored) => {
+    if (select("WHERE wake IS NOT NULL AND owner = ? AND name = ?", r.owner, r.name).length === 0) sql.exec("UPDATE timers SET firing = 0 WHERE id = ?", r.id);
+    else done(r.id);
+  };
 
   /**
    * One firing, uninterruptible from taking the row out to the world having counted what it woke: false when an earlier wake in
    * the walk already took the row. A wake that is interrupted or fails puts its row back (unless it was replaced) and fails the step.
    */
   const fireOne = (r: Stored, source: ClockSource | undefined): Effect.Effect<boolean, WakeFailed> =>
-    Effect.uninterruptibleMask((restore) => Effect.suspend(() => {
-      if (!forget(r.id)) return Effect.succeed(false);
+    Effect.uninterruptibleMask((restoreInterrupt) => Effect.suspend(() => {
       if (r.wake === null) {
-        // A sleeper: count it and hand the instant back in one synchronous step.
+        // A sleeper is an in-memory wait: it lives and dies with the process that parked it (and a row is dropped when the object starts),
+        // so it needs no record of a firing in progress. Count it and hand the instant back in one synchronous step.
+        if (!forget(r.id)) return Effect.succeed(false);
         const gate = waiting.get(r.id);
         if (gate !== undefined) {
           if (counting) count.enter(r.holder ?? r.owner);
@@ -86,14 +112,16 @@ export const makeTable = (
       }
       const timer = durableOf(r);
       if (wakes === undefined) {
-        insert(r);
         return Effect.fail(new WakeFailed({ owner: r.owner, name: r.name, message: `no wake handler routes kind ${timer.wake.kind} in this world` }));
       }
+      if (!take(r.id)) return Effect.succeed(false);
       if (counting) count.enter(r.owner);
-      return restore(wakes(timer)).pipe(
+      // The row is deleted only once the wake has returned; a wake that fails or is interrupted puts it back to pending, and one the
+      // world died in the middle of is put back when the table is built again.
+      return restoreInterrupt(wakes(timer)).pipe(
+        Effect.tap(() => Effect.sync(() => done(r.id))),
         Effect.catchCause((cause) => Effect.suspend(() => {
-          // Unless the wake already set a replacement under the same (owner, name): then there is still only one, the new one.
-          if (select("WHERE wake IS NOT NULL AND owner = ? AND name = ?", r.owner, r.name).length === 0) insert(r);
+          restore(r);
           return Effect.fail(new WakeFailed({ owner: r.owner, name: r.name, message: String(cause) }));
         })),
         Effect.ensuring(Effect.sync(() => { if (counting) count.leave(r.owner); })),
@@ -103,7 +131,7 @@ export const makeTable = (
 
   return {
     add: (owner, name, at, holder) => {
-      const id = insert({ at, owner, name, holder, wake: null });
+      const id = insert({ at: instantOf(at, `a sleep for ${owner} ${name}`), owner, name, holder, wake: null });
       waiting.set(id, Deferred.makeUnsafe<ClockSource | undefined>());
       return id;
     },
@@ -122,9 +150,12 @@ export const makeTable = (
     },
     set: (at, owner, name, wake) => {
       const pending = select("WHERE wake IS NOT NULL AND owner = ? AND name = ?", owner, name)[0];
-      return pending !== undefined ? pending.id : insert({ at, owner, name, holder: null, wake: JSON.stringify(wake) });
+      if (pending !== undefined) return pending.id;
+      // The payload is JSON (rule 4): one that is not (a bigint, a cycle) is refused here, not stored as something else.
+      const payload = Effect.runSync(Effect.try(() => JSON.stringify(wake)).pipe(Effect.orDie));
+      return insert({ at: instantOf(at, `a durable timer for ${owner} ${name}`), owner, name, holder: null, wake: payload });
     },
-    clear: (owner, name) => sql.exec("DELETE FROM timers WHERE wake IS NOT NULL AND owner = ? AND name = ?", owner, name).rowsWritten > 0,
+    clear: (owner, name) => sql.exec("DELETE FROM timers WHERE wake IS NOT NULL AND firing = 0 AND owner = ? AND name = ?", owner, name).rowsWritten > 0,
     rows: () => select("").map(rowOf),
     durable: () => select("WHERE wake IS NOT NULL").map(durableOf),
     sleeping: () => select("WHERE wake IS NULL").map(rowOf),

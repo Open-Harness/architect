@@ -172,6 +172,36 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | an entry's first read (`begin`) | fresh by construction | the source comes with the token |
     | a real world | none | there is no source to take |
 
+    *Class E: a firing that is not crash-safe* (`M8-timers-shape` rule 3, at least once). A durable row is no longer deleted at fire time.
+    `firing` is a column: the same SQL step that takes a row out of the pending set marks it, and it is deleted only once its wake has
+    returned. A wake that fails or is interrupted puts it back to pending, unless a pending row now has the same (owner, name), when the
+    replacement stands alone. When the table is built, any `firing` row left over is pending again, due as it was, unless there is a
+    replacement (of several firing rows for one key the newest wins); a real world also sets its alarm for it. Tested in
+    `timers/crash.test.ts`: a row firing mid-wake survives the table being built again and fires again; a replacement set during the wake wins;
+    a successful wake leaves no record; a failed one is pending again.
+
+    | Place | Verdict | How |
+    |---|---|---|
+    | a durable row's firing | **was open** | `firing` column, deleted on return, recovered on build |
+    | a durable row a wake clears or replaces mid-firing | covered | `clear` takes pending rows only; `set` sees only pending ones, so a replacement is a new pending row |
+    | a sleeper's row | **not durable, no record** | a sleep is an in-memory wait that lives and dies with the process that parked it, and its rows are dropped when the object starts, so a firing in progress needs no record |
+    | `TimerWakes` with no route | nothing is taken | the row stays pending and the step fails, naming it |
+
+    *Class F: a value that crosses into SQL or the clock unchecked.* Nothing that cannot be an instant (not finite, or beyond a Date's
+    +/-8.64e15 ms) is stored. Refused as a defect before it leaves the process (`language-effect`: a sleep's computed instant,
+    `within`'s deadline, `Timers.at`, `DurableTimers.set`) and again in the world's table (`add`, `set`: the trust boundary); a durable
+    payload that is not JSON (a bigint, a cycle) is refused the same way.
+
+    | Place | Verdict | How |
+    |---|---|---|
+    | a sleep or deadline: `now + span` (`Duration.infinity`) | **was open** | refused before `table.add` (`timers/world.test.ts`) and in `add` (`timers/crash.test.ts`) |
+    | `Timers.at`, `DurableTimers.set` with `NaN` or `Infinity` | **was open** | the same |
+    | a durable payload | **was open** | `JSON.stringify` failing is a defect, nothing stored |
+    | `GET /_world/clock`, the walk: `iso(row.at)` | follows | no row can hold what `Date` cannot |
+    | the door's spans and instants (`advance`, `move-to`) | already refused | `plan` checks finite and range; tested with `99999999999999 months`, `years` and `days` (`clock/clock.test.ts`) |
+    | `ORTHO_QUIET_MS`, `ORTHO_FIRE_LIMIT` | already checked | a positive finite number, or the default |
+    | owner, name, holder | strings by type | nothing to range-check |
+
     **Self-review of the whole diff** (adversarial, against `origin/goal/time`): tokens, rows, gates, clock sources, the alarm. Found and
     fixed in this round:
     - a `timerWait` on a row the world had forgotten (a reset) or no longer knew hung for ever: it now wakes uncounted;
