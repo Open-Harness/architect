@@ -32,14 +32,16 @@ const declared = (model: Model): MapView | undefined => {
 const derived = (model: Model, project: string): MapView => {
   const anyone = [{ kind: "anyone" as const }];
   const things = Object.keys(model.things).sort();
+  // The home takes the name `home` unless a thing has it; then `home-page`, and so on, so no two pages share a name.
+  const home = [...Array(things.length + 1).keys()].map((i) => `home${"-page".repeat(i)}`).find((n) => !things.includes(n)) ?? "home";
   const pages: ReadonlyArray<ViewPage> = [
-    { name: "home", path: "/", params: [], description: `The things ${project} is made of.`, allowed: anyone, shows: [], offers: [], components: [] },
+    { name: home, path: "/", params: [], description: `The things ${project} is made of.`, allowed: anyone, shows: [], offers: [], components: [] },
     ...things.map((thing): ViewPage => ({
       name: thing,
       path: `/things/${thing}`,
       params: [],
       description: model.things[thing]?.description || `The ${thing}, and what can be done to it.`,
-      parent: "home",
+      parent: home,
       allowed: anyone,
       shows: [],
       offers: Object.keys(model.operations).filter((o) => model.operations[o]?.thing === thing).sort(),
@@ -48,7 +50,7 @@ const derived = (model: Model, project: string): MapView => {
   ].sort(byName);
   return {
     layout: "sidebar",
-    home: "home",
+    home,
     pages,
     groups: [{ title: "Things", folded: false, pages: things.map((t) => ({ page: t, path: `/things/${t}` })) }],
   };
