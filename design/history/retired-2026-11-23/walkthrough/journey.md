@@ -1658,9 +1658,9 @@ export default Blueprint.workflow({
   starts: { revision: Revision.fields.id },
   activities: {
     freeze:  Blueprint.activity.call(revision.freeze),                      // a D1 commit: body and digest frozen
-    propose: Blueprint.activity.call(proposal.open),                        // the member calls it; the workflow awaits its event (M3-workflows)
+    propose: Blueprint.activity.client(proposal.open, { by: "member" }),    // the member approves the wallet call  (Superseded by M3-workflows, 22 November 2026)
     seen:    Blueprint.activity.await(Governance.events.ProposalOpened,     // the confirmed event, with the
-               { within: "7 days" }),                                       //   the handler passes the expected proposal and digest as `match`
+               { match: { proposal: "propose.proposal", digest: "freeze.digest" } }), //   expected proposal and digest  (Superseded by M3-workflows, 22 November 2026)
     link:    Blueprint.activity.call(revision.link),                        // a D1 commit: revision ↔ proposal
   },
 });
