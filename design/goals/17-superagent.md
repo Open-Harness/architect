@@ -617,8 +617,8 @@ its checks (#648, #658, #673: 08 to 17) and its build (#670) give the blueprint'
 plugins, the new `@orthograph/agents` package, and `ReadNotServed` (AR-008) for a pinned or derived read until slice 7
 serves it; GOAL17-slice5-forms (calls 1 to 16) and GOAL17-plugin-scope record what the build decided. GOAL17-check-harness
 (#681) says how a check scripts a model, kills a world, steps the clock and the outbox, and probes an agent. Open now:
-slice 6's checks (#686), slice 10's checks (#687, with GOAL17-connections) and slice 8's checks. Two snags are open:
-slice 6's journeys need `versions:` served and an `agent.open` handler before they can pass (#685), and the compiler's
+slice 6's checks (#686), slice 10's checks (#687, whose branch carries GOAL17-connections) and slice 8's checks. Two snags are open:
+slice 6's journeys need `versions:` served and an `agent.open` handler before they can pass (the snag #685), and the compiler's
 acme tests time out on a slow CI runner, about one run in two.
 
 What slice 5's and slice 8's authors take from slice 2's last review, beyond the records:
