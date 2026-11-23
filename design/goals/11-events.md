@@ -104,23 +104,28 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-**Parked on 23 November 2026 under K42** (section 7: "11 · Events | nothing in review | parked; #498 stays a draft").
-Its open slices go back to the board as items at their stage; no lead holds them.
+23 November 2026, parked under K42 (section 7: "11 · Events | nothing in review | parked; #498 stays a draft"). The
+lander updated this at the `goal/events` landing (#794). Its open slices are board items at their stage; no lead holds
+them.
 
-- **Landed on `goal/events`:** the base merge from `goal/stage-1` (#454) and slice 1, the decision on doors, the inbox,
-  `on:`, the outbox, views and workflow events, `design/decisions/M5-reach-out.md` (#479, merge `8d13eca3`). #387 is
-  closed. Codex's last pass on #479 was still running at the merge (Codex is advisory); a finding that arrives after
-  it is answered in the next pull request on this design.
+- **Landed in `main`** with #794: the sync with stage 1 (#454), slice 1, `design/decisions/M5-reach-out.md` (#479),
+  and the parking (#726). Codex's five findings on #479 were answered and resolved. Its last pass never reviewed the
+  final head and posted nothing after the merge, so nothing from it is open.
+- **K40 changes M5-reach-out** (22 November, applied at #794, answering Asks #536 and #538):
+  - Fix 1: the door's `service` caller carries the sender's outside account (`actor`), and a role admits it through
+    `actor:`.
+  - Fix 5: an event is keyed by the change to its object, the same from a webhook and a poll. An adapter catches up
+    after sleep with `catchUp` and a cursor, a new slice, M5.16.
 - **Open, as board items:**
-  - Slice 3, events in (#389): signed doors, including the GitHub-style webhook (HMAC-SHA256 over the raw body, an event
-    id for idempotency), and `on:`. Nothing written. Goal 3's service principal (M2.03, #297) has landed on
-    `goal/stage-1`, after `goal/events`' last base merge; its build needs that merged in and the engine seams asked in #480. Goal 12 asked for it early (#477).
-  - Slice 4, the outbox for every move (#390): after slice 3; seams in #480.
-  - Slice 2, journeys for payments and notifications (#388): after the beta (Aaron, 22 November). Draft #498 holds
-    `design/decisions/M5-checks.md`, a `builder-paths` change making `e2e/events/expected-failing/` shrink-only, and
-    unrun, unreviewed checks under `e2e/events/` that slice 3's checks can start from.
-  - Slice 5, `emits:` on an operation (#391): after the beta; needs Goal 8's workflow decision (#462).
-- **Asks still open:** #480 (Goal 3, the engine seams), #481 (Goal 4, the follower through `Inbox.accept`), #462
-  (Goal 8, M3.01 early). #501 passed a Codex finding on Goal 3's staging code to Goal 3.
-- **Next, for whoever takes slice 3:** merge the integration branch in, write the signed-door and `on:` checks from
-  #498's start, then build once the #480 seams have landed, and land it early for Goal 12.
+  - Slice 3, events in (#389, M5.03): signed doors and `on:`, keyed and attributed as K40 says. Nothing written. Goal
+    3's service principal (M2.03) is on `main`. It needs the engine seams of #480.
+  - M5.16, catching up after sleep: after M5.03.
+  - Slice 4, the outbox for every move (#390, M5.04): after slice 3; seams in #480.
+  - Slice 2, journeys for payments and notifications (#388, M5.02): after the beta (Aaron, 22 November). Draft #498
+    holds `design/decisions/M5-checks.md`, a `builder-paths` change making `e2e/events/expected-failing/` shrink-only,
+    and unrun, unreviewed checks under `e2e/events/` that slice 3's checks can start from.
+  - Slice 5, `emits:` on an operation (#391): after the beta. It needs M3.01, the workflows decision (#462).
+- **Who picks it up.** Under K42 the superagent (Goal 17) takes events in and the outbox first, since its GitHub door
+  slice pulls them (K40). #480, #462 and #477 are older Asks. Under K42 they're read as the needs of these board items,
+  and Goal 12, which made #477, is parked. Whoever takes slice 3 merges `main` in, writes the signed-door and `on:`
+  checks from #498's start, then builds.

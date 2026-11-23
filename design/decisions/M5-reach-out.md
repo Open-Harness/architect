@@ -160,7 +160,9 @@ The call:
    HMAC scheme by header, prefix and tolerance, or the adapter's own verifier in its `src/`), where the event's id and
    type are (in headers or in the body), and its events as `Blueprint.event` schemas. A GitHub-style sender signs just
    the raw body with HMAC-SHA256 and sends its delivery id separately. The secret is the adapter's declared signing
-   secret, read only by its layer (S21: its `provision` registers the door at promote).
+   secret, read only by its layer (S21: its `provision` registers the door at promote). _(Superseded by K40, 22 November
+   2026, fix 5: an event's id is one change to the object it is about, its object, action and version, which the
+   webhook and a poll both carry. The door keys by delivery only when the sender offers no object id.)_
 2. **What the door answers.** A bad or stale signature: 401, nothing written, span `in.<mount>.refused`
    (`refusal: BadSignature`); the signature is compared in constant time. A type the mount does not include: 200, nothing
    written (vendors send many). An included event that does not decode: 200, nothing written, and a defect on the span,
@@ -170,10 +172,13 @@ The call:
 3. **The inbox is the journal.** `Inbox.accept` writes one `_journal` row in the default database with
    `id = "<source>:<the sender's id>"`, `operation = "in:<source>"`, `move = ""`, `subject` the sender's object id where
    the adapter names one (else the id), and the event's outbox rows, in one batch. A second accept of the same id hits the
-   unique id and writes nothing: **a webhook sent twice settles once.**
+   unique id and writes nothing: **a webhook sent twice settles once.** _(Superseded by K40, 22 November 2026, fix 5:
+   "the sender's id" is the event's id under fix 5, so a webhook and a catch-up poll of one change also settle once.)_
 4. **Other sources use the same entry.** The chain follower (M6.09) calls `Inbox.accept({ source: "chain", id: "<chain>:<block hash>:<log index>", … })`
    with no door: it read the chain itself. A correction (`<Event>Corrected { wasConfirmed }`, K7 Q6) is another event
-   with its own id. A poll or change feed (K3 item 9) is the same.
+   with its own id. A poll or change feed (K3 item 9) is the same. _(Superseded by K40, 22 November 2026, fix 5: an
+   adapter declares `catchUp: { every, since(cursor) }`, run through `Timers` and once when the world starts; the
+   runtime keeps `_cursors (mount, cursor)` beside `_journal`, and the cursor moves only after its events are accepted.)_
 
 ### Q3. `on:`, and idempotency by event id
 
@@ -209,7 +214,9 @@ The call:
 ### Q4. Who delivers: `system` and `service(<mount>)`
 
 M5.03 uses Goal 3's [M2.03 principals](M2-auth.md), not its own. The runtime delivers our own events as
-`{ kind: "system" }`, and a mount's events as `{ kind: "service", mount }`. A service role declared with
+`{ kind: "system" }`, and a mount's events as `{ kind: "service", mount }`. _(Superseded by K40, 22 November 2026,
+fix 1: the `service` caller may also carry `actor`, the sender's stable outside account id with a name and `bot`, read
+from each event by the adapter; a role admits it through the `actor:` form.)_ A service role declared with
 `Blueprint.role(Thing, { service: adapterMount })` admits only that mount; `Blueprint.system` admits only the system.
 `Blueprint.anyone` admits both, just as it admits all other principals. A person or agent cannot acquire either identity
 through a public door. The SDK, CLI and MCP leave out an operation that only a service role or `Blueprint.system` admits.

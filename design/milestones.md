@@ -427,7 +427,7 @@ actors; `ortho prove` names each adapter's stand-in.
 |---|---|---|---|---|---|
 | M5.01 ✅ | Views (where a view lives, how it is rebuilt), the general outbox (S22, S24), `step.await` on adapter events | none (K34) | decision | [`decisions/M5-reach-out.md`](decisions/M5-reach-out.md) written | S |
 | M5.02 | Journeys for payments and notifications | M5.01 | checks | they fail on empty handlers | M |
-| M5.03 | Events in: signed doors, `on:` declarations, and delivery of inbound events through the default-store outbox, keyed by event id. Move-event delivery as `system` follows in M5.04 | M5.01; M2.03 for the build only | build | a webhook sent twice settles once | M |
+| M5.03 | Events in: signed doors, `on:` declarations, and delivery of inbound events through the default-store outbox, each event keyed by the change to its object, and the door's caller carrying the sender's outside account (K40 fixes 1 and 5). Move-event delivery as `system` follows in M5.04 | M5.01; M2.03 for the build only | build | a webhook sent twice settles once | M |
 | M5.04 | The outbox for every move: events written with the state, delivered at least once; an undeliverable one is a defect with a redelivery command | M5.03 | build | killing a delivery mid-way delivers once after restart | M |
 | M5.05 | Views at runtime: `Blueprint.view`, kept from events, reads generated in the SDK, CLI and MCP | M5.04 | build | the allowances view lists actor-homed allowances | L |
 | M5.06 ∥ | The data map and the portal's data page | M5.05 | build | `generated/data/map.md` and the page list every store (kind, binding, migrations), every source (adapter, calls, stand-in) and every view | S |
@@ -439,7 +439,8 @@ actors; `ortho prove` names each adapter's stand-in.
 | M5.11 ∥ | Another Orthograph app as an adapter, `--from-model`, its stand-in a world of that app | M5.07 | build | acme calls a second fixture app through a generated adapter | M |
 | M5.14 ∥ | Signals from GitHub issues (M4.25's github adapter, not a second one), Slack and alerts into the work inbox (K11): their adapters' events received through `on:` | M5.03, M3.19, M4.25 | build | a GitHub issue, a Slack message and a fired alert each land once in the inbox; an alert on a standing goal's measure is accepted under it | M |
 | M5.15 ∥ | Declared state limits ([`decisions/K18-monitoring-falls-out.md`](decisions/K18-monitoring-falls-out.md) Q3): `within` on a machine state; entering it starts a `Timers` wait for that thing; leaving cancels it; overstaying raises `<thing>.overstayed` once, which becomes an alert rule with no counting | M5.14, M8.07 | build | a fixture link held in `listed` past a 1 min `within` raises one `link.overstayed` and one alert; one that moves on in time raises nothing; the portal shows no count of links in any state | S |
-| M5.12 | **Gate M5** | M5.02 to M5.11, M5.13 to M5.15 | e2e | `nx run e2e:m5` passes on `main` | S |
+| M5.16 | Catching up after sleep (K40 fix 5): an adapter's `catchUp` (`every`, `since(cursor)`) through `Timers` and once at start, `_cursors (mount, cursor)` beside `_journal`, the cursor moved only after its events are accepted | M5.03; M8.07 for `Timers` | build | a world down during a delivery accepts the missed event once on waking, and a webhook and a poll of one change settle once | S |
+| M5.12 | **Gate M5** | M5.02 to M5.11, M5.13 to M5.16 | e2e | `nx run e2e:m5` passes on `main` | S |
 
 ## M6: On chain
 
