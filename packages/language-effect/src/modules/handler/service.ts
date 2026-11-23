@@ -95,10 +95,11 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         withRecords, Effect.withTracerEnabled(false), Effect.tapError(refused(principal, number, callId, request)),
       );
       const logs = yield* recordingLogs(payload, op.payload);
+      // The operation is counted work from its handler to its commit (M8.07): a world is quiet only once its writes are visible.
+      const busy = (yield* Busy).as(name);
       return yield* Effect.gen(function* () {
         // The operation's span, which a move's attributes are written on whichever step span the handler is in.
         const operationSpan = yield* Effect.currentSpan;
-        const busy = yield* Busy;
         yield* Effect.annotateCurrentSpan(payloadAttributes(payload, op.payload));
         // Where the call ran: the world's environment, and the kind of store its thing lives in.
         yield* Effect.annotateCurrentSpan({ environment: yield* Environment, store: op.thing.lives });
@@ -116,7 +117,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         const from = yield* checkFrom(op, notFrom, handed.subject);
         const chosen = yield* Ref.make<string | undefined>(undefined);
         const move = (to?: string) => chooseOutcome(name, op, to, operationSpan).pipe(Effect.flatMap((o) => Ref.set(chosen, o)));
-        const answer = yield* busy.counted(handler(payload, { principal, steps, move, ...handed })).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
+        const answer = yield* handler(payload, { principal, steps, move, ...handed }).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
         // Recorded before the check, so an answer outside its declaration is evidence `prove` can name.
         yield* Effect.annotateCurrentSpan(answerAttributes(answer, op.answer));
         // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
@@ -140,6 +141,8 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
             ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
           })),
           spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
+          // A write section: the commit happens only while the world still holds this request's token, and a reset waits for it (M8.07).
+          busy.fenced,
         );
         if (committed === "conflict") return yield* new Conflict();
         return answer;
@@ -156,6 +159,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
             Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }), ...(log === undefined ? {} : { "refusal.log": log }) })));
         }),
         spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
+        busy.counted,
       );
     });
 

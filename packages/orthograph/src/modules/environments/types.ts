@@ -1,10 +1,11 @@
 // Environments: somewhere the application runs. One file per environment in `blueprint/environments/`, named by its path.
 import type { Duration } from "effect";
+import type { ChainNetwork, ChainToken } from "#modules/chains/types.js";
 import type { CloudProvider, Database } from "#modules/cloud/types.js";
 import type { Deployment, Publication } from "#modules/deploy/types.js";
 import type { Identity } from "#modules/identity/types.js";
 import type { Via } from "#modules/plugins/types.js";
-import type { Secret } from "#modules/secrets/types.js";
+import type { SecretDeclaration } from "#modules/secrets/types.js";
 import type { Sink } from "#modules/telemetry/types.js";
 import type { Clock } from "#modules/time/types.js";
 
@@ -27,9 +28,14 @@ export interface EnvironmentSpec {
    * Only the stores that differ from the default: each names a declared store (`blueprint/stores/<name>.ts`) and where
    * it lives here. The compiler refuses a name that isn't a store. By default every store gets its own database.
    */
-  readonly stores?: Readonly<Record<string, Database>>;
+  readonly stores?: Readonly<Record<string, Database | ChainNetwork>>;
+  /**
+   * Which contract each fixed token asset is, by asset name and then by chain store: `usdc: { budgets: Chain.evm.token("0x…") }`
+   * (M6-money item 2). Every chain store whose things use a fixed token asset must have it bound here.
+   */
+  readonly assets?: Readonly<Record<string, Readonly<Record<string, ChainToken>>>>;
   /** Secrets by name, and how each gets its value. */
-  readonly secrets?: Readonly<Record<string, Secret>>;
+  readonly secrets?: Readonly<Record<string, SecretDeclaration>>;
   /** Where its traces and logs go: a list, so one sink or several is the same line. Absent: the local Collector only. */
   readonly telemetry?: ReadonlyArray<Sink>;
   /** Only a revision with a green verdict in this environment may be promoted here. */

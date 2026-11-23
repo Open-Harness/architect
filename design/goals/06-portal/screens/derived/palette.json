@@ -1,0 +1,135 @@
+{
+  "entries": [
+    {
+      "kind": "page",
+      "name": "handle",
+      "path": "/things/handle",
+      "description": "A public name that belongs to one person until they release it, and is the address of a public page.",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ]
+    },
+    {
+      "kind": "page",
+      "name": "home",
+      "path": "/",
+      "description": "The things plugged-in is made of.",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ]
+    },
+    {
+      "kind": "page",
+      "name": "link",
+      "path": "/things/link",
+      "description": "A title and web address on a public page.",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ]
+    },
+    {
+      "kind": "page",
+      "name": "profile",
+      "path": "/things/profile",
+      "description": "A claimed name's public page, with its links in the order they were put.",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ]
+    },
+    {
+      "kind": "operation",
+      "name": "handle.claim",
+      "page": "handle",
+      "component": null,
+      "description": "Claim a free name and make it the address of your public page, with its profile.",
+      "allowed": [
+        {
+          "kind": "signed-in"
+        }
+      ]
+    },
+    {
+      "kind": "operation",
+      "name": "handle.release",
+      "page": "handle",
+      "component": null,
+      "description": "Free your name and take its public page offline. Anyone may claim the name afterwards.",
+      "allowed": [
+        {
+          "kind": "role",
+          "role": "handle.handleOwner"
+        }
+      ]
+    },
+    {
+      "kind": "operation",
+      "name": "handle.resolve",
+      "page": "handle",
+      "component": null,
+      "description": "Find the handle that holds a claimed name. A released or unclaimed name has none.",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ]
+    },
+    {
+      "kind": "operation",
+      "name": "link.add",
+      "page": "link",
+      "component": null,
+      "description": "Append a link to your own public page. You need a claimed name first.",
+      "allowed": [
+        {
+          "kind": "signed-in"
+        }
+      ]
+    },
+    {
+      "kind": "operation",
+      "name": "link.order",
+      "page": "link",
+      "component": null,
+      "description": "Move a link to a zero-based position. A position past the end puts it last.",
+      "allowed": [
+        {
+          "kind": "role",
+          "role": "link.linkOwner"
+        }
+      ]
+    },
+    {
+      "kind": "operation",
+      "name": "link.remove",
+      "page": "link",
+      "component": null,
+      "description": "Remove a link from a public page.",
+      "allowed": [
+        {
+          "kind": "role",
+          "role": "link.linkOwner"
+        }
+      ]
+    },
+    {
+      "kind": "operation",
+      "name": "profile.get",
+      "page": "profile",
+      "component": null,
+      "description": "Read a claimed name's public page and its links in display order.",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@ milestone: "Goal 9: time"
 release: "1.0"
 branch: goal/time
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude      # claude | amp | codex, set by the lead when it starts
   model: claude-opus-5-5 # the model id it runs on
@@ -125,6 +125,39 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Running since 22 November 2026 (claude, claude-opus-5-5). Slices 1 to 3 (M8.02 to M8.04, the checks) are written and
-listed in `e2e/m8/expected-failing/`. Next: `Timers`' cross-process shape agreed with Goals 8 and 10
-(`design/decisions/M8-timers-shape.md`), M8.09 built and landed early for Goal 4 (#443), and M8.06 begun.
+Parked on 23 November 2026 under K42 (`design/decisions/K42-goals-are-agents.md`, section 7). It ran from 22 November
+(claude, claude-opus-5-5). Its open slices go back to the board at their stage.
+
+**Done on `goal/time`.**
+- The checks, M8.02 to M8.04, are written and listed in `e2e/m8/expected-failing/`.
+- M8.14, the grid's `time` block (#470).
+- `Timers` across processes, settled as a second service, `DurableTimers` (#483, `design/decisions/M8-timers-shape.md`).
+- M8.09, moves made by time in the language (#517, `design/decisions/M8-09-time-in-the-language.md`). It landed early
+  in `goal/stage-1` for Goal 4 (#600).
+- M8.06, the world holds the clock (#615, `design/decisions/M8-06-world-holds-the-clock.md`).
+- M8.07, timers on the world's table and the quiet check (#626, then #704, `design/decisions/M8-07-timers-and-quiet.md`).
+  - Call 12 holds the five invariants every site keeps: counted work, a reset fences by generation, one owner per timer
+    row, every wait bounded, and a resume reads the world's clock. It also holds the site table that an independent 🔍
+    audited row by row.
+  - Call 13 adds conservative counting of forked fibers, the reset's close, drain, wipe and reopen sequence, and fencing
+    of a stale request's writes and timers.
+  - M8.07 lands early in `goal/stage-1` for Goals 8 and 10 by #696 (#464, #467).
+
+**Known gaps, recorded in calls 12 and 13.**
+- A Worker isolate that dies while it holds a parked request leaves the world `NeverQuiet` until a reset. A lease per
+  token would fix it.
+- Not fenced: D1 bindings other than `DB`, KV, R2, `fetch` and queues. `runFork` and `runPromise` inside a handler are
+  forbidden by the docs, not by lint.
+- A plain `Effect.all` with a `Timers.sleep` in it makes a move fail `NeverQuiet`, by design; `Timers.all` is the way
+  to sleep in parallel with other work.
+- Small test gaps the 🔍 named and #704 lists: the order of checks inside `count.section`, a refused take releasing its
+  holder, and the idle-box clear covering every unpinned box rather than only shared ones.
+
+**For Goals 8 and 10.** The wake route exists only when some environment declares a stepped or scaled clock, and
+`wakes` stays empty until a feature registers a kind. Widen projections' `timed` gate and register the wake kind.
+
+**Open slices, for the board.**
+- M8.10, the keeper. It is next, and M8.02 passes once it lands.
+- M8.08, M8.11, M8.12, M8.13 and M8.15.
+- M8.17 waits on Goal 4's M6.09 (#442), and M8.18 on Gate M2.
+- Then Gate M8, `nx run e2e:m8`.

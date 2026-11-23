@@ -1,0 +1,95 @@
+{
+  "layout": "sidebar",
+  "home": "home",
+  "pages": [
+    {
+      "name": "handle",
+      "path": "/things/handle",
+      "params": [],
+      "description": "A public name that belongs to one person until they release it, and is the address of a public page.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [
+        "handle.claim",
+        "handle.release",
+        "handle.resolve"
+      ],
+      "components": []
+    },
+    {
+      "name": "home",
+      "path": "/",
+      "params": [],
+      "description": "The things plugged-in is made of.",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "link",
+      "path": "/things/link",
+      "params": [],
+      "description": "A title and web address on a public page.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [
+        "link.add",
+        "link.order",
+        "link.remove"
+      ],
+      "components": []
+    },
+    {
+      "name": "profile",
+      "path": "/things/profile",
+      "params": [],
+      "description": "A claimed name's public page, with its links in the order they were put.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [
+        "profile.get"
+      ],
+      "components": []
+    }
+  ],
+  "groups": [
+    {
+      "title": "Things",
+      "folded": false,
+      "pages": [
+        {
+          "page": "handle",
+          "path": "/things/handle"
+        },
+        {
+          "page": "link",
+          "path": "/things/link"
+        },
+        {
+          "page": "profile",
+          "path": "/things/profile"
+        }
+      ]
+    }
+  ]
+}
