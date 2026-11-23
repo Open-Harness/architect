@@ -87,7 +87,10 @@ record, so a decision or the ledger that names an old path can still be followed
 Before the move, `git grep` found every live reference to the retired and merged pages on `main` and on
 `goal/stage-1`. Each live one was re-pointed in this change: `AGENTS.md`, `README.md`, the kanban skill's `STATE.md`
 and lane data, the live goals (5, 6, 10, 17), `design/handoff.md`, `design/portal.md`, `design/milestones.md`, the
-canon's README, outline and pages, eight package READMEs, two code comments, and the grid's and check 12's citations.
+canon's README, outline and pages, nine package READMEs, two code comments, and the grid's and check 12's citations. The
+grid eval, its test and check 12 change only the path they cite, never what they check. Goals 1 and 2 are finished
+goals whose quoted prompts are records (goal 1's prompt is one in `e2e/m0/names.test.ts`), so they keep the paths they
+were written with.
 Dated records keep the paths they were written with, and the folder map in `design/frame/README.md` leads from each old
 path to its new home.
 
