@@ -62,23 +62,23 @@
     },
     "portal-next-parity": {
       "metadata": {
-        "description": "Every portal check that reads a served client, run against the new one (PORTAL_CLIENT=next), through the parity ratchet: it fails on a red check that is not on e2e/portal-next/expected-failing.txt and on a listed check that passes."
+        "description": "Every portal check that reads a served client, run against the new one (PORTAL_CLIENT=next), through the parity ratchet (it builds packages/portal-next's client first, once that package exists): it fails on a red check that is not on e2e/portal-next/expected-failing.txt and on a listed check that passes."
       },
       "dependsOn": ["browser"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "mkdir -p tmp && rm -f tmp/parity-report.json tmp/parity-errors.json; PORTAL_CLIENT=next RATCHET_ERRORS_FILE=tmp/parity-errors.json vitest run --root e2e --config portal-next/vitest.parity.config.ts --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/parity-report.json; node e2e/portal-next/parity/main.ts tmp/parity-report.json e2e/portal-next/expected-failing.txt tmp/parity-errors.json"
+        "command": "if [ -f packages/portal-next/project.json ]; then NX_DAEMON=false nx run portal-next:build --outputStyle=static || exit 1; fi; mkdir -p tmp && rm -f tmp/parity-report.json tmp/parity-errors.json; PORTAL_CLIENT=next RATCHET_ERRORS_FILE=tmp/parity-errors.json vitest run --root e2e --config portal-next/vitest.parity.config.ts --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/parity-report.json; node e2e/portal-next/parity/main.ts tmp/parity-report.json e2e/portal-next/expected-failing.txt tmp/parity-errors.json"
       },
       "cache": false
     },
     "portal-next-grid": {
       "metadata": {
-        "description": "The grid's portal evals, run against the new client (PORTAL_CLIENT=next) on their own list, e2e/portal-next/grid-switched-on.json (the portal cells of the grid's own), through the grid's ratchet with e2e/portal-next/grid-expected-red.json: it fails on a red pair not on that list and on a listed pair that is green. Goal 3's expected-red.json is not touched."
+        "description": "The grid's portal evals, run against the new client (PORTAL_CLIENT=next, built first once packages/portal-next exists) on their own list, e2e/portal-next/grid-switched-on.json (the portal cells of the grid's own), through the grid's ratchet with e2e/portal-next/grid-expected-red.json: it fails on a red pair not on that list and on a listed pair that is green. Goal 3's expected-red.json is not touched."
       },
       "dependsOn": ["browser"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "PORTAL_CLIENT=next tsx e2e/grid/src/main.ts run --list e2e/portal-next/grid-switched-on.json --expected e2e/portal-next/grid-expected-red.json --out tmp/grid-portal-verdicts.json; status=$?; node -e \"console.log('parity-grid-red: ' + require('./e2e/portal-next/grid-expected-red.json').pairs.length)\"; exit $status"
+        "command": "if [ -f packages/portal-next/project.json ]; then NX_DAEMON=false nx run portal-next:build --outputStyle=static || exit 1; fi; PORTAL_CLIENT=next tsx e2e/grid/src/main.ts run --list e2e/portal-next/grid-switched-on.json --expected e2e/portal-next/grid-expected-red.json --out tmp/grid-portal-verdicts.json; status=$?; node -e \"console.log('parity-grid-red: ' + require('./e2e/portal-next/grid-expected-red.json').pairs.length)\"; exit $status"
       },
       "cache": false
     },
