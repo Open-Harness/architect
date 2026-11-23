@@ -1,0 +1,84 @@
+{
+  "layout": "none",
+  "home": "home",
+  "groups": [
+    {
+      "title": "things",
+      "folded": false,
+      "pages": [
+        {
+          "page": "thing",
+          "path": "/portal/things/:name"
+        }
+      ]
+    },
+    {
+      "title": "proof",
+      "folded": false,
+      "pages": [
+        {
+          "page": "environment",
+          "path": "/portal/environments/:name"
+        },
+        {
+          "page": "compare",
+          "path": "/portal/compare"
+        },
+        {
+          "page": "journeys",
+          "path": "/portal/journeys"
+        },
+        {
+          "page": "worlds",
+          "path": "/portal/starting-worlds"
+        }
+      ]
+    },
+    {
+      "title": "reference",
+      "folded": false,
+      "pages": [
+        {
+          "page": "access",
+          "path": "/portal/reference/access"
+        },
+        {
+          "page": "refusals",
+          "path": "/portal/reference/refusals"
+        },
+        {
+          "page": "events",
+          "path": "/portal/reference/events"
+        },
+        {
+          "page": "values",
+          "path": "/portal/reference/values"
+        },
+        {
+          "page": "machines",
+          "path": "/portal/reference/machines"
+        }
+      ]
+    },
+    {
+      "title": "plugins",
+      "folded": false,
+      "pages": [
+        {
+          "page": "plugins",
+          "path": "/portal/plugins"
+        }
+      ]
+    },
+    {
+      "title": "monitor",
+      "folded": false,
+      "pages": [
+        {
+          "page": "monitor",
+          "path": "/portal/monitor"
+        }
+      ]
+    }
+  ]
+}
