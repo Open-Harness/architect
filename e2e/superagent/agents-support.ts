@@ -23,6 +23,27 @@ const registry = () => join(tmpdir(), `ortho-s8-roots-${process.ppid}.txt`);
 export const registerRoot = (root: string, file: string = registry()) => appendFileSync(file, `${dirname(root)}\n`);
 export const registeredRoots = (file: string = registry()): ReadonlyArray<string> => { try { return readFileSync(file, "utf8").split("\n").filter((l) => l !== ""); } catch { return []; } };
 
+/** Every folder under a `sandboxes` folder below `dir` (not inside `node_modules`): what a sandbox left behind. */
+export const sandboxFolders = (dir: string): ReadonlyArray<string> => {
+  try {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      if (!e.isDirectory() || e.name === "node_modules") return [];
+      const p = join(dir, e.name);
+      return e.name === "sandboxes" ? readdirSync(p).map((s) => join(p, s)) : sandboxFolders(p);
+    });
+  } catch { return []; }
+};
+
+/**
+ * Removing a copy removes its sandboxes with it, so what a journey left is written down first, to a file named for the run as the roots are, and
+ * check 48 reads it with what is still on the disk.
+ */
+const leftRegistry = () => join(tmpdir(), `ortho-s8-left-${process.ppid}.txt`);
+export const keepLeftovers = (roots: ReadonlyArray<string> = registeredRoots(), file: string = leftRegistry()) => {
+  for (const f of roots.flatMap(sandboxFolders)) appendFileSync(file, `${f}\n`);
+};
+export const keptLeftovers = (file: string = leftRegistry()): ReadonlyArray<string> => { try { return readFileSync(file, "utf8").split("\n").filter((l) => l !== ""); } catch { return []; } };
+
 /** A copy of the app with slice 8's starting worlds, kit and the named journeys laid over it, as an author's files are laid over a builder's app. */
 export const withJourneys = (names: ReadonlyArray<string>, extra: ReadonlyArray<string> = []) => {
   const root = copyApp();
@@ -88,7 +109,7 @@ export const tapeCopy = () => {
 export const journeysPass = (heading: string, files: ReadonlyArray<string>) => {
   describe(heading, () => {
     const proved = lazy(() => prove(withJourneys(files)));
-    afterAll(removeCopies);
+    afterAll(() => { keepLeftovers(); removeCopies(); });
     for (const file of files) {
       const j = JOURNEYS.find((x) => x.file === file);
       if (j === undefined) throw new Error(`no journey ${file} in journeys-table.ts`);
