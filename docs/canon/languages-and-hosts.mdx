@@ -30,16 +30,16 @@ language, `language-effect`. Everything that is about the place comes from the h
 
 ```ts file=examples/signup/generated/server/main.ts name=imports lines=9-10
 import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
-import { Auth, Busy, BusyLive, Handlers, Journal, Principals, Reads, Store, Wire, thingIn } from "@orthograph/language-effect";
+import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, Principals, Reads, Store, Wire, thingIn } from "@orthograph/language-effect";
 ```
 
 `Handlers.serve` is the language's enforcer. It wraps each handler in the same fixed order, whatever host it runs on:
 
 ```ts file=examples/signup/generated/server/main.ts name=sheetCloseServed,sheetOpenServed lines=26-29
-const sheetCloseServed = Handlers.serve({ name: "sheet.close", operation: sheetClose.declaration, handler: sheetCloseHandler, notFrom: "SheetNotOpen" });
+const sheetCloseServed = Handlers.serve({ name: "sheet.close", operation: sheetClose.declaration, handler: sheetCloseHandler, notFrom: "SheetNotOpen", notFound: { sheet: "SheetNotFound" }, codes: Errors.codes });
 const sheetGetServed = Reads.serve({ name: "sheet.get", read: sheetGet.declaration });
-const sheetJoinServed = Handlers.serve({ name: "sheet.join", operation: sheetJoin.declaration, handler: sheetJoinHandler, notFrom: "SheetNotOpen" });
-const sheetOpenServed = Handlers.serve({ name: "sheet.open", operation: sheetOpen.declaration, handler: sheetOpenHandler });
+const sheetJoinServed = Handlers.serve({ name: "sheet.join", operation: sheetJoin.declaration, handler: sheetJoinHandler, notFrom: "SheetNotOpen", notFound: { sheet: "SheetNotFound" }, codes: Errors.codes });
+const sheetOpenServed = Handlers.serve({ name: "sheet.open", operation: sheetOpen.declaration, handler: sheetOpenHandler, codes: Errors.codes });
 ```
 
 And the handler someone wrote is in the language, with nothing of the host in it. It never names D1, a Worker or a
@@ -73,9 +73,11 @@ The compiled model records the operation's place, `runs: "server"`, the only one
 2. **The language names what it needs from a host, as services.** The store is one of them. The language declares the
    port and says what a store must do; it never says how:
 
-```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=61-70
+```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=67-78
 /** The host's side. A failing store dies: it is never the caller's refusal. */
 export class Store extends Context.Service<Store, {
+  /** The rules this store enforces at commit (G5), as the model carries them; a unit made over it looks through the same ones. Absent when the project declares none. */
+  readonly rules?: ReadonlyArray<NamedRule>;
   readonly find: (thing: Thing, id: string) => Effect.Effect<Stored | undefined>;
   /** One page of a thing's instances, in the order they were made (never a clock). A thing that lives as actors has none to list. */
   readonly list: (query: ListQuery) => Effect.Effect<Listed>;
@@ -92,21 +94,22 @@ export class Store extends Context.Service<Store, {
    (`examples/signup/generated/server/wrangler.jsonc:8-11`).
 4. **`runs` says where an operation runs.** The declaration can say three places. Only one is accepted:
 
-```ts file=packages/orthograph/src/modules/operations/types.ts name=Runs lines=21-22
+```ts file=packages/orthograph/src/modules/operations/types.ts name=Runs lines=30-31
 /** Where an operation runs: `server` (every target today), on the caller's `client`, or on a `chain`. */
 export type Runs = "client" | "server" | "chain";
 ```
 
    The compiler refuses the other two, and says what a project would need to run them:
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=108
-if (op.runs !== "server") problems.push(`${file}: runs "${op.runs}" is not supported yet: ${RUNS_NEEDS[op.runs] ?? "an unknown place"}`);
+```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=102-103
+// On a chain store where it runs is the compiler's word, so a written `runs` is refused in operations.ts.
+if (!chain && op.runs !== "server" && !onDevice) problems.push(`${file}: runs "${op.runs}" is not supported yet: ${RUNS_NEEDS[op.runs] ?? "an unknown place"}`); else if (onDevice) problems.push(...deviceProblems(file, op));
 ```
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=RUNS_NEEDS lines=167-171
+```ts file=packages/compiler/src/modules/model/internal/device.ts name=RUNS_NEEDS lines=5-9
 /** What an operation that doesn't run on the server needs: a language that does. Only the Effect language exists today. */
-const RUNS_NEEDS: Readonly<Record<string, string>> = {
-  client: "it needs a language that runs operations on the caller's own device (language-noir, a later language), and this project's only language, language-effect, runs them all on the server",
+export const RUNS_NEEDS: Readonly<Record<string, string>> = {
+  client: "an operation runs on the caller's own device only when a mounted plugin supplies it, with a code entry for each of node, browser and world; this app's own operations all run on the server",
   chain: "it needs a language that runs operations on a chain (language-solidity, or language-noir on Aztec), and this project's only language, language-effect, runs them all on the server",
 };
 ```
@@ -141,15 +144,18 @@ export {};
 
 ### Where a chain fits
 
-A chain is a host, `Host.chain`, and `chain` is the store kind that runs on it, supplied by `language-solidity` (K3
-item 2). That much is decided. How an operation maps to a contract function, which contract functions clients may
-reach, and how Solidity, Noir and Solana fit together all wait on K7, the chain languages worked out together (Aaron,
-18 November 2026). This page says no more about them until K7 lands.
+A chain is a host, `Host.chain`, and `chain` is the store kind that runs on it. The host supplies the kind, and
+`language-solidity` writes the code that lives in it (K3 item 2, K27 item 5). That much is decided.
+K7, the chain languages worked out together (Aaron, 18 November 2026), decided the rest. Each declared operation is
+exactly one generated entry on the chain (on Aztec, a pair). The generated clients may reach every external function the
+generated `surface.json` lists, the developer's own included, with a role modifier the scaffold supplies. Solidity is
+built first; Solana and Aztec are designed on the same port and built later. [chains-and-wallets](chains-and-wallets.mdx)
+has the whole of it, with what is built and what is not.
 
 ## Choices
 
 **Which language does an operation's behaviour go in?** Today, Effect, always: it is the only language that runs an
-operation. A chain or client language becomes a choice when K7 and M6 build one.
+operation. A chain or client language becomes a choice when M6 builds the one K7 designed.
 
 **Which host runs it?** You don't choose per operation. An environment picks the host's place (this machine, or
 Cloudflare), and the language's enforcer runs there unchanged:
@@ -159,7 +165,7 @@ export default Blueprint.environment({
   runs: "on this machine",
   identity: Identity.testPrincipals, // fixed test people, no sign-in
   database: Cloud.d1.local(), // the local runtime emulates D1: no database process
-  telemetry: [Telemetry.sink.local()], // prove's Collector, and the viewer while `ortho telemetry view` runs
+  telemetry: [Telemetry.sink.local()], // prove's Collector, a process of its own
 });
 ```
 
@@ -189,8 +195,8 @@ boundaries": "a host's types in a handler" never crosses from host to language).
 | `runs` in the declaration | `packages/orthograph/src/modules/operations/types.ts:22` | built |
 | the compiler's refusal of `client` and `chain` | `packages/compiler/src/modules/model/internal/describe.ts:108` | built |
 | runtime entries per host (`worker`, `node`) | M1.09 | planned |
-| `language-solidity`, no longer a placeholder | `packages/language-solidity/src/index.ts:1` | planned, M6.11, after K7 |
-| `runs: "chain"` accepted | M6.10 | planned, after K7 |
+| `language-solidity`, no longer a placeholder | `packages/language-solidity/src/index.ts:1` | planned, M6.11 (K7) |
+| `runs` worked out for an operation on a chain store | M6.10 | planned (K25: an author never writes `runs: "chain"`) |
 | `language-noir`, `language-python`, `Host.browser` | not in any slice | later |
 
 ## Status
@@ -203,10 +209,11 @@ boundaries": "a host's types in a handler" never crosses from host to language).
 | `runs` defaults to server and refuses every other place | proved | | `packages/compiler/src/modules/model/model.test.ts:184` |
 | a language and a host apart, by services | specified | | K5, "Languages and hosts" and "The boundaries" |
 | runtime entries per host | specified | M1.09 | check `02` |
-| chain languages and `Host.chain` | open | M6.01 | waits on K7 |
+| chain languages and `Host.chain` | specified | M6.01 | K7, K25, K27 |
 | `runs: "client"`, Noir, Python, the browser host | open | | no slice yet |
 
-The page is a draft because the chain half waits on K7. The Effect half is built and proved.
+The page is a draft because the chain languages are decided but not built. The Effect half is built and proved, and the
+wallet's chain port is on [chains-and-wallets](chains-and-wallets.mdx).
 
 ## Notes
 
@@ -214,14 +221,16 @@ The page is a draft because the chain half waits on K7. The Effect half is built
 are languages; Cloudflare and a chain are hosts.</Note>
 
 <Note kind="decision" decision="K3">A chain is a host (`Host.chain`), and `chain` is the store kind that runs on it,
-supplied by `language-solidity` (K3 item 2, K5 decision 8). This answers ledger `LAH-04`.</Note>
+supplied by the host and written for by `language-solidity` (K3 item 2, K5 decision 8, K27 item 5). This answers
+ledger `LAH-04`.</Note>
 
-<Note kind="status" slice="M6.01">Everything about chain languages waits on K7: how an operation maps to a contract's
-ABI, what clients may reach, and how Solidity, Noir and Solana share one model. M6.01 starts from K7. Until then
+<Note kind="status" slice="M6.01">K7 decided the chain languages: how an operation maps to a contract's ABI, what clients
+may reach, and how Solidity, Noir and Solana share one model. M6.01 starts from K7. Until M6.11 builds it,
 `language-solidity` stays a placeholder (ledger `LAH-35`) and `runs: "chain"` is refused (ledger `LAH-19`).</Note>
 
-<Note kind="question" id="runs-client">An operation that runs on the caller's device (`runs: "client"`, such as a
-wallet link) is refused by the compiler, and no slice lifts the refusal. Ledger `LAH-02` (high).</Note>
+<Note kind="status" slice="M1.27">An operation that runs on the caller's device (`runs: "client"`, such as a wallet's `send`)
+is accepted when a mounted plugin supplies a code entry for `node`, `browser` and `world` (K7, M1.27); an app's own operations
+all run on the server. The wallet is the first ([chains-and-wallets](chains-and-wallets.mdx)). Ledger `LAH-02`.</Note>
 
 <Note kind="question" id="target-word">The compiler's refusal now says "needs a language" (`describe.ts:167-170`), but
 the retired word is still in the declaration's own comments (`packages/orthograph/src/modules/operations/types.ts:15-16`,

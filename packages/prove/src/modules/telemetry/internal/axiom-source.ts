@@ -5,7 +5,7 @@ import { Effect, Schedule } from "effect";
 import type { Env, Reader } from "#modules/sinks/types.js";
 import { Sinks } from "#modules/sinks/service.js";
 import { SourceFailed, type AxiomSourceApi, type Log, type Span, type Trace, type TraceSource, type Wanted } from "../types.ts";
-import { looksComplete } from "./otlp.ts";
+import { arrived } from "./otlp.ts";
 
 type Row = Readonly<Record<string, unknown>>;
 
@@ -99,10 +99,14 @@ const sourceOf = (c: Connection, group: string, environment: string): TraceSourc
       Effect.gen(function* () {
         const ids = wanted.map((w) => w.trace).filter((id) => HEX.test(id));
         let last: ReadonlyMap<string, Trace> = new Map();
+        // Axiom has no quiet period and its ingestion lags: an empty trace that may stay empty is believed only on a
+        // second look, a second later, so the late spans of a handler that ran after all are still seen.
+        let looks = 0;
         const settled = (ids.length === 0 ? Effect.succeed(new Map<string, Trace>()) : byIds(ids)).pipe(
           Effect.map((got) => {
             last = got;
-            return wanted.every((w) => looksComplete(got.get(w.trace), w.parent, w.rooted));
+            looks += 1;
+            return wanted.every((w) => arrived(got.get(w.trace), looks > 1 ? w : { ...w, mayBeEmpty: false }));
           }),
           Effect.orElseSucceed(() => true),
         );

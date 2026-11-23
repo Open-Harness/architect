@@ -1,6 +1,6 @@
 import { Names } from "orthograph/server";
 import { Effect, Redacted, Schema } from "effect";
-import { VerdictsFailed, type Held, type TokenSource, type VerdictsApi } from "./types.ts";
+import { VerdictsFailed, type TokenSource, type VerdictsApi } from "./types.ts";
 
 const AUDIENCE = "ortho-logbook";
 
@@ -34,7 +34,17 @@ const fromGithub = (requestUrl: string, requestToken: Redacted.Redacted<string>)
     return typeof body["value"] === "string" ? body["value"] : yield* failed("GitHub's answer has no value");
   });
 
-const Rows = Schema.Array(Schema.Struct({ revision: Schema.String, environment: Schema.String, operation: Schema.String, verdict: Schema.String, ref: Schema.String, sha256: Schema.optionalKey(Schema.NullOr(Schema.String)) }));
+const Journeys = Schema.Array(Schema.Struct({
+  journey: Schema.String, modelHash: Schema.String, handlerHash: Schema.NullOr(Schema.String), verdict: Schema.Literals(["pass", "fail"]),
+}));
+
+const verdictFields = {
+  revision: Schema.String, environment: Schema.String, operation: Schema.String, verdict: Schema.String,
+  sha256: Schema.optionalKey(Schema.NullOr(Schema.String)),
+  journeys: Schema.optionalKey(Schema.NullOr(Journeys)),
+};
+export const VerdictRows = Schema.Array(Schema.Struct(verdictFields));
+const HeldRows = Schema.Array(Schema.Struct({ ...verdictFields, ref: Schema.String }));
 
 const minted = (source: TokenSource) =>
   source.kind === "given" ? Effect.succeed(Redacted.value(source.token))
@@ -56,7 +66,7 @@ export const Verdicts: VerdictsApi = {
       const response = yield* request("the logbook", `${logbook}/verdicts/latest?${query}`, {});
       if (!response.ok) return yield* failed(`the logbook would not give ${environment}'s verdicts for ${revision} (${response.status})`);
       const body = yield* Effect.tryPromise({ try: () => response.json() as Promise<unknown>, catch: () => failed("the logbook's verdicts were not JSON") });
-      return (yield* Schema.decodeUnknownEffect(Rows)(body).pipe(Effect.mapError((e) => failed(`the logbook's verdicts were not as expected: ${e.message}`)))) as ReadonlyArray<Held>;
+      return yield* Schema.decodeUnknownEffect(HeldRows)(body).pipe(Effect.mapError((e) => failed(`the logbook's verdicts were not as expected: ${e.message}`)));
     }),
   post: ({ logbook, token, revision, environment, sha256, results }) =>
     Effect.forEach(results, (r) =>
@@ -64,7 +74,7 @@ export const Verdicts: VerdictsApi = {
         const response = yield* request("the logbook", `${logbook}/verdicts`, {
           method: "POST",
           headers: { "content-type": "application/json", authorization: `Bearer ${Redacted.value(token)}` },
-          body: JSON.stringify({ revision, environment, operation: r.operation, verdict: r.verdict, ...(sha256 === undefined ? {} : { sha256 }) }),
+          body: JSON.stringify({ revision, environment, ...r, ...(sha256 === undefined ? {} : { sha256 }) }),
         });
         if (!response.ok) return yield* failed(`the logbook refused ${r.operation} (${response.status})`);
       }), { discard: true }),

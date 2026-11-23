@@ -1,0 +1,44 @@
+/* ST1.22: rules in the portal. Page shell and tokens come from console.css. */
+.mono-title{font-family:'JetBrains Mono',ui-monospace,monospace!important;font-size:1.5rem!important}
+.tree-op{padding-inline-start:22px}
+.prop-list{display:flex;flex-direction:column;gap:10px}
+.prop{display:flex;justify-content:space-between;gap:12px;font-size:.84rem;text-align:right}
+.prop>span:first-child{text-align:left;flex:none}
+.rules-list{display:flex;flex-direction:column}
+.rule-row{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px;padding:16px;border-top:1px solid var(--separator);scroll-margin-top:80px}
+.rule-row:first-child{border-top:0}
+.rule-row:target{background:color-mix(in oklab,var(--accent) 10%,transparent)}
+.rule-main,.rule-refuses{display:flex;flex-direction:column;gap:8px;min-width:0}
+.rule-title{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.rule-title strong{font-size:.95rem;margin-right:4px}
+.rule-sentence{margin:0;font-size:1.05rem;line-height:1.45}
+.refusal{display:flex;flex-direction:column;gap:6px;min-width:0}
+.refusal-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.refusal-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;font-size:.88rem}
+.refusal-line a{display:inline-flex;align-items:center;gap:4px;font-size:12px}
+.errors-list{display:flex;flex-direction:column;gap:14px}
+.errors-list>.refusal{padding-bottom:14px;border-bottom:1px solid var(--separator)}
+.errors-list>.refusal:last-child{padding-bottom:0;border-bottom:0}
+.lifecycle{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 4px}
+.lc-step{display:flex;align-items:center;gap:8px}
+.state{display:grid;place-items:center;min-width:44px;padding:8px 16px;border-radius:999px;background:var(--surface-secondary,var(--surface));border:1px solid var(--separator);font-size:.9rem}
+.state--start{min-width:36px;padding:8px 0;color:var(--muted)}
+.arrow{display:grid;justify-items:center;gap:2px;min-width:150px}
+.arrow-name{font-size:12.5px;font-weight:600}
+.arrow-line{color:var(--muted);display:flex}
+.arrow-emits{font-size:11px}
+.arrow-guard{font-size:11px;color:var(--muted)}
+.band{display:flex;align-items:stretch;gap:12px}
+.band-side,.band-op{display:flex;flex-direction:column;gap:6px;justify-content:center;padding:14px 16px;border-radius:12px;background:var(--surface-secondary,var(--surface));min-width:0;flex:1}
+.band-op{align-items:center;text-align:center}
+.band-arrow{align-self:center;color:var(--muted);flex:none}
+.band-field{font-size:12.5px;overflow-wrap:anywhere}
+.spine .timeline__content{display:flex;flex-direction:column;gap:2px;padding-bottom:14px}
+.spine-detail{font-size:.84rem;color:var(--muted)}
+.rules-stop{display:flex;flex-direction:column;gap:8px;color:var(--foreground)}
+.rules-stop-list{display:flex;flex-wrap:wrap;gap:6px}
+.rule-chip{padding:3px 8px;border-radius:999px;background:var(--surface-secondary,var(--surface));border:1px solid var(--separator);font-size:12px}
+.page-tabs .tabs__tab{white-space:nowrap}
+.docs-link{display:inline-flex;align-items:center;gap:8px}
+.arrow-guard{max-width:230px;text-align:center}
+.spine-rules .timeline__content{padding:12px 14px;margin-bottom:14px;border-radius:12px;background:color-mix(in oklab,var(--accent) 10%,transparent);border:1px solid color-mix(in oklab,var(--accent) 35%,transparent)}

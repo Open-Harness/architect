@@ -1,6 +1,7 @@
 // Check 6: the allowance is built on the starter by Orthograph's own commands, and check holds the rules throughout.
 // add writes a thing of blanks that check names; with the declarations written, generate scaffolds each handler once;
-// with the handlers written, check and prove pass. Each of the journey author's check fixtures fails it.
+// with the handlers and journeys written, generate again (journeys are an input to generate: the model and the portal
+// blueprint carry them), then check and prove pass. Each of the journey author's check fixtures fails it.
 import { cpSync, existsSync, readFileSync, rmSync } from "node:fs";
 import { basename, join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -20,7 +21,16 @@ describe("check 6: ortho add, generate and check build the allowance on the star
     const { root } = project;
     try {
       const added = ortho(root, "add", "thing", "allowance");
-      expect(added.stdout.trim().split("\n")).toHaveLength(6);
+      // The six files add wrote before G5, by name and in order; G5's `invariants.ts` (ST1.17) is the one more line the output may carry, and
+      // anything else is a failure. No count is pinned: the check holds each of the six, and refuses a stranger.
+      const wrote = (path: string) => `wrote blueprint/${path}`;
+      const lines = added.stdout.trim().split("\n");
+      const invariants = wrote("things/allowance/invariants.ts");
+      expect(lines.filter((l) => l !== invariants)).toEqual([
+        "things/allowance/thing.ts", "things/allowance/machine.ts", "things/allowance/roles.ts",
+        "things/allowance/events.ts", "things/allowance/errors.ts", "values/allowance.ts",
+      ].map(wrote));
+      expect(lines.filter((l) => l === invariants).length).toBeLessThanOrEqual(1);
       const blank = ortho(root, "check");
       expect(blank.status).toBe(1);
       expect(blank.stdout.split("\n")[0]).toBe("allowance has 3 blanks");
@@ -38,9 +48,11 @@ describe("check 6: ortho add, generate and check build the allowance on the star
       ]);
       expect(ortho(root, "generate").stdout.trim()).not.toContain("implementation/");
 
-      // The handlers and journeys written: check and prove pass.
+      // The handlers and journeys written: journeys change what generate writes (generated/model/model.json and
+      // generated/portal/blueprint.json), so generate again before check, as the authoring loop goes: write, generate, check.
       for (const op of ["grant", "revoke", "spend"]) cpSync(join(acme, `src/allowance/${op}.ts`), join(root, `src/allowance/${op}.ts`));
       cpSync(join(acme, "journeys"), join(root, "journeys"), { recursive: true, filter: visible });
+      expect(ortho(root, "generate").status).toBe(0);
       const checked = ortho(root, "check");
       expect(checked.stdout.trimEnd().split("\n").at(-1), checked.stdout).toBe("check ✔");
       const proved = ortho(root, "prove", "--env", "local", "--port", "0");

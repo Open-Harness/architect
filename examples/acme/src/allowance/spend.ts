@@ -6,11 +6,11 @@ import { Allowance } from "../../blueprint/things/allowance/thing.ts";
 import { AllowanceExceeded } from "../../blueprint/things/allowance/errors.ts";
 
 /** Spend from what is left of this month's allowance. */
-const spend: Handler = ({ allowance, amount }, { steps, move }) =>
+const spend: Handler = ({ allowance, amount }, { steps, move, subject }) =>
   Effect.gen(function* () {
     const records = yield* Records;
-    // Only the allowance's grantee may spend, so the runtime has already found it before this runs.
-    const found = yield* steps.load(records.find(Allowance, allowance));
+    // Only the allowance's grantee may spend, so the runtime has already read it, and hands it in as subject.
+    const found = yield* steps.load(Effect.succeed(subject));
     if (!found) return yield* Effect.die(new Error(`allowance ${allowance} was checked and then not found`));
     const limit = found["limit"] as bigint;
     const spent = found["spent"] as bigint;

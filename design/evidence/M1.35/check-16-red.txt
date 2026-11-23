@@ -1,0 +1,269 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/16
+# commit 57ffbb7e · 2026-11-19T09:03:37Z · exit 1 (expected 1) · 86.8s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/16-visibility.test.ts (27 tests | 9 failed) 84368ms
+     × exports Audience (principal, agent, telemetry, public, owner) and Visibility (sees, redact, schema) from language-effect, and the generated api has no Errors.shown 500ms
+     × exists, and ortho check refuses it on a public value and on a payload field, naming the field 236ms
+     × ortho prove passes `open a locker` with the fixture's handlers, and its evals find nothing non-public in a log line, a span or an answer 5435ms
+     × HTTP: the answer's, the refusal's and the read's body show no secret, no undeclared field, and a private one only to its role 1ms
+     × SDK: the decoded answer and the typed failure hold no secret, no undeclared field, and a private field only for its role 0ms
+     × CLI: the text of an answer, a refusal and a read shows no secret, no undeclared field, and a private one only to its role 1ms
+     × CLI --json: the same, as JSON (and a refusal still goes to stderr with its exit code) 0ms
+     × spans: no operation, step or commit span carries a secret, a private value or an undeclared one 4106ms
+     × logs: no log record, the handler's own line and the one that decided a refusal included, carries one 4104ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 the surface: one visibility module, one Audience > exports Audience (principal, agent, telemetry, public, owner) and Visibility (sees, redact, schema) from language-effect, and the generated api has no Errors.shown
+AssertionError: M1.35: a `visibility` module in language-effect with one Audience, and sees, redact and schema; Errors.shown goes. A tripwire: it fails, it never skips.: expected [ 'Audience.agent', …(8) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Audience.agent",
++   "Audience.owner",
++   "Audience.principal",
++   "Audience.public",
++   "Audience.telemetry",
++   "Visibility.redact",
++   "Visibility.schema",
++   "Visibility.sees",
++   "Errors.shown is still generated (the row: it goes)",
++ ]
+
+ ❯ m1/16-visibility.test.ts:113:181
+    111|       ...(/\bexport const shown\b/.test(readFileSync(join(acme, "gener…
+    112|     ];
+    113|     expect(absentNames, "M1.35: a `visibility` module in language-effe…
+       |                                                                                                                                                                                     ^
+    114|   });
+    115| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 the surface: Blueprint.issued marks a secret answer field the caller is given once > exists, and ortho check refuses it on a public value and on a payload field, naming the field
+AssertionError: `Blueprint.issued` is exported by orthograph (the lead's R1 revision): expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/16-visibility.test.ts:121:98
+    119| describe("16 the surface: Blueprint.issued marks a secret answer field…
+    120|   it("exists, and ortho check refuses it on a public value and on a pa…
+    121|     expect(hasIssued(), "`Blueprint.issued` is exported by orthograph …
+       |                                                                                                  ^
+    122|     const refused = (field: string, edit: (source: string) => string) …
+    123|       const copy = overlay(planted, edit);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 M1.35 journeys: the fixture's journey fails on empty handlers and passes with its own > ortho prove passes `open a locker` with the fixture's handlers, and its evals find nothing non-public in a log line, a span or an answer
+AssertionError: locker.open's nine evals, and the others', all pass (a non-public value in a log line fails one today): expected [ 'locker.get 9 evals ✔', …(2) ] to deeply equal [ 'locker.get 9 evals ✔', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "locker.get 9 evals ✔",
+    "locker.install 9 evals ✔",
+-   "locker.open 9 evals ✔",
++   "locker.open 1 of 9 evals ✘",
+  ]
+
+ ❯ m1/16-visibility.test.ts:238:168
+    236|     expect(result.out.match(/^journey .*$/gm), result.out).toEqual(["j…
+    237|     const evals = result.out.split("\n").filter((line) => /^locker\.(o…
+    238|     expect(evals.map((line) => line.replace(/ p50.*$/, "")), "locker.o…
+       |                                                                                                                                                                        ^
+    239|       "locker.get 9 evals ✔", "locker.install 9 evals ✔", "locker.open…
+    240|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 M1.35: what a caller is answered with, for every audience (R1, R2, R3) > HTTP: the answer's, the refusal's and the read's body show no secret, no undeclared field, and a private one only to its role
+AssertionError: expected [ …(15) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "http answer as keeper: seal (secret)",
++   "http refusal as keeper: pin (secret)",
++   "http read as keeper: code (secret)",
++   "http answer as stranger: note (private)",
++   "http answer as stranger: seal (secret)",
++   "http refusal as stranger: memo (private)",
++   "http refusal as stranger: pin (secret)",
++   "http read as stranger: note (private)",
++   "http read as stranger: code (secret)",
++   "http answer as anonymous: note (private)",
++   "http answer as anonymous: seal (secret)",
++   "http refusal as anonymous: memo (private)",
++   "http refusal as anonymous: pin (secret)",
++   "http read as anonymous: note (private)",
++   "http read as anonymous: code (secret)",
++ ]
+
+ ❯ m1/16-visibility.test.ts:251:34
+    249| describe("16 M1.35: what a caller is answered with, for every audience…
+    250|   it("HTTP: the answer's, the refusal's and the read's body show no se…
+    251|     expect(await noLeak("http")).toEqual([]);
+       |                                  ^
+    252|   });
+    253|   it("SDK: the decoded answer and the typed failure hold no secret, no…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 M1.35: what a caller is answered with, for every audience (R1, R2, R3) > SDK: the decoded answer and the typed failure hold no secret, no undeclared field, and a private field only for its role
+AssertionError: expected [ …(15) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "sdk answer as keeper: seal (secret)",
++   "sdk refusal as keeper: pin (secret)",
++   "sdk read as keeper: code (secret)",
++   "sdk answer as stranger: note (private)",
++   "sdk answer as stranger: seal (secret)",
++   "sdk refusal as stranger: memo (private)",
++   "sdk refusal as stranger: pin (secret)",
++   "sdk read as stranger: note (private)",
++   "sdk read as stranger: code (secret)",
++   "sdk answer as anonymous: note (private)",
++   "sdk answer as anonymous: seal (secret)",
++   "sdk refusal as anonymous: memo (private)",
++   "sdk refusal as anonymous: pin (secret)",
++   "sdk read as anonymous: note (private)",
++   "sdk read as anonymous: code (secret)",
++ ]
+
+ ❯ m1/16-visibility.test.ts:254:33
+    252|   });
+    253|   it("SDK: the decoded answer and the typed failure hold no secret, no…
+    254|     expect(await noLeak("sdk")).toEqual([]);
+       |                                 ^
+    255|   });
+    256|   it("CLI: the text of an answer, a refusal and a read shows no secret…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 M1.35: what a caller is answered with, for every audience (R1, R2, R3) > CLI: the text of an answer, a refusal and a read shows no secret, no undeclared field, and a private one only to its role
+AssertionError: expected [ …(10) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "cli answer as keeper: seal (secret)",
++   "cli read as keeper: code (secret)",
++   "cli answer as stranger: note (private)",
++   "cli answer as stranger: seal (secret)",
++   "cli read as stranger: note (private)",
++   "cli read as stranger: code (secret)",
++   "cli answer as anonymous: note (private)",
++   "cli answer as anonymous: seal (secret)",
++   "cli read as anonymous: note (private)",
++   "cli read as anonymous: code (secret)",
++ ]
+
+ ❯ m1/16-visibility.test.ts:257:33
+    255|   });
+    256|   it("CLI: the text of an answer, a refusal and a read shows no secret…
+    257|     expect(await noLeak("cli")).toEqual([]);
+       |                                 ^
+    258|   });
+    259|   it("CLI --json: the same, as JSON (and a refusal still goes to stder…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 M1.35: what a caller is answered with, for every audience (R1, R2, R3) > CLI --json: the same, as JSON (and a refusal still goes to stderr with its exit code)
+AssertionError: expected [ …(10) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "cli-json answer as keeper: seal (secret)",
++   "cli-json read as keeper: code (secret)",
++   "cli-json answer as stranger: note (private)",
++   "cli-json answer as stranger: seal (secret)",
++   "cli-json read as stranger: note (private)",
++   "cli-json read as stranger: code (secret)",
++   "cli-json answer as anonymous: note (private)",
++   "cli-json answer as anonymous: seal (secret)",
++   "cli-json read as anonymous: note (private)",
++   "cli-json read as anonymous: code (secret)",
++ ]
+
+ ❯ m1/16-visibility.test.ts:260:38
+    258|   });
+    259|   it("CLI --json: the same, as JSON (and a refusal still goes to stder…
+    260|     expect(await noLeak("cli-json")).toEqual([]);
+       |                                      ^
+    261|   });
+    262|   it("MCP: a tool's result and error show no secret, no undeclared fie…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 M1.35: what the runtime says of every call, for the telemetry audience (R1, R2, R3) > spans: no operation, step or commit span carries a secret, a private value or an undeclared one
+AssertionError: expected [ 'note (private)', 'code (secret)' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "note (private)",
++   "code (secret)",
++ ]
+
+ ❯ m1/16-visibility.test.ts:301:91
+    299|   it("spans: no operation, step or commit span carries a secret, a pri…
+    300|     const { live, captured } = await ready();
+    301|     expect(leaks((await settled(live, captured)).collected.traces, "te…
+       |                                                                                           ^
+    302|   });
+    303|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  m1/16-visibility.test.ts > 16 M1.35: what the runtime says of every call, for the telemetry audience (R1, R2, R3) > logs: no log record, the handler's own line and the one that decided a refusal included, carries one
+AssertionError: expected [ 'note (private)', 'code (secret)' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "note (private)",
++   "code (secret)",
++ ]
+
+ ❯ m1/16-visibility.test.ts:306:89
+    304|   it("logs: no log record, the handler's own line and the one that dec…
+    305|     const { live, captured } = await ready();
+    306|     expect(leaks((await settled(live, captured)).collected.logs, "tele…
+       |                                                                                         ^
+    307|   });
+    308|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 18 passed (27)
+   Start at  09:02:11
+   Duration  86.09s (transform 734ms, setup 0ms, import 1.61s, tests 84.37s, environment 0ms)

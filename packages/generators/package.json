@@ -1,13 +1,15 @@
 {
   "name": "@orthograph/generators",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "type": "module",
   "dependencies": {
     "orthograph": "workspace:*",
     "@orthograph/compiler": "workspace:*",
     "@orthograph/portal": "workspace:*",
+    "@orthograph/projections": "workspace:*",
     "@nx/devkit": "24.0.3",
-    "effect": "4.1.1"
+    "effect": "4.1.4"
   },
   "generators": "./generators.json",
   "imports": {

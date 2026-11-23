@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/cli src/modules/mounting
+# commit 892851a · 2026-11-18T22:13:24Z · exit 0 (expected 0) · 1.1s
+
+
+ RUN  v4.1.12 ./packages/cli
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  22:13:24
+   Duration  390ms (transform 75ms, setup 0ms, import 263ms, tests 15ms, environment 0ms)

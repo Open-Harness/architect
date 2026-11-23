@@ -21,9 +21,26 @@ repo() { # a fresh repository with a base commit; prints its path
   git -C "$dir" init -q -b base
   git -C "$dir" config user.email ci@example.invalid
   git -C "$dir" config user.name ci
-  mkdir -p "$dir/e2e/m1" "$dir/examples/acme/journeys" "$dir/packages/wallets/blueprint/journeys" \
+  mkdir -p "$dir/e2e/m1/expected-failing" "$dir/examples/acme/journeys" "$dir/packages/wallets/blueprint/journeys" \
     "$dir/packages/prove/src/modules/evals" "$dir/packages/prove/src/modules/journeys" "$dir/src"
-  printf 'm1/a.test.ts > a\nm1/b.test.ts > b\n' > "$dir/e2e/m1/expected-failing.txt"
+  printf 'm1/a.test.ts > a\nm1/a.test.ts > a2\n' > "$dir/e2e/m1/expected-failing/a.txt"
+  printf 'm1/b.test.ts > b\n' > "$dir/e2e/m1/expected-failing/b.txt"
+  mkdir -p "$dir/e2e/on-chain/expected-failing"
+  printf 'on-chain/01-a.test.ts > a\non-chain/01-a.test.ts > a2\n' > "$dir/e2e/on-chain/expected-failing/01-a.txt"
+  printf 'on-chain/03-b.test.ts > b\n' > "$dir/e2e/on-chain/expected-failing/03-b.txt"
+  echo c > "$dir/e2e/on-chain/01-a.test.ts"
+  mkdir -p "$dir/e2e/ui-layer/expected-failing"
+  printf 'ui-layer/01.test.ts > u1\nui-layer/01.test.ts > u2\n' > "$dir/e2e/ui-layer/expected-failing/01.txt"
+  echo t > "$dir/e2e/ui-layer/01.test.ts"
+  mkdir -p "$dir/e2e/m8/expected-failing"
+  printf 'm8/a.test.ts > a\nm8/a.test.ts > a2\n' > "$dir/e2e/m8/expected-failing/a.txt"
+  mkdir -p "$dir/e2e/m2/expected-failing"
+  printf 'm2/a.test.ts > a\nm2/a.test.ts > a2\n' > "$dir/e2e/m2/expected-failing/a.txt"
+  mkdir -p "$dir/packages/foo/expected-failing"
+  printf 'src/a.test.ts > t1\nsrc/a.test.ts > t2\n' > "$dir/packages/foo/expected-failing/a.txt"
+  printf '# m1\n\nprose\n' > "$dir/e2e/m1/README.md"
+  mkdir -p "$dir/e2e/grid"
+  grid "$dir" a b
   echo j > "$dir/examples/acme/journeys/signup.ts"
   echo j > "$dir/packages/wallets/blueprint/journeys/send.ts"
   echo e > "$dir/packages/prove/src/modules/evals/service.ts"
@@ -41,6 +58,11 @@ repo() { # a fresh repository with a base commit; prints its path
 }
 
 guard() { (cd "$1" && "$here/builder-paths.sh" base x-build); }
+grid() { # <repo> <subject...>; writes the grid's expected-red list with one error.portal pair per subject
+  local dir="$1"; shift
+  printf '%s\n' "$@" | jq -R '{cell: "error.portal", subject: ., reason: "red", waitsOn: "M1.13"}' | jq -s '{pairs: .}' \
+    > "$dir/e2e/grid/expected-red.json"
+}
 commit() { git -C "$1" add -A && git -C "$1" commit -qm change; }
 
 # builder-paths
@@ -64,14 +86,99 @@ r=$(repo); echo t >> "$r/packages/prove/src/modules/evals/service.ts"; commit "$
 expect "an eval fails" 1 guard "$r"
 r=$(repo); mkdir -p "$r/e2e/m1" && echo t > "$r/e2e/m1/30-new.test.ts"; commit "$r"
 expect "a new e2e check fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/.github/workflows" && echo t > "$r/.github/workflows/staging.yml"; commit "$r"
+expect "the staging workflow, the M7.04 check, fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/.github/workflows" && echo t > "$r/.github/workflows/ci.yml"; commit "$r"
+expect "another workflow is not a check" 0 guard "$r"
 r=$(repo); git -C "$r" mv packages/prove/src/modules/evals/service.ts src/evals.ts; commit "$r"
 expect "moving an eval out fails" 1 guard "$r"
-r=$(repo); printf 'm1/a.test.ts > a\n' > "$r/e2e/m1/expected-failing.txt"; commit "$r"
-expect "taking a line off the ratchet list passes" 0 guard "$r"
-r=$(repo); printf 'm1/a.test.ts > a\nm1/b.test.ts > b\nm1/c.test.ts > c\n' > "$r/e2e/m1/expected-failing.txt"; commit "$r"
-expect "adding a line to the ratchet list fails" 1 guard "$r"
-r=$(repo); printf 'm1/a.test.ts > a\nm1/c.test.ts > c\n' > "$r/e2e/m1/expected-failing.txt"; commit "$r"
+r=$(repo); printf 'm1/a.test.ts > a\n' > "$r/e2e/m1/expected-failing/a.txt"; commit "$r"
+expect "deleting a line from a check's ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/m1/expected-failing/b.txt; commit "$r"
+expect "deleting a check's ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/m1/expected-failing/a.txt e2e/m1/expected-failing/b.txt; commit "$r"
+expect "deleting every ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'm1/a.test.ts > a\nm1/a.test.ts > a2\nm1/a.test.ts > a3\n' > "$r/e2e/m1/expected-failing/a.txt"; commit "$r"
+expect "adding a line to a check's ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'm1/c.test.ts > c\n' > "$r/e2e/m1/expected-failing/c.txt"; commit "$r"
+expect "adding a ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'm1/a.test.ts > a\nm1/a.test.ts > swapped\n' > "$r/e2e/m1/expected-failing/a.txt"; commit "$r"
 expect "swapping a ratchet line fails" 1 guard "$r"
+r=$(repo); printf '' > "$r/e2e/m1/expected-failing/c.txt"; commit "$r"
+expect "adding an empty ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'on-chain/01-a.test.ts > a\n' > "$r/e2e/on-chain/expected-failing/01-a.txt"; commit "$r"
+expect "deleting a line from an on-chain ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/on-chain/expected-failing/03-b.txt; commit "$r"
+expect "deleting an on-chain ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'on-chain/01-a.test.ts > a\non-chain/01-a.test.ts > a2\non-chain/01-a.test.ts > a3\n' > "$r/e2e/on-chain/expected-failing/01-a.txt"; commit "$r"
+expect "adding a line to an on-chain ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'on-chain/05-c.test.ts > c\n' > "$r/e2e/on-chain/expected-failing/05-c.txt"; commit "$r"
+expect "adding an on-chain ratchet file fails" 1 guard "$r"
+r=$(repo); git -C "$r" mv e2e/on-chain/expected-failing/01-a.txt e2e/on-chain/expected-failing/01-renamed.txt; commit "$r"
+expect "renaming an on-chain ratchet file fails" 1 guard "$r"
+r=$(repo); echo t >> "$r/e2e/on-chain/01-a.test.ts"; commit "$r"
+expect "editing an on-chain check file fails" 1 guard "$r"
+r=$(repo); printf 'ui-layer/01.test.ts > u1\n' > "$r/e2e/ui-layer/expected-failing/01.txt"; commit "$r"
+expect "deleting a line from another suite's ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/ui-layer/expected-failing/01.txt; commit "$r"
+expect "deleting another suite's ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'ui-layer/01.test.ts > u1\nui-layer/01.test.ts > u2\nui-layer/01.test.ts > u3\n' > "$r/e2e/ui-layer/expected-failing/01.txt"; commit "$r"
+expect "adding a line to another suite's ratchet file fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/e2e/stage1/expected-failing"; printf 'stage1/x.test.ts > x\n' > "$r/e2e/stage1/expected-failing/x.txt"; commit "$r"
+expect "a ratchet file in a new suite fails" 1 guard "$r"
+r=$(repo); echo changed > "$r/e2e/ui-layer/01.test.ts"; commit "$r"
+expect "editing another suite's check still fails" 1 guard "$r"
+r=$(repo); printf 'm8/a.test.ts > a\n' > "$r/e2e/m8/expected-failing/a.txt"; commit "$r"
+expect "deleting a line from a later milestone's ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'm8/a.test.ts > a\nm8/a.test.ts > a2\nm8/a.test.ts > a3\n' > "$r/e2e/m8/expected-failing/a.txt"; commit "$r"
+expect "adding a line to a later milestone's ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'm8/c.test.ts > c\n' > "$r/e2e/m8/expected-failing/c.txt"; commit "$r"
+expect "adding a later milestone's ratchet file fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/e2e/mx/expected-failing-x"; printf 'x\n' > "$r/e2e/mx/expected-failing-x/a.txt"; git -C "$r" add -A; git -C "$r" commit -qm x; git -C "$r" branch -f base; git -C "$r" checkout -q x-build; git -C "$r" reset -q --hard base; printf '' > "$r/e2e/mx/expected-failing-x/a.txt"; commit "$r"
+expect "a look-alike of a ratchet folder (expected-failing-x/) may not shrink" 1 guard "$r"
+r=$(repo); printf 'm2/a.test.ts > a\n' > "$r/e2e/m2/expected-failing/a.txt"; commit "$r"
+expect "deleting a line from an m2 ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/m2/expected-failing/a.txt; commit "$r"
+expect "deleting an m2 ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'm2/a.test.ts > a\nm2/a.test.ts > a2\nm2/a.test.ts > a3\n' > "$r/e2e/m2/expected-failing/a.txt"; commit "$r"
+expect "adding a line to an m2 ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'm2/c.test.ts > c\n' > "$r/e2e/m2/expected-failing/c.txt"; commit "$r"
+expect "adding an m2 ratchet file fails" 1 guard "$r"
+# What the narrower guards held (m2 #267, m<n> M8-timers-shape) the every-suite pattern still holds:
+r=$(repo); printf 'm2/a.test.ts > a\nm2/a.test.ts > zz\n' > "$r/e2e/m2/expected-failing/a.txt"; commit "$r"
+expect "swapping an m2 ratchet line fails" 1 guard "$r"
+r=$(repo); printf 'm8/a.test.ts > a\nm8/a.test.ts > zz\n' > "$r/e2e/m8/expected-failing/a.txt"; commit "$r"
+expect "swapping a later milestone's ratchet line fails" 1 guard "$r"
+r=$(repo); git -C "$r" mv e2e/m2/expected-failing/a.txt e2e/m2/expected-failing/b.txt; commit "$r"
+expect "renaming an m2 ratchet file fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/e2e/m2/sub/expected-failing"; printf 'x\ny\n' > "$r/e2e/m2/sub/expected-failing/a.txt"; git -C "$r" add -A; git -C "$r" commit -qm x; git -C "$r" branch -f base; git -C "$r" checkout -q x-build; git -C "$r" reset -q --hard base; printf 'x\n' > "$r/e2e/m2/sub/expected-failing/a.txt"; commit "$r"
+expect "a ratchet folder nested below a suite may not shrink" 1 guard "$r"
+r=$(repo); printf 'src/a.test.ts > t1\n' > "$r/packages/foo/expected-failing/a.txt"; commit "$r"
+expect "deleting a line from a package's ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q packages/foo/expected-failing/a.txt; commit "$r"
+expect "deleting a package's ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'src/a.test.ts > t1\nsrc/a.test.ts > t2\nsrc/a.test.ts > t3\n' > "$r/packages/foo/expected-failing/a.txt"; commit "$r"
+expect "adding a line to a package's ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'src/c.test.ts > c\n' > "$r/packages/foo/expected-failing/c.txt"; commit "$r"
+expect "adding a package ratchet file fails" 1 guard "$r"
+r=$(repo); git -C "$r" mv packages/foo/expected-failing/a.txt packages/foo/expected-failing/renamed.txt; commit "$r"
+expect "renaming a package ratchet file fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/packages/bar/expected-failing"; printf 'src/x.test.ts > x\n' > "$r/packages/bar/expected-failing/x.txt"; commit "$r"
+expect "a ratchet file in another package fails" 1 guard "$r"
+r=$(repo); grid "$r" a; commit "$r"
+expect "taking a pair off the grid's list passes" 0 guard "$r"
+r=$(repo); grid "$r" b; commit "$r"
+expect "taking the first pair off the grid's list passes" 0 guard "$r"
+r=$(repo); grid "$r" a b c; commit "$r"
+expect "adding a pair to the grid's list fails" 1 guard "$r"
+r=$(repo); grid "$r" a c; commit "$r"
+expect "swapping a grid pair fails" 1 guard "$r"
+r=$(repo); echo '{' > "$r/e2e/grid/expected-red.json"; commit "$r"
+expect "a broken grid list fails" 1 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/grid/expected-red.json; commit "$r"
+expect "deleting the grid list fails" 1 guard "$r"
+r=$(repo); echo changed >> "$r/e2e/m1/README.md"; commit "$r"
+expect "editing a suite README fails: it holds no totals now, so it is a check file like the rest" 1 guard "$r"
 
 # docs-only: the flag that lets a docs-only pull request skip the layer gates
 docs() { # <repo> <wanted flag>
@@ -87,13 +194,39 @@ expect "docs-only: one code file among docs is not" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/packages/wallets/src/modules/send"; echo d > "$r/packages/wallets/src/modules/send/README.md"; commit "$r"
 expect "docs-only: a module's README is one of its slots, not docs" 0 docs "$r" false
 r=$(repo); echo d > "$r/e2e/m1/README.md"; commit "$r"
-expect "docs-only: an e2e README carries generated totals, not docs" 0 docs "$r" false
+expect "docs-only: an e2e README is part of the checks, not docs" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/examples/acme"; echo d > "$r/examples/acme/README.md"; commit "$r"
 expect "docs-only: an example's README is not docs" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/ci.yml"; commit "$r"
 expect "docs-only: a workflow is not docs" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/design"; echo d > "$r/design/notes.md"; commit "$r"; git -C "$r" mv design/notes.md src/notes.ts; commit "$r"
 expect "docs-only: moving a file out of design/ is not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design"; echo d > "$r/design/heroui-pro-notes.md"; commit "$r"
+expect "docs-only: a doc named for HeroUI Pro is not docs (check 15 scans paths)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design"; name=HEROUI_AUTH; echo "${name}_TOKEN=$(printf 'a%.0s' {1..16})" > "$r/design/setup.md"; commit "$r"
+expect "docs-only: a doc that adds a line naming the token is not docs (check 15 scans text)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design/grid"; echo d > "$r/design/grid/grid.json"; commit "$r"
+expect "docs-only: design/grid is read by e2e/grid, so not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design/goals"; echo d > "$r/design/goals/g.json"; commit "$r"
+expect "docs-only: the rest of design/ is still docs" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x" "$r/.agents/skills/kanban/data" "$r/.claude/agents" "$r/.github/ISSUE_TEMPLATE"; echo d > "$r/spikes/x/a.ts"; echo d > "$r/.agents/skills/kanban/data/tasks.json"; echo d > "$r/.claude/settings.json"; echo d > "$r/.github/ISSUE_TEMPLATE/1.yml"; echo d > "$r/skills-lock.json"; commit "$r"
+expect "docs-only: spikes, agent skills, claude config and issue templates are read by no gated suite" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; echo t >> "$r/src/handler.ts"; commit "$r"
+expect "docs-only: an inert path beside a code change is not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/x.yml"; mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; commit "$r"
+expect "docs-only: a workflow among inert paths is not docs" 0 docs "$r" false
+# the Pro name is written in pieces, so check 15 does not read this file as naming Pro
+pro="@heroui-""pro/react"
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"; commit "$r"
+expect "docs-only: a line naming HeroUI Pro in an agents file runs check 15 (not docs)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"; echo d > "$r/.agents/skills/x/SKILL.md"; commit "$r"
+expect "docs-only: the same line beside a markdown file still runs check 15" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "see $pro" > "$r/.agents/skills/x/SKILL.md"; commit "$r"
+expect "docs-only: a markdown page naming Pro is a doc (check 15 exempts *.md)" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/.agents/skills/big"; { echo "import \"$pro\""; seq 1 60000; } > "$r/.agents/skills/big/a.ts"; commit "$r"
+expect "docs-only: a Pro name at the top of a large diff is still found (no SIGPIPE under pipefail)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/spikes/x"; echo "const x = 1" > "$r/spikes/x/a.ts"; commit "$r"
+expect "docs-only: an inert file that does not name Pro is docs" 0 docs "$r" true
 r=$(repo)
 expect "docs-only: an empty diff is not docs" 0 docs "$r" false
 r=$(repo); echo d > "$r/README.md"; commit "$r"
@@ -212,6 +345,182 @@ expect "gate: docs-only does not excuse a failure" 1 gate true check-static=succ
 expect "gate: no jobs is a usage error" 2 gate false
 expect "gate: a bad DOCS_ONLY is a usage error" 2 gate yes check-static=success
 expect "gate: an argument without a result is a usage error" 2 gate false check-static
+
+# m1-reports: the e2e-m1 shards' reports joined into the one the ratchet reads (design/decisions/CI-speed.md)
+shard() { # <dir> <n> <test file...>; writes shard n's report (one passing test per file) and an empty hook-error file
+  local dir="$1/m1-report-$2"; shift 2; mkdir -p "$dir"
+  printf '%s\n' "$@" | jq -R '{name: ., status: "passed", assertionResults: [{title: "t", status: "passed"}]}' | jq -s '{testResults: .}' > "$dir/m1-report.json"
+  echo '{"suiteErrors":[],"unhandled":[]}' > "$dir/m1-errors.json"
+}
+join() { "$here/m1-reports.sh" "$1" 2 "${2:-2}" "$1/out"; }
+d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts
+expect "m1-reports: two shards join" 0 join "$d"
+expect "m1-reports: the joined report has both files" 0 jq -e '.testResults | length == 2' "$d/out/m1-report.json"
+d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts
+expect "m1-reports: a missing shard fails" 1 join "$d"
+d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts; rm "$d/m1-report-2/m1-errors.json"
+expect "m1-reports: a missing hook-error file fails" 1 join "$d"
+d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/a.test.ts
+expect "m1-reports: a file run by two shards fails" 1 join "$d"
+d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts; echo '{}' > "$d/m1-report-2/m1-report.json"
+expect "m1-reports: a report without test files fails" 1 join "$d"
+d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts
+expect "m1-reports: a file no shard ran fails" 1 join "$d" 3
+d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts
+echo '{"suiteErrors":[{"name":"/e2e/m1/b.test.ts","path":[]}],"unhandled":["boom"]}' > "$d/m1-report-2/m1-errors.json"
+join "$d" > /dev/null
+expect "m1-reports: hook errors and unhandled errors carry over" 0 jq -e '(.suiteErrors | length == 1) and (.unhandled == ["boom"])' "$d/out/m1-errors.json"
+d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts; echo 'not json' > "$d/m1-report-1/m1-errors.json"
+expect "m1-reports: a broken hook-error file fails" 1 join "$d"
+
+# required-jobs: no draft run, and no stale draft payload, can pass a required check (design/decisions/CI-drafts-race.md)
+wf() { # <body of one job, its keys indented four spaces>; prints the path of a workflow holding it as job `gate`
+  local f; f="$(mktemp "$scratch/wf.XXXX")"
+  printf 'name: ci\njobs:\n  ready:\n    runs-on: ubuntu-latest\n  other:\n    runs-on: ubuntu-latest\n  gate:\n%s\n    runs-on: ubuntu-latest\n' "$1" > "$f"
+  echo "$f"
+}
+req() { "$here/required-jobs.sh" "$@"; }
+dname="    name: \${{ needs.ready.outputs.draft != 'false' && 'gate (draft)' || 'gate' }}"
+dlive="    if: needs.ready.outputs.draft == 'false'"
+dlive_c="    if: \${{ needs.ready.outputs.draft == 'false' && !cancelled() }}"
+expect "required-jobs: ready, the live guard and the draft name pass" 0 req "$(wf "$dname
+    needs: ready
+$dlive")" gate
+expect "required-jobs: with other needs, the live guard and !cancelled() pass" 0 req "$(wf "$dname
+    needs: [ready, other]
+$dlive_c")" gate
+expect "required-jobs: this repository's ci.yml passes" 0 req "$here/../../.github/workflows/ci.yml" \
+  check e2e-layer1 e2e-layer2 e2e-m0 builder-paths
+expect "required-jobs: this repository's ci.yml passes for goal/stage-1's required checks" 0 req "$here/../../.github/workflows/ci.yml" \
+  check portal-ui e2e-layer1 e2e-layer2 e2e-m0 e2e-m1 e2e-climb e2e-grid e2e-stage1 builder-paths
+expect "required-jobs: a plain name fails" 1 req "$(wf "    name: gate
+    needs: ready
+$dlive")" gate
+expect "required-jobs: a name keyed on the payload fails" 1 req "$(wf "    name: \${{ github.event.pull_request.draft && 'gate (draft)' || 'gate' }}
+    needs: ready
+$dlive")" gate
+expect "required-jobs: no name fails" 1 req "$(wf "    needs: ready
+$dlive")" gate
+expect "required-jobs: not needing ready fails" 1 req "$(wf "$dname
+    needs: other
+$dlive_c")" gate
+expect "required-jobs: the payload's draft guard fails" 1 req "$(wf "$dname
+    needs: ready
+    if: github.event.pull_request.draft != true")" gate
+expect "required-jobs: another skip condition fails" 1 req "$(wf "$dname
+    needs: ready
+    if: needs.ready.outputs.draft == 'false' && endsWith(github.head_ref, '-build')")" gate
+expect "required-jobs: other needs without !cancelled() fail" 1 req "$(wf "$dname
+    needs: [ready, other]
+$dlive")" gate
+expect "required-jobs: a job not in the workflow fails" 1 req "$(wf "$dname
+    needs: ready
+$dlive")" nope
+expect "required-jobs: no job ids is a usage error" 2 req "$(wf "$dname")"
+
+# scope: the flag that makes a pull request into a goal branch run the fast gate only (CI-integration.md, B1)
+scope() { # <event> <base ref> <wanted flag>
+  local got; got=$("$here/scope.sh" "$1" "$2")
+  [ "$got" = "fast=$3" ] || { echo "got $got"; return 1; }
+}
+expect "scope: a pull request into a goal branch is fast" 0 scope pull_request goal/on-chain true
+expect "scope: a pull request into goal/stage-1 runs everything" 0 scope pull_request goal/stage-1 false
+expect "scope: a pull request into main runs everything" 0 scope pull_request main false
+expect "scope: a pull request into a layer or milestone branch runs everything" 0 scope pull_request m1 false
+expect "scope: a push to a goal branch is never fast" 0 scope push goal/on-chain false
+expect "scope: a bare goal/ base is not a goal branch" 0 scope pull_request goal/ false
+expect "scope: an empty base runs everything" 0 scope pull_request "" false
+expect "scope: no arguments is a usage error" 1 "$here/scope.sh"
+
+# affected: which suites a pull request touches (CI-integration.md, B3). The two nx calls are stood in for by files.
+aff_repo() { # <changed file>...; a repository whose branch x-build changes those files
+  local dir; dir="$(mktemp -d "$scratch/aff.XXXX")"
+  git -C "$dir" init -q -b base; git -C "$dir" config user.email ci@example.invalid; git -C "$dir" config user.name ci
+  mkdir -p "$dir/packages/prove" "$dir/packages/cli" "$dir/packages/portal" "$dir/e2e" "$dir/docs/canon" "$dir/design/docs"
+  mkdir -p "$dir/packages/cli/test/fixtures" "$dir/e2e/fixtures"
+  printf '**/test/fixtures/**\n' > "$dir/.nxignore"
+  for f in packages/prove/a packages/cli/a packages/cli/test/fixtures/a packages/portal/a e2e/a e2e/fixtures/a docs/canon/a design/docs/a root.json; do echo 1 > "$dir/$f"; done
+  git -C "$dir" add -A && git -C "$dir" commit -qm base && git -C "$dir" checkout -qb x-build
+  local f; for f in "$@"; do echo 2 >> "$dir/$f"; done
+  git -C "$dir" add -A && git -C "$dir" commit -qm change
+  echo "$dir"
+}
+printf '%s' '{"graph":{"nodes":{"prove":{"data":{"root":"packages/prove"}},"cli":{"data":{"root":"packages/cli"}},"portal":{"data":{"root":"packages/portal"}},"e2e":{"data":{"root":"e2e"}},"canon":{"data":{"root":"docs/canon"}},"docs":{"data":{"root":"design/docs"}},"workspace":{"data":{"root":"."}}}}}' > "$scratch/graph.json"
+aff() { # <repo> <affected list, space separated> -> flags for e2e and prove, on one line
+  local list="$scratch/list"; printf '%s\n' $2 > "$list"
+  (cd "$1" && AFFECTED_GRAPH="$scratch/graph.json" AFFECTED_LIST="$list" "$here/affected.sh" base x-build e2e prove 2> /dev/null | tr '\n' ' ')
+}
+want() { local got; got=$(aff "$1" "$2"); [ "$got" = "$3 " ] || { echo "got: $got"; return 1; }; }
+r=$(aff_repo packages/portal/a)
+expect "affected: a portal change reaches prove and e2e by the graph" 0 want "$r" "portal prove e2e" "affected_e2e=true affected_prove=true"
+r=$(aff_repo packages/cli/a)
+expect "affected: a cli change reaches e2e and prove (prove runs the CLI)" 0 want "$r" "cli e2e" "affected_e2e=true affected_prove=true"
+r=$(aff_repo docs/canon/a)
+expect "affected: a canon change reaches e2e (e2e/m1 reads it), not prove" 0 want "$r" "canon" "affected_e2e=true affected_prove=false"
+r=$(aff_repo design/docs/a)
+expect "affected: a design-docs project change touches neither suite" 0 want "$r" "docs" "affected_e2e=false affected_prove=false"
+r=$(aff_repo packages/cli/test/fixtures/a)
+expect "affected: a file .nxignore hides from Nx runs everything" 0 want "$r" "" "affected_e2e=true affected_prove=true"
+r=$(aff_repo e2e/fixtures/a)
+expect "affected: e2e/fixtures is copied by prove's tests, so everything runs" 0 want "$r" "e2e" "affected_e2e=true affected_prove=true"
+r=$(aff_repo e2e/a)
+expect "affected: an e2e change runs e2e, not prove" 0 want "$r" "e2e" "affected_e2e=true affected_prove=false"
+r=$(aff_repo root.json)
+expect "affected: a file in no project runs everything" 0 want "$r" "canon" "affected_e2e=true affected_prove=true"
+r=$(aff_repo docs/canon/a root.json)
+expect "affected: one unowned file among owned ones runs everything" 0 want "$r" "canon" "affected_e2e=true affected_prove=true"
+r=$(aff_repo packages/cli/a)
+expect "affected: an unreadable graph runs everything" 0 bash -c "cd '$r' && echo nonsense > '$scratch/bad.json' && AFFECTED_GRAPH='$scratch/bad.json' AFFECTED_LIST=/dev/null '$here/affected.sh' base x-build e2e prove 2>/dev/null | tr '\n' ' ' | grep -qx 'affected_e2e=true affected_prove=true '"
+expect "affected: a base that does not exist runs everything" 0 bash -c "cd '$r' && AFFECTED_GRAPH='$scratch/graph.json' AFFECTED_LIST=/dev/null '$here/affected.sh' no-such-base x-build e2e prove 2>/dev/null | tr '\n' ' ' | grep -qx 'affected_e2e=true affected_prove=true '"
+expect "affected: no projects is a usage error" 2 "$here/affected.sh" base x-build
+
+# watch-required: a fake `gh` on the PATH answers from files in $W, so no case reaches GitHub.
+W="$scratch/watch"; mkdir -p "$W/bin"
+cat > "$W/bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$1 $2" in
+  "pr view") cat "$W/pr" ;;
+  "run list") n=$(cat "$W/polls" 2>/dev/null || echo 0); echo $((n + 1)) > "$W/polls"
+    if [ "$n" -lt "$(cat "$W/pending_polls" 2>/dev/null || echo 0)" ]; then echo '[{"status":"in_progress","conclusion":""}]'; else cat "$W/run"; fi ;;
+  "run view") cat "$W/jobs" ;;
+  "pr checks") c=$(cat "$W/check_calls" 2>/dev/null || echo 0); echo $((c + 1)) > "$W/check_calls"
+    if [ "$c" -lt "$(cat "$W/partial_calls" 2>/dev/null || echo 0)" ]; then echo '[{"name":"check","state":"SUCCESS"}]'; else cat "$W/checks"; fi ;;
+  api*) [ -f "$W/required" ] && { cat "$W/required"; exit 0; }; cat "$W/api_err" >&2; exit 1 ;;
+  *) echo "fake gh: $*" >&2; exit 9 ;;
+esac
+GH
+chmod +x "$W/bin/gh"
+watch() { # <pr json> <run json> <checks json> <required json or ""> [api error] [pending polls]
+  rm -f "$W/polls" "$W/required" "$W/check_calls"; printf '%s' "${PARTIAL:-0}" > "$W/partial_calls"; printf '%s' "$1" > "$W/pr"; printf '%s' "$2" > "$W/run"; printf '%s' "$3" > "$W/checks"
+  [ -n "$4" ] && printf '%s' "$4" > "$W/required"; printf '%s' "${5:-gh: Branch not protected (HTTP 404)}" > "$W/api_err"
+  printf '%s' "${6:-0}" > "$W/pending_polls"; printf '%s' "${JOBS:-$ready_jobs}" > "$W/jobs"
+  W="$W" PATH="$W/bin:$PATH" WATCH_MAX_SECONDS="${MAXS:-60}" "$here/watch-required.sh" 7 0
+}
+ready_jobs='{"jobs":[{"name":"check"}]}'
+watch_late() { PARTIAL=2 watch "$@"; }
+open='{"state":"OPEN","isDraft":false,"headRefOid":"abc","baseRefName":"main"}'
+done_ok='[{"status":"completed","conclusion":"success"}]'
+req='{"contexts":["check","e2e-m1"]}'
+expect "watch: every required check passed" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SUCCESS"}]' "$req"
+expect "watch: waits while the run is in progress, then reads the checks" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SKIPPED"}]' "$req" "" 3
+MAXS=0 expect "watch: a required check still missing at the deadline is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"}]' "$req"
+expect "watch: a required check missing after the run completed is waited on (a draft run on the same commit)" 0 watch_late "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SUCCESS"}]' "$req"
+expect "watch: a merged pull request with no ci run cannot be watched" 2 watch '{"state":"MERGED","isDraft":false,"headRefOid":"abc","baseRefName":"main"}' '[]' '[]' "$req"
+expect "watch: a failed required check is reported at once, while another is still missing" 1 watch "$open" "$done_ok" '[{"name":"check","state":"FAILURE"}]' "$req"
+expect "watch: a cancelled required check is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED"}]' "$req"
+expect "watch: the newest row decides when an older run listed the same name" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED","startedAt":"2026-11-23T01:00:00Z"},{"name":"e2e-m1","state":"SUCCESS","startedAt":"2026-11-23T02:00:00Z"}]' "$req"
+expect "watch: an unprotected base goes by the run's conclusion (success)" 0 watch "$open" "$done_ok" '[]' ""
+expect "watch: an unprotected base goes by the run's conclusion (failure)" 1 watch "$open" '[{"status":"completed","conclusion":"failure"}]' '[]' ""
+MAXS=0 JOBS='{"jobs":[{"name":"check (draft)"}]}' expect "watch: an unprotected base never trusts a draft run's success" 3 watch "$open" "$done_ok" '[]' ""
+expect "watch: the newest run by id decides when two share a second (#658)" 0 watch "$open" '[{"databaseId":2,"status":"completed","conclusion":"success"},{"databaseId":1,"status":"completed","conclusion":"cancelled"}]' '[]' ""
+expect "watch: the newest run by id decides, whatever order gh lists them in" 0 watch "$open" '[{"databaseId":1,"status":"completed","conclusion":"cancelled"},{"databaseId":2,"status":"completed","conclusion":"success"}]' '[]' ""
+expect "watch: a cancelled newest run with no newer one is not green (unprotected)" 1 watch "$open" '[{"databaseId":1,"status":"completed","conclusion":"cancelled"}]' '[]' ""
+expect "watch: a skipped newest run is not green, though its required checks read SKIPPED (#513)" 1 watch "$open" '[{"databaseId":2,"status":"completed","conclusion":"skipped"},{"databaseId":1,"status":"completed","conclusion":"cancelled"}]' '[{"name":"check","state":"SKIPPED"},{"name":"e2e-m1","state":"SKIPPED"}]' "$req"
+expect "watch: gh failing on the protection is not read as unprotected" 2 watch "$open" "$done_ok" '[]' "" "gh: HTTP 502"
+expect "watch: a draft cannot be watched" 2 watch '{"state":"OPEN","isDraft":true,"headRefOid":"abc","baseRefName":"main"}' "$done_ok" '[]' "$req"
+expect "watch: a closed pull request cannot be watched" 2 watch '{"state":"CLOSED","isDraft":false,"headRefOid":"abc","baseRefName":"main"}' "$done_ok" '[]' "$req"
+MAXS=0 expect "watch: a run that never finishes ends at the deadline" 3 watch "$open" '[{"status":"queued","conclusion":""}]' '[]' "$req"
+expect "watch: no pull request number is a usage error" 2 "$here/watch-required.sh"
 
 if [ "$failures" -gt 0 ]; then echo "$failures case(s) failed"; exit 1; fi
 echo "all tools/ci cases pass"

@@ -14,3 +14,19 @@ Tests: `store.test.ts`, the race test for the database owner.
 `Store.list` (L2.04) runs one SELECT in `internal/list.ts`: `WHERE` the equality filters, `rowid` ordered `ASC` or `DESC`, one row more
 than the page to know whether another follows. The cursor is the last kept row's rowid, so rows made meanwhile never shift a page.
 A thing that lives as actors can't be listed (the compiler refuses a list read of one).
+
+## Declared stores (K3, M1.17)
+
+`StoreD1.layer({ tables, stores: [[store, env.DB_STORE]] })`: a thing that `lives` in a declared database store is read
+and committed in that store's D1 binding, with its own `_journal` and `_requests`; a thing in no store is in the default
+database (`SqlClient`). One call commits to one store: writes to two die (`stores.test.ts`, two real D1 databases in
+workerd). `answered(key)` asks every database. A field whose encoded form is an array or a struct is its JSON text in
+its column and is read back by the field's schema (`internal/rows.ts`, STO-23; `store.test.ts`).
+
+The thing the identity keeps (`people`: the `per_`-id thing and the identity's users table, both named by the generated
+server) is read by id from that table, only its own fields decoded, never from a table of its own, so the runtime finds
+the person a payload names (K16, M1.46). A list read of it dies; the identity plugin (M2.05) owns the rest.
+
+`StoreD1.layer({ tables, rules })` (G5): the model's rules, each by its full name. The generated migration makes one partial
+unique index per rule, `<table>_<rule>`; a commit it refuses is a `conflict` (D1 names the key's columns, never the index,
+so the store reads them from the rules), and the store hands the rules to the runtime's `findBy` and before-commit check.

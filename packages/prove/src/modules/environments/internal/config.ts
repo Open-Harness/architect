@@ -1,7 +1,7 @@
 // The environment's own wrangler config: the generated server's, running the built bundle unchanged.
 import { Names } from "orthograph/server";
-import { resolve } from "node:path";
-import { parseJsonc } from "./jsonc.ts";
+import { dirname, join, resolve } from "node:path";
+import { ServerConfig } from "#modules/server-config/service.js";
 
 type Base = { readonly name: string; readonly d1_databases?: ReadonlyArray<Record<string, unknown>>; readonly vars?: Record<string, string> } & Record<string, unknown>;
 
@@ -11,6 +11,8 @@ export interface Describe {
   readonly sha256: string;
   /** The bundle `Build.build` kept. */
   readonly main: string;
+  /** The portal's client the revision ships (`<artefact>/portal`): the Worker's static assets (K19). */
+  readonly portal?: string;
   /** An environment that records telemetry sends it to a collector of its own (`OTLP_URL`). */
   readonly otlp?: string;
   /** An environment that hosts worlds with lifetimes says so (`ORTHO_WORLDS`). */
@@ -19,17 +21,25 @@ export interface Describe {
   readonly logbook?: string;
 }
 
+/**
+ * The portal's client a revision ships, as the verified record says: its `portal/` folder when `bundle.json` records a client and its digest
+ * matched (`Build.find` checked it), and nothing otherwise. A folder the record does not name is not the revision's, however it got there.
+ */
+export const portalOf = (built: { readonly main: string; readonly portal: string | null }): string | undefined =>
+  built.portal === null ? undefined : join(dirname(built.main), "portal");
+
 /** The logbook an environment's config names, if it names one. */
 export const logbookOf = (configText: string): string | undefined =>
-  ((parseJsonc(configText) as { vars?: Record<string, string> }).vars ?? {})["ORTHO_LOGBOOK_URL"];
+  ((ServerConfig.parse(configText) as { vars?: Record<string, string> }).vars ?? {})["ORTHO_LOGBOOK_URL"];
 
 /**
  * `generated/server/wrangler.jsonc` with its source swapped for the built file and `no_bundle`, its database and worker
- * named for the environment, and the bundle's revision and hash as vars, which is where `/_ortho/bundle` gets them.
+ * named for the environment, and the bundle's revision and hash as vars, which is where `/_ortho/bundle` gets them. The portal's
+ * client, when the revision shipped one, is the Worker's static assets (K19).
  * Secrets are not here: they go in the env file.
  */
 export const environmentConfig = (root: string, baseText: string, d: Describe): string => {
-  const base = parseJsonc(baseText) as Base;
+  const base = ServerConfig.parse(baseText) as Base;
   const config = {
     ...base,
     name: `${base.name}-${d.name}`,
@@ -40,6 +50,7 @@ export const environmentConfig = (root: string, baseText: string, d: Describe): 
       database_name: `${String(db["database_name"])}-${d.name}`,
       migrations_dir: resolve(root, "generated/server", String(db["migrations_dir"] ?? "migrations")),
     })),
+    ...(d.portal === undefined ? {} : { assets: ServerConfig.assets(d.portal) }),
     vars: {
       ...base.vars,
       [Names.variable("ENVIRONMENT")]: d.name,

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "passed": false,
+  "totals": {
+    "journeys": 1,
+    "journeysPassed": 0,
+    "steps": 1,
+    "stepsPassed": 0,
+    "evalsFailed": 14,
+    "failing": 15
+  },
+  "seconds": 1.049,
+  "journeys": [
+    {
+      "name": "climb: a wrong answer",
+      "verdict": "fail",
+      "steps": [
+        {
+          "name": "olga spends some and is told what is left",
+          "verdict": "fail",
+          "expected": "\"380\"",
+          "got": "\"500\"",
+          "failures": [
+            {
+              "message": "answer \"500\", expected \"380\"",
+              "expected": "\"380\"",
+              "got": "\"500\""
+            }
+          ],
+          "operation": "allowance.spend",
+          "handlerFile": "src/allowance/spend.ts",
+          "declarationFile": "blueprint/things/allowance/verbs/spend.ts",
+          "ms": 5
+        }
+      ],
+      "skipped": [],
+      "ms": 5
+    }
+  ],
+  "lines": [
+    "journey climb: a wrong answer ✘ 0/1 steps",
+    "  ✘ \"olga spends some and is told what is left\": answer \"500\", expected \"380\"",
+    "  ✘ \"olga spends some and is told what is left\": handler src/allowance/spend.ts, declared in blueprint/things/allowance/verbs/spend.ts (allowance.spend)"
+  ]
+}

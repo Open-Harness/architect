@@ -16,13 +16,13 @@ const cardOf = (lanes: ReadonlyArray<LaneView>, cell: string) =>
 test("lanes come in the hill-climb order, each with a card per output in output order", () => {
   const view = join(grid, board);
   deepEqual(view.lanes.map((l) => l.block.id).slice(0, 3), ["operation", "error", "thing"]);
-  equal(view.lanes.length, 13);
+  equal(view.lanes.length, 14);
   for (const l of view.lanes) deepEqual(l.cards.map((c) => c.output.id), view.outputs.map((o) => o.id));
 });
 
 test("with no history, the board shows the grid's states: nothing green until a verdict lands", () => {
   const view = join(grid, board);
-  deepEqual(view.score, { green: 0, built: 52, partly: 32, red: 33, notNeeded: 0, needed: 117 });
+  deepEqual(view.score, { green: 0, built: 52, partly: 37, red: 37, notNeeded: 0, needed: 126 });
   deepEqual(lane(view.lanes, "visibility").cards.map((c) => c.state),
     ["built", "red", "red", "red", "partly", "built", "partly", "red", "built"]);
   equal(view.illustrative, false);
@@ -74,15 +74,15 @@ test("what changed lists moves after a time, newest first, with the state each c
 
 test("filters by state, thread and output", () => {
   const cards = join(grid, moved).lanes.flatMap((l) => l.cards);
-  equal(cards.filter((c) => matches(c, { states: ["red"] })).length, 31);
+  equal(cards.filter((c) => matches(c, { states: ["red"] })).length, 35);
   equal(cards.filter((c) => matches(c, { thread: "codex-plugged-in" })).length, 1);
-  equal(cards.filter((c) => matches(c, { output: "mcp", states: ["red"] })).length, 5);
+  equal(cards.filter((c) => matches(c, { output: "mcp", states: ["red"] })).length, 6);
 });
 
-test("roles come from cellRole: 93 carry, 4 absence checks, 20 not needed; 14 red ones are proposed grey", () => {
+test("roles come from cellRole: 102 carry, 4 absence checks, 20 not needed; 14 red ones are proposed grey", () => {
   const all = join(grid, board).lanes.flatMap((l) => l.cards);
   const count = (r: string) => all.filter((c) => c.role === r).length;
-  deepEqual([count("carries"), count("absence"), count("not-needed")], [93, 4, 20]);
+  deepEqual([count("carries"), count("absence"), count("not-needed")], [102, 4, 20]);
   deepEqual(all.filter((c) => c.role === "absence").map((c) => c.cell.id).sort(), ["step.api", "step.cli", "step.mcp", "step.sdk"]);
   const grey = all.filter((c) => c.proposedNotNeeded);
   equal(grey.length, 14);

@@ -1,9 +1,26 @@
 import { acmeCopy } from "../../../test/acme.ts";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
-import { Effect } from "effect";
+import { Clock, Duration, Effect, Exit, Scope } from "effect";
+import { Anvil } from "@orthograph/chain-evm";
+import { Timers } from "@orthograph/language-effect";
 import { afterAll, describe, expect, it } from "vitest";
 import { Worlds } from "./service.ts";
+import { WorldFailed } from "./types.ts";
+
+const timers = Timers.of({
+  at: () => Effect.die("only sleep is used"),
+  sleep: (_owner, span) => Effect.flatMap(Clock.Clock, (clock) => clock.sleep(Duration.fromInputUnsafe(span))),
+  due: () => Effect.succeed(undefined),
+  fire: () => Effect.succeed([]),
+  pending: Effect.succeed([]),
+});
+const alive = (pid: number) => {
+  try { process.kill(pid, 0); return true; } catch { return false; }
+};
+const chainId = (rpcUrl: string) =>
+  Effect.promise(() => fetch(rpcUrl, { method: "POST", headers: { "content-type": "application/json" }, body: '{"jsonrpc":"2.0","id":1,"method":"eth_chainId"}' })
+    .then((r) => r.json() as Promise<{ result: string }>).then((j) => j.result, () => "gone"));
 
 const project = acmeCopy();
 const acme = project.root;
@@ -54,4 +71,24 @@ describe("a local world", () => {
       const revoked = acmeCli("olga", "allowance", "spend", "--allowance", allowance, "--amount", "1", "--memo", "late");
       expect([revoked.status, revoked.stderr.trim()]).toEqual([40, "[AL-900] AllowanceNotActive { state: revoked }"]);
     }))));
+
+  it.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("M1.31: a world's chain answers eth_chainId beside the Worker and is gone when the world ends", { timeout: 90_000 }, () =>
+    Effect.runPromise(Effect.gen(function* () {
+      const scope = yield* Scope.make();
+      let pid = 0;
+      const chain = Anvil.start({ chainId: 31_337 }).pipe(
+        Effect.tap((a) => Effect.sync(() => { pid = a.pid; })),
+        Effect.map((a) => ({ rpcUrl: a.rpcUrl, chainId: a.chainId })),
+        Effect.mapError((e) => new WorldFailed({ message: e.message })),
+        Effect.provideService(Timers, timers),
+      );
+      const running = yield* Worlds.start({ root: acme, port: 0, name: "chain-test", chain }).pipe(Scope.provide(scope));
+      expect(running.chain?.chainId).toBe(31_337);
+      expect(yield* chainId(running.chain!.rpcUrl)).toBe("0x7a69");
+      expect((yield* Effect.promise(() => fetch(`${running.url}/_world/health`))).ok).toBe(true);
+      expect(alive(pid)).toBe(true);
+      yield* Scope.close(scope, Exit.void);
+      expect(alive(pid)).toBe(false);
+      expect(yield* chainId(running.chain!.rpcUrl)).toBe("gone");
+    })));
 });

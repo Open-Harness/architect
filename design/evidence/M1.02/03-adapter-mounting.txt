@@ -1,0 +1,290 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/03-adapter-mounting
+# commit b39b30d · 2026-11-18T20:20:26Z · exit 1 (expected 1) · 10.7s
+
+
+ RUN  v4.1.12 ./e2e
+
+ × m1/03-adapter-mounting.test.ts > 03 adapters: ortho add adapter > a dry run writes nothing; one command writes one mount and pins it; a duplicate and the wrong kind are refused 2904ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "adapter" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/03-adapter-mounting.test.ts > 03 adapters: ortho add adapter > after it, generate and check work with nothing else 759ms
+   → USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "adapter" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+ × m1/03-adapter-mounting.test.ts > 03 adapters: a mount reaches only what it includes > records the mount, and an app operation's step.call compiles against an included call 708ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/03-adapter-mounting.test.ts > 03 adapters: a mount reaches only what it includes > an operation naming a call its mount did not include is refused, naming the mount and the call 733ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/03-adapter-mounting.test.ts > 03 adapters: a mount reaches only what it includes > including a call the adapter does not have is refused, naming the mount file 805ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/03-adapter-mounting.test.ts > 03 adapters: the graph > prints a used-by edge from the mount to the operation that calls it, and Compare keys on it 919ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/03-adapter-mounting.test.ts > 03 adapters: foreign code stays out of every pure entry and client closure > a scaffold with one blank, and nothing foreign in blueprint/ or the api and sdk 1061ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/03-adapter-mounting.test.ts > 03 adapters: foreign code stays out of every pure entry and client closure > a Node-capable Promise callable's own types and runtime stay out of the SDK and API 1871ms
+   → can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/03-adapter-mounting.test.ts > 03 adapters: ortho add adapter > a dry run writes nothing; one command writes one mount and pins it; a duplicate and the wrong kind are refused
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "adapter" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --dry-run in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/03-adapter-mounting.test.ts:23:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  m1/03-adapter-mounting.test.ts > 03 adapters: ortho add adapter > after it, generate and check work with nothing else
+AssertionError: USAGE
+  ortho add <subcommand> [flags]
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
+
+SUBCOMMANDS
+  thing        
+  operation    
+  read         
+  journey      
+
+ERRORS
+  Unknown subcommand "adapter" for "ortho add"
+  Unrecognized flag: --as in command ortho add
+  Unrecognized flag: --root in command ortho add
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/03-adapter-mounting.test.ts:46:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  m1/03-adapter-mounting.test.ts > 03 adapters: a mount reaches only what it includes > records the mount, and an app operation's step.call compiles against an included call
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/03-adapter-mounting.test.ts:59:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  m1/03-adapter-mounting.test.ts > 03 adapters: a mount reaches only what it includes > an operation naming a call its mount did not include is refused, naming the mount and the call
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/03-adapter-mounting.test.ts:70:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  m1/03-adapter-mounting.test.ts > 03 adapters: a mount reaches only what it includes > including a call the adapter does not have is refused, naming the mount file
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/03-adapter-mounting.test.ts:78:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  m1/03-adapter-mounting.test.ts > 03 adapters: the graph > prints a used-by edge from the mount to the operation that calls it, and Compare keys on it
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/03-adapter-mounting.test.ts:89:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  m1/03-adapter-mounting.test.ts > 03 adapters: foreign code stays out of every pure entry and client closure > a scaffold with one blank, and nothing foreign in blueprint/ or the api and sdk
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/03-adapter-mounting.test.ts:105:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  m1/03-adapter-mounting.test.ts > 03 adapters: foreign code stays out of every pure entry and client closure > a Node-capable Promise callable's own types and runtime stay out of the SDK and API
+AssertionError: can't load blueprint/adapters/pricing.ts: TypeError: Blueprint.call is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/03-adapter-mounting.test.ts:122:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed (8)
+   Start at  20:20:16
+   Duration  10.13s (transform 92ms, setup 0ms, import 263ms, tests 9.77s, environment 0ms)

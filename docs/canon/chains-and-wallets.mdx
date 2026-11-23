@@ -1,0 +1,453 @@
+---
+title: Chains and wallets
+concept: wallet
+owns: [chain port, signer, wallet, confirmation depth, submission, chain in a world]
+questions:
+  - How does Orthograph reach a chain, and what does it give me over a bare client?
+  - What is a wallet, and where does its key live?
+  - What does a send do, step by step, and why can it never skip the simulation?
+  - What does confirmed mean, and how many blocks does it wait for?
+  - How does a world get a chain, and what runs on it?
+  - What did K7 decide about contracts, and which of it is built?
+status: specified
+milestone: M1
+slices: [M1.27, M1.29, M1.30, M1.31, M1.32, M1.38, M1.39, M2.13, M6.10, M6.11]
+decisions: [K7, K12, K25, K27, M1-plugins]
+links: [languages-and-hosts, plugins, data, stores, operations, doors, journeys, proof, stand-ins]
+---
+
+## The idea
+
+A chain is a host, `Host.chain`, and the store kind that runs on it is `chain` ([languages-and-hosts](languages-and-hosts.mdx)).
+Orthograph reaches an EVM chain through one port, `ChainPort`, in the package `@orthograph/chain-evm`. The first plugin
+built on that port is `@orthograph/wallets`: keys, kept where a **signer** keeps them, and five operations to make, bring
+in, list, sign with and send from them. Two rules decide the whole page. **A key lives in exactly one place, its signer,
+and never in a payload, a binding, a commit or a log.** And **a send is never signed before it has been simulated, and is
+never called `confirmed` until the chain's own depth says so.** What is built is the device half and the port under it. How
+a contract is written, called and refused (K7, K25) is decided and not built: it is slice M6.10 onwards.
+
+## The smallest example
+
+The wallet is one thing with one field, an id. It has no machine and no stored key, because the key never reaches the
+server and so is no state the server owns:
+
+```ts file=packages/wallets/blueprint/things/wallet/thing.ts name=imports,Wallet lines=1-7
+import { Blueprint } from "orthograph";
+
+export const Wallet = Blueprint.thing({
+  description: "A key, kept where its signer keeps it (browser, node, keystore or world), named by its CAIP-10 account.",
+  fields: { id: Blueprint.id("wal") },
+  code: "WL",
+});
+```
+
+Its `send` operation says everything a caller needs, and it runs on the caller's device (`runs: "client"`, M1.27):
+
+```ts file=packages/wallets/blueprint/things/wallet/verbs/send.ts name=imports,default lines=1-13
+import { Blueprint } from "orthograph";
+import { Wallet } from "../thing.js";
+import { SimulationReverted, KeyLocked, NoSuchKey } from "../errors.js";
+
+export default Blueprint.operation(Wallet, {
+  description: "Simulate, sign, send and follow a transfer until it is confirmed.",
+  payload: { signer: Blueprint.traced(Blueprint.text({ max: 16 })), label: Blueprint.traced(Blueprint.text({ max: 32 })), to: Blueprint.text({ max: 128 }), value: Blueprint.uint(256) },
+  // A transaction hash and its level are public: the chain's own spans name the hash too.
+  answer: { transaction: Blueprint.traced(Blueprint.text({ max: 128 })), level: Blueprint.traced(Blueprint.text({ max: 16 })), nonce: Blueprint.uint(64) },
+  errors: [SimulationReverted, KeyLocked, NoSuchKey],
+  allowed: [Blueprint.anyone],
+  runs: "client",
+});
+```
+
+Three things in it matter. `signer` says where the key lives, and `label` names a key on that signer, so no payload ever
+holds a key. `to` is a CAIP-10 account, `eip155:<chain>:<address>`, never a bare address, so a Solana or Aztec account can
+join later without reshaping the thing. And `SimulationReverted` is the one refusal a send can end in, because the chain's
+own simulation refuses a doomed transfer before anything is signed or sent.
+
+The handler for each place an operation runs is one line over the same module. This is the Node one, where the signers
+are an encrypted keystore folder:
+
+```ts file=packages/wallets/src/wallet/send.node.ts name=imports,default lines=1-9
+// wallet.send on the Node host (the generated CLI, and the SDK run from Node): the encrypted keystore folder.
+import type { Handler } from "@orthograph/language-effect";
+import type declaration from "../../blueprint/things/wallet/verbs/send.js";
+import { NodeHost } from "../modules/node-host/service.ts";
+import { Operations } from "../modules/operations/service.ts";
+
+const handler: Handler<typeof declaration> = (payload) => Operations.on(NodeHost.signer).send(payload);
+
+export default handler;
+```
+
+A journey from the wallet's author proves a send at depth three, in a world with a real chain. Read it as a story:
+
+<Scenario journey="e2e/fixtures/m1/wallets/source/blueprint/journeys/zz-depth-three.ts" step="send at depth three and see it confirmed after the third block" />
+
+```ts file=e2e/fixtures/m1/wallets/source/blueprint/journeys/zz-depth-three.ts name=journey lines=15-34
+const journey: Journey<{ readonly holder: Allowed }> = Blueprint.journey("wallet at depth three on the world signer", {
+  cast: { holder },
+  steps: (s) => [
+    s.step("import the world's funded key at depth three", s.holder.run(importKey, { signer: "world", label: "deep", source: s.world.chain.keys.world }), expect((a) => a.account).toMatch(account), noEvents()),
+    s.step(
+      "send at depth three and see it confirmed after the third block",
+      s.holder.run(send, { signer: "world", label: "deep", to: s.world.chain.payee, value: 1_000n }),
+      expect((a) => a.level).toBe("confirmed"),
+      expect((a) => a.transaction).toMatch(/^0x[0-9a-fA-F]{64}$/),
+      spans({ present: ["wallet.send.level"] }),
+      noEvents(),
+    ),
+    s.step(
+      "a send whose simulation reverts is refused at depth three before anything is sent",
+      s.holder.run(send, { signer: "world", label: "deep", to: s.world.chain.payee, value: 1_000_000_000_000_000_000_000_000_000_000n }),
+      refuses(SimulationReverted),
+      noEvents(),
+    ),
+  ],
+});
+```
+
+## How it works
+
+1. **An operation that runs on a device needs a plugin that brings code for each place.** The compiler refuses
+   `runs: "client"` for an app's own operations and accepts it for a mounted plugin's, when the plugin has a `node`, a
+   `browser` and a `world` entry for it (`packages/compiler/src/modules/model/internal/device.ts:5`). The wallet's entries
+   are `src/wallet/<verb>.{node,browser,world}.ts`. Prove runs the `world` one in place of a device.
+2. **The host gives the signers it has.** Each host answers `signer(name)`: the Node host (`packages/wallets/src/modules/node-host/service.ts:9`)
+   has `node`, the browser host (`packages/wallets/src/modules/browser-host/service.ts:17`) has `browser`, and the world
+   (`packages/wallets/src/modules/world/service.ts:20`) has all four. A signer a host does not have refuses as `KeyLocked`,
+   and says why in a log first. A signer is this, and none of its methods ever gives a secret back:
+
+```ts file=packages/wallets/src/modules/signer/types.ts name=SignerName,Signer lines=8-36
+/** Where a key lives (K7 F5: each wallet declares it): on the person's machine, in their browser's wallet, in a server's key store, or in a world. */
+export type SignerName = "node" | "browser" | "keystore" | "world";
+
+export const SIGNER_NAMES: ReadonlyArray<SignerName> = ["node", "browser", "keystore", "world"];
+
+/** A key a signer keeps, by the label it was given. */
+export interface Held {
+  readonly label: string;
+  readonly address: Address;
+}
+
+/**
+ * One signer on one host (K7: a `Signer` per host). Every operation of the wallet is asked of a signer by name; the host
+ * decides which signers it has. None of them ever gives a secret back.
+ */
+export interface Signer {
+  readonly name: SignerName;
+  /** The chain this signer's accounts are on: what the CAIP-10 values it answers say. */
+  readonly chain: ChainSetting;
+  /** A new key under `label`; one that already exists under it is answered as it is, never replaced. */
+  readonly create: (label: string) => Effect.Effect<Held, KeyLocked>;
+  /** A key from `source` under `label`: a secret key, or for a browser the account its wallet holds. */
+  readonly import: (label: string, source: Redacted.Redacted<string>) => Effect.Effect<Held, KeyLocked>;
+  readonly keys: Effect.Effect<ReadonlyArray<Held>, KeyLocked>;
+  /** An EIP-191 signature, `0x` and 130 hex digits. */
+  readonly sign: (label: string, message: string) => Effect.Effect<Hex, KeyLocked | NoSuchKey>;
+  /** The transfer, through the whole lifecycle, signed by the key of this label. */
+  readonly send: (label: string, to: Address, value: bigint) => Effect.Effect<Sent, SendRefused | NoSuchKey, Timers>;
+}
+```
+
+3. **The chain is a setting of the host, never of the payload.** `ORTHO_WALLET_CHAIN` (a CAIP-2 id), `ORTHO_WALLET_RPC_URL`
+   and `ORTHO_WALLET_DEPTH` are read through Effect's `Config`; a browser, with no process environment, sets
+   `globalThis.ORTHOGRAPH_WALLET`; a world gives the chain it stood. All three end as one value:
+
+```ts file=packages/wallets/src/modules/chain/types.ts name=ChainSetting lines=5-17
+/** The chain a wallet's accounts are on and, to send, where it answers. */
+export interface ChainSetting {
+  /** The EIP-155 chain id: the `31337` of `eip155:31337`. */
+  readonly chainId: number;
+  /** An HTTP(S) JSON-RPC endpoint. Without one a wallet makes keys and signs but cannot send. */
+  readonly rpcUrl: string | undefined;
+  /**
+   * How many blocks count before a send is `confirmed`, the including block as 1 (K7 F2, M1.38). Declared with
+   * `ORTHO_WALLET_DEPTH` (a whole number of at least 1) or, in a world, `chain.depth`. A local chain (id 31337) that
+   * declares none is 1; any other chain has none, and a send on it is a defect naming the variable.
+   */
+  readonly depth: number | undefined;
+}
+```
+
+4. **A send asks for its depth first.** A chain with no declared depth is a defect that names the variable, before a nonce
+   is taken, a transaction prepared or anything signed. Only chain id 31337, a local chain, is depth 1 without a declaration:
+
+```ts file=packages/wallets/src/modules/submit/internal/flow.ts name=depthOf lines=27-31
+/** The depth a send needs, or the defect that says where to declare it: asked first, before anything is prepared, signed or sent. */
+export const depthOf = (setting: ChainSetting): Effect.Effect<number> =>
+  setting.depth === undefined
+    ? Effect.die(new Error(`chain ${setting.chainId} has no confirmation depth: set ORTHO_WALLET_DEPTH (the blocks that count before a send is confirmed, the one it is in as the first); only a local chain (31337) is depth 1 without it`))
+    : Effect.succeed(setting.depth);
+```
+
+5. **The port does the rest, and it is the one place a chain is reached.** A transfer goes prepare, simulate, sign, submit,
+   track. `simulate` is a plain `eth_call` of the prepared transaction. `sign` and `submit` refuse one that has not
+   passed it (`ChainFault` of kind `unsimulated`, `packages/chain-evm/src/modules/tx/internal/manager.ts:59`), so no
+   path sends without simulating, and a failed simulation hands its nonce back (`release`):
+
+```ts file=packages/chain-evm/src/modules/tx/types.ts name=ChainPort lines=67-86
+export interface ChainPort {
+  readonly prepare: (call: Call) => Effect.Effect<Unsigned, ChainError>;
+  /** An `eth_call` of the prepared transaction. `sign` and `submit` refuse a transaction that has not passed it. On failure, `release` it. */
+  readonly simulate: (tx: Unsigned) => Effect.Effect<void, ChainError>;
+  /** A plain `eth_call` of `call` at the latest block that returns the data the call answered (`0x` when it answers nothing). A revert fails exactly as `simulate`'s does. Nothing is prepared, reserved or sent. */
+  readonly read: (call: Call) => Effect.Effect<Hex, ChainError>;
+  readonly sign: (tx: Unsigned, signer: Signer) => Effect.Effect<Signed, ChainFault>;
+  readonly submit: (tx: Signed) => Effect.Effect<Submission, ChainError>;
+  readonly track: <TEvent extends DecodedEvent>(
+    submission: Submission,
+    level: ConfirmationLevel,
+    intent?: Intent<TEvent>,
+  ) => Stream.Stream<TxState<TEvent>, ChainFault>;
+  readonly follow: <TEvent extends DecodedEvent>(
+    source: EventSource<TEvent>,
+    level: ConfirmationLevel,
+  ) => EventFollower<TEvent>;
+  readonly replace: (tx: Signed, signer: Signer, policy: ReplacementPolicy) => Effect.Effect<Signed, ChainFault>;
+  readonly release: (tx: Unsigned) => Effect.Effect<void>;
+}
+```
+
+6. **A send follows its transaction until it is deep enough.** `track` counts blocks for a plain transfer, the one the
+   transaction is in as the first, and says `Deepened { blocks }` each time the count changes. The wallet turns each count
+   into a `wallet.send.level` span (`submitted` below the depth, `confirmed` at it) and answers only at the last. A mined
+   revert ends it at once as `SimulationReverted`; a reorg that moves the receipt re-counts from the new block:
+
+```ts file=packages/wallets/src/modules/submit/internal/flow.ts name=follow lines=37-62
+/**
+ * Follow a submission until it is `depth` blocks deep, the block it is in as the first. Each time the count changes a
+ * `wallet.send.level` span says what it is, from 0 (submitted, in no block) to the depth (confirmed); the send answers
+ * only at the last. A transfer mined and reverted is refused whatever the depth.
+ */
+export const follow = (port: ChainPort, submission: Submission, depth: number): Effect.Effect<Sent, SimulationReverted | KeyLocked, Timers> =>
+  Effect.gen(function* () {
+    yield* levelSpan(depth, 0);
+    const states = yield* port.track(submission, { depth }).pipe(
+      Stream.tap((state) => (state._tag === "Deepened" ? levelSpan(depth, state.blocks) : Effect.void)),
+      Stream.runCollect,
+      Effect.catch(refused),
+    );
+    if (states.some((s) => s._tag === "Reverted")) {
+      return yield* Effect.logInfo("the transfer was mined and reverted").pipe(Effect.andThen(Effect.fail(new SimulationReverted({}))));
+    }
+    // A Dropped after an Included voids that inclusion (a reorg): only the last Deepened of an inclusion still standing counts.
+    const standing = states.reduce<{ included: boolean; blocks: number }>((now, s) =>
+      s._tag === "Included" ? { included: true, blocks: 0 }
+        : s._tag === "Dropped" ? { included: false, blocks: 0 }
+        : s._tag === "Deepened" && now.included ? { included: true, blocks: s.blocks }
+        : now, { included: false, blocks: 0 });
+    if (!standing.included) return yield* Effect.die(new Error("the transfer was never included: it was replaced or dropped"));
+    if (standing.blocks < depth) return yield* Effect.die(new Error(`the transfer was included but never ${depth} blocks deep`));
+    return { transaction: submission.hash, level: "confirmed", nonce: BigInt(submission.nonce) } satisfies Sent;
+  });
+```
+
+7. **A server operation can sign too.** A server's key is a `keystore` signer: `Server.keystore` takes a secret the server
+   was given as a `Redacted` binding, puts it through the signer's own `import` (so the key is checked and never
+   answered), and the handler sends with `signer.send("server", to, value)`, getting the same lifecycle and refusals a
+   device gets. In M1 the only secret given this way is a key the world generated; real secrets come with M2.04.
+
+```ts file=packages/wallets/src/modules/server/service.ts name=Server lines=6-12
+export const Server: ServerApi = {
+  keystore: ({ secret, chain }) => {
+    const signer = Signers.keyed("keystore", chain, Signers.memory(emptyStore()));
+    // Put through the signer's own import, so the key is checked and never answered.
+    return Effect.as(signer.import(SERVER_LABEL, secret), signer);
+  },
+};
+```
+
+### Anvil in a world
+
+Anvil is Foundry's local chain, and in a world it is **a process, never a container** (K10, section 8, M1.31). `Anvil.start`
+runs it as a process of the caller's scope: always `--silent`, on loopback, with none of Anvil's own funded accounts, and
+no environment but what it needs to find itself. The world makes the keys and funds them over RPC, so no key is ever an
+argument, an environment variable, a file or any output. The process is killed, and waited for, when the scope closes:
+
+```ts file=packages/chain-evm/src/modules/anvil/internal/process.ts name=anvilArgs lines=5-9
+/** Flags are fixed: `--silent` always, loopback only, and none of Anvil's own funded dev accounts. */
+export const anvilArgs = (port: number, chainId: number, blockTime?: number): ReadonlyArray<string> => [
+  "--silent", "--host", "127.0.0.1", "--port", String(port), "--chain-id", String(chainId), "--accounts", "0",
+  ...(blockTime === undefined ? [] : ["--block-time", String(blockTime)]),
+];
+```
+
+Prove stands that chain for every run whose model has a plugin that runs operations on a device. It gives each host a
+funded key and one more account, the payee's, and it declares the chain's depth, which is three, with a block a second.
+A journey cannot name its chain and a plugin cannot ship a starting world, so the one chain every device journey meets is
+the deep one, and the depth-three story is the common case. Without `anvil` on the path the world has no chain and says
+so, and the steps that need one fail naming `world.chain`:
+
+```ts file=packages/prove/src/modules/prove/internal/device-host.ts name=standChain lines=27-38
+/**
+ * The world's chain, when the plugins need one: Anvil as a process of the world's scope. Without Foundry's `anvil` on the
+ * path the world has none, and says so; the journeys that need a key then fail naming `world.chain`, not the world.
+ */
+export const standChain = (model: Model): Effect.Effect<{ readonly chain: ChainStand | undefined; readonly notes: ReadonlyArray<string> }, never, Scope.Scope> =>
+  needsDevice(model)
+    ? Anvil.start({ accounts: HOSTS.length + 1, blockTime: BLOCK_SECONDS }).pipe(
+      Effect.provide(TimersLive),
+      Effect.map((anvil) => ({ chain: { rpcUrl: anvil.rpcUrl, chainId: anvil.chainId, accounts: anvil.accounts } as ChainStand | undefined, notes: [] as ReadonlyArray<string> })),
+      Effect.catch((failed) => Effect.succeed({ chain: undefined, notes: [`world chain: none, ${failed.message} (the plugins here run on a device and some journeys need a chain)`] })),
+    )
+    : Effect.succeed({ chain: undefined, notes: [] });
+```
+
+### What K7 decided, and what is built
+
+K7 worked one example, a small DAO, through three chain languages at once (Solidity on an EVM, Rust on Solana, Noir on
+Aztec), and the answers are one set for all three. Aaron's calls were F1 (every function reachable), F2 (a confirmation
+level per chain, set per environment), F3 ("EVM now, rest design"), F4 (the wallet is the first real plugin) and F5 (an
+app keeps keys where it chooses). K25 later changed two things in it: how a thing says it lives on a chain, and how roles
+are generated.
+
+| Question | What was decided | Built in |
+|---|---|---|
+| What runs on chain for one operation? | each declared operation is exactly one generated entry (on Aztec, a pair), and a hand-written external function is reachable too, with a role modifier the generator offers; `ortho check` warns when a state-changing one has none (F1) | M6.10, M6.11 |
+| Which functions may a client reach? | every external function in the generated `surface.json`; the SDK, CLI and MCP tools are generated from it, never from the chain's own interface | M6.11, M6.14 |
+| Contracts we don't write | a source behind an adapter, typed from its interface, never a store; a call into one is a declared step with one declared refusal (M1.14 built the call step) | ST2.02 |
+| Who signs and what is `confirmed`? | one lifecycle on every chain, `simulated → submitted → included → confirmed`, ending in `dropped` or `reverted`, with `corrected` possible after `confirmed`; `confirmed` means the declared event for the intent was seen at the environment's level | the port and wallet, M1.30 to M1.38; the follower, M6.09 |
+| Where does state live? | `chain` is a family of store kinds (`evm`, `solana`, `aztec`), supplied by the host and written for by the language; a chain store is a file, `Blueprint.store.chain.evm()`, and several things may share it (K25) | M6.10 |
+| What does a commit return? | a store kind may answer late; the caller then gets a submission, not `committed` or `conflict` on the spot | M6.10, M6.15 |
+| How are refusals carried? | one code in `blueprint/refusals.lock`, whatever the chain; the client decodes every chain's refusal to the same typed class; a refusal with no code of ours is a `ChainFault` | refusals.lock M6.10; `ChainFault` M1.30 |
+| Who may act on chain? | the chain is the authority: the contract alone decides; the server and SDK only simulate ahead; roles are generated behind OpenZeppelin's `IAccessControl`, one role id per instance (K25) | M6.11 |
+| What is a value on chain? | worked out from the value (`uint(bits)` is `uint<bits>`, `text` is `string`, `account()` is `address`); a secret or private field on a public chain store is refused (K25) | M6.10 |
+| Which operations run on chain? | the compiler works out `runs` for an operation on a thing in a chain store; an author never writes `runs: "chain"` (K25) | M6.10 |
+
+A chain store is a file in the blueprint, and an environment binds it to a network, the way it binds a database. This
+is designed, so it is not compared with anything:
+
+```ts planned=M6.10 path=blueprint/stores/budgets.ts
+export default Blueprint.store.chain.evm();
+```
+
+On Solana and Aztec the same blueprint renders in each chain's own idiom (an account list with seeds, a private note held
+by the member), and none of it is built: K7 F3 chose EVM now and the rest as design, on the same port.
+
+## Choices
+
+**Which signer holds the key?** The one that matches where the key already is. The payload names it, and the host decides
+which it has:
+
+| `signer` | Where the key lives | On which host | Cost |
+|---|---|---|---|
+| `node` | an encrypted keystore file (Web3 Secret Storage v3) in `ORTHO_WALLET_HOME`, locked with `ORTHO_WALLET_PASSPHRASE` | the CLI, and the SDK run from Node | without a passphrase, keys list and nothing signs |
+| `browser` | the wallet the page was given as `window.ethereum` (EIP-1193); the signer keeps only labels | a browser | a doomed send is refused before the person is asked to approve anything |
+| `keystore` | a server's key store | a server operation, and a world | in M1 only a key the world generated |
+| `world` | the world's test wallets, in memory | a world | test keys only |
+
+The Node signer is a file, not the operating system's keychain, so the same code runs on macOS, Linux and CI with no
+daemon. The passphrase is typed by a person and is never a Blueprint secret: the description holds nothing a person
+keeps in their head. Passkeys are not offered, because they sign with P-256 and need a smart account checked with
+ERC-1271, which nothing here proves.
+
+**How deep is `confirmed`?** Declare it. On a host it is `ORTHO_WALLET_DEPTH`, in a world it is `chain.depth`, and either
+is a whole number of at least 1, counting the block the transaction is in as the first. A local chain (31337) with no
+declaration is 1; any other chain with none is a defect. Pick one block for a local chain, and more for any chain where a
+reorg could undo a send.
+
+**Mine or theirs?** A contract Orthograph generated, with every write through its generated entries, is a store, reached
+as `lives` ([data](data.mdx), [stores](stores.mdx)). A contract anyone else wrote is a source, reached through an adapter.
+This is K3's rule, carried onto chain by K7.
+
+**Sign on the device or on the server?** Sign on the device when the person owns the key. Sign on the server only for a
+key the app itself holds, as a `keystore` signer, and never put its secret in a payload.
+
+## What it is not
+
+- **Not the linked half of the wallet.** Binding a key to a person's account, by signing the server's challenge (Sign-In
+  with Ethereum), is `challenge`, `complete`, `link`, `unlink` and `list`, after auth: M2.13. Agents never link. This page
+  is the device half.
+- **Not a store.** A key is not a thing's state: it never reaches the server, so Orthograph does not own it ([stores](stores.mdx)).
+  A chain store, which K7 and K25 decided, is a contract Orthograph generates ([data](data.mdx)).
+- **Not a role.** Who may call `wallet.send` is `anyone`, because the caller's own machine is the boundary. Who may act on
+  a contract is the contract's, behind `IAccessControl`.
+- **Not an adapter.** A wallet's browser extension is an outside system, reached inside the browser signer; a separate
+  `eip1193` adapter is not built ([plugins](plugins.mdx)).
+- **Not the relayer or the follower.** One relayer actor that submits for many signers (M6.07) and one follower that turns
+  logs into events (M6.09) come later, on the same port.
+- **Not a stand-in.** Anvil is a real chain running locally, not our own fake of one ([stand-ins](stand-ins.mdx)).
+- **Not `viem` in your handler.** `viem` is confined to `@orthograph/chain-evm`, and a lint rule keeps it there. A wallet
+  imports `@orthograph/chain-evm/device`, the package without `Anvil` and so with no `node:` import, which a browser or a
+  Worker can hold.
+
+## Where it lives
+
+| What | Where | |
+|---|---|---|
+| the wallet thing, its errors, five operations | `packages/wallets/blueprint/things/wallet/thing.ts:3` | built, M1.29 |
+| a host entry (one line per operation per host) | `packages/wallets/src/wallet/send.node.ts:1` | built, M1.29 |
+| the four signers, and what a signer is | `packages/wallets/src/modules/signer/types.ts:23` | built, M1.29 |
+| CAIP-10 accounts (`eip155` only) | `packages/wallets/src/modules/account/service.ts:7` | built, M1.29 |
+| the chain setting and its depth rule | `packages/wallets/src/modules/chain/service.ts:18` | built, M1.38 |
+| the send's lifecycle | `packages/wallets/src/modules/submit/internal/flow.ts:42` | built, M1.29, M1.38 |
+| a server operation signing | `packages/wallets/src/modules/server/service.ts:6` | built, M1.29 |
+| the chain port | `packages/chain-evm/src/modules/tx/types.ts:67` | built, M1.30 |
+| simulation, mandatory before sign and submit | `packages/chain-evm/src/modules/tx/internal/manager.ts:59` | built, M1.32 |
+| the typed chain faults and refusals | `packages/chain-evm/src/modules/faults/types.ts:11` | built, M1.30 |
+| event streams (the follower's source) | `packages/chain-evm/src/modules/events/internal/decoder.ts:7` | built, M1.30 |
+| keys: generate, sign, checksum | `packages/chain-evm/src/modules/keys/service.ts:7` | built, M1.29 |
+| Anvil in a world | `packages/chain-evm/src/modules/anvil/service.ts:18` | built, M1.31 |
+| the chain prove stands for a device | `packages/prove/src/modules/prove/internal/device-host.ts:31` | built, M1.29, M1.38 |
+| the wallet as a fixture, with its ten journeys | `e2e/fixtures/m1/wallets/source/feature.ts:1` | built, M1.28 |
+| SIWE linking | `challenge`, `complete`, `link` | planned, M2.13 |
+| chain stores, `runs` worked out, `refusals.lock` | `packages/orthograph/src/modules/stores/types.ts:19` | planned, M6.10 |
+| `language-solidity`, no longer a placeholder | `packages/language-solidity/src/index.ts:1` | planned, M6.11 |
+| the relayer and the follower | not written | planned, M6.07, M6.09 |
+
+## Status
+
+<Status />
+
+| Part | Status | Slice | Proved by |
+|---|---|---|---|
+| a device operation, with a host entry for each place | proved | M1.27 | `e2e/m1/11-client-operations.test.ts` |
+| the wallet's five operations and four signers | proved | M1.29 | `e2e/m1/09-wallet-journeys.test.ts` (each journey fails on an empty handler), and `packages/prove/test/device-journeys.test.ts` (the real handlers pass them, on a real Anvil) |
+| a server operation signing with the server's key | proved | M1.29 | `packages/wallets/src/modules/server/server.test.ts` |
+| the chain port: nonces, tracking, error mapping, events | proved | M1.30 | `packages/chain-evm/src/modules/tx/tx.test.ts`, and the same on a real Anvil in `packages/chain-evm/src/modules/tx/anvil.test.ts` |
+| Anvil in a world, silent, gone with its scope | proved | M1.31 | `packages/chain-evm/src/modules/anvil/anvil.test.ts` |
+| simulation before every send | proved | M1.32 | `packages/chain-evm/src/modules/tx/anvil.test.ts` (an unsimulated `sign` is refused) |
+| confirmation depth per chain and environment | proved | M1.38 | `e2e/m1/18-confirmation-depth.test.ts` |
+| a contract per operation, client reach, refusals, chain stores | specified | M6.10, M6.11 | K7 and K25 |
+| the follower, corrections, the relayer | specified | M6.07, M6.09 | K7, Q3 and Q6 |
+| linking a wallet to a person | specified | M2.13 | K7, "The wallet plugin" |
+| Solana and Aztec | specified | later | K7 F3: designed, not built |
+
+The page is `specified`: what is built is proved, and what K7 and K25 decided for contracts is the spec that M6 builds to.
+
+## Notes
+
+<Note kind="decision" decision="K7">One lifecycle on every chain, and `confirmed` means the declared event for the intent was
+seen at the environment's level. A plain transfer declares no event, so its intent is the transfer itself: included in a block
+and not reverted, as deep as the chain's depth says. A wallet's first event-bearing send comes in M6 (K7, "As built in M1.29").</Note>
+
+<Note kind="decision" decision="K25">A chain store is a file, `Blueprint.store.chain.evm()`, and a thing lives in it. The
+contract's name comes from the file's path, an environment binds the store to a network, and who acts on chain is an account,
+`Blueprint.account()`, never a person id. This replaces K7's inline `lives` spelling and its generated `onlyRole`.</Note>
+
+<Note kind="decision" decision="K27">A chain is a host, `Host.chain`, and Solidity is a language that writes for it. The four
+questions of any generated code (written in what, runs where, which copy, reached how) have four words: language, host,
+environment, projection. There is no "target".</Note>
+
+<Note kind="decision" decision="M1-plugins">Where K7 left the wallet open, M1.29 decided: the port is used as a library and not
+as a call step; a send's simulation cannot be turned off; `eip155` is the only namespace parsed; labels are never
+overwritten; and prove runs a client operation through its `world` entry, in a process of its own.</Note>
+
+<Note kind="decision" decision="K12">The canon had no page for `chain-evm` and `wallets`, and several pages said a chain part
+waited on K7 after K7 had merged. This page is that gap's slice (M1.39), and each such note now says what K7 decided and
+which slice builds it.</Note>
+
+<Note kind="status" slice="M1.38">A world's chain is depth three, a block a second, for every device journey, so each send in
+a journey waits about three seconds. A journey cannot name its chain, and a plugin cannot ship a starting world, so the deep
+chain is the common case; the local environment of a real app still confirms at one.</Note>
+
+<Note kind="question" id="browser-proof" slice="M1.29">A browser signer proved against a test EIP-1193 provider proves our side of the
+protocol, not each extension's quirks. A replay in Chromium against Anvil as the provider, with the `react` projection and an
+`eip1193` adapter's conformance, has no slice. Ledger `G-11`.</Note>
+
+<Note kind="question" id="real-secrets" slice="M6.18">A `keystore` signer holds only a key a world generated. How a real server key
+reaches it (M2.04's secrets) and the check that no key is ever in a binding, a commit or a log (the hygiene check) are not built.</Note>
+
+<Note kind="question" id="linked-half" slice="M2.13">Linking needs `Blueprint.step.call` and `step.use` on a device, which the M1.29 build did not
+need, and a starting-world fragment so a journey can begin with a linked wallet. Aztec has no default link, because linking
+a private account to a public person would undo its privacy.</Note>

@@ -27,9 +27,7 @@ export const Evals: EvalsApi = {
     Object.values(project.model.operations).flatMap((op) => {
       const mine = evidence.filter((e) => e.call.operation === op.name);
       if (mine.length === 0) return [];
-      // No answer is in hand live, only the span's. A secret or private field is on no span (L2.P), `email` never leaves the machine
-      // for a sink (D3 #120), and a replayed call answers from the stored answer, not from a span: prove judges those.
-      const visible = { ...op, answer: Object.fromEntries(Object.entries(op.answer).filter(([k, f]) => f.visibility === undefined && k !== "email")) };
-      return LIVE.map((ev) => ev(visible, ev === answerShape ? mine.filter((e) => !replayed(e)) : mine, { project, all: evidence }));
+      // A replayed call answers from the stored answer, not from a span: prove judges its shape.
+      return LIVE.map((ev) => ev(op, ev === answerShape ? mine.filter((e) => !replayed(e)) : mine, { project, all: evidence }));
     }),
 };

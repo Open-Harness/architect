@@ -1,14 +1,15 @@
 // L2.06's done-when checks, through the `ortho publish` command on a copy of acme under git: the dry run lists exactly what would
 // go out and sends nothing; `--local` puts `@acme/sdk@1.1.0` and `@acme/cli@1.1.0` on a real Verdaccio, installable in a fresh folder;
 // the formula it commits to the tap installs with `brew` and runs; a prerelease never takes `latest`. Real wrangler and workerd for the
-// logbook, a real OIDC server and a real registry (verdaccio/verdaccio:6.11.1) in Docker, real Homebrew.
+// logbook, a real OIDC issuer and a real registry (Verdaccio under Node), both @orthograph/services processes, real Homebrew, each on a free port.
 import { freePorts } from "../../../test/ports.ts";
 import { spawnSync } from "node:child_process";
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import { Effect, Exit, Scope } from "effect";
+import { Issuer, Registry } from "@orthograph/services";
 import type { Model } from "@orthograph/compiler";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Environments } from "#modules/environments/service.js";
@@ -16,17 +17,14 @@ import { Releases } from "#modules/releases/service.js";
 import { Worlds } from "#modules/world/service.js";
 import { Publish } from "./service.ts";
 import { hostTarget } from "./internal/sea.ts";
+import { publishOrthograph } from "../../../test/orthograph-package.ts";
 
-const ISSUER_IMAGE = "ghcr.io/navikt/mock-oauth2-server:6.1.4@sha256:647dd8c78a54f0e6fcd58d79c884e612f8f998a0662276f3e1db22e464a50192";
-const REGISTRY_IMAGE = "verdaccio/verdaccio:6.11.1";
 const PORTS = freePorts("registry", "logbook", "issuer", "world");
 const repo = resolve(import.meta.dirname, "../../../../..");
 const acme = join(repo, "examples/acme");
 const cli = join(repo, "packages/cli/src/main.ts");
 const id = randomBytes(3).toString("hex");
-const containers = { issuer: `ortho-l206-issuer-${process.pid}`, registry: `ortho-l206-registry-${process.pid}` };
-const docker = (...args: ReadonlyArray<string>) => spawnSync("docker", args, { encoding: "utf8" });
-const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+const services = Effect.runSync(Scope.make());
 const git = (cwd: string, ...args: ReadonlyArray<string>) => {
   const r = spawnSync("git", ["-c", "user.name=l206", "-c", "user.email=l206@example.test", "-c", "commit.gpgsign=false", ...args], { cwd, encoding: "utf8" });
   expect(r.status, r.stderr).toBe(0);
@@ -48,8 +46,8 @@ git(root, "commit", "-q", "-m", "acme");
 const first = git(root, "rev-parse", "--short", "HEAD");
 
 const issuer = `http://127.0.0.1:${PORTS.issuer}/ortho`;
-const registry = `http://localhost:${PORTS.registry}/`;
-const npmrc = join(parent, "npmrc");
+const registry = `http://127.0.0.1:${PORTS.registry}/`;
+const npmrc = join(parent, "services", "npmrc");
 const tap = `ortho-l206-${id}/pub`;
 const formula = `acme-l206-${id}`;
 const full = `${tap}/${formula}`;
@@ -81,26 +79,15 @@ beforeAll(async () => {
   const dir = join(parent, "services");
   mkdirSync(dir);
   // The OIDC server the logbook trusts, and the logbook; a release 1.0.0 recorded from a model without `allowance.revoke`, so that today's model is a minor.
-  writeFileSync(join(dir, "issuer.json"), JSON.stringify({ interactiveLogin: false, tokenCallbacks: [{ issuerId: "ortho", tokenExpiry: 600, requestMappings: [{
-    requestParam: "client_id", match: "ci-main", claims: { sub: "repo:acme/acme:ref:refs/heads/main", aud: ["ortho-logbook"], repository: "acme/acme", ref: "refs/heads/main", workflow: "ortho" } }] }] }));
-  chmodSync(join(dir, "issuer.json"), 0o644);
-  docker("rm", "-f", containers.issuer, containers.registry);
-  const started = docker("run", "-d", "--name", containers.issuer, "-p", `127.0.0.1:${PORTS.issuer}:8080`, "-e", "JSON_CONFIG_PATH=/config/issuer.json", "-v", `${join(dir, "issuer.json")}:/config/issuer.json:ro`, ISSUER_IMAGE);
-  expect(started.status, started.stderr).toBe(0);
-  mkdirSync(join(dir, "storage"));
-  chmodSync(join(dir, "storage"), 0o777);
-  const reg = docker("run", "-d", "--name", containers.registry, "-p", `127.0.0.1:${PORTS.registry}:4873`, "-v", `${resolve(import.meta.dirname, "../../../test/verdaccio.yaml")}:/verdaccio/conf/config.yaml:ro`, "-v", `${join(dir, "storage")}:/verdaccio/storage`, REGISTRY_IMAGE);
-  expect(reg.status, reg.stderr).toBe(0);
-  for (let i = 0; i < 300 && !(await fetch(`${issuer}/.well-known/openid-configuration`).then((r) => r.ok, () => false)); i++) await sleep(200);
-  for (let i = 0; i < 300 && !(await fetch(`${registry}-/ping`).then((r) => r.ok, () => false)); i++) await sleep(200);
-  // A throwaway user on this registry; its token goes to a file and nowhere else.
-  const created = await fetch(`${registry}-/user/org.couchdb.user:l206`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "l206", password: randomBytes(12).toString("hex") }) });
-  writeFileSync(npmrc, `//localhost:${PORTS.registry}/:_authToken=${((await created.json()) as { token: string }).token}\n`, { mode: 0o600 });
+  await Effect.runPromise(Issuer.start({ port: PORTS.issuer, dir, config: { tokenCallbacks: [{ issuerId: "ortho", tokenExpiry: 600, requestMappings: [{
+    requestParam: "client_id", match: "ci-main", claims: { sub: "repo:acme/acme:ref:refs/heads/main", aud: ["ortho-logbook"], repository: "acme/acme", ref: "refs/heads/main", workflow: "ortho" } }] }] } }).pipe(Scope.provide(services)));
+  // A throwaway user on this registry; its token is in `npmrc` and nowhere else.
+  await Effect.runPromise(Registry.start({ dir, port: PORTS.registry }).pipe(Scope.provide(services)));
+  expect(existsSync(npmrc)).toBe(true);
   // The SDK and the CLI depend on orthograph, so the registry holds it, as the starter's script publishes it.
-  const built = spawnSync("pnpm", ["nx", "run", "orthograph:build", "--outputStyle=static"], { cwd: repo, encoding: "utf8", env: { ...env, NX_DAEMON: "false" } });
+  const { built, published } = publishOrthograph(repo, registry, env);
   expect(built.status, built.stdout + built.stderr).toBe(0);
-  const pushed = spawnSync("pnpm", ["publish", "--registry", registry, "--no-git-checks"], { cwd: join(repo, "packages/orthograph"), encoding: "utf8", env });
-  expect(pushed.status, pushed.stderr).toBe(0);
+  expect(published?.status, `${published?.stdout}${published?.stderr}`).toBe(0);
 
   const policy = { issuer, repository: "acme/acme", refs: ["refs/heads/main"], workflows: ["ortho"] };
   const logbook = (await Effect.runPromise(Environments.up({ root, name: "logbook", port: PORTS.logbook, policy }))).url;
@@ -119,11 +106,8 @@ afterAll(async () => {
   }
   if (brewHere && brew("tap").stdout.split("\n").includes(tap)) brew("untap", tap);
   await Effect.runPromise(Environments.down({ root, name: "logbook" }));
-  // The registry writes its storage as its own user; on Linux the runner cannot delete those files, so the container empties it first.
-  docker("exec", containers.registry, "sh", "-c", "rm -rf /verdaccio/storage/*");
-  docker("rm", "-f", containers.issuer, containers.registry);
+  await Effect.runPromise(Scope.close(services, Exit.void));
   rmSync(parent, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
-  rmSync(join(repo, "packages/orthograph/dist"), { recursive: true, force: true });
 });
 
 describe("ortho publish", () => {
@@ -133,8 +117,8 @@ describe("ortho publish", () => {
     expect(said.status, said.out).toBe(0);
     const target = hostTarget() ?? `${process.platform}-${process.arch}`;
     expect(said.lines, said.out).toEqual(expect.arrayContaining([
-      expect.stringMatching(new RegExp(`^npm @acme/sdk@1\\.1\\.0 --tag latest to http://localhost:${PORTS.registry}/ {2}\\(\\d+ files`)),
-      expect.stringMatching(new RegExp(`^npm @acme/cli@1\\.1\\.0 --tag latest to http://localhost:${PORTS.registry}/ {2}\\(\\d+ files`)),
+      expect.stringMatching(new RegExp(`^npm @acme/sdk@1\\.1\\.0 --tag latest to http://127\\.0\\.0\\.1:${PORTS.registry}/ {2}\\(\\d+ files`)),
+      expect.stringMatching(new RegExp(`^npm @acme/cli@1\\.1\\.0 --tag latest to http://127\\.0\\.0\\.1:${PORTS.registry}/ {2}\\(\\d+ files`)),
       expect.stringMatching(/^ {2}dist\/index\.js {2}\d+ B$/), expect.stringMatching(/^ {2}dist\/main\.js {2}\d+ B$/),
       expect.stringMatching(/^ {2}types\/generated\/sdk\/src\/index\.d\.ts {2}\d+ B$/),
       expect.stringMatching(new RegExp(`^binary acme-1\\.1\\.0-${target}\\.tar\\.gz `)),
@@ -195,7 +179,7 @@ describe("ortho publish", () => {
     const installed = spawnSync("npm", ["install", "@acme/sdk@1.1.0", "@acme/cli@1.1.0", "--registry", registry, "--ignore-scripts", "--no-audit", "--no-fund", "--cache", join(parent, "npm-cache"), "--userconfig", join(parent, "npmrc-empty")], { cwd: fresh, encoding: "utf8", timeout: 600_000 });
     expect(installed.status, installed.stdout + installed.stderr).toBe(0);
     const sdk = spawnSync(process.execPath, ["--input-type=module", "-e", "import * as sdk from '@acme/sdk'; console.log(Object.keys(sdk).sort().join(','))"], { cwd: fresh, encoding: "utf8" });
-    expect(sdk.stdout.trim(), sdk.stderr).toContain("Acme,Errors,allowance");
+    expect(sdk.stdout.trim(), sdk.stderr).toContain("Acme,Credential,Errors,InvalidPayload,allowance");
     const version = spawnSync(join(fresh, "node_modules/.bin/acme"), ["--version"], { encoding: "utf8" });
     expect(version.stdout.trim(), version.stderr).toBe("acme 1.1.0");
     // The SDK's declarations resolve for a consumer: the real thing is typed, and a name it doesn't have is an error.

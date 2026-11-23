@@ -13,6 +13,8 @@ export interface Built {
   readonly sha256: string;
   /** Absolute path of the bundle. */
   readonly main: string;
+  /** The digest of the portal's prebuilt client this revision ships beside the bundle (`portal/`), or null when it shipped none (K19). */
+  readonly portal: string | null;
 }
 
 export interface BuildApi {

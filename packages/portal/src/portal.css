@@ -1,0 +1,29 @@
+/* The portal's own look, on HeroUI's tokens: its precompiled sheets first (vite.config.ts aliases them), then this. */
+@import "heroui-styles";
+@import "heroui-pro-styles";
+
+body { margin: 0; background: var(--background); color: var(--foreground); font: 15px/1.5 system-ui, sans-serif; }
+main[data-portal="page"] { margin: 0 auto; max-width: 72rem; padding: 1.5rem; }
+a { color: var(--accent); }
+h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+h2 { font-size: 1.1rem; margin: 1.75rem 0 0.5rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--separator); vertical-align: top; }
+.meta, .note { color: var(--muted); font-size: 0.85rem; }
+.pass { color: var(--success); }
+.fail { color: var(--danger); }
+.old { color: var(--warning); }
+.none, .na { color: var(--muted); }
+.banner { border: 1px solid var(--danger); padding: 0.5rem 0.75rem; margin: 1rem 0; border-radius: 0.5rem; }
+pre { background: var(--surface-secondary); padding: 0.75rem; overflow: auto; font-size: 0.8rem; border-radius: 0.5rem; }
+ul.things { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 0.75rem; }
+[data-portal="rules"] h2 { margin: 0; }
+.rule { padding: 0.75rem 0; border-bottom: 1px solid var(--separator); scroll-margin-top: 1rem; }
+.rule p { margin: 0.25rem 0; }
+.rule:target { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 0.5rem; }
+.refusal .rule-link { font-family: ui-monospace, monospace; font-size: 0.85rem; }
+.refusal-sentence { color: var(--muted); }
+.refusals ul { list-style: none; margin: 0; padding: 0; display: inline; font-weight: 600; }
+.refusals li { display: inline; }
+.refusals > .refusal, .refusals > ul { display: block; margin: 0.25rem 0; }
+.rule-stop { display: block; margin-top: 0.25rem; }

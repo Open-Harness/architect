@@ -1,6 +1,7 @@
 {
   "name": "@orthograph/compiler",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -8,7 +9,7 @@
   },
   "dependencies": {
     "orthograph": "workspace:*",
-    "effect": "4.1.1"
+    "effect": "4.1.4"
   },
   "imports": {
     "#modules/*.js": "./src/modules/*.ts"

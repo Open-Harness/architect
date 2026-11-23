@@ -6,6 +6,7 @@ import type { CheckApi, Finding } from "./types.ts";
 import { blankLines, blanks } from "./internal/blanks.ts";
 import { textsUnder } from "./internal/files.ts";
 import { rules, types } from "./internal/tools.ts";
+import { changes } from "./internal/changes.ts";
 import { drift } from "./internal/drift.ts";
 import { ratchet, ratchetsOf } from "./internal/ratchets.ts";
 
@@ -19,15 +20,22 @@ const run: CheckApi["run"] = (at) =>
     // The real path: tools report files by it, so a root reached through a symlink (macOS /var) still matches.
     const root = existsSync(at) ? realpathSync(at) : resolve(at);
     const left = blanks(textsUnder(root, "blueprint"));
-    const model = yield* Compiler.model.pipe(Effect.provide(nodeSource(root)), Effect.option);
-    if (model._tag === "None") return { lines: [...blankLines(left), "model ✘ the blueprint doesn't compile: run ortho model"], passed: false };
+    const compiled = yield* Compiler.model.pipe(Effect.provide(nodeSource(root)), Effect.result);
+    if (compiled._tag === "Failure") {
+      // Each problem names its files: the app's, and a plugin's package path with the mount that brought it in.
+      const problems = compiled.failure._tag === "BlueprintInvalid" ? compiled.failure.problems : [compiled.failure.message];
+      return { lines: [...blankLines(left), `model ✘ ${problems.length}`, ...problems.map((p) => `  ${p}`), "check ✘"], passed: false };
+    }
+    const model = { value: compiled.success };
     const typed = yield* Effect.sync(() => types(root));
     const ruled = yield* Effect.sync(() => rules(root, model.value));
-    const drifted = yield* Effect.sync(() => drift(root, model.value));
-    const ratchets = ratchet(ruled, ratchetsOf(root));
+    const drifted = yield* drift(root, model.value);
+    const changed = yield* changes(root, model.value);
+    const ratchets = ratchet(ruled.errors, ratchetsOf(root));
+    const warnings = ruled.warnings.map((f) => `  warning: ${f.file}:${f.line}  ${f.message}`);
     const passed = left.length === 0 && typed.length === 0 && ratchets.over.length === 0 && drifted.length === 0;
     return {
-      lines: [...blankLines(left), ...part("types", typed), ...part("rules", ratchets.over), ...part("drift", drifted), ...ratchets.lines, passed ? "check ✔" : "check ✘"],
+      lines: [...blankLines(left), ...part("types", typed), ...part("rules", ratchets.over), ...warnings, ...part("drift", drifted), ...changed, ...ratchets.lines, passed ? "check ✔" : "check ✘"],
       passed,
     };
   });

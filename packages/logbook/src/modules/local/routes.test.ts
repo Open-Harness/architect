@@ -1,29 +1,27 @@
-// The former HTTP/SQL shim assertions, through real workerd, R2, Durable Objects and the pinned OIDC issuer.
+// The former HTTP/SQL shim assertions, through real workerd, R2, Durable Objects and the OIDC issuer process of @orthograph/services.
 // Each case gets fresh persisted storage. Every port is a free one; no other services are touched.
 import { freePorts } from "../../../test/ports.ts";
-import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect, Exit, Scope } from "effect";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { Issuer, type IssuerConfig } from "@orthograph/services";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { StoredVerdict } from "#modules/book/types.js";
 import { Logbook } from "./service.ts";
 
-const IMAGE = "ghcr.io/navikt/mock-oauth2-server:6.1.4@sha256:647dd8c78a54f0e6fcd58d79c884e612f8f998a0662276f3e1db22e464a50192";
 const PORTS = freePorts("logbook", "issuer");
-const name = `logbook-routes-issuer-${process.pid}`;
+const services = Effect.runSync(Scope.make());
 const base = `http://127.0.0.1:${PORTS.logbook}`;
 const issuer = `http://127.0.0.1:${PORTS.issuer}/ortho`;
-const config = JSON.stringify({ interactiveLogin: false, tokenCallbacks: [{ issuerId: "ortho", tokenExpiry: 600,
+const config: IssuerConfig = { tokenCallbacks: [{ issuerId: "ortho", tokenExpiry: 600,
   requestMappings: [false, true].map((pr) => ({ requestParam: "client_id", match: pr ? "ci-pr" : "ci-main", claims: {
     sub: `repo:acme/acme:ref:${pr ? "refs/pull/3/merge" : "refs/heads/main"}`, aud: ["ortho-logbook"], repository: "acme/acme",
     ref: pr ? "refs/pull/3/merge" : "refs/heads/main", workflow: "ci", event_name: pr ? "pull_request" : "push",
     sha: "0123456789abcdef0123456789abcdef01234567",
     job_workflow_ref: `acme/acme/.github/workflows/ci.yml@${pr ? "refs/pull/3/merge" : "refs/heads/main"}`,
   } })),
-}] });
-const docker = (...args: string[]) => spawnSync("docker", args, { encoding: "utf8" });
+}] };
 let dir = "";
 let state = "";
 let token = "";
@@ -56,16 +54,14 @@ const post = async (revision: string, environment: string, operation: string, va
 
 beforeAll(async () => {
   dir = mkdtempSync(join(tmpdir(), "logbook-routes-"));
-  const started = docker("run", "-d", "--name", name, "-p", `127.0.0.1:${PORTS.issuer}:8080`, "-e", `JSON_CONFIG=${config}`, IMAGE);
-  expect(started.status, started.stderr).toBe(0);
-  await vi.waitFor(async () => expect(await fetch(`${issuer}/.well-known/openid-configuration`).then((r) => r.ok)).toBe(true), { timeout: 120_000, interval: 200 });
+  await Effect.runPromise(Issuer.start({ config, port: PORTS.issuer }).pipe(Scope.provide(services)));
   [token, prToken] = await Promise.all([mint("ci-main"), mint("ci-pr")]);
 }, 180_000);
 beforeEach(async () => { state = mkdtempSync(join(dir, "case-")); await start(); }, 180_000);
 afterEach(async () => { await stop?.(); stop = undefined; }, 60_000);
 afterAll(async () => {
   await stop?.();
-  docker("rm", "-f", name);
+  await Effect.runPromise(Scope.close(services, Exit.void));
   if (dir) rmSync(dir, { recursive: true, force: true });
 }, 60_000);
 

@@ -1,4 +1,4 @@
-import type { Provenance, Release, StoredVerdict, VerdictFilter, VerdictInput } from "../types.ts";
+import type { JourneyVerdict, Provenance, Release, StoredVerdict, VerdictFilter, VerdictInput } from "../types.ts";
 
 export const schema = [
   `CREATE TABLE IF NOT EXISTS verdicts (
@@ -16,6 +16,7 @@ export const initialize = (sql: SqlStorage) => {
   for (const statement of schema) sql.exec(statement);
   const columns = sql.exec<{ name: string }>("PRAGMA table_info(verdicts)").toArray();
   if (!columns.some((column) => column.name === "sha256")) sql.exec("ALTER TABLE verdicts ADD COLUMN sha256 TEXT");
+  if (!columns.some((column) => column.name === "journeys")) sql.exec("ALTER TABLE verdicts ADD COLUMN journeys TEXT");
 };
 
 const columns = ["revision", "environment", "operation", "ref"] as const;
@@ -26,19 +27,29 @@ const where = (filter: VerdictFilter) => {
   return { clause: given.length === 0 ? "" : ` WHERE ${given.map((c) => `${c} = ?`).join(" AND ")}`, values: given.map((c) => filter[c]!) };
 };
 
-const selectVerdicts = "SELECT seq, revision, environment, operation, verdict, repository, ref, workflow, event_name, sha, sha256 FROM verdicts";
+const verdictColumns = "seq, revision, environment, operation, verdict, repository, ref, workflow, event_name, sha, sha256, journeys";
+const selectVerdicts = `SELECT ${verdictColumns} FROM verdicts`;
+
+const verdictOf = (row: Record<string, SqlStorageValue>): StoredVerdict => {
+  const { journeys, ...stored } = row;
+  return {
+    ...stored,
+    ...(typeof journeys === "string" ? { journeys: JSON.parse(journeys) as ReadonlyArray<JourneyVerdict> } : {}),
+  } as StoredVerdict;
+};
 
 export const insertVerdict = (sql: SqlStorage, v: VerdictInput, from: Provenance): StoredVerdict =>
-  sql.exec<Record<string, SqlStorageValue>>(
-    `INSERT INTO verdicts (revision, environment, operation, verdict, repository, ref, workflow, event_name, sha, sha256)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     RETURNING seq, revision, environment, operation, verdict, repository, ref, workflow, event_name, sha, sha256`,
+  verdictOf(sql.exec<Record<string, SqlStorageValue>>(
+    `INSERT INTO verdicts (revision, environment, operation, verdict, repository, ref, workflow, event_name, sha, sha256, journeys)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     RETURNING ${verdictColumns}`,
     v.revision, v.environment, v.operation, v.verdict, from.repository, from.ref, from.workflow, from.eventName, from.sha, v.sha256 ?? null,
-  ).one() as unknown as StoredVerdict;
+    v.journeys === undefined ? null : JSON.stringify(v.journeys),
+  ).one());
 
 export const selectAll = (sql: SqlStorage, filter: VerdictFilter): ReadonlyArray<StoredVerdict> => {
   const { clause, values } = where(filter);
-  return sql.exec(`${selectVerdicts}${clause} ORDER BY seq`, ...values).toArray() as unknown as ReadonlyArray<StoredVerdict>;
+  return sql.exec(`${selectVerdicts}${clause} ORDER BY seq`, ...values).toArray().map(verdictOf);
 };
 
 export const selectLatest = (sql: SqlStorage, filter: VerdictFilter): ReadonlyArray<StoredVerdict> => {
@@ -46,7 +57,7 @@ export const selectLatest = (sql: SqlStorage, filter: VerdictFilter): ReadonlyAr
   return sql.exec(
     `${selectVerdicts} WHERE seq IN (SELECT MAX(seq) FROM verdicts${clause} GROUP BY environment, operation) ORDER BY environment, operation`,
     ...values,
-  ).toArray() as unknown as ReadonlyArray<StoredVerdict>;
+  ).toArray().map(verdictOf);
 };
 
 const selectRelease = "SELECT seq, version, revision, ref, event_name FROM releases";

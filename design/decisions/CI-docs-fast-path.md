@@ -1,11 +1,11 @@
-# CI-docs-fast-path: a docs-only pull request skips the layer gates; main stays strict
+# CI-docs-fast-path: a docs-only pull request skips the layer gates; main stays strict (_Superseded by CI-drafts, 21 November 2026: `main` is no longer strict_)
 
 20 November 2026. Decided by the conductor under AGENTS.md, "Who decides", after Aaron said yes to fixing both costs
 the 📓 Scribe raised on 19 November: strict `main` reruns CI that docs cannot affect, and a lint test flakes under load.
 
 ## Evidence
 
-Since 19 November `main` is strict ("require branches to be up to date before merging",
+Since 19 November `main` is strict (_Superseded by CI-drafts, 21 November 2026: not strict since 21 November_) ("require branches to be up to date before merging",
 [`CI-branch-protection.md`](CI-branch-protection.md)). With several pull requests in flight, each merge puts every
 other one behind, and each catch-up merge reruns all of CI, 9 to 20 minutes, the layer gates included.
 
@@ -19,12 +19,13 @@ other one behind, and each catch-up merge reruns all of CI, 9 to 20 minutes, the
 
 ## Decision
 
-1. **Main stays strict.** Dropping "up to date" would let two green pull requests merge into a red `main`.
+1. **Main stays strict.** (_Superseded by CI-drafts, 21 November 2026: `main` no longer requires up to date; its own push run checks every merge_) Dropping "up to date" would let two green pull requests merge into a red `main`.
 2. **A `changes` job decides docs-only** from the pull request's diff against `origin/$BASE_REF`
    ([`tools/ci/docs-only.sh`](../../tools/ci/docs-only.sh), its cases in `tools/ci/ci.test.sh`). Docs-only means every
    changed path is under `design/`, or is a `*.md` file outside `packages/`, `e2e/` and `examples/`: a module's
    `README.md` is one of its six slots, and the e2e READMEs carry generated totals. An empty diff is not docs-only.
-3. **`e2e-layer1` and `e2e-layer2` need `changes` and skip through a job-level `if:`** when the flag is set. A skipped
+3. **`e2e-layer1` and `e2e-layer2` need `changes` and skip through a job-level `if:`** when the flag is set (_Superseded by CI-drafts-race, 21 November 2026: they run and
+   pass without their steps, since a required job never skips_). A skipped
    job counts as passed for a required check, so `main`'s required checks are unchanged. Should `changes` fail, the
    gates run: the condition skips only on a `changes` that succeeded and said docs-only.
 4. **`check` and `e2e-m0` always run.** `check` lints, runs `e2e:totals` and the CI guards' cases; `e2e-m0` runs

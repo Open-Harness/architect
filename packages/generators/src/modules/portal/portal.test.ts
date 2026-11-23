@@ -14,14 +14,14 @@ const compiler = resolve(repo, "packages/compiler/src/main.ts");
 const compile = (root: string) => JSON.parse(execFileSync(process.execPath, [compiler, root], { encoding: "utf8" })) as Model;
 const acme = resolve(repo, "examples/acme");
 const read = (path: string) => readFileSync(join(repo, path), "utf8");
-const filesOf = (name: string, model: Model) => new Map(Render.files({ name, model }).map((f) => [f.path, f.content]));
+const filesOf = async (name: string, model: Model) => new Map((await Effect.runPromise(Render.files({ name, model, root: acme }))).map((f) => [f.path, f.content]));
 
-describe("generated/portal", () => {
+describe("generated/portal", async () => {
   const model = JSON.parse(read("examples/acme/generated/model/model.json")) as Model;
-  const files = filesOf("acme", model);
+  const files = await filesOf("acme", model);
 
-  it("is the same bytes every time, and the bytes acme has committed", () => {
-    expect(filesOf("acme", model).get("generated/portal/blueprint.json")).toBe(files.get("generated/portal/blueprint.json"));
+  it("is the same bytes every time, and the bytes acme has committed", async () => {
+    expect((await filesOf("acme", model)).get("generated/portal/blueprint.json")).toBe(files.get("generated/portal/blueprint.json"));
     expect(files.get("generated/portal/blueprint.json")).toBe(read("examples/acme/generated/portal/blueprint.json"));
     expect(files.get("generated/portal/main.ts")).toBe(read("examples/acme/generated/portal/main.ts"));
   });
@@ -73,6 +73,37 @@ describe("the portal's dependency adapter is the compiler's Compare.dependsOn", 
     }
     const wire = Wire.build({ project: "p", model: JSON.parse(JSON.stringify(model)), docs: {} });
     for (const operation of Object.keys(model.operations)) expect(wire.dependsOnByOperation[operation], operation).toEqual(Compare.dependsOn(model, operation));
+  });
+});
+
+describe("the portal's data holds no secret a journey step passes to a blank operation", () => {
+  const scratch = join(acme, "test/tmp/portal-blank-journey");
+  const secret = "hunter2-DISTINCTIVE-4f9a1c";
+
+  it("a journey step calling an operation with a blank part leaves its secret payload literal out of generated/portal/blueprint.json", async () => {
+    rmSync(scratch, { recursive: true, force: true });
+    mkdirSync(join(scratch, "journeys"), { recursive: true });
+    try {
+      for (const part of ["blueprint", "package.json"]) cpSync(join(acme, part), join(scratch, part), { recursive: true, filter: (f) => !basename(f).startsWith(".") });
+      writeFileSync(join(scratch, "tsconfig.json"), JSON.stringify({ extends: relative(scratch, join(acme, "tsconfig.json")), include: ["blueprint/**/*.ts", "journeys/**/*.ts"] }));
+      const signUp = join(scratch, "blueprint/things/person/verbs/sign-up.ts");
+      writeFileSync(signUp, readFileSync(signUp, "utf8").replace("steps: { create: Blueprint.step.database() },", 'steps: Blueprint.todo("the steps"),'));
+      writeFileSync(join(scratch, "journeys/leak.ts"), [
+        'import { Blueprint } from "orthograph";',
+        'import signUp from "../blueprint/things/person/verbs/sign-up.ts";',
+        'export default Blueprint.journey("a newcomer signs up", {',
+        "  cast: { newcomer: Blueprint.anyone },",
+        `  steps: (s) => [s.step("the newcomer signs up", s.newcomer.run(signUp, { email: "n@example.test", password: "${secret}", name: "Newcomer" }))],`,
+        "});",
+        "",
+      ].join("\n"));
+      const model = compile(scratch);
+      expect(Object.keys(model.blankOperations ?? {})).toContain("person.sign-up");
+      const portal = (await filesOf("acme", model)).get("generated/portal/blueprint.json")!;
+      expect(portal.includes(secret) ? "the secret literal is in the portal's blueprint.json" : "the portal data is clean").toBe("the portal data is clean");
+    } finally {
+      rmSync(scratch, { recursive: true, force: true });
+    }
   });
 });
 

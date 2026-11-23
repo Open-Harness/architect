@@ -1,0 +1,378 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/06-collisions-and-needs
+# commit b39b30d · 2026-11-18T20:21:04Z · exit 1 (expected 1) · 15.7s
+
+
+ RUN  v4.1.12 ./e2e
+
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: a clean mounted project checks (the control) > echo and greet mounted together check, and their needs are recorded 2854ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a plugin thing named like an app thing is refused, naming the mount, the package and the app's thing 757ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > two plugins with a thing of one name are refused, naming both mounts 732ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a refusal named like the app's refusal is refused 725ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a plugin thing with the app's code prefix is refused 777ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a plugin thing using AR, which the runtime reserves, is refused 775ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > two error classes with one tag in an operation's union are refused 798ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a thing folder or a verb file whose name is not lowercase words with dashes is refused, naming the package 748ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a server operation with no handler module is refused at generate, naming the operation, the package and the worker 719ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > one descriptor mounted twice is refused, naming both files 829ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > a mount named Bad_Name is refused, naming its file 780ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > a mount named 1starts-with-digit is refused, naming its file 751ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > a mount named double--dash is refused, naming its file 719ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > an option of another plugin is refused, naming the mount 1598ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 needs > a need that is not mounted is refused, naming the package and the command to mount it 730ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/06-collisions-and-needs.test.ts > 06 needs > a need with `when` applies only when its option is picked 771ms
+   → can't load blueprint/features/greet.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: a clean mounted project checks (the control) > echo and greet mounted together check, and their needs are recorded
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/06-collisions-and-needs.test.ts:37:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a plugin thing named like an app thing is refused, naming the mount, the package and the app's thing
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:48:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > two plugins with a thing of one name are refused, naming both mounts
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/06-collisions-and-needs.test.ts:57:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a refusal named like the app's refusal is refused
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:63:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a plugin thing with the app's code prefix is refused
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:69:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a plugin thing using AR, which the runtime reserves, is refused
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:75:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > two error classes with one tag in an operation's union are refused
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:81:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a thing folder or a verb file whose name is not lowercase words with dashes is refused, naming the package
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:88:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: names, codes and tags > a server operation with no handler module is refused at generate, naming the operation, the package and the worker
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:95:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > one descriptor mounted twice is refused, naming both files
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:104:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > a mount named Bad_Name is refused, naming its file
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > a mount named 1starts-with-digit is refused, naming its file
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > a mount named double--dash is refused, naming its file
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ selected m1/06-collisions-and-needs.test.ts:26:22
+ ❯ m1/06-collisions-and-needs.test.ts:111:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 collisions: mounts > an option of another plugin is refused, naming the mount
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/06-collisions-and-needs.test.ts:121:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 needs > a need that is not mounted is refused, naming the package and the command to mount it
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/06-collisions-and-needs.test.ts:132:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  m1/06-collisions-and-needs.test.ts > 06 needs > a need with `when` applies only when its option is picked
+AssertionError: can't load blueprint/features/greet.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ m1/06-collisions-and-needs.test.ts:142:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  16 failed (16)
+   Start at  20:20:49
+   Duration  15.24s (transform 31ms, setup 0ms, import 44ms, tests 15.10s, environment 0ms)

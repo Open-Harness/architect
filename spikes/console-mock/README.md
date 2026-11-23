@@ -47,11 +47,10 @@ That writes `out/Main.dc.html` (the artboard), `out/Main.preview.html` (the same
 
 ## Publish it
 
-The canvas is the Design artifact at https://claude.ai/artifact/D6MgxwE454KhLDatHuHnV7 (private to Aaron). To update
+The canvas of 19 November (https://claude.ai/artifact/D6MgxwE454KhLDatHuHnV7) can no longer be opened since the account switch, so ST1.22's screens live on a new Design artifact, https://claude.ai/artifact/C7oAsVGi7fUYoRfL6ACM2Q (private), whose index is `canvas/canvas.st1-22.json`. To update
 it, copy the rendered `out/<Name>.dc.html` over `canvas/<Name>.dc.html`, then publish with the Artifact tool:
 `url` set to that link, `root` set to `canvas/`, `file_path` set to `canvas/canvas.json`, and `files` naming each
-changed artboard. The two `/_blob/…` stylesheet links in `render.tsx` are HeroUI and HeroUI Pro already uploaded to
-that artifact; keep them as they are.
+changed artboard. Its page `Main.dc.html` is `RulesHandle`; the other three keep their names. The two `/_blob/…` links in `render.tsx` are HeroUI and HeroUI Pro uploaded to that new artifact; keep them as they are.
 
 ## The decision it supports
 
@@ -64,3 +63,20 @@ a package; when a page is right, it is rebuilt in `packages/portal` from the blu
   Orthograph blueprint operations. The redesign moves the content to `examples/links` stage 1.
 - Several Pro parts used here (`ChatTool`, `ItemCard`, `KPIGroup`, `ProgressCircle`) are not yet in `portal-ui`'s
   exports. Each needs to be named to the M1 lead with its Pro subpath and the page that needs it.
+
+## ST1.22: rules in the portal (21 November 2026)
+
+Four full pages at 1440 wide, drawn for G5's answers (1A 2A 3A 4A, `design/decisions/G5-invariants-ui-grill.md`) and shot with
+`shoot.sh RulesHandle RulesProfile RulesClaim RulesRelease`: `src/rules-things.tsx` (handle, profile), `src/rules-operations.tsx` (handle.claim, handle.release),
+`src/rules-parts.tsx` (the shared parts, where check 28's hooks sit) and `src/rules-facts.ts` (every fact, with the generated file it came from).
+The pages follow check 28's hooks one to one: `rules` on the Rules widget (after `lifecycle`, before the first `operation-row`), `rule` rows with
+`id="rule-<name>"`, `refusal` wherever a rule's refusal shows (a rule row, a thing's Errors, an operation's Refusals), and `spine-stop` move, rules, commit.
+
+**What the wire lacks, named and not invented:**
+
+- Live counts per refusal, and so the arrow's "most common refusal": telemetry, not the wire. Not drawn.
+- A refusal's HTTP status: `things.<t>.errors` carries code and exit only. The mock quotes status from `generated/api/src/errors.ts`; the portal needs it on the wire.
+- A rule's generated sentence: the wire has fields, states and `description`. The portal writes the sentence (in the words of docs.ts: "another claimed handle holds this name").
+- A call marked on the rules stop (`refusal.invariant`, G5 section 5): live, so the spine here is the model's order with no call down it.
+- The commit's store: the model gives step kinds (`database`), so the commit row says only that.
+- In a rule row the refusal links to its own row, because check 28 wants a `rule-link` in every `refusal`.

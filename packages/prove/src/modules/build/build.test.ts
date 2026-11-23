@@ -1,6 +1,6 @@
 // `ortho build` on a copy of acme under git: the revision's bundle, once, with its hash.
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, writeFileSync, utimesSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, writeFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { Effect } from "effect";
@@ -42,7 +42,7 @@ describe("build", () => {
     expect(statSync(first.main).mtimeMs).toBe(1000);
     expect(first.main).toBe(join(project.root, ".ortho/artefacts", project.revision, "main.js"));
     expect(statSync(first.main).size).toBeGreaterThan(100_000);
-    expect(await run(Build.find(project.root, project.revision))).toEqual({ revision: project.revision, commit: git(project.root, "rev-parse", "HEAD"), sha256: first.sha256, main: first.main });
+    expect(await run(Build.find(project.root, project.revision))).toEqual({ revision: project.revision, commit: git(project.root, "rev-parse", "HEAD"), sha256: first.sha256, main: first.main, portal: first.portal });
     expect(await run(Build.find(project.root, "0000000"))).toBeUndefined();
   });
 
@@ -67,8 +67,30 @@ describe("build", () => {
     renameSync(dirname(record), `${dirname(record)}.legacy`);
     const rebuilt = await run(Build.build(project.root));
     expect(rebuilt.sha256).toBe(old.sha256);
-    expect(await run(Build.find(project.root, project.revision))).toEqual({ revision: rebuilt.revision, commit: git(project.root, "rev-parse", "HEAD"), sha256: rebuilt.sha256, main: rebuilt.main });
+    expect(await run(Build.find(project.root, project.revision))).toEqual({ revision: rebuilt.revision, commit: git(project.root, "rev-parse", "HEAD"), sha256: rebuilt.sha256, main: rebuilt.main, portal: rebuilt.portal });
     expect(readFileSync(join(`${dirname(record)}.legacy`, "bundle.json"), "utf8")).toBe(JSON.stringify({ revision: old.revision, sha256: old.sha256 }));
+  });
+
+  it("records the portal's client beside the bundle, never reuses a revision built with another, and notices a client that was changed", { timeout: 300_000 }, async () => {
+    const built = await run(Build.find(project.root, project.revision));
+    const record = join(dirname(built!.main), "bundle.json");
+    const kept = readFileSync(record, "utf8");
+    const shipped = existsSync(join(dirname(built!.main), "portal/index.html"));
+    expect(built!.portal, "the digest of what shipped, or none when this machine has no client").toEqual(shipped ? expect.stringMatching(/^[0-9a-f]{64}$/) : null);
+    if (shipped) {
+      // The same revision, recorded as built with no client: this machine has one, so this is not that build.
+      writeFileSync(record, JSON.stringify({ ...JSON.parse(kept), portal: null }));
+      expect((await run(Build.find(project.root, project.revision))))!.toMatchObject({ portal: null });
+      expect((await run(Build.build(project.root).pipe(Effect.flip))).message).toContain("without the portal's client");
+      writeFileSync(record, kept);
+      // A client file changed after the build.
+      const index = join(dirname(built!.main), "portal/index.html");
+      const original = readFileSync(index, "utf8");
+      writeFileSync(index, `${original}<!-- tampered -->`);
+      expect((await run(Build.find(project.root, project.revision).pipe(Effect.flip))).message).toContain("no longer matches the client");
+      writeFileSync(index, original);
+    }
+    expect(await run(Build.find(project.root, project.revision))).toEqual(built);
   });
 
   it("notices an artefact that is not what was built", { timeout: 60_000 }, async () => {

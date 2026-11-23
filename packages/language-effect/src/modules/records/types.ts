@@ -1,7 +1,7 @@
 // Records: a thing's stored instances. Two sides: the host's `Store`, which reads and commits, and the handler's
 // `Records`, which reads through the store and holds its writes back until the call commits them with its move.
 import { Context, type Effect } from "effect";
-import type { InstanceOf, Thing } from "orthograph";
+import type { AnyErrorClass, InstanceOf, Thing, Unique } from "orthograph";
 import type { Entry } from "#modules/journal/types.js";
 
 /** A thing's fields, decoded: what a handler stores. */
@@ -58,8 +58,16 @@ export interface Listed {
   readonly next: string | null;
 }
 
+/** A rule a store enforces and a unit looks through: the invariant as declared, and its full name (`handle.oneHolderPerName`), which a defect and a span quote. */
+export interface NamedRule {
+  readonly name: string;
+  readonly rule: Unique;
+}
+
 /** The host's side. A failing store dies: it is never the caller's refusal. */
 export class Store extends Context.Service<Store, {
+  /** The rules this store enforces at commit (G5), as the model carries them; a unit made over it looks through the same ones. Absent when the project declares none. */
+  readonly rules?: ReadonlyArray<NamedRule>;
   readonly find: (thing: Thing, id: string) => Effect.Effect<Stored | undefined>;
   /** One page of a thing's instances, in the order they were made (never a clock). A thing that lives as actors has none to list. */
   readonly list: (query: ListQuery) => Effect.Effect<Listed>;
@@ -73,6 +81,11 @@ export class Store extends Context.Service<Store, {
 export class Records extends Context.Service<Records, {
   /** The instance of `thing` with this id, or undefined: what this call's own writes left it as, else the store's. */
   readonly find: (thing: Thing, id: string) => Effect.Effect<Instance | undefined>;
+  /** The one instance holding `value` under a unique rule, within its scope: what this call's own writes left it as, else the store's. The store enforces the same rule at commit. */
+  readonly findBy: {
+    /** G5: the one instance holding `value` under the unique `rule`, within the rule's scope. The value is the key's own type, or an object of the fields for a composite key. */
+    <R extends Unique<any, any>>(rule: R, value: NonNullable<R["~key"]>): Effect.Effect<Instance | undefined>;
+  };
   /** A new instance, in `state` when the thing has a machine (a move sets it otherwise). */
   readonly insert: <T extends Thing>(thing: T, fields: FieldsOf<T>, state?: string) => Effect.Effect<void>;
   /** Change some fields of an instance. Guarded by the version this call read it at. */
@@ -80,8 +93,18 @@ export class Records extends Context.Service<Records, {
 }>()("@orthograph/language-effect/Records") {}
 
 export interface UnitApi {
-  /** A fresh attempt's `Records` over `store`, and what it holds back. */
-  readonly make: (store: Store["Service"]) => Effect.Effect<Unit>;
+  /** A fresh attempt's `Records` over `store`, and what it holds back. `rules` default to the store's own. */
+  readonly make: (store: Store["Service"], rules?: ReadonlyArray<NamedRule>) => Effect.Effect<Unit>;
+}
+
+/** A rule this call's rows would break, found before the commit: the rule's name, its refusal, and the row as the call leaves it (the refusal is filled from it, never from the holder's). */
+export interface Violation {
+  readonly rule: string;
+  /** The thing's own error the runtime refuses with; absent when no caller can break the rule. */
+  readonly refuse: AnyErrorClass | undefined;
+  readonly row: Instance;
+  /** The other holder is a row this call wrote too: the handler's own bug, never a refusal or a race. */
+  readonly own: boolean;
 }
 
 export interface Unit {
@@ -91,4 +114,6 @@ export interface Unit {
   /** Set the state of `id`: on its held-back insert, or as an update guarded by the version read. */
   readonly setState: (thing: Thing, id: string, state: string) => Effect.Effect<void>;
   readonly writes: Effect.Effect<ReadonlyArray<Write>>;
+  /** G5: the first rule one of this call's rows breaks by taking a key another instance holds, or undefined. Run after the move, before `writes`. */
+  readonly check: Effect.Effect<Violation | undefined>;
 }

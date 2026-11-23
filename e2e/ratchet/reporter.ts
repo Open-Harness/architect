@@ -38,10 +38,12 @@ export default class RatchetReporter {
     const file = process.env["RATCHET_ERRORS_FILE"];
     if (file === undefined) return;
     const suiteErrors: Array<{ name: string; path: ReadonlyArray<string>; label?: string }> = [];
+    // Without ratchet/runner.ts (a package run, G11) no test is marked, and a test's own failure would read as a beforeEach error: judge suites and files only.
+    const marked = modules.some((module) => [...module.children.allTests()].some((test) => test.meta()["ratchetBodyRan"] !== undefined));
     for (const module of modules) {
       if (module.errors().length > 0) suiteErrors.push({ name: module.moduleId, path: [] });
       for (const suite of module.children.allSuites()) if (suite.errors().length > 0) suiteErrors.push({ name: module.moduleId, path: titles(suite) });
-      for (const test of module.children.allTests()) {
+      for (const test of marked ? module.children.allTests() : []) {
         const meta = test.meta();
         const errors = test.result().errors?.length ?? 0;
         const before = typeof meta["ratchetErrorsBefore"] === "number" ? meta["ratchetErrorsBefore"] : errors;

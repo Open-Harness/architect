@@ -1,6 +1,7 @@
 {
   "name": "@orthograph/preset",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "type": "module",
   "generators": "./generators.json",
   "imports": {
@@ -14,7 +15,8 @@
     "@orthograph/compiler": "workspace:*",
     "@orthograph/generators": "workspace:*",
     "orthograph": "workspace:*",
-    "@nx/devkit": "24.0.3"
+    "@nx/devkit": "24.0.3",
+    "effect": "4.1.4"
   },
   "devDependencies": {
     "nx": "24.0.3"

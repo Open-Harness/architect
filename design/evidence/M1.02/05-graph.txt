@@ -1,0 +1,272 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts --reporter=verbose m1/05-graph
+# commit b39b30d · 2026-11-18T20:20:48Z · exit 1 (expected 1) · 13.7s
+
+
+ RUN  v4.1.12 ./e2e
+
+ × m1/05-graph.test.ts > 05 graph: edges and keys > prints sorted, deduplicated edges first: provides, and needs between mounts 3405ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: edges and keys > Compare names the mount as what its operations depend on, and hashOf answers it 760ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: what stales what > a changed pick stales the mount's operations and nothing else 749ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: what stales what > changed bytes in the installed package stale them too, though the version is the same 755ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: what stales what > a changed byte in a declaration the app never imports by name stales them as well 764ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: what stales what > transient outputs and the checkout path enter no hash 761ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: fails closed, naming the package > a missing handler module is refused 884ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: fails closed, naming the package > a missing blueprint folder is refused 725ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: fails closed, naming the package > a missing package.json is refused 691ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+ × m1/05-graph.test.ts > 05 graph: order does not matter > the same things declared in another order keep their names, identifiers, codes and tags 2813ms
+   → can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: edges and keys > prints sorted, deduplicated edges first: provides, and needs between mounts
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/05-graph.test.ts:52:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: edges and keys > Compare names the mount as what its operations depend on, and hashOf answers it
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ produced m1/05-graph.test.ts:18:36
+ ❯ m1/05-graph.test.ts:66:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: what stales what > a changed pick stales the mount's operations and nothing else
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ produced m1/05-graph.test.ts:18:36
+ ❯ m1/05-graph.test.ts:83:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: what stales what > changed bytes in the installed package stale them too, though the version is the same
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ produced m1/05-graph.test.ts:18:36
+ ❯ m1/05-graph.test.ts:91:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: what stales what > a changed byte in a declaration the app never imports by name stales them as well
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ produced m1/05-graph.test.ts:18:36
+ ❯ m1/05-graph.test.ts:105:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: what stales what > transient outputs and the checkout path enter no hash
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ produced m1/05-graph.test.ts:18:36
+ ❯ m1/05-graph.test.ts:115:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: fails closed, naming the package > a missing handler module is refused
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ m1/05-graph.test.ts:135:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: fails closed, naming the package > a missing blueprint folder is refused
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ produced m1/05-graph.test.ts:18:36
+ ❯ m1/05-graph.test.ts:142:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: fails closed, naming the package > a missing package.json is refused
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ produced m1/05-graph.test.ts:18:36
+ ❯ m1/05-graph.test.ts:149:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  m1/05-graph.test.ts > 05 graph: order does not matter > the same things declared in another order keep their names, identifiers, codes and tags
+AssertionError: can't load blueprint/features/echo.ts: TypeError: Blueprint.choice is not a function
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ succeeds m1/support.ts:45:37
+     43| export const succeeds = (root: string, ...args: ReadonlyArray<string>)…
+     44|   const result = run(root, ...args);
+     45|   expect(result.status, result.out).toBe(0);
+       |                                     ^
+     46|   return result;
+     47| };
+ ❯ model m1/support.ts:109:51
+ ❯ produced m1/05-graph.test.ts:18:36
+ ❯ m1/05-graph.test.ts:166:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed (10)
+   Start at  20:20:35
+   Duration  13.20s (transform 399ms, setup 0ms, import 774ms, tests 12.33s, environment 0ms)

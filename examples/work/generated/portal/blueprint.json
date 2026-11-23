@@ -4,8 +4,11 @@
   "revision": null,
   "model": {
     "refusals": {
+      "AttentionNotFound": "AT-901",
       "AttentionNotOpen": "AT-900",
+      "IdempotencyConflict": "AR-002",
       "MilestoneNotActive": "ML-900",
+      "MilestoneNotFound": "ML-901",
       "MissionClosed": "MS-005",
       "MissionHasOpenQuestions": "MS-001",
       "MissionHasOpenTasks": "MS-004",
@@ -15,7 +18,9 @@
       "NotAllowed": "AR-001",
       "QuestionNoSuchOption": "QU-001",
       "QuestionNotAsked": "QU-900",
+      "QuestionNotFound": "QU-901",
       "RunAgentCannot": "RU-002",
+      "RunNotFound": "RU-901",
       "RunNotRunning": "RU-900",
       "RunOverBudget": "RU-001",
       "RunTaskClaimed": "RU-003"
@@ -227,8 +232,17 @@
           }
         },
         "errors": {},
+        "notFound": {
+          "error": "AttentionNotFound",
+          "exit": 4,
+          "code": "AT-901"
+        },
         "roles": [],
-        "hash": "ddfc27b01db3872b"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "4bc4bbfa3bc73459"
       },
       "milestone": {
         "name": "milestone",
@@ -356,8 +370,17 @@
           }
         },
         "errors": {},
+        "notFound": {
+          "error": "MilestoneNotFound",
+          "exit": 4,
+          "code": "ML-901"
+        },
         "roles": [],
-        "hash": "c1707e2052fd0111"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "10bfc73701266a5a"
       },
       "mission": {
         "name": "mission",
@@ -607,7 +630,13 @@
         "roles": [
           "owner"
         ],
-        "hash": "0ef71607a40139e5"
+        "roleRules": {
+          "owner": "(mission, principal) => mission.owner === principal.person"
+        },
+        "from": {
+          "kind": "app"
+        },
+        "hash": "0ce414120027dab4"
       },
       "person": {
         "name": "person",
@@ -639,7 +668,11 @@
         "events": {},
         "errors": {},
         "roles": [],
-        "hash": "0c62a8f851d3c32f"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "c9a028d47a5f83b2"
       },
       "question": {
         "name": "question",
@@ -809,8 +842,17 @@
             "code": "QU-001"
           }
         },
+        "notFound": {
+          "error": "QuestionNotFound",
+          "exit": 4,
+          "code": "QU-901"
+        },
         "roles": [],
-        "hash": "8253c3475eb21dfa"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "eb3656bcee0f85ef"
       },
       "run": {
         "name": "run",
@@ -1061,8 +1103,17 @@
             "code": "RU-003"
           }
         },
+        "notFound": {
+          "error": "RunNotFound",
+          "exit": 4,
+          "code": "RU-901"
+        },
         "roles": [],
-        "hash": "1ecf60f70ed99b66"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "3ec697db6baa81eb"
       }
     },
     "operations": {
@@ -1073,6 +1124,9 @@
         "verb": "approve",
         "identifier": "approve",
         "file": "blueprint/things/attention/verbs/approve.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Say yes. For a promote, the promote runs.",
         "payload": {
           "mission": {
@@ -1102,8 +1156,10 @@
           "emits": "AttentionApproved"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "AttentionNotOpen",
+          "AttentionNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -1113,6 +1169,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "attention": "attention"
+        },
+        "notFound": {
+          "attention": "AttentionNotFound"
+        },
         "steps": {
           "record": {
             "name": "attention.approve.record",
@@ -1125,7 +1189,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "cca125254ef995f7"
+        "hash": "b41d3eb8001d82bb"
       },
       "attention.decline": {
         "kind": "operation",
@@ -1134,6 +1198,9 @@
         "verb": "decline",
         "identifier": "decline",
         "file": "blueprint/things/attention/verbs/decline.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Say not yet, and why. The task stays where its facts put it.",
         "payload": {
           "mission": {
@@ -1170,8 +1237,10 @@
           "emits": "AttentionDeclined"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "AttentionNotOpen",
+          "AttentionNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -1181,6 +1250,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "attention": "attention"
+        },
+        "notFound": {
+          "attention": "AttentionNotFound"
+        },
         "steps": {
           "record": {
             "name": "attention.decline.record",
@@ -1193,7 +1270,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "4b6fcff837667b9c"
+        "hash": "fd7efa41d9865b82"
       },
       "attention.list": {
         "kind": "read",
@@ -1202,6 +1279,9 @@
         "verb": "list",
         "identifier": "list",
         "file": "blueprint/things/attention/verbs/list.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "List attentions, newest first, 50 to a page, filtered by mission, state.",
         "payload": {
           "mission": {
@@ -1241,6 +1321,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -1251,6 +1332,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1266,7 +1348,7 @@
           "order": "newest",
           "page": 50
         },
-        "hash": "a285f1ba16307abe"
+        "hash": "ebdea41f9007b66c"
       },
       "attention.raise": {
         "kind": "operation",
@@ -1275,6 +1357,9 @@
         "verb": "raise",
         "identifier": "raise",
         "file": "blueprint/things/attention/verbs/raise.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Ask the mission's owner for a decision only they can make.",
         "payload": {
           "mission": {
@@ -1336,9 +1421,11 @@
         "errors": [
           "MissionNotRunning"
         ],
+        "breaks": [],
         "refusals": [
           "MissionNotRunning",
-          "NotAllowed"
+          "NotAllowed",
+          "IdempotencyConflict"
         ],
         "allowed": [
           {
@@ -1347,6 +1434,11 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
+        "mints": "attention",
         "steps": {
           "insert": {
             "name": "attention.raise.insert",
@@ -1359,7 +1451,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "92d59b158780c2d2"
+        "hash": "9615fc0b9525f656"
       },
       "milestone.add": {
         "kind": "operation",
@@ -1368,6 +1460,9 @@
         "verb": "add",
         "identifier": "add",
         "file": "blueprint/things/milestone/verbs/add.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Add a milestone to a mission. Its tasks appear at once: its kinds over its subject.",
         "payload": {
           "mission": {
@@ -1428,9 +1523,11 @@
         "errors": [
           "MissionClosed"
         ],
+        "breaks": [],
         "refusals": [
           "MissionClosed",
-          "NotAllowed"
+          "NotAllowed",
+          "IdempotencyConflict"
         ],
         "allowed": [
           {
@@ -1439,6 +1536,11 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
+        "mints": "milestone",
         "steps": {
           "insert": {
             "name": "milestone.add.insert",
@@ -1451,7 +1553,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "f57260ccf4fa7dea"
+        "hash": "343a86926bb38881"
       },
       "milestone.drop": {
         "kind": "operation",
@@ -1460,6 +1562,9 @@
         "verb": "drop",
         "identifier": "drop",
         "file": "blueprint/things/milestone/verbs/drop.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Drop a milestone from its mission's scope. Its tasks leave the board; the burn-down shows the step.",
         "payload": {
           "mission": {
@@ -1489,8 +1594,10 @@
           "emits": "MilestoneDropped"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "MilestoneNotActive",
+          "MilestoneNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -1500,6 +1607,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "milestone": "milestone"
+        },
+        "notFound": {
+          "milestone": "MilestoneNotFound"
+        },
         "steps": {
           "record": {
             "name": "milestone.drop.record",
@@ -1512,7 +1627,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "c8fcf297b3a55d2f"
+        "hash": "8f1ca999fe2d6160"
       },
       "milestone.list": {
         "kind": "read",
@@ -1521,6 +1636,9 @@
         "verb": "list",
         "identifier": "list",
         "file": "blueprint/things/milestone/verbs/list.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "List milestones, oldest first, 50 to a page, filtered by mission, state.",
         "payload": {
           "mission": {
@@ -1560,6 +1678,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -1570,6 +1689,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1585,7 +1705,7 @@
           "order": "oldest",
           "page": 50
         },
-        "hash": "432b05efdcd8e9f5"
+        "hash": "73a47df6293bbb14"
       },
       "mission.finish": {
         "kind": "operation",
@@ -1594,6 +1714,9 @@
         "verb": "finish",
         "identifier": "finish",
         "file": "blueprint/things/mission/verbs/finish.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Close the mission: every task is closed by a fact up to its target.",
         "payload": {
           "mission": {
@@ -1618,6 +1741,7 @@
         "errors": [
           "MissionHasOpenTasks"
         ],
+        "breaks": [],
         "refusals": [
           "MissionHasOpenTasks",
           "MissionNotIntake",
@@ -1630,6 +1754,10 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
         "steps": {
           "record": {
             "name": "mission.finish.record",
@@ -1642,7 +1770,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "b7fce489a2125211"
+        "hash": "a7f9c485cfc7907a"
       },
       "mission.get": {
         "kind": "read",
@@ -1651,6 +1779,9 @@
         "verb": "get",
         "identifier": "get",
         "file": "blueprint/things/mission/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Read one mission by its id: owner, title, target, blueprint, state.",
         "payload": {
           "id": {
@@ -1701,6 +1832,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -1710,6 +1842,7 @@
             "role": "mission.owner"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1717,7 +1850,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "32b72425d755f755"
+        "hash": "c6e071db7e259620"
       },
       "mission.list": {
         "kind": "read",
@@ -1726,6 +1859,9 @@
         "verb": "list",
         "identifier": "list",
         "file": "blueprint/things/mission/verbs/list.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "List missions, newest first, 20 to a page, filtered by owner, state.",
         "payload": {
           "owner": {
@@ -1765,6 +1901,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -1773,6 +1910,7 @@
             "kind": "signed-in"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1788,7 +1926,7 @@
           "order": "newest",
           "page": 20
         },
-        "hash": "3856ff5dba949558"
+        "hash": "adb7a03ed6088cec"
       },
       "mission.open": {
         "kind": "operation",
@@ -1797,6 +1935,9 @@
         "verb": "open",
         "identifier": "open",
         "file": "blueprint/things/mission/verbs/open.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Open a mission over the blueprint revision named. The manager starts by asking about the blueprint's gaps.",
         "payload": {
           "title": {
@@ -1841,14 +1982,18 @@
           "emits": "MissionOpened"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
-          "NotAllowed"
+          "NotAllowed",
+          "IdempotencyConflict"
         ],
         "allowed": [
           {
             "kind": "signed-in"
           }
         ],
+        "agentTool": true,
+        "mints": "mission",
         "steps": {
           "insert": {
             "name": "mission.open.insert",
@@ -1861,7 +2006,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "9543931a3d016483"
+        "hash": "812106af3ec81b4c"
       },
       "mission.pause": {
         "kind": "operation",
@@ -1870,6 +2015,9 @@
         "verb": "pause",
         "identifier": "pause",
         "file": "blueprint/things/mission/verbs/pause.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Pause the mission, saying why.",
         "payload": {
           "mission": {
@@ -1899,6 +2047,7 @@
           "emits": "MissionPaused"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "MissionNotIntake",
           "NotAllowed"
@@ -1910,6 +2059,10 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
         "steps": {
           "record": {
             "name": "mission.pause.record",
@@ -1922,7 +2075,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "6c5f7dbc66625741"
+        "hash": "d3b6f3dc816bdfed"
       },
       "mission.resume": {
         "kind": "operation",
@@ -1931,6 +2084,9 @@
         "verb": "resume",
         "identifier": "resume",
         "file": "blueprint/things/mission/verbs/resume.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Pick a paused mission up again.",
         "payload": {
           "mission": {
@@ -1953,6 +2109,7 @@
           "emits": "MissionResumed"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "MissionNotIntake",
           "NotAllowed"
@@ -1964,6 +2121,10 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
         "steps": {
           "record": {
             "name": "mission.resume.record",
@@ -1976,7 +2137,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "c5e35210e6a420b0"
+        "hash": "5036eb1dbbb1edd7"
       },
       "mission.start": {
         "kind": "operation",
@@ -1985,6 +2146,9 @@
         "verb": "start",
         "identifier": "start",
         "file": "blueprint/things/mission/verbs/start.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Start the mission once intake is done. From here the manager only orchestrates.",
         "payload": {
           "mission": {
@@ -2009,6 +2173,7 @@
         "errors": [
           "MissionHasOpenQuestions"
         ],
+        "breaks": [],
         "refusals": [
           "MissionHasOpenQuestions",
           "MissionNotIntake",
@@ -2021,6 +2186,10 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
         "steps": {
           "record": {
             "name": "mission.start.record",
@@ -2033,7 +2202,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "8a8ddea8c0fe9c4f"
+        "hash": "759e820cdcef06b3"
       },
       "mission.stop": {
         "kind": "operation",
@@ -2042,6 +2211,9 @@
         "verb": "stop",
         "identifier": "stop",
         "file": "blueprint/things/mission/verbs/stop.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Stop the mission for good. Its runs are stopped with it.",
         "payload": {
           "mission": {
@@ -2073,6 +2245,7 @@
           "emits": "MissionStopped"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "MissionNotIntake",
           "NotAllowed"
@@ -2084,6 +2257,10 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
         "steps": {
           "record": {
             "name": "mission.stop.record",
@@ -2096,7 +2273,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "c2ffbd45aa4aae73"
+        "hash": "562e14aae500c09c"
       },
       "mission.tasks": {
         "kind": "operation",
@@ -2105,6 +2282,9 @@
         "verb": "tasks",
         "identifier": "tasks",
         "file": "blueprint/things/mission/verbs/tasks.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "The mission's tasks, each in the column its facts put it in.",
         "payload": {
           "mission": {
@@ -2125,6 +2305,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -2135,22 +2316,30 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
         "steps": {
           "plan": {
             "name": "mission.tasks.plan",
             "type": "database"
           },
           "facts": {
-            "name": "mission.tasks.facts"
+            "name": "mission.tasks.facts",
+            "type": "blank"
           }
         },
+        "blanks": [
+          "steps.facts: read eval rows, verdicts and compiled revisions from the logbook: a declared dependency (L3.01)"
+        ],
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": {
           "p95Ms": 300
         },
-        "hash": "08e5c4eaf83fb049"
+        "hash": "f032f66ccaa2cee0"
       },
       "question.answer": {
         "kind": "operation",
@@ -2159,6 +2348,9 @@
         "verb": "answer",
         "identifier": "answer",
         "file": "blueprint/things/question/verbs/answer.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Answer a question with one of its letters.",
         "payload": {
           "mission": {
@@ -2197,9 +2389,11 @@
         "errors": [
           "QuestionNoSuchOption"
         ],
+        "breaks": [],
         "refusals": [
           "QuestionNoSuchOption",
           "QuestionNotAsked",
+          "QuestionNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -2209,6 +2403,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "question": "question"
+        },
+        "notFound": {
+          "question": "QuestionNotFound"
+        },
         "steps": {
           "record": {
             "name": "question.answer.record",
@@ -2221,7 +2423,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "351a5e72d85b995e"
+        "hash": "af190c907ab1cb4a"
       },
       "question.ask": {
         "kind": "operation",
@@ -2230,6 +2432,9 @@
         "verb": "ask",
         "identifier": "ask",
         "file": "blueprint/things/question/verbs/ask.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Ask the mission's owner about one gap in the blueprint, with lettered answers.",
         "payload": {
           "mission": {
@@ -2291,9 +2496,11 @@
         "errors": [
           "MissionNotInIntake"
         ],
+        "breaks": [],
         "refusals": [
           "MissionNotInIntake",
-          "NotAllowed"
+          "NotAllowed",
+          "IdempotencyConflict"
         ],
         "allowed": [
           {
@@ -2302,6 +2509,11 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
+        "mints": "question",
         "steps": {
           "insert": {
             "name": "question.ask.insert",
@@ -2314,7 +2526,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "ce99fec8831ff30a"
+        "hash": "ad554a00d4c4326a"
       },
       "question.list": {
         "kind": "read",
@@ -2323,6 +2535,9 @@
         "verb": "list",
         "identifier": "list",
         "file": "blueprint/things/question/verbs/list.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "List questions, oldest first, 50 to a page, filtered by mission, state.",
         "payload": {
           "mission": {
@@ -2362,6 +2577,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -2372,6 +2588,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -2387,7 +2604,7 @@
           "order": "oldest",
           "page": 50
         },
-        "hash": "e780a06b74809b00"
+        "hash": "327ea58f20e30eed"
       },
       "question.spike": {
         "kind": "operation",
@@ -2396,6 +2613,9 @@
         "verb": "spike",
         "identifier": "spike",
         "file": "blueprint/things/question/verbs/spike.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Not sure yet: turn the question into a spike task on its subject.",
         "payload": {
           "mission": {
@@ -2425,8 +2645,10 @@
           "emits": "QuestionSpiked"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "QuestionNotAsked",
+          "QuestionNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -2436,6 +2658,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "question": "question"
+        },
+        "notFound": {
+          "question": "QuestionNotFound"
+        },
         "steps": {
           "record": {
             "name": "question.spike.record",
@@ -2448,7 +2678,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "ca77c15be4d4330a"
+        "hash": "7cfbd133245e5bca"
       },
       "run.fail": {
         "kind": "operation",
@@ -2457,6 +2687,9 @@
         "verb": "fail",
         "identifier": "fail",
         "file": "blueprint/things/run/verbs/fail.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "The run gave up, saying why.",
         "payload": {
           "mission": {
@@ -2494,8 +2727,10 @@
           "emits": "RunFailed"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "RunNotRunning",
+          "RunNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -2505,6 +2740,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "run": "run"
+        },
+        "notFound": {
+          "run": "RunNotFound"
+        },
         "steps": {
           "record": {
             "name": "run.fail.record",
@@ -2517,7 +2760,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "eaaf8ea198d0fcdf"
+        "hash": "0596c85907d6d342"
       },
       "run.finish": {
         "kind": "operation",
@@ -2526,6 +2769,9 @@
         "verb": "finish",
         "identifier": "finish",
         "file": "blueprint/things/run/verbs/finish.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "The run pushed its branch. CI proves it; the run cannot close its own task.",
         "payload": {
           "mission": {
@@ -2562,8 +2808,10 @@
           "emits": "RunFinished"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "RunNotRunning",
+          "RunNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -2573,6 +2821,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "run": "run"
+        },
+        "notFound": {
+          "run": "RunNotFound"
+        },
         "steps": {
           "record": {
             "name": "run.finish.record",
@@ -2585,7 +2841,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "d5c8959ee2ed50bc"
+        "hash": "4bb786b8cc371857"
       },
       "run.list": {
         "kind": "read",
@@ -2594,6 +2850,9 @@
         "verb": "list",
         "identifier": "list",
         "file": "blueprint/things/run/verbs/list.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "List runs, newest first, 50 to a page, filtered by mission, task, state.",
         "payload": {
           "mission": {
@@ -2642,6 +2901,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -2652,6 +2912,7 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -2668,7 +2929,7 @@
           "order": "newest",
           "page": 50
         },
-        "hash": "2a5b6fcfbf90e985"
+        "hash": "ad4643ee90683db2"
       },
       "run.report": {
         "kind": "operation",
@@ -2677,6 +2938,9 @@
         "verb": "report",
         "identifier": "report",
         "file": "blueprint/things/run/verbs/report.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Say how the run is going. It moves no card.",
         "payload": {
           "mission": {
@@ -2721,8 +2985,10 @@
           "emits": "RunReported"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "RunNotRunning",
+          "RunNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -2732,6 +2998,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "run": "run"
+        },
+        "notFound": {
+          "run": "RunNotFound"
+        },
         "steps": {
           "record": {
             "name": "run.report.record",
@@ -2744,7 +3018,7 @@
         "budget": {
           "p95Ms": 100
         },
-        "hash": "23753a4b42178e5c"
+        "hash": "cd06c7ba79eefc74"
       },
       "run.start": {
         "kind": "operation",
@@ -2753,6 +3027,9 @@
         "verb": "start",
         "identifier": "start",
         "file": "blueprint/things/run/verbs/start.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Start an agent on one task. The run claims the task until it ends.",
         "payload": {
           "mission": {
@@ -2818,12 +3095,14 @@
           "RunAgentCannot",
           "RunTaskClaimed"
         ],
+        "breaks": [],
         "refusals": [
           "MissionNotRunning",
           "RunOverBudget",
           "RunAgentCannot",
           "RunTaskClaimed",
-          "NotAllowed"
+          "NotAllowed",
+          "IdempotencyConflict"
         ],
         "allowed": [
           {
@@ -2832,6 +3111,11 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission"
+        },
+        "mints": "run",
         "steps": {
           "claim": {
             "name": "run.start.claim",
@@ -2844,7 +3128,7 @@
         "budget": {
           "p95Ms": 250
         },
-        "hash": "9042f562ee3c07c3"
+        "hash": "410a9424a5ad91e2"
       },
       "run.stop": {
         "kind": "operation",
@@ -2853,6 +3137,9 @@
         "verb": "stop",
         "identifier": "stop",
         "file": "blueprint/things/run/verbs/stop.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Stop the run. A person's act, or the mission stopping.",
         "payload": {
           "mission": {
@@ -2890,8 +3177,10 @@
           "emits": "RunStopped"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "RunNotRunning",
+          "RunNotFound",
           "NotAllowed"
         ],
         "allowed": [
@@ -2901,6 +3190,14 @@
             "path": "mission"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "mission": "mission",
+          "run": "run"
+        },
+        "notFound": {
+          "run": "RunNotFound"
+        },
         "steps": {
           "record": {
             "name": "run.stop.record",
@@ -2913,8 +3210,15 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "9967cbbc707bd3b3"
+        "hash": "a58ba19ad179e771"
       }
+    },
+    "journeys": {},
+    "startingWorlds": {},
+    "blanks": {
+      "mission.tasks": [
+        "steps.facts: read eval rows, verdicts and compiled revisions from the logbook: a declared dependency (L3.01)"
+      ]
     },
     "environments": {
       "local": {
@@ -2953,173 +3257,2585 @@
         "publish": {},
         "hash": "e264584f19862db6"
       }
-    }
+    },
+    "alertRules": [
+      {
+        "id": "anomaly:AR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-001",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AT-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AT-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AT-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AT-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:ML-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "ML-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:ML-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "ML-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:MS-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "MS-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/mission/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:MS-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "MS-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/mission/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:MS-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "MS-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/mission/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:MS-004",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "MS-004",
+          "severity": "ticket",
+          "owner": "blueprint/things/mission/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:MS-005",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "MS-005",
+          "severity": "ticket",
+          "owner": "blueprint/things/mission/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:MS-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "MS-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:QU-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "QU-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/question/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:QU-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "QU-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:QU-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "QU-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:RU-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "RU-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/run/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:RU-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "RU-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/run/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:RU-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "RU-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/run/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:RU-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "RU-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:RU-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "RU-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "defect:attention.approve",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "attention.approve",
+          "severity": "page",
+          "owner": "blueprint/things/attention/verbs/approve.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:attention.decline",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "attention.decline",
+          "severity": "page",
+          "owner": "blueprint/things/attention/verbs/decline.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:attention.list",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "attention.list",
+          "severity": "page",
+          "owner": "blueprint/things/attention/verbs/list.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:attention.raise",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "attention.raise",
+          "severity": "page",
+          "owner": "blueprint/things/attention/verbs/raise.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:milestone.add",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "milestone.add",
+          "severity": "page",
+          "owner": "blueprint/things/milestone/verbs/add.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:milestone.drop",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "milestone.drop",
+          "severity": "page",
+          "owner": "blueprint/things/milestone/verbs/drop.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:milestone.list",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "milestone.list",
+          "severity": "page",
+          "owner": "blueprint/things/milestone/verbs/list.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.finish",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.finish",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/finish.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.get",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.list",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.list",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/list.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.open",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.open",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/open.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.pause",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.pause",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/pause.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.resume",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.resume",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/resume.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.start",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.start",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/start.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.stop",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.stop",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/stop.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:mission.tasks",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.tasks",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/tasks.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:question.answer",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "question.answer",
+          "severity": "page",
+          "owner": "blueprint/things/question/verbs/answer.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:question.ask",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "question.ask",
+          "severity": "page",
+          "owner": "blueprint/things/question/verbs/ask.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:question.list",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "question.list",
+          "severity": "page",
+          "owner": "blueprint/things/question/verbs/list.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:question.spike",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "question.spike",
+          "severity": "page",
+          "owner": "blueprint/things/question/verbs/spike.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:run.fail",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "run.fail",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/fail.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:run.finish",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "run.finish",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/finish.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:run.list",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "run.list",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/list.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:run.report",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "run.report",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/report.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:run.start",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "run.start",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/start.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:run.stop",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "run.stop",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/stop.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:attention.approve",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "attention.approve",
+          "severity": "page",
+          "owner": "blueprint/things/attention/verbs/approve.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:attention.decline",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "attention.decline",
+          "severity": "page",
+          "owner": "blueprint/things/attention/verbs/decline.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:attention.list",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "attention.list",
+          "severity": "page",
+          "owner": "blueprint/things/attention/verbs/list.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 80,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:attention.raise",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "attention.raise",
+          "severity": "page",
+          "owner": "blueprint/things/attention/verbs/raise.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:milestone.add",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "milestone.add",
+          "severity": "page",
+          "owner": "blueprint/things/milestone/verbs/add.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:milestone.drop",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "milestone.drop",
+          "severity": "page",
+          "owner": "blueprint/things/milestone/verbs/drop.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:milestone.list",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "milestone.list",
+          "severity": "page",
+          "owner": "blueprint/things/milestone/verbs/list.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 80,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.finish",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.finish",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/finish.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.get",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.list",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.list",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/list.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 80,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.open",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.open",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/open.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.pause",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.pause",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/pause.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.resume",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.resume",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/resume.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.start",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.start",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/start.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.stop",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.stop",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/stop.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:mission.tasks",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "mission.tasks",
+          "severity": "page",
+          "owner": "blueprint/things/mission/verbs/tasks.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 300,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:question.answer",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "question.answer",
+          "severity": "page",
+          "owner": "blueprint/things/question/verbs/answer.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:question.ask",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "question.ask",
+          "severity": "page",
+          "owner": "blueprint/things/question/verbs/ask.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:question.list",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "question.list",
+          "severity": "page",
+          "owner": "blueprint/things/question/verbs/list.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 80,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:question.spike",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "question.spike",
+          "severity": "page",
+          "owner": "blueprint/things/question/verbs/spike.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:run.fail",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "run.fail",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/fail.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:run.finish",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "run.finish",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/finish.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:run.list",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "run.list",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/list.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 80,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:run.report",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "run.report",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/report.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 100,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:run.start",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "run.start",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/start.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 250,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:run.stop",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "run.stop",
+          "severity": "page",
+          "owner": "blueprint/things/run/verbs/stop.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      }
+    ]
   },
   "dependsOnByOperation": {
     "attention.approve": {
-      "operation:attention.approve": "cca125254ef995f7",
-      "thing:attention": "ddfc27b01db3872b",
-      "thing:mission": "0ef71607a40139e5"
+      "operation:attention.approve": "b41d3eb8001d82bb",
+      "thing:attention": "4bc4bbfa3bc73459",
+      "thing:mission": "0ce414120027dab4"
     },
     "attention.decline": {
-      "operation:attention.decline": "4b6fcff837667b9c",
-      "thing:attention": "ddfc27b01db3872b",
-      "thing:mission": "0ef71607a40139e5"
+      "operation:attention.decline": "fd7efa41d9865b82",
+      "thing:attention": "4bc4bbfa3bc73459",
+      "thing:mission": "0ce414120027dab4"
     },
     "attention.list": {
-      "operation:attention.list": "a285f1ba16307abe",
-      "thing:attention": "ddfc27b01db3872b",
-      "thing:mission": "0ef71607a40139e5"
+      "operation:attention.list": "ebdea41f9007b66c",
+      "thing:attention": "4bc4bbfa3bc73459",
+      "thing:mission": "0ce414120027dab4"
     },
     "attention.raise": {
-      "operation:attention.raise": "92d59b158780c2d2",
-      "thing:attention": "ddfc27b01db3872b",
-      "thing:mission": "0ef71607a40139e5"
+      "operation:attention.raise": "9615fc0b9525f656",
+      "thing:attention": "4bc4bbfa3bc73459",
+      "thing:mission": "0ce414120027dab4"
     },
     "milestone.add": {
-      "operation:milestone.add": "f57260ccf4fa7dea",
-      "thing:milestone": "c1707e2052fd0111",
-      "thing:mission": "0ef71607a40139e5"
+      "operation:milestone.add": "343a86926bb38881",
+      "thing:milestone": "10bfc73701266a5a",
+      "thing:mission": "0ce414120027dab4"
     },
     "milestone.drop": {
-      "operation:milestone.drop": "c8fcf297b3a55d2f",
-      "thing:milestone": "c1707e2052fd0111",
-      "thing:mission": "0ef71607a40139e5"
+      "operation:milestone.drop": "8f1ca999fe2d6160",
+      "thing:milestone": "10bfc73701266a5a",
+      "thing:mission": "0ce414120027dab4"
     },
     "milestone.list": {
-      "operation:milestone.list": "432b05efdcd8e9f5",
-      "thing:milestone": "c1707e2052fd0111",
-      "thing:mission": "0ef71607a40139e5"
+      "operation:milestone.list": "73a47df6293bbb14",
+      "thing:milestone": "10bfc73701266a5a",
+      "thing:mission": "0ce414120027dab4"
     },
     "mission.finish": {
-      "operation:mission.finish": "b7fce489a2125211",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.finish": "a7f9c485cfc7907a",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "mission.get": {
-      "operation:mission.get": "32b72425d755f755",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.get": "c6e071db7e259620",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "mission.list": {
-      "operation:mission.list": "3856ff5dba949558",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.list": "adb7a03ed6088cec",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "mission.open": {
-      "operation:mission.open": "9543931a3d016483",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.open": "812106af3ec81b4c",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "mission.pause": {
-      "operation:mission.pause": "6c5f7dbc66625741",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.pause": "d3b6f3dc816bdfed",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "mission.resume": {
-      "operation:mission.resume": "c5e35210e6a420b0",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.resume": "5036eb1dbbb1edd7",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "mission.start": {
-      "operation:mission.start": "8a8ddea8c0fe9c4f",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.start": "759e820cdcef06b3",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "mission.stop": {
-      "operation:mission.stop": "c2ffbd45aa4aae73",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.stop": "562e14aae500c09c",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "mission.tasks": {
-      "operation:mission.tasks": "08e5c4eaf83fb049",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:person": "0c62a8f851d3c32f"
+      "operation:mission.tasks": "f032f66ccaa2cee0",
+      "thing:mission": "0ce414120027dab4",
+      "thing:person": "c9a028d47a5f83b2"
     },
     "question.answer": {
-      "operation:question.answer": "351a5e72d85b995e",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:question": "8253c3475eb21dfa"
+      "operation:question.answer": "af190c907ab1cb4a",
+      "thing:mission": "0ce414120027dab4",
+      "thing:question": "eb3656bcee0f85ef"
     },
     "question.ask": {
-      "operation:question.ask": "ce99fec8831ff30a",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:question": "8253c3475eb21dfa"
+      "operation:question.ask": "ad554a00d4c4326a",
+      "thing:mission": "0ce414120027dab4",
+      "thing:question": "eb3656bcee0f85ef"
     },
     "question.list": {
-      "operation:question.list": "e780a06b74809b00",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:question": "8253c3475eb21dfa"
+      "operation:question.list": "327ea58f20e30eed",
+      "thing:mission": "0ce414120027dab4",
+      "thing:question": "eb3656bcee0f85ef"
     },
     "question.spike": {
-      "operation:question.spike": "ca77c15be4d4330a",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:question": "8253c3475eb21dfa"
+      "operation:question.spike": "7cfbd133245e5bca",
+      "thing:mission": "0ce414120027dab4",
+      "thing:question": "eb3656bcee0f85ef"
     },
     "run.fail": {
-      "operation:run.fail": "eaaf8ea198d0fcdf",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:run": "1ecf60f70ed99b66"
+      "operation:run.fail": "0596c85907d6d342",
+      "thing:mission": "0ce414120027dab4",
+      "thing:run": "3ec697db6baa81eb"
     },
     "run.finish": {
-      "operation:run.finish": "d5c8959ee2ed50bc",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:run": "1ecf60f70ed99b66"
+      "operation:run.finish": "4bb786b8cc371857",
+      "thing:mission": "0ce414120027dab4",
+      "thing:run": "3ec697db6baa81eb"
     },
     "run.list": {
-      "operation:run.list": "2a5b6fcfbf90e985",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:run": "1ecf60f70ed99b66"
+      "operation:run.list": "ad4643ee90683db2",
+      "thing:mission": "0ce414120027dab4",
+      "thing:run": "3ec697db6baa81eb"
     },
     "run.report": {
-      "operation:run.report": "23753a4b42178e5c",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:run": "1ecf60f70ed99b66"
+      "operation:run.report": "cd06c7ba79eefc74",
+      "thing:mission": "0ce414120027dab4",
+      "thing:run": "3ec697db6baa81eb"
     },
     "run.start": {
-      "operation:run.start": "9042f562ee3c07c3",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:run": "1ecf60f70ed99b66"
+      "operation:run.start": "410a9424a5ad91e2",
+      "thing:mission": "0ce414120027dab4",
+      "thing:run": "3ec697db6baa81eb"
     },
     "run.stop": {
-      "operation:run.stop": "9967cbbc707bd3b3",
-      "thing:mission": "0ef71607a40139e5",
-      "thing:run": "1ecf60f70ed99b66"
+      "operation:run.stop": "a58ba19ad179e771",
+      "thing:mission": "0ce414120027dab4",
+      "thing:run": "3ec697db6baa81eb"
     }
   },
   "docs": {
-    "attention/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention.approve\n\nSay yes. For a promote, the promote runs.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | attention.mission |\n| attention | attention.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`approve`: from open to approved, emitting AttentionApproved.\n\n## Steps\n\n- `attention.approve.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttentionNotOpen | 55 | AT-900 | the attention is in a state approve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork attention approve --mission <mission> --attention <attention>\n```\n\nHTTP: `POST /attention/approve` with the payload as JSON. SDK: `Sdk.attention.approve(payload)`.\n",
-    "attention/decline.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention.decline\n\nSay not yet, and why. The task stays where its facts put it.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | attention.mission |\n| attention | attention.id |\n| why | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`decline`: from open to declined, emitting AttentionDeclined.\n\n## Steps\n\n- `attention.decline.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttentionNotOpen | 55 | AT-900 | the attention is in a state decline can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork attention decline --mission <mission> --attention <attention> --why <why>\n```\n\nHTTP: `POST /attention/decline` with the payload as JSON. SDK: `Sdk.attention.decline(payload)`.\n",
-    "attention/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention\n\nSomething waiting on you: a promote, money past the cap, a credential, a question mid-mission.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| mission | mission.id |\n| kind | AttentionKind |\n| title | Title |\n| why | Note |\n| task | TaskKey |\n\n## Machine\n\nStates: open, approved, declined. A move from the wrong state is refused AttentionNotOpen (exit 55).\n\n| move | from | to | emits |\n|---|---|---|---|\n| raise | (creates) | open | AttentionRaised |\n| approve | open | approved | AttentionApproved |\n| decline | open | declined | AttentionDeclined |\n\n## Operations\n\n- [attention.approve](approve.md): Say yes. For a promote, the promote runs.\n- [attention.decline](decline.md): Say not yet, and why. The task stays where its facts put it.\n- [attention.list](list.md): List attentions, newest first, 50 to a page, filtered by mission, state.\n- [attention.raise](raise.md): Ask the mission's owner for a decision only they can make.\n",
+    "attention/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention.approve\n\nSay yes. For a promote, the promote runs.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | attention.mission |\n| attention | attention.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`approve`: from open to approved, emitting AttentionApproved.\n\n## Steps\n\n- `attention.approve.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttentionNotOpen | 55 | AT-900 | the attention is in a state approve can't start from; carries `state` |\n| AttentionNotFound | 4 | AT-901 | nothing has the id in attention; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork attention approve --mission <mission> --attention <attention>\n```\n\nHTTP: `POST /attention/approve` with the payload as JSON. SDK: `Sdk.attention.approve(payload)`.\n",
+    "attention/decline.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention.decline\n\nSay not yet, and why. The task stays where its facts put it.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | attention.mission |\n| attention | attention.id |\n| why | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`decline`: from open to declined, emitting AttentionDeclined.\n\n## Steps\n\n- `attention.decline.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttentionNotOpen | 55 | AT-900 | the attention is in a state decline can't start from; carries `state` |\n| AttentionNotFound | 4 | AT-901 | nothing has the id in attention; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork attention decline --mission <mission> --attention <attention> --why <why>\n```\n\nHTTP: `POST /attention/decline` with the payload as JSON. SDK: `Sdk.attention.decline(payload)`.\n",
+    "attention/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention\n\nSomething waiting on you: a promote, money past the cap, a credential, a question mid-mission.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| mission | mission.id |\n| kind | AttentionKind |\n| title | Title |\n| why | Note |\n| task | TaskKey |\n\n## Machine\n\nStates: open, approved, declined. A move from the wrong state is refused AttentionNotOpen (exit 55).\n\n| move | from | to | emits |\n|---|---|---|---|\n| raise | (creates) | open | AttentionRaised |\n| approve | open | approved | AttentionApproved |\n| decline | open | declined | AttentionDeclined |\n\n## Events\n\n- `AttentionApproved`: carries attention (attention.id); emitted by the move approve\n- `AttentionDeclined`: carries attention (attention.id), why (Note); emitted by the move decline\n- `AttentionRaised`: carries attention (attention.id), mission (attention.mission), kind (attention.kind), task (attention.task); emitted by the move raise\n\n## Operations\n\n- [attention.approve](approve.md): Say yes. For a promote, the promote runs.\n- [attention.decline](decline.md): Say not yet, and why. The task stays where its facts put it.\n- [attention.list](list.md): List attentions, newest first, 50 to a page, filtered by mission, state.\n- [attention.raise](raise.md): Ask the mission's owner for a decision only they can make.\n",
     "attention/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention.list\n\nList attentions, newest first, 50 to a page, filtered by mission, state.\n\n**Who may call:** the owner of its mission.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, newest first, narrowed by mission, state; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission (optional) | attention.mission |\n| state (optional) | text |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork attention list [--mission <mission>] [--state <state>] [--cursor <cursor>]\n```\n\nHTTP: `POST /attention/list` with the payload as JSON. SDK: `Sdk.attention.list(payload)`.\n",
-    "attention/raise.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention.raise\n\nAsk the mission's owner for a decision only they can make.\n\n**Who may call:** the owner of its mission.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | attention.mission |\n| kind | attention.kind |\n| title | attention.title |\n| why | attention.why |\n| task | attention.task |\n\n## Answer\n\n| field | value |\n|---|---|\n| attention | attention.id |\n\n## Move\n\n`raise`: from nothing (it creates) to open, emitting AttentionRaised.\n\n## Steps\n\n- `attention.raise.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotRunning | 55 | MS-002 | the attention is in a state raise can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork attention raise --mission <mission> --kind <kind> --title <title> --why <why> --task <task>\n```\n\nHTTP: `POST /attention/raise` with the payload as JSON. SDK: `Sdk.attention.raise(payload)`.\n",
-    "milestone/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# milestone.add\n\nAdd a milestone to a mission. Its tasks appear at once: its kinds over its subject.\n\n**Who may call:** the owner of its mission.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | milestone.mission |\n| title | milestone.title |\n| kinds | milestone.kinds |\n| of | milestone.of |\n| until | milestone.until |\n\n## Answer\n\n| field | value |\n|---|---|\n| milestone | milestone.id |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting MilestoneAdded.\n\n## Steps\n\n- `milestone.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionClosed | 52 | MS-005 | the milestone is in a state add can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork milestone add --mission <mission> --title <title> --kinds <kinds> --of <of> --until <until>\n```\n\nHTTP: `POST /milestone/add` with the payload as JSON. SDK: `Sdk.milestone.add(payload)`.\n",
-    "milestone/drop.md": "<!-- Generated from the blueprint. Do not edit. -->\n# milestone.drop\n\nDrop a milestone from its mission's scope. Its tasks leave the board; the burn-down shows the step.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | milestone.mission |\n| milestone | milestone.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`drop`: from active to dropped, emitting MilestoneDropped.\n\n## Steps\n\n- `milestone.drop.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MilestoneNotActive | 52 | ML-900 | the milestone is in a state drop can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork milestone drop --mission <mission> --milestone <milestone>\n```\n\nHTTP: `POST /milestone/drop` with the payload as JSON. SDK: `Sdk.milestone.drop(payload)`.\n",
-    "milestone/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# milestone\n\nA stage of a mission: which steps of the build loop, over which thing or operation, and how far.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| mission | mission.id |\n| title | Title |\n| kinds | TaskKinds |\n| of | Subject |\n| until | Environment |\n\n## Machine\n\nStates: active, dropped. A move from the wrong state is refused MilestoneNotActive (exit 52).\n\n| move | from | to | emits |\n|---|---|---|---|\n| add | (creates) | active | MilestoneAdded |\n| drop | active | dropped | MilestoneDropped |\n\n## Operations\n\n- [milestone.add](add.md): Add a milestone to a mission. Its tasks appear at once: its kinds over its subject.\n- [milestone.drop](drop.md): Drop a milestone from its mission's scope. Its tasks leave the board; the burn-down shows the step.\n- [milestone.list](list.md): List milestones, oldest first, 50 to a page, filtered by mission, state.\n",
+    "attention/raise.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention.raise\n\nAsk the mission's owner for a decision only they can make.\n\n**Who may call:** the owner of its mission.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | attention.mission |\n| kind | attention.kind |\n| title | attention.title |\n| why | attention.why |\n| task | attention.task |\n\n## Answer\n\n| field | value |\n|---|---|\n| attention | attention.id |\n\n## Move\n\n`raise`: from nothing (it creates) to open, emitting AttentionRaised.\n\n## Steps\n\n- `attention.raise.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotRunning | 55 | MS-002 | the attention is in a state raise can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\nwork attention raise --mission <mission> --kind <kind> --title <title> --why <why> --task <task>\n```\n\nHTTP: `POST /attention/raise` with the payload as JSON. SDK: `Sdk.attention.raise(payload)`.\n",
+    "milestone/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# milestone.add\n\nAdd a milestone to a mission. Its tasks appear at once: its kinds over its subject.\n\n**Who may call:** the owner of its mission.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | milestone.mission |\n| title | milestone.title |\n| kinds | milestone.kinds |\n| of | milestone.of |\n| until | milestone.until |\n\n## Answer\n\n| field | value |\n|---|---|\n| milestone | milestone.id |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting MilestoneAdded.\n\n## Steps\n\n- `milestone.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionClosed | 52 | MS-005 | the milestone is in a state add can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\nwork milestone add --mission <mission> --title <title> --kinds <kinds> --of <of> --until <until>\n```\n\nHTTP: `POST /milestone/add` with the payload as JSON. SDK: `Sdk.milestone.add(payload)`.\n",
+    "milestone/drop.md": "<!-- Generated from the blueprint. Do not edit. -->\n# milestone.drop\n\nDrop a milestone from its mission's scope. Its tasks leave the board; the burn-down shows the step.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | milestone.mission |\n| milestone | milestone.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`drop`: from active to dropped, emitting MilestoneDropped.\n\n## Steps\n\n- `milestone.drop.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MilestoneNotActive | 52 | ML-900 | the milestone is in a state drop can't start from; carries `state` |\n| MilestoneNotFound | 4 | ML-901 | nothing has the id in milestone; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork milestone drop --mission <mission> --milestone <milestone>\n```\n\nHTTP: `POST /milestone/drop` with the payload as JSON. SDK: `Sdk.milestone.drop(payload)`.\n",
+    "milestone/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# milestone\n\nA stage of a mission: which steps of the build loop, over which thing or operation, and how far.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| mission | mission.id |\n| title | Title |\n| kinds | TaskKinds |\n| of | Subject |\n| until | Environment |\n\n## Machine\n\nStates: active, dropped. A move from the wrong state is refused MilestoneNotActive (exit 52).\n\n| move | from | to | emits |\n|---|---|---|---|\n| add | (creates) | active | MilestoneAdded |\n| drop | active | dropped | MilestoneDropped |\n\n## Events\n\n- `MilestoneAdded`: carries milestone (milestone.id), mission (milestone.mission), kinds (milestone.kinds), of (milestone.of), until (milestone.until); emitted by the move add\n- `MilestoneDropped`: carries milestone (milestone.id); emitted by the move drop\n\n## Operations\n\n- [milestone.add](add.md): Add a milestone to a mission. Its tasks appear at once: its kinds over its subject.\n- [milestone.drop](drop.md): Drop a milestone from its mission's scope. Its tasks leave the board; the burn-down shows the step.\n- [milestone.list](list.md): List milestones, oldest first, 50 to a page, filtered by mission, state.\n",
     "milestone/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# milestone.list\n\nList milestones, oldest first, 50 to a page, filtered by mission, state.\n\n**Who may call:** the owner of its mission.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by mission, state; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission (optional) | milestone.mission |\n| state (optional) | text |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork milestone list [--mission <mission>] [--state <state>] [--cursor <cursor>]\n```\n\nHTTP: `POST /milestone/list` with the payload as JSON. SDK: `Sdk.milestone.list(payload)`.\n",
     "mission/finish.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.finish\n\nClose the mission: every task is closed by a fact up to its target.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | mission.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`finish`: from running to done, emitting MissionFinished.\n\n## Steps\n\n- `mission.finish.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionHasOpenTasks | 58 | MS-004 | declared in errors.ts, carrying open |\n| MissionNotIntake | 50 | MS-900 | the mission is in a state finish can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork mission finish --mission <mission>\n```\n\nHTTP: `POST /mission/finish` with the payload as JSON. SDK: `Sdk.mission.finish(payload)`.\n",
     "mission/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.get\n\nRead one mission by its id: owner, title, target, blueprint, state.\n\n**Who may call:** the owner of the mission.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | mission.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| owner | mission.owner |\n| title | mission.title |\n| target | mission.target |\n| blueprint | mission.blueprint |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the mission; the handler never runs |\n\n## How to call\n\n```sh\nwork mission get --id <id>\n```\n\nHTTP: `POST /mission/get` with the payload as JSON. SDK: `Sdk.mission.get(payload)`.\n",
-    "mission/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission\n\nA goal: milestones of tasks over the blueprint, taken as far as one environment.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| owner | person.id |\n| title | Title |\n| target | Environment |\n| blueprint | Digest |\n\n## Machine\n\nStates: intake, running, paused, done, stopped. A move from the wrong state is refused MissionNotIntake (exit 50).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | intake | MissionOpened |\n| start | intake | running | MissionStarted |\n| pause | running | paused | MissionPaused |\n| resume | paused | running | MissionResumed |\n| finish | running | done | MissionFinished |\n| stop | intake, running, paused | stopped | MissionStopped |\n\n## Roles\n\n- owner\n\n## Operations\n\n- [mission.finish](finish.md): Close the mission: every task is closed by a fact up to its target.\n- [mission.get](get.md): Read one mission by its id: owner, title, target, blueprint, state.\n- [mission.list](list.md): List missions, newest first, 20 to a page, filtered by owner, state.\n- [mission.open](open.md): Open a mission over the blueprint revision named. The manager starts by asking about the blueprint's gaps.\n- [mission.pause](pause.md): Pause the mission, saying why.\n- [mission.resume](resume.md): Pick a paused mission up again.\n- [mission.start](start.md): Start the mission once intake is done. From here the manager only orchestrates.\n- [mission.stop](stop.md): Stop the mission for good. Its runs are stopped with it.\n- [mission.tasks](tasks.md): The mission's tasks, each in the column its facts put it in.\n",
+    "mission/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission\n\nA goal: milestones of tasks over the blueprint, taken as far as one environment.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| owner | person.id |\n| title | Title |\n| target | Environment |\n| blueprint | Digest |\n\n## Machine\n\nStates: intake, running, paused, done, stopped. A move from the wrong state is refused MissionNotIntake (exit 50).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | intake | MissionOpened |\n| start | intake | running | MissionStarted |\n| pause | running | paused | MissionPaused |\n| resume | paused | running | MissionResumed |\n| finish | running | done | MissionFinished |\n| stop | intake, running, paused | stopped | MissionStopped |\n\n## Events\n\n- `MissionFinished`: carries mission (mission.id); emitted by the move finish\n- `MissionOpened`: carries mission (mission.id), title (mission.title), target (mission.target), blueprint (mission.blueprint); emitted by the move open\n- `MissionPaused`: carries mission (mission.id), why (Note); emitted by the move pause\n- `MissionResumed`: carries mission (mission.id); emitted by the move resume\n- `MissionStarted`: carries mission (mission.id); emitted by the move start\n- `MissionStopped`: carries mission (mission.id), why (Note); emitted by the move stop\n\n## Roles\n\n- owner\n\n## Operations\n\n- [mission.finish](finish.md): Close the mission: every task is closed by a fact up to its target.\n- [mission.get](get.md): Read one mission by its id: owner, title, target, blueprint, state.\n- [mission.list](list.md): List missions, newest first, 20 to a page, filtered by owner, state.\n- [mission.open](open.md): Open a mission over the blueprint revision named. The manager starts by asking about the blueprint's gaps.\n- [mission.pause](pause.md): Pause the mission, saying why.\n- [mission.resume](resume.md): Pick a paused mission up again.\n- [mission.start](start.md): Start the mission once intake is done. From here the manager only orchestrates.\n- [mission.stop](stop.md): Stop the mission for good. Its runs are stopped with it.\n- [mission.tasks](tasks.md): The mission's tasks, each in the column its facts put it in.\n",
     "mission/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.list\n\nList missions, newest first, 20 to a page, filtered by owner, state.\n\n**Who may call:** anyone signed in.\n\n**A read:** answered from the records, with no handler. A page of 20 at a time, newest first, narrowed by owner, state; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| owner (optional) | mission.owner |\n| state (optional) | text |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nwork mission list [--owner <owner>] [--state <state>] [--cursor <cursor>]\n```\n\nHTTP: `POST /mission/list` with the payload as JSON. SDK: `Sdk.mission.list(payload)`.\n",
-    "mission/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.open\n\nOpen a mission over the blueprint revision named. The manager starts by asking about the blueprint's gaps.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| title | mission.title |\n| target | mission.target |\n| blueprint | mission.blueprint |\n\n## Answer\n\n| field | value |\n|---|---|\n| mission | mission.id |\n\n## Move\n\n`open`: from nothing (it creates) to intake, emitting MissionOpened.\n\n## Steps\n\n- `mission.open.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nwork mission open --title <title> --target <target> --blueprint <blueprint>\n```\n\nHTTP: `POST /mission/open` with the payload as JSON. SDK: `Sdk.mission.open(payload)`.\n",
+    "mission/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.open\n\nOpen a mission over the blueprint revision named. The manager starts by asking about the blueprint's gaps.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| title | mission.title |\n| target | mission.target |\n| blueprint | mission.blueprint |\n\n## Answer\n\n| field | value |\n|---|---|\n| mission | mission.id |\n\n## Move\n\n`open`: from nothing (it creates) to intake, emitting MissionOpened.\n\n## Steps\n\n- `mission.open.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\nwork mission open --title <title> --target <target> --blueprint <blueprint>\n```\n\nHTTP: `POST /mission/open` with the payload as JSON. SDK: `Sdk.mission.open(payload)`.\n",
     "mission/pause.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.pause\n\nPause the mission, saying why.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | mission.id |\n| why | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`pause`: from running to paused, emitting MissionPaused.\n\n## Steps\n\n- `mission.pause.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotIntake | 50 | MS-900 | the mission is in a state pause can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork mission pause --mission <mission> --why <why>\n```\n\nHTTP: `POST /mission/pause` with the payload as JSON. SDK: `Sdk.mission.pause(payload)`.\n",
     "mission/resume.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.resume\n\nPick a paused mission up again.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | mission.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`resume`: from paused to running, emitting MissionResumed.\n\n## Steps\n\n- `mission.resume.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotIntake | 50 | MS-900 | the mission is in a state resume can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork mission resume --mission <mission>\n```\n\nHTTP: `POST /mission/resume` with the payload as JSON. SDK: `Sdk.mission.resume(payload)`.\n",
     "mission/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.start\n\nStart the mission once intake is done. From here the manager only orchestrates.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | mission.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`start`: from intake to running, emitting MissionStarted.\n\n## Steps\n\n- `mission.start.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionHasOpenQuestions | 51 | MS-001 | declared in errors.ts, carrying open |\n| MissionNotIntake | 50 | MS-900 | the mission is in a state start can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork mission start --mission <mission>\n```\n\nHTTP: `POST /mission/start` with the payload as JSON. SDK: `Sdk.mission.start(payload)`.\n",
     "mission/stop.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.stop\n\nStop the mission for good. Its runs are stopped with it.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | mission.id |\n| why | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`stop`: from intake or running or paused to stopped, emitting MissionStopped.\n\n## Steps\n\n- `mission.stop.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotIntake | 50 | MS-900 | the mission is in a state stop can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork mission stop --mission <mission> --why <why>\n```\n\nHTTP: `POST /mission/stop` with the payload as JSON. SDK: `Sdk.mission.stop(payload)`.\n",
-    "mission/tasks.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.tasks\n\nThe mission's tasks, each in the column its facts put it in.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | mission.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| tasks | Tasks |\n\n## Steps\n\n- `mission.tasks.plan` (database)\n- `mission.tasks.facts` (undefined)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork mission tasks --mission <mission>\n```\n\nHTTP: `POST /mission/tasks` with the payload as JSON. SDK: `Sdk.mission.tasks(payload)`.\n",
+    "mission/tasks.md": "<!-- Generated from the blueprint. Do not edit. -->\n# mission.tasks\n\nThe mission's tasks, each in the column its facts put it in.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | mission.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| tasks | Tasks |\n\n## Steps\n\n- `mission.tasks.plan` (database)\n- `mission.tasks.facts` (blank)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork mission tasks --mission <mission>\n```\n\nHTTP: `POST /mission/tasks` with the payload as JSON. SDK: `Sdk.mission.tasks(payload)`.\n",
     "person/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# person\n\nSomeone who signs in. Better Auth keeps people; work refers to them by id.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| email | text |\n| name | text |\n\n## Operations\n\n(none yet)\n",
-    "question/answer.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question.answer\n\nAnswer a question with one of its letters.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | question.mission |\n| question | question.id |\n| picked | Letter |\n\n## Answer\n\n(none)\n\n## Move\n\n`answer`: from asked to answered, emitting QuestionAnswered.\n\n## Steps\n\n- `question.answer.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| QuestionNoSuchOption | 54 | QU-001 | declared in errors.ts |\n| QuestionNotAsked | 53 | QU-900 | the question is in a state answer can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork question answer --mission <mission> --question <question> --picked <picked>\n```\n\nHTTP: `POST /question/answer` with the payload as JSON. SDK: `Sdk.question.answer(payload)`.\n",
-    "question/ask.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question.ask\n\nAsk the mission's owner about one gap in the blueprint, with lettered answers.\n\n**Who may call:** the owner of its mission.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | question.mission |\n| asks | question.asks |\n| about | question.about |\n| gap | question.gap |\n| options | question.options |\n\n## Answer\n\n| field | value |\n|---|---|\n| question | question.id |\n\n## Move\n\n`ask`: from nothing (it creates) to asked, emitting QuestionAsked.\n\n## Steps\n\n- `question.ask.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotInIntake | 53 | MS-003 | the question is in a state ask can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork question ask --mission <mission> --asks <asks> --about <about> --gap <gap> --options <options>\n```\n\nHTTP: `POST /question/ask` with the payload as JSON. SDK: `Sdk.question.ask(payload)`.\n",
-    "question/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question\n\nSomething the manager needs you to decide before the mission starts, taken from a gap in the blueprint.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| mission | mission.id |\n| asks | Title |\n| about | Subject |\n| gap | Note |\n| options | Options |\n\n## Machine\n\nStates: asked, answered, spiked. A move from the wrong state is refused QuestionNotAsked (exit 53).\n\n| move | from | to | emits |\n|---|---|---|---|\n| ask | (creates) | asked | QuestionAsked |\n| answer | asked | answered | QuestionAnswered |\n| spike | asked | spiked | QuestionSpiked |\n\n## Operations\n\n- [question.answer](answer.md): Answer a question with one of its letters.\n- [question.ask](ask.md): Ask the mission's owner about one gap in the blueprint, with lettered answers.\n- [question.list](list.md): List questions, oldest first, 50 to a page, filtered by mission, state.\n- [question.spike](spike.md): Not sure yet: turn the question into a spike task on its subject.\n",
+    "question/answer.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question.answer\n\nAnswer a question with one of its letters.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | question.mission |\n| question | question.id |\n| picked | Letter |\n\n## Answer\n\n(none)\n\n## Move\n\n`answer`: from asked to answered, emitting QuestionAnswered.\n\n## Steps\n\n- `question.answer.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| QuestionNoSuchOption | 54 | QU-001 | declared in errors.ts |\n| QuestionNotAsked | 53 | QU-900 | the question is in a state answer can't start from; carries `state` |\n| QuestionNotFound | 4 | QU-901 | nothing has the id in question; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork question answer --mission <mission> --question <question> --picked <picked>\n```\n\nHTTP: `POST /question/answer` with the payload as JSON. SDK: `Sdk.question.answer(payload)`.\n",
+    "question/ask.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question.ask\n\nAsk the mission's owner about one gap in the blueprint, with lettered answers.\n\n**Who may call:** the owner of its mission.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | question.mission |\n| asks | question.asks |\n| about | question.about |\n| gap | question.gap |\n| options | question.options |\n\n## Answer\n\n| field | value |\n|---|---|\n| question | question.id |\n\n## Move\n\n`ask`: from nothing (it creates) to asked, emitting QuestionAsked.\n\n## Steps\n\n- `question.ask.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotInIntake | 53 | MS-003 | the question is in a state ask can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\nwork question ask --mission <mission> --asks <asks> --about <about> --gap <gap> --options <options>\n```\n\nHTTP: `POST /question/ask` with the payload as JSON. SDK: `Sdk.question.ask(payload)`.\n",
+    "question/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question\n\nSomething the manager needs you to decide before the mission starts, taken from a gap in the blueprint.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| mission | mission.id |\n| asks | Title |\n| about | Subject |\n| gap | Note |\n| options | Options |\n\n## Machine\n\nStates: asked, answered, spiked. A move from the wrong state is refused QuestionNotAsked (exit 53).\n\n| move | from | to | emits |\n|---|---|---|---|\n| ask | (creates) | asked | QuestionAsked |\n| answer | asked | answered | QuestionAnswered |\n| spike | asked | spiked | QuestionSpiked |\n\n## Events\n\n- `QuestionAnswered`: carries question (question.id), picked (Letter); emitted by the move answer\n- `QuestionAsked`: carries question (question.id), mission (question.mission), asks (question.asks), about (question.about), options (question.options); emitted by the move ask\n- `QuestionSpiked`: carries question (question.id), about (question.about); emitted by the move spike\n\n## Operations\n\n- [question.answer](answer.md): Answer a question with one of its letters.\n- [question.ask](ask.md): Ask the mission's owner about one gap in the blueprint, with lettered answers.\n- [question.list](list.md): List questions, oldest first, 50 to a page, filtered by mission, state.\n- [question.spike](spike.md): Not sure yet: turn the question into a spike task on its subject.\n",
     "question/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question.list\n\nList questions, oldest first, 50 to a page, filtered by mission, state.\n\n**Who may call:** the owner of its mission.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by mission, state; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission (optional) | question.mission |\n| state (optional) | text |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork question list [--mission <mission>] [--state <state>] [--cursor <cursor>]\n```\n\nHTTP: `POST /question/list` with the payload as JSON. SDK: `Sdk.question.list(payload)`.\n",
-    "question/spike.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question.spike\n\nNot sure yet: turn the question into a spike task on its subject.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | question.mission |\n| question | question.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`spike`: from asked to spiked, emitting QuestionSpiked.\n\n## Steps\n\n- `question.spike.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| QuestionNotAsked | 53 | QU-900 | the question is in a state spike can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork question spike --mission <mission> --question <question>\n```\n\nHTTP: `POST /question/spike` with the payload as JSON. SDK: `Sdk.question.spike(payload)`.\n",
-    "run/fail.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.fail\n\nThe run gave up, saying why.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| run | run.id |\n| why | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`fail`: from running or waiting to failed, emitting RunFailed.\n\n## Steps\n\n- `run.fail.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RunNotRunning | 60 | RU-900 | the run is in a state fail can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run fail --mission <mission> --run <run> --why <why>\n```\n\nHTTP: `POST /run/fail` with the payload as JSON. SDK: `Sdk.run.fail(payload)`.\n",
-    "run/finish.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.finish\n\nThe run pushed its branch. CI proves it; the run cannot close its own task.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| run | run.id |\n| branch | Branch |\n\n## Answer\n\n(none)\n\n## Move\n\n`finish`: from running to finished, emitting RunFinished.\n\n## Steps\n\n- `run.finish.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RunNotRunning | 60 | RU-900 | the run is in a state finish can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run finish --mission <mission> --run <run> --branch <branch>\n```\n\nHTTP: `POST /run/finish` with the payload as JSON. SDK: `Sdk.run.finish(payload)`.\n",
-    "run/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run\n\nOne agent working one task: which agent type, on which model, with what budget.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| mission | mission.id |\n| task | TaskKey |\n| agent | AgentType |\n| model | ModelName |\n| budget | Cents |\n\n## Machine\n\nStates: running, waiting, finished, failed, stopped. A move from the wrong state is refused RunNotRunning (exit 60).\n\n| move | from | to | emits |\n|---|---|---|---|\n| start | (creates) | running | RunStarted |\n| report | running, waiting | running, waiting | RunReported |\n| finish | running | finished | RunFinished |\n| fail | running, waiting | failed | RunFailed |\n| stop | running, waiting | stopped | RunStopped |\n\n## Operations\n\n- [run.fail](fail.md): The run gave up, saying why.\n- [run.finish](finish.md): The run pushed its branch. CI proves it; the run cannot close its own task.\n- [run.list](list.md): List runs, newest first, 50 to a page, filtered by mission, task, state.\n- [run.report](report.md): Say how the run is going. It moves no card.\n- [run.start](start.md): Start an agent on one task. The run claims the task until it ends.\n- [run.stop](stop.md): Stop the run. A person's act, or the mission stopping.\n",
+    "question/spike.md": "<!-- Generated from the blueprint. Do not edit. -->\n# question.spike\n\nNot sure yet: turn the question into a spike task on its subject.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | question.mission |\n| question | question.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`spike`: from asked to spiked, emitting QuestionSpiked.\n\n## Steps\n\n- `question.spike.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| QuestionNotAsked | 53 | QU-900 | the question is in a state spike can't start from; carries `state` |\n| QuestionNotFound | 4 | QU-901 | nothing has the id in question; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork question spike --mission <mission> --question <question>\n```\n\nHTTP: `POST /question/spike` with the payload as JSON. SDK: `Sdk.question.spike(payload)`.\n",
+    "run/fail.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.fail\n\nThe run gave up, saying why.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| run | run.id |\n| why | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`fail`: from running or waiting to failed, emitting RunFailed.\n\n## Steps\n\n- `run.fail.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RunNotRunning | 60 | RU-900 | the run is in a state fail can't start from; carries `state` |\n| RunNotFound | 4 | RU-901 | nothing has the id in run; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run fail --mission <mission> --run <run> --why <why>\n```\n\nHTTP: `POST /run/fail` with the payload as JSON. SDK: `Sdk.run.fail(payload)`.\n",
+    "run/finish.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.finish\n\nThe run pushed its branch. CI proves it; the run cannot close its own task.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| run | run.id |\n| branch | Branch |\n\n## Answer\n\n(none)\n\n## Move\n\n`finish`: from running to finished, emitting RunFinished.\n\n## Steps\n\n- `run.finish.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RunNotRunning | 60 | RU-900 | the run is in a state finish can't start from; carries `state` |\n| RunNotFound | 4 | RU-901 | nothing has the id in run; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run finish --mission <mission> --run <run> --branch <branch>\n```\n\nHTTP: `POST /run/finish` with the payload as JSON. SDK: `Sdk.run.finish(payload)`.\n",
+    "run/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run\n\nOne agent working one task: which agent type, on which model, with what budget.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| mission | mission.id |\n| task | TaskKey |\n| agent | AgentType |\n| model | ModelName |\n| budget | Cents |\n\n## Machine\n\nStates: running, waiting, finished, failed, stopped. A move from the wrong state is refused RunNotRunning (exit 60).\n\n| move | from | to | emits |\n|---|---|---|---|\n| start | (creates) | running | RunStarted |\n| report | running, waiting | running, waiting | RunReported |\n| finish | running | finished | RunFinished |\n| fail | running, waiting | failed | RunFailed |\n| stop | running, waiting | stopped | RunStopped |\n\n## Events\n\n- `RunFailed`: carries run (run.id), why (Note); emitted by the move fail\n- `RunFinished`: carries run (run.id), branch (Branch); emitted by the move finish\n- `RunReported`: carries run (run.id), report (Report), note (Note); emitted by the move report\n- `RunStarted`: carries run (run.id), mission (run.mission), task (run.task), agent (run.agent), model (run.model); emitted by the move start\n- `RunStopped`: carries run (run.id), why (Note); emitted by the move stop\n\n## Operations\n\n- [run.fail](fail.md): The run gave up, saying why.\n- [run.finish](finish.md): The run pushed its branch. CI proves it; the run cannot close its own task.\n- [run.list](list.md): List runs, newest first, 50 to a page, filtered by mission, task, state.\n- [run.report](report.md): Say how the run is going. It moves no card.\n- [run.start](start.md): Start an agent on one task. The run claims the task until it ends.\n- [run.stop](stop.md): Stop the run. A person's act, or the mission stopping.\n",
     "run/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.list\n\nList runs, newest first, 50 to a page, filtered by mission, task, state.\n\n**Who may call:** the owner of its mission.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, newest first, narrowed by mission, task, state; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission (optional) | run.mission |\n| task (optional) | run.task |\n| state (optional) | text |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run list [--mission <mission>] [--task <task>] [--state <state>] [--cursor <cursor>]\n```\n\nHTTP: `POST /run/list` with the payload as JSON. SDK: `Sdk.run.list(payload)`.\n",
-    "run/report.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.report\n\nSay how the run is going. It moves no card.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 100ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| run | run.id |\n| report | Report |\n| note | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`report`: from running or waiting to running or waiting, emitting RunReported.\n\n## Steps\n\n- `run.report.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RunNotRunning | 60 | RU-900 | the run is in a state report can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run report --mission <mission> --run <run> --report <report> --note <note>\n```\n\nHTTP: `POST /run/report` with the payload as JSON. SDK: `Sdk.run.report(payload)`.\n",
-    "run/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.start\n\nStart an agent on one task. The run claims the task until it ends.\n\n**Who may call:** the owner of its mission.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 250ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| task | run.task |\n| agent | run.agent |\n| model | run.model |\n| budget | run.budget |\n\n## Answer\n\n| field | value |\n|---|---|\n| run | run.id |\n\n## Move\n\n`start`: from nothing (it creates) to running, emitting RunStarted.\n\n## Steps\n\n- `run.start.claim` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotRunning | 60 | MS-002 | the run is in a state start can't start from; carries `state` |\n| RunOverBudget | 61 | RU-001 | declared in errors.ts, carrying left |\n| RunAgentCannot | 62 | RU-002 | declared in errors.ts |\n| RunTaskClaimed | 63 | RU-003 | declared in errors.ts |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run start --mission <mission> --task <task> --agent <agent> --model <model> --budget <budget>\n```\n\nHTTP: `POST /run/start` with the payload as JSON. SDK: `Sdk.run.start(payload)`.\n",
-    "run/stop.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.stop\n\nStop the run. A person's act, or the mission stopping.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| run | run.id |\n| why | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`stop`: from running or waiting to stopped, emitting RunStopped.\n\n## Steps\n\n- `run.stop.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RunNotRunning | 60 | RU-900 | the run is in a state stop can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run stop --mission <mission> --run <run> --why <why>\n```\n\nHTTP: `POST /run/stop` with the payload as JSON. SDK: `Sdk.run.stop(payload)`.\n"
+    "run/report.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.report\n\nSay how the run is going. It moves no card.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 100ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| run | run.id |\n| report | Report |\n| note | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`report`: from running or waiting to running or waiting, emitting RunReported.\n\n## Steps\n\n- `run.report.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RunNotRunning | 60 | RU-900 | the run is in a state report can't start from; carries `state` |\n| RunNotFound | 4 | RU-901 | nothing has the id in run; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run report --mission <mission> --run <run> --report <report> --note <note>\n```\n\nHTTP: `POST /run/report` with the payload as JSON. SDK: `Sdk.run.report(payload)`.\n",
+    "run/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.start\n\nStart an agent on one task. The run claims the task until it ends.\n\n**Who may call:** the owner of its mission.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 250ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| task | run.task |\n| agent | run.agent |\n| model | run.model |\n| budget | run.budget |\n\n## Answer\n\n| field | value |\n|---|---|\n| run | run.id |\n\n## Move\n\n`start`: from nothing (it creates) to running, emitting RunStarted.\n\n## Steps\n\n- `run.start.claim` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| MissionNotRunning | 60 | MS-002 | the run is in a state start can't start from; carries `state` |\n| RunOverBudget | 61 | RU-001 | declared in errors.ts, carrying left |\n| RunAgentCannot | 62 | RU-002 | declared in errors.ts |\n| RunTaskClaimed | 63 | RU-003 | declared in errors.ts |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\nwork run start --mission <mission> --task <task> --agent <agent> --model <model> --budget <budget>\n```\n\nHTTP: `POST /run/start` with the payload as JSON. SDK: `Sdk.run.start(payload)`.\n",
+    "run/stop.md": "<!-- Generated from the blueprint. Do not edit. -->\n# run.stop\n\nStop the run. A person's act, or the mission stopping.\n\n**Who may call:** the owner of its mission.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| mission | run.mission |\n| run | run.id |\n| why | Note |\n\n## Answer\n\n(none)\n\n## Move\n\n`stop`: from running or waiting to stopped, emitting RunStopped.\n\n## Steps\n\n- `run.stop.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RunNotRunning | 60 | RU-900 | the run is in a state stop can't start from; carries `state` |\n| RunNotFound | 4 | RU-901 | nothing has the id in run; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |\n\n## How to call\n\n```sh\nwork run stop --mission <mission> --run <run> --why <why>\n```\n\nHTTP: `POST /run/stop` with the payload as JSON. SDK: `Sdk.run.stop(payload)`.\n"
   },
   "extensions": {
     "journeys": {
@@ -3135,5 +5851,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "71f414e2b21a76940aebbe4b6d9a84039ee2c5cb87329f86a4dff9ca38f39e5c"
+  "digest": "c45f5b574d4fce5dafcdccb25e517110022d9fe73c5a469ff244b44349f1fb67"
 }

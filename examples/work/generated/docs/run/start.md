@@ -42,6 +42,7 @@ Start an agent on one task. The run claims the task until it ends.
 | RunAgentCannot | 62 | RU-002 | declared in errors.ts |
 | RunTaskClaimed | 63 | RU-003 | declared in errors.ts |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its mission; the handler never runs |
+| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
 ## How to call
 

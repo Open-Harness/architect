@@ -1,0 +1,32 @@
+$ pnpm exec vitest run --root packages/host-cloudflare src/modules/store/store.test.ts
+# commit 892851a · 2026-11-18T22:40:45Z · exit 0 (expected 0) · 14.0s
+
+
+=======================================================================================
+WARNING: @cloudflare/vitest-pool-workers has been renamed to @cloudflare/vitest-plugin.
+This package will not receive future updates.
+Run `npx @cloudflare/codemods vitest:pool-workers-to-vitest-plugin` to migrate.
+=======================================================================================
+
+
+ RUN  v4.1.12 ./packages/host-cloudflare
+
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/index.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-compat.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/types.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/interfaces.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-json-schema-compat.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/validation/ajv-provider.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/server.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/helpers.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/webStandardStreamableHttp.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/mediaType.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/requestBody.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/server/sseKeepAlive.js" points to missing source files
+Sourcemap for "./node_modules/.pnpm/@modelcontextprotocol+sdk@1.32.2_@cfworker+json-schema@4.1.4_supports-color@10.2.2_zod@4.5.4/node_modules/@modelcontextprotocol/sdk/dist/esm/validation/cfworker-provider.js" points to missing source files
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  22:40:32
+   Duration  12.34s (transform 4.69s, setup 10.01s, import 160ms, tests 1.57s, environment 0ms)

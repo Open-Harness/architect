@@ -7,13 +7,22 @@ argument and never written to a file. With `otlp`, the Worker exports its spans 
 `/_world/health` answers; stopped, with wrangler, when the scope closes. `ortho dev` and `ortho prove` both use
 it.
 
+With the portal's built client in reach, the world runs a config derived from the generated one that serves it as static assets
+(`server-config`, K19), written to `.ortho/<name>/wrangler.jsonc`.
+
 `Worlds.launch({ config, state, port, log, pidFile, envFile?, ready })`: the same wrangler, kept: detached in its own
 process group, on a config the caller made, with a `--persist-to` folder that survives restarts, `--inspector-port 0`,
 and its secrets in an env file. Migrations are applied first, a taken socket starts it again, and it is ready once the
 `ready` path answers. The caller keeps the pid and stops it: this is what `environments` builds on (D3 #4).
+
+`chain` (M1.31): an effect the caller supplies that stands up the world's chain (`Anvil.start` from
+`@orthograph/chain-evm`, wired by the composition root). It is acquired in the world's scope before the Worker and
+released after it, and `Running.chain` carries its `rpcUrl` and `chainId`, so the chain is gone when the world ends.
 
 Test: `world.test.ts`.
 
 L2.O: `environment` (default `local`) is the `ORTHO_ENVIRONMENT` var, written on every span as `deployment.environment`. `secretEnv` (from
 `Sinks.resolve`) goes to wrangler through its process environment, which wrangler hands to the Worker as secret bindings, never a file or an
 argument; wrangler then runs with an allowlist of the shell's environment (D3 #109).
+
+A world of `ortho dev` is also kept for `ortho prove` to use (`warm`, ST1.24): `ortho dev` starts a collector and a portal feed beside it, and `Worlds.start` is given their URLs.

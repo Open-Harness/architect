@@ -67,6 +67,19 @@ describe("the ortho rules", () => {
     })).toEqual(Array(4).fill(`${spend} no-wall-clock`));
   });
 
+  it("no-wall-clock: SQL that reads the database's clock (now(), CURRENT_TIMESTAMP, datetime('now')), but not a time passed as a parameter", { timeout: 60_000 }, () => {
+    expect(lint({
+      [spend]: [
+        "export const a = `INSERT INTO t (id, at) VALUES (?, now())`;",
+        `export const b = "UPDATE t SET at = CURRENT_TIMESTAMP";`,
+        `export const c = "SELECT datetime('now')";`,
+        "export const d = `CREATE TABLE t (at TEXT DEFAULT CURRENT_TIMESTAMP)`;",
+        `export const e = "INSERT INTO t (id, at) VALUES (?, ?)";`,
+        `export const f = "call now() to see the time";`,
+      ].join("\n"),
+    })).toEqual(Array(4).fill(`${spend} no-wall-clock`));
+  });
+
   it("no-old-names: an import from an old package scope, an old variable prefix, folder, config file or name", { timeout: 60_000 }, () => {
     expect(lint({
       [spend]: [

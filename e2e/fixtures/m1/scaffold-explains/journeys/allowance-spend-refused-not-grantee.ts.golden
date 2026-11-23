@@ -1,0 +1,21 @@
+// Scaffolded from blueprint/things/allowance/roles.ts. Yours from now on.
+import { Blueprint, noEvents, refuses } from "orthograph";
+import spend from "../things/allowance/verbs/spend.ts";
+
+/**
+ * Who may call allowance.spend, from blueprint/things/allowance/roles.ts:
+ *   the grantee of the allowance: (allowance, principal) => allowance.member === principal.person
+ * Refused: someone signed in who isn't the grantee of the allowance calls allowance.spend, and nothing changes.
+ */
+export default Blueprint.journey("allowance.spend: refused a caller who isn't the grantee", {
+  cast: { stranger: Blueprint.signedIn },
+  starts: Blueprint.todo("a starting world where allowance.spend can run"),
+  steps: (s) => [
+    s.step(
+      "the stranger calls allowance.spend",
+      s.stranger.run(spend, Blueprint.todo("allowance.spend's payload: allowance, amount, memo")),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+    ),
+  ],
+});

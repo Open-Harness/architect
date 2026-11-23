@@ -15,9 +15,18 @@ export type TokenSource =
   /** The CI job's own token: GitHub Actions' request URL and the bearer that asks for it (`id-token: write`). */
   | { readonly kind: "github"; readonly requestUrl: string; readonly requestToken: Redacted.Redacted<string> };
 
+export interface JourneyVerdict {
+  readonly journey: string;
+  readonly modelHash: string;
+  /** Reads have no handler. */
+  readonly handlerHash: string | null;
+  readonly verdict: "pass" | "fail";
+}
+
 export interface Result {
   readonly operation: string;
   readonly verdict: "pass" | "fail";
+  readonly journeys?: ReadonlyArray<JourneyVerdict>;
 }
 
 /** A verdict as the logbook holds it (D3 #31): the fields a gate reads. */
@@ -29,6 +38,7 @@ export interface Held {
   readonly ref: string;
   /** The signed proof's bundle. Legacy rows may omit it or hold null. */
   readonly sha256?: string | null;
+  readonly journeys?: ReadonlyArray<JourneyVerdict> | null;
 }
 
 export interface VerdictsApi {

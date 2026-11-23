@@ -10,4 +10,4 @@ state in a `--persist-to` folder of its own, so it survives a restart. This is t
 - `Logbook.start({ ..., log })` is both, scoped: wrangler stops when the scope closes. Tests use it.
 
 The policy travels as `--var` arguments, never a file; none of it is a secret. Nothing is left running when the scope closes.
-Test: `local.test.ts` is L2.03's done-when check, against a real OIDC server in Docker.
+Test: `local.test.ts` is L2.03's done-when check, against a real OIDC issuer process (@orthograph/services).

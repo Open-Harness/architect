@@ -21,7 +21,7 @@ copied into a re-run attempt (started before it was created) is left out.
 | into `main`, docs only | 21 | 52 | 11 | 14 min | 11.2 min | 1 min |
 
 A code pull request into `goal/stage-1` ran CI 4.4 times on average. Of the 155 runs of all 37 goal pull requests, 37
-were the first push, 83 a new commit, 32 a catch-up merge of the base branch and 3 another merge (`main` is strict, so every merge there puts the rest behind;
+were the first push, 83 a new commit, 32 a catch-up merge of the base branch and 3 another merge (`main` is strict (_Superseded by CI-drafts, 21 November 2026: not strict since 21 November_), so every merge there puts the rest behind;
 `goal/stage-1` is not strict, but builders merge it in to pick up totals and generated files). Each rerun costs one
 whole run, so the length of a clean run multiplies through everything else.
 
@@ -94,15 +94,20 @@ A green push run costs 21 runner-minutes on `main` and 55 on `goal/stage-1`. Run
    when both passed (`tools/ci/gate.sh`, its cases in `tools/ci/ci.test.sh`). It never skips, because a skipped
    required check counts as passed. The same tests run with the same config; only where they run changes.
 2. **`e2e-m1` runs as four shards and keeps its name** (`goal/stage-1` only, in the change that carries this one
-   there). Each shard runs the ratchet's vitest command with `--shard=<n>/4` and uploads its JSON report and hook-error file. The `e2e-m1` job then runs the ratchet's own
-   unit test, joins the four reports (`tools/ci/m1-reports.sh`: every shard's test files, every hook error, and it
-   fails unless exactly four of each arrived) and runs the unchanged `e2e/ratchet/check.ts` on the whole. The files
-   still run one at a time on each runner, so each file still has a machine to itself.
+   there). Each shard runs the ratchet's vitest command with `--shard=<n>/4` and uploads its JSON report and
+   hook-error file. The `e2e-m1` job then runs the ratchet's own unit test, joins the four reports
+   (`tools/ci/m1-reports.sh`: every shard's test files and hook errors; it fails unless exactly four of each arrived,
+   no file ran twice, and together they ran as many files as `e2e/m1` holds) and runs the unchanged
+   `e2e/ratchet/check.ts` on the whole. The files still run one at a time on each runner, so each file still has a
+   machine to itself.
 3. **The docs fast path covers the suites docs cannot move:** prove's tests, and on `goal/stage-1` the M1 shards,
-   `e2e-climb` and `e2e-grid` skip on a docs-only pull request, as the layer gates already do. No test in them reads
+   `e2e-climb` and `e2e-grid` skip on a docs-only pull request, as the layer gates already do (_Superseded by CI-drafts-race, 21 November 2026:
+   the layer gates now run and pass without their steps; a required job never skips_). No test in them reads
    `design/` or a doc outside `packages/`, `e2e/` and `examples/`: check 15 (`e2e/m1/15-portal-ui-seam.test.ts`) scans
    every tracked file but allows Pro's name in `design/`, `docs/` and every `*.md`, and the grid and check 21 read
-   generated docs under `examples/`, which are never docs-only. `check-static`, `e2e-m0` and `portal-ui` still run on
+   generated docs under `examples/`, which are never docs-only. The one way a doc could still fail check 15 is a path
+   named for Pro or a literal licence token, so a pull request that changes such a path or adds a line naming
+   `HEROUI_AUTH_TOKEN` is not docs-only (`tools/ci/docs-only.sh`, the 🔍's finding on the goal branch's change). `check-static`, `e2e-m0` and `portal-ui` still run on
    every pull request, and pushes run everything.
 4. **No branch protection changes.** The required names (`check`, `e2e-m1` and the rest) are the same jobs' names on
    `main`, `m1` and `goal/stage-1`. The new jobs (`check-static`, the shards) are not required; their gate is.
@@ -114,7 +119,7 @@ A green push run costs 21 runner-minutes on `main` and 55 on `goal/stage-1`. Run
 - **Nx's cache between runs, or `nx affected`:** both trust the project graph's inputs, and the slow tests read files
   the graph does not list as inputs (prove's tests start the worlds of `examples/acme` and the starter by path). A
   cache hit or an unaffected project would pass a test that never ran against the change. That weakens a check.
-- **Turning off strict on `main`:** two green pull requests could merge into a red `main`. Still no.
+- **Turning off strict on `main`:** two green pull requests could merge into a red `main`. Still no. (_Superseded by CI-drafts, 21 November 2026: turned off; `main`'s own push run checks every merge_)
 - **Sharding the layer gates:** each has one file of four to five minutes, so a shard cannot finish sooner than that;
   they already sit near the new longest path.
 - **More shards:** each shard is a runner slot and a minute of setup. Three and four bring each sharded job under the
@@ -143,7 +148,19 @@ In the after run, `check-static` took 3.0 minutes and the three prove shards 2.3
 prove's 30 test files exactly once (9 + 1 skipped, 9 + 1 skipped, 10, read from the shard logs). `check` now waits on
 the slowest shard, and the longest path is the layer 2 gate, whose one four-minute file sets the floor. On
 `goal/stage-1` the same split should take `check` from about 15 minutes to about 6, and the four M1 shards `e2e-m1` from
-22 minutes to about 9, estimated from the timings above; that half is measured in the goal branch's change.
+22 minutes to about 9, estimated from the timings above.
+
+A code pull request into `goal/stage-1` (the goal branch's change, run 44719201399, 20 November, 10:26 UTC):
+
+| | wall time | longest path, run time only | `check` | `e2e-m1` |
+|---|---|---|---|---|
+| Before: median of the 32 code pull requests into the goal branch above | 22.7 min | about 22 min (`portal-ui`, then `e2e-m1`) | 14.8 min | 20 to 22 min |
+| After | 20.8 min | 10.2 min (`portal-ui`, then `e2e-layer2`) | 7.5 min (slowest shard 7.4) | 10.1 min (shards 8.5, 6.3, 5.6, 5.2, then 0.7 to judge) |
+
+The run's own work halved, but it waited 10.5 minutes for runners: three Goal 3 builders had the 20-job limit full, and
+this run asks for 18 jobs, so its shards started 5 to 6.5 minutes after they were ready. With the queue that day, a
+single 10-job run would have waited too, but less. The joined M1 verdict was the same as one runner's on the goal
+branch at that time: 68 failing, 68 expected, 0 unexpected, 0 newly passing, 0 missing, over all 29 files.
 
 ## Supersedes
 

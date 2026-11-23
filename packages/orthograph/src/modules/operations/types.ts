@@ -2,7 +2,8 @@
 import type { Duration, Schema } from "effect";
 import type { AnyErrorClass } from "#modules/errors/types.js";
 import type { Move } from "#modules/machines/types.js";
-import type { Allowed, Builtin, Role, RoleOf } from "#modules/roles/types.js";
+import type { Call } from "#modules/plugins/types.js";
+import type { Allowed, Builtin, Narrowed, Role, RoleOf, ServiceRole, SignedIn, System } from "#modules/roles/types.js";
 import type { FieldsInput, Thing, ValueOf } from "#modules/things/types.js";
 import type { TypeOf } from "#modules/values/types.js";
 
@@ -10,13 +11,21 @@ import type { TypeOf } from "#modules/values/types.js";
 export interface Step<K extends StepKind = StepKind> {
   readonly kind: "step";
   readonly type: K;
+  readonly optional?: boolean;
+  /** A `database` step: the things it writes, when not just the operation's own. The compiler refuses writes to two stores (K3 item 5). */
+  readonly writes?: ReadonlyArray<Thing>;
 }
+/** A step that calls out through a mounted adapter: `call` is what the mount offers, `<mount>.calls.<name>`. */
+export interface CallStep extends Step<"call"> {
+  readonly call: Call;
+}
+
 /**
- * What a step is. `database` and `wait` are what the Effect target runs. `sync`, `check` and `prove` are reserved for
+ * What a step is. `database`, `wait` and `call` are what the Effect target runs. `sync`, `check` and `prove` are reserved for
  * targets that run on a chain or a client (N1): each is a span with its own budget. The union is open, so a target can
  * add kinds, and nothing here matches on all of them.
  */
-export type StepKind = "database" | "wait" | "sync" | "check" | "prove" | (string & {});
+export type StepKind = "database" | "wait" | "call" | "sync" | "check" | "prove" | (string & {});
 
 /** Where an operation runs: `server` (every target today), on the caller's `client`, or on a `chain`. */
 export type Runs = "client" | "server" | "chain";
@@ -34,19 +43,24 @@ type StructOf<F extends FieldsInput> = Schema.Struct<{ readonly [K in keyof F]: 
 
 /** A role may point at the thing a payload field names: `owner.of("organization")`, or deeper, `"allowance.organization"`. */
 // `any`: a role's rule takes its own thing's instance, so roles of different things are only comparable as `any`.
-type AllowedFor<P> = Role<any> | Builtin | RoleOf<any, (keyof P & string) | `${keyof P & string}.${string}`>;
+type AllowedFor<P> =
+  | Role<any> | ServiceRole<any> | Builtin | System
+  | RoleOf<any, (keyof P & string) | `${keyof P & string}.${string}`>
+  | Narrowed<Role<any> | SignedIn | RoleOf<any, (keyof P & string) | `${keyof P & string}.${string}`>>;
 
-export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E extends ReadonlyArray<AnyErrorClass>, St extends Steps> {
+export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E extends ReadonlyArray<AnyErrorClass>, St extends Steps, M extends Move | undefined = Move | undefined> {
   readonly description: string;
   readonly payload: P;
   readonly answer: A;
-  readonly move?: Move;
+  readonly move?: M;
   readonly errors?: E;
   readonly allowed: readonly [AllowedFor<P>, ...Array<AllowedFor<P>>];
   readonly steps?: St;
   readonly idempotent?: "request";
+  /** A person must say yes before it runs. `true` is the only value: leave it out for an operation that asks nobody (#466). */
+  readonly needsApproval?: true;
   readonly budget?: Budget;
-  /** Where it runs. Only `server` is accepted until a target supports another (N1). */
+  /** Where it runs. `server` for a thing in a database or actor store; an operation of a chain-stored thing runs on the `chain`, worked out by the compiler, never written (K25 item 6). */
   readonly runs?: Runs;
   /** A target can say a guarantee needs a network test; defaults to `unit`. */
   readonly test?: TestKind;
@@ -58,6 +72,7 @@ export interface Operation<
   A extends FieldsInput = FieldsInput,
   E extends ReadonlyArray<AnyErrorClass> = ReadonlyArray<AnyErrorClass>,
   St extends Steps = Steps,
+  M extends Move | undefined = Move | undefined,
 > {
   readonly kind: "operation";
   readonly thing: T;
@@ -66,13 +81,18 @@ export interface Operation<
   readonly answer: A;
   readonly payloadSchema: StructOf<P>;
   readonly answerSchema: StructOf<A>;
-  readonly move: Move | undefined;
+  /** Its move, keeping the machine's literal states: a handler's `move` takes only the move's own outcomes (K16). */
+  readonly move: M;
   readonly errors: E;
   readonly allowed: ReadonlyArray<Allowed>;
   readonly steps: St;
   readonly idempotent: "request" | undefined;
+  /** Present only when declared; the compiler refuses any value but `true`. */
+  readonly needsApproval?: true;
   readonly budget: Budget | undefined;
   readonly runs: Runs;
+  /** Whether the author wrote `runs`, and what: the compiler refuses it on an operation of a chain-stored thing, where it is worked out. */
+  readonly runsDeclared: Runs | undefined;
   readonly test: TestKind;
 }
 
@@ -136,7 +156,8 @@ export interface OperationsApi {
     const A extends FieldsInput,
     const E extends ReadonlyArray<AnyErrorClass> = readonly [],
     const St extends Steps = {},
-  >(thing: T, spec: OperationSpec<P, A, E, St>) => Operation<T, P, A, E, St>;
+    M extends Move | undefined = undefined,
+  >(thing: T, spec: OperationSpec<P, A, E, St, M>) => Operation<T, P, A, E, St, M>;
   readonly read: {
     /** One instance by its id, answering the fields it names. */
     <T extends Thing>(thing: T, spec: {
@@ -154,5 +175,11 @@ export interface OperationsApi {
       readonly budget?: Budget;
     }): Read<T, ListPayload<T, W>, Page<ListItem<T>>>;
   };
-  readonly step: { readonly database: () => Step<"database">; readonly wait: () => Step<"wait"> };
+  readonly step: {
+    /** Writes the operation's thing, or the things named: all of them must live in one store. */
+    readonly database: (spec?: { readonly writes?: ReadonlyArray<Thing>; readonly optional?: boolean }) => Step<"database">;
+    readonly wait: (spec?: { readonly optional?: boolean }) => Step<"wait">;
+    /** A call out through an adapter the app mounted and `include`d the call of (M1-plugins section 9). */
+    readonly call: (call: Call) => CallStep;
+  };
 }

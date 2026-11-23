@@ -1,0 +1,32 @@
+{
+  "name": "@orthograph/chain-evm",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/main.ts",
+    "./device": "./src/device.ts"
+  },
+  "dependencies": {
+    "@orthograph/language-effect": "workspace:*",
+    "effect": "4.1.4",
+    "viem": "2.57.20"
+  },
+  "files": [
+    "dist",
+    "LICENSE-prb-effect-evm"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/main.d.ts",
+        "default": "./dist/main.js"
+      },
+      "./device": {
+        "types": "./dist/device.d.ts",
+        "default": "./dist/device.js"
+      }
+    }
+  }
+}

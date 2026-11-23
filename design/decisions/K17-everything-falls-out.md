@@ -95,7 +95,7 @@ The rules:
    already says so: "Not chosen per environment. The kind is in the model … Only the binding changes"
    (`docs/canon/stores.mdx:274`).
 
-## The one structural change: a target is a plugin
+## The one structural change: a target is a plugin (superseded by K27, 20 November 2026: no target; a language and a host, each a plugin kind)
 
 K5 already says what a language owns: "the frame, the blanks, the enforcer's meaning and the clients written in it"
 (`K5-the-whole-shape.md:509-516`). The proposal makes that an interface. `language-effect` is its first
@@ -304,9 +304,10 @@ A check is proposed for the story check (K14). Generate every environment, and a
 Nothing here starts outside its milestone. On the critical path, K16 comes first (the scaffold and Aaron's
 pre-handling list), then:
 
-1. **The target interface, with one implementation.** This fits M1.12 and M1.13, which already move renderers onto
-   projections. It means `TargetSpec` in `orthograph`, `language-effect` implementing it, and the guard list printed
-   by the scaffold. Done when the existing outputs come out byte-identical through the new seam. No new language yet.
+1. **The target interface, with one implementation.** (Superseded by K27, 20 November 2026: the language and
+   host seam, Goal 4's first slice.) This fits M1.12 and M1.13, which already move renderers onto projections.
+   It means `TargetSpec` in `orthograph`, `language-effect` implementing it, and the guard list printed by the
+   scaffold. Done when the existing outputs come out byte-identical through the new seam. No new language yet.
 2. **Fields declared but reaching nothing**, wired up:
    - `allowed`, `idempotent` and `budget` into the clients (M1.42 and M2.03);
    - journeys into the portal (M1.13);

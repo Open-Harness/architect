@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "feature.ts",
+    "blueprint/**/*.ts",
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
+}

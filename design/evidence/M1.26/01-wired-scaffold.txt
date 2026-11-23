@@ -1,0 +1,11 @@
+$ env -u NO_COLOR pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/10-empty-and-scaffold.test.ts -t M1.26
+# commit 93aa91f · 2026-11-18T22:59:36Z · exit 0 (expected 0) · 121.0s
+
+
+ RUN  v4.1.12 ./e2e
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed | 1 skipped (4)
+   Start at  22:57:36
+   Duration  120.15s (transform 69ms, setup 0ms, import 89ms, tests 119.85s, environment 0ms)

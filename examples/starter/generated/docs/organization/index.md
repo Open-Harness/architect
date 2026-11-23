@@ -21,6 +21,10 @@ States: active. A move from the wrong state is refused OrganizationNotActive (ex
 |---|---|---|---|
 | create | (creates) | active | OrganizationCreated |
 
+## Events
+
+- `OrganizationCreated`: carries organization (organization.id), owner (organization.owner); emitted by the move create
+
 ## Roles
 
 - owner

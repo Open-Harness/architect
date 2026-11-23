@@ -2,6 +2,10 @@
 // `ortho prove --env test`: the same, in a world of the long-lived test environment, with a signed verdict per operation.
 import { Data, type Effect, type Scope } from "effect";
 import type { Result, TokenSource } from "#modules/verdicts/types.js";
+import type { D1Access } from "#modules/journeys/types.js";
+import type { ProveReport } from "./internal/structured.ts";
+
+export type { ChangedDetail, FailureDetail, JourneyDetail, ProveReport, StepDetail } from "./internal/structured.ts";
 
 export class ProveFailed extends Data.TaggedError("ProveFailed")<{ readonly message: string }> {}
 
@@ -9,30 +13,45 @@ export interface Report {
   /** What prove says, line by line: journeys, then each operation's evals, then coverage, then the verdict. */
   readonly lines: ReadonlyArray<string>;
   readonly passed: boolean;
+  /** The same run as data (`ortho prove --json`, `--report <file>`): per journey, per step, totals and timings. */
+  readonly structured: ProveReport;
+  /** How many leading `lines` were already said through `say` as they became true: a caller that printed them prints the rest. */
+  readonly said?: number;
 }
 
 export interface ProveApi {
   /**
    * Prove the project at `root` on a local world served on `port` (0: any free port). Nothing is left running when the scope closes:
-   * wrangler is stopped and the collector container removed. Fails only when it can't run at all (no model, no
-   * Docker, no world); a project that runs and fails its journeys or evals is a report with `passed: false`.
+   * wrangler is stopped and the collector is closed. A project that runs and fails its journeys or evals is a
+   * report with `passed: false`.
    */
   readonly run: (options: {
     readonly root: string;
     readonly port: number;
-    /** Start the local viewer first (it stays up: `telemetry stop` ends it) and, for every failure, print its trace id and link. */
-    readonly view?: boolean;
+    /** Run journey calls on scaffolds and print results without recording proof verdicts. */
+    readonly empty?: boolean;
+    /** Run one journey by its declared name, without recording proof verdicts. */
+    readonly only?: string;
+    /**
+     * Run only the journeys a change since the last proof's record touches (and judge the evals of what changed), naming each
+     * it skipped; run everything, saying why, when it cannot tell. The proof it leaves is recorded as a full run's is.
+     */
+    readonly changed?: boolean;
+    /** Said as it is true, ahead of the report: `--changed` says what it will run before a world that cannot start can hide it. */
+    readonly say?: (line: string) => Effect.Effect<void>;
     /** The process environment, for the sinks' tokens (`AXIOM_TOKEN`): only an entry file reads it. */
     readonly env?: Readonly<Record<string, string | undefined>>;
   }) => Effect.Effect<Report, ProveFailed, Scope.Scope>;
 
   /**
-   * `ortho dev`: a local world on `port` that stays up while the scope is open. While the viewer runs it also has a
-   * collector, so its traces are in the viewer; the local environment's other sinks get what they are named for.
+   * `ortho dev`: a local world on `port` and a collector (writing `.ortho/dev-telemetry`) that stay up while the scope is open; the
+   * local environment's sinks get what they are named for. A `prove` that finds them uses them (`warm`, ST1.24).
    */
   readonly dev: (options: {
     readonly root: string;
     readonly port: number;
+    /** This process's id, which `ortho prove` reads to tell a live `ortho dev` from a record one left behind. */
+    readonly pid: number;
     readonly env?: Readonly<Record<string, string | undefined>>;
   }) => Effect.Effect<{ readonly url: string; readonly log: string; readonly notes: ReadonlyArray<string> }, ProveFailed, Scope.Scope>;
 
@@ -53,6 +72,22 @@ export interface ProveApi {
     readonly token: TokenSource;
     readonly say: (line: string) => Effect.Effect<void>;
   }) => Effect.Effect<{ readonly passed: boolean }, ProveFailed>;
+
+  /**
+   * Prove the journeys against a deployed Worker at `url` (`ortho prove --env staging --run <id>`, M7.04), in no world of its
+   * own. The Worker's `/_world` is closed, so each journey's people sign up through Better Auth's routes. There is no
+   * collector, so the journeys are judged and the nine evals are not (`totals.evalsFailed` is 0). `url` that nothing answers,
+   * or that answers 404 to everything (a Worker never deployed), is a `ProveFailed` naming it, before any journey runs.
+   */
+  readonly staged: (options: {
+    readonly root: string;
+    readonly url: string;
+    /** What the address is called in a refusal, e.g. `run r4417`. */
+    readonly label: string;
+    readonly only?: string;
+    /** The deployed environment's database, read through Cloudflare's API with the operator's credential. Without it the journeys' facts come from the Worker's own `/_world`, which only a local world has. */
+    readonly d1?: D1Access;
+  }) => Effect.Effect<Report, ProveFailed>;
 
   /**
    * Prove the project against an environment that is already running (staging), and post nothing. A real environment has

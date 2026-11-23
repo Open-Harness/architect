@@ -1,0 +1,32 @@
+$ bash <scratch>/nodocker.sh pnpm nx run e2e:layer1 --outputStyle=static --skip-nx-cache
+# commit 2cbb81aa · 2026-11-19T08:36:34Z · exit 0 (expected 0) · 393.1s
+
+
+> nx run e2e:layer1
+
+> vitest run --root e2e layer1
+
+
+ RUN  v4.1.12 ./e2e
+
+
+ Test Files  8 passed (8)
+      Tests  20 passed | 1 skipped (21)
+   Start at  08:30:03
+   Duration  391.15s (transform 1.47s, setup 0ms, import 3.09s, tests 774.38s, environment 0ms)
+
+
+
+
+ NX   Successfully ran target layer1 for project e2e
+
+
+  Run duration:      6m 32s
+  Cache:             Skipped (--skip-nx-cache)
+  Critical path:     6m 32s (1 task)
+  Recoverable time:  <1ms
+
+  Recommendations:
+    - Cache: drop --skip-nx-cache to restore unchanged tasks instantly.
+    - Speed up or split the longest tasks on the critical path:
+        e2e:layer1    6m 32s

@@ -5,9 +5,9 @@ import { declaration as Declaration } from "../../../api/src/sheet/get.ts";
 import * as Sdk from "../../../sdk/src/index.ts";
 import * as Output from "../output.ts"; // a namespace, so a verb named like a helper (answer) cannot clash
 
-/** Read one sheet by its id: title, places, taken, state. Every flag is text; the declaration decodes it. `--json` prints the whole answer as JSON. */
+/** Read one sheet by its id: title, places, taken, state. Each flag is handed on as text; the declaration decodes it. `--json` prints the whole answer as JSON. */
 export const get = Command.make(
   "get",
-  { id: Flag.String("id"), json: Flag.Boolean("json").pipe(Flag.withDefault(false)) },
+  { id: Flag.String("id").pipe(Flag.withMetavar("id"), Flag.withDescription("Sheet id: an id (sht_...).")), json: Flag.Boolean("json").pipe(Flag.withDefault(false)) },
   ({ json, ...flags }) => Schema.decodeUnknownEffect(Declaration.payloadSchema)(flags).pipe(Effect.flatMap(Sdk.sheet.get), Output.answer(json)),
-);
+).pipe(Command.withDescription("Read one sheet by its id: title, places, taken, state."));

@@ -1,0 +1,26 @@
+# M1.45 green at bdb9e1db (built and run as 6601f438, before the evidence was amended in) (19 Nov 2026)
+
+## packages/projections handlers.test.ts: all pass except grant's two, which wait on M1.46
+     × lists the generated not-found refusal for a referenced id no role check reads, with its exit and code 2ms
+     × says the runtime mints a creating move's id and hands in what the payload references, and answers with the minted id 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  2 failed | 8 passed (10)
+
+## e2e/m1/19: the M1.44 and M1.45 tests pass; the three red are M1.46 to M1.48 (Builder B)
+     × the model gives person a PersonNotFound at PE-901, adopts allowance's declared AllowanceNotFound at AL-002, and lists them where they apply 930ms
+     × generated errors.ts exports the table, one row per refusal, and the old exits and codes are read from it 1259ms
+     × a field of AllowanceSpent that is in neither the allowance, spend's payload nor its answer is named, with the event and the operation 913ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  3 failed | 9 passed (12)
+
+## e2e/m1/10 (M1.16, M1.26): unchanged, all pass
+      Tests  6 passed (6)
+
+## e2e/m1/00 controls
+      Tests  7 passed (7)
+
+## e2e/m1/12: two baseline tests red, the known conflict in design/decisions/K16a-scaffold-build.md item 7 (spend.handler.ts gains Outcome)
+     × acme's checked-in generated/server, generated/api and model are what the baseline records 11ms
+     × generates generated/server and generated/api as before, the model as before plus its mounts, and check passes 1565ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  2 failed | 5 passed (7)

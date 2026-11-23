@@ -395,7 +395,8 @@ full template, so each gets its options and a recommendation in a line or two. T
   hosted models in staging. B: Pi's `faux` provider. C: no journey runs a model. **A**: B is our own fake (Q1 of the
   last round rules it out); C leaves durability unproved.
 - **S15. Who may start an agent run.** A: only a person, unless the app's mount allows agents. B: anyone signed in. C:
-  only `system`. **A**: an agent starting agents spends money with no person.
+  only `system`. K40 (22 November 2026) replaces all three: an agent is its own thing, made by any operation allowed
+  to create one, under that operation's roles.
 - **S16. The factory's run and the agents feature's run.** A: the factory references one. B: the agents run gains
   mission fields. C: the factory calls Pi itself. **A**: features never contain each other.
 - **S17. What the factory runs on.** A: the last released Forman. B: `main`. C: the revision it is building. **A.**
@@ -421,6 +422,8 @@ full template, so each gets its options and a recommendation in a line or two. T
 - **S26. How much fuzzing runs on every check.** A: a fixed seed set in `check`, the long run in CI. B: always long.
   **A**, the CI seed in the verdict.
 - **S27. One vault per organisation or one for all.** A: per organisation, as L4.07 plans. B: one with a mapping. **A.**
+  (Settled otherwise by K25, 20 November 2026: an organisation is not deployed. One budgets module per network, which
+  each organisation's Safe enables; the money stays in the Safe.)
 - **S28. Is "leaks nothing" a journey check or an eval?** A: a built-in eval on every operation with a private field.
   B: a journey check. **A.**
 - **S29. Where custody is proved first.** A: in Solidity with wallets, so Noir inherits it. B: only with Noir. **A.**

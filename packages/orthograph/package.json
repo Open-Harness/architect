@@ -1,13 +1,15 @@
 {
   "name": "orthograph",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./server": "./src/server.ts"
+    "./server": "./src/server.ts",
+    "./sentences": "./src/sentences.ts"
   },
   "dependencies": {
-    "effect": "4.1.1"
+    "effect": "4.1.4"
   },
   "imports": {
     "#modules/*.js": "./src/modules/*.ts"
@@ -25,6 +27,10 @@
       "./server": {
         "types": "./dist/server.d.ts",
         "default": "./dist/server.js"
+      },
+      "./sentences": {
+        "types": "./dist/sentences.d.ts",
+        "default": "./dist/sentences.js"
       }
     },
     "imports": {

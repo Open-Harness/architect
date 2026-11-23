@@ -37,8 +37,8 @@ const get = Blueprint.read(Purse, { by: "id", fields: ["member", "spent", "pin"]
 const spender: Handler<typeof spend, Records> = ({ amount }) =>
   amount > 100n ? Effect.fail(new TooMuch({ left: 7n, limit: 100n })) : Effect.succeed({ spent: amount, balance: 93n, pin: "1234" });
 
-const olga = { kind: "person", person: "per_olga" } as const;
-const bob = { kind: "person", person: "per_bob" } as const;
+const olga = { kind: "person", person: "per_olga", via: "session" } as const;
+const bob = { kind: "person", person: "per_bob", via: "session" } as const;
 const memory = storeMemory([[Purse, { id: "pur_1", member: "per_olga", spent: 7n, pin: "1234" }]]);
 const services = Layer.mergeAll(BusyLive, memory.layer);
 
@@ -91,5 +91,21 @@ describe("the MCP tools", () => {
     }));
     const body = (await response.json()) as { result: { tools: ReadonlyArray<{ name: string; annotations?: { readOnlyHint?: boolean } }> } };
     expect(body.result.tools.map((t) => [t.name, t.annotations?.readOnlyHint ?? false])).toEqual([["purse.spend", false], ["purse.unlock", false], ["purse.get", true]]);
+  });
+});
+
+describe("an MCP refusal's structured form", () => {
+  it("keeps the table's refusal, code, exit and status when the error has fields of those names", async () => {
+    const Clash = Blueprint.error({ exit: Amount, status: Blueprint.text(), refusal: Blueprint.text() }, { exit: 42 });
+    ErrorNames.name(Clash, "Clash");
+    const clash = Blueprint.operation(Purse, { description: "Always refuses.", payload: { purse: Purse.fields.id }, answer: {}, errors: [Clash], allowed: [Blueprint.signedIn] });
+    const refuser: Handler<typeof clash> = () => Effect.fail(new Clash({ exit: 9n, status: "odd", refusal: "other" }));
+    const [only] = Mcp.tools<never>({
+      catalog: { "purse.clash": { description: "Always refuses.", operation: clash } },
+      served: { "purse.clash": Handlers.serve({ name: "purse.clash", operation: clash, handler: refuser }) } as never,
+      refusals: { codes: { Clash: "PU-002" }, declared: { Clash }, table: { Clash: { code: "PU-002", exit: 42, status: 422 } } } as never,
+    });
+    const result = await Effect.runPromise(only!.call({ purse: "pur_1" }, olga as never).pipe(Effect.provide(services)));
+    expect(result.structured).toEqual({ refusal: "Clash", code: "PU-002", exit: 42, status: 422 });
   });
 });

@@ -1,23 +1,111 @@
 // Timers: the only way anything waits. Nothing reads the wall clock and nothing sleeps on its own; a world's clock
-// (real, stepped or scaled) decides when each timer is due.
-import { Context, type Duration, type Effect } from "effect";
+// (real, stepped or scaled) decides when each timer is due. Two services, one table (M8-timers-shape):
+// `Timers` waits inside a fiber; `DurableTimers` sets a timer that outlives the fiber and the process, and the world
+// hands it back through the host's `TimerWakes` when it falls due.
+import { Context, Effect as Fx, type Duration, type Effect, type Option } from "effect";
+import { Busy } from "#modules/work/types.js";
 
 export interface Timer {
   readonly id: number;
   /** Epoch milliseconds on the world's clock. */
   readonly at: number;
+  /** Who set it, as a path: `agents/run/<runId>`, `workflows/<workflow>/<execution>`, `keeper/<thing>.<move>/<id>`. */
   readonly owner: string;
   readonly name: string;
 }
 
 export class Timers extends Context.Service<Timers, {
-  /** Fire `work` at the instant `at`, as counted work. */
+  /** Fire `work` at the instant `at`, as counted work. In-process only: `work` is a closure. */
   readonly at: <E>(at: number, owner: string, name: string, work: Effect.Effect<void, E>) => Effect.Effect<number>;
   /** A durable sleep: park until the world fires it. Must be called from counted work. */
   readonly sleep: (owner: string, span: Duration.Input) => Effect.Effect<void>;
-  /** The earliest instant a timer is due at or before `target`, if any. */
+  /** Park counted work while awaiting an interruptible port call. None means its timer won. Every world's Timers has it. */
+  readonly within?: <A, E, R>(owner: string, span: Duration.Input, wait: Effect.Effect<A, E, R>) => Effect.Effect<Option.Option<A>, E, R>;
+  /** The world's driver only: the earliest instant a timer is due at or before `target`, if any. */
   readonly due: (target: number) => Effect.Effect<number | undefined>;
-  /** Fire every timer due at exactly `at`, in the order they were set; returns what fired. */
+  /** The world's driver only: fire every timer due at exactly `at`, in order (set first, then owner); returns what fired. */
   readonly fire: (at: number) => Effect.Effect<ReadonlyArray<Timer>>;
   readonly pending: Effect.Effect<ReadonlyArray<Timer>>;
-}>()("@orthograph/language-effect/Timers") {}
+}>()("@orthograph/language-effect/Timers") {
+  /**
+   * `Effect.all`, for work that sleeps in parallel with other work: the parent only waits, so it is not counted while it does, and the world can fire the sleeper
+   * once the working branches are done. A plain `Effect.all` stays counted, with its children, until every one is done (a move meanwhile
+   * fails `NeverQuiet`, naming the request).
+   */
+  static readonly all = <A, E, R>(effects: ReadonlyArray<Effect.Effect<A, E, R>>, options?: { readonly concurrency?: number | "unbounded" | undefined }): Effect.Effect<ReadonlyArray<A>, E, R | Busy> =>
+    Fx.flatMap(Fx.service(Busy), (busy) => {
+      // Only a call that really forks joins. With the default concurrency the effects run one after another in the calling fiber, which is doing
+      // the work itself: marking it joining would leave real I/O uncounted.
+      const concurrency = options?.concurrency;
+      // Effect runs 0 and negative concurrency, and 1, one after another: only "unbounded" and a number above one fork.
+      const forks = effects.length > 1 && (concurrency === "unbounded" || (typeof concurrency === "number" && concurrency > 1));
+      return forks ? busy.joining(Fx.all(effects, options)) : Fx.all(effects, options);
+    });
+  /** `Effect.raceFirst`, as a join. */
+  static readonly raceFirst = <A, E, R, A2, E2, R2>(a: Effect.Effect<A, E, R>, b: Effect.Effect<A2, E2, R2>): Effect.Effect<A | A2, E | E2, R | R2 | Busy> =>
+    Fx.flatMap(Fx.service(Busy), (busy) => busy.joining(Fx.raceFirst(a, b)));
+}
+
+/** JSON, as the world's table stores it. */
+export type Json = null | boolean | number | string | ReadonlyArray<Json> | { readonly [key: string]: Json };
+
+/** What a durable timer hands back when it fires: a kind the host routes on, and JSON for the woken code. */
+export interface Wake {
+  /** One handler per kind in the host: `"workflow"`, `"agent"`, `"keeper"`. */
+  readonly kind: string;
+  /** For a workflow, the DurableDeferred's token; for an agent run, the run's id. */
+  readonly payload: Json;
+}
+
+export interface DurableTimer extends Timer {
+  readonly wake: Wake;
+}
+
+export class DurableTimers extends Context.Service<DurableTimers, {
+  /**
+   * Set a timer that outlives this fiber and this process: a row in the world's table. Once per `(owner, name)`: while
+   * one is pending, setting it again returns the first id and keeps its instant and wake (a replayed activity sets
+   * nothing new). To move one, `clear` it and set it again. In a real world the row is kept behind an alarm.
+   */
+  readonly set: (at: number, owner: string, name: string, wake: Wake) => Effect.Effect<number>;
+  /** Clear it if it has not fired; false when none was pending. Leaving a state clears the keeper's timer this way. */
+  readonly clear: (owner: string, name: string) => Effect.Effect<boolean>;
+  readonly pending: Effect.Effect<ReadonlyArray<DurableTimer>>;
+}>()("@orthograph/language-effect/DurableTimers") {}
+
+/**
+ * The host's side: how a fired durable timer reaches the code that set it, in whatever process now runs it (an evicted
+ * Durable Object is woken by its binding). The world calls `wake` at least once per firing, as counted work, and `wake`
+ * returns only after the work it woke holds its own token, so the world is never quiet between the two. A handler is
+ * idempotent by `(owner, name, at)`: a second firing changes nothing.
+ */
+export class TimerWakes extends Context.Service<TimerWakes, {
+  readonly wake: (timer: DurableTimer) => Effect.Effect<void>;
+}>()("@orthograph/language-effect/TimerWakes") {}
+
+/**
+ * The world's timer table as another process sees it (M8.07): rows kept in the world's Durable Object, which fires them
+ * when its clock reaches them. A sleeping row lives as long as the process that parked it; a durable row outlives it.
+ * The host provides this (host-cloudflare, over the world's RPC); `TimersWorld` is `Timers` and `DurableTimers` on it.
+ */
+export class WorldTable extends Context.Service<WorldTable, {
+  /**
+   * Park a row for a sleeper: `at` on the world's clock. `holder` names the token the world holds for the sleeper once the
+   * row fires. Returns its id.
+   */
+  readonly add: (owner: string, name: string, at: number, holder: string) => Effect.Effect<number>;
+  /**
+   * Resolve when the world fires the row. The world holds a token of its own for the sleeper from the firing, and the host has
+   * put this request on the world's instant at the firing, so the caller reads the instant it woke at.
+   */
+  readonly wait: (id: number) => Effect.Effect<void>;
+  /**
+   * The sleeper is back (it holds its own token again) or gave up: take the row back if it has not fired, and let go of the
+   * token the world held for it if it has. Idempotent; a row the world no longer knows is a no-op.
+   */
+  readonly cancel: (id: number) => Effect.Effect<void>;
+  readonly sleeping: Effect.Effect<ReadonlyArray<Timer>>;
+  readonly set: (at: number, owner: string, name: string, wake: Wake) => Effect.Effect<number>;
+  readonly clear: (owner: string, name: string) => Effect.Effect<boolean>;
+  readonly durable: Effect.Effect<ReadonlyArray<DurableTimer>>;
+}>()("@orthograph/language-effect/WorldTable") {}

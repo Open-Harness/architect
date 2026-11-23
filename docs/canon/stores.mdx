@@ -13,7 +13,7 @@ status: draft
 milestone: M1
 slices: [M1.17, M5.13, M5.06]
 decisions: [K3, D1, D2, K5]
-links: [data, things, operations, views, adapters, workflows, environments, features]
+links: [data, things, invariants, operations, views, adapters, workflows, environments, features]
 ---
 
 ## The idea
@@ -22,7 +22,7 @@ A store is a place where things live. One rule decides what counts: **a place is
 and every write to it goes through Orthograph's commit.** The commit takes everything one call changes (its writes, the
 events its move recorded, and the answer kept under its request key) and lands all of it or none of it, guarded by a
 version. The kinds of store are open. A host or a language supplies a kind by implementing one port. Orthograph ships
-`database` and `actor`. A chain is a host, and the store kind it runs is `chain` (K3 item 2); its details wait on K7.
+`database` and `actor`. A chain is a host, and the store kind it runs is `chain` (K3 item 2). K7 and K25 decided its details: a chain store is a file, its commit answers late with a submission, and it is built in M6.10 ([chains-and-wallets](chains-and-wallets.mdx)).
 KV, R2 and caches can't take that commit, so a thing never lives in one. A
 database someone else owns isn't a store either: it is a source, and you reach it through an adapter.
 
@@ -55,7 +55,7 @@ export default Blueprint.environment({
   runs: "on this machine",
   identity: Identity.testPrincipals, // fixed test people, no sign-in
   database: Cloud.d1.local(), // the local runtime emulates D1: no database process
-  telemetry: [Telemetry.sink.local()], // prove's Collector, and the viewer while `ortho telemetry view` runs
+  telemetry: [Telemetry.sink.local()], // prove's Collector, a process of its own
 });
 ```
 
@@ -78,9 +78,17 @@ export default Blueprint.thing({ description: "An entry in the ledger.", fields:
 A handler never writes to a store. It writes to `Records`, which holds every write back until the call ends. Then
 the handler wrapper makes one commit and looks at the one thing it returns:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=71-72
-const committed = yield* store.commit({ writes: yield* unit.writes, entries, ...request });
-if (committed === "conflict") return yield* new Conflict();
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=136-145
+const writes = yield* unit.writes;
+const committed = yield* store.commit({ writes, entries, ...request }).pipe(
+  Effect.tap((outcome) => Effect.annotateCurrentSpan({
+    "commit.outcome": outcome,
+    // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
+    ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
+  })),
+  spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
+  // A write section: the commit happens only while the world still holds this request's token, and a reset waits for it (M8.07).
+  busy.fenced,
 ```
 
 What goes in, and what comes back, is the port every store kind implements:
@@ -98,9 +106,11 @@ export interface Commit {
 export type Committed = "committed" | "conflict";
 ```
 
-```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=61-70
+```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=67-78
 /** The host's side. A failing store dies: it is never the caller's refusal. */
 export class Store extends Context.Service<Store, {
+  /** The rules this store enforces at commit (G5), as the model carries them; a unit made over it looks through the same ones. Absent when the project declares none. */
+  readonly rules?: ReadonlyArray<NamedRule>;
   readonly find: (thing: Thing, id: string) => Effect.Effect<Stored | undefined>;
   /** One page of a thing's instances, in the order they were made (never a clock). A thing that lives as actors has none to list. */
   readonly list: (query: ListQuery) => Effect.Effect<Listed>;
@@ -123,27 +133,26 @@ Every update carries the version this call read. The commit lands only if the st
 kind enforces it in its own way. The `database` kind turns a stale version into a NULL on a NOT NULL column, which
 fails D1's whole batch:
 
-```ts file=packages/host-cloudflare/src/modules/store/service.ts name=StoreD1 lines=27-28
+```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=24-25
 // The guard: a stale version becomes NULL on a NOT NULL column, which fails the whole batch (D2 #36).
 const guard = sql`"version" = CASE WHEN "version" = ${w.version} THEN "version" + 1 ELSE NULL END`;
 ```
 
-```ts file=packages/host-cloudflare/src/modules/store/service.ts name=StoreD1 lines=36-45
-const commitD1 = ({ writes, entries, request }: Commit) =>
-  Effect.gen(function* () {
-    const keep = request ? [sql`INSERT INTO "_requests" ${sql.insert({ key: request.key, answer: request.answer })}`] : [];
-    const statements = [...(yield* Effect.forEach(writes, statementOf)), ...entries.map(journalOf), ...keep];
-    if (statements.length === 0) return "committed" as const;
-    return yield* d1.batch(statements).pipe(
-      Effect.as("committed" as const),
-      Effect.catch((e) => (lostGuard(e) ? Effect.succeed("conflict" as const) : Effect.die(e))),
-    );
-  });
+```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=33-41
+return Effect.gen(function* () {
+  const keep = request ? [sql`INSERT INTO "_requests" ${sql.insert({ key: request.key, answer: request.answer })}`] : [];
+  const statements = [...(yield* Effect.forEach(writes, statementOf)), ...entries.map(journalOf), ...keep];
+  if (statements.length === 0) return "committed" as const;
+  return yield* d1.batch(statements).pipe(
+    Effect.as("committed" as const),
+    Effect.catch((e) => (lostGuard(e) || lostUnique(e, writes, tableOf, rules) ? Effect.succeed("conflict" as const) : Effect.die(e))),
+  );
+});
 ```
 
 The `actor` kind has one Durable Object per instance, so it checks the version inside one SQLite transaction:
 
-```ts file=packages/host-cloudflare/src/modules/actors/service.ts name=Actor lines=30-37
+```ts file=packages/host-cloudflare/src/modules/actors/service.ts name=Actor lines=44-51
 return this.ctx.storage.transactionSync((): Committed => {
   const now = this.stored();
   for (const w of writes) {
@@ -157,12 +166,12 @@ return this.ctx.storage.transactionSync((): Committed => {
 A `conflict` never reaches the caller. The wrapper runs the whole call again from the top, reading fresh, up to 64
 times:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=91-98
-const loop = (left: number): Effect.Effect<object, unknown, unknown> =>
-  attempt(payload, principal, key).pipe(
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=173-180
+const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
+  attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
       !(e instanceof Conflict) ? Effect.fail(e)
-      : left > 1 ? loop(left - 1)
+      : number < ATTEMPTS ? loop(number + 1, callId)
       : Effect.die(new Error(`${name} lost its version race ${ATTEMPTS} times in a row`)),
     ),
   );
@@ -172,6 +181,37 @@ The request key rides in the same commit, so a retried request can never spend t
 with the same key, it finds the first answer and changes nothing:
 
 <Scenario journey="examples/acme/journeys/spend-twice-with-one-request.ts" step="the same request again gives the same answer and spends nothing" />
+
+### A rule is held at commit too
+
+A thing's rules ([invariants](invariants.mdx)) are checked by the runtime before the commit, against the state the call
+read. Another call can commit in between, so the store holds each rule as well: one unique index per rule, named after
+it, over the rule's key and within its `while` states. Plugged In's `profile` rule has no `while`, so its index covers
+every row:
+
+```sql file=examples/plugged-in/generated/server/migrations/0001_things.sql lines=27
+CREATE UNIQUE INDEX "profile_onePagePerHandle" ON "profile" ("handle");
+```
+
+Of two racing commits, the index refuses the second. The host recognises a failure of one of those indexes, and only
+those, and answers `conflict` instead of dying:
+
+```ts file=packages/host-cloudflare/src/modules/store/internal/unique.ts name=lostUnique lines=11-20
+export const lostUnique = (error: unknown, writes: ReadonlyArray<Write>, tableOf: (thing: Write["thing"]) => string, rules: ReadonlyArray<NamedRule> = []): boolean => {
+  const columns = new Set(writes.flatMap((w) => columnsOf(w.thing, tableOf(w.thing), rules)));
+  if (columns.size === 0) return false;
+  for (let e: unknown = error, depth = 0; e !== undefined && e !== null && depth < 8; e = (e as { cause?: unknown }).cause, depth++) {
+    const message = String((e as { message?: unknown }).message ?? e);
+    const failed = /UNIQUE constraint failed: ([^:]+)/.exec(message)?.[1];
+    if (failed && failed.split(",").some((c) => columns.has(c.trim().replaceAll('"', "")))) return true;
+  }
+  return false;
+};
+```
+
+So a lost race for a name is the same retry as a lost version race. The call runs again, its check finds the winner,
+and the runtime refuses with the rule's own error. Any other constraint failure stays a defect. A thing that lives as
+actors can't hold a rule: each instance is its own Durable Object, so there is no table to put an index on.
 
 ### Why the commit is the test
 
@@ -187,15 +227,15 @@ The rule isn't about which software it is. It is about whether a place can take 
 
 ### One call commits to one store
 
-A call's writes all land in its thing's store. Today the `database` kind refuses a commit that mixes owners, at run
+A call's writes all land in its thing's store. The host refuses a commit that writes to more than one store, at run
 time:
 
-```ts file=packages/host-cloudflare/src/modules/store/service.ts name=StoreD1 lines=66-67
-const owners = new Set(commit.writes.map((w) => w.thing.lives));
-if (owners.size > 1) return Effect.die(new Error("a call wrote to both a database thing and an actor: one owner per call in layer one (D2 #38)"));
+```ts file=packages/host-cloudflare/src/modules/store/service.ts name=StoreD1 lines=58-59
+const owners = new Set(commit.writes.map((w) => ownerOf(w.thing)));
+if (owners.size > 1) return Effect.die(new Error("a call wrote to more than one store: one call commits to one store, and work across stores is a workflow (K3 item 5)"));
 ```
 
-From M1.17 the compiler refuses an operation whose steps write to two stores, before anything runs. Work across stores
+The compiler refuses an operation whose steps write to two stores first, before anything runs (M1.17). Work across stores
 runs as a workflow: each step commits to one store, and the workflow remembers which steps are done.
 
 ### What a kind can do
@@ -203,7 +243,7 @@ runs as a workflow: each step commits to one store, and the workflow remembers w
 A kind declares what it can serve, and the compiler refuses a read the kind can't. An actor holds one instance, so it
 has nothing to list, and the compiler already says so:
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=139
+```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=188
 if (list && t?.thing?.lives === "actor") problems.push(`${file}: a list read needs a thing that lives in the database, and ${thing} lives as actors`);
 ```
 
@@ -211,16 +251,21 @@ To list things that live as actors, or across stores, declare a view.
 
 ### Migrations
 
-Migrations are generated from the model, one set per store, and never for a source. Today there is one store, so
-there is one file, with a version column on every table:
+Migrations are generated from the model, one set per store, and never for a source: one file per store, with a
+version column on every table:
 
-```ts file=packages/generators/src/modules/render/internal/worker-config.ts name=renderMigration lines=61-66
-Object.values(model.things).filter((t) => t.lives === "database").map((t) => {
+```ts file=packages/projections/src/modules/server/internal/worker-config.ts name=tablesOf lines=73-83
+things.map((t) => {
   const columns = Object.keys(t.fields).map((f) => (f === "id" ? `  "id" TEXT PRIMARY KEY` : `  "${f}" TEXT NOT NULL`));
   // Empty until the thing's first move sets it.
   if (t.machine) columns.push(`  "state" TEXT`);
   columns.push(`  "version" INTEGER NOT NULL DEFAULT 0`);
-  return `CREATE TABLE "${t.name}" (\n${columns.join(",\n")}\n);`;
+  // A rule (G5) is one partial unique index too, named after it (`<table>_<rule>`) so two rules over one field keep two: over the rule's key, within its `while` states.
+  const ruleIndexes = Object.entries(t.invariants ?? {}).map(([rule, { fields, while: states }]) => {
+    const scope = states ? ` WHERE "state" IN (${states.map((s) => `'${s.replaceAll("'", "''")}'`).join(", ")})` : "";
+    return `CREATE UNIQUE INDEX "${t.name}_${rule}" ON "${t.name}" (${fields.map((f) => `"${f}"`).join(", ")})${scope};`;
+  });
+  return [`CREATE TABLE "${t.name}" (\n${columns.join(",\n")}\n);`, ...ruleIndexes].join("\n");
 ```
 
 ### Binding a store in an environment
@@ -243,10 +288,10 @@ them. That is why stores land in M1: auth in M2 needs them.
 
 ### Which kind
 
-| | `database` (the default) | `actor` | `chain` (waits on K7) |
+| | `database` (the default) | `actor` | `chain` (specified, M6.10) |
 |---|---|---|---|
 | What it is | D1, one row per instance, with a version column | one Durable Object per instance: its own SQLite, its own outbox | a contract, generated in the Solidity language |
-| Supplied by | `@orthograph/host-cloudflare` | `@orthograph/host-cloudflare` | `@orthograph/language-solidity` |
+| Supplied by | `@orthograph/host-cloudflare` | `@orthograph/host-cloudflare` | `Host.chain`, written for by `@orthograph/language-solidity` (K27) |
 | Lists and search | yes | no: declare a view | through views |
 | Contention | every call to any instance shares one database | one writer per instance, so instances never contend | one transaction at a time, and every write costs gas |
 | Pick it when | you need to list and search across many | an instance takes many writes and needs strict order, and nobody lists them | it is money or a public commitment |
@@ -270,6 +315,7 @@ local-first, Noir on Aztec.
   calls, with typed errors and its own stand-in. Orthograph never migrates it. See `adapters`.
 - **Not a view.** A view is a list kept from events, across stores and sources. It can be rebuilt. A store holds the
   truth. See `views`.
+- **Not a rule.** A rule is declared on its thing and refused by the runtime; the store only holds it as an index. See `invariants`.
 - **Not a table.** A store holds the tables of every thing that lives in it, plus its journal and its kept answers.
 - **Not chosen per environment.** The kind is in the model, so it is the same everywhere. Only the binding changes
   per environment. See `environments`.
@@ -285,8 +331,9 @@ local-first, Noir on Aztec.
 | The one commit per call, and the rerun on conflict | `packages/language-effect/src/modules/handler/service.ts:71` | built |
 | The `database` kind, on D1 | `packages/host-cloudflare/src/modules/store/service.ts:11` | built |
 | The `actor` kind, a Durable Object per instance | `packages/host-cloudflare/src/modules/actors/service.ts:28` | built |
+| A rule's unique index, and a lost race as a conflict | `packages/host-cloudflare/src/modules/store/internal/unique.ts:11` | built |
 | The compiler refusing a list over actors | `packages/compiler/src/modules/model/internal/describe.ts:139` | built |
-| Migrations from the model | `packages/generators/src/modules/render/internal/worker-config.ts:55` | built, one store |
+| Migrations from the model | `packages/projections/src/modules/server/internal/worker-config.ts:55` | built, one store |
 | `Blueprint.store.<kind>()`, and `lives` taking a store | `packages/orthograph/src/modules/stores/` | planned, M1.17 |
 | The data map | `generated/data/map.md` in each project | planned, M5.06 |
 
@@ -299,10 +346,11 @@ local-first, Noir on Aztec.
 | One commit per call: writes, journal and request answer together | proved | layer 1 | `packages/language-effect/src/modules/records/records.test.ts:33` (one wins, the other is `conflict` and writes nothing) |
 | A retried request changes nothing | proved | layer 1 | the `spend twice with one request` journey |
 | The `database` and `actor` kinds | proved | layer 1 | Gate 1 on `main` |
+| A rule held by an index at commit, a lost race a conflict, and the call refused on its retry | proved | ST1.16 | `packages/host-cloudflare/src/modules/store/unique.test.ts`, and ten racing claims in `e2e/m1/25-unique-fields.test.ts:184` |
 | A list over actors refused | proved | layer 1 | the compiler's describe step |
 | Declared stores, open kinds, typed bindings, migrations per store, plugin stores | specified | M1.17 | a second store in acme, its own D1, its own migrations |
 | The compiler refusing an operation that writes to two stores | specified | M1.17 | a fixture operation over two stores fails `ortho check` |
-| The `chain` kind | waits on K7 | M6.10 | K3 item 2 and K5 seam 2 (the note under Notes) |
+| The `chain` kind | specified | M6.10 | K3 item 2, K5 seam 2, K7 and K25 (the note under Notes) |
 | Sources through adapters | specified | M5.13 | a fixture adapter over MariaDB that Orthograph never migrates |
 | The data map | specified | M5.06 | the map lists every store and source |
 
@@ -334,7 +382,7 @@ local-first, Noir on Aztec.
 <Note kind="question" id="schema-per-kind" slice="M1.17">
   Where does a kind's schema come from? The store port only reads and commits
   (`packages/language-effect/src/modules/records/types.ts:62`). The schema is hard-coded in the generator, and only for
-  D1: every field becomes `TEXT NOT NULL` (`packages/generators/src/modules/render/internal/worker-config.ts:62`). An
+  D1: every field becomes `TEXT NOT NULL` (`packages/projections/src/modules/server/internal/worker-config.ts:62`). An
   actor keeps the whole instance as one JSON value (`packages/host-cloudflare/src/modules/actors/service.ts:34`). If kinds
   are open, a kind must also say how a thing's fields become its storage, and how that storage migrates.
 </Note>
@@ -346,11 +394,12 @@ local-first, Noir on Aztec.
   which.
 </Note>
 
-<Note kind="decision" decision="K5">
+<Note kind="decision" decision="K7">
   Is a chain a store? Settled by K3 item 2 and K5 seam 2: a chain is a host, and the store kind it runs is `chain`.
-  The contract commits per transaction, with one writer. "Pending until mined" belongs to the caller, so a server call
-  that sends a transaction is a workflow, not a commit that answers later. How an operation maps to a contract, and
-  everything else about chain storage, waits on K7. Aaron's doubt (18 November 2026, said in the canon session on PR #38: "it just doesn't seem like a
+  The contract commits per transaction, with one writer. A server call that sends a transaction is a workflow. K7 decided
+  that a chain store's own commit may answer late, and its caller
+  gets a submission (`simulated` to `confirmed`); how an operation maps to a contract, and the rest of chain storage, are
+  K7's and K25's ([chains-and-wallets](chains-and-wallets.mdx)). Aaron's doubt (18 November 2026, said in the canon session on PR #38: "it just doesn't seem like a
   thing that makes sense") is why the pending part moved to the caller.
 </Note>
 

@@ -4,8 +4,10 @@
   "revision": null,
   "model": {
     "refusals": {
+      "IdempotencyConflict": "AR-002",
       "NotAllowed": "AR-001",
       "SheetFull": "SH-001",
+      "SheetNotFound": "SH-901",
       "SheetNotOpen": "SH-900"
     },
     "values": {
@@ -153,8 +155,17 @@
             "code": "SH-001"
           }
         },
+        "notFound": {
+          "error": "SheetNotFound",
+          "exit": 4,
+          "code": "SH-901"
+        },
         "roles": [],
-        "hash": "009352307cbc683c"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "320a7ee2e246a009"
       }
     },
     "operations": {
@@ -165,6 +176,9 @@
         "verb": "close",
         "identifier": "close",
         "file": "blueprint/things/sheet/verbs/close.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Take a sheet down. Nobody can join it after this.",
         "payload": {
           "sheet": {
@@ -188,14 +202,23 @@
           "emits": "SheetClosed"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
-          "SheetNotOpen"
+          "SheetNotOpen",
+          "SheetNotFound"
         ],
         "allowed": [
           {
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "sheet": "sheet"
+        },
+        "notFound": {
+          "sheet": "SheetNotFound"
+        },
         "steps": {
           "record": {
             "name": "sheet.close.record",
@@ -208,7 +231,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "2302ec1b616a2ce6"
+        "hash": "cfb0e68868397eb4"
       },
       "sheet.get": {
         "kind": "read",
@@ -217,6 +240,9 @@
         "verb": "get",
         "identifier": "get",
         "file": "blueprint/things/sheet/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Read one sheet by its id: title, places, taken, state.",
         "payload": {
           "id": {
@@ -261,12 +287,14 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [],
         "allowed": [
           {
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -274,7 +302,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "9c5f49e2d899332c"
+        "hash": "09767e4f4ef5a8c9"
       },
       "sheet.join": {
         "kind": "operation",
@@ -283,6 +311,9 @@
         "verb": "join",
         "identifier": "join",
         "file": "blueprint/things/sheet/verbs/join.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Take places on a sheet, for yourself and anyone with you.",
         "payload": {
           "sheet": {
@@ -323,15 +354,25 @@
         "errors": [
           "SheetFull"
         ],
+        "breaks": [],
         "refusals": [
           "SheetFull",
-          "SheetNotOpen"
+          "SheetNotOpen",
+          "SheetNotFound",
+          "IdempotencyConflict"
         ],
         "allowed": [
           {
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "sheet": "sheet"
+        },
+        "notFound": {
+          "sheet": "SheetNotFound"
+        },
         "steps": {
           "load": {
             "name": "sheet.join.load",
@@ -348,7 +389,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "63b36f6626b629f2"
+        "hash": "aab95ecb61d4f88d"
       },
       "sheet.open": {
         "kind": "operation",
@@ -357,6 +398,9 @@
         "verb": "open",
         "identifier": "open",
         "file": "blueprint/things/sheet/verbs/open.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Put up a sheet with a number of places.",
         "payload": {
           "title": {
@@ -394,12 +438,17 @@
           "emits": "SheetOpened"
         },
         "errors": [],
-        "refusals": [],
+        "breaks": [],
+        "refusals": [
+          "IdempotencyConflict"
+        ],
         "allowed": [
           {
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
+        "mints": "sheet",
         "steps": {
           "insert": {
             "name": "sheet.open.insert",
@@ -412,7 +461,622 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "b38fe5a25ddac5ec"
+        "hash": "389a59321bbe525d"
+      }
+    },
+    "journeys": {
+      "journeys/a-closed-sheet-takes-no-one.ts": {
+        "name": "a closed sheet takes no one",
+        "file": "journeys/a-closed-sheet-takes-no-one.ts",
+        "cast": {
+          "visitor": {
+            "kind": "anyone"
+          }
+        },
+        "starts": "opened",
+        "steps": [
+          {
+            "title": "the visitor closes the sheet",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.close",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "emits",
+                "event": "SheetClosed",
+                "fields": {
+                  "sheet": {
+                    "ref": [
+                      "world",
+                      "sheet"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "sheet",
+                "id": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "state": "closed"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "sheet.close",
+                  "sheet.close.record"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "joining it is refused",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.join",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "people": "1"
+              },
+              "request": "late-1"
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "sheet.notFrom",
+                "fields": {
+                  "state": "closed"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "sheet.join.record"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "closing it again is refused",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.close",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "sheet.notFrom",
+                "fields": {
+                  "state": "closed"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "sheet.close.record"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "reading it back shows a closed sheet with nobody on it",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "0",
+                  "closed"
+                ]
+              }
+            ]
+          }
+        ],
+        "sourceHash": "2428f97a2fb9b5e7685f08410074b388bb2fa774bef47fe1e76e5bb7bbfc93cb"
+      },
+      "journeys/fill-a-sheet.ts": {
+        "name": "fill a sheet",
+        "file": "journeys/fill-a-sheet.ts",
+        "cast": {
+          "visitor": {
+            "kind": "anyone"
+          }
+        },
+        "starts": "opened",
+        "steps": [
+          {
+            "title": "the first join leaves one place and the sheet stays open",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.join",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "people": "1"
+              },
+              "request": "join-1"
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "1"
+              },
+              {
+                "kind": "emits",
+                "event": "PlaceTaken",
+                "fields": {
+                  "sheet": {
+                    "ref": [
+                      "world",
+                      "sheet"
+                    ]
+                  },
+                  "left": "1"
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "sheet",
+                "id": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "state": "open"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "sheet.join",
+                  "sheet.join.load",
+                  "sheet.join.record"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "two people are refused: only one place is left",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.join",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "people": "2"
+              },
+              "request": "join-2-people"
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "SheetFull",
+                "fields": {
+                  "left": "1"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "is-in",
+                "thing": "sheet",
+                "id": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "state": "open"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "sheet.join.load"
+                ],
+                "absent": [
+                  "sheet.join.record"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "the second join takes the last place and the sheet is full",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.join",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "people": "1"
+              },
+              "request": "join-3"
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "0"
+              },
+              {
+                "kind": "emits",
+                "event": "PlaceTaken",
+                "fields": {
+                  "sheet": {
+                    "ref": [
+                      "world",
+                      "sheet"
+                    ]
+                  },
+                  "left": "0"
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "sheet",
+                "id": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "state": "full"
+              }
+            ]
+          },
+          {
+            "title": "a third join is refused: a full sheet is not open",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.join",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "people": "1"
+              },
+              "request": "join-4"
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "sheet.notFrom",
+                "fields": {
+                  "state": "full"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "sheet.join.record"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "reading it back shows both places taken",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "2",
+                  "2",
+                  "full"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "4e6c6467f4eb8025e7500dde64a8212c88df5adc59c172d3fce534ae04380299"
+      },
+      "journeys/join-twice-with-one-request.ts": {
+        "name": "join twice with one request",
+        "file": "journeys/join-twice-with-one-request.ts",
+        "cast": {
+          "visitor": {
+            "kind": "anyone"
+          }
+        },
+        "starts": "opened",
+        "steps": [
+          {
+            "title": "the visitor joins",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.join",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "people": "1"
+              },
+              "request": "me-1"
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "1"
+              },
+              {
+                "kind": "emits",
+                "event": "PlaceTaken",
+                "fields": {
+                  "sheet": {
+                    "ref": [
+                      "world",
+                      "sheet"
+                    ]
+                  },
+                  "left": "1"
+                }
+              }
+            ]
+          },
+          {
+            "title": "the same request again gives the same answer and takes nothing",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.join",
+              "payload": {
+                "sheet": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                },
+                "people": "1"
+              },
+              "request": "me-1"
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "1"
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "sheet.join.record"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "only one place was taken",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "sheet"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "1",
+                  "open"
+                ]
+              }
+            ]
+          }
+        ],
+        "sourceHash": "454df45f527a3fa4d66e210c21aabc5bf44532e07f9cef04ca68548bf14c26ae"
+      },
+      "journeys/put-up-a-sheet.ts": {
+        "name": "put up a sheet",
+        "file": "journeys/put-up-a-sheet.ts",
+        "cast": {
+          "visitor": {
+            "kind": "anyone"
+          }
+        },
+        "starts": null,
+        "steps": [
+          {
+            "title": "a visitor puts up a sheet with 3 places",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.open",
+              "payload": {
+                "title": "Book club",
+                "places": "3"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^sht_",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "SheetOpened",
+                "fields": {
+                  "sheet": {
+                    "ref": [
+                      "last",
+                      "sheet"
+                    ]
+                  },
+                  "places": "3"
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "sheet",
+                "id": {
+                  "ref": [
+                    "last",
+                    "sheet"
+                  ]
+                },
+                "state": "open"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "sheet.open",
+                  "sheet.open.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "reading it back shows an open sheet with nobody on it",
+            "call": {
+              "actor": "visitor",
+              "operation": "sheet.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "sheet"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Book club",
+                  "3",
+                  "0",
+                  "open"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "770b0170b7ff7079eb3cc237b20bc6a7f813c98c13455db9f69cc2df658972a5"
+      }
+    },
+    "startingWorlds": {
+      "opened": {
+        "name": "opened",
+        "file": "blueprint/starting-worlds/opened.ts",
+        "from": null,
+        "cast": {
+          "visitor": {
+            "kind": "anyone"
+          }
+        },
+        "sourceHash": "3bf74b4ce3701851b64abadfd11c2dcbaf77cf8b7c50dba2307e6d4702f15253",
+        "makes": [
+          {
+            "actor": "visitor",
+            "operation": "sheet.open",
+            "payload": {
+              "title": "Saturday clean-up",
+              "places": "2"
+            }
+          }
+        ],
+        "gives": {
+          "sheet": {
+            "ref": [
+              "last",
+              "sheet"
+            ]
+          }
+        }
       }
     },
     "environments": {
@@ -435,32 +1099,464 @@
         "publish": {},
         "hash": "0f14705e03d3bc97"
       }
-    }
+    },
+    "alertRules": [
+      {
+        "id": "anomaly:AR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-001",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:SH-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/sheet/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:SH-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:SH-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "defect:sheet.close",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.close",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/close.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.get",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.join",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.join",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/join.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.open",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.open",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/open.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.close",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.close",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/close.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.get",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.join",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.join",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/join.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.open",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.open",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/open.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "verdict:a closed sheet takes no one:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "a closed sheet takes no one",
+          "severity": "page",
+          "owner": "journeys/a-closed-sheet-takes-no-one.ts"
+        }
+      },
+      {
+        "id": "verdict:fill a sheet:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "fill a sheet",
+          "severity": "page",
+          "owner": "journeys/fill-a-sheet.ts"
+        }
+      },
+      {
+        "id": "verdict:join twice with one request:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "join twice with one request",
+          "severity": "page",
+          "owner": "journeys/join-twice-with-one-request.ts"
+        }
+      },
+      {
+        "id": "verdict:put up a sheet:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "put up a sheet",
+          "severity": "page",
+          "owner": "journeys/put-up-a-sheet.ts"
+        }
+      }
+    ]
   },
   "dependsOnByOperation": {
     "sheet.close": {
-      "operation:sheet.close": "2302ec1b616a2ce6",
-      "thing:sheet": "009352307cbc683c"
+      "operation:sheet.close": "cfb0e68868397eb4",
+      "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.get": {
-      "operation:sheet.get": "9c5f49e2d899332c",
-      "thing:sheet": "009352307cbc683c"
+      "operation:sheet.get": "09767e4f4ef5a8c9",
+      "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.join": {
-      "operation:sheet.join": "63b36f6626b629f2",
-      "thing:sheet": "009352307cbc683c"
+      "operation:sheet.join": "aab95ecb61d4f88d",
+      "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.open": {
-      "operation:sheet.open": "b38fe5a25ddac5ec",
-      "thing:sheet": "009352307cbc683c"
+      "operation:sheet.open": "389a59321bbe525d",
+      "thing:sheet": "320a7ee2e246a009"
     }
   },
   "docs": {
-    "sheet/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet.close\n\nTake a sheet down. Nobody can join it after this.\n\n**Who may call:** anyone.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| sheet | sheet.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`close`: from open or full to closed, emitting SheetClosed.\n\n## Steps\n\n- `sheet.close.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SheetNotOpen | 70 | SH-900 | the sheet is in a state close can't start from; carries `state` |\n\n## How to call\n\n```sh\nsignup sheet close --sheet <sheet>\n```\n\nHTTP: `POST /sheet/close` with the payload as JSON. SDK: `Sdk.sheet.close(payload)`.\n",
-    "sheet/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet.get\n\nRead one sheet by its id: title, places, taken, state.\n\n**Who may call:** anyone.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | sheet.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| title | sheet.title |\n| places | sheet.places |\n| taken | sheet.taken |\n| state | text |\n\n## Refusals\n\n(none)\n\n## How to call\n\n```sh\nsignup sheet get --id <id>\n```\n\nHTTP: `POST /sheet/get` with the payload as JSON. SDK: `Sdk.sheet.get(payload)`.\n",
-    "sheet/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet\n\nA sign-up sheet with a fixed number of places.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| title | Title |\n| places | Count |\n| taken | Count |\n\n## Machine\n\nStates: open, full, closed. A move from the wrong state is refused SheetNotOpen (exit 70).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | open | SheetOpened |\n| join | open | open, full | PlaceTaken |\n| close | open, full | closed | SheetClosed |\n\n## Operations\n\n- [sheet.close](close.md): Take a sheet down. Nobody can join it after this.\n- [sheet.get](get.md): Read one sheet by its id: title, places, taken, state.\n- [sheet.join](join.md): Take places on a sheet, for yourself and anyone with you.\n- [sheet.open](open.md): Put up a sheet with a number of places.\n",
-    "sheet/join.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet.join\n\nTake places on a sheet, for yourself and anyone with you.\n\n**Who may call:** anyone.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| sheet | sheet.id |\n| people | Count |\n\n## Answer\n\n| field | value |\n|---|---|\n| left | Count |\n\n## Move\n\n`join`: from open to open or full, emitting PlaceTaken.\n\n## Steps\n\n- `sheet.join.load` (database)\n- `sheet.join.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SheetFull | 71 | SH-001 | declared in errors.ts, carrying left |\n| SheetNotOpen | 70 | SH-900 | the sheet is in a state join can't start from; carries `state` |\n\n## How to call\n\n```sh\nsignup sheet join --sheet <sheet> --people <people>\n```\n\nHTTP: `POST /sheet/join` with the payload as JSON. SDK: `Sdk.sheet.join(payload)`.\n",
-    "sheet/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet.open\n\nPut up a sheet with a number of places.\n\n**Who may call:** anyone.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| title | sheet.title |\n| places | sheet.places |\n\n## Answer\n\n| field | value |\n|---|---|\n| sheet | sheet.id |\n\n## Move\n\n`open`: from nothing (it creates) to open, emitting SheetOpened.\n\n## Steps\n\n- `sheet.open.insert` (database)\n\n## Refusals\n\n(none)\n\n## How to call\n\n```sh\nsignup sheet open --title <title> --places <places>\n```\n\nHTTP: `POST /sheet/open` with the payload as JSON. SDK: `Sdk.sheet.open(payload)`.\n"
+    "sheet/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet.close\n\nTake a sheet down. Nobody can join it after this.\n\n**Who may call:** anyone.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| sheet | sheet.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`close`: from open or full to closed, emitting SheetClosed.\n\n## Steps\n\n- `sheet.close.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SheetNotOpen | 70 | SH-900 | the sheet is in a state close can't start from; carries `state` |\n| SheetNotFound | 4 | SH-901 | nothing has the id in sheet; the handler never runs; carries `id` |\n\n## Worked examples\n\n### a closed sheet takes no one\n\nStarts from the world `opened`.\n\n- **the visitor closes the sheet.** `visitor` (anyone) calls and sends sheet the world's sheet, and is answered.\n- **closing it again is refused.** `visitor` (anyone) calls and sends sheet the world's sheet, and is refused with SheetNotOpen, SH-900, carrying state `closed`.\n\n## How to call\n\n```sh\nsignup sheet close --sheet <sheet>\n```\n\nHTTP: `POST /sheet/close` with the payload as JSON. SDK: `Sdk.sheet.close(payload)`.\n",
+    "sheet/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet.get\n\nRead one sheet by its id: title, places, taken, state.\n\n**Who may call:** anyone.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | sheet.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| title | sheet.title |\n| places | sheet.places |\n| taken | sheet.taken |\n| state | text |\n\n## Refusals\n\n(none)\n\n## Worked examples\n\n### a closed sheet takes no one\n\nStarts from the world `opened`.\n\n- **reading it back shows a closed sheet with nobody on it.** `visitor` (anyone) calls and sends id the world's sheet, and gets back [`0`, `closed`].\n\n### fill a sheet\n\nStarts from the world `opened`.\n\n- **reading it back shows both places taken.** `visitor` (anyone) calls and sends id the world's sheet, and gets back [`2`, `2`, `full`].\n\n### join twice with one request\n\nStarts from the world `opened`.\n\n- **only one place was taken.** `visitor` (anyone) calls and sends id the world's sheet, and gets back [`1`, `open`].\n\n### put up a sheet\n\nStarts from an empty world.\n\n- **reading it back shows an open sheet with nobody on it.** `visitor` (anyone) calls and sends id the last call's sheet, and gets back [`Book club`, `3`, `0`, `open`].\n\n## How to call\n\n```sh\nsignup sheet get --id <id>\n```\n\nHTTP: `POST /sheet/get` with the payload as JSON. SDK: `Sdk.sheet.get(payload)`.\n",
+    "sheet/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet\n\nA sign-up sheet with a fixed number of places.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| title | Title |\n| places | Count |\n| taken | Count |\n\n## Machine\n\nStates: open, full, closed. A move from the wrong state is refused SheetNotOpen (exit 70).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | open | SheetOpened |\n| join | open | open, full | PlaceTaken |\n| close | open, full | closed | SheetClosed |\n\n## Events\n\n- `PlaceTaken`: carries sheet (sheet.id), left (Count); emitted by the move join\n- `SheetClosed`: carries sheet (sheet.id); emitted by the move close\n- `SheetOpened`: carries sheet (sheet.id), places (Count); emitted by the move open\n\n## Operations\n\n- [sheet.close](close.md): Take a sheet down. Nobody can join it after this.\n- [sheet.get](get.md): Read one sheet by its id: title, places, taken, state.\n- [sheet.join](join.md): Take places on a sheet, for yourself and anyone with you.\n- [sheet.open](open.md): Put up a sheet with a number of places.\n",
+    "sheet/join.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet.join\n\nTake places on a sheet, for yourself and anyone with you.\n\n**Who may call:** anyone.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| sheet | sheet.id |\n| people | Count |\n\n## Answer\n\n| field | value |\n|---|---|\n| left | Count |\n\n## Move\n\n`join`: from open to open or full, emitting PlaceTaken.\n\n## Steps\n\n- `sheet.join.load` (database)\n- `sheet.join.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SheetFull | 71 | SH-001 | declared in errors.ts, carrying left |\n| SheetNotOpen | 70 | SH-900 | the sheet is in a state join can't start from; carries `state` |\n| SheetNotFound | 4 | SH-901 | nothing has the id in sheet; the handler never runs; carries `id` |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### a closed sheet takes no one\n\nStarts from the world `opened`.\n\n- **joining it is refused.** `visitor` (anyone) calls and sends sheet the world's sheet, people `1`, with the request key `late-1`, and is refused with SheetNotOpen, SH-900, carrying state `closed`.\n\n### fill a sheet\n\nStarts from the world `opened`.\n\n- **the first join leaves one place and the sheet stays open.** `visitor` (anyone) calls and sends sheet the world's sheet, people `1`, with the request key `join-1`, and gets back `1`.\n- **two people are refused: only one place is left.** `visitor` (anyone) calls and sends sheet the world's sheet, people `2`, with the request key `join-2-people`, and is refused with SheetFull, SH-001, carrying left `1`.\n- **the second join takes the last place and the sheet is full.** `visitor` (anyone) calls and sends sheet the world's sheet, people `1`, with the request key `join-3`, and gets back `0`.\n- **a third join is refused: a full sheet is not open.** `visitor` (anyone) calls and sends sheet the world's sheet, people `1`, with the request key `join-4`, and is refused with SheetNotOpen, SH-900, carrying state `full`.\n\n### join twice with one request\n\nStarts from the world `opened`.\n\n- **the visitor joins.** `visitor` (anyone) calls and sends sheet the world's sheet, people `1`, with the request key `me-1`, and gets back `1`.\n- **the same request again gives the same answer and takes nothing.** `visitor` (anyone) calls and sends sheet the world's sheet, people `1`, with the request key `me-1`, and gets back `1`.\n\n## How to call\n\n```sh\nsignup sheet join --sheet <sheet> --people <people>\n```\n\nHTTP: `POST /sheet/join` with the payload as JSON. SDK: `Sdk.sheet.join(payload)`.\n",
+    "sheet/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# sheet.open\n\nPut up a sheet with a number of places.\n\n**Who may call:** anyone.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| title | sheet.title |\n| places | sheet.places |\n\n## Answer\n\n| field | value |\n|---|---|\n| sheet | sheet.id |\n\n## Move\n\n`open`: from nothing (it creates) to open, emitting SheetOpened.\n\n## Steps\n\n- `sheet.open.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### put up a sheet\n\nStarts from an empty world.\n\n- **a visitor puts up a sheet with 3 places.** `visitor` (anyone) calls and sends title `Book club`, places `3`, and gets back an answer matching `^sht_`.\n\n## How to call\n\n```sh\nsignup sheet open --title <title> --places <places>\n```\n\nHTTP: `POST /sheet/open` with the payload as JSON. SDK: `Sdk.sheet.open(payload)`.\n"
   },
   "extensions": {
     "journeys": {
@@ -476,5 +1572,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "0fb9f336cb52309f507bf897222f4ae5ed1233ef9a885aadf72252fd5abe67e8"
+  "digest": "b67b4bac51395fd2414ff0939bc9a0f30a68b2fd3db2ab4c89a0c26edee96aad"
 }

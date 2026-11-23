@@ -1,0 +1,13 @@
+# M1.44 green at 9f83ee65 (built and run as 0b0ed4f8, before the evidence was amended in) (19 Nov 2026)
+
+## packages/projections handlers.test.ts: grant's two wait on M1.46, the three path and stub tests on M1.45
+     × lists the generated not-found refusal for a referenced id no role check reads, with its exit and code 2ms
+     × says the runtime mints a creating move's id and hands in what the payload references, and answers with the minted id 1ms
+     × enumerates allowance's eight paths: five allowed transitions and three refused moves, in the machine's order 1ms
+     × gives a thing with no machine no paths, and a creating move no refused path (the runtime never checks it) 0ms
+     × scaffolds one journey per path in blueprint/journeys/, then per role and per declared error, five of them exactly as their goldens 0ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  5 failed | 5 passed (10)
+
+## e2e/m1/19: the M1.44 tests
+      Tests  5 passed | 7 skipped (12)

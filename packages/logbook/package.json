@@ -1,6 +1,7 @@
 {
   "name": "@orthograph/logbook",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
@@ -9,12 +10,13 @@
     "#modules/*.js": "./src/modules/*.ts"
   },
   "dependencies": {
-    "effect": "4.1.1",
+    "effect": "4.1.4",
     "jose": "6.2.15",
     "wrangler": "4.156.1"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "5.20261101.1"
+    "@cloudflare/workers-types": "5.20261101.1",
+    "@orthograph/services": "workspace:*"
   },
   "files": [
     "dist",

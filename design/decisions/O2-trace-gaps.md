@@ -15,7 +15,7 @@ You never write span code. The declaration produces the spans:
 - **One span per declared step**, `<operation>.<step>`, tagged `step.kind`, at `service.ts:34`.
 - **Attributes come from the declaration.** Only public fields are written: `payload.*`, `answer.*` and
   `principal.person`. A field the declaration doesn't name is never written (`internal/attributes.ts`).
-- **Refusals end OK and defects end in error** (`internal/span.ts`). A refusal is tagged `refusal` and `refusal.log`.
+- **Refusals end OK and defects end in error** (Superseded by O4, 21 November 2026: a refusal's span exits successfully and is exported as OTLP UNSET, never ERROR; a defect is still ERROR) (`internal/span.ts`). A refusal is tagged `refusal` and `refusal.log`.
   Only a defect is red.
 
 ## Gap 1: the commit has no span
@@ -51,7 +51,8 @@ person types into a text field. That is where personal details turn up.
 No journey changes. `spend-within-allowance` still asserts `memo` on `AllowanceSpent`, because events keep the field.
 
 **Proved by** the attributes test (`internal/attributes.test.ts`) asserting that `payload.memo` is absent and that a
-traced text field is present, and by the built-in "leaks nothing" eval (S28) asserting no untraced text in any span.
+traced text field is present, and by the "leaks nothing" part of the answer-shape eval (S28, D3 #83) checking spans
+and logs for untraced text. `prove` reads the same declarations as the handler, so the text marker applies to both.
 
 ## Gap 3: refusals before the span leave no count
 
@@ -60,16 +61,23 @@ traced text field is present, and by the built-in "leaks nothing" eval (S28) ass
 like work. But it also means nobody can see that `spend` refused 400 strangers in an hour.
 
 **The fix.** Every call is counted as a metric, whether or not a span opened:
-- `forman.calls`, a counter, tagged `operation`, `outcome` (`answered`, `refused` or `defect`), `refusal` (the tag)
+- `ortho.calls`, a counter, tagged `operation`, `outcome` (`answered`, `refused` or `defect`), `refusal` (the tag)
   and `principal.kind`. It carries no payload values and no person.
-- `forman.call.duration`, a histogram per operation, for comparing against the declared budget
+- `ortho.call.duration`, a millisecond histogram per operation, for comparing against the declared budget
   (`budget: { p95: "150 millis" }`).
 
-Both go through Effect's `Metric` to OpenTelemetry, into the `<project>-<env>-metrics` dataset O1 reserved (O1 line
-356). Locally they go through the Collector, whose configuration gains a metrics pipeline.
+Both go through Effect's `Metric` to OpenTelemetry, into the `<project>-<env>-metrics` dataset O1 reserved. Axiom routes
+the signal using `x-axiom-metrics-dataset`. Locally the Collector writes `metrics.jsonl`.
+[Axiom's OTLP documentation](https://axiom.co/docs/send-data/opentelemetry)
 
-**Proved by** a world test that sends one bad payload and one stranger, then reads `forman.calls` from the Collector:
-two refusals and no spans.
+The wrapper measures one call across its retries, using the monotonic clock. The HTTP API and MCP can reject a payload
+before invoking the wrapper, so their decoders count those refusals. The HTTP API suppresses its automatic request
+span and keeps the caller's trace context for the operation span after access succeeds. `prove` accepts an empty trace
+for an independently predicted `NotAllowed` response when the journey requires no spans to be present. The Worker
+exports its request's metric deltas once, when its telemetry runtime closes.
+
+**Proved by** a world test that sends one bad payload and one stranger, then reads `ortho.calls` and
+`ortho.call.duration` from the Collector: two refusals, two duration observations, and no spans for either call.
 
 ## What to look for in a trace (for the docs page)
 
@@ -84,3 +92,12 @@ two refusals and no spans.
 ## Where it lands
 
 M1.18 (gap 1), M1.19 (gap 2) and M1.20 (gap 3), all in parallel, each one slice ending in its proof above.
+
+## Builder-edited checks, audited (lead, 18 November 2026)
+
+M1.19 and M1.20's builder also changed the evals (`packages/prove/src/modules/evals/{service.ts,internal/calls.ts,internal/secrets.ts}`, commits 5abbe67 and 8f57542) and the runner's generic span check (`prove/internal/report.ts`, 9cb4242). AGENTS.md doesn't allow that. A ✍️ author who wrote none of it audited each change against this record:
+
+- **`report.ts`** now accepts an empty trace only for a pre-handler `NotAllowed` that was predicted before the call (gap 3, M1.20).
+- **The secrets eval** treats untraced public text as hidden in spans and logs, but allowed in the journal (gap 2, M1.19).
+
+The author found no case that failed before and passes now, beyond what this record allows. Two corners stay open: a private field named `attempt`, `refusal` or `defect` is caught by value but not by name, and an operation with no declaration would skip `answerShape` (a compiled project can't have one). Verdict: accept as authored. A later author may add a test for the first corner. The lead also fixed the reviewer's P1 in 7a8cc38: untraced text was redacted only in `refusal.log`, and is now redacted for every logger, exporters included.

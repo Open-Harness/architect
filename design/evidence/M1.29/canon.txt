@@ -1,0 +1,4 @@
+$ node docs/canon/check.mjs
+# commit 3f762331 · 2026-11-19T07:34:51Z · exit 0 (expected 0) · 0.2s
+
+canon check passed: 12 of 28 pages written, every quote, reference and component resolves

@@ -49,7 +49,7 @@ stays small: its profile and its links. Everything else is mounted.
 | 3 · the vault | run a group's Safe; give hats; spend within a hat's budget alone; collect owner signatures above it | `@orthograph/organizations`, the `safe` and `hats` adapters, `@orthograph/budgets` (a Safe module), `@orthograph/agents` | auth, handles, wallets, chain-evm |
 | 4 · the club | join a members-only club on Aztec; spend privately within budget; decide big spends by private ballot | `@orthograph/chain-aztec`, `language-noir`, `@orthograph/ballots`, the budgets feature's Aztec choice | auth, handles, budgets |
 
-**v1.0 is the four stage gates on `main`, plus the release** (M7.01 to M7.04 and M7.06: the cloud pass, the packages
+**v1.0 is the four stage gates on `main`, plus the release** (superseded by K42, 23 November 2026: 1.0 is Capxul core on Orthograph, K43) (M7.01 to M7.04 and M7.06: the cloud pass, the packages
 on npm, the infra projection, and a deploy and destroy that leaves nothing behind).
 
 ## Stage 1: links
@@ -106,7 +106,7 @@ The app's `profile.create` answers `handles.events.HandleClaimed` through `on:` 
 `/claim` makes both calls in a row. This is the canon's first example: the same lesson as the tickets' `event.claim`
 (a refusal that depends on the data, idempotent by request), now in the app everything else grows from.
 
-**Needs:** M1 and M2 (the gate's slices), plus the stage slices ST1.01 to ST1.08 in `milestones.md`. Until
+**Needs:** M1 and M2 (the gate's slices), plus the stage slices ST1.01 to ST1.08 in `milestones.md`. (Superseded by G10, 20 November 2026.) Until
 M2.07, stage 1 signs in through auth copied from the starter, as acme does. M2 swaps that copy for the mount, and the
 handlers don't change.
 
@@ -315,15 +315,16 @@ React hooks are designed in `frame/projections.md:261-275`: `useSpend()`, `useAl
 pending states. They are a projection built on the SDK, replayed in a real browser and never in jsdom. No slice owned
 them. They come in three slices, each where a stage first needs it:
 
-1. **ST1.01.** The react projection over the SDK:
+1. **ST1.01.** The react projection over the SDK (superseded by K29, 21 November 2026: ST1.25, the web projection,
+   one UI SDK piece per operation):
    - one mutation hook per operation and one query hook per read;
    - declared refusals as classes in the hook's error;
    - `pending` while a call is in flight;
    - one `requestKey` per form open, kept across the hook's retries.
 
    It is replayed with `--through react` in headless Chromium.
-2. **ST1.06.** Hooks behind a signed-in session (`Via.session`). The links screens sign in and claim through them.
-3. **ST2.03.** Hooks for client operations and chain submissions: the submission lifecycle (`simulated`, `submitted`,
+2. **ST1.06.** (Superseded by K29, 21 November 2026: pieces, not hooks.) Hooks behind a signed-in session (`Via.session`). The links screens sign in and claim through them.
+3. **ST2.03.** (Superseded by K29, 21 November 2026: pieces, not hooks.) Hooks for client operations and chain submissions: the submission lifecycle (`simulated`, `submitted`,
    `included`, `confirmed`, `dropped`, `reverted`, `corrected`) as hook state, and the wallet's device half run in the
    browser.
 
@@ -389,6 +390,8 @@ By the recommendation Aaron let stand, the stages are the order:
 
 1. **After Gate M2 (stage 1),** stage 2 comes next.
 2. **Then stage 3,** which pulls in workflows from M3 and agents from M4.
+   (Superseded in part by K26, 20 November 2026: the on-chain slices of stages 2 and 3 are pulled forward, Aaron's
+   exception; their gates still run here.)
 3. **Then stage 4.**
 4. **Then the release.**
 
@@ -427,7 +430,7 @@ The docs canon thread owns `docs/canon/`. These are the changes this record asks
 ## Decided here
 
 1. One app, `links`, in `examples/links`, grows through four stages. Each passing stage is tagged `links/stage-<n>`.
-2. v1.0 is the four stage gates plus M7.01 to M7.04 and M7.06.
+2. v1.0 is the four stage gates plus M7.01 to M7.04 and M7.06. (Superseded by K42, 23 November 2026: 1.0 is Capxul core on Orthograph, K43.)
 3. The pieces:
    - `handles` and `budgets` are new features;
    - `ballots` is K7's governance contract as a feature;

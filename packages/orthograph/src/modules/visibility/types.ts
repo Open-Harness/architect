@@ -15,6 +15,8 @@ export interface PrivateTo {
 export type Visibility = "public" | "secret" | PrivateTo;
 
 export interface VisibilityApi {
+  /** Allow a public text value or field to appear in traces. Preserves its visibility and schema. */
+  readonly traced: <const X extends Value | Field>(x: X) => X;
   readonly visibility: {
     /**
      * Mark a value, or one field of a thing, as secret: `Blueprint.visibility.secret(Blueprint.text({ max: 128 }))`.
@@ -26,4 +28,12 @@ export interface VisibilityApi {
     /** Public again: the default, said out loud. */
     readonly public: <const X extends Value | Field>(x: X) => X;
   };
+  /**
+   * Mark a secret answer value as handed to its caller once: `answer: { token: Blueprint.issued(Token) }`, where `Token`
+   * is a secret value or a secret field. The answer of the call that issued it carries it, to that call's own caller, over
+   * HTTP, the SDK and the CLI; it never leaves in a refusal, a read, MCP, telemetry, the journal or a generated file.
+   * Gives back the same kind, so it goes wherever the original went. It is only a mark: the compiler refuses it on
+   * anything but a secret value in an operation's answer.
+   */
+  readonly issued: <const X extends Value | Field>(x: X) => X;
 }

@@ -4,6 +4,7 @@
   "revision": null,
   "model": {
     "refusals": {
+      "IdempotencyConflict": "AR-002",
       "InvitationNotPending": "IN-900",
       "NotAllowed": "AR-001",
       "OrganizationNotActive": "OR-900",
@@ -24,6 +25,9 @@
       "Secret": {
         "type": "text",
         "max": 512
+      },
+      "Way": {
+        "type": "schema"
       }
     },
     "things": {
@@ -65,7 +69,11 @@
         "events": {},
         "errors": {},
         "roles": [],
-        "hash": "6e46b72b0aa08b14"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "dec54cf75bd4acb9"
       },
       "invitation": {
         "name": "invitation",
@@ -188,7 +196,13 @@
         "roles": [
           "invitee"
         ],
-        "hash": "c480108780ac255d"
+        "roleRules": {
+          "invitee": "(invitation, principal) => invitation.email === principal.email"
+        },
+        "from": {
+          "kind": "app"
+        },
+        "hash": "7c1d13c393ddaa62"
       },
       "membership": {
         "name": "membership",
@@ -230,7 +244,13 @@
         "roles": [
           "holder"
         ],
-        "hash": "7c2dc564f0e86a98"
+        "roleRules": {
+          "holder": "(membership, principal) => membership.person === principal.person"
+        },
+        "from": {
+          "kind": "app"
+        },
+        "hash": "e6505be81a7030e4"
       },
       "organization": {
         "name": "organization",
@@ -300,7 +320,13 @@
         "roles": [
           "owner"
         ],
-        "hash": "0dbabb64b8897f35"
+        "roleRules": {
+          "owner": "(organization, principal) => organization.owner === principal.person"
+        },
+        "from": {
+          "kind": "app"
+        },
+        "hash": "24a71fadb70bce98"
       },
       "person": {
         "name": "person",
@@ -338,7 +364,11 @@
           }
         },
         "roles": [],
-        "hash": "1595aad527217150"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "ad771ebabdfe3e0e"
       },
       "session": {
         "name": "session",
@@ -371,7 +401,11 @@
           }
         },
         "roles": [],
-        "hash": "1fa5923e2d4a38d4"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "455311c2adae1097"
       },
       "system": {
         "name": "system",
@@ -391,7 +425,11 @@
         "events": {},
         "errors": {},
         "roles": [],
-        "hash": "f59c02fd744afb41"
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "357767c64efceced"
       }
     },
     "operations": {
@@ -402,6 +440,9 @@
         "verb": "create",
         "identifier": "create",
         "file": "blueprint/things/api-key/verbs/create.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Create an API key in an organisation. The key itself is shown once.",
         "payload": {
           "organization": {
@@ -433,11 +474,13 @@
               "max": 512
             },
             "named": "Secret",
-            "visibility": "secret"
+            "visibility": "secret",
+            "issued": true
           }
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -445,9 +488,17 @@
           {
             "kind": "role-of",
             "role": "organization.owner",
-            "path": "organization"
+            "path": "organization",
+            "via": [
+              "device",
+              "session"
+            ]
           }
         ],
+        "agentTool": false,
+        "refs": {
+          "organization": "organization"
+        },
         "steps": {
           "issue": {
             "name": "api-key.create.issue",
@@ -464,7 +515,7 @@
         "budget": {
           "p95Ms": 250
         },
-        "hash": "08aae6601d29ec9c"
+        "hash": "13b1d071bf6d24ea"
       },
       "invitation.accept": {
         "kind": "operation",
@@ -473,6 +524,9 @@
         "verb": "accept",
         "identifier": "accept",
         "file": "blueprint/things/invitation/verbs/accept.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Accept an invitation and become a member of its organisation.",
         "payload": {
           "invitation": {
@@ -510,6 +564,7 @@
           "emits": "InvitationAccepted"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "InvitationNotPending",
           "NotAllowed"
@@ -517,9 +572,18 @@
         "allowed": [
           {
             "kind": "role",
-            "role": "invitation.invitee"
+            "role": "invitation.invitee",
+            "via": [
+              "device",
+              "key",
+              "session"
+            ]
           }
         ],
+        "agentTool": false,
+        "refs": {
+          "invitation": "invitation"
+        },
         "steps": {
           "join": {
             "name": "invitation.accept.join",
@@ -532,7 +596,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "9b5d5f2a5e227711"
+        "hash": "70314ea959c43146"
       },
       "invitation.revoke": {
         "kind": "operation",
@@ -541,6 +605,9 @@
         "verb": "revoke",
         "identifier": "revoke",
         "file": "blueprint/things/invitation/verbs/revoke.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Withdraw an invitation that hasn't been accepted.",
         "payload": {
           "invitation": {
@@ -563,6 +630,7 @@
           "emits": "InvitationRevoked"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "InvitationNotPending",
           "NotAllowed"
@@ -574,6 +642,10 @@
             "path": "invitation.organization"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "invitation": "invitation"
+        },
         "steps": {
           "update": {
             "name": "invitation.revoke.update",
@@ -586,7 +658,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "273081eb20442e78"
+        "hash": "2e88e5bd83d2eed9"
       },
       "invitation.send": {
         "kind": "operation",
@@ -595,6 +667,9 @@
         "verb": "send",
         "identifier": "send",
         "file": "blueprint/things/invitation/verbs/send.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Invite someone to an organisation by email.",
         "payload": {
           "organization": {
@@ -630,6 +705,7 @@
           "emits": "InvitationSent"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -640,6 +716,11 @@
             "path": "organization"
           }
         ],
+        "agentTool": true,
+        "refs": {
+          "organization": "organization"
+        },
+        "mints": "invitation",
         "steps": {
           "insert": {
             "name": "invitation.send.insert",
@@ -652,7 +733,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "f760027d1cbbe846"
+        "hash": "fb40c7cb89f22921"
       },
       "membership.get": {
         "kind": "read",
@@ -661,6 +742,9 @@
         "verb": "get",
         "identifier": "get",
         "file": "blueprint/things/membership/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Read one membership by its id: organization, person, role.",
         "payload": {
           "id": {
@@ -696,6 +780,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -710,6 +795,7 @@
             "path": "membership.organization"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -717,7 +803,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "b2d66623a4335cca"
+        "hash": "e734960d35d8a981"
       },
       "organization.create": {
         "kind": "operation",
@@ -726,6 +812,9 @@
         "verb": "create",
         "identifier": "create",
         "file": "blueprint/things/organization/verbs/create.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Found an organisation. Whoever founds it owns it, and is its first member.",
         "payload": {
           "name": {
@@ -754,14 +843,18 @@
           "emits": "OrganizationCreated"
         },
         "errors": [],
+        "breaks": [],
         "refusals": [
-          "NotAllowed"
+          "NotAllowed",
+          "IdempotencyConflict"
         ],
         "allowed": [
           {
             "kind": "signed-in"
           }
         ],
+        "agentTool": true,
+        "mints": "organization",
         "steps": {
           "insert": {
             "name": "organization.create.insert",
@@ -778,7 +871,7 @@
         "budget": {
           "p95Ms": 250
         },
-        "hash": "909c664469fae961"
+        "hash": "44abc64a3e7dc160"
       },
       "organization.get": {
         "kind": "read",
@@ -787,6 +880,9 @@
         "verb": "get",
         "identifier": "get",
         "file": "blueprint/things/organization/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Read one organization by its id: name, owner, state.",
         "payload": {
           "id": {
@@ -821,6 +917,7 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -830,6 +927,7 @@
             "role": "organization.owner"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -837,7 +935,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "45802f5f1bd67a6d"
+        "hash": "684ffa1f086e7c63"
       },
       "person.sign-up": {
         "kind": "operation",
@@ -846,6 +944,9 @@
         "verb": "sign-up",
         "identifier": "signUp",
         "file": "blueprint/things/person/verbs/sign-up.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Sign up with an email address and a password.",
         "payload": {
           "email": {
@@ -884,6 +985,7 @@
         "errors": [
           "PersonEmailTaken"
         ],
+        "breaks": [],
         "refusals": [
           "PersonEmailTaken"
         ],
@@ -892,6 +994,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "steps": {
           "create": {
             "name": "person.sign-up.create",
@@ -904,7 +1007,7 @@
         "budget": {
           "p95Ms": 400
         },
-        "hash": "a07b2e3beea84684"
+        "hash": "e7172748550f49b1"
       },
       "session.show": {
         "kind": "operation",
@@ -913,6 +1016,9 @@
         "verb": "show",
         "identifier": "show",
         "file": "blueprint/things/session/verbs/show.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Who is signed in.",
         "payload": {},
         "answer": {
@@ -929,10 +1035,17 @@
               "max": 254
             },
             "ref": "person.email"
+          },
+          "via": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Way"
           }
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [
           "NotAllowed"
         ],
@@ -941,6 +1054,7 @@
             "kind": "signed-in"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -948,7 +1062,7 @@
         "budget": {
           "p95Ms": 100
         },
-        "hash": "d6972d746c66f735"
+        "hash": "f6abef87ce0c498a"
       },
       "session.sign-in": {
         "kind": "operation",
@@ -957,6 +1071,9 @@
         "verb": "sign-in",
         "identifier": "signIn",
         "file": "blueprint/things/session/verbs/sign-in.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Sign in with email and password. The token is the bearer for every later call.",
         "payload": {
           "email": {
@@ -982,7 +1099,8 @@
               "prefix": "ses"
             },
             "ref": "session.id",
-            "visibility": "secret"
+            "visibility": "secret",
+            "issued": true
           },
           "token": {
             "value": {
@@ -990,13 +1108,15 @@
               "max": 512
             },
             "named": "Secret",
-            "visibility": "secret"
+            "visibility": "secret",
+            "issued": true
           }
         },
         "move": null,
         "errors": [
           "SessionCredentialsWrong"
         ],
+        "breaks": [],
         "refusals": [
           "SessionCredentialsWrong"
         ],
@@ -1005,6 +1125,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "steps": {
           "verify": {
             "name": "session.sign-in.verify",
@@ -1017,7 +1138,7 @@
         "budget": {
           "p95Ms": 400
         },
-        "hash": "631917ddeff4685a"
+        "hash": "13e27d0e3a08e66b"
       },
       "system.health": {
         "kind": "operation",
@@ -1026,6 +1147,9 @@
         "verb": "health",
         "identifier": "health",
         "file": "blueprint/things/system/verbs/health.ts",
+        "from": {
+          "kind": "app"
+        },
         "description": "Is the application up?",
         "payload": {},
         "answer": {
@@ -1038,12 +1162,14 @@
         },
         "move": null,
         "errors": [],
+        "breaks": [],
         "refusals": [],
         "allowed": [
           {
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -1051,7 +1177,1181 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "354821b9c37665dc"
+        "hash": "d97534a72031965e"
+      }
+    },
+    "journeys": {
+      "journeys/an-invitation-is-used-once.ts": {
+        "name": "an invitation is used once",
+        "file": "journeys/an-invitation-is-used-once.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "organization.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "invited",
+        "steps": [
+          {
+            "title": "olga accepts the invitation ada sent her",
+            "call": {
+              "actor": "olga",
+              "operation": "invitation.accept",
+              "payload": {
+                "invitation": {
+                  "ref": [
+                    "world",
+                    "invitation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                }
+              },
+              {
+                "kind": "expect",
+                "match": "^mem_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "InvitationAccepted",
+                "fields": {
+                  "invitation": {
+                    "ref": [
+                      "world",
+                      "invitation"
+                    ]
+                  },
+                  "membership": {
+                    "ref": [
+                      "last",
+                      "membership"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "invitation",
+                "id": {
+                  "ref": [
+                    "world",
+                    "invitation"
+                  ]
+                },
+                "state": "accepted"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "invitation.accept",
+                  "invitation.accept.join"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "accepting it again is refused",
+            "call": {
+              "actor": "olga",
+              "operation": "invitation.accept",
+              "payload": {
+                "invitation": {
+                  "ref": [
+                    "world",
+                    "invitation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "invitation.notFrom",
+                "fields": {
+                  "state": "accepted"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "is-in",
+                "thing": "invitation",
+                "id": {
+                  "ref": [
+                    "world",
+                    "invitation"
+                  ]
+                },
+                "state": "accepted"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "invitation.accept.join"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "ada can't revoke an invitation that has been accepted",
+            "call": {
+              "actor": "ada",
+              "operation": "invitation.revoke",
+              "payload": {
+                "invitation": {
+                  "ref": [
+                    "world",
+                    "invitation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "invitation.notFrom",
+                "fields": {
+                  "state": "accepted"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "invitation.revoke.update"
+                ]
+              }
+            ]
+          }
+        ],
+        "sourceHash": "9e88e14681fb4c9b0feedcffe750b2b1023275bdb5074d165162516b901e0b74"
+      },
+      "journeys/an-owner-makes-an-api-key.ts": {
+        "name": "an owner makes an api key",
+        "file": "journeys/an-owner-makes-an-api-key.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "organization.owner"
+          },
+          "bob": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "founded",
+        "steps": [
+          {
+            "title": "bob can't make a key in ada's organisation",
+            "call": {
+              "actor": "bob",
+              "operation": "api-key.create",
+              "payload": {
+                "organization": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                },
+                "name": "bob's key"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "api-key.create",
+                  "api-key.create.issue",
+                  "api-key.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "ada makes a key; the secret is shown once",
+            "call": {
+              "actor": "ada",
+              "operation": "api-key.create",
+              "payload": {
+                "organization": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                },
+                "name": "ci"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^key_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "expect",
+                "match": "^.+$",
+                "flags": ""
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "api-key.create",
+                  "api-key.create.issue",
+                  "api-key.create.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "bob founds an organisation of his own",
+            "call": {
+              "actor": "bob",
+              "operation": "organization.create",
+              "payload": {
+                "name": "Bob Co"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^org_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "OrganizationCreated",
+                "fields": {
+                  "organization": {
+                    "ref": [
+                      "last",
+                      "organization"
+                    ]
+                  },
+                  "owner": {
+                    "ref": [
+                      "cast",
+                      "bob",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "organization",
+                "id": {
+                  "ref": [
+                    "last",
+                    "organization"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "organization.create",
+                  "organization.create.insert",
+                  "organization.create.owner"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "ada can't read bob's organisation",
+            "call": {
+              "actor": "ada",
+              "operation": "organization.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "organization"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              }
+            ]
+          },
+          {
+            "title": "bob makes a key in his own organisation",
+            "call": {
+              "actor": "bob",
+              "operation": "api-key.create",
+              "payload": {
+                "organization": {
+                  "ref": [
+                    "last",
+                    "organization"
+                  ]
+                },
+                "name": "bob's own key"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^key_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "expect",
+                "match": "^.+$",
+                "flags": ""
+              }
+            ]
+          }
+        ],
+        "sourceHash": "6e1c7c375d8388c9ed7a6fc2e41a53724a4856a49e3fe802c526c3f555758f08"
+      },
+      "journeys/health-is-up.ts": {
+        "name": "health is up",
+        "file": "journeys/health-is-up.ts",
+        "cast": {
+          "visitor": {
+            "kind": "anyone"
+          }
+        },
+        "starts": null,
+        "steps": [
+          {
+            "title": "anyone can ask if the application is up",
+            "call": {
+              "actor": "visitor",
+              "operation": "system.health",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "ok"
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "system.health"
+                ],
+                "absent": []
+              }
+            ]
+          }
+        ],
+        "sourceHash": "75ae85ee5a4bfcfccba6436d8ca16a29a741227a90db4ed87c9c0d1bec330b03"
+      },
+      "journeys/invite-and-accept.ts": {
+        "name": "invite and accept",
+        "file": "journeys/invite-and-accept.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "organization.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          },
+          "bob": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "founded",
+        "steps": [
+          {
+            "title": "ada sees who she is signed in as",
+            "call": {
+              "actor": "ada",
+              "operation": "session.show",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                }
+              },
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "email"
+                  ]
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "session.show"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "ada reads her organisation",
+            "call": {
+              "actor": "ada",
+              "operation": "organization.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "Acme Demo"
+              },
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                }
+              },
+              {
+                "kind": "expect-equal",
+                "value": "active"
+              },
+              {
+                "kind": "is-in",
+                "thing": "organization",
+                "id": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "bob can't invite anyone to it",
+            "call": {
+              "actor": "bob",
+              "operation": "invitation.send",
+              "payload": {
+                "organization": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                },
+                "email": {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "email"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "invitation.send",
+                  "invitation.send.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "ada invites olga by her email",
+            "call": {
+              "actor": "ada",
+              "operation": "invitation.send",
+              "payload": {
+                "organization": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                },
+                "email": {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "email"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^inv_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "InvitationSent",
+                "fields": {
+                  "invitation": {
+                    "ref": [
+                      "last",
+                      "invitation"
+                    ]
+                  },
+                  "email": {
+                    "ref": [
+                      "cast",
+                      "olga",
+                      "email"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "invitation",
+                "id": {
+                  "ref": [
+                    "last",
+                    "invitation"
+                  ]
+                },
+                "state": "pending"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "invitation.send",
+                  "invitation.send.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "bob can't accept olga's invitation",
+            "call": {
+              "actor": "bob",
+              "operation": "invitation.accept",
+              "payload": {
+                "invitation": {
+                  "ref": [
+                    "last",
+                    "invitation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "is-in",
+                "thing": "invitation",
+                "id": {
+                  "ref": [
+                    "last",
+                    "invitation"
+                  ]
+                },
+                "state": "pending"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "invitation.accept",
+                  "invitation.accept.join"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "olga accepts and joins ada's organisation",
+            "call": {
+              "actor": "olga",
+              "operation": "invitation.accept",
+              "payload": {
+                "invitation": {
+                  "ref": [
+                    "last",
+                    "invitation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                }
+              },
+              {
+                "kind": "expect",
+                "match": "^mem_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "InvitationAccepted",
+                "fields": {
+                  "membership": {
+                    "ref": [
+                      "last",
+                      "membership"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "invitation.accept",
+                  "invitation.accept.join"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "bob can't read olga's membership",
+            "call": {
+              "actor": "bob",
+              "operation": "membership.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "membership"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              }
+            ]
+          },
+          {
+            "title": "olga reads her membership: she is a member, not an owner",
+            "call": {
+              "actor": "olga",
+              "operation": "membership.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "membership"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                }
+              },
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "person"
+                  ]
+                }
+              },
+              {
+                "kind": "expect-equal",
+                "value": "member"
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "ada sends a second invitation",
+            "call": {
+              "actor": "ada",
+              "operation": "invitation.send",
+              "payload": {
+                "organization": {
+                  "ref": [
+                    "world",
+                    "organization"
+                  ]
+                },
+                "email": {
+                  "ref": [
+                    "cast",
+                    "bob",
+                    "email"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^inv_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "InvitationSent",
+                "fields": {
+                  "invitation": {
+                    "ref": [
+                      "last",
+                      "invitation"
+                    ]
+                  },
+                  "email": {
+                    "ref": [
+                      "cast",
+                      "bob",
+                      "email"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "invitation",
+                "id": {
+                  "ref": [
+                    "last",
+                    "invitation"
+                  ]
+                },
+                "state": "pending"
+              }
+            ]
+          },
+          {
+            "title": "olga, a member but not the owner, can't revoke it",
+            "call": {
+              "actor": "olga",
+              "operation": "invitation.revoke",
+              "payload": {
+                "invitation": {
+                  "ref": [
+                    "last",
+                    "invitation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "invitation.revoke",
+                  "invitation.revoke.update"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "ada revokes it",
+            "call": {
+              "actor": "ada",
+              "operation": "invitation.revoke",
+              "payload": {
+                "invitation": {
+                  "ref": [
+                    "last",
+                    "invitation"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "emits",
+                "event": "InvitationRevoked",
+                "fields": {}
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "invitation.revoke",
+                  "invitation.revoke.update"
+                ],
+                "absent": []
+              }
+            ]
+          }
+        ],
+        "sourceHash": "cf697a8e531f10316e6513348e93486c809fb842fca372774d580eeef91fbb4a"
+      },
+      "journeys/sign-up-and-sign-in.ts": {
+        "name": "sign up and sign in",
+        "file": "journeys/sign-up-and-sign-in.ts",
+        "cast": {
+          "newcomer": {
+            "kind": "anyone"
+          }
+        },
+        "starts": null,
+        "steps": [
+          {
+            "title": "before signing up the newcomer is nobody",
+            "call": {
+              "actor": "newcomer",
+              "operation": "session.show",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "session.show"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "the newcomer signs up",
+            "call": {
+              "actor": "newcomer",
+              "operation": "person.sign-up",
+              "payload": {
+                "email": {
+                  "ref": [
+                    "cast",
+                    "newcomer",
+                    "email"
+                  ]
+                },
+                "password": {
+                  "ref": [
+                    "cast",
+                    "newcomer",
+                    "password"
+                  ]
+                },
+                "name": "Newcomer"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^per_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "person.sign-up",
+                  "person.sign-up.create"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "signing up again with the same email is refused",
+            "call": {
+              "actor": "newcomer",
+              "operation": "person.sign-up",
+              "payload": {
+                "email": {
+                  "ref": [
+                    "cast",
+                    "newcomer",
+                    "email"
+                  ]
+                },
+                "password": {
+                  "ref": [
+                    "cast",
+                    "newcomer",
+                    "password"
+                  ]
+                },
+                "name": "Newcomer again"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "PersonEmailTaken",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "person.sign-up"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "a wrong password is refused",
+            "call": {
+              "actor": "newcomer",
+              "operation": "session.sign-in",
+              "payload": {
+                "email": {
+                  "ref": [
+                    "cast",
+                    "newcomer",
+                    "email"
+                  ]
+                },
+                "password": {
+                  "redacted": true
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "SessionCredentialsWrong",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "session.sign-in"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "the right password answers a session and a token",
+            "call": {
+              "actor": "newcomer",
+              "operation": "session.sign-in",
+              "payload": {
+                "email": {
+                  "ref": [
+                    "cast",
+                    "newcomer",
+                    "email"
+                  ]
+                },
+                "password": {
+                  "ref": [
+                    "cast",
+                    "newcomer",
+                    "password"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^ses_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "expect",
+                "match": "^.+$",
+                "flags": ""
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "session.sign-in",
+                  "session.sign-in.verify"
+                ],
+                "absent": []
+              }
+            ]
+          }
+        ],
+        "sourceHash": "59cd73d467f68f7747f707b3f32e2fe02e5807444a42aef338d5bfa697e7cd87"
+      }
+    },
+    "startingWorlds": {
+      "founded": {
+        "name": "founded",
+        "file": "blueprint/starting-worlds/founded.ts",
+        "from": null,
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "organization.owner"
+          }
+        },
+        "sourceHash": "7fc64f2291c5db5ba4755646c988e0646866c96633d7190068131b17ecb59278",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "organization.create",
+            "payload": {
+              "name": "Acme Demo"
+            }
+          }
+        ],
+        "gives": {
+          "organization": {
+            "ref": [
+              "last",
+              "organization"
+            ]
+          }
+        }
+      },
+      "invited": {
+        "name": "invited",
+        "file": "blueprint/starting-worlds/invited.ts",
+        "from": "founded",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "organization.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          }
+        },
+        "sourceHash": "496b865f4b984f114c22472960e4d221dd1fa428b97f46d74da7e35a3e5487fa",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "invitation.send",
+            "payload": {
+              "organization": {
+                "ref": [
+                  "world",
+                  "organization"
+                ]
+              },
+              "email": {
+                "ref": [
+                  "cast",
+                  "olga",
+                  "email"
+                ]
+              }
+            }
+          }
+        ],
+        "gives": {
+          "organization": {
+            "ref": [
+              "world",
+              "organization"
+            ]
+          },
+          "invitation": {
+            "ref": [
+              "last",
+              "invitation"
+            ]
+          }
+        }
       }
     },
     "environments": {
@@ -1161,87 +2461,1284 @@
         "publish": {},
         "hash": "e264584f19862db6"
       }
-    }
+    },
+    "alertRules": [
+      {
+        "id": "anomaly:AR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-001",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:IN-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "IN-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:OR-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "OR-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:PE-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "PE-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/person/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:SE-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SE-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/session/errors.ts"
+        }
+      },
+      {
+        "id": "defect:api-key.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "api-key.create",
+          "severity": "page",
+          "owner": "blueprint/things/api-key/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:invitation.accept",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.accept",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/accept.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:invitation.revoke",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.revoke",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/revoke.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:invitation.send",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.send",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/send.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:membership.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "membership.get",
+          "severity": "page",
+          "owner": "blueprint/things/membership/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:organization.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "organization.create",
+          "severity": "page",
+          "owner": "blueprint/things/organization/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:organization.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "organization.get",
+          "severity": "page",
+          "owner": "blueprint/things/organization/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:person.sign-up",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "person.sign-up",
+          "severity": "page",
+          "owner": "blueprint/things/person/verbs/sign-up.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:session.show",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "session.show",
+          "severity": "page",
+          "owner": "blueprint/things/session/verbs/show.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:session.sign-in",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "session.sign-in",
+          "severity": "page",
+          "owner": "blueprint/things/session/verbs/sign-in.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:system.health",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "system.health",
+          "severity": "page",
+          "owner": "blueprint/things/system/verbs/health.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:api-key.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "api-key.create",
+          "severity": "page",
+          "owner": "blueprint/things/api-key/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 250,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:invitation.accept",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.accept",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/accept.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:invitation.revoke",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.revoke",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/revoke.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:invitation.send",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "invitation.send",
+          "severity": "page",
+          "owner": "blueprint/things/invitation/verbs/send.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:membership.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "membership.get",
+          "severity": "page",
+          "owner": "blueprint/things/membership/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:organization.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "organization.create",
+          "severity": "page",
+          "owner": "blueprint/things/organization/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 250,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:organization.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "organization.get",
+          "severity": "page",
+          "owner": "blueprint/things/organization/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:person.sign-up",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "person.sign-up",
+          "severity": "page",
+          "owner": "blueprint/things/person/verbs/sign-up.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 400,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:session.show",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "session.show",
+          "severity": "page",
+          "owner": "blueprint/things/session/verbs/show.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 100,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:session.sign-in",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "session.sign-in",
+          "severity": "page",
+          "owner": "blueprint/things/session/verbs/sign-in.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 400,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:system.health",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "system.health",
+          "severity": "page",
+          "owner": "blueprint/things/system/verbs/health.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "verdict:an invitation is used once:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "an invitation is used once",
+          "severity": "page",
+          "owner": "journeys/an-invitation-is-used-once.ts"
+        }
+      },
+      {
+        "id": "verdict:an invitation is used once:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "an invitation is used once",
+          "severity": "page",
+          "owner": "journeys/an-invitation-is-used-once.ts"
+        }
+      },
+      {
+        "id": "verdict:an invitation is used once:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "an invitation is used once",
+          "severity": "page",
+          "owner": "journeys/an-invitation-is-used-once.ts"
+        }
+      },
+      {
+        "id": "verdict:an invitation is used once:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "an invitation is used once",
+          "severity": "page",
+          "owner": "journeys/an-invitation-is-used-once.ts"
+        }
+      },
+      {
+        "id": "verdict:an owner makes an api key:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "an owner makes an api key",
+          "severity": "page",
+          "owner": "journeys/an-owner-makes-an-api-key.ts"
+        }
+      },
+      {
+        "id": "verdict:an owner makes an api key:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "an owner makes an api key",
+          "severity": "page",
+          "owner": "journeys/an-owner-makes-an-api-key.ts"
+        }
+      },
+      {
+        "id": "verdict:an owner makes an api key:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "an owner makes an api key",
+          "severity": "page",
+          "owner": "journeys/an-owner-makes-an-api-key.ts"
+        }
+      },
+      {
+        "id": "verdict:an owner makes an api key:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "an owner makes an api key",
+          "severity": "page",
+          "owner": "journeys/an-owner-makes-an-api-key.ts"
+        }
+      },
+      {
+        "id": "verdict:health is up:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "health is up",
+          "severity": "page",
+          "owner": "journeys/health-is-up.ts"
+        }
+      },
+      {
+        "id": "verdict:health is up:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "health is up",
+          "severity": "page",
+          "owner": "journeys/health-is-up.ts"
+        }
+      },
+      {
+        "id": "verdict:health is up:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "health is up",
+          "severity": "page",
+          "owner": "journeys/health-is-up.ts"
+        }
+      },
+      {
+        "id": "verdict:health is up:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "health is up",
+          "severity": "page",
+          "owner": "journeys/health-is-up.ts"
+        }
+      },
+      {
+        "id": "verdict:invite and accept:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "invite and accept",
+          "severity": "page",
+          "owner": "journeys/invite-and-accept.ts"
+        }
+      },
+      {
+        "id": "verdict:invite and accept:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "invite and accept",
+          "severity": "page",
+          "owner": "journeys/invite-and-accept.ts"
+        }
+      },
+      {
+        "id": "verdict:invite and accept:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "invite and accept",
+          "severity": "page",
+          "owner": "journeys/invite-and-accept.ts"
+        }
+      },
+      {
+        "id": "verdict:invite and accept:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "invite and accept",
+          "severity": "page",
+          "owner": "journeys/invite-and-accept.ts"
+        }
+      },
+      {
+        "id": "verdict:sign up and sign in:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "sign up and sign in",
+          "severity": "page",
+          "owner": "journeys/sign-up-and-sign-in.ts"
+        }
+      },
+      {
+        "id": "verdict:sign up and sign in:production",
+        "kind": "verdict",
+        "labels": {
+          "environment": "production",
+          "journey": "sign up and sign in",
+          "severity": "page",
+          "owner": "journeys/sign-up-and-sign-in.ts"
+        }
+      },
+      {
+        "id": "verdict:sign up and sign in:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "sign up and sign in",
+          "severity": "page",
+          "owner": "journeys/sign-up-and-sign-in.ts"
+        }
+      },
+      {
+        "id": "verdict:sign up and sign in:test",
+        "kind": "verdict",
+        "labels": {
+          "environment": "test",
+          "journey": "sign up and sign in",
+          "severity": "page",
+          "owner": "journeys/sign-up-and-sign-in.ts"
+        }
+      }
+    ]
   },
   "dependsOnByOperation": {
     "api-key.create": {
-      "operation:api-key.create": "08aae6601d29ec9c",
-      "thing:api-key": "6e46b72b0aa08b14",
-      "thing:organization": "0dbabb64b8897f35",
-      "thing:person": "1595aad527217150"
+      "operation:api-key.create": "13b1d071bf6d24ea",
+      "thing:api-key": "dec54cf75bd4acb9",
+      "thing:organization": "24a71fadb70bce98",
+      "thing:person": "ad771ebabdfe3e0e"
     },
     "invitation.accept": {
-      "operation:invitation.accept": "9b5d5f2a5e227711",
-      "thing:invitation": "c480108780ac255d",
-      "thing:membership": "7c2dc564f0e86a98",
-      "thing:organization": "0dbabb64b8897f35",
-      "thing:person": "1595aad527217150"
+      "operation:invitation.accept": "70314ea959c43146",
+      "thing:invitation": "7c1d13c393ddaa62",
+      "thing:membership": "e6505be81a7030e4",
+      "thing:organization": "24a71fadb70bce98",
+      "thing:person": "ad771ebabdfe3e0e"
     },
     "invitation.revoke": {
-      "operation:invitation.revoke": "273081eb20442e78",
-      "thing:invitation": "c480108780ac255d",
-      "thing:organization": "0dbabb64b8897f35",
-      "thing:person": "1595aad527217150"
+      "operation:invitation.revoke": "2e88e5bd83d2eed9",
+      "thing:invitation": "7c1d13c393ddaa62",
+      "thing:organization": "24a71fadb70bce98",
+      "thing:person": "ad771ebabdfe3e0e"
     },
     "invitation.send": {
-      "operation:invitation.send": "f760027d1cbbe846",
-      "thing:invitation": "c480108780ac255d",
-      "thing:organization": "0dbabb64b8897f35",
-      "thing:person": "1595aad527217150"
+      "operation:invitation.send": "fb40c7cb89f22921",
+      "thing:invitation": "7c1d13c393ddaa62",
+      "thing:organization": "24a71fadb70bce98",
+      "thing:person": "ad771ebabdfe3e0e"
     },
     "membership.get": {
-      "operation:membership.get": "b2d66623a4335cca",
-      "thing:membership": "7c2dc564f0e86a98",
-      "thing:organization": "0dbabb64b8897f35",
-      "thing:person": "1595aad527217150"
+      "operation:membership.get": "e734960d35d8a981",
+      "thing:membership": "e6505be81a7030e4",
+      "thing:organization": "24a71fadb70bce98",
+      "thing:person": "ad771ebabdfe3e0e"
     },
     "organization.create": {
-      "operation:organization.create": "909c664469fae961",
-      "thing:organization": "0dbabb64b8897f35",
-      "thing:person": "1595aad527217150"
+      "operation:organization.create": "44abc64a3e7dc160",
+      "thing:organization": "24a71fadb70bce98",
+      "thing:person": "ad771ebabdfe3e0e"
     },
     "organization.get": {
-      "operation:organization.get": "45802f5f1bd67a6d",
-      "thing:organization": "0dbabb64b8897f35",
-      "thing:person": "1595aad527217150"
+      "operation:organization.get": "684ffa1f086e7c63",
+      "thing:organization": "24a71fadb70bce98",
+      "thing:person": "ad771ebabdfe3e0e"
     },
     "person.sign-up": {
-      "operation:person.sign-up": "a07b2e3beea84684",
-      "thing:person": "1595aad527217150"
+      "operation:person.sign-up": "e7172748550f49b1",
+      "thing:person": "ad771ebabdfe3e0e"
     },
     "session.show": {
-      "operation:session.show": "d6972d746c66f735",
-      "thing:person": "1595aad527217150",
-      "thing:session": "1fa5923e2d4a38d4"
+      "operation:session.show": "f6abef87ce0c498a",
+      "thing:person": "ad771ebabdfe3e0e",
+      "thing:session": "455311c2adae1097"
     },
     "session.sign-in": {
-      "operation:session.sign-in": "631917ddeff4685a",
-      "thing:person": "1595aad527217150",
-      "thing:session": "1fa5923e2d4a38d4"
+      "operation:session.sign-in": "13e27d0e3a08e66b",
+      "thing:person": "ad771ebabdfe3e0e",
+      "thing:session": "455311c2adae1097"
     },
     "system.health": {
-      "operation:system.health": "354821b9c37665dc",
-      "thing:system": "f59c02fd744afb41"
+      "operation:system.health": "d97534a72031965e",
+      "thing:system": "357767c64efceced"
     }
   },
   "docs": {
-    "api-key/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# api-key.create\n\nCreate an API key in an organisation. The key itself is shown once.\n\n**Who may call:** the owner of its organization.\n\n**Budget:** p95 250ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| organization | api-key.organization |\n| name | api-key.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| apiKey | api-key.id |\n| key | Secret (secret) |\n\n## Steps\n\n- `api-key.create.issue` (database)\n- `api-key.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization; the handler never runs |\n\n## How to call\n\n```sh\nstarter api-key create --organization <organization> --name <name>\n```\n\nHTTP: `POST /api-key/create` with the payload as JSON. SDK: `Sdk.api-key.create(payload)`.\n",
+    "api-key/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# api-key.create\n\nCreate an API key in an organisation. The key itself is shown once.\n\n**Who may call:** the owner of its organization by device or session.\n\n**Budget:** p95 250ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| organization | api-key.organization |\n| name | api-key.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| apiKey | api-key.id |\n| key | Secret (secret) |\n\n## Steps\n\n- `api-key.create.issue` (database)\n- `api-key.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization by device or session; the handler never runs |\n\n## Worked examples\n\n### an owner makes an api key\n\nStarts from the world `founded`.\n\n- **bob can't make a key in ada's organisation.** `bob` (signed in) calls and sends organization the world's organization, name `bob's key`, and is refused with NotAllowed, AR-001.\n- **ada makes a key; the secret is shown once.** `ada` (role organization.owner) calls and sends organization the world's organization, name `ci`, and gets back an answer matching `^key_[0-9a-z]+$` and gets back an answer matching `^.+$`.\n- **bob makes a key in his own organisation.** `bob` (signed in) calls and sends organization the last call's organization, name `bob's own key`, and gets back an answer matching `^key_[0-9a-z]+$` and gets back an answer matching `^.+$`.\n\n## How to call\n\n```sh\nstarter api-key create --organization <organization> --name <name>\n```\n\nHTTP: `POST /api-key/create` with the payload as JSON. SDK: `Sdk.api-key.create(payload)`.\n",
     "api-key/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# api-key\n\nA key an agent or a service calls with, on behalf of whoever created it. Better Auth keeps its hash.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| organization | organization.id |\n| name | text |\n| createdBy | person.id |\n\n## Operations\n\n- [api-key.create](create.md): Create an API key in an organisation. The key itself is shown once.\n",
-    "invitation/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.accept\n\nAccept an invitation and become a member of its organisation.\n\n**Who may call:** the invitee of the invitation.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| organization | invitation.organization |\n| membership | membership.id |\n\n## Move\n\n`accept`: from pending to accepted, emitting InvitationAccepted.\n\n## Steps\n\n- `invitation.accept.join` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InvitationNotPending | 40 | IN-900 | the invitation is in a state accept can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the invitee of the invitation; the handler never runs |\n\n## How to call\n\n```sh\nstarter invitation accept --invitation <invitation>\n```\n\nHTTP: `POST /invitation/accept` with the payload as JSON. SDK: `Sdk.invitation.accept(payload)`.\n",
-    "invitation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation\n\nAn offer to join an organisation, sent to an email address.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| organization | organization.id |\n| email | person.email |\n| invitedBy | person.id |\n\n## Machine\n\nStates: pending, accepted, revoked. A move from the wrong state is refused InvitationNotPending (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| send | (creates) | pending | InvitationSent |\n| accept | pending | accepted | InvitationAccepted |\n| revoke | pending | revoked | InvitationRevoked |\n\n## Roles\n\n- invitee\n\n## Operations\n\n- [invitation.accept](accept.md): Accept an invitation and become a member of its organisation.\n- [invitation.revoke](revoke.md): Withdraw an invitation that hasn't been accepted.\n- [invitation.send](send.md): Invite someone to an organisation by email.\n",
-    "invitation/revoke.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.revoke\n\nWithdraw an invitation that hasn't been accepted.\n\n**Who may call:** the owner of its invitation.organization.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`revoke`: from pending to revoked, emitting InvitationRevoked.\n\n## Steps\n\n- `invitation.revoke.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InvitationNotPending | 40 | IN-900 | the invitation is in a state revoke can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its invitation.organization; the handler never runs |\n\n## How to call\n\n```sh\nstarter invitation revoke --invitation <invitation>\n```\n\nHTTP: `POST /invitation/revoke` with the payload as JSON. SDK: `Sdk.invitation.revoke(payload)`.\n",
-    "invitation/send.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.send\n\nInvite someone to an organisation by email.\n\n**Who may call:** the owner of its organization.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| organization | invitation.organization |\n| email | invitation.email |\n\n## Answer\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Move\n\n`send`: from nothing (it creates) to pending, emitting InvitationSent.\n\n## Steps\n\n- `invitation.send.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization; the handler never runs |\n\n## How to call\n\n```sh\nstarter invitation send --organization <organization> --email <email>\n```\n\nHTTP: `POST /invitation/send` with the payload as JSON. SDK: `Sdk.invitation.send(payload)`.\n",
-    "membership/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# membership.get\n\nRead one membership by its id: organization, person, role.\n\n**Who may call:** the holder of the membership, or the owner of its membership.organization.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | membership.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| organization | membership.organization |\n| person | membership.person |\n| role | membership.role |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the holder of the membership, or the owner of its membership.organization; the handler never runs |\n\n## How to call\n\n```sh\nstarter membership get --id <id>\n```\n\nHTTP: `POST /membership/get` with the payload as JSON. SDK: `Sdk.membership.get(payload)`.\n",
+    "invitation/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.accept\n\nAccept an invitation and become a member of its organisation.\n\n**Who may call:** the invitee of the invitation by device or key or session.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| organization | invitation.organization |\n| membership | membership.id |\n\n## Move\n\n`accept`: from pending to accepted, emitting InvitationAccepted.\n\n## Steps\n\n- `invitation.accept.join` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InvitationNotPending | 40 | IN-900 | the invitation is in a state accept can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the invitee of the invitation by device or key or session; the handler never runs |\n\n## Worked examples\n\n### an invitation is used once\n\nStarts from the world `invited`.\n\n- **olga accepts the invitation ada sent her.** `olga` (signed in) calls and sends invitation the world's invitation, and gets back the world's organization and gets back an answer matching `^mem_[0-9a-z]+$`.\n- **accepting it again is refused.** `olga` (signed in) calls and sends invitation the world's invitation, and is refused with InvitationNotPending, IN-900, carrying state `accepted`.\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **bob can't accept olga's invitation.** `bob` (signed in) calls and sends invitation the last call's invitation, and is refused with NotAllowed, AR-001.\n- **olga accepts and joins ada's organisation.** `olga` (signed in) calls and sends invitation the last call's invitation, and gets back the world's organization and gets back an answer matching `^mem_[0-9a-z]+$`.\n\n## How to call\n\n```sh\nstarter invitation accept --invitation <invitation>\n```\n\nHTTP: `POST /invitation/accept` with the payload as JSON. SDK: `Sdk.invitation.accept(payload)`.\n",
+    "invitation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation\n\nAn offer to join an organisation, sent to an email address.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| organization | organization.id |\n| email | person.email |\n| invitedBy | person.id |\n\n## Machine\n\nStates: pending, accepted, revoked. A move from the wrong state is refused InvitationNotPending (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| send | (creates) | pending | InvitationSent |\n| accept | pending | accepted | InvitationAccepted |\n| revoke | pending | revoked | InvitationRevoked |\n\n## Events\n\n- `InvitationAccepted`: carries invitation (invitation.id), membership (membership.id); emitted by the move accept\n- `InvitationRevoked`: carries invitation (invitation.id); emitted by the move revoke\n- `InvitationSent`: carries invitation (invitation.id), email (invitation.email); emitted by the move send\n\n## Roles\n\n- invitee\n\n## Operations\n\n- [invitation.accept](accept.md): Accept an invitation and become a member of its organisation.\n- [invitation.revoke](revoke.md): Withdraw an invitation that hasn't been accepted.\n- [invitation.send](send.md): Invite someone to an organisation by email.\n",
+    "invitation/revoke.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.revoke\n\nWithdraw an invitation that hasn't been accepted.\n\n**Who may call:** the owner of its invitation.organization.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`revoke`: from pending to revoked, emitting InvitationRevoked.\n\n## Steps\n\n- `invitation.revoke.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InvitationNotPending | 40 | IN-900 | the invitation is in a state revoke can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its invitation.organization; the handler never runs |\n\n## Worked examples\n\n### an invitation is used once\n\nStarts from the world `invited`.\n\n- **ada can't revoke an invitation that has been accepted.** `ada` (role organization.owner) calls and sends invitation the world's invitation, and is refused with InvitationNotPending, IN-900, carrying state `accepted`.\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **olga, a member but not the owner, can't revoke it.** `olga` (signed in) calls and sends invitation the last call's invitation, and is refused with NotAllowed, AR-001.\n- **ada revokes it.** `ada` (role organization.owner) calls and sends invitation the last call's invitation, and is answered.\n\n## How to call\n\n```sh\nstarter invitation revoke --invitation <invitation>\n```\n\nHTTP: `POST /invitation/revoke` with the payload as JSON. SDK: `Sdk.invitation.revoke(payload)`.\n",
+    "invitation/send.md": "<!-- Generated from the blueprint. Do not edit. -->\n# invitation.send\n\nInvite someone to an organisation by email.\n\n**Who may call:** the owner of its organization.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| organization | invitation.organization |\n| email | invitation.email |\n\n## Answer\n\n| field | value |\n|---|---|\n| invitation | invitation.id |\n\n## Move\n\n`send`: from nothing (it creates) to pending, emitting InvitationSent.\n\n## Steps\n\n- `invitation.send.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its organization; the handler never runs |\n\n## Worked examples\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **bob can't invite anyone to it.** `bob` (signed in) calls and sends organization the world's organization, email the cast's olga email, and is refused with NotAllowed, AR-001.\n- **ada invites olga by her email.** `ada` (role organization.owner) calls and sends organization the world's organization, email the cast's olga email, and gets back an answer matching `^inv_[0-9a-z]+$`.\n- **ada sends a second invitation.** `ada` (role organization.owner) calls and sends organization the world's organization, email the cast's bob email, and gets back an answer matching `^inv_[0-9a-z]+$`.\n\n## How to call\n\n```sh\nstarter invitation send --organization <organization> --email <email>\n```\n\nHTTP: `POST /invitation/send` with the payload as JSON. SDK: `Sdk.invitation.send(payload)`.\n",
+    "membership/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# membership.get\n\nRead one membership by its id: organization, person, role.\n\n**Who may call:** the holder of the membership, or the owner of its membership.organization.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | membership.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| organization | membership.organization |\n| person | membership.person |\n| role | membership.role |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the holder of the membership, or the owner of its membership.organization; the handler never runs |\n\n## Worked examples\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **bob can't read olga's membership.** `bob` (signed in) calls and sends id the last call's membership, and is refused with NotAllowed, AR-001.\n- **olga reads her membership: she is a member, not an owner.** `olga` (signed in) calls and sends id the last call's membership, and gets back the world's organization and gets back the cast's olga person and gets back `member`.\n\n## How to call\n\n```sh\nstarter membership get --id <id>\n```\n\nHTTP: `POST /membership/get` with the payload as JSON. SDK: `Sdk.membership.get(payload)`.\n",
     "membership/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# membership\n\nA person's place in an organisation.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| organization | organization.id |\n| person | person.id |\n| role | Role |\n\n## Roles\n\n- holder\n\n## Operations\n\n- [membership.get](get.md): Read one membership by its id: organization, person, role.\n",
-    "organization/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# organization.create\n\nFound an organisation. Whoever founds it owns it, and is its first member.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 250ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| name | organization.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| organization | organization.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting OrganizationCreated.\n\n## Steps\n\n- `organization.create.insert` (database)\n- `organization.create.owner` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nstarter organization create --name <name>\n```\n\nHTTP: `POST /organization/create` with the payload as JSON. SDK: `Sdk.organization.create(payload)`.\n",
-    "organization/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# organization.get\n\nRead one organization by its id: name, owner, state.\n\n**Who may call:** the owner of the organization.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | organization.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| name | organization.name |\n| owner | organization.owner |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the organization; the handler never runs |\n\n## How to call\n\n```sh\nstarter organization get --id <id>\n```\n\nHTTP: `POST /organization/get` with the payload as JSON. SDK: `Sdk.organization.get(payload)`.\n",
-    "organization/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# organization\n\nA company or team that people belong to.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| name | text |\n| owner | person.id |\n\n## Machine\n\nStates: active. A move from the wrong state is refused OrganizationNotActive (exit 20).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | OrganizationCreated |\n\n## Roles\n\n- owner\n\n## Operations\n\n- [organization.create](create.md): Found an organisation. Whoever founds it owns it, and is its first member.\n- [organization.get](get.md): Read one organization by its id: name, owner, state.\n",
+    "organization/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# organization.create\n\nFound an organisation. Whoever founds it owns it, and is its first member.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 250ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| name | organization.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| organization | organization.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting OrganizationCreated.\n\n## Steps\n\n- `organization.create.insert` (database)\n- `organization.create.owner` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an owner makes an api key\n\nStarts from the world `founded`.\n\n- **bob founds an organisation of his own.** `bob` (signed in) calls and sends name `Bob Co`, and gets back an answer matching `^org_[0-9a-z]+$`.\n\n## How to call\n\n```sh\nstarter organization create --name <name>\n```\n\nHTTP: `POST /organization/create` with the payload as JSON. SDK: `Sdk.organization.create(payload)`.\n",
+    "organization/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# organization.get\n\nRead one organization by its id: name, owner, state.\n\n**Who may call:** the owner of the organization.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | organization.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| name | organization.name |\n| owner | organization.owner |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the organization; the handler never runs |\n\n## Worked examples\n\n### an owner makes an api key\n\nStarts from the world `founded`.\n\n- **ada can't read bob's organisation.** `ada` (role organization.owner) calls and sends id the last call's organization, and is refused with NotAllowed, AR-001.\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **ada reads her organisation.** `ada` (role organization.owner) calls and sends id the world's organization, and gets back `Acme Demo` and gets back the cast's ada person and gets back `active`.\n\n## How to call\n\n```sh\nstarter organization get --id <id>\n```\n\nHTTP: `POST /organization/get` with the payload as JSON. SDK: `Sdk.organization.get(payload)`.\n",
+    "organization/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# organization\n\nA company or team that people belong to.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| name | text |\n| owner | person.id |\n\n## Machine\n\nStates: active. A move from the wrong state is refused OrganizationNotActive (exit 20).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | OrganizationCreated |\n\n## Events\n\n- `OrganizationCreated`: carries organization (organization.id), owner (organization.owner); emitted by the move create\n\n## Roles\n\n- owner\n\n## Operations\n\n- [organization.create](create.md): Found an organisation. Whoever founds it owns it, and is its first member.\n- [organization.get](get.md): Read one organization by its id: name, owner, state.\n",
     "person/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# person\n\nSomeone who signs in. Better Auth keeps people; the project refers to them by id.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| email | text |\n| name | text |\n\n## Operations\n\n- [person.sign-up](sign-up.md): Sign up with an email address and a password.\n",
-    "person/sign-up.md": "<!-- Generated from the blueprint. Do not edit. -->\n# person.sign-up\n\nSign up with an email address and a password.\n\n**Who may call:** anyone.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| email | person.email |\n| password | Password (secret) |\n| name | person.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| person | person.id |\n\n## Steps\n\n- `person.sign-up.create` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| PersonEmailTaken | 11 | PE-001 | declared in errors.ts |\n\n## How to call\n\n```sh\nstarter person sign-up --email <email> --password <password> --name <name>\n```\n\nHTTP: `POST /person/sign-up` with the payload as JSON. SDK: `Sdk.person.sign-up(payload)`.\n",
+    "person/sign-up.md": "<!-- Generated from the blueprint. Do not edit. -->\n# person.sign-up\n\nSign up with an email address and a password.\n\n**Who may call:** anyone.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| email | person.email |\n| password | Password (secret) |\n| name | person.name |\n\n## Answer\n\n| field | value |\n|---|---|\n| person | person.id |\n\n## Steps\n\n- `person.sign-up.create` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| PersonEmailTaken | 11 | PE-001 | declared in errors.ts |\n\n## Worked examples\n\n### sign up and sign in\n\nStarts from an empty world.\n\n- **the newcomer signs up.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, name `Newcomer`, and gets back an answer matching `^per_[0-9a-z]+$`.\n- **signing up again with the same email is refused.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, name `Newcomer again`, and is refused with PersonEmailTaken, PE-001.\n\n## How to call\n\n```sh\nstarter person sign-up --email <email> --password <password> --name <name>\n```\n\nHTTP: `POST /person/sign-up` with the payload as JSON. SDK: `Sdk.person.sign-up(payload)`.\n",
     "session/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session\n\nA person's signed-in session, issued by Better Auth.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| person | person.id |\n\n## Operations\n\n- [session.show](show.md): Who is signed in.\n- [session.sign-in](sign-in.md): Sign in with email and password. The token is the bearer for every later call.\n",
-    "session/show.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session.show\n\nWho is signed in.\n\n**Who may call:** anyone signed in.\n\n**Budget:** p95 100ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| person | person.id |\n| email | person.email |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nstarter session show\n```\n\nHTTP: `POST /session/show` with the payload as JSON. SDK: `Sdk.session.show(payload)`.\n",
-    "session/sign-in.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session.sign-in\n\nSign in with email and password. The token is the bearer for every later call.\n\n**Who may call:** anyone.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| email | person.email |\n| password | Password (secret) |\n\n## Answer\n\n| field | value |\n|---|---|\n| session | session.id (secret) |\n| token | Secret (secret) |\n\n## Steps\n\n- `session.sign-in.verify` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SessionCredentialsWrong | 10 | SE-001 | declared in errors.ts |\n\n## How to call\n\n```sh\nstarter session sign-in --email <email> --password <password>\n```\n\nHTTP: `POST /session/sign-in` with the payload as JSON. SDK: `Sdk.session.sign-in(payload)`.\n",
-    "system/health.md": "<!-- Generated from the blueprint. Do not edit. -->\n# system.health\n\nIs the application up?\n\n**Who may call:** anyone.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| status | Ok |\n\n## Refusals\n\n(none)\n\n## How to call\n\n```sh\nstarter system health\n```\n\nHTTP: `POST /system/health` with the payload as JSON. SDK: `Sdk.system.health(payload)`.\n",
+    "session/show.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session.show\n\nWho is signed in.\n\n**Who may call:** anyone signed in.\n\n**Budget:** p95 100ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| person | person.id |\n| email | person.email |\n| via | Way |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## Worked examples\n\n### invite and accept\n\nStarts from the world `founded`.\n\n- **ada sees who she is signed in as.** `ada` (role organization.owner) calls and sends nothing, and gets back the cast's ada person and gets back the cast's ada email.\n\n### sign up and sign in\n\nStarts from an empty world.\n\n- **before signing up the newcomer is nobody.** `newcomer` (anyone) calls and sends nothing, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\nstarter session show\n```\n\nHTTP: `POST /session/show` with the payload as JSON. SDK: `Sdk.session.show(payload)`.\n",
+    "session/sign-in.md": "<!-- Generated from the blueprint. Do not edit. -->\n# session.sign-in\n\nSign in with email and password. The token is the bearer for every later call.\n\n**Who may call:** anyone.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| email | person.email |\n| password | Password (secret) |\n\n## Answer\n\n| field | value |\n|---|---|\n| session | session.id (secret) |\n| token | Secret (secret) |\n\n## Steps\n\n- `session.sign-in.verify` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SessionCredentialsWrong | 10 | SE-001 | declared in errors.ts |\n\n## Worked examples\n\n### sign up and sign in\n\nStarts from an empty world.\n\n- **a wrong password is refused.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password { redacted: true }, and is refused with SessionCredentialsWrong, SE-001.\n- **the right password answers a session and a token.** `newcomer` (anyone) calls and sends email the cast's newcomer email, password the cast's newcomer password, and gets back an answer matching `^ses_[0-9a-z]+$` and gets back an answer matching `^.+$`.\n\n## How to call\n\n```sh\nstarter session sign-in --email <email> --password <password>\n```\n\nHTTP: `POST /session/sign-in` with the payload as JSON. SDK: `Sdk.session.sign-in(payload)`.\n",
+    "system/health.md": "<!-- Generated from the blueprint. Do not edit. -->\n# system.health\n\nIs the application up?\n\n**Who may call:** anyone.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| status | Ok |\n\n## Refusals\n\n(none)\n\n## Worked examples\n\n### health is up\n\nStarts from an empty world.\n\n- **anyone can ask if the application is up.** `visitor` (anyone) calls and sends nothing, and gets back `ok`.\n\n## How to call\n\n```sh\nstarter system health\n```\n\nHTTP: `POST /system/health` with the payload as JSON. SDK: `Sdk.system.health(payload)`.\n",
     "system/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# system\n\nThe running application itself.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n\n## Operations\n\n- [system.health](health.md): Is the application up?\n"
   },
   "extensions": {
@@ -1258,5 +3755,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "b52288a87018586baee167246257d0990bbaf63a32742d32e5e2a106b800d475"
+  "digest": "1e2dddb414faed96c62d69fea0a5488e46864d99cd3d0b0b07a16df59416379d"
 }

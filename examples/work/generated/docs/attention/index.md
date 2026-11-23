@@ -26,6 +26,12 @@ States: open, approved, declined. A move from the wrong state is refused Attenti
 | approve | open | approved | AttentionApproved |
 | decline | open | declined | AttentionDeclined |
 
+## Events
+
+- `AttentionApproved`: carries attention (attention.id); emitted by the move approve
+- `AttentionDeclined`: carries attention (attention.id), why (Note); emitted by the move decline
+- `AttentionRaised`: carries attention (attention.id), mission (attention.mission), kind (attention.kind), task (attention.task); emitted by the move raise
+
 ## Operations
 
 - [attention.approve](approve.md): Say yes. For a promote, the promote runs.

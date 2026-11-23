@@ -51,7 +51,8 @@ export const bearer = (a: AuthInstance, auth: BetterAuth, request: Request): Eff
     if (typeof sub !== "string") return { kind: "invalid" } satisfies Bearer;
     const user = yield* Effect.promise(() => held(a).db.prepare(`SELECT "email" FROM "auth_user" WHERE "id" = ?`).bind(sub).first<{ email: string }>());
     if (!user) return { kind: "invalid" } satisfies Bearer;
-    const principal: Principal = { kind: "person", person: sub, email: user.email };
+    // The MCP door is the agent's: whoever signed in over OAuth acts for the person it names.
+    const principal: Principal = { kind: "agent", person: sub, email: user.email, via: "agent" };
     return { kind: "person", principal } satisfies Bearer;
   });
 

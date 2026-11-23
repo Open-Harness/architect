@@ -1,7 +1,7 @@
 // Telemetry sinks: where an environment's traces and logs go. The core speaks only OpenTelemetry (O1); a sink is a
 // destination named in `blueprint/environments/<env>.ts`, as a list, so one sink or several is the same line.
 
-/** The Collector prove and `env up` start, and through it the local viewer when one is running. Needs no credential. */
+/** The Collector prove and `env up` start, as a process. Needs no credential. */
 export interface LocalSink {
   readonly kind: "sink";
   readonly which: "local";

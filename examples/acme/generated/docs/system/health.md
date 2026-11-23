@@ -21,6 +21,14 @@ Is the application up?
 
 (none)
 
+## Worked examples
+
+### health is up
+
+Starts from an empty world.
+
+- **anyone can ask if the application is up.** `visitor` (anyone) calls and sends nothing, and gets back `ok`.
+
 ## How to call
 
 ```sh

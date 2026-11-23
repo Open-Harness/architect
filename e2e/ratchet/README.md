@@ -56,3 +56,10 @@ check the shape: `vitest run --root e2e --config vitest.m1.config.ts m1/16-visib
 then `node e2e/ratchet/check.ts tmp/r.json e2e/m1/expected-failing` (entries for the files you did not run show as missing warnings).
 
 The rules for a branch: a `-build` branch may only delete lines from these files, or delete a file (`tools/ci/builder-paths.sh` refuses an added line or an added file); a `-check` branch may add, with the reason in the pull request.
+
+## Package tests (G11)
+
+A package whose directory has an `expected-failing/` folder runs its `nx test` through `tools/ci/package-test.sh`: vitest with the JSON reporter, then this `check.ts` with `RATCHET_ROOT=<package>`.
+The folder holds one file per test file, named after it, with keys relative to the package (`src/modules/records/find-by.test.ts > <describe> > <test>`). A package without the folder runs as it always did.
+The rules are the same as for `e2e/m1`: a builder may only delete lines or files (`tools/ci/builder-paths.sh`); a listed test that passes is reported to take off; there is no hook-error key (a file whose hook throws fails as the file).
+`package-ratchet.test.ts` proves it on a scratch package. See `design/decisions/G11-package-ratchet.md`.

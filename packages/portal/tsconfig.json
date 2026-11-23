@@ -5,6 +5,8 @@
     "test/**/*.ts"
   ],
   "exclude": [
-    "test/fixtures/**"
+    "test/fixtures/**",
+    "src/main.ts",
+    "src/modules/pages/**"
   ]
 }

@@ -16,7 +16,7 @@ export default Blueprint.journey("spend within an allowance", {
       expect((a) => a.remaining).toBe(380n),
       emits(AllowanceSpent, { allowance: s.world.allowance, amount: 120n, memo: "train", remaining: 380n }),
       machine.isIn(s.world.allowance, "active"),
-      spans({ present: ["allowance.spend", "allowance.spend.load", "allowance.spend.record"] }),
+      spans({ present: ["allowance.spend", "allowance.spend.load", "allowance.spend.record", "allowance.spend.commit"] }),
     ),
     s.step(
       "olga can't spend more than is left",

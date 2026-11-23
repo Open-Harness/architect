@@ -43,6 +43,18 @@ logs the telemetry case; `Errors.shown` goes. It fails closed, as `shown.ts` doe
 is never shown. The sign-in and sign-up operations that carry a secret in their payload stay usable through MCP only
 by M2.06's MCP sign-in, never by showing the secret.
 
+**Issued secrets (lead and conductor, 19 November 2026, at check 16).** The row first said no secret leaves through any
+output. That breaks acme: `session.sign-in` answers `token: Secret` (and the session's id, which its journey reads), and
+`api-key.create` answers `key: Secret` (`examples/acme/blueprint/things/session/verbs/sign-in.ts:10`,
+`api-key/verbs/create.ts:9`), and the canon already calls `Secret` "a secret shown once". So: an issued secret leaves
+exactly once, in the answer of the call that issued it, to that call's own caller (anonymous included, since sign-in is
+anyone's), over HTTP, the SDK and the CLI. It never leaves in a refusal, a read, MCP (the agent audience), spans, logs,
+metrics, the journal, the portal's data file, the docs or the model. The declaration says so, nothing infers it: an
+answer field is written `Blueprint.issued(<secret value or field>)`. A secret answer field without that mark never
+leaves for anyone. The compiler refuses `issued` on a value that is not secret, on a payload field, on an error's field
+and on a thing's field, and a `Blueprint.read` can't carry it (a read names its fields). acme marks sign-in's `session`
+and `token` and `api-key.create`'s `key`. Gate M1's check (8) reads the same.
+
 ## 2. Telemetry carries the model (M1.36)
 
 Built: the operation span with `operation`, `attempt` and public payload and answer fields (`handler/service.ts:102`),
@@ -54,6 +66,36 @@ moved from, the error's code (`AL-002`; the span carries only the name), a breac
 environment and store a call ran in. The portal can only light up what telemetry carries, so these land before M1.13:
 `move.from`, `event.name` on the commit span, `refusal.code`, an `ortho.budget.breaches` counter, and `environment`
 and `store` as attributes.
+
+### M1.36: what its builder settled (19 November 2026)
+
+**Amended by [G8](G8-refused-span.md):** a call the role refuses is traced in `<operation>.refused`, and `move.name` and `move.to` are written on the operation's span, not the step's.
+
+Check 17 (`e2e/m1/17-telemetry-model.test.ts`) names six assumptions where the design was silent; all six are built as
+written there. The calls the builder had to make beyond them:
+
+- **`move.from` is the state `checkFrom` read, written once the move is made.** `checkFrom` gives back the state it read
+  (`handler/internal/move.ts`) and the wrapper writes it after `applyMove`, so a call refused by the handler or by the
+  machine, and a call that made no move, carry none. A move that creates (`from: []`), or whose subject is not found,
+  has no `from` to write.
+- **`event.name` is written on the commit span only when that attempt committed.** A conflicted attempt journalled
+  nothing, so naming an event on its commit span would claim an emission that never happened (`"commit.outcome":
+  "conflict"` and no `event.name`). It left the operation span: nothing but the canon read it there.
+- **`refusal.code` comes from `Errors.codes`, passed to `Handlers.serve` as `codes`.** The generated server hands each
+  served operation the one map of tag to code the API already generates (declared errors and each machine's `notFrom`),
+  so the runtime never rebuilds a code from a thing's prefix. A tag with no code is written without one. (`NotAllowed` is
+  traced in its own `<operation>.refused` span, which carries its code: see [G8](G8-refused-span.md).) This changes every generated `server/main.ts`; the four
+  examples are regenerated.
+- **`environment` reaches a handler as a Context reference, `Environment`, default `local`.** The Worker's
+  `ORTHO_ENVIRONMENT` binding is read once where the layers are built (the API's and the MCP runtime's) and provided as
+  `Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local")`. Nothing is added to `Services`, so a handler's type is
+  unchanged. It is written on the operation span next to `store` (`op.thing.lives`), on a replayed call too.
+- **`ortho.budget.breaches` is recorded where the call's duration is.** `recordCall` adds one, tagged `operation` alone,
+  when the measured call (the whole call, every attempt, as `ortho.call.duration` measures it) took longer than the
+  declared `budget.p95`; it is exported with the other two. A call refused at the door (a bad payload or a stranger) has
+  no budgeted operation to measure and never counts.
+- **`ortho prove --port 0` binds a free port.** `Worlds.start` now asks the OS for one when given 0 (`world/internal/port.ts`),
+  so a caller no longer waits on `127.0.0.1:0` while wrangler listens elsewhere.
 
 ## 3. MCP from the whole model (M1.37)
 
@@ -76,6 +118,35 @@ const states = yield* port.track(submission, { depth: 1 }).pipe(Stream.runCollec
 Depth one is right for local Anvil and wrong for any testnet or production chain, where a reorg can undo a "confirmed"
 send. It is fixed before any environment names a real chain.
 
+### M1.38: what its builder settled
+
+Check 18 settled how depth is declared (`ORTHO_WALLET_DEPTH` on a host, `chain.depth` in a world, `ChainSetting.depth`),
+that chain id 31337 alone defaults to depth 1, and that a send on any other chain with no depth is a defect naming
+`ORTHO_WALLET_DEPTH` before anything is signed or submitted. Two calls were left to the builder.
+
+1. **`track` counts the blocks; the wallet does not.** The wallet has no way to read a head: its only road to the chain is
+   the `ChainPort`, and a second RPC client beside it would duplicate the port's deadline, timeout and fault mapping.
+   So `trackTransaction` takes the level's depth and, for a plain transfer (no intent), keeps polling past the receipt
+   until `head - receipt.blockNumber + 1 >= depth`, emitting a new `TxState` `Deepened { blocks, receipt }` each time the
+   count changes. A mined revert ends it at once; a new block renews the tracking budget (a depth of twelve on a real
+   chain outlasts the 120 s a receipt gets); a reorg that moves the receipt re-counts from the new block. A tag level
+   (`safe`, `finalized`) is not counted and ends at the receipt as before. Depth 1 is one extra `eth_blockNumber` read
+   and the same states as before, `Included` first. The wallet's `follow` taps the stream: a `wallet.send.level` span
+   with `level` and `blocks` first at 0 (`submitted`), then one per `Deepened`, `confirmed` when `blocks >= depth`, and it
+   answers when the stream ends. A count skipped between two polls (two blocks arriving within one poll) has no span of its
+   own: the span says what was seen, the next one carries the larger count.
+2. **Prove's chain is depth three, a block a second, for every device journey.** A journey cannot name its chain and a
+   plugin cannot ship a starting world (M1-plugins), so prove's `standChain` starts Anvil with `blockTime: 1` (a new
+   `AnvilOptions.blockTime`, whole seconds, the `--block-time` flag; default none, so every other user of `Anvil.start`
+   still automines) and the device world declares `chain.depth: 3`. Every send in a device journey then waits for three
+   blocks, about three seconds, and the wallet's depth-three story is the common case rather than a special one. Making
+   it per journey would need a field no journey can write. Cost: the ten wallet journeys' sends are about three seconds
+   slower each.
+
+Also: `Chain.depthOf(chainId, declared)` is the one rule for "declared, else 1 on 31337, else none", used by `fromHost`
+and by `WorldHost`; `DeviceWorldOf.chain` in `language-effect` gains `depth?`. The send asks for its depth first, so a
+chain with none costs no RPC call, no nonce and no signature.
+
 ## 5. The canon's chain page (M1.39)
 
 K7 is merged and wallets is built, but the canon still says it waits (or "wait") on K7:
@@ -83,6 +154,21 @@ K7 is merged and wallets is built, but the canon still says it waits (or "wait")
 `outline.md:42,52,78`, `operations.mdx:207`, `orthograph.mdx:274` and `stores.mdx:249`. And
 `design/frame/writing-a-feature.md` describes the wallet before M1.29. There is no page for `chain-evm` and `wallets`. Docs are the spec, so the gap is a
 slice, done by the canon thread.
+
+### M1.39: what its builder settled
+
+The page is `docs/canon/chains-and-wallets.mdx`, the thirtieth in the outline (written after the layers, so numbered last),
+and it owns `chain port`, `signer`, `wallet`, `confirmation depth`, `submission` and `chain in a world`. Calls the builder made:
+
+- **K7 over K5 where they disagree.** The stores page's note said "pending until mined" belongs to the caller. K7 decided a chain
+  store's own commit may answer late with a submission, so the note now says both: a server call that sends a transaction is
+  still a workflow, and a chain store's commit returns a submission.
+- **Each "waits on K7" says what K7 decided and which slice builds it** (M6.10, M6.11, M6.14, ST2.02), and no more. Pages that
+  called the chain column "illustrative" now say it is K7's design, and the status tables read `specified`, not `open`.
+- **A stale note went with them.** `languages-and-hosts` still said no slice lifts the refusal of `runs: "client"`; M1.27 did.
+- **`design/frame/writing-a-feature.md`** is rewritten around what M1.29 built: five operations with `signer` and `label` in the
+  payload, CAIP-10 text values, four signers, no `needs`, and the chain as a host setting. The linked half (`challenge`,
+  `complete`, `link`) stays as a section marked proposed, for M2.13.
 
 ## 6. The portal's wire (inside M1.13)
 
@@ -144,3 +230,7 @@ the handler scaffold (`move.ts:61`); reads are served generically and need no ha
 | M1.10 built `ortho add` on `node:fs` | on Nx's `Tree` (M2.14) | the spec's decision, and edits in place need it |
 | visibility decided per output (L2, D3 #125 for MCP) | one rule in `language-effect` (M1.35) | three outputs applied none |
 | the wallet's `confirmed` at depth one | from the chain and environment (M1.38) | K7 F2 |
+
+## Supersedes
+
+- docs/canon/stores.mdx: "belongs to the caller, so a server call" → "A server call that sends a transaction is a workflow. K7 decided that a chain store's own commit may answer late"

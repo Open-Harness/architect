@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/prove test/device-journeys.test.ts
+# commit 3f762331 · 2026-11-19T07:33:35Z · exit 0 (expected 0) · 21.1s
+
+
+ RUN  v4.1.12 ./packages/prove
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  07:33:15
+   Duration  20.00s (transform 18ms, setup 0ms, import 27ms, tests 19.83s, environment 0ms)

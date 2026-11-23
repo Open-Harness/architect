@@ -1,0 +1,24 @@
+// Scaffolded from blueprint/things/allowance/machine.ts. Yours from now on.
+import { Blueprint, emits } from "orthograph";
+import { machine } from "../things/allowance/machine.ts";
+import { grantee } from "../things/allowance/roles.ts";
+import { AllowanceSpent } from "../things/allowance/events.ts";
+import spend from "../things/allowance/verbs/spend.ts";
+
+/**
+ * One path through the allowance's machine, from blueprint/things/allowance/machine.ts:
+ *   active  spend  exhausted  AllowanceSpent, by allowance.spend
+ * Allowed: the grantee of the allowance calls allowance.spend on an allowance in active, and it ends in exhausted.
+ */
+export default Blueprint.journey("allowance.spend: active to exhausted", {
+  cast: { grantee },
+  starts: Blueprint.todo("a starting world with an allowance in active"),
+  steps: (s) => [
+    s.step(
+      "the grantee calls allowance.spend",
+      s.grantee.run(spend, Blueprint.todo("allowance.spend's payload, one that ends in exhausted: allowance, amount, memo")),
+      emits(AllowanceSpent, Blueprint.todo("AllowanceSpent's fields: allowance, amount, memo, remaining")),
+      machine.isIn(Blueprint.todo("the allowance's id"), "exhausted"),
+    ),
+  ],
+});

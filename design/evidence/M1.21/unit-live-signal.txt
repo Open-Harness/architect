@@ -1,0 +1,20 @@
+$ bash -c pnpm exec vitest run --root packages/language-effect && pnpm exec vitest run --root packages/portal src/modules/live src/modules/site src/modules/wire src/modules/snapshot/snapshot.test.ts
+# commit 15491548 · 2026-11-19T07:23:43Z · exit 0 (expected 0) · 4.1s
+
+
+ RUN  v4.1.12 ./packages/language-effect
+
+
+ Test Files  22 passed (22)
+      Tests  69 passed (69)
+   Start at  07:23:40
+   Duration  2.15s (transform 2.57s, setup 0ms, import 12.65s, tests 889ms, environment 1ms)
+
+
+ RUN  v4.1.12 ./packages/portal
+
+
+ Test Files  4 passed (4)
+      Tests  48 passed (48)
+   Start at  07:23:43
+   Duration  580ms (transform 273ms, setup 0ms, import 1.45s, tests 138ms, environment 0ms)

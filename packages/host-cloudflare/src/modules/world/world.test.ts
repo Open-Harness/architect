@@ -21,12 +21,24 @@ describe("the world Durable Object, in workerd", () => {
     const principal = await Effect.runPromise(
       Effect.flatMap(Principals, (p) => p.of(`Bearer ${again["ada"]!.token}`)).pipe(Effect.provide(AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET })))),
     );
-    expect(principal).toEqual({ kind: "person", person: first["ada"]!.person, email: first["ada"]!.email });
+    expect(principal).toEqual({ kind: "person", person: first["ada"]!.person, email: first["ada"]!.email, via: "session" });
     expect(first["newcomer"]).toEqual({ email: expect.stringMatching(/^newcomer\..+@world\.test$/), password: expect.any(String) });
   });
 
   it("answers health", async () => {
     expect((await toWorld(world, new Request("http://world/_world/health"))).status).toBe(200);
+  });
+
+  it("resets only on a request that names its world in a header, keeping the cast and emptying the rest; a world with leases answers 404", { timeout: 30_000 }, async () => {
+    const reset = (headers: Record<string, string> = {}, at = world) => toWorld(at, new Request("http://world/_world/reset", { method: "POST", headers }));
+    const kept = await cast(["keeper"]);
+    await env.DB.prepare(`INSERT INTO "allowance" ("id", "member", "limit", "state") VALUES ('alw_r1', 'per_o', '5', 'active')`).run();
+    expect((await reset()).status, "a page cannot send the header cross-origin without a preflight").toBe(400);
+    expect(await env.DB.prepare(`SELECT id FROM "allowance" WHERE id = 'alw_r1'`).first(), "refused, so nothing was emptied").not.toBeNull();
+    expect((await reset({ "x-ortho-world": "mine" })).status).toBe(200);
+    expect(await env.DB.prepare(`SELECT id FROM "allowance" WHERE id = 'alw_r1'`).first()).toBeNull();
+    expect((await cast(["keeper"]))["keeper"]!.person).toBe(kept["keeper"]!.person);
+    expect((await reset({ "x-ortho-world": "mine" }, leased)).status, "a world with leases is ended by its lease").toBe(404);
   });
 
   it("reads facts from the database: a row, and a trace's journal", async () => {

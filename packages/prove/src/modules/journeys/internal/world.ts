@@ -1,6 +1,7 @@
 // Talking to a local world over HTTP: cast people, call operations with a trace prefixed by the caller, read facts.
 import { randomBytes } from "node:crypto";
-import { request } from "node:http";
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
 import { Effect, Layer, Option, Schema } from "effect";
 import type { Operation, Read, Principal, Thing } from "orthograph";
 import { structOf } from "orthograph/server";
@@ -26,12 +27,12 @@ export const castPeople = (url: string, names: ReadonlyArray<string>, anonymous:
 
 /**
  * A POST from something that is not a browser. Node's `fetch` adds `Sec-Fetch-*` headers, which Better Auth reads as a
- * browser's first login and so demands an `Origin` for; `node:http` sends none, as `curl` doesn't.
+ * browser's first login and so demands an `Origin` for; `node:http` sends none, as `curl` doesn't. The transport is chosen by the address's protocol: a deployed Worker is `https`.
  */
-const postJson = (url: string, body: object) =>
+const postJson = (url: string, body: object, headers: Readonly<Record<string, string>> = {}) =>
   Effect.callback<{ readonly status: number; readonly body: unknown }>((resume) => {
     const text = JSON.stringify(body);
-    const req = request(url, { method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(text) } }, (res) => {
+    const req = (url.startsWith("https:") ? httpsRequest : httpRequest)(url, { method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(text), ...headers } }, (res) => {
       let received = "";
       res.on("data", (chunk: Buffer) => (received += chunk.toString()));
       res.on("end", () => resume(Effect.succeed({ status: res.statusCode ?? 0, body: Option.getOrElse(parse(received), () => received) as unknown })));
@@ -69,14 +70,62 @@ export const signUpPeople = (url: string, names: ReadonlyArray<string>, anonymou
     return cast;
   });
 
+/**
+ * The credential the world mints for one cast member's way in (`key` or `agent`: an `ak_` key, the second made for an agent), or for
+ * the system or a service: none of which a sign-in makes. `undefined` when the world has no such door or will not mint it.
+ */
+export const mintCredential = (url: string, spec: { readonly name: string; readonly via: string } | { readonly system: true } | { readonly service: string }) =>
+  fetchJson(`${url}/_world/credential`, { method: "POST", body: JSON.stringify(spec) }).pipe(
+    Effect.map((r) => (r.status === 200 ? (r.body as { readonly token?: unknown } | null)?.token : undefined)),
+    Effect.map((token) => (typeof token === "string" ? token : undefined)),
+  );
+
+/**
+ * A real environment has no `/_world/credential`: a person makes their own key through Better Auth's route, signed in with their session, and
+ * marks it for an agent the way a person may (`metadata.acts`). The system and a service have no credential there, so a journey that is one of
+ * them runs as no one, which is refused wherever it is refused for being no person.
+ */
+export const makeKey = (url: string, session: string, forAnAgent: boolean) =>
+  postJson(`${url}/api/auth/api-key/create`, { name: forAnAgent ? "prove agent" : "prove key", ...(forAnAgent ? { metadata: { acts: "agent" } } : {}) }, { authorization: `Bearer ${session}` }).pipe(
+    Effect.map((r) => (r.status === 200 ? (r.body as { readonly key?: unknown } | null)?.key : undefined)),
+    Effect.map((key) => (typeof key === "string" ? key : undefined)),
+  );
+
+/** The tools the MCP door lists for a credential: the wire names, as `{ tools }`; any other answer is kept as it came. */
+export const callTools = (url: string, token: string) =>
+  Effect.gen(function* () {
+    const trace = randomBytes(16).toString("hex");
+    const parent = `${PROVE_SPAN_PREFIX}${randomBytes(4).toString("hex")}`;
+    const r = yield* fetchJson(`${url}/mcp`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json", accept: "application/json, text/event-stream", traceparent: `00-${trace}-${parent}-01`,
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+    });
+    const listed = (r.body as { readonly result?: { readonly tools?: ReadonlyArray<{ readonly name?: unknown }> } } | null)?.result?.tools;
+    const body = r.status === 200 && Array.isArray(listed) ? { tools: listed.flatMap((t) => (typeof t.name === "string" ? [t.name] : [])) } : r.body;
+    return { wire: {}, status: r.status, body, trace, parent, journal: [] as CallRecord["journal"] };
+  });
+
 /** Encode the payload by its declaration, call the route, and record what came back. */
 /** The world's own front door, `/_world/facts/*`: only a world that hosts its tests has one (D3 #127). */
-export const doorFacts = (url: string): Facts => ({
-  record: (table, id) => fetchJson(`${url}/_world/facts/record?table=${table}&id=${encodeURIComponent(id)}`).pipe(Effect.map((r) => r.body as Record<string, unknown> | null)),
-  journal: (trace) => fetchJson(`${url}/_world/facts/journal?trace=${trace}`).pipe(Effect.map((r) => r.body as CallRecord["journal"])),
-});
+export const doorFacts = (url: string): Facts => {
+  const ask = (what: string, path: string) =>
+    fetchJson(`${url}${path}`).pipe(
+      Effect.flatMap((r) =>
+        r.status === 200 && typeof r.body === "object" && r.body !== undefined
+          ? Effect.succeed(r.body)
+          : Effect.die(new Error(`${url} answered ${r.status} for its ${what}: a deployed Worker closes /_world, so its database must be read with CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID`))),
+    );
+  return {
+    record: (table, id) => ask("facts", `/_world/facts/record?table=${table}&id=${encodeURIComponent(id)}`).pipe(Effect.map((b) => b as Record<string, unknown> | null)),
+    journal: (trace) => ask("facts", `/_world/facts/journal?trace=${trace}`).pipe(Effect.map((b) => (Array.isArray(b) ? b : []) as unknown as CallRecord["journal"])),
+  };
+};
 
-export const callOperation = (url: string, facts: Facts, name: string, op: Operation | Read, payload: Record<string, unknown>, token: string, request: string | undefined) =>
+export const callOperation = (url: string, facts: Facts, name: string, op: Operation | Read, payload: Record<string, unknown>, token: string, request: string | undefined, startingWorld = false) =>
   Effect.gen(function* () {
     const wire = yield* Schema.encodeUnknownEffect(op.payloadSchema as unknown as Codec)(payload).pipe(Effect.orElseSucceed(() => payload));
     const trace = randomBytes(16).toString("hex");
@@ -87,8 +136,10 @@ export const callOperation = (url: string, facts: Facts, name: string, op: Opera
       headers: {
         "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}), traceparent: `00-${trace}-${parent}-01`,
         ...(request === undefined ? {} : { "idempotency-key": request }),
+        ...(startingWorld ? { "x-ortho-starting-world": "1" } : {}),
       },
-      body: JSON.stringify(wire),
+      // A payload its schema could not encode is sent as it is, with bigints as text (as the wire carries them).
+      body: JSON.stringify(wire, (_, v: unknown) => (typeof v === "bigint" ? v.toString() : v)),
     });
     const journal = yield* facts.journal(trace);
     return { wire, status: r.status, body: r.body, trace, parent, journal };
@@ -106,13 +157,19 @@ export const factsRecords = (facts: Facts, tableOf: (thing: Thing) => string | u
         const fields = yield* Schema.decodeUnknownEffect(structOf(thing.fields) as unknown as Codec)(row).pipe(Effect.orDie);
         return (typeof row["state"] === "string" ? { ...fields, state: row["state"] } : fields) as Instance;
       }),
+    // A role's rule reads by id only. A lookup by a rule (G5, `findBy(rule, value)`) is a handler's, and a handler
+    // runs on the world's own server, where the runtime holds the rules and makes the refusal: it never reaches this stand-in, which reads rows and enforces nothing.
+    findBy: () => Effect.die(new Error("prove reads the world's rows by id; a lookup by a rule is a handler's, run by the world's server")),
     insert: () => Effect.die(new Error("prove reads the world; it never writes to it")),
     update: () => Effect.die(new Error("prove reads the world; it never writes to it")),
   }));
 
 /** Whether the declaration's `allowed` lets this caller make this call, judged on the world's facts. */
-export const mayCall = (facts: Facts, tableOf: (thing: Thing) => string | undefined, op: Operation | Read, payload: object, principal: Principal) =>
-  Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing }).pipe(
+export const mayCall = (
+  facts: Facts, tableOf: (thing: Thing) => string | undefined, op: Operation | Read, payload: object, principal: Principal,
+  mounts?: ReadonlyMap<unknown, string>,
+) =>
+  Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
     Effect.as(true),
     Effect.catchTag("NotAllowed", () => Effect.succeed(false)),
     Effect.provide(factsRecords(facts, tableOf)),

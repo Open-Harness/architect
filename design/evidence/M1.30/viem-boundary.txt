@@ -1,0 +1,16 @@
+$ pnpm exec vitest run --root packages/lint test/boundaries.test.ts --reporter=verbose
+# commit dd5da697 · 2026-11-18T23:24:15Z · exit 0 (expected 0) · 4.7s
+
+
+ RUN  v4.1.12 ./packages/lint
+
+ ✓ test/boundaries.test.ts > module boundaries > fails lint when blueprint imports compiler 764ms
+ ✓ test/boundaries.test.ts > module boundaries > fails lint when blueprint imports a package other than Effect 623ms
+ ✓ test/boundaries.test.ts > module boundaries > fails lint when runtime code imports generators 660ms
+ ✓ test/boundaries.test.ts > module boundaries > refuses static, dynamic and type viem imports outside chain-evm 1285ms
+ ✓ test/boundaries.test.ts > module boundaries > passes when blueprint imports Effect 679ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  23:24:11
+   Duration  4.14s (transform 15ms, setup 0ms, import 24ms, tests 4.01s, environment 0ms)

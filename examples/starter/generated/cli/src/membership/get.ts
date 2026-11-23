@@ -5,9 +5,9 @@ import { declaration as Declaration } from "../../../api/src/membership/get.ts";
 import * as Sdk from "../../../sdk/src/index.ts";
 import * as Output from "../output.ts"; // a namespace, so a verb named like a helper (answer) cannot clash
 
-/** Read one membership by its id: organization, person, role. Every flag is text; the declaration decodes it. `--json` prints the whole answer as JSON. */
+/** Read one membership by its id: organization, person, role. Each flag is handed on as text; the declaration decodes it. `--json` prints the whole answer as JSON. */
 export const get = Command.make(
   "get",
-  { id: Flag.String("id"), json: Flag.Boolean("json").pipe(Flag.withDefault(false)) },
+  { id: Flag.String("id").pipe(Flag.withMetavar("id"), Flag.withDescription("Membership id: an id (mem_...).")), json: Flag.Boolean("json").pipe(Flag.withDefault(false)) },
   ({ json, ...flags }) => Schema.decodeUnknownEffect(Declaration.payloadSchema)(flags).pipe(Effect.flatMap(Sdk.membership.get), Output.answer(json)),
-);
+).pipe(Command.withDescription("Read one membership by its id: organization, person, role."));

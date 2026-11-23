@@ -331,6 +331,9 @@ compiler refuses, naming the file:
 - **an exit the shell keeps.** Above 125: 126 and 127 are the shell's own failures, 128 and up a signal's death, and
   an exit wraps at 256. So a declared exit is 5 to 125: `AllowanceFrozen's exit 130 is outside 5 to 125, which are
   the blueprint's; pick another`.
+  **Amended by [G3](G3-runtime-exits.md) (19 November 2026):** the runtime also keeps 120 to 125 (`IdempotencyConflict`
+  is 120, ledger HAN-10), so a declared exit is **5 to 119**, and the message reads `… is outside 5 to 119, which are
+  the blueprint's` or, for 120 to 125, `… is IdempotencyConflict's` / `… is the runtime's; pick another`.
 - **two refusals of one thing sharing an exit**, its declared errors and its machine's `notFrom` together:
   `AllowanceLimitTooHigh's exit 41 is AllowanceExceeded's; pick another`, the later one named. A declared error an
   operation borrows from another thing must also differ from every other refusal that operation lists.

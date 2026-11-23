@@ -14,11 +14,11 @@ const ortho = (...args: ReadonlyArray<string>) => spawnSync("node", [main, ...ar
 afterAll(() => rmSync(fresh, { recursive: true, force: true }));
 
 describe("Add.plan", () => {
-  it("a thing is five files in its folder and a values file", () => {
+  it("a thing is six files in its folder and a values file", () => {
     const planned = Add.plan("thing", "allowance", () => false);
     expect(planned instanceof AddRefused ? planned.message : planned.map((f) => f.path)).toEqual([
       "blueprint/things/allowance/thing.ts", "blueprint/things/allowance/machine.ts", "blueprint/things/allowance/roles.ts",
-      "blueprint/things/allowance/events.ts", "blueprint/things/allowance/errors.ts", "blueprint/values/allowance.ts",
+      "blueprint/things/allowance/events.ts", "blueprint/things/allowance/errors.ts", "blueprint/things/allowance/invariants.ts", "blueprint/values/allowance.ts",
     ]);
   });
 
@@ -45,10 +45,10 @@ describe("ortho add, then check, in a fresh project", () => {
     writeFileSync(join(fresh, "tsconfig.json"), JSON.stringify({ extends: "../../../tsconfig.json", include: ["blueprint/**/*.ts"] }));
 
     const dry = ortho("add", "thing", "allowance", "--dry-run");
-    expect(dry.stdout).toContain("(dry run: 6 files, nothing written)");
+    expect(dry.stdout).toContain("(dry run: 7 files, nothing written)");
     expect(existsSync(join(fresh, "blueprint"))).toBe(false);
 
-    expect(ortho("add", "thing", "allowance").stdout.trim().split("\n")).toHaveLength(6);
+    expect(ortho("add", "thing", "allowance").stdout.trim().split("\n")).toHaveLength(7);
     expect(ortho("add", "thing", "allowance").status).toBe(2); // never overwrites
 
     const tsc = spawnSync(join(repo, "node_modules/.bin/tsc"), ["-p", fresh, "--noEmit", "--pretty", "false"], { cwd: fresh, encoding: "utf8" });

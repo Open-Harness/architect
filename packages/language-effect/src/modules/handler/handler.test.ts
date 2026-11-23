@@ -1,9 +1,9 @@
-import { Cause, Effect, Exit, Layer, Tracer } from "effect";
+import { Cause, Deferred, Effect, Exit, Fiber, Layer, Tracer } from "effect";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { Blueprint } from "orthograph";
 import { ErrorNames } from "orthograph/server";
-import { Busy } from "#modules/work/types.js";
-import { BusyLive } from "#modules/work/service.js";
+import { Busy, WorldCount, makeBox } from "#modules/work/types.js";
+import { BusyLive, BusyReporting } from "#modules/work/service.js";
 import { storeMemory } from "#modules/records/service.js";
 import { Records, Store } from "#modules/records/types.js";
 import { EventNames } from "orthograph/server";
@@ -40,7 +40,7 @@ const recording = () => {
   const store = storeMemory();
   return { spans, store, layer: Layer.mergeAll(BusyLive, store.layer, Layer.succeed(Tracer.Tracer, tracer)) };
 };
-const ada = { kind: "person", person: "per_ada" } as const;
+const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 const served = Handlers.serve({ name: "allowance.grant", operation: grant, handler });
 
 describe("handler wrapper", () => {
@@ -73,7 +73,7 @@ describe("handler wrapper", () => {
       });
     const { spans, layer } = recording();
     await Effect.runPromise(Effect.provide(Handlers.serve({ name: "allowance.settle", operation: settle, handler: h }).call({ member: "per_olga", limit: "1" }, ada), layer));
-    const stepSpans = spans.filter((x) => x.name.startsWith("allowance.settle."));
+    const stepSpans = spans.filter((x) => x.name.startsWith("allowance.settle.") && x.name !== "allowance.settle.commit");
     expect(stepSpans.map((x) => [x.name, x.attributes.get("step.kind")])).toEqual([
       ["allowance.settle.load", "database"], ["allowance.settle.wait", "wait"],
     ]);
@@ -97,7 +97,20 @@ describe("handler wrapper", () => {
     const { spans, layer } = recording();
     const exit = await Effect.runPromiseExit(Effect.provide(served.call({ member: "per_olga", limit: "500" }, { kind: "anonymous" }), layer));
     expect(Exit.isFailure(exit) ? Cause.squash(exit.cause) : undefined).toBeInstanceOf(NotAllowed);
-    expect(spans.map((s) => s.name)).toEqual([]); // the handler never ran, so it has no span
+    // The handler never ran, so the operation has no span of its own; the refused call is still traced, in `.refused`.
+    expect(spans.map((s) => s.name)).toEqual(["allowance.grant.refused"]);
+    expect(spans[0]!.attributes.get("refusal")).toBe("NotAllowed");
+    expect(spans[0]!.attributes.get("operation")).toBe("allowance.grant");
+  });
+
+  it("a refused NotAllowed call's span carries the refusal, its code and the operation, and the handler never ran", async () => {
+    const { spans, layer } = recording();
+    let ran = false;
+    const s = Handlers.serve({ name: "allowance.grant", operation: grant, handler: () => { ran = true; return Effect.succeed({ allowance: "alw_1" as never }); }, codes: { NotAllowed: "AL-001" } });
+    await Effect.runPromiseExit(Effect.provide(s.call({ member: "per_olga", limit: "500" }, { kind: "anonymous" }), layer));
+    expect(ran).toBe(false);
+    expect(spans[0]!.attributes.get("refusal.code")).toBe("AL-001");
+    expect(spans[0]!.attributes.get("operation")).toBe("allowance.grant");
   });
 
   it("refuses a payload outside its declaration before the handler runs", async () => {
@@ -145,6 +158,33 @@ describe("handler wrapper", () => {
       ]);
       expect(r.spans[0]!.attributes.get("move.to")).toBe("active");
       expect(r.spans[0]!.attributes.get("answer.allowance")).toBe("alw_7");
+    });
+
+    it("a move made inside a step is written on the operation's span, not the step's", async () => {
+      const r = recording();
+      const stepped = Blueprint.operation(Allowance, {
+        description: "Grant, with its move, in a step.",
+        payload: { member: Allowance.fields.member, limit: Allowance.fields.limit },
+        answer: { allowance: Allowance.fields.id },
+        move: machine.moves.grant,
+        allowed: [Blueprint.signedIn],
+        steps: { insert: Blueprint.step.database() },
+      });
+      const inStep: Handler<typeof stepped, Records> = (payload, { move, steps }) => steps.insert(
+        Effect.gen(function* () {
+          const records = yield* Records;
+          yield* records.insert(Allowance, { id: "alw_7" as never, member: payload.member, limit: payload.limit });
+          yield* move();
+          return { allowance: "alw_7" as never };
+        }),
+      );
+      const s = Handlers.serve({ name: "allowance.grant", operation: stepped, handler: inStep });
+      await Effect.runPromise(Effect.provide(s.call({ member: "per_olga", limit: "5" }, ada), r.layer));
+      const op = r.spans.find((x) => x.name === "allowance.grant");
+      const step = r.spans.find((x) => x.name === "allowance.grant.insert");
+      expect(op!.attributes.get("move.name")).toBe("grant");
+      expect(op!.attributes.get("move.to")).toBe("active");
+      expect(step!.attributes.has("move.name")).toBe(false);
     });
 
     it("an outcome the move doesn't declare dies, and the span says what was asked", async () => {
@@ -257,6 +297,24 @@ describe("a move with a machine: the race, the machine's refusal, all or nothing
     expect(memory.entries).toHaveLength(50);
   });
 
+  it("every attempt span of a call carries its call's name (O3): 50 concurrent calls are 50 names, and each name's attempts are 1..n", async () => {
+    const memory = start("active");
+    const spans: Array<Tracer.NativeSpan> = [];
+    const tracer = Tracer.make({ span: (options) => { const s = new Tracer.NativeSpan(options); spans.push(s); return s; } });
+    const layer = Layer.mergeAll(BusyLive, memory.layer, Layer.succeed(Tracer.Tracer, tracer));
+    const calls = Array.from({ length: 50 }, () => served.call({ allowance: "alw_1", amount: "10" }, ada));
+    await Effect.runPromise(Effect.all(calls, { concurrency: "unbounded" }).pipe(Effect.provide(layer)));
+    const attempts = spans.filter((s) => s.name === "purse.spend");
+    const byCall = new Map<string, Array<number>>();
+    for (const s of attempts) {
+      const id = s.attributes.get("call.id");
+      expect(id, "every attempt span names its call").toMatch(/^call_[0-9a-z]{16}$/);
+      byCall.set(String(id), [...(byCall.get(String(id)) ?? []), Number(s.attributes.get("attempt"))]);
+    }
+    expect(byCall.size).toBe(50);
+    for (const numbers of byCall.values()) expect(numbers.sort((a, b) => a - b)).toEqual(numbers.map((_, i) => i + 1));
+  });
+
   it("refuses with the machine's refusal, carrying the state it was in, before the handler runs", async () => {
     const memory = start("revoked");
     const exit = await Effect.runPromiseExit(served.call({ allowance: "alw_1", amount: "10" }, ada).pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))));
@@ -274,5 +332,49 @@ describe("a move with a machine: the race, the machine's refusal, all or nothing
     await Effect.runPromiseExit(dying.call({ allowance: "alw_1", amount: "10" }, ada).pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))));
     expect(memory.rows[0]!.instance["spent"]).toBe(0n);
     expect(memory.entries).toEqual([]);
+  });
+});
+
+describe("counted work spans the whole operation (M8.07)", () => {
+  it("holds the operation's token through its commit, so a world with a commit pending is not quiet", async () => {
+    const { layer } = recording();
+    const seen = await Effect.runPromise(Effect.provide(Effect.gen(function* () {
+      const busy = yield* Busy;
+      const base = yield* Store;
+      const gate = yield* Deferred.make<void>();
+      const slow = { ...base, commit: (c: Parameters<typeof base.commit>[0]) => Effect.andThen(Deferred.await(gate), base.commit(c)) };
+      const fiber = yield* Effect.forkChild(Effect.provideService(served.call({ member: "per_olga", limit: "500" }, ada), Store, slow));
+      for (let i = 0; i < 20; i++) yield* Effect.yieldNow;
+      const during = yield* busy.held;
+      yield* Deferred.succeed(gate, undefined);
+      yield* Fiber.join(fiber);
+      return { during, after: yield* busy.held };
+    }), layer));
+    expect(seen).toEqual({ during: ["allowance.grant"], after: [] });
+  });
+});
+
+describe("the commit is a write section (M8.07)", () => {
+  it("a request the world no longer holds is interrupted at its commit, and nothing is committed; one it holds commits inside the section", async () => {
+    const run = async (open: boolean) => {
+      const rec = recording();
+      const sections: Array<string> = [];
+      const request = makeBox("entry:/allowance/grant", { id: "0.0", pinned: true });
+      const world = Layer.succeed(WorldCount, WorldCount.of({
+        enter: () => Effect.succeed("0.1"), leave: () => Effect.void, valid: () => Effect.succeed(open),
+        section: (id) => Effect.sync(() => { sections.push(`open ${id}`); return open; }),
+        sectionEnd: (id) => Effect.sync(() => void sections.push(`end ${id}`)),
+        request: Effect.succeed(request),
+      }));
+      let commits = 0;
+      const exit = await Effect.runPromiseExit(Effect.gen(function* () {
+        const base = yield* Store;
+        const counted = { ...base, commit: (c: Parameters<typeof base.commit>[0]) => Effect.suspend(() => { commits += 1; return base.commit(c); }) };
+        return yield* Effect.provideService(served.call({ member: "per_olga", limit: "500" }, ada), Store, counted);
+      }).pipe(Effect.provide(Layer.mergeAll(BusyReporting.pipe(Layer.provide(world)), rec.store.layer))));
+      return { ok: Exit.isSuccess(exit), commits, sections };
+    };
+    expect(await run(false)).toEqual({ ok: false, commits: 0, sections: [] });
+    expect(await run(true)).toEqual({ ok: true, commits: 1, sections: ["open 0.0", "end 0.0"] });
   });
 });

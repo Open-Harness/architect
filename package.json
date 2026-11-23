@@ -15,7 +15,7 @@
     "@nx/oxlint": "24.0.3",
     "@types/node": "24.19.2",
     "@typescript/native": "npm:typescript@7.0.2",
-    "effect": "4.1.1",
+    "effect": "4.1.4",
     "nx": "24.0.3",
     "oxlint": "1.90.0",
     "tsx": "4.23.15",

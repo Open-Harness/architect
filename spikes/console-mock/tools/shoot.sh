@@ -13,7 +13,7 @@ chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 for f in "$out"/*.dc.html; do
   name="$(basename "$f" .dc.html)"
   h="$(grep -o '"height":[0-9]*' "$f" | head -1 | cut -d: -f2)"
-  sed -e 's#/_blob/a5c01cf5f56bfbf4f11a45c6efa6bcb8#heroui.css#' -e 's#/_blob/f44a27983e7bd7a54d35b15ee501d6f8#heroui-pro.css#' "$f" > "$out/$name.preview.html"
+  sed -e 's#/_blob/3d919fd818506a14aa401243b3e69241#heroui.css#' -e 's#/_blob/f30f6291464f81bf7dfbe0a4c38de8f0#heroui-pro.css#' "$f" > "$out/$name.preview.html"
   "$chrome" --headless=new --hide-scrollbars --window-size="1440,${h:-1400}" --screenshot="$out/$name.png" "file://$out/$name.preview.html" 2>/dev/null
   echo "$out/$name.png"
 done

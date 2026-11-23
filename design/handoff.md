@@ -5,18 +5,21 @@ exactly where the last one stopped. The narrative of goal 1 (layers 1 and 2) is 
 [`history/handoff-layers-1-2.md`](history/handoff-layers-1-2.md).
 Everything open, promised, deferred or stale, with its source, canon page and owning slice: [`ledger.md`](ledger.md).
 
-## START HERE (19 November 2026): the conductor's handoff
+## START HERE (21 November 2026): the conductor's handoff
+
+Pull request states change hourly, so this file names pull requests for the record and never keeps their status: GitHub is the status, and Goal 3's is in its goal file's "Where it stands".
+
+Rewritten on 21 November by the Goal 3 lead, merging `main` into `goal/stage-1`. Read `.agents/skills/kanban/STATE.md`
+for the same picture in a page; this file keeps the standing directions, the lines of work and the decision ids.
+
+**Where things are.** M0 and layers 1 and 2 are done. M1's slices have landed on `goal/stage-1` (Goal 3) except those
+listed under "Every open line", and Gate M1 (M1.15) is not run yet. Plugged In's seven journeys run green in CI, in
+local and in test (`e2e-stage1`, a required check), and the climb is green: 331 of 331 cell-and-subject pairs. Goal 4 (on-chain)
+has started on `goal/on-chain`. K28 (21 November) cut three releases: the preview (Gate M1 on `main` plus npm under
+`next`, slice M1.51), the beta (the framework the superagent proves, K42) and 1.0 (Capxul core, K42). K29 (`design/decisions/K29-*.md`, PR #272) decides the UI layer, under Aaron's standing authority of 21 November; Goal 5 builds from it.
 
 **Renamed by K15** (19 November 2026, Aaron): the example app is **Plugged In** (`plugged-in`), no longer `links`. Rows below that say `links` predate it;
 `milestones.md` is renamed in place ([`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md)).
-
-Overnight, 18 to 19 November: K7 (#53), K9 (#55), the durable-run spike (#57), the work board K11 (#61), the factory
-K10 (#62) and the portal design M1.25 (#65) merged into `main`. On `m1`, 26 slices are ticked; what's left is in
-"Next on the critical path". Aaron quit local Docker (direction 11), set the Cloudflare and HeroUI CI secrets, and
-said yes to a preview on npm after Gate M1 (direction 12). Today, from a checkout of `m1`, `ortho generate` writes
-the model, api, server, sdk, cli, mcp, docs and the read-only portal; `ortho prove --env local` proves them on
-workerd; `tools/demo/m1-plugin.sh` mounts a plugin and `tools/demo/m1-wallet.sh` sends from a wallet on Anvil. A new
-project from the preset passes in CI (layer 1 check 1), but not on Aaron's Mac until M1.33 takes Docker out.
 
 ### The job you are taking over
 
@@ -44,9 +47,11 @@ thread's branch, its PR, its PR comments. To steer a thread, comment on its PR, 
 
 ### The goal
 
-**Workable at the end of M2:** plugins mounted and proved, auth and organizations as plugins, the new principals,
-secrets by declaration ([`milestones.md`](milestones.md)). Then Aaron builds Capxul's plugins on it. Everything below
-is judged by whether it gets us there sooner and truer.
+**The framework, built by the apps that dogfood it (K42):** the superagent goes first, then Capxul core. Each pulls the
+framework pieces it needs, the lander brings them into `main`, and the releases are cut from there: the beta is what the
+superagent proved, 1.0 what Capxul core proved. Under K28 this was workable at the end of M2 (plugins mounted and
+proved, auth and organizations as plugins, the new principals, secrets by declaration). Everything below is judged by
+whether it gets us there sooner and truer.
 
 ### The direction (Aaron, 17 and 18 November)
 
@@ -71,9 +76,9 @@ is judged by whether it gets us there sooner and truer.
    people claim a username, then gives those users wallets, then a multisig with budgets, then privacy. Each stage is
    a meta-milestone; all four together are v1.0. Each stage is built from reusable pieces (plugins), and the starter
    and every example change to follow it. The 📐 growing-example thread designed it as K9 ([`decisions/K9-growing-example.md`](decisions/K9-growing-example.md), merged in #55), including what the app
-   looks like at each stage, the React hooks slice (designed in `frame/projections.md:261`, owned by no slice), and
-   whether generated actions really make us compatible with agent-native apps. Until K9 lands, the sign-up sheet
-   (`examples/signup`) stays the canon's first example and acme the tests' fixture. The earlier mini DAO example
+   looks like at each stage, the React hooks slice (designed in `design/history/retired-2026-11-23/frame/projections.md:261`, owned by no slice), and
+   whether generated actions really make us compatible with agent-native apps. Plugged In is the canon's one example
+   and acme the tests' fixture (K37). The earlier mini DAO example
    (governance, private membership) is folded into stages 3 and 4 or retired by K9.
 8. **Operations DX (K5):** an operation-level `emits:` lands in the same commit as its writes, only on success, and a
    call that writes nothing emits nothing (Q5 = B; built in M3.16). Steps may be declared optional, and eval 6 still
@@ -104,37 +109,24 @@ is judged by whether it gets us there sooner and truer.
 
 ### Every open line
 
-Five lines, and the conductor. The factory (K10, #62) and the work board (K11, #61) merged and their threads are
-archived; building them is M3 and later. The Codex runs on M1 (O2 #60, chain-evm #59, scaffold #63, model #64) are
-merged and their worktrees removed.
+Goals run the work now (`design/goals/`), each on its own branch. The conductor sets direction and keeps this file.
 
-| # | Line | Branch | PR | Done when | State now | Next |
-|---|---|---|---|---|---|---|
-| ① | **Docs canon (MDX)** | `claude/docs-canon-cf2c38` | #38 merged (layer 1) | Pass 2, every page in layers, checked against the ledger before each layer | Layer 1 merged at `b600bb8`; replaced by the 📖 minimal pass below (K13) | None |
-| 📖 | **Canon, minimal pass** (`local_bb023976…`) | its own branch from `main` | none yet | Every canon page rewritten around the links app, as little prose as possible, for a package user; the canon check and a reviewer pass | Started 19 November | Opens the first canon PR |
-| 🧭 | **M1 lead** (`local_90551e2a…`) | `m1` | none (M1 lands as one PR at Gate M1) | Every M1 row ticked with its check, `e2e-m1` made blocking, then Gate M1.15 on `main` | 26 rows ticked, wallets (M1.29) and live steps (M1.21) included; M1.11 built and verifying; M1.33 building. `e2e-m1` fails only on unmerged slices and is still `continue-on-error` | Push M1.11, merge `main` for M1.25 and M1.34, then, in K13's order, M1.35 and M1.36, M1.40 to M1.43, M1.12, M1.13 (M1.22 to M1.24 and M1.37 are M3 now) |
-| 📐 | **Portal design** (`local_24ad5b8b…`) | `claude/portal-908a25`, then F8's branch | #65 merged; #66 open | F8 merged: Codex's eight good ideas placed in their slices, the agreed design kept where they clash, and the data gaps M1.13 must close | #66 in review and CI | Merges #66 when both pass |
-| 🔗 | **Links stage 1 (Codex, run by Aaron)** | `links/stage-1`, `codex/links-staging` | #56 open | `examples/links` runs and the starter is its copy; then handles as a plugin; then the screens | #56 open. `codex/links-staging` deploys to real staging but has no teardown step | Add teardown before any staging run |
-| 📒 | **Ledger** | its own branch per round | #58, the K7 and K9 round | The ledger matches what's merged, every item with its source and owner | Open | Merges each round itself when green |
+| Line | Branch | PRs | Done when | State, 21 November 2026 |
+|---|---|---|---|---|
+| **Goal 3, stage 1 (Plugged In)** | `goal/stage-1` | open and merged pull requests: see the goal file | `nx run e2e:stage1` and Gates M1 and M2 pass; the staging run; one pull request to `main` at the done check, after the preview merge (K28) | Kept in one place, rewritten at every slice merge: "Where it stands" at the end of [`goals/03-stage-1-hill-climbed.md`](goals/03-stage-1-hill-climbed.md) |
+| **Goal 4, on-chain (1.0)** | `goal/on-chain` | see `design/goals/04-on-chain.md` | stage 2 and 3 slices, from `design/goals/04-on-chain.md` | Started 21 November. Its seam slice waits on M2.05, because both reshape `host-cloudflare` |
+| **Goal 5, the UI layer** | `goal/ui-layer` | #272 (K29, into `main`) | ST1.25 to ST1.28 and M1.22, M1.23 built, from K29 | Built from K29 by a Goal 5 lead |
+| **Foreman** | `claude/foreman-c521e2` | #187 | the design and a Capxul test drive | Merged into `main` on 21 November (#187, F9); the branch is kept |
+| **K24, UI SDK** | `conductor/k24-ui-sdk` | #217, #215 | K24 decided, the verb-primitive spike | K29 builds on K24 |
+| **M8, time's checks** | `main` | #274 | the checks for M8.02 to M8.04 | The checks are on `main` (#213, #274) |
 
 **Closed, branches kept:**
-- **#48, span fixes (O3).** It edited journeys and evals, which a builder may not do, and its review found four
-  faults. O3's draft stays on `fix/operation-span-first`. M1.18 to M1.20 pick up the work, with journey changes made
-  by their authors.
-- **#28, the work-real spike.** Its answer is on `main` in [`../spikes/work-real/README.md`](../spikes/work-real/README.md).
-  The D1 array fix is ledger STO-23, owned by M1.17. The fuller work app is FAC-15. The work system is parked.
-
-**Done this evening:** the durable-run spike (Codex, #57): one Pi Durable run per SQLite Durable Object survives
-eviction mid-tool-call, one commit and one model call per step; an eviction before the model's reply repeats that
-request; the bundle is about 420 KB gzipped. Left for M4: the provider path's 17 ambient clock reads and two timeouts.
+- **#48, span fixes (O3).** It edited journeys and evals, which a builder may not do. Its draft stays on
+  `fix/operation-span-first`. M1.18 to M1.20 picked up the work.
+- **#28, the work-real spike.** Its answer is in [`../spikes/work-real/README.md`](../spikes/work-real/README.md).
 
 **Aaron's aim (18 November):** small, modular, reusable pieces, so we can run lots of experiments and spikes with
 plugins and extensions; most won't stick, the kept ones are refactored, and production stays clean.
-
-**Other branches not merged into `main`, all parked and owned by nothing:** `layer/4` and `author/stage4-checks` and
-`author/stage4-graph-checks` (kept for the M1 harvest); `author/m0-names`, `build/M0.05` (M0 leftovers: check they're
-in `main`, then delete); `build/portal-pro`, `design/kits-decision`, `design/work-blueprint`,
-`claude/design-agent-harness-e6e8ff` (older design lines: read each one's last commit before deciding).
 
 ### How the pieces relate
 
@@ -152,19 +144,15 @@ in `main`, then delete); `build/portal-pro`, `design/kits-decision`, `design/wor
 
 ### What waits on Aaron
 
-1. **Rotate the HeroUI personal token** that was printed in a conductor's tool output on 18 November (never
-   committed).
-2. **Canon's open choice:** entity or actor (ticketing is settled: the links app is the one example, K13).
-3. **The npm publish at Gate M1** (direction 12): his sign-in.
+1. **The npm publish at Gate M1** (direction 12, K28): his sign-in. The licence for every published package.
+2. **Rotate the HeroUI personal token** printed in a conductor's tool output on 18 November (never committed).
+3. **Release credentials**, each in writing (M7.13), and the staging token's scope (M7.01).
 
 ### Next on the critical path
 
-Re-cut by [`decisions/K13-lock-down-first.md`](decisions/K13-lock-down-first.md) (Aaron, 19 November): lock down what
-exists first. M1.40 (the links app, from the canon's blueprint) → M1.41 (the loop through the real `ortho`, every
-output read for the basics; checks first, by another agent) → M1.43 (links' handlers) and M1.42 (the basics in every output), with M1.35 (one
-visibility rule), M1.36 (telemetry carries the model) and M1.34 (portal-ui) beside them → M1.13 (the portal as a
-viewer) → Gate M1.15 → the npm preview → M2. Beside it: M1.33, M1.12 (the SDK contract only), M1.38, M1.39. The
-actions, approvals, the chat and MCP from the whole model (M1.22 to M1.24, M1.37) and ST1.05 moved to M3.
+The superagent's next slice is the critical path (K42). Goal 3 lands #683 and #690 and stops; the lander's slice 1
+lands `goal/stage-1` in `main` and retires it; M1.51's publish stays Aaron's. The M2 slices wait until an app pulls
+them (K42, sections 6 and 7).
 
 ### Open questions carried by threads
 
@@ -173,45 +161,70 @@ actions, approvals, the chat and MCP from the whole model (M1.22 to M1.24, M1.37
 
 ### Decision IDs
 
-The one allocator for `design/decisions/` off a goal branch (the `conductor` and `threads` skills); a goal's lead keeps
-the same list in its goal file. Taken from every file in `design/decisions/` on `main`, `m1`, `goal/stage-1` and every
+The list of lettered IDs for `design/decisions/`, kept by the conductor (the `conductor` and `threads` skills); a goal
+names its own calls by slug instead (K32). Taken from every file in `design/decisions/` on `main`, `m1`, `goal/stage-1` and every
 open remote branch, 20 November 2026. An ID is the part before the first `-` (`K16a` in `K16a-scaffold-build.md`).
 
 **On `main`:** CI-branch-protection, CI-codex-advisory, CI-docs-fast-path, CI-model-integration-deadlines, CI-speed · D1, D2, D3 · E1 · F1, F2,
-F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23 · M0 · N1 · O1, O2 · P1 · R1 · S1.
+F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 · N1 · O1, O2 · P1 · R1 · S1.
 
 **Only on other branches:**
 
 | ID | Title | Where |
 |---|---|---|
 | D4 | kits, dependencies and the chain | `author/stage4-checks` |
-| G3 | the runtime's exits are 0 to 4 and 120 to 125 | `goal-3/han-10-build` (#117, open). An earlier G3 for the grid's verdicts, on merged `goal-3/prove-names-files`, became G6: G3 is taken twice |
+| G3 | the runtime's exits are 0 to 4 and 120 to 125 | `goal-3/han-10-build` (#117). An earlier G3 for the grid's verdicts, on merged `goal-3/prove-names-files`, became G6: G3 is taken twice |
 | G4 | a field can be declared unique | `goal/stage-1` |
-| G5 | invariants are their own kind of declaration | `designer/g5-invariants` (#123, open) |
+| G5 | invariants are their own kind of declaration | `designer/g5-invariants` (#123) |
 | G6 | the grid's verdicts go to a file first | `goal/stage-1` |
 | G7 | red grid cells are listed and may not grow | `goal/stage-1` |
 | G8 | a refused call is traced in `<operation>.refused` | `goal/stage-1` |
 | K8 | the canon's first review | `claude/docs-canon-cf2c38` (not on `main`) |
 | K16a | building the scaffold that explains itself | `m1` |
+| K30 | the model and the map: where the core ends, the repositories, declaring what you know, extraction, staleness in CI | `claude/orthograph-model-cf3dca` (#185), reserved |
 | M1 | the milestone's calls, one file each (`M1-model`, `M1-plugins`, …) | `m1`, `goal/stage-1`, `m1-12-clients` |
+| M7 | the cloud pass for staging (`M7-cloud`, M7.01) | `goal/stage-1`, `goal/on-chain` |
 | M8 | time's calls, one file each (`M8-checks`: what time's checks assume) | `main` |
 | O3 | every call names its shape | `fix/operation-span-first` (#48, closed) |
+| O4 | a successful span exports as UNSET under effect 4.1.4 (check 39's control: "not an error") | `goal/stage-1`, by Goal 3's lead (#290) |
+| S31 | an operation's model carries `breaks`, every rule it can break (`S31-breaks`) | `goal/stage-1` (#269, merged) |
 | ST1 | stage one's calls (`ST1-02-plugged-in-ownership`) | `goal/stage-1` |
+| W1 | a count with no metrics source is `not yet` (`W1-no-source-count`) | `goal/stage-1`, `goal/on-chain` |
+| W2 | an operation's docs page shows each journey as a worked example (`W2-docs-worked-examples`) | `goal/stage-1`, `goal/on-chain` |
 | K25 | the blueprint on chain (a chain store, `lives:`), superseding K7's inline chain | reserved 20 November 2026 for the 📐 Solidity session |
 | K26 | on chain pulled forward (M6 ahead of the gates for M3 to M5) | reserved 20 November 2026 for the 📐 Solidity session |
-| K27 | the three plugin kinds: language, host, projection; no target (replaces K17's TargetSpec) | reserved 20 November 2026 for the 📐 Solidity session, Goal 4 |
+| K27 | the plugin kinds: language and host beside feature, adapter and projection, five in all; no target (replaces K17's TargetSpec) | reserved 20 November 2026 for the 📐 Solidity session, Goal 4 |
 | K28 | releases (scope map) | open PR #262, reserved 21 November 2026 |
 | K29 | the UI layer: generated pieces on UI SDK | reserved 21 November 2026 for the UI-layer thread |
+| K31 | the app's map in the blueprint, and Goal 6 | taken 21 November 2026 by the 📐 designer thread, #285 |
+| K32 | goals coordinate themselves, through git and GitHub | `main`, by the conductor |
+| K33 | the work lives on GitHub natively: a milestone per goal, issue kinds, templates, the sync | #301, by the 📐 designer thread |
+| K34 | goals start by what they need, not by milestone order; the goal map | `main`, by the conductor |
+| K35 | Goals 8 to 16 briefed, short, with their branches | `main`, by the conductor |
+| K36 | a composite component declares its wiring; its behaviour stays yours | `main`, by the conductor, on Aaron's call |
+| K37 | the canon: one doc set replaces the old pages | reserved 21 November 2026 for the 📚 canon thread |
+| K38 | a slice another goal needs lands early | `main`, by the conductor (#440) |
+| K39 | the superagent, built as Orthograph plugins (Goal 17) | `main`, by the 📐 superagent designer thread |
+| K40 | what a superagent needs that Orthograph lacks: outside accounts as things, versions, agents as things, the sandbox over pi-env, catching up, lent tokens | `main`, by the 📐 superagent gaps thread |
+| K41 | the canon map applied: eight clashes settled; the frame, the old docs page, the walkthrough and the sign-up sheet retired; scope, the package map and the model draft merged into the canon | `main`, by the conductor's canon-map session |
+| K42 | a goal is a long-running agent; the framework goal (18) and the lander (19) always run; the apps dogfood the framework, the superagent first; the releases are the framework's | decided with Aaron, 23 November (#694) |
+| K43 | Capxul core: free software in ERPNext's shapes; verification, bank accounts and incorporation are paid | decided with Aaron, 23 November (#694) |
 
-**Next free:** D5, E2, F10, G9, H3, K30, N2, O4, P2, R2, S2. Never fill a gap (F3, F4, G2): it may have been handed out
+**Also taken, off `main`:** K24 (UI SDK is the base, #217), K25 (the blueprint on chain), K26 (on-chain pulled forward), K27 (five plugin kinds), K29
+(the UI layer, #272), K30 (where the core ends, the repositories, declaring what you know, #185), G12 (a slice that changes acme's wire lands as a pair, #263),
+G9 to G11 (`goal/stage-1`), `M2-auth` (#263, #267), `M6-chain` (#275, #276, #279), `M7-03-infra-projection` (#282). `ST1-25-flakes` is a
+decision file; K29's ST1.25 is a slice id, and the two are unrelated.
+
+**Next free:** D5, E2, F10, G13, H3, K44, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
 before this list existed. `CI-<slug>`, `M<n>-<slug>`, `ST<n>-<slug>` and `Gate<n>` are named by their slug or
-milestone, not numbered, and still go on this list.
+milestone, not numbered; a goal records its own in its brief, not here (K32), and `GOAL<n>-<slug>` names a call that
+belongs to one goal and no milestone.
 
-**To claim one,** ask the conductor (on a goal, its lead); never mint one yourself. The conductor checks that no file
+**To claim a lettered one,** ask the conductor; a goal names its own calls by milestone or area and a slug (K32). The conductor checks that no file
 starts with it anywhere, adds it here with a one-line title in the same push, and only then hands it out:
 
 ```bash
-git fetch -q origin && for r in $(git branch -r --format='%(refname:short)'); do git ls-tree --name-only "$r" design/decisions/; done | grep -E '/G9(-|\.md$)'
+git fetch -q origin && for r in $(git branch -r --format='%(refname:short)'); do git ls-tree --name-only "$r" design/decisions/; done | grep -E '/G13(-|\.md$)'
 ```
 
 No output means it is free.

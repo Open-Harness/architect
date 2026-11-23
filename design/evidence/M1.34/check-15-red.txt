@@ -1,0 +1,227 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/15
+# commit 56ea4b31 · 2026-11-19T08:13:02Z · exit 1 (expected 1) · 5.8s
+
+
+ RUN  v4.1.12 ./e2e
+
+ ❯ m1/15-portal-ui-seam.test.ts (15 tests | 11 failed) 4881ms
+     × has portal-ui, its README and licence, the lint rule's message, and a CI job that reads the secret 6ms
+     × takes @heroui-pro/react as a peer dependency only, is public, and publishes dist 1ms
+     × exports Shell, Board, Grid, Chart, Stat, StatGroup, Card, CardGroup, Peek, Widget, Timeline, Command, Code, Markdown, Editor and Chat 2ms
+     × its README says Pro is a peer dependency the installer licenses; its LICENSE is its own 0ms
+     × lists package.json, README.md, a licence and dist, and nothing else 1ms
+     × holds nothing of Pro in its packed files; built where Pro is installed (CI, with the secret) 0ms
+     × fails in a copy of packages/portal with the rule's message, for an import, a subpath and an export-from 1356ms
+     × fails in a generated file of an example, where the rule must hold although lint skips generated/ today 1141ms
+     × passes in packages/portal-ui and under spikes/, after the same import failed in packages/portal 1071ms
+     × has a job that reads HEROUI_AUTH_TOKEN, runs on pushes and our pull requests, and never on a fork's 10ms
+     × builds portal-ui in that job, with Pro's install cached by the lockfile's hash before pnpm install 3ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 the surface: what the seam needs > has portal-ui, its README and licence, the lint rule's message, and a CI job that reads the secret
+AssertionError: the seam is not there until: packages/portal-ui/package.json; packages/portal-ui/README.md; packages/portal-ui/LICENSE; packages/portal-ui/src (index.ts or index.tsx); .oxlintrc.json: no-restricted-imports for @heroui-pro/*; .github/workflows: a job that installs Pro from secrets.HEROUI_AUTH_TOKEN. This is a tripwire: it fails, it never skips.: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "packages/portal-ui/package.json",
++   "packages/portal-ui/README.md",
++   "packages/portal-ui/LICENSE",
++   "packages/portal-ui/src (index.ts or index.tsx)",
++   ".oxlintrc.json: no-restricted-imports for @heroui-pro/*",
++   ".github/workflows: a job that installs Pro from secrets.HEROUI_AUTH_TOKEN",
++ ]
+
+ ❯ m1/15-portal-ui-seam.test.ts:76:122
+     74|     if (!readFileSync(join(repo, ".oxlintrc.json"), "utf8").includes(`…
+     75|     if (!workflows().some(([, text]) => /secrets\.HEROUI_AUTH_TOKEN/i.…
+     76|     expect(missing, `the seam is not there until: ${missing.join("; ")…
+       |                                                                                                                          ^
+     77|   });
+     78| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 the package: Pro is a peer, our names are exported > takes @heroui-pro/react as a peer dependency only, is public, and publishes dist
+Error: packages/portal-ui/package.json does not exist yet (M1.34)
+ ❯ needed m1/15-portal-ui-seam.test.ts:51:43
+     49| /** A file of portal-ui, or a failure that names it (the red is the mi…
+     50| const needed = (file: string) => {
+     51|   if (!existsSync(join(dir, file))) throw new Error(`packages/portal-u…
+       |                                           ^
+     52|   return readFileSync(join(dir, file), "utf8");
+     53| };
+ ❯ manifest m1/15-portal-ui-seam.test.ts:54:35
+ ❯ m1/15-portal-ui-seam.test.ts:82:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 the package: Pro is a peer, our names are exported > exports Shell, Board, Grid, Chart, Stat, StatGroup, Card, CardGroup, Peek, Widget, Timeline, Command, Code, Markdown, Editor and Chat
+AssertionError: portal-ui does not export: Shell, Board, Grid, Chart, Stat, StatGroup, Card, CardGroup, Peek, Widget, Timeline, Command, Code, Markdown, Editor, Chat: expected [ 'Shell', 'Board', 'Grid', …(13) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Shell",
++   "Board",
++   "Grid",
++   "Chart",
++   "Stat",
++   "StatGroup",
++   "Card",
++   "CardGroup",
++   "Peek",
++   "Widget",
++   "Timeline",
++   "Command",
++   "Code",
++   "Markdown",
++   "Editor",
++   "Chat",
++ ]
+
+ ❯ m1/15-portal-ui-seam.test.ts:104:73
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 the package: Pro is a peer, our names are exported > its README says Pro is a peer dependency the installer licenses; its LICENSE is its own
+Error: packages/portal-ui/README.md does not exist yet (M1.34)
+ ❯ needed m1/15-portal-ui-seam.test.ts:51:43
+     49| /** A file of portal-ui, or a failure that names it (the red is the mi…
+     50| const needed = (file: string) => {
+     51|   if (!existsSync(join(dir, file))) throw new Error(`packages/portal-u…
+       |                                           ^
+     52|   return readFileSync(join(dir, file), "utf8");
+     53| };
+ ❯ m1/15-portal-ui-seam.test.ts:108:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 the publish preview: what the tarball would hold > lists package.json, README.md, a licence and dist, and nothing else
+AssertionError: npm pack --dry-run failed in packages/portal-ui: packages/portal-ui does not exist yet (M1.34): expected null to be +0 // Object.is equality
+
+- Expected:
+0
+
++ Received:
+null
+
+ ❯ m1/15-portal-ui-seam.test.ts:119:93
+    117|   it("lists package.json, README.md, a licence and dist, and nothing e…
+    118|     const { status, list, err } = pack();
+    119|     expect(status, `npm pack --dry-run failed in packages/portal-ui: $…
+       |                                                                                             ^
+    120|     expect(list).toContain("package.json");
+    121|     expect(list).toContain("README.md");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 the publish preview: what the tarball would hold > holds nothing of Pro in its packed files; built where Pro is installed (CI, with the secret)
+Error: packages/portal-ui/project.json does not exist yet (M1.34)
+ ❯ needed m1/15-portal-ui-seam.test.ts:51:43
+     49| /** A file of portal-ui, or a failure that names it (the red is the mi…
+     50| const needed = (file: string) => {
+     51|   if (!existsSync(join(dir, file))) throw new Error(`packages/portal-u…
+       |                                           ^
+     52|   return readFileSync(join(dir, file), "utf8");
+     53| };
+ ❯ m1/15-portal-ui-seam.test.ts:129:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 lint: a planted Pro import fails everywhere but portal-ui and spikes > fails in a copy of packages/portal with the rule's message, for an import, a subpath and an export-from
+AssertionError: an import in packages/portal must fail lint (exit 0):
+: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/15-portal-ui-seam.test.ts:171:113
+    169|     ] as const) {
+    170|       const linted = lintMirror({ "packages/portal/src/planted.ts": so…
+    171|       expect(bans(linted), `${what} in packages/portal must fail lint …
+       |                                                                                                                 ^
+    172|       expect(linted.out, "the message says where to import from").toCo…
+    173|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 lint: a planted Pro import fails everywhere but portal-ui and spikes > fails in a generated file of an example, where the rule must hold although lint skips generated/ today
+AssertionError: a planted Pro import in generated code must fail lint (exit 1):
+No files found to lint. Please check your paths and ignore patterns.
+: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/15-portal-ui-seam.test.ts:178:123
+    176|   it("fails in a generated file of an example, where the rule must hol…
+    177|     const linted = lintMirror({ "examples/acme/generated/api/planted.t…
+    178|     expect(bans(linted), `a planted Pro import in generated code must …
+       |                                                                                                                           ^
+    179|   });
+    180|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 lint: a planted Pro import fails everywhere but portal-ui and spikes > passes in packages/portal-ui and under spikes/, after the same import failed in packages/portal
+AssertionError: the same import must fail in packages/portal first:
+: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ m1/15-portal-ui-seam.test.ts:183:96
+    181|   it("passes in packages/portal-ui and under spikes/, after the same i…
+    182|     const portal = lintMirror({ "packages/portal/src/planted.ts": impo…
+    183|     expect(bans(portal), `the same import must fail in packages/portal…
+       |                                                                                                ^
+    184|     for (const path of ["packages/portal-ui/src/planted.tsx", "spikes/…
+    185|       const linted = lintMirror({ [path]: importLine }, [path]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 CI: the secret, the fork rule and the cache > has a job that reads HEROUI_AUTH_TOKEN, runs on pushes and our pull requests, and never on a fork's
+AssertionError: no job in .github/workflows reads secrets.HEROUI_AUTH_TOKEN: CI cannot install Pro: expected 0 to be greater than 0
+ ❯ m1/15-portal-ui-seam.test.ts:198:111
+    196|     const readings = all.map(([file, text]) => ({ file, reading: read(…
+    197|     const refs = readings.flatMap(({ file, reading }) => reading.refer…
+    198|     expect(refs.length, "no job in .github/workflows reads secrets.HER…
+       |                                                                                                               ^
+    199|     for (const { file, reading } of readings) expect(unsafe(reading), …
+    200|     for (const ref of refs) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  m1/15-portal-ui-seam.test.ts > 15 CI: the secret, the fork rule and the cache > builds portal-ui in that job, with Pro's install cached by the lockfile's hash before pnpm install
+AssertionError: no job reads the token: expected 0 to be greater than 0
+ ❯ m1/15-portal-ui-seam.test.ts:212:51
+    210|       return [...names].map((name) => ({ file, name, steps: ((reading.…
+    211|     });
+    212|     expect(jobs.length, "no job reads the token").toBeGreaterThan(0);
+       |                                                   ^
+    213|     for (const { file, name, steps } of jobs) {
+    214|       const at = `${file} job ${name}`;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 4 passed (15)
+   Start at  08:12:56
+   Duration  5.16s (transform 97ms, setup 0ms, import 146ms, tests 4.88s, environment 0ms)

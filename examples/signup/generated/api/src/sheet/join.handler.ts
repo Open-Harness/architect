@@ -5,3 +5,5 @@ import type { Auth, Handler as Of, Records } from "@orthograph/language-effect";
 import type declaration from "../../../../blueprint/things/sheet/verbs/join.ts";
 
 export type Handler<R = Records | SqlClient.SqlClient | Auth> = Of<typeof declaration, R>;
+/** Where the move can end: one of its outcomes, as the machine declares them. */
+export type Outcome = NonNullable<(typeof declaration)["move"]>["to"][number];

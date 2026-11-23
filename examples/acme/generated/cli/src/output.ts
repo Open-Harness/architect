@@ -1,4 +1,4 @@
-// Generated from the blueprint. Do not edit.
+// Generated from blueprint/projections/cli.ts. Do not edit.
 import { Console, Context, Effect, Option } from "effect";
 import { Errors } from "../../sdk/src/index.ts";
 
@@ -11,14 +11,14 @@ export const supplied = (flags: Readonly<Record<string, unknown>>) =>
 
 const text = (x: unknown) => JSON.stringify(x, (_, v: unknown) => (typeof v === "bigint" ? v.toString() : v));
 const exitOf = (tag: unknown): number =>
-  typeof tag === "string" && tag in Errors.exits ? Errors.exits[tag as keyof typeof Errors.exits] : tag === "SchemaError" ? 2 : 1;
+  typeof tag === "string" && tag in Errors.refusals ? Errors.refusals[tag as keyof typeof Errors.refusals].exit : tag === "SchemaError" ? 2 : 1;
 
-/** `AL-002 Name { a: 1, b: x }`: a refusal's code, its name, and the values of its public fields only. */
+/** `AL-002 Name { a: 1, b: x }`: a refusal's code, its name, and the values of its declared fields that the server sent (it cut them for this caller). */
 const said = (tag: unknown, code: unknown, fields: Readonly<Record<string, unknown>>) => {
   // Only the project's own refusals have a code. Anything else (the CLI's own `NotSignedIn`) is told as it always was.
   if (typeof tag !== "string" || !(tag in Errors.codes)) return `${String(tag ?? "Error")}: ${text(fields)}`;
-  const visible = Errors.shown[tag] ?? [];
-  const shown = Object.entries(fields).filter(([k]) => visible.includes(k)).map(([k, v]) => `${k}: ${typeof v === "object" ? text(v) : String(v)}`);
+  const declared = (Errors.declared as Readonly<Record<string, { readonly fields: Readonly<Record<string, unknown>> }>>)[tag];
+  const shown = Object.entries(fields).filter(([k]) => declared === undefined || k in declared.fields).map(([k, v]) => `${k}: ${typeof v === "object" ? text(v) : String(v)}`);
   return `${typeof code === "string" ? `[${code}] ` : ""}${tag}${shown.length > 0 ? ` { ${shown.join(", ")} }` : ""}`;
 };
 

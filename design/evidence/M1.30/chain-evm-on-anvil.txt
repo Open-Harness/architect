@@ -1,0 +1,26 @@
+$ pnpm exec vitest run --root packages/chain-evm --reporter=verbose
+# commit dd5da697 · 2026-11-18T23:24:11Z · exit 0 (expected 0) · 2.0s
+
+
+ RUN  v4.1.12 ./packages/chain-evm
+
+ ✓ src/modules/nonce/nonce.test.ts > allocates unique nonces across parallel calls and case variants 4ms
+ ✓ src/modules/nonce/nonce.test.ts > does not recycle a broadcast nonce or let an obsolete reservation release its successor 2ms
+ ✓ src/modules/nonce/nonce.test.ts > definite rejection reclaims the first nonce and restores the replaced attempt 0ms
+ ✓ src/modules/nonce/nonce.test.ts > a lagging pending count cannot allocate a finalized nonce 0ms
+ ✓ src/modules/faults/faults.test.ts > locked old and current selectors keep the same refusal code and name 4ms
+ ✓ src/modules/faults/faults.test.ts > empty and text-only reverts remain chain faults 1ms
+ ✓ src/modules/events/events.test.ts > the follower builds its hash window under one counted work token 5ms
+ ✓ src/modules/tx/tracker.test.ts > a late confirmation remains valid when the checkpoint has already pruned the event 8ms
+ ✓ src/modules/tx/tracker.test.ts > the on-chain intent deadline drops an intent that has no matching event 1ms
+ ✓ src/modules/tx/tracker.test.ts > a stalled optional trace returns the uncoded mined revert 1ms
+ ✓ src/modules/anvil/anvil.test.ts > the arguments always carry --silent, stay on loopback and make no dev accounts 1ms
+ ✓ src/modules/anvil/anvil.test.ts > a missing binary is a typed failure, not a hang or a throw 16ms
+ ✓ src/modules/anvil/anvil.test.ts > a world's chain answers eth_chainId, holds no printed key, and is gone when the scope ends 105ms
+ ✓ src/modules/tx/tx.test.ts > cancels a stalled receipt RPC within the tracker budget 281ms
+ ✓ src/modules/tx/anvil.test.ts > transfers ERC20, decodes reverts, and corrects a reorg on Anvil 215ms
+
+ Test Files  7 passed (7)
+      Tests  15 passed (15)
+   Start at  23:24:09
+   Duration  1.47s (transform 1.16s, setup 0ms, import 5.70s, tests 652ms, environment 0ms)

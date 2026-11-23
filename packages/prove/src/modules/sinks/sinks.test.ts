@@ -23,6 +23,7 @@ describe("sinks", () => {
     expect(exporter.traces).toEqual({ url: "https://eu.edge.example/v1/traces", headers: { authorization: `Bearer ${TOKEN}`, "x-axiom-dataset": "capxul-test-traces" } });
     expect(exporter.logs.url).toBe("https://eu.edge.example/v1/logs");
     expect(exporter.logs.headers["x-axiom-dataset"]).toBe("capxul-test-logs");
+    expect(exporter.metrics).toEqual({ url: "https://eu.edge.example/v1/metrics", headers: { authorization: `Bearer ${TOKEN}`, "x-axiom-metrics-dataset": "capxul-test-metrics" } });
   });
 
   it("lets AXIOM_TOKEN and AXIOM_DOMAIN override the keychain (CI), and keeps a full URL as it is (a stand-in)", async () => {

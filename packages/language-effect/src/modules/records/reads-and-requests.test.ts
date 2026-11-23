@@ -33,8 +33,8 @@ const spender: Handler<typeof spend, Records> = ({ purse, amount }, { move }) =>
     yield* move();
     return { spent };
   });
-const olga = { kind: "person", person: "per_olga" } as const;
-const bob = { kind: "person", person: "per_bob" } as const;
+const olga = { kind: "person", person: "per_olga", via: "session" } as const;
+const bob = { kind: "person", person: "per_bob", via: "session" } as const;
 const world = () => storeMemory([[Purse, { id: "pur_1", member: "per_olga", spent: 0n, state: "active" }]]);
 const served = Handlers.serve({ name: "purse.spend", operation: spend, handler: spender, notFrom: "PurseNotActive" });
 

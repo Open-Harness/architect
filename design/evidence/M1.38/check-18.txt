@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/18
+# commit 52e71b99+wip · 2026-11-19T14:12:50Z · exit 0 (expected 0) · 25s
+
+
+ RUN  v4.1.12 /Users/abuusama/projects/architect/.claude/worktrees/agent-ad7329bce2064c746/e2e
+
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  14:12:27
+   Duration  22.41s (transform 3.89s, setup 0ms, import 8.26s, tests 13.77s, environment 0ms)

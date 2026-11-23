@@ -31,7 +31,7 @@ that one declaration for free: the model, the HTTP API, the server, the SDK, the
 portal and the telemetry. Nothing is configured twice, and nothing an output shows is written by hand.
 
 **Why a grid measures it.** "Falls out for free" is a claim about every pair of building block and output. The
-coverage audit of 19 November (K12) drew that as a grid of 13 building blocks by 9 outputs, 117 cells, and found the
+coverage audit of 19 November (K12) drew that as a grid of 13 building blocks by 9 outputs, 117 cells (14 and 126 since G5 added invariants), and found the
 claim fully true only for operations. A promise that holds for one row is not yet the promise. So the grid is the
 goal: each row is a lane, each cell in it is a card, and each card is an eval. A card says, in one or two sentences,
 what green means for that building block in that output, and names the evidence that proves it: an e2e check, a
@@ -114,8 +114,9 @@ cell's `path:line` and what it means are in its lane's section below.
 | 11 | [Store](#11-store) | ✓ | ✗ⁿ | ✓ | ✗ⁿ | ✗ⁿ | ✗ⁿ | ~ | ✗ | ✗ |
 | 12 | [Mount, adapter, plugin origin](#12-mount) | ✓ | ✓ⁿ | ✓ | ✓ⁿ | ✓ⁿ | ✓ⁿ | ✗ | ✗ | ✗ |
 | 13 | [Runs on the device (runs: "client")](#13-device) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ~ |
+| 14 | [Invariants (unique rules, G5)](#14-invariant) | ~ | ✗ | ~ | ~ | ~ | ✗ | ~ | ✗ | ✗ |
 
-**In numbers:** 52 ✓, 32 ~ and 33 ✗ of 117. The audiences rule (below, "Who each block is for") makes 20 cards not needed (5 of them ✓ today) and 4 absence checks, which leaves 50 cards to build. By column, ✓ out of 13: model 12, api 6, server 11, sdk 5, cli 4, mcp 6, docs 4, portal 0, telemetry 4.
+**In numbers:** 52 ✓, 37 ~ and 37 ✗ of 126 (the audit's thirteen lanes keep their 52 ✓, 32 ~ and 33 ✗ of 117; the invariant lane adds 5 ~ and 4 ✗). The audiences rule (below, "Who each block is for") makes 20 cards not needed (5 of them ✓ today) and 4 absence checks, which leaves 59 cards to build (the 50 of the audit's lanes and the invariant lane's nine, none of them ✓). By column, ✓ out of 13: model 12, api 6, server 11, sdk 5, cli 4, mcp 6, docs 4, portal 0, telemetry 4.
 
 **Where this differs from the audit.** The audit's grid (K12) was read from a wider sweep; this one is read cell
 by cell against each card's own green, so some cells moved. Up: the CLI and MCP refusal cards (both print the code,
@@ -244,7 +245,7 @@ What "today" means, for each card not yet ✓ (and each regraded one):
 | server | ✓ `packages/language-effect/src/modules/handler/internal/move.ts:39` | A wrong-state call is refused before the handler; a move sets the state and commits it with its journal entry. | packages/language-effect/src/modules/handler/internal/commit.test.ts; e2e/layer2. | built | carries |
 | sdk | ✗ `examples/acme/generated/sdk/src/organization/get.ts:8` | A thing's state is a typed union in the SDK, and the wrong-state refusal is a typed class. | M1.41 reads the SDK's types; ST1.02 through the SDK (M2.08). | M1.42 | carries |
 | cli | ✗ `packages/generators/src/modules/render/internal/cli.ts:1` | A `get` prints the state, and a command's help says which states it moves from and to. | M1.41 reads `--help`. | M1.42 | carries |
-| mcp | ✗ `packages/language-effect/src/modules/mcp/internal/tool.ts:32` | A tool's description says which states it moves from and to, and its output schema types the state. | M1.37's output-schema check. | M1.37 (M3) | carries |
+| mcp | ✗ `packages/language-effect/src/modules/mcp/internal/tool.ts:32` | A tool states which states it moves from and to in what the framework emits for it (its input and output schemas, annotations and metadata (`_meta`)), never in its description, which is the author's and must equal the model's (operation.mcp); its output schema types the state. Changed by #150: the old wording, \"description\", contradicted operation.mcp's exact-description rule. | M1.37's output-schema check. | M1.37 (M3) | carries |
 | docs | ✓ `packages/generators/src/modules/render/internal/docs.ts:66` | The thing's page lists its states, the wrong-state refusal and a move table; each operation's page has its move. | render.test.ts; M1.41. | built; evidence M1.41 | carries |
 | portal | ~ `packages/portal/src/modules/site/internal/detail.ts:58` | The lifecycle strip is drawn from the machine on the thing's card and page, with live move counts on each arrow. | M1.13's screenshot of `handle`'s lifecycle lit by a journey's claim. | M1.13 | carries |
 | telemetry | ~ `packages/language-effect/src/modules/handler/internal/move.ts:48` | Every move writes `move.name`, `move.from` and `move.to` on the operation's span. | e2e/m1/17-telemetry-model.test.ts (written ahead, red on `move.from`). | M1.36 | carries |
@@ -326,7 +327,7 @@ What "today" means, for each card not yet ✓ (and each regraded one):
 | sdk | ✗ `packages/generators/src/modules/render/internal/sdk.ts:62` | Not needed: journeys run through this client (M2.08), never in it. | M2.08. | none; journeys through this client are M2.08 | not needed (rule) |
 | cli | ✗ `packages/generators/src/modules/render/internal/cli.ts:1` | Not needed: journeys run through this client (M2.08), never in it. | M2.08. | none; journeys through this client are M2.08 | not needed (rule) |
 | mcp | ✗ `packages/language-effect/src/modules/mcp/internal/tool.ts:1` | Not needed: journeys run through this client (M2.08), never in it. | M2.08. | none; journeys through this client are M2.08 | not needed (rule) |
-| docs | ✗ `packages/generators/src/modules/render/internal/docs.ts:1` | Each operation's page lists the journeys that cover it, as worked examples drawn from the model. | new: render.test.ts. | M1.13 (proposed addition) | carries |
+| docs | ✗ `packages/generators/src/modules/render/internal/docs.ts:1` | Each operation's page lists the journeys that cover it, as worked examples drawn from the model. (Superseded by W2, 20 November 2026.) | new: render.test.ts. | M1.13 (proposed addition) | carries |
 | portal | ✗ `packages/portal/src/modules/wire/service.ts:7` | The wire decodes journeys and starting worlds (today it says "unavailable", and the reason is stale), and each operation's proof tab shows its journeys and their verdicts. | M1.13's proof tab; M1.41 reads journeys in the data file (proposed addition). | M1.13 (journeys, starting worlds, the proof tab) | carries |
 | telemetry | ~ `packages/prove/src/modules/journeys/internal/device.ts:62` | A journey's calls are traced under the journey's name and step, so the portal lights what a run touched. | e2e/layer1/02-acme-proves.test.ts (spans read back); new for the names. | M1.13 (proposed addition: `journey` and `journey.step` on prove's spans, which its "a journey's run lights up its operation" needs) | carries |
 
@@ -526,7 +527,7 @@ export const cellRole = (block: Block, output: Output): CellRole =>
   : "not-needed";
 ```
 
-On the 117 cards it gives 93 that carry, 4 absence checks (step in the api, sdk, cli and mcp) and 20 not needed:
+On the 126 cards it gives 102 that carry (the invariant lane is for every audience, so its nine all carry), 4 absence checks (step in the api, sdk, cli and mcp) and 20 not needed:
 event, environment, store, mount and journey, each in the four caller outputs. Against the first list of 17, it moves
 these:
 
@@ -573,7 +574,7 @@ The nine columns are not nine independent results. They form three tiers, and a 
 
 **The source tier: model.** Every other column is generated from the model, so the model card is the floor of its lane.
 A building block missing from the model is missing everywhere, and no other card in the lane can be green before it.
-The model column is the only one that is green in all thirteen lanes today.
+The model column is the greenest: 12 of the audit's 13 lanes (Thing & fields is ~), and ~ in the invariant lane.
 
 **The surfaces tier: api, server, sdk, cli, mcp.** The SDK, CLI and MCP are all generated from the one API declaration
 (`packages/generators/src/modules/render/internal/sdk.ts`, `cli.ts` and `mcp.ts` each import the generated API), so a
@@ -643,7 +644,7 @@ and each card's evidence run by hand.
 ## Hill-climb order
 
 No lane can be fully green before M1.13, because every lane's end state is a portal view and the portal column is ✗
-or ~ in all thirteen today (its wire drops most of the model, and no trace source reaches it:
+or ~ in the thirteen lanes of the audit today (its wire drops most of the model, and no trace source reaches it:
 `packages/portal/src/modules/wire/service.ts:6-9`). So the climb is: build the evidence path once on the lane that
 needs least besides it, then let every lane after reuse it.
 
@@ -680,9 +681,29 @@ them on the rows in one change (this record does not edit `milestones.md`):
 **New slices proposed:** the story check (`e2e/story`, after Gate M2, see "The end-to-end story") and ST2.07 (a
 device operation's spans reach the environment's sink, ledger `LAH-02`, before ST2.03).
 
+### 14. invariant
+
+**Waiting for the grid to learn `invariant`, then for ST1.19.** No journey touches an invariant card yet, and the grid cannot see one even when it does: `e2e/grid/src/modules/touches/service.ts` emits no `invariant` row and no evals exist for the block, so ST1.19's rules alone switch nothing on. The checks author adds both, beside ST1.19's checks (a line in the ST1.19 row's needs in `design/milestones.md`); the cards are then switched on by Plugged In's claim journey and their pairs go on `e2e/grid/expected-red.json`. Superseded by `ST1-19-checks.md`, 21 November 2026: the grid has learned `invariant` (the touches row, eight evals, `invariant.cli` held off), and the claim journey's switched-on cells and their 24 red pairs are on the lists.
+
+**Invariants (unique rules, G5).** A thing's rule that stays true among many records of it, declared once in `things/<thing>/invariants.ts` with `Blueprint.invariant.unique(field or tuple, { while, refuse, description })`. The runtime refuses for the handler; every output says the rule. Joined the grid on 20 November 2026 (ST1.10), graded from `goal/stage-1`.
+
+**How it is proved.** Check 25 and its package halves (the model, the compiler's refusals, a real world, the outputs); check 31 (S-19); `ortho prove` on Plugged In's claim journey; ST1.22's Chromium check on the portal's Rules section. Cards and their greens are in `design/grid/grid.json`; the owners are the slices ST1.12 to ST1.18 and ST1.22.
+
+| Output | Today |
+|---|---|
+| model | ~ G4's per-field `unique` is in the model; no named rule, no `refuse`, no operation map |
+| api | ✗ a rule's refusal is in no operation's errors |
+| server | ~ the store's index and conflict retry; the handler still refuses by hand |
+| sdk | ~ reads an operation's refusals, so it would carry a rule's once the model lists it |
+| cli | ~ the same |
+| mcp | ✗ the tool says nothing of a rule |
+| docs | ~ `## Unique` with its scope; no `## Invariants` or reasons |
+| portal | ✗ no Rules section |
+| telemetry | ✗ no `refusal.invariant`, no runtime deciding log |
+
 ## Rows still to come
 
-The audit's thirteen rows are the blocks that exist today. These join the grid as rows when their decision slice names
+The audit's thirteen rows are the blocks that existed then; invariants (G5) is the fourteenth and is already a row. These join the grid as rows when their decision slice names
 their outputs, each with nine cards like the rest: **workflows** (M3.01; stage 3's owner signatures), **views**
 (M5.01, M5.05), **agents and runs** (M4.01, M4.10), **chains as stores and chain events** (M6.01, M6.09), and
 **secrets by declaration** (M2.04; today a field's visibility covers secret fields, not the environment's secrets).

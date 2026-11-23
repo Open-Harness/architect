@@ -1,20 +1,25 @@
 {
   "name": "@orthograph/cli",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "type": "module",
   "dependencies": {
     "@orthograph/compiler": "workspace:*",
     "@orthograph/generators": "workspace:*",
     "@orthograph/lint": "workspace:*",
+    "@orthograph/projections": "workspace:*",
     "@orthograph/prove": "workspace:*",
     "orthograph": "workspace:*",
-    "@effect/platform-node": "4.1.1",
-    "effect": "4.1.1",
+    "@effect/platform-node": "4.1.4",
+    "effect": "4.1.4",
     "nx": "24.0.3",
-    "wrangler": "4.156.1"
+    "wrangler": "4.156.1",
+    "alchemy": "2.0.0-beta.87",
+    "@alchemy.run/cloudflare": "2.0.0-beta.87"
   },
   "devDependencies": {
-    "@orthograph/logbook": "workspace:*"
+    "@orthograph/logbook": "workspace:*",
+    "@orthograph/services": "workspace:*"
   },
   "bin": {
     "ortho": "./src/main.ts"

@@ -99,11 +99,11 @@ Only a layer's own primitives are decided before it starts; the rest wait in `pl
 
 ## Layer 4: on chain
 
-- Solidity is a target, switched on by `lives: Blueprint.chain({ contract, key, per })`. Values say their Solidity type.
+- Solidity is a target, switched on by a thing living in a chain store (K25, 20 November 2026). Values say their Solidity type.
 - Generated: the types, the compiled machine (`_step`), what each person signs (EIP-712 from each payload, with nonce
   and deadline), Foundry tests (every move from every state, wrong signer, replay), the contract scaffold with blanks,
   and the contract's Effect client from the ABI. The compiled contract owns its ABI.
-- Signing: people sign with their own wallets (`signedBy: <role>`). The signer is a primitive; kits implement it:
+- Signing: people sign with their own wallets; the role an operation allows is who must sign, and no `signedBy` is written (M6-chain item 1). The signer is a primitive; kits implement it:
   local key, browser wallet, test keys; later embedded wallets (such as Openfort) and smart accounts (such as Safe).
   Wallets are linked by Sign-In with Ethereum. The contract checks with OpenZeppelin's SignatureChecker, so a plain
   wallet and a smart account are checked the same way.

@@ -1,4 +1,4 @@
-// Generated from the blueprint. Do not edit.
+// Generated from blueprint/projections/api.ts. Do not edit.
 import { HttpApi, HttpApiGroup } from "effect/http-api";
 import * as allowanceGet from "./allowance/get.ts";
 import * as allowanceGrant from "./allowance/grant.ts";

@@ -7,8 +7,8 @@ import { HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
 import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
-import { Auth, Busy, BusyLive, Handlers, Journal, Principals, Reads, Store, Wire, thingIn } from "@orthograph/language-effect";
-import { Mcp, type McpResult } from "@orthograph/language-effect";
+import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, Principals, Reads, Store, Wire, thingIn } from "@orthograph/language-effect";
+import { Mcp, type McpResult, type ShownOperation } from "@orthograph/language-effect";
 import { Api, Errors } from "../api/src/index.ts";
 import * as portal from "../portal/main.ts";
 import { catalog } from "../mcp/src/index.ts";
@@ -23,27 +23,31 @@ import * as sheetThing from "../../blueprint/things/sheet/thing.ts";
 
 export { World } from "@orthograph/host-cloudflare";
 
-const sheetCloseServed = Handlers.serve({ name: "sheet.close", operation: sheetClose.declaration, handler: sheetCloseHandler, notFrom: "SheetNotOpen" });
+const sheetCloseServed = Handlers.serve({ name: "sheet.close", operation: sheetClose.declaration, handler: sheetCloseHandler, notFrom: "SheetNotOpen", notFound: { sheet: "SheetNotFound" }, codes: Errors.codes });
 const sheetGetServed = Reads.serve({ name: "sheet.get", read: sheetGet.declaration });
-const sheetJoinServed = Handlers.serve({ name: "sheet.join", operation: sheetJoin.declaration, handler: sheetJoinHandler, notFrom: "SheetNotOpen" });
-const sheetOpenServed = Handlers.serve({ name: "sheet.open", operation: sheetOpen.declaration, handler: sheetOpenHandler });
+const sheetJoinServed = Handlers.serve({ name: "sheet.join", operation: sheetJoin.declaration, handler: sheetJoinHandler, notFrom: "SheetNotOpen", notFound: { sheet: "SheetNotFound" }, codes: Errors.codes });
+const sheetOpenServed = Handlers.serve({ name: "sheet.open", operation: sheetOpen.declaration, handler: sheetOpenHandler, codes: Errors.codes });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
 const tables = [[thingIn(sheetThing), "sheet"]] as const;
 
 const refusals = Wire.refusals(Errors.wire);
+const CallApi = Api.middleware(CallTelemetry);
 type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth;
 
 /** Who is calling, then the operation or read, its refusals sent as their wire classes. */
 type Run = (payload: never, principal: Principal, request?: string) => Effect.Effect<unknown, unknown, unknown>;
-const call = <P>(served: { readonly run: Run }, payload: P, headers: Readonly<Record<string, string | undefined>>) =>
+/** Every answer and every refusal is cut by the visibility rule for this caller before it is sent. */
+const shown = Wire.shown(Errors.declared);
+const call = <P extends object>(served: { readonly run: Run; readonly operation: ShownOperation }, payload: P, headers: Readonly<Record<string, string | undefined>>) =>
   Effect.flatMap(Principals, (principals) => principals.of(headers["authorization"])).pipe(
+    Effect.withTracerEnabled(false),
     // The caller's idempotency key: for an operation declared `idempotent: "request"`, the same key is one call.
-    Effect.flatMap((principal: Principal) => served.run(payload as never, principal, headers["idempotency-key"])),
+    Effect.flatMap((principal: Principal) => served.run(payload as never, principal, headers["idempotency-key"]).pipe(shown(served, payload, principal))),
     refusals,
   ) as Effect.Effect<never, never, Services>;
 
-const SheetLive = HttpApiBuilder.group(Api, "sheet", Effect.fn(function* (handlers) {
+const SheetLive = HttpApiBuilder.group(CallApi, "sheet", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
   const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
   return handlers
@@ -72,16 +76,24 @@ export interface Env {
   readonly ORTHO_WORLDS?: string;
 }
 
+/** Which steps each operation runs, by the operation's name: the server's own record, never in the API package (the caller's contract names no step, K14). */
+export const steps = {
+  "sheet.close": ["sheet.close.record"],
+  "sheet.join": ["sheet.join.load", "sheet.join.record"],
+  "sheet.open": ["sheet.open.insert"],
+} as const;
+
 // Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the
 // layer's instance, so a session either one issues is a person to both.
 let routes: ReturnType<typeof AuthD1.make> | undefined;
-const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, cli: "signup-cli" }));
+const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, cli: "signup-cli", worlds: hostsWorlds(env) }));
 
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
-    HttpApiBuilder.layer(Api).pipe(
+    HttpApiBuilder.layer(CallApi).pipe(
       Layer.provide([SheetLive]),
-      Layer.provide([StoreD1.layer({ tables }), JournalD1.layer, BusyLive, AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET }))]),
+      Layer.provideMerge(CallTelemetry.layer),
+      Layer.provide([StoreD1.layer({ tables }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
       Layer.provideMerge(Database.d1(env.DB)),
       Layer.provide(HttpServer.layerServices),
     ),
@@ -105,22 +117,29 @@ const hostsWorlds = (env: Env) =>
 const tools = Mcp.tools<Services>({
   catalog,
   served: { "sheet.close": sheetCloseServed, "sheet.get": sheetGetServed, "sheet.join": sheetJoinServed, "sheet.open": sheetOpenServed },
-  refusals: { codes: Errors.codes, declared: Errors.declared },
+  refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 
 // The MCP server's own runtime, built once per isolate: the same store, journal, busy count and auth as the API's.
 let mcpRuntime: ManagedRuntime.ManagedRuntime<Services, never> | undefined;
 const runtimeOf = (env: Env) =>
   (mcpRuntime ??= ManagedRuntime.make(
-    Layer.mergeAll(StoreD1.layer({ tables }), JournalD1.layer, BusyLive, AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET }))).pipe(Layer.provideMerge(Database.d1(env.DB))),
+    Layer.mergeAll(StoreD1.layer({ tables }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(env.DB))),
   ));
 
 const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/;
 
-/** `/mcp`: a person's access token (OAuth, by Better Auth's provider) or a 401 that says where to get one; then the tool call. */
+/** Who is asking at `/mcp`: any credential the identity knows, or an OAuth access token. This door is the agent's, so each is an agent for its person (M2-auth, fork 2). */
+const asker = (env: Env, request: Request) =>
+  runtimeOf(env).runPromise(Effect.flatMap(Principals, (principals) => principals.of(request.headers.get("authorization") ?? undefined, "mcp"))).then((principal) =>
+    principal.kind !== "anonymous"
+      ? { kind: "asked" as const, principal }
+      : Effect.runPromise(AuthD1.oauth.bearer(routesOf(env), request)).then((who) => (who.kind === "person" ? { kind: "asked" as const, principal: who.principal } : who)));
+
+/** `/mcp`: an agent's credential, or a 401 that says where to get one; then the tool call. */
 const mcp = (env: Env, request: Request, context: Context.Context<never> | undefined): Promise<Response> =>
-  Effect.runPromise(AuthD1.oauth.bearer(routesOf(env), request)).then((who) => {
-    if (who.kind !== "person") {
+  asker(env, request).then((who) => {
+    if (who.kind !== "asked") {
       const invalid = who.kind === "invalid";
       return Response.json({ error: invalid ? "invalid_token" : "unauthorized" }, { status: 401, headers: { "www-authenticate": AuthD1.oauth.challenge(request, invalid ? "invalid_token" : undefined) } });
     }

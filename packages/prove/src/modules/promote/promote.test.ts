@@ -1,27 +1,24 @@
 // L2.05's done-when checks, on a copy of acme under git, through the `ortho promote` command: it refuses a revision
 // without verdicts and accepts one that has them, production is refused without staging verdicts, one bundle hash runs in
 // test, staging and production, and a dirty tree or an unbuilt bundle is refused. Real wrangler and workerd for the
-// logbook and the three environments, real collectors and a real OIDC server (mock-oauth2-server, pinned by digest) in
-// Docker.
+// logbook and the three environments, real collectors and a real OIDC issuer (an @orthograph/services process), each on a free port.
 import { freePorts } from "../../../test/ports.ts";
 import { spawnSync } from "node:child_process";
-import { chmodSync, cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import { Effect } from "effect";
+import { Effect, Exit, Scope } from "effect";
+import { Issuer } from "@orthograph/services";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Environments } from "#modules/environments/service.js";
 
-const ISSUER_IMAGE = "ghcr.io/navikt/mock-oauth2-server:6.1.4@sha256:647dd8c78a54f0e6fcd58d79c884e612f8f998a0662276f3e1db22e464a50192";
 const PORTS = freePorts("logbook", "test", "staging", "production", "issuer");
 const acme = resolve(import.meta.dirname, "../../../../../examples/acme");
 const cli = resolve(import.meta.dirname, "../../../../cli/src/main.ts");
 const trusted = { repository: "acme/acme", workflow: "ortho" };
-const container = `ortho-l205-issuer-${process.pid}`;
+const services = Effect.runSync(Scope.make());
 const visible = (from: string) => !basename(from).startsWith(".");
-const docker = (...args: ReadonlyArray<string>) => spawnSync("docker", args, { encoding: "utf8" });
 const run = <A, E>(effect: Effect.Effect<A, E>) => Effect.runPromise(effect);
-const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 // Each ortho command blocks this test's event loop. A pooled socket may close while spawnSync is running, so
 // never carry one across those commands. Closing the request is safe for both reads and signed writes; no replay.
@@ -96,13 +93,7 @@ const bundleOf = async (name: "test" | "staging" | "production") => {
 beforeAll(async () => {
   const dir = join(parent, "issuer");
   mkdirSync(dir);
-  const config = join(dir, "issuer.json");
-  writeFileSync(config, JSON.stringify(scenarios));
-  chmodSync(config, 0o644);
-  docker("rm", "-f", container);
-  const started = docker("run", "-d", "--name", container, "-p", `127.0.0.1:${PORTS.issuer}:8080`, "-e", "JSON_CONFIG_PATH=/config/issuer.json", "-v", `${config}:/config/issuer.json:ro`, ISSUER_IMAGE);
-  expect(started.status, started.stderr).toBe(0);
-  for (let i = 0; i < 300 && !(await request(`${issuer}/.well-known/openid-configuration`).then((r) => r.ok, () => false)); i++) await sleep(200);
+  await run(Issuer.start({ port: PORTS.issuer, dir, config: scenarios }).pipe(Scope.provide(services)));
   // A pull request's token is trusted by the logbook, so that only a verdict's ref, not its signature, keeps it from counting.
   const policy = { issuer, repository: trusted.repository, refs: ["refs/heads/main", "refs/pull/*/merge"], workflows: [trusted.workflow] };
   expect((await run(Environments.up({ root, name: "logbook", port: PORTS.logbook, policy }))).url).toBe(logbook);
@@ -110,7 +101,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const name of ["production", "staging", "test", "logbook"]) await run(Environments.down({ root, name }));
-  docker("rm", "-f", container);
+  await run(Scope.close(services, Exit.void));
   rmSync(parent, { recursive: true, force: true });
 });
 

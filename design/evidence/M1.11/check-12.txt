@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root e2e --config vitest.m1.config.ts m1/12
+# commit 15491548 · 2026-11-19T07:30:39Z · exit 0 (expected 0) · 13.5s
+
+
+ RUN  v4.1.12 ./e2e
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  07:30:27
+   Duration  12.70s (transform 51ms, setup 0ms, import 69ms, tests 12.50s, environment 0ms)

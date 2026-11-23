@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { installPackagesTask } from "@nx/devkit";
+import { Effect } from "effect";
 import type { Model } from "@orthograph/compiler";
 import { Render } from "@orthograph/generators/render";
 import type { StarterApi } from "./types.ts";
@@ -20,7 +21,8 @@ const read: StarterApi["read"] = (root, version) => ({
 const write: StarterApi["write"] = (tree, { name }, source) => {
   for (const f of source.files) tree.write(f.path, f.content);
   // generated/ is rendered for this project's name; the handlers are the starter's own, so no scaffold is written.
-  for (const f of Render.files({ name, model: JSON.parse(source.model) as Model })) if (!f.scaffold) tree.write(f.path, f.content);
+  // The starter mounts no projection, so the model, the api and the server are rendered as they always were.
+  for (const f of Effect.runSync(Render.files({ name, model: JSON.parse(source.model) as Model }))) if (!f.scaffold) tree.write(f.path, f.content);
   const existing = tree.exists("package.json") ? (JSON.parse(tree.read("package.json", "utf8")!) as Record<string, unknown>) : {};
   tree.write("package.json", JSON.stringify(packageJson(existing, name, source.version), null, 2) + "\n");
   tree.write("tsconfig.json", JSON.stringify(TSCONFIG, null, 2) + "\n");

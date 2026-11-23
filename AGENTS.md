@@ -5,10 +5,11 @@
 ## What this repository is
 
 Orthograph, the framework (command `ortho`, packages `@orthograph/*`); what you write with it is the blueprint. The name
-was decided on 18 November 2026 (`design/decisions/K6-orthograph.md`), and `design/naming.md` maps every name. Its design is in `design/`: the frame
-(`frame/`), the milestones (`milestones.md`: M0 to M7, each slice with what it needs and the check that proves it), the
-decisions (`decisions/`), `packages.md`, `spikes.md` and `spikes/`, and the design docs in `design/docs/`. Layers 1 and
-2 are recorded in `build-plan.md`.
+was decided on 18 November 2026 (`design/decisions/K6-orthograph.md`), and `design/naming.md` maps every name. Its documentation is the canon,
+`docs/canon/`, and its status page, `docs/canon/status.md`, says what is built and maps the packages (K41). Its design is
+in `design/`: the milestones (`milestones.md`: M0 to M7, each slice with what it needs and the check that proves it), the
+decisions (`decisions/`), `spikes.md` and `spikes/`. The retired frame and the old docs page are records in
+`design/history/retired-2026-11-23/`. Layers 1 and 2 are recorded in `build-plan.md`.
 
 ## Who decides (Aaron, 16 November 2026)
 
@@ -30,14 +31,23 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 
 ## How work flows
 
-- **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). Nothing
-  in a milestone starts until the previous milestone's gate passes on `main`. Ideas for later go in `design/later.md`,
-  never into code.
-- **Goals.** Work runs as goals in `design/goals/`: one long autonomous run with a bound and a single done check. A
-  goal works on `m<n>`, one commit per milestone slice, each ending green with its "done when" check. It loops
-  generate, run, fix until the check passes, then moves on. The milestone reaches `main` by one pull request, merged
-  when CI is green, its gate passes and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
-  parallel.
+- **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). An
+  app goal builds what it needs in its own slice, unless a running goal has claimed it or its paths (K42); a milestone
+  is done when its gate passes on `main`. The running goals and the collision rule are in `design/goals/map.md`. Ideas
+  for later go in `design/later.md`, never into code.
+- **Goals.** A goal is one long-running agent, today a thread that manages other threads, later a superagent (K42).
+  The framework goal (Goal 18) always runs: it ranks what can run now, starts it and keeps the board. The lander (Goal
+  19) always runs: it brings each app goal's green slices into `main`. An app goal (the superagent, Goal 17, first;
+  then Capxul, Goal 16) builds one app and its share of the framework pieces the apps need, and dogfoods the framework. A goal exists while its
+  agent runs. Its brief in `design/goals/` has one done check; it works one commit per slice, each ending green with
+  its "done when" check. It loops generate, run, fix until the check passes, then moves on. Its work reaches `main` by
+  pull requests, merged when CI is green and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
+  parallel. A goal may run in any harness (Claude Code, Codex, OpenCode, Amp) and coordinates through the repository and
+  GitHub: its brief's "Where it stands", its claims on the board, and Snag issues (K42;
+  `design/decisions/K33-github-native.md`; the `github` skill says how).
+  A slice lands early, by a branch cut at the commit that ends it and merged into `main` (into `goal/stage-1` until
+  the lander retires it) by a merge commit, which is how the lander brings app work into `main` (K42, section 8;
+  `K38-early-landing.md`).
 - **Spikes** answer one question in throwaway code under `spikes/<name>/`, on a `spike/<name>` branch. Each ends with
   a README (question, tried, found, the decision it supports, open risks) and is merged into `main` for the record.
   Spike code is never imported by packages.
@@ -45,17 +55,22 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   in `design/decisions/<id>.md` with the evidence. Don't reopen one without new evidence.
 - **Journeys and checks come first.** A different agent from the builder writes an operation's journeys and checks,
   and they fail on empty handlers before the builder starts (the `author` skill). A builder never edits journeys, the
-  evals or the runner's generic checks; on `m1` and the goal branches it may only remove lines from the ratchet list,
-  `e2e/m1/expected-failing.txt`. Authors' branches end in `-check` and builders' in `-build`. A builder that needs a
-  check changed stops and asks its author.
+  evals or the runner's generic checks; on `m1` and the goal branches it may only remove lines from the ratchet lists, a file per check
+  in an e2e suite's `expected-failing/` (`e2e/m1/`, `e2e/ui-layer/` and the rest; CI-ratchet-suites) and a file per test file in `packages/<package>/expected-failing/` (G11), or delete a file there. Authors' branches end in `-check` and builders' in `-build`. A builder that needs a
+  check changed stops and asks its author. A slice that changes acme's wire, its model or its checked-in `generated/` lands as a
+  pair, `goal-3/<slice>-check` and `goal-3/<slice>-build`, because layer 1 and layer 2 have no ratchet (G12,
+  `design/decisions/G12-paired-landing.md`).
 - **Merge your own pull requests when CI is green,** every review thread is resolved and a 🔍 reviewer that wrote none
   of it has passed it. The 🔍 pass is the gate. Codex is advisory (`design/decisions/CI-codex-advisory.md`): comment
   "@codex review" when it is available, and answer any finding it posts before the merge, but nobody waits on it; if
-  Codex is down or slow, the pull request merges without it. Push on until actually blocked. GitHub enforces CI and
+  Codex is down or slow, the pull request merges without it. Push on until actually blocked, and never end a turn waiting on CI without a background watcher that wakes you (`design/decisions/CI-integration.md`). GitHub enforces CI and
   threads, admins included (`design/decisions/CI-branch-protection.md`): `main`, `m1` and `goal/stage-1` require their
   CI jobs and every conversation resolved. `main` and `goal/stage-1` also require `builder-paths`: a `-build` pull
-  request may not touch journeys, evals or checks. A docs-only pull request skips `e2e-layer1` and `e2e-layer2`, and a
-  skip passes (`design/decisions/CI-docs-fast-path.md`). Bring a branch up to date by merging its base in, never by
+  request may not touch journeys, evals or checks. On a docs-only pull request `e2e-layer1` and `e2e-layer2`
+  pass without running their steps (`design/decisions/CI-docs-fast-path.md`). Open pull requests as drafts: a draft runs no CI, so test
+  locally, get the 🔍 pass, then mark it ready and CI runs once; keep at most two ready pull requests per lane in CI at
+  once (`design/decisions/CI-drafts.md`). CI goes by the pull request's live draft state, never the event's payload, so a
+  push just before `gh pr ready` still runs CI (`design/decisions/CI-drafts-race.md`). Bring a branch up to date by merging its base in, never by
   rebasing, so the commits a reviewer already read keep their identity.
 
 ## The code's own rules (enforced by lint and check as soon as they exist)
@@ -68,7 +83,8 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   after a shebang when there is one) and are never edited. Scaffolds start
   with `// Scaffolded from <path>. Yours from now on.`
 - Package rules (Nx module boundaries): `orthograph` (the front door, the `Blueprint` API) depends only on Effect;
-  generated code imports only the language's runtime, `orthograph`, the host and project code; `compiler` and `generators`
+  generated code imports only the language's runtime, `orthograph`, the host and project code, and in `generated/web/`
+  also `@ui-sdk/*`, `react` and `@orthograph/web` (K29); `compiler` and `generators`
   never run in production.
 - Pin dependency versions exactly, and use versions published at least three days before you add them (Aaron, 17
   November 2026). A younger version needs an override: its name in `minimumReleaseAgeExclude` in
@@ -95,6 +111,10 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 Every thread is one type, titled with its emoji; the skills are in `.agents/skills/`: `threads` (the types and each agent's
 word for starting, messaging, reading and archiving a thread), `conductor` (the loop), `spike` (running a spike),
 `author` (writing journeys and checks, and proving each fair), `reviewer` (the 🔍 review), `hashtags` (Aaron's `#shortcuts`), `portal-design` (designing portal and console screens:
-the process and the style guide) and `kanban` (the board Aaron and the conductor track every slice on, its data saved
-in the repo, and `STATE.md`, where the project stands). `.claude/skills` and `.claude/agents/reviewer.md`
+the process and the style guide), `kanban` (the board Aaron and the conductor track every slice on, its data saved
+in the repo, and `STATE.md`, where the project stands), `ui-sdk` (UI SDK's own skill, vendored at the pinned version, for
+the generated pieces, pages and the portal's components on it; its `README.md` says how we use it) and `github` (how the
+work lives on GitHub: a milestone per goal, the issue kinds and forms, labels, the pull request template and the sync, K33).
+On `goal/on-chain`, the `goal-4` skill is how Goal 4's lead works and resumes; its state is
+`.agents/skills/goal-4/STATE.md`. `.claude/skills` and `.claude/agents/reviewer.md`
 are links to it; edit them only in `.agents/skills/`.

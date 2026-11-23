@@ -22,7 +22,7 @@ The mission's tasks, each in the column its facts put it in.
 ## Steps
 
 - `mission.tasks.plan` (database)
-- `mission.tasks.facts` (undefined)
+- `mission.tasks.facts` (blank)
 
 ## Refusals
 

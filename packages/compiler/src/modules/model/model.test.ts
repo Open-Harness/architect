@@ -10,14 +10,16 @@ import { Compiler } from "./service.ts";
 const visible = (from: string) => !basename(from).startsWith(".");
 
 const acme = resolve(import.meta.dirname, "../../../../../examples/acme");
-const scratch = resolve(import.meta.dirname, "../../../test/tmp");
+// This file's own folder: test/tmp also holds other files' scratch copies, which removing test/tmp as a whole deleted
+// while they loaded (design/decisions/CI-compiler-test-speed.md, "The scratch-folder race").
+const scratch = resolve(import.meta.dirname, "../../../test/tmp/model");
 const modelOf = (root: string) => Effect.runPromiseExit(Effect.provide(Compiler.model, nodeSource(root)));
 
 /** A copy of acme's blueprint inside the package, so its imports still resolve. */
-const copyOfAcme = (): string => {
+const copyOfAcme = (startingWorlds = true): string => {
   mkdirSync(scratch, { recursive: true });
   const root = mkdtempSync(join(scratch, "acme-"));
-  cpSync(join(acme, "blueprint"), join(root, "blueprint"), { recursive: true, filter: visible });
+  cpSync(join(acme, "blueprint"), join(root, "blueprint"), { recursive: true, filter: (path) => visible(path) && basename(path) !== "projections" && (startingWorlds || basename(path) !== "starting-worlds") });
   return root;
 };
 
@@ -30,7 +32,8 @@ describe("model", () => {
     if (!Exit.isSuccess(exit)) return;
     expect(Object.keys(exit.value.operations)).toEqual(["allowance.get", "allowance.grant", "allowance.revoke", "allowance.spend", "api-key.create", "invitation.accept", "invitation.revoke", "invitation.send", "membership.get", "organization.create", "organization.get", "person.sign-up", "session.show", "session.sign-in", "system.health"]);
     const grant = exit.value.operations["allowance.grant"];
-    expect(grant?.refusals).toEqual(["AllowanceLimitTooHigh", "NotAllowed"]);
+    // K16 (M1.46): grant's member is read by no role check, so a missing one is refused PersonNotFound before the handler.
+    expect(grant?.refusals).toEqual(["AllowanceLimitTooHigh", "PersonNotFound", "NotAllowed", "IdempotencyConflict"]);
     expect(grant?.steps).toEqual({ insert: { name: "allowance.grant.insert", type: "database" } });
     expect(grant?.allowed).toEqual([{ kind: "role-of", role: "organization.owner", path: "organization" }]);
     expect(exit.value.things["allowance"]?.fields["member"]?.ref).toBe("person.id");
@@ -38,7 +41,7 @@ describe("model", () => {
   });
 
   it("names an operation after its file: grant.ts renamed to award.ts is allowance.award", async () => {
-    const root = copyOfAcme();
+    const root = copyOfAcme(false);
     renameSync(join(root, "blueprint/things/allowance/verbs/grant.ts"), join(root, "blueprint/things/allowance/verbs/award.ts"));
     const exit = await modelOf(root);
     expect(Exit.isSuccess(exit)).toBe(true);
@@ -48,7 +51,7 @@ describe("model", () => {
   });
 
   it("keeps every hash when a file is only reformatted", async () => {
-    const before = await modelOf(acme);
+    const before = await modelOf(copyOfAcme());
     const root = copyOfAcme();
     const file = join(root, "blueprint/things/allowance/verbs/grant.ts");
     const reformatted = readFileSync(file, "utf8").split("\n").map((l) => `\t${l}   `).join("\n\n");
@@ -111,6 +114,92 @@ describe("model", () => {
     const renamed = await modelOf(fixed);
     expect(Exit.isSuccess(renamed)).toBe(true);
     if (Exit.isSuccess(renamed)) expect(Object.keys(renamed.value.environments!)).toEqual(["local", "preview", "production", "test"]);
+  });
+
+  // A journey step that calls an operation with a blank part is described under `blankOperations`, so it has no entry in
+  // `operations` to look the payload's `visibility` up in. The completed operation's secret is redacted (journeys.ts `publicData`,
+  // asserted for acme's sign-up journey below); a blank one must redact the same payload field, not print the literal.
+  describe("a journey step's payload literals", () => {
+    const secret = "hunter2-DISTINCTIVE-4f9a1c";
+    const journey = (root: string) => {
+      mkdirSync(join(root, "journeys"), { recursive: true });
+      writeFileSync(join(root, "journeys/leak.ts"), [
+        'import { Blueprint } from "orthograph";',
+        'import signUp from "../blueprint/things/person/verbs/sign-up.ts";',
+        'export default Blueprint.journey("a newcomer signs up", {',
+        "  cast: { newcomer: Blueprint.anyone },",
+        `  steps: (s) => [s.step("the newcomer signs up", s.newcomer.run(signUp, { email: "n@example.test", password: "${secret}", name: "Newcomer" }))],`,
+        "});",
+        "",
+      ].join("\n"));
+    };
+    const signUpOf = (root: string, blank: boolean) => {
+      journey(root);
+      if (blank) {
+        const file = join(root, "blueprint/things/person/verbs/sign-up.ts");
+        writeFileSync(file, readFileSync(file, "utf8").replace("steps: { create: Blueprint.step.database() },", 'steps: Blueprint.todo("the steps"),'));
+      }
+      return modelOf(root);
+    };
+
+    it("are redacted for a completed operation: the secret field is { redacted: true }", async () => {
+      const exit = await signUpOf(copyOfAcme(false), false);
+      expect(Exit.isSuccess(exit)).toBe(true);
+      if (!Exit.isSuccess(exit)) return;
+      expect(Object.keys(exit.value.operations)).toContain("person.sign-up");
+      expect(JSON.stringify(exit.value).includes(secret) ? "the secret literal is in the model" : "the model is clean").toBe("the model is clean");
+      expect(Object.values(exit.value.journeys!)[0]?.steps[0]).toMatchObject({ call: { payload: { password: { redacted: true } } } });
+    });
+
+    it("are redacted for an operation that has a blank part too, in describe's JSON", async () => {
+      const exit = await signUpOf(copyOfAcme(false), true);
+      expect(Exit.isSuccess(exit)).toBe(true);
+      if (!Exit.isSuccess(exit)) return;
+      expect(Object.keys(exit.value.blankOperations ?? {})).toContain("person.sign-up");
+      // Redacted or left out are both fine; the literal in describe's JSON is not.
+      const leaked = JSON.stringify(exit.value).includes(secret);
+      expect(leaked ? `the blank operation's secret payload literal is in describe's JSON: ${JSON.stringify(Object.values(exit.value.journeys!)[0]?.steps[0])}` : "the model is clean").toBe("the model is clean");
+    });
+  });
+
+  // A blank operation's payload is redacted by its declaration: a public field's literal is data, a secret one is
+  // { redacted: true }, a key the declaration does not name stays redacted, and a wholly blank payload redacts everything.
+  describe("a blank operation's payload literals, by declared visibility", () => {
+    const publicLiteral = "public-DISTINCTIVE-7b2e";
+    const stepOf = async (blankPayload: boolean) => {
+      const root = copyOfAcme(false);
+      mkdirSync(join(root, "journeys"), { recursive: true });
+      writeFileSync(join(root, "journeys/mixed.ts"), [
+        'import { Blueprint } from "orthograph";',
+        'import signUp from "../blueprint/things/person/verbs/sign-up.ts";',
+        'export default Blueprint.journey("a newcomer signs up", {',
+        "  cast: { newcomer: Blueprint.anyone },",
+        `  steps: (s) => [s.step("the newcomer signs up", s.newcomer.run(signUp, { email: "${publicLiteral}@example.test", password: "hunter2", name: "Newcomer", undeclared: "stray" } as never))],`,
+        "});",
+        "",
+      ].join("\n"));
+      const file = join(root, "blueprint/things/person/verbs/sign-up.ts");
+      const blanked = readFileSync(file, "utf8").replace("steps: { create: Blueprint.step.database() },", 'steps: Blueprint.todo("the steps"),');
+      writeFileSync(file, blankPayload ? blanked.replace(/payload: \{[^\n]*\},/, 'payload: Blueprint.todo("the payload"),') : blanked);
+      const exit = await modelOf(root);
+      expect(Exit.isSuccess(exit)).toBe(true);
+      if (!Exit.isSuccess(exit)) throw new Error("model failed");
+      expect(Object.keys(exit.value.blankOperations ?? {})).toContain("person.sign-up");
+      return (Object.values(exit.value.journeys!)[0]?.steps[0] as { call: { payload: Record<string, unknown> } }).call.payload;
+    };
+
+    it("keeps a public literal as data, redacts a secret one and an undeclared key", async () => {
+      const payload = await stepOf(false);
+      expect(payload["email"]).toBe(`${publicLiteral}@example.test`);
+      expect(payload["name"]).toBe("Newcomer");
+      expect(payload["password"]).toEqual({ redacted: true });
+      expect(payload["undeclared"]).toEqual({ redacted: true });
+    });
+
+    it("redacts everything when the payload declaration is wholly blank", async () => {
+      const payload = await stepOf(true);
+      expect(payload).toEqual({ email: { redacted: true }, password: { redacted: true }, name: { redacted: true }, undeclared: { redacted: true } });
+    });
   });
 
   it("refuses a verb file that holds no operation", async () => {
@@ -178,7 +267,7 @@ describe("model", () => {
       edit(root, "things/organization/thing.ts", (t) => t.replace('  description: "A company', '  code: "AL",\n  description: "A company'));
       const exit = await modelOf(root);
       expect(Exit.isFailure(exit)).toBe(true);
-      expect(JSON.stringify(exit)).toMatch(/organization and allowance would both have refusal codes starting AL-|allowance and organization would both/);
+      expect(JSON.stringify(exit)).toMatch(/organization and allowance \(blueprint\/things\/allowance\/thing\.ts\) would both have refusal codes starting AL-/);
     });
 
     it("defaults `runs` to server and `test` to unit, and refuses every other place, naming the target that would run it", async () => {
@@ -191,7 +280,7 @@ describe("model", () => {
       const refusedClient = await modelOf(client);
       expect(Exit.isFailure(refusedClient)).toBe(true);
       expect(JSON.stringify(refusedClient)).toContain('blueprint/things/allowance/verbs/grant.ts: runs \\"client\\" is not supported yet');
-      expect(JSON.stringify(refusedClient)).toContain("language-noir");
+      expect(JSON.stringify(refusedClient)).toContain("a mounted plugin supplies it, with a code entry for each of node, browser and world");
 
       const chain = copyOfAcme();
       edit(chain, "things/allowance/verbs/grant.ts", (t) => t.replace("  idempotent:", '  runs: "chain",\n  idempotent:'));

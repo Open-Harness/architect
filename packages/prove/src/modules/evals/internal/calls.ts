@@ -1,6 +1,6 @@
 // Evals 1 to 6 and 9: each looks at every call of one operation.
 import { Schema } from "effect";
-import { structOf } from "orthograph/server";
+import { listItemFields, structOf, traceable, wireStruct } from "orthograph/server";
 import type { FieldModel } from "@orthograph/compiler";
 import type { PerOperation, Verdict } from "../types.ts";
 import { answered, attr, replayed, subtree, where } from "./evidence.ts";
@@ -21,22 +21,45 @@ const fromJson = (text: unknown) => {
 };
 
 /**
- * 1. Span answers keep their declared shape, including an answer the server refused to send. Hidden fields come
- * only from the observed response; a present schema-valued field uses that response's unambiguous type. The same eval
- * checks that no secret value, sent or answered, appears in any span or log of the call (`secrets.ts`).
+ * 1. Span answers keep their declared shape, including an answer the server refused to send. Fields kept out of
+ * telemetry come from the observed response, when there is one. A present schema-valued field uses that response's
+ * unambiguous type. The same eval checks for values that should never appear in traces (`secrets.ts`).
  */
 export const answerShape: PerOperation = (op, evidence, { project }) => {
-  const declared = project.operations.get(op.name)?.answer ?? {};
+  const operation = project.operations.get(op.name);
+  const declared = operation?.answer ?? {};
+  const traceItems = operation?.kind === "read" && operation.by === "list"
+    ? Schema.Array(structOf(Object.fromEntries(Object.entries(listItemFields(operation.thing)).filter(([, field]) => traceable(field)))))
+    : undefined;
+  const shown = (key: string) => {
+    const field = declared[key];
+    return field !== undefined && traceable(field);
+  };
   const failures = evidence.flatMap((e) => {
     const fromSpan = Object.fromEntries(Object.entries(e.opSpan?.attrs ?? {}).filter(([k]) => k.startsWith("answer.")).map(([k, v]) => [k.slice(7), v]));
     const hasResponse = answered(e) && e.call.body !== undefined;
     const sent = answered(e) && typeof e.call.body === "object" && e.call.body !== null ? (e.call.body as Record<string, unknown>) : {};
-    const hidden = Object.fromEntries(Object.entries(sent).filter(([k]) => op.answer[k]?.visibility !== undefined));
+    const hidden = Object.fromEntries(Object.entries(sent).filter(([k]) => !shown(k)));
     const answer = Object.keys(fromSpan).length > 0 ? { ...hidden, ...fromSpan } : answered(e) ? sent : undefined;
-    const leaks = secretsIn(op, e);
+    const leaks = secretsIn(op, operation, e);
     if (!answer) return leaks;
     return [...leaks, ...Object.keys(op.answer).flatMap((k) => {
-      const schema = structOf({ [k]: declared[k]! }) as never;
+      // A field with a declared visibility is cut from the answer of a caller who is not shown it (M1.35): absent is right.
+      // Present, it is still checked below. A public field has no visibility, so a public field that is missing still fails.
+      // An issued field (`Blueprint.issued`) is the exception: the call that issues it hands it to its own caller, so presence is required.
+      // Visibility decides what is displayed, never whether the field is there. The report names the field and never prints a value.
+      // The model decides: the compiler copies `issued` from the declaration into the model, and refuses it anywhere but a secret answer value.
+      const issued = op.answer[k]?.issued === true;
+      if (issued && hasResponse && !Object.hasOwn(answer, k)) return [`${where(e)}: answer.${k}: issued by ${op.name}, missing from its answer`];
+      if (hasResponse && !issued && op.answer[k]?.visibility !== undefined && !Object.hasOwn(answer, k)) return [];
+      // Live telemetry has no response and an external sink also drops email (D3 #120).
+      if (!hasResponse && (!shown(k) || k === "email")) return [];
+      if (!hasResponse && k === "items" && traceItems !== undefined) {
+        const decoded = Schema.decodeUnknownExit(traceItems as never)(fromJson(answer[k]), { onExcessProperty: "error" });
+        return decoded._tag === "Success" ? [] : [`${where(e)}: answer.items: expected traceable item fields and state`];
+      }
+      // The wire's codec: a private or secret field the server cut for this caller may be absent, a public one never is.
+      const schema = wireStruct({ [k]: declared[k]! }, { issuing: operation?.kind === "operation", ...(operation?.kind === "read" && operation.by === "list" ? { items: listItemFields(operation.thing) } : {}) }) as never;
       const schemaValued = op.answer[k]?.value.type === "schema";
       // An observed response disambiguates a schema-valued field only after the existing answer selection found it:
       // a valid body cannot bless a public field missing from partial answer telemetry (D3 #82).
@@ -44,8 +67,10 @@ export const answerShape: PerOperation = (op, evidence, { project }) => {
       const rawFits = Schema.decodeUnknownExit(schema)({ [k]: got })._tag === "Success";
       // Span-only strings are ambiguous: keep valid text before trying the encoded object/list representation.
       const ok = rawFits || (!hasResponse && schemaValued && Schema.decodeUnknownExit(schema)({ [k]: fromJson(got) })._tag === "Success");
-      // A secret is not repeated in the report, only said to be wrong.
-      return ok ? [] : [`${where(e)}: answer.${k}: expected ${expectation(op.answer[k])}, got ${op.answer[k]?.visibility === undefined ? JSON.stringify(answer[k]) : "a value that does not fit (hidden: not public)"}`];
+      if (ok) return [];
+      // A value kept out of telemetry is also kept out of the report.
+      const display = shown(k) && !(k === "items" && traceItems !== undefined) ? JSON.stringify(answer[k]) : "a value that does not fit (hidden from telemetry)";
+      return [`${where(e)}: answer.${k}: expected ${expectation(op.answer[k])}, got ${display}`];
     })];
   });
   return verdict("answer shape", op.name, failures);
@@ -111,7 +136,7 @@ export const whoMayCall: PerOperation = (op, evidence) =>
     return [];
   }));
 
-/** 6. Every declared step of an answered call ran in its own span, in the order the operation declares them. */
+/** 6. Every required step of an answered call ran in its own span; all observed steps ran in declared order. */
 export const steps: PerOperation = (op, evidence) =>
   verdict("steps", op.name, evidence.flatMap((e) => {
     if (!answered(e) || replayed(e)) return [];
@@ -120,15 +145,20 @@ export const steps: PerOperation = (op, evidence) =>
       const span = e.trace.spans.find((x) => x.name === s.name);
       return span ? [{ name: s.name, start: span.start }] : [];
     });
-    const missing = declared.filter((s) => !ran.some((r) => r.name === s.name)).map((s) => `${where(e)}: declared step ${s.name} ran no span`);
+    const missing = declared.filter((s) => !("optional" in s && s.optional === true) && !ran.some((r) => r.name === s.name))
+      .map((s) => `${where(e)}: declared step ${s.name} ran no span`);
     const late = ran.slice(1).flatMap((r, i) => (r.start < ran[i]!.start ? [`${where(e)}: step ${r.name} ran before ${ran[i]!.name}, which is declared first`] : []));
     return [...missing, ...late];
   }));
 
-/** 9. Every declared refusal has the log that decided it, inside the operation's span. */
+/** 9. Every declared refusal, and every rule's refusal (the runtime's own, G5), has the log that decided it, inside the operation's span. A rule's refusal names its rule on the span (`refusal.invariant`, its full name): log text is redacted of hidden values, so it is never matched. */
 export const explainability: PerOperation = (op, evidence) =>
   verdict("explainability", op.name, evidence.flatMap((e) => {
-    if (!e.refusal || !op.errors.includes(e.refusal)) return [];
+    const rule = e.refusal === undefined ? undefined : op.invariants?.[e.refusal];
+    if (!e.refusal || (!op.errors.includes(e.refusal) && rule === undefined)) return [];
     const ids = new Set(subtree(e.trace, e.opSpan).map((s) => s.spanId));
-    return e.trace.logs.some((l) => ids.has(l.spanId)) ? [] : [`${where(e)}: ${e.refusal} has no deciding log`];
+    if (!e.trace.logs.some((l) => ids.has(l.spanId))) return [`${where(e)}: ${e.refusal} has no deciding log`];
+    if (rule === undefined) return [];
+    const named = attr(e, "refusal.invariant");
+    return named === rule ? [] : [`${where(e)}: ${e.refusal} names ${typeof named === "string" ? named : "no rule"} on its span, not ${rule}`];
   }));

@@ -1,11 +1,11 @@
-// Where a request's spans and logs go: every exporter is an OTLP/HTTP endpoint pair, whether it is prove's Collector
-// or a sink named in the environment. One fetch fans each export out to all of them, so Effect's tracer and logger
+// Where a request's traces, logs and metrics go, whether to prove's Collector or a sink named in the environment.
+// One fetch fans each export out to all of them, so Effect's exporters
 // stay unaware there is more than one destination.
 import { Option, Schema } from "effect";
 import type { Exporter } from "../types.ts";
 
 const Endpoint = Schema.Struct({ url: Schema.String, headers: Schema.Record(Schema.String, Schema.String) });
-const Exporters = Schema.Array(Schema.Struct({ id: Schema.String, traces: Endpoint, logs: Endpoint }));
+const Exporters = Schema.Array(Schema.Struct({ id: Schema.String, traces: Endpoint, logs: Endpoint, metrics: Schema.optionalKey(Endpoint) }));
 
 const decode = Schema.decodeUnknownOption(Schema.fromJsonString(Exporters));
 
@@ -18,6 +18,7 @@ export const collectorOf = (url: string): Exporter => ({
   id: "local",
   traces: { url: `${url}/v1/traces`, headers: {} },
   logs: { url: `${url}/v1/logs`, headers: {} },
+  metrics: { url: `${url}/v1/metrics`, headers: {} },
 });
 
 /** What the tracer and logger believe they are sending to. Only its path matters: it picks each exporter's own endpoint. */
@@ -50,21 +51,24 @@ export const scrub = <B extends BodyInit | null | undefined>(body: B): B | strin
 const pathOf = (url: string) => new URL(url).pathname;
 
 /**
- * A `fetch` that sends each export to every exporter's endpoint for that signal, and answers with the first that
- * answered. One exporter failing never fails the others, and a request waits for all of them, so a flush under
+ * A `fetch` that sends each export to every exporter's endpoint for that signal. Prefer a successful response so
+ * the exporter does not retry a delta another destination accepted. Wait for all sends so a flush under
  * `waitUntil` has finished every send.
  */
 export const fanOut = (exporters: ReadonlyArray<Exporter>, base: typeof fetch): typeof fetch =>
   (input, init) => {
-    const signal = pathOf(String(input instanceof Request ? input.url : input)).endsWith("/v1/logs") ? "logs" : "traces";
-    const sends = exporters.map((e) => {
+    const path = pathOf(String(input instanceof Request ? input.url : input));
+    const signal = path === "/v1/metrics" ? "metrics" : path === "/v1/logs" ? "logs" : "traces";
+    const sends = exporters.flatMap((e) => {
       const endpoint = e[signal];
+      if (!endpoint) return [];
       const headers = new Headers(init?.headers as HeadersInit | undefined);
       for (const [k, v] of Object.entries(endpoint.headers)) headers.set(k, v);
-      return base(endpoint.url, { ...init, headers, ...(e.id === "local" || init?.body == null ? {} : { body: scrub(init.body) as BodyInit }) });
+      return [base(endpoint.url, { ...init, headers, ...(e.id === "local" || init?.body == null ? {} : { body: scrub(init.body) as BodyInit }) })];
     });
     return Promise.allSettled(sends).then((results) => {
-      const answered = results.find((r): r is PromiseFulfilledResult<Response> => r.status === "fulfilled");
+      const answered = results.find((r): r is PromiseFulfilledResult<Response> => r.status === "fulfilled" && r.value.ok)
+        ?? results.find((r): r is PromiseFulfilledResult<Response> => r.status === "fulfilled");
       if (answered) return answered.value;
       throw (results[0] as PromiseRejectedResult | undefined)?.reason ?? new Error("no exporter");
     });

@@ -1,0 +1,11 @@
+$ pnpm exec vitest run --root packages/orthograph src/modules/stores
+# commit 892851a · 2026-11-18T22:41:05Z · exit 0 (expected 0) · 1.1s
+
+
+ RUN  v4.1.12 ./packages/orthograph
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  22:41:05
+   Duration  413ms (transform 69ms, setup 0ms, import 282ms, tests 3ms, environment 0ms)

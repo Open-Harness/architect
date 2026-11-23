@@ -28,6 +28,14 @@ States: running, waiting, finished, failed, stopped. A move from the wrong state
 | fail | running, waiting | failed | RunFailed |
 | stop | running, waiting | stopped | RunStopped |
 
+## Events
+
+- `RunFailed`: carries run (run.id), why (Note); emitted by the move fail
+- `RunFinished`: carries run (run.id), branch (Branch); emitted by the move finish
+- `RunReported`: carries run (run.id), report (Report), note (Note); emitted by the move report
+- `RunStarted`: carries run (run.id), mission (run.mission), task (run.task), agent (run.agent), model (run.model); emitted by the move start
+- `RunStopped`: carries run (run.id), why (Note); emitted by the move stop
+
 ## Operations
 
 - [run.fail](fail.md): The run gave up, saying why.
