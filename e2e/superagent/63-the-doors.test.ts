@@ -189,6 +189,22 @@ describe("63 slack: a delivery signed as Slack signs it", () => {
     expect(said(await slack(door, message("Ev0RETRY003", "1700000000.000101"), { retry: 2 })), "a retry with a new event id and the same time").toEqual(SEEN);
   });
 
+  it("a bad signature on a message that was already accepted is refused, not seen: a wrong secret, a stale time and no header are each 401, and the message is still one", async () => {
+    const door = await world();
+    const sent = message("Ev0BAD0003", "1700000000.000250");
+    const raw = JSON.stringify(sent);
+    const now = Math.floor(Date.now() / 1000);
+    expect(said(await slack(door, sent))).toEqual(ACCEPTED);
+    for (const [what, options] of [
+      ["a wrong secret", { signature: slackSignature("not-the-secret", now, raw) }], ["a stale time", { at: now - 3600 }], ["no header", { signature: null }],
+    ] as const) {
+      const t = trace();
+      expect(said(await slack(door, sent, { ...options, trace: t.header })), what).toEqual(BAD);
+      expect(await journalOf(door.url, t.id), what).toEqual([]);
+    }
+    expect(said(await slack(door, sent)), "a signed re-send is still seen: one message").toEqual(SEEN);
+  });
+
   it("one message that arrives as a message and as an app mention, each with its own event id, is one event: the second is seen", async () => {
     const door = await world();
     const asMention = setAt(setAt(setAt(APP_MENTION, "event.channel", "C024BE91L"), "event.ts", "1700000000.000300"), "event_id", "Ev0BOTH0001");

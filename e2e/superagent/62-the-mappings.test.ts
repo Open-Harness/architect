@@ -316,7 +316,7 @@ describe("62 posthog: an alert makes the trigger the record says", () => {
     });
   });
 
-  it("an alert with no description is its name alone, and a project and an issue are what a reply would be addressed to", async () => {
+  it("an alert with no description has the name and \": \" with nothing after as its text, and a project and an issue are what a reply would be addressed to", async () => {
     const t = (await spec()).on["errorAlert"]!(setAt(setAt(POSTHOG_ALERT, "issue.description", undefined), "project.id", "2"), c);
     expect(t.text).toBe("TypeError: ");
     expect(t.channel).toEqual({ project: "2", issue: ISSUE_ID });

@@ -77,12 +77,17 @@ describe("61 github: each event names its identity and its account", () => {
     expect(id(setAt(COMMENT_CREATED, "issue.number", 99)), "the comment's id names it; the issue is not part of it").toBe(ids[0]);
   });
 
-  it("the same number from two kinds of object is two ids: comment 9001, review comment 9001 and review 9001 are three", async () => {
+  it("the same repository, number and last-change time from four kinds of object are four ids: only the kind tells a comment, a review comment, a review and a check run apart", async () => {
     const all = await events();
-    const comment = fn(all["issueComment"], "id", "issueComment")(COMMENT_CREATED);
-    const reviewComment = fn(all["pullRequestReviewComment"], "id", "pullRequestReviewComment")(REVIEW_COMMENT_CREATED);
-    const review = fn(all["pullRequestReview"], "id", "pullRequestReview")(setAt(REVIEW_SUBMITTED, "review.id", 9001));
-    expect(new Set([comment, reviewComment, review]).size).toBe(3);
+    const T = "2026-11-23T11:00:00Z";
+    const same = (payload: Obj, path: string, version: string) => setAt(setAt(setAt(payload, path, 9001), version, T), "repository.full_name", "acme/widgets");
+    const ids = [
+      fn(all["issueComment"], "id", "issueComment")(same(COMMENT_CREATED, "comment.id", "comment.updated_at")),
+      fn(all["pullRequestReviewComment"], "id", "pullRequestReviewComment")(same(REVIEW_COMMENT_CREATED, "comment.id", "comment.updated_at")),
+      fn(all["pullRequestReview"], "id", "pullRequestReview")(same(REVIEW_SUBMITTED, "review.id", "review.submitted_at")),
+      fn(all["checkRun"], "id", "checkRun")(setAt(same(CHECK_ON_PR, "check_run.id", "check_run.completed_at"), "check_run.started_at", T)),
+    ];
+    expect(new Set(ids).size, ids.join(" | ")).toBe(4);
   });
 
   it.each(NAMED)("%s: the account is the sender: the stable numeric id as a string, the login as its name, and whether it is a bot", async (name, payload) => {

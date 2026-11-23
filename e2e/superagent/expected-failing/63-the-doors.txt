@@ -11,6 +11,7 @@ superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs i
 superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > is accepted, and the inbox keeps one row in its trace: an id of the github source, the operation `in:github`, the event's name
 superagent/63-the-doors.test.ts > 63 github: a delivery signed as GitHub signs it > the same comment edited is another event, and edited again later is a third; a different comment is its own
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > Slack's retry of a delivery it thought failed is seen, not written again, and another message is accepted
+superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > a bad signature on a message that was already accepted is refused, not seen: a wrong secret, a stale time and no header are each 401, and the message is still one
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > a bad signature on the URL verification challenge is refused too, and the challenge is not echoed
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > an app mention and a message are accepted, each written once with its own event's name
 superagent/63-the-doors.test.ts > 63 slack: a delivery signed as Slack signs it > an event the app does not listen to (a reaction), signed, is acknowledged and ignored

@@ -6,7 +6,7 @@ superagent/62-the-mappings.test.ts > 62 github: each event makes the trigger the
 superagent/62-the-mappings.test.ts > 62 github: each event makes the trigger the record says > a review, a review's line comment and a check each address the agent only when their words mention it
 superagent/62-the-mappings.test.ts > 62 github: each event makes the trigger the record says > an action the mapping does not take makes nothing: a deleted comment, a labeled or assigned issue
 superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > a resolved error closes its thread, and an alert does not
-superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > an alert with no description is its name alone, and a project and an issue are what a reply would be addressed to
+superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > an alert with no description has the name and ": " with nothing after as its text, and a project and an issue are what a reply would be addressed to
 superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > an error alert: kind errorIssue, the thread `error/<issue id>`, the name and description as text, the issue's url; it is never addressed, and names no author
 superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > it has no reply: PostHog is only listened to; its history is the issue read back, as one message
 superagent/62-the-mappings.test.ts > 62 posthog: an alert makes the trigger the record says > it hears its project and the kinds it lists
