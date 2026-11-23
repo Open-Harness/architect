@@ -9,6 +9,7 @@ import { dirname, join, relative } from "node:path";
 import { Build, Environments, Prove, ProveFailed, Promote, TestWorlds, Verdicts } from "@orthograph/prove";
 import { ModelCommand } from "#modules/model/service.js";
 import { Add } from "#modules/add/service.js";
+import { New } from "#modules/new/service.js";
 import { Mounting } from "#modules/mounting/service.js";
 import type { Kind } from "#modules/mounting/types.js";
 import { AddRefused, type What } from "#modules/add/types.js";
@@ -207,6 +208,24 @@ const add = Command.make("add").pipe(
   Command.withSubcommands([addOne("thing"), addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),
 );
 
+// `ortho new adapter <name> --from-openapi <file or URL>`: an adapter generated from a service's own API description (M5.07).
+const newAdapter = Command.make(
+  "adapter",
+  {
+    name: Argument.String("name"),
+    from: Flag.String("from-openapi").pipe(Flag.optional),
+    root: Flag.String("root").pipe(Flag.withDefault(process.cwd())),
+  },
+  ({ name, from, root }) =>
+    Option.isNone(from)
+      ? fail("ortho new adapter needs --from-openapi <file or URL>: the description to make the adapter from", 2)
+      : New.adapter({ root, name, from: from.value }).pipe(
+          Effect.flatMap((lines) => Console.log(lines.join("\n"))),
+          Effect.catchTag("NewRefused", (e) => fail(e.message, 2)),
+        ),
+);
+const newCommand = Command.make("new").pipe(Command.withSubcommands([newAdapter]));
+
 const tsFiles = (dir: string): ReadonlyArray<string> =>
   existsSync(dir) ? readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? tsFiles(join(dir, d.name)) : d.name.endsWith(".ts") ? [join(dir, d.name)] : [])) : [];
 
@@ -379,7 +398,7 @@ const reap = Command.make(
 const worlds = Command.make("worlds").pipe(Command.withSubcommands([reap]));
 
 Command.make(Names.short).pipe(
-  Command.withSubcommands([model, dev, prove, promote, add, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
+  Command.withSubcommands([model, dev, prove, promote, add, newCommand, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
   Command.run({ version: "0.0.0" }),
   Effect.provide(NodeServices.layer),
   NodeRuntime.runMain,

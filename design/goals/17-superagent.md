@@ -608,7 +608,7 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
 23 November 2026. Slice 1 is on `main` (#515), and K40 is decided (#529). The lead is Claude Code on `claude-opus-5-5`.
 The brief, K39, K40 and GOAL17-model-endpoint reached this branch by #578: real model runs go through VibeProxy, with
 Pi Durable running the agents. Slice 2 is the four seam records (#583), passed by 🔍 after five rounds, with a "Two
-writers, one guard" table in GOAL17-executor-slots. Slice 3's checks are being written. Slice 4 starts when they land.
+writers, one guard" table in GOAL17-executor-slots. Slice 4 is built on `goal-17/s4-adapters-from-spec-build` (GOAL17-adapters-from-spec).
 
 What slice 5's and slice 8's authors take from slice 2's last review, beyond the records:
 
