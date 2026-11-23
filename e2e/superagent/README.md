@@ -226,100 +226,67 @@ changed stops and asks its author.
 # Goal 17's checks: stage one's behaviour (slice 6)
 
 Written before slice 7 builds stage one's handlers, by an author who builds none of them. Slice 6's done-when is "they fail on
-empty handlers"; slice 7's is "slice 6 passes". These checks say what today's journey harness can say: a signed-in person, an
-anonymous caller and the system as callers, one call at a time, the call's own answer, events and refusals, and a thing's state.
-What it cannot say waits on `GOAL17-check-harness` and is listed below, so nothing here is invented to fill the gap.
+empty handlers"; slice 7's is "slice 6 passes". `GOAL17-stage-one.md` makes the calls these checks stopped at; `GOAL17-check-harness.md` fixes the doors
+`22` is written against.
 
 | Check | What it proves | Reads |
 |---|---|---|
-| `18-reading-prove` | the way `19` reads prove's report is sound: each hollow reading (a journey that did not run, ran twice, stopped, ran other or fewer steps, or had a red step) is refused and named; each journey file has the steps `19` expects | the fixtures; planted reports |
-| `19-stage-one-journeys` | six journeys on a copy of the app, run by `ortho prove`, every step green: a stale policy save refused (12 steps); an account seen once (10); a trigger twice stored once (4); the gate lets the right ones through (19); an eval batches a thread (6); the stage read is served (4) | prove's `--report` |
-| `20-the-stage-table` | the stage table, row by row and pair by pair (33 cases, each expected value from the record), and `closing` named as stopping; the judge is shown to refuse 22 planted wrong tables | `stageOf` |
-| `21-accept-and-stop-write-what-the-design-says` | `ticket.accept` writes its five records in one database step, and `ticket.stop` declares the one step that writes the ticket, the mandate it withdraws and the assignment it closes | `ortho model --json` |
+| `18-reading-prove` | the way `19` and `22` read prove's report is sound: each hollow reading (a journey that did not run, ran twice, stopped, ran other or fewer steps, or had a red step) is refused and named; each journey file has the steps its check expects | the fixtures; planted reports |
+| `19-stage-one-journeys` | six journeys on a copy of the app, run by `ortho prove`, every step green: a stale policy save refused (12 steps); an account seen once (10); a trigger twice stored once (4); the gate lets the right ones through (27: each cell of the prototype's `002` that the payload drives, in all three modes); an eval batches a thread (6); the stage read is served (4) | prove's `--report` |
+| `20-the-stage-table` | the stage table, row by row and pair by pair (33 cases, each expected value from the record), and `closing` named "Stopping" (call 6); the judge is shown to refuse 22 planted wrong tables | `stageOf` |
+| `21-accept-and-stop-write-what-the-design-says` | `ticket.accept` writes its five records in one database step (call 3), and `ticket.stop` declares the one step that writes the ticket, the mandate it withdraws and the assignment it closes | `ortho model --json` |
+| `22-stage-one-doors` | eight journeys written against the harness's doors: observe's "would accept" starts nothing; a follow-up reaches its ticket with no eval; a policy change restarts a live eval; a stop withdraws the mandate; a stop cancels a waiting assignment and interrupts a running one; a stop after a handoff still tells the Agent to close; the stage read's rows over a ticket's life; an accept makes five records in one commit | prove's `--report` |
+| `23-the-gate` | the gate's table (`gate.of`, call 8), cell by cell: 38 cases from the prototype's `002`, and the judge refuses 16 planted wrong gates | `gate` in `plugins/intake/src/modules/gate/service.ts` |
 
 ## What the builder must make, and where the checks read it (slice 6)
 
-The design settles most of it. These are the points it leaves open, fixed here so a check can read them. A builder who needs one
-changed stops and asks its author.
+`GOAL17-stage-one` call 1 ratifies points 1 to 12. A builder who needs one changed stops and asks its author.
 
-1. **Where the journeys are.** `e2e/fixtures/superagent/stage-one/journeys/*.ts` and `.../starting-worlds/*.ts`. `stage-one.ts` copies
-   them into a copy of the app (`journeys/` and `blueprint/starting-worlds/`), generates, and runs `ortho prove --env local --report`.
-   A builder never edits them. The app's own `journeys/` is the builder's.
-2. **Who calls.** `trigger.receive`, `account.seen` and `eval.due` are called as the system (their declared `allowed`), standing in
-   for the source's caller and the clock; `account.list`, `account.unlist`, `policy.*` and the reads as a signed-in person.
-3. **A superagent needs an Agent first.** `superagent.create` takes `main`, a reference to an Agent that exists (the framework
-   refuses an unknown id with `AgentNotFound` before any handler runs, shown by prove), so the starting world calls `agent.open`
-   (`kind: "main"`, `about: "superagent/stage-one"`) as the system and passes its answer. Four of the six journeys start there, so
-   they pass only once `agent.open` has a handler (slice 9's runtime, or a thin one in slice 7).
-4. **A connection is `{ source, config }`.** The world's one connection is `{ source: "slack", config: { me: { id: "UBOT", login:
-   "agent" }, channels: ["C1"], directMessages: false } }`, as `slackSource`'s `Config` says. A trigger on it is `source: "slack"`,
-   `thread: "C1:<ts>"`, `channel: { channel: "C1", ts }`, `author` the sender's outside id (`external`), absent for no sender.
-5. **"Addressed" is the trigger's `kind`.** `mention` and `direct` address the agent; any other kind does not. Slack's mapping gives
-   `kind` and `addressed` the same two words, and `trigger.receive`'s payload has no `addressed` (a gap, below).
-6. **The first policy is a save from base 0.** `superagent.create` makes no Policy (its payload has no `policy`, a gap, below); the first
-   `policy.save` is `base: 0n` and answers revision 1. `allowed`, `bots` and `admission` are stored and read back as written; a `bots`
-   entry is `"<source>:<external>"`, as an `allowed` one is in the brief's `Superagent.declare`.
-7. **What `trigger.receive` answers.** `outcome` is `stored`, `duplicate` or `filtered`. Only `stored` records anything: the call's
-   journal then holds `TriggerReceived`. `duplicate` and `filtered` record nothing (`noEvents`), and an event the gate filtered,
-   delivered again, is `filtered` again (it was never kept). A duplicate answers the first trigger's id.
-8. **`account.seen` of a known account** answers its id, records nothing and leaves its state (a person's listing is never undone by a source).
-9. **`policy.history` rows** are `{ revision, at, by, from }` as numbers and a person id (GOAL17-slice5-forms call 7), newest first; a
-   save's `from` is its `base`. What a restore's `from` is, the records do not say, so no check reads it.
-10. **`eval.due`'s `started`** counts the evals one pass made: one per thread with a waiting trigger and no eval running on it.
-11. **The stage table's labels** are the record's: "Ended", "Input undelivered", "Awaiting answer", "Awaiting review", "Queued",
-    "Waiting for a Trigger", "Working"; the blocked and failed row's label must say which (the record's one "Blocked · Failed" is read as
-    two). A closing Assignment on an open ticket is labelled "Stopping" by `stageOf`; no record words its `stage` or `why`, so the check
-    pins only the label and that nobody is waited for (`working` or `idle`, with `none` or `queued`), and that a ready report or a
-    question above it still wins.
-12. **`ticket.stop`'s one database step** is any step the builder names, of type `database`, whose `writes` include `ticket`,
-    `mandate` and `assignment`; `ticket.accept` has exactly one database step, which writes `ticket`, `mandate`, `subscription`,
-    `assignment` and `input`.
+1. **Where the journeys are.** `e2e/fixtures/superagent/stage-one/` (19) and `.../stage-one-doors/` (22), each with `journeys/` and `starting-worlds/`. `stage-one.ts`
+   copies them into a copy of the app, generates, and runs `ortho prove --env local --report`. A builder never edits them. The app's own `journeys/` is the builder's.
+2. **Who calls.** `trigger.receive`, `account.seen` and `eval.due` are called as the system (their declared `allowed`), standing in for the source's caller and the clock;
+   `account.list`, `account.unlist`, `policy.*` and the reads as a signed-in person; `22` also casts the main agent's tool calls through the scripted model.
+3. **A superagent needs an Agent first** (call 4). `superagent.create` takes `main`, an Agent that exists, so a starting world calls `agent.open` (`kind: "main"`) as the system and
+   passes its answer; `create` takes no `policy`, and the first `policy.save` is from base 0. Four of 19's six journeys start there, so they pass only once `agent.open` has a handler.
+4. **A connection is `{ source, config }`.** The world's one connection is `{ source: "slack", config: { me: { id: "UBOT", login: "agent" }, channels: ["C1"], directMessages: false } }`.
+5. **What `trigger.receive` takes** (call 2): `{ superagent, source, event, thread, kind, text, url?, addressed?, actor?, channel }`, `addressed` `"mention"` or `"direct"` and the actor
+   `{ id, name, bot }`, absent for no sender. `kind` no longer carries "addressed". The journeys' `kind`s are Slack's: `mention`, `direct`, `message`.
+6. **The first policy is a save from base 0.** `allowed`, `bots` and `admission` are stored and read back as written; a `bots` entry is `"<source>:<external>"`, and `admission` is
+   `{ <row>: { listed?, unlisted?, unnamed? } }` with a strength in each (call 8).
+7. **What `trigger.receive` answers.** `outcome` is `stored`, `duplicate` or `filtered`. Only `stored` records anything: the call's journal then holds `TriggerReceived`. `duplicate` and `filtered`
+   record nothing (`noEvents`), and an event the gate filtered, delivered again, is `filtered` again (it was never kept). A duplicate answers the first trigger's id.
+8. **`account.seen` of a known account** answers its id, records nothing and leaves its state.
+9. **`policy.history` rows** are `{ revision, at, by, from }` as numbers and a person id, newest first; a save's `from` is its `base`; a restore's `from` is not read.
+10. **`eval.due`'s `started`** counts the evals one pass made: one per thread with a waiting trigger and no eval running on it (call 5: `eval.due` calls `eval.start` and `eval.expire`).
+11. **The stage table's labels** are the record's; the blocked and failed row's label says which. A closing Assignment on an open ticket is `working`, `none`, "Stopping", below a ready report and a
+    question (call 6).
+12. **`ticket.stop`'s one database step** is any step the builder names, of type `database`, whose `writes` include `ticket`, `mandate` and `assignment`; `ticket.accept` has exactly one database
+    step, writing `ticket`, `mandate`, `subscription`, `assignment` and `input`.
+13. **The gate's module** is `plugins/intake/src/modules/gate/{types,service}.ts`, exporting `gate: Gate` from `service.ts`, over the views of call 8.
+14. **`observedRow`** is `{ listed: "inferred", unlisted: "none", unnamed: "none" }` (call 8): the gate journey's plain-message steps read it.
 
-## What waits on `GOAL17-check-harness`
+## What waits on a door nobody has built
 
-Each is a journey or a step a check in this slice should hold and the harness cannot say yet. They are written when the record lands.
+`22` is red today for one reason: prove cannot load a journey that imports `@orthograph/stand-in-model/stand` or `outbox` (check 22 says so, with prove's own line). It waits on, in order:
 
-- **A caller that is an agent or an outside account.** A cast member can be a signed-in person, anyone, the system or a service; not the
-  main agent (`itsMain`), an executor (`itsAgent`) or a listed outside account (`listed.of("account")`). So no journey calls
-  `decision.route`, `eval.decide`, `ticket.report` (the executor's), or `ticket.accept` (a listed account's).
-- **Running an outbox hop.** `TriggerReceived` to `input.store`, `InputStored` to `input.route`, `PolicyChanged` to `ticket.policy-changed` and
-  every hop of the app's `pausable` list are declared and never run in prove's world.
-- **Restart, the stand-in model's script and call count, `Timers` stepping, reading `_outbox` rows.**
+| Door | Built in |
+|---|---|
+| the journey surface: `s.clock.settle`, `outbox`, `Stand.command`, `Probe`, the `actor:` and `agent:` cast forms (GOAL17-check-harness, call 0) | slice 8's first pull request |
+| `agent.open`'s handler, `@orthograph/stand-in-model`, the drain on `Timers`, `outbox.rows`, `outbox.hold` | slice 9 |
 
-What they leave out of slice 6's list, by name:
+Shapes the records do not give, which `22` guesses and says so in its journeys: `decision.route`'s items (`{ action, trigger, title }`); that `outbox.rows`' `subject` for `TicketCreated` is the ticket's id;
+that the `actor:` cast member is named by the world's listed account (`U1`). Slice 9 or the lead settles each when the door is built.
 
-| Slice 6 check | What is in this slice | What waits |
-|---|---|---|
-| every gate cell of `002` | the cells a journey can reach by outcome (`19`, the gate) | the explicit-versus-inferred line itself; a follow-up on a thread with a ticket; a table cell set by hand; the gate as a pure module (`gate/types.ts` has no `TriggerView`, `ThreadView`, `TicketView` or `PolicyView` in any record) |
-| an accept making all six records in one commit | the five records of one database step (`21`) | the journey that runs it (a listed account calls it, and asserts each record's event); the sixth, the executor, is an Agent in its own store (a gap, below) |
-| `observe` recording "would accept" and starting nothing | nothing | `decision.route` called by the main agent, then reading the Decision and the absence of a Ticket |
-| a follow-up reaching its ticket with no eval | nothing | a ticket, the `TriggerReceived` hop, and a read of the Input |
-| a policy change restarting a live eval | nothing | the `PolicyChanged` hop and a read of the Eval |
-| stop withdrawing the mandate; `ticket.stop` picks `cancelled` or `interrupted`; a stop after a handoff closes the Assignment on the Agent | the declared step (`21`) | a ticket, then the stop, then the Mandate's, the Assignment's and the Agent's state |
-| the stage read's every row | the table (`20`), and the read served for an empty page, a missing ticket and who may call (`19`) | a ticket in each row, through the served read |
+## Gaps in the records that are now closed
 
-## Gaps in the records, found while writing these
-
-None is invented here; each is what a check could not pin.
-
-1. `trigger.receive`'s payload has no `addressed`, no sender `login` and no `bot` flag, though GOAL17-source-from says the mapping's `addressed` and the
-   actor's `bot` reach the gate. The journeys use `kind` and `account.seen`'s `bot` instead (points 4 and 5).
-2. `superagent.create`'s payload has `main` (an Agent that must exist) and no `policy`; the brief's runtime example passes `policy:` and a main agent
-   made by create. Points 3 and 6 are how these journeys live with that.
-3. `ticket.accept`'s payload has `agent` (an executor that must exist), and an Agent lives in its own store, so "the executor in one commit"
-   cannot hold as the brief words it. `21` pins the five records the step declares.
-4. `policy.restore` declares a move from `current` and has no row to move; `versions:` has no run-time here yet (K40 says the four
-   operations are generated). What slice 7 must do is serve `versions:`, not write four handlers.
-5. `Thread`'s moves `queue`, `evaluate` and `release`, and `Eval`'s `evaluate`, have no operation, and `eval.due` has no move: a journey
-   cannot see a thread wait or an eval start except by `started`. Where a trigger's thread waits is not stated.
-6. The label, stage and reason of a closing Assignment's row (point 11), and the `off` mode's effect on a listed bot (`002` says nothing
-   inferred is admitted; no record under `design/` does).
+`GOAL17-stage-one` closes: the payload (call 2), "six records" (3), `create`'s `main` and `policy` (4), the moves no operation makes (5), the closing row (6), `off` with a listed bot (7), the gate's views (8) and
+`versions:` at run time (9, snag #685). Open: nothing of slice 6's own; slice 7's builder changes the blueprint to match (the payload, Thread's machine, `eval.expire`, `observedRow`).
 
 ## Running them
 
 ```bash
-pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/18   # the controls: no prove, a second
-pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/19   # one prove run for the six journeys: about 40 seconds
-pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/20 superagent/21
-SUPERAGENT_APP=<folder> ...                                                      # an author's throwaway app that should pass
+pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/18 superagent/20 superagent/21 superagent/23   # seconds
+pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/19                                              # one prove run, about 40 seconds
+pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/22                                              # red until the doors are built
+SUPERAGENT_APP=<folder> ...                                                                                                 # an author's throwaway app that should pass
 ```

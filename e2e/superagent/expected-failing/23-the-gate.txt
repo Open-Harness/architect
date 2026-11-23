@@ -1,0 +1,2 @@
+# Written before slice 7 (Goal 17, slice 6). The gate module, `gate` in plugins/intake/src/modules/gate/service.ts (GOAL17-stage-one call 8), does not exist. Due before slice 7 merges.
+superagent/23-the-gate.test.ts > 23 the gate: the app's gate > is right on every cell and every pair of cells that decides which wins

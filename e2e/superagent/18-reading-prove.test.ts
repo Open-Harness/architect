@@ -3,7 +3,7 @@
 // twice, stopped, ran fewer or other steps than its file says, or had a red step) and shows each is named, with the journey and
 // the step; and it shows the fixtures hold the journeys the other checks expect, with the steps they expect.
 import { describe, expect, it } from "vitest";
-import { WANTED, journeyFile, problemsOf, titlesOf, type JourneyRun, type Wanted } from "./stage-one.ts";
+import { DOORS, WANTED, journeyFile, problemsOf, titlesOf, type JourneyRun, type Wanted } from "./stage-one.ts";
 
 const want: Wanted = WANTED[0]!;
 const green = (w: Wanted): JourneyRun => ({
@@ -13,16 +13,16 @@ const green = (w: Wanted): JourneyRun => ({
 
 describe("18 reading prove: the fixtures", () => {
   it("each journey file has the steps the check expects, each with a title", () => {
-    for (const w of WANTED) {
-      const titles = titlesOf(journeyFile(w.file));
+    for (const w of [...WANTED, ...DOORS]) {
+      const titles = titlesOf(journeyFile(w.file, w.dir));
       expect(titles.length, w.file).toBe(w.steps);
-      expect(new Set(titles).size, `${w.file}: two steps share a title`).toBe(titles.length);
+      if (w.dir === undefined) expect(new Set(titles).size, `${w.file}: two steps share a title`).toBe(titles.length);
       expect(titles.every((t) => t.length > 10), `${w.file}: a step has no real title`).toBe(true);
     }
   });
 
   it("each journey file declares the name the check expects", () => {
-    for (const w of WANTED) expect(journeyFile(w.file), w.file).toContain(`Blueprint.journey("${w.name}"`);
+    for (const w of [...WANTED, ...DOORS]) expect(journeyFile(w.file, w.dir), w.file).toContain(`Blueprint.journey("${w.name}"`);
   });
 });
 

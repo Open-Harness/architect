@@ -9,7 +9,7 @@ export default Blueprint.startingWorld("a-trigger-was-received", {
   makes: (s) => [
     s.source.run(receive, {
       superagent: s.world.superagent, source: "slack", event: "Ev1", thread: "C1:1.1", kind: "mention",
-      text: "@agent fix the flaky login test", author: "U1", channel: { channel: "C1", ts: "1.1" },
+      text: "@agent fix the flaky login test", actor: { id: "U1", name: "ann", bot: false }, addressed: "mention", channel: { channel: "C1", ts: "1.1" },
     }),
   ],
   gives: (s) => ({ trigger: s.last.trigger }),

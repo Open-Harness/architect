@@ -6,8 +6,7 @@
 // The cases' expected values come from the record's table, never from `stageOf`. CONTROLS: `reference` is that table written out
 // again from the record, and it passes every case; each planted wrong table (two rows swapped, a row dropped, a wrong `why`, a
 // wrong stage, a label that is the row below's) fails at least one, so a table that is right on some rows and wrong on one cannot
-// pass. The one thing no record words is the label of the row for a closing Assignment ("`stageOf` names `closing`, as stopping",
-// brief, "Where it stands"): its case pins only that the label says "stopping" and that the stage is none of `person` or `ended`.
+// pass. The row for a closing Assignment is GOAL17-stage-one's call 6: `working`, `none`, "Stopping", below a question and a ready report.
 import { pathToFileURL } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";

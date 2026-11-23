@@ -9,7 +9,7 @@ import due from "@orthograph/intake/blueprint/things/eval/verbs/due.ts";
 import receive from "@orthograph/intake/blueprint/things/trigger/verbs/receive.ts";
 
 const mention = (superagent: unknown, event: string, ts: string, text: string) => ({
-  superagent, source: "slack", event, thread: `C1:${ts}`, kind: "mention", text, author: "U1", channel: { channel: "C1", ts },
+  superagent, source: "slack", event, thread: `C1:${ts}`, kind: "mention", text, actor: { id: "U1", name: "ann", bot: false }, addressed: "mention", channel: { channel: "C1", ts },
 });
 
 export default Blueprint.journey("an eval batches a thread", {

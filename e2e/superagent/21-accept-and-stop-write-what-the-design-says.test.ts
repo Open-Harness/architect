@@ -2,12 +2,11 @@
 // the app). A handler may only write what its operation declares in a database step (`Blueprint.step.database({ writes })`), so
 // "an accept making its records in one commit" and "a stop withdrawing the mandate and closing the assignment in one commit" are
 // first a matter of what the one step names. The journeys that run them (a listed account calls `ticket.accept`; a ticket is
-// stopped after a handoff) wait on GOAL17-check-harness: `README.md`, "Slice 6".
+// stopped after a handoff) are `22-stage-one-doors`.
 //
-//  - `ticket.accept` (the brief's spec table): "the Mandate, Ticket, Subscription, Assignment, Input and executor in one commit".
-//    The executor is an Agent, which lives in its own actor store, so no one commit can hold it: the model says `agent` is a
-//    reference that must already exist (`AgentNotFound`). So the one step is judged for the five records of the commit, and the
-//    sixth is a gap in the records (reported with this check), not a line here.
+//  - `ticket.accept` (GOAL17-stage-one, call 3): its Ticket, Mandate, Subscription, Assignment and Input in one commit. Its executor
+//    is an Agent, which lives in its own actor store, so it is opened first by `agent.open` and the accept takes its id (the model says
+//    `agent` is a reference that must already exist, `AgentNotFound`); no one commit holds it.
 //  - `ticket.stop` ("Where it stands" and the Ticket row): "stop withdraws the mandate", and "closes the executor's current
 //    Assignment" (`cancelled` when it is pending, `interrupted` when it is running, from the state it reads). Both are records of
 //    the stop's own commit, beside the Ticket's move to `stopped`.

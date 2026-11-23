@@ -3,5 +3,5 @@ superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "a 
 superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "a trigger twice is stored once": 4 steps, each green
 superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "an account is seen once": 10 steps, each green
 superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "an eval batches a thread": 6 steps, each green
-superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "the gate lets the right ones through": 19 steps, each green
+superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "the gate lets the right ones through": 27 steps, each green
 superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "the stage read is served": 4 steps, each green
