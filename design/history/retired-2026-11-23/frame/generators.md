@@ -82,7 +82,7 @@ export default Blueprint.use(agentKit, (k) => [
 
 `@orthograph/agent-kit` ships templates. The model fills them. The project's choices pick the forms. It never depends on
 `@orthograph/agents` (M4): skills are core, agents are one of their users
-([`../decisions/K4-agent-skills.md`](../decisions/K4-agent-skills.md)).
+([`../decisions/K4-agent-skills.md`](../../../decisions/K4-agent-skills.md)).
 
 ### Skills
 

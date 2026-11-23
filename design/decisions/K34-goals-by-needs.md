@@ -14,11 +14,12 @@ what M2 builds, so the order costs parallel work and buys nothing.
 
 ## The call
 
-1. **A goal builds a slice once what that slice needs has landed,** whatever milestone it sits in. A slice's `needs`
+1. (Superseded by K42, 23 November 2026: an app goal builds what it needs in its own slice, unless a running goal
+   has claimed it or its paths.) **A goal builds a slice once what that slice needs has landed,** whatever milestone it sits in. A slice's `needs`
    column in `milestones.md` is the rule; the milestone order is not.
 2. **A milestone still counts as done only when its gate passes on `main`.** Releases (K28) are unchanged: the preview
-   is Gate M1 and the npm preview, the beta is Gate M2 and Goal 3's done check, 1.0 is the four stage gates.
-3. **Goals are drawn for independence** (`design/goals/map.md`): each owns its paths, adds new modules rather than
+   is Gate M1 and the npm preview, the beta is Gate M2 and Goal 3's done check (superseded by K42, 23 November 2026: the beta is the framework the superagent proves), 1.0 is the four stage gates (superseded by K42, 23 November 2026: 1.0 is Capxul core).
+3. (Superseded by K42, 23 November 2026: goals are long-running agents, one framework goal and app goals.) **Goals are drawn for independence** (`design/goals/map.md`): each owns its paths, adds new modules rather than
    editing the core, has one owner per shared seam, and writes its journeys and checks before what its builds need has
    landed.
 4. **The map is the list of goals.** Goals 8 to 16 are planned there; each starts when the conductor has written its
@@ -32,7 +33,7 @@ what M2 builds, so the order costs parallel work and buys nothing.
    | M4.01, agents' shape | Gate M3 (the stage table: the stage 2 gate, ST2.06) | none | a decision; nothing in M4.02 to M4.10 reads M3 or stage 2 |
    | M5.01, views and the outbox | Gate M4 (the stage table: Gate M2) | none | a decision; M5.03's `on:` reads only M5.01 |
    | M7.10, Capxul's plugins mapped | M7.13 | none | a mapping on paper, from `decisions/M7-capxul.md` |
-   | M7.13, the release pass | ST4.08, M7.01 | M7.01 | the credentials a release needs, each with Aaron's written yes; the npm preview needs one before stage 4 exists. 1.0 itself still waits for the four stage gates (K28) |
+   | M7.13, the release pass | ST4.08, M7.01 | M7.01 | the credentials a release needs, each with Aaron's written yes; the npm preview needs one before stage 4 exists. 1.0 itself still waits for the four stage gates (superseded by K42, 23 November 2026: 1.0 is Capxul core) (K28) |
    | ST4.01, the club's spike | ST3.08 | none | it reads the budgets declaration in `examples/budgets` (Goal 4), not stage 3's gate |
 
    Needs that name a real slice stay: M8.18's Gate M2 (it reads stage one's dev worlds and adapter packages), M6.21's

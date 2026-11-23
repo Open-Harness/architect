@@ -145,7 +145,7 @@ export interface ProjectedOperation {
 }
 
 /**
- * What a projection renders from (frame/projections.md section 1): the project's name, the model, this mount's name, and
+ * What a projection renders from (design/history/retired-2026-11-23/frame/projections.md section 1): the project's name, the model, this mount's name, and
  * every mount of the model by name. The model is the compiler's, which `orthograph` cannot import: a projection that
  * reads it types it itself. The environments are in the model.
  */

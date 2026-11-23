@@ -243,7 +243,7 @@ runs as a workflow: each step commits to one store, and the workflow remembers w
 A kind declares what it can serve, and the compiler refuses a read the kind can't. An actor holds one instance, so it
 has nothing to list, and the compiler already says so:
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=235
+```ts file=packages/compiler/src/modules/model/internal/reads.ts name=readModelOf lines=27
 if (list && t?.thing?.lives === "actor") problems.push(`${file}: a list read needs a thing that lives in the database, and ${thing} lives as actors`);
 ```
 
