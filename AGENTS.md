@@ -108,7 +108,9 @@ Every thread is one type, titled with its emoji; the skills are in `.agents/skil
 word for starting, messaging, reading and archiving a thread), `conductor` (the loop), `spike` (running a spike),
 `author` (writing journeys and checks, and proving each fair), `reviewer` (the 🔍 review), `hashtags` (Aaron's `#shortcuts`), `portal-design` (designing portal and console screens:
 the process and the style guide), `kanban` (the board Aaron and the conductor track every slice on, its data saved
-in the repo, and `STATE.md`, where the project stands) and `ui-sdk` (UI SDK's own skill, vendored at the pinned version, for
-the generated pieces, pages and the portal's components on it; its `README.md` says how we use it), and `github` (how the
-work lives on GitHub: a milestone per goal, the issue kinds and forms, labels, the pull request template and the sync, K33). `.claude/skills` and `.claude/agents/reviewer.md`
+in the repo, and `STATE.md`, where the project stands), `ui-sdk` (UI SDK's own skill, vendored at the pinned version, for
+the generated pieces, pages and the portal's components on it; its `README.md` says how we use it) and `github` (how the
+work lives on GitHub: a milestone per goal, the issue kinds and forms, labels, the pull request template and the sync, K33).
+On `goal/on-chain`, the `goal-4` skill is how Goal 4's lead works and resumes; its state is
+`.agents/skills/goal-4/STATE.md`. `.claude/skills` and `.claude/agents/reviewer.md`
 are links to it; edit them only in `.agents/skills/`.
