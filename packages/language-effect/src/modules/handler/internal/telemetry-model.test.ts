@@ -29,7 +29,7 @@ const close = Blueprint.operation(Allowance, {
   move: machine.moves.close, errors: [TooMuch], allowed: [Blueprint.signedIn], budget: { p95: Duration.zero },
 });
 const codes = { TooMuch: "AL-001", AllowanceNotActive: "AL-900" };
-const person = { kind: "person", person: "per_ada" } as const;
+const person = { kind: "person", person: "per_ada", via: "session" } as const;
 
 it("writes move.from, event.name on the commit, refusal.code, environment and store, and counts a call past its budget", () => {
   const spans: Array<Tracer.NativeSpan> = [];

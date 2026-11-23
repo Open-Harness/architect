@@ -157,8 +157,8 @@ describe("operation.api: the endpoint's method and path, not its formatting", ()
     expect(check((t) => t.replace('HttpApiEndpoint.post("remove", "/link/remove", {', "HttpApiEndpoint\n  .post(\n    'remove',\n    `/link/remove`,\n    {"))).toEqual({ ok: true, why: [] });
     expect(check((t) => `// HttpApiEndpoint.get("remove", "/link/remove")\n${t}`)).toEqual({ ok: true, why: [] });
   });
-  it("owns the method: an operation is called with POST (design/frame/projections.md), whatever the endpoint says", () => {
-    expect(check((t) => t.replace("HttpApiEndpoint.post(", "HttpApiEndpoint.delete(")).why).toEqual(["generated/api/src/link/remove.ts's endpoint remove is DELETE, but an operation is called with POST (design/frame/projections.md)"]);
+  it("owns the method: an operation is called with POST (design/history/retired-2026-11-23/frame/projections.md), whatever the endpoint says", () => {
+    expect(check((t) => t.replace("HttpApiEndpoint.post(", "HttpApiEndpoint.delete(")).why).toEqual(["generated/api/src/link/remove.ts's endpoint remove is DELETE, but an operation is called with POST (design/history/retired-2026-11-23/frame/projections.md)"]);
     expect(check((t) => t.replace("HttpApiEndpoint.post(", "HttpApiEndpoint.get(")).ok).toBe(false);
   });
   it("is red when the only endpoint call is in a comment", () => {

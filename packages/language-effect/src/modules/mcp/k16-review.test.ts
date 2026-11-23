@@ -34,7 +34,7 @@ const tools = Mcp.tools<never>({
 });
 const services = Layer.mergeAll(BusyLive, storeMemory([[Purse, { id: "pur_1" }]]).layer);
 const call = (args: Record<string, unknown>) =>
-  Effect.runPromise(tools[0]!.call(args, { kind: "person", person: "per_olga" } as never).pipe(Effect.provide(services)));
+  Effect.runPromise(tools[0]!.call(args, { kind: "person", person: "per_olga", via: "session" } as never).pipe(Effect.provide(services)));
 
 describe("K16 review 7: an MCP refusal with an undefined field is still a refusal", () => {
   it("control: the same refusal with its field set is the table's row and its field", async () => {

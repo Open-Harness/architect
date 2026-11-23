@@ -43,8 +43,10 @@ Set with `gh api -X PUT repos/AaronAbuUsama/architect/branches/main/protection`:
 ```
 
 - **The checks** are every job `main`'s `ci.yml` runs (`check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, and
-  `builder-paths`, which is skipped, and so passes, on anything but a `-build` branch), plus the `codex-finished` status
-  (Superseded by CI-codex-advisory, 20 November 2026: no longer required).
+  `builder-paths`, which is skipped, and so passes, on anything but a `-build` branch (_Superseded by CI-drafts-race,
+  21 November 2026: it runs and passes at once on anything but a `-build` branch_)), plus the `codex-finished` status
+  (Superseded by CI-codex-advisory, 20 November 2026: no longer required). (_Superseded by CI-main-required, 23 November
+  2026: `main` also requires `portal-ui`, `e2e-m1`, `e2e-climb` and `e2e-grid`._)
 - **`strict`** (_Superseded by CI-drafts, 21 November 2026: `false` on `main` now_): the branch must contain the current `main` before it merges, so the green run is of what will land (the
   conductor's landing rule 2, "a fresh CI run on a head that includes the current `main`").
 - **Conversation resolution**: every review thread, Codex's included, is resolved before the merge.

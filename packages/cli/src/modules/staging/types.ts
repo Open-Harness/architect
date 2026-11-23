@@ -83,7 +83,7 @@ export interface StagingApi {
   /** `ortho env destroy <env>`: deletes every Worker and database whose name carries the run's prefix, matched at a dash, and nothing else. */
   readonly destroy: (options: Options) => Effect.Effect<Said>;
   /** The prefix every name of a run carries: formed here and nowhere else. */
-  readonly prefix: (app: string, run: string) => string;
+  readonly prefix: (app: string, short: string, run: string) => string;
   /** The `workers.dev` address of a run's deployed Worker. */
   readonly url: (prefix: string, subdomain: string) => string;
 }

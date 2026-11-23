@@ -7,7 +7,7 @@ branch: goal/club
 base: goal/stage-1
 status: ready          # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
+  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
   model: null          # the model id it runs on
   since: null          # the date it started
 done_check: nx run e2e:stage4
@@ -32,10 +32,15 @@ slices:
 ---
 # Goal 14: the club, stage 4 of Plugged In, private on Aztec
 
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
+
 Branch `goal/club`, cut from `goal/stage-1`. Written 21 November 2026 by the 🎼 conductor, from the goal map
 (`design/goals/map.md`, K34) and K35. Milestone `Goal 14: the club`, label `release:1.0` (K33).
 
-**To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 14. Read `AGENTS.md` and
+**To start it, in any harness** (Claude Code, Codex, OpenCode, Amp): "You lead Goal 14. Read `AGENTS.md` and
 `design/goals/14-club.md`, and run it." Nothing else is needed.
 
 ## The goal, in plain words
@@ -93,10 +98,10 @@ The rules every goal shares, so this brief stays short. Where they and this file
 - **Merging.** Open pull requests as drafts, test locally, get a 🔍 pass from a reviewer that wrote none of it (the
   `reviewer` skill), then mark ready; merge when CI is green and every thread is resolved. At most two ready pull
   requests in CI at once.
-- **Its needs.** A slice builds once what it needs has landed (K34, `design/goals/map.md`). A slice that needs another
-  goal's work writes its checks first and waits for the build; it never builds a stand-in for the other goal.
-- **Asks.** Anything outside "What it owns" is an Ask issue in the owning goal's milestone, naming this goal and what
-  done looks like (K32, K33). Read this goal's own open issues at every slice start.
+- **Its needs.** Under K42: a gap this goal finds goes by K42's collision rule (section 3), and a
+  slice another goal needs lands early into `main` (K38, K42).
+- **Asks.** Under K42, an Ask issue is only for two goals' claims that overlap (K42, section 3, case 2). Read this
+  goal's own open issues at every slice start.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 14: the club` and the label `release:1.0`;
   every comment an agent posts starts `[goal-14 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" in the pull

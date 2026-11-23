@@ -29,6 +29,12 @@ it("still needs telemetry for other calls", () => {
   ]) expect(check(call).lines).toContain(`  ✘ "${step.title}": telemetry missing: no span of this call reached the collector`);
 });
 
+it("a tools list (`.tools()`) runs no operation: its empty trace is not missing telemetry", () => {
+  const tools: CallRecord = { ...refused, operation: "tools", status: 200, body: { tools: [] }, mayCall: true, tools: true };
+  expect(check(tools).failed).toBe(0);
+  expect(check({ ...tools, tools: undefined } as unknown as CallRecord).lines).toContain(`  ✘ "${step.title}": telemetry missing: no span of this call reached the collector`);
+});
+
 it("keeps explicit span assertions for an access refusal", () => {
   expect(check(refused, { present: ["allowance.spend"], absent: [] }).failed).toBe(1);
   const trace: Trace = {

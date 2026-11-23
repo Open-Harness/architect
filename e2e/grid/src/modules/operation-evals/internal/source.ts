@@ -20,7 +20,7 @@ const endpointErrors = (source: string): ReadonlyArray<string> | undefined => {
 };
 
 /**
- * The HTTP method a client calls each kind with (design/frame/projections.md: "Journeys call the server directly over HTTP", `POST` to
+ * The HTTP method a client calls each kind with (design/history/retired-2026-11-23/frame/projections.md: "Journeys call the server directly over HTTP", `POST` to
  * `/<thing>/<verb>` for an operation and for a read alike). Judged from the model's kind, never from a name typed in an eval.
  */
 const METHOD: Readonly<Record<string, string>> = { operation: "post", read: "post" };
@@ -29,7 +29,7 @@ const endpointProblems = (path: string, source: string, op: OperationModel): Rea
   const found = Reading.endpoints(source).filter((x) => x.name === op.verb && x.path === `/${op.thing}/${op.verb}`);
   if (found.length === 0) return [`${path} has no endpoint "${op.verb}" at /${op.thing}/${op.verb}`];
   const method = METHOD[op.kind];
-  return method === undefined || found.some((x) => x.method === method) ? [] : [`${path}'s endpoint ${op.verb} is ${found[0]!.method.toUpperCase()}, but ${op.kind === "operation" ? "an" : "a"} ${op.kind} is called with ${method.toUpperCase()} (design/frame/projections.md)`];
+  return method === undefined || found.some((x) => x.method === method) ? [] : [`${path}'s endpoint ${op.verb} is ${found[0]!.method.toUpperCase()}, but ${op.kind === "operation" ? "an" : "a"} ${op.kind} is called with ${method.toUpperCase()} (design/history/retired-2026-11-23/frame/projections.md)`];
 };
 
 /** operation.api: one endpoint at `/<thing>/<verb>` with the declaration's own schemas, listing every refusal the model gives the operation. */

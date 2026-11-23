@@ -25,7 +25,7 @@ const BRANCH = (() => {
   try { return execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd: repo, encoding: "utf8" }).trim(); }
   catch { return "main"; }
 })();
-const gh = (path, ref = "main") => `https://github.com/AaronAbuUsama/architect/blob/${ref}/${path}`;
+const gh = (path, ref = "main") => `https://github.com/Open-Harness/orthograph/blob/${ref}/${path}`;
 
 // ---- the outline: every page, written or not ----
 const outline = read(join(canon, "outline.md"));
