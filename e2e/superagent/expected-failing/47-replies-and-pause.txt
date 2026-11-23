@@ -1,0 +1,5 @@
+# Slice 8's check (GOAL17-check-harness), red until slice 9 builds the agents, the sandbox, slots, pause and the harness's instruments; the surface (a builder's first pull request) comes before it.
+superagent/47-replies-and-pause.test.ts > replies and the pause > the journey "a kill during a pause loses nothing" passes whole
+superagent/47-replies-and-pause.test.ts > replies and the pause > the journey "one chatty ticket's writes stay within budget" passes whole
+superagent/47-replies-and-pause.test.ts > replies and the pause > the journey "pause holds processing while triggers keep arriving" passes whole
+superagent/47-replies-and-pause.test.ts > replies and the pause > the journey "two replies at once and a head that sends at that moment leave one head and no lost reply" passes whole
