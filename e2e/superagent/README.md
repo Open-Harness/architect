@@ -274,9 +274,78 @@ imports at throwaway descriptors (`tape/shims/`). Six calls the review made are 
    - A reply's natural key is read as "not null": no record says its form. `EvalExpired` is not tied to the eval that was paused.
    - The 20 s window of the close-resend journey holds at most one 30 s sweep, whose phase no record fixes; the grace journey calls `reap` by hand so its first sight of the idleness is at a known instant.
 
+# Goal 17's checks: stage one's behaviour (slice 6)
+
+Written before slice 7 builds stage one's handlers, by an author who builds none of them. Slice 6's done-when is "they fail on
+empty handlers"; slice 7's is "slice 6 passes". `GOAL17-stage-one.md` makes the calls these checks stopped at; `GOAL17-check-harness.md` fixes the doors
+`22` is written against.
+
+| Check | What it proves | Reads |
+|---|---|---|
+| `18-reading-prove` | the way `19` and `22` read prove's report is sound: each hollow reading (a journey that did not run, ran twice, stopped, ran other or fewer steps, or had a red step) is refused and named; each journey file has the steps its check expects | the fixtures; planted reports |
+| `19-stage-one-journeys` | six journeys on a copy of the app, run by `ortho prove`, every step green: a stale policy save refused (12 steps); an account seen once (10); a trigger twice stored once (4); the gate lets the right ones through (27: each cell of the prototype's `002` that the payload drives, in all three modes); an eval batches a thread (6); the stage read is served (4) | prove's `--report` |
+| `20-the-stage-table` | the stage table, row by row and pair by pair (33 cases, each expected value from the record), and `closing` named "Stopping" (call 6); the judge is shown to refuse 22 planted wrong tables | `stageOf` |
+| `21-accept-and-stop-write-what-the-design-says` | `ticket.accept` writes its five records in one database step (call 3), and `ticket.stop` declares the one step that writes the ticket, the mandate it withdraws and the assignment it closes | `ortho model --json` |
+| `22-stage-one-doors` | eight journeys written against the harness's doors: observe's "would accept" starts nothing; a follow-up reaches its ticket with no eval; a policy change restarts a live eval; a stop withdraws the mandate; a stop cancels a waiting assignment and interrupts a running one; a stop after a handoff still tells the Agent to close; the stage read's rows over a ticket's life; an accept makes five records in one commit | prove's `--report` |
+| `23-the-gate` | the gate's table (`gate.of`, call 8), cell by cell: 38 cases from the prototype's `002`, and the judge refuses 16 planted wrong gates | `gate` in `plugins/intake/src/modules/gate/service.ts` |
+
+## What the builder must make, and where the checks read it (slice 6)
+
+`GOAL17-stage-one` call 1 ratifies points 1 to 12. A builder who needs one changed stops and asks its author.
+
+1. **Where the journeys are.** `e2e/fixtures/superagent/stage-one/` (19) and `.../stage-one-doors/` (22), each with `journeys/` and `starting-worlds/`. `stage-one.ts`
+   copies them into a copy of the app, generates, and runs `ortho prove --env local --report`. A builder never edits them. The app's own `journeys/` is the builder's.
+2. **Who calls.** `trigger.receive`, `account.seen` and `eval.due` are called as the system (their declared `allowed`), standing in for the source's caller and the clock;
+   `account.list`, `account.unlist`, `policy.*` and the reads as a signed-in person; `22` also casts the main agent's tool calls through the scripted model. The shapes `22` keeps where no record gave one are call 11.
+3. **A superagent needs an Agent first** (call 4). `superagent.create` takes `main`, an Agent that exists, so a starting world calls `agent.open` (`kind: "main"`) as the system and
+   passes its answer; `create` takes no `policy`, and the first `policy.save` is from base 0. Four of 19's six journeys start there, so they pass only once `agent.open` has a handler.
+4. **A connection is `{ source, config }`.** The world's one connection is `{ source: "slack", config: { me: { id: "UBOT", login: "agent" }, channels: ["C1"], directMessages: false } }`.
+5. **What `trigger.receive` takes** (call 2): `{ superagent, source, event, thread, kind, text, url?, addressed?, actor?, channel }`, `addressed` `"mention"` or `"direct"` and the actor
+   `{ id, name, bot }`, absent for no sender. `kind` no longer carries "addressed". The journeys' `kind`s are Slack's: `mention`, `direct`, `message`.
+6. **The first policy is a save from base 0.** `allowed`, `bots` and `admission` are stored and read back as written; a `bots` entry is `"<source>:<external>"`, and `admission` is
+   `{ <row>: { listed?, unlisted?, unnamed? } }` with a strength in each (call 8).
+7. **What `trigger.receive` answers.** `outcome` is `stored`, `duplicate` or `filtered`. Only `stored` records anything: the call's journal then holds `TriggerReceived`. `duplicate` and `filtered`
+   record nothing (`noEvents`), and an event the gate filtered, delivered again, is `filtered` again (it was never kept). A duplicate answers the first trigger's id. A filtered trigger records nothing at all, not even the sender's Account (call 2); the answer then has no `trigger`.
+8. **`account.seen` of a known account** answers its id, records nothing and leaves its state.
+9. **`policy.history` rows** are `{ revision, at, by, from }` as numbers and a person id, newest first; a save's `from` is its `base`; a restore's `from` is not read.
+10. **`eval.due`'s `started`** counts the evals one pass made: one per thread with a waiting trigger and no eval running on it (call 5: `eval.due` calls `eval.start` and `eval.expire`).
+11. **The stage table's labels** are the record's; the blocked and failed row's label says which. A closing Assignment on an open ticket is `working`, `none`, "Stopping", below a ready report and a
+    question (call 6).
+12. **`ticket.stop`'s one database step** is any step the builder names, of type `database`, whose `writes` include `ticket`, `mandate` and `assignment`; `ticket.accept` has exactly one database
+    step, writing `ticket`, `mandate`, `subscription`, `assignment` and `input`.
+13. **The gate's module** is `plugins/intake/src/modules/gate/{types,service}.ts`, exporting `gate: Gate` from `service.ts`, over the views of call 8.
+14. **`observedRow`** is `{ listed: "inferred", unlisted: "none", unnamed: "none" }` (call 8): the gate journey's plain-message steps read it.
+
+## What waits on a door nobody has built
+
+`22` is red today for one reason: prove cannot load a journey that imports `@orthograph/stand-in-model/stand` or `outbox` (check 22 says so, with prove's own line). It waits on, in order:
+
+| Door | Built in |
+|---|---|
+| the journey surface: `s.clock.settle`, `outbox`, `Stand.command`, `Probe`, the `actor:` and `agent:` cast forms (GOAL17-check-harness, call 0) | slice 8's first pull request |
+| `agent.open`'s handler, `@orthograph/stand-in-model`, the drain on `Timers`, `outbox.rows`, `outbox.hold` | slice 9 |
+
+Shapes the records did not give, which `22` keeps and `GOAL17-stage-one` call 11 settles: `decision.route`'s items (`{ action, trigger, title? }`, with the `eval` it answers, which a script names `"$eval"`); that
+`outbox.rows`' `subject` for `TicketCreated` is the ticket's id; that the `actor:` cast member is the world's listed account (`U1`).
+
+## What proving 19 found
+
+`19` passes, all six journeys, on a throwaway app (`SUPERAGENT_APP`) with handlers and blueprint edits written only for the proof. It needed four framework fixes the blueprint cannot work round
+(`GOAL17-stage-one` call 12: facts for actor-lived things, nullable optional fields, booleans, `Unknown` as JSON), and corrected two steps that no correct implementation could pass
+(a read of a missing ticket answers `NotAllowed`, not not-found; `trigger.receive`'s answer has no `trigger` when it filters).
+
+## Gaps in the records that are now closed
+
+`GOAL17-stage-one` closes: the payload (call 2), "six records" (3), `create`'s `main` and `policy` (4), the moves no operation makes (5), the closing row (6), `off` with a listed bot (7), the gate's views (8) and
+`versions:` at run time (9, snag #685). Open: nothing of slice 6's own; slice 7's builder changes the blueprint to match (the payload, Thread's machine, `eval.expire`, `observedRow`).
+
 ## Running them
 
 ```bash
+pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/18 superagent/20 superagent/21 superagent/23   # seconds
+pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/19                                              # one prove run, about 40 seconds
+pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/22                                              # red until the doors are built
+SUPERAGENT_APP=<folder> ...                                                                                                 # an author's throwaway app that should pass
 pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/40     # the fairness proofs: green
 pnpm nx run e2e:superagent-ratchet                                                   # everything, against expected-failing/
 ```

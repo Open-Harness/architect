@@ -1,0 +1,6 @@
+# Written before slice 7 (Goal 17, slice 6). GOAL17-stage-one call 5 gives Thread one state and Eval `start` and `expire`: slice 7's builder changes the blueprint to match. Due before slice 7 merges.
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > each machine has exactly the states the design names, and each move it spells out
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > each operation and read it names is in the model, on its thing, and comes from this package
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > the docs list every thing, operation, event and error: a page for each, linked from its thing's index
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > the generated CLI lists every operation: `<cli> <thing> --help` names each verb
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what the design names is in the model, and in the docs, CLI and MCP > the generated MCP catalog has a tool for every operation

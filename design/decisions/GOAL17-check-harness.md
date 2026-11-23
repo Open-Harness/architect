@@ -145,6 +145,8 @@ export const models = {
 //   reset:   {} → {}
 ```
 
+Addition, 23 November 2026 (GOAL17-stage-one, call 11; nothing is superseded): a scripted turn's `args` may name the eval it answers as the string `"$eval"`, which the stand-in fills with the id of the eval its request was told, and `"$ticket"`, filled from the answering Agent's `about` (`ticket/<id>`).
+
 Fairness properties, each a check of the stand-in's own test (`script.test.ts`): no script answers `501 NoScript`; a scripted call
 to a tool the request did not offer answers `500 ToolNotOffered` (a script can never call what the agent lacks); `models.done`
 fails a journey that left turns unused; replies are real SSE chunks (a role chunk, a text delta or a `tool_calls` delta, a finish
