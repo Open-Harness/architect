@@ -1,4 +1,0 @@
-# slice 3 (M6.10): ortho generate writes no blueprint/refusals.lock yet. Comes off when that slice's builder turns it green.
-on-chain/04-m6-10-refusals-lock.test.ts > ortho generate writes blueprint/refusals.lock > generating again changes nothing: the lock byte for byte, and every file of generated/
-on-chain/04-m6-10-refusals-lock.test.ts > ortho generate writes blueprint/refusals.lock > model and check write no lock; generate writes one in the exact schema, holding exactly today's refusals
-on-chain/04-m6-10-refusals-lock.test.ts > ortho generate writes blueprint/refusals.lock > the model's refusals map is read from the lock: a lock that says TicketBusy is TK-007 makes the model say so

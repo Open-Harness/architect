@@ -1,9 +1,0 @@
-# slice 3 (M6.10): ortho check reports no major or minor yet. Comes off when that slice's builder turns it green.
-on-chain/04-m6-10-check-reports-major.test.ts > ortho check reports a move to a chain store as major > ticket moves from the database to a chain store
-on-chain/04-m6-10-check-reports-major.test.ts > ortho check reports a renamed refusal as major > a declared error renamed (TicketBusy to TicketStuck)
-on-chain/04-m6-10-check-reports-major.test.ts > ortho check reports a renamed refusal as major > the first state renamed, which renames the machine's refusal (TicketNotOpen), keeping its code
-on-chain/04-m6-10-check-reports-major.test.ts > ortho check reports the states' numbers on chain: reordered or inserted is major, appended is minor > a new state at the end
-on-chain/04-m6-10-check-reports-major.test.ts > ortho check reports the states' numbers on chain: reordered or inserted is major, appended is minor > a new state before the last
-on-chain/04-m6-10-check-reports-major.test.ts > ortho check reports the states' numbers on chain: reordered or inserted is major, appended is minor > a state removed (exhausted, with the moves that named it)
-on-chain/04-m6-10-check-reports-major.test.ts > ortho check reports the states' numbers on chain: reordered or inserted is major, appended is minor > nothing changed in a chain project: no bump
-on-chain/04-m6-10-check-reports-major.test.ts > ortho check reports the states' numbers on chain: reordered or inserted is major, appended is minor > two states swapped

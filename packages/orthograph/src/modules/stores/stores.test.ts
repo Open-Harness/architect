@@ -9,6 +9,7 @@ describe("stores", () => {
     expect(Stores.store.database()).toEqual({ kind: "store", of: "database" });
     expect(Stores.store.actor().of).toBe("actor");
     expect(Stores.store.kind("chain").of).toBe("chain");
+    expect(Stores.store.chain.evm()).toEqual({ kind: "store", of: "chain.evm" });
     expect(Object.isFrozen(Stores.store.database())).toBe(true);
   });
 

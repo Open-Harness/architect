@@ -748,7 +748,7 @@ jobs:
 
   # Goal 4's done check, begun (`e2e/on-chain/README.md`): the budgets journeys, the seam, the snag log and each slice's check, through the
   # ratchet, so it is green while every failure is listed. `nx run e2e:on-chain` itself (red while anything is listed) is the done check and
-  # is run by hand and at landing. Only for the goal's own branch: pull requests into goal/on-chain and pushes to it. On any other pull request
+  # is run by hand and at landing. Only for the goal's own branch: pull requests into goal/on-chain. On any other pull request
   # or push, and on a docs-only pull request, the job runs and passes without its steps: a required job never skips (CI-drafts-race.md,
   # CI-docs-fast-path.md). It is goal/on-chain's own e2e suite, so the fast gate runs it (CI-integration.md, B1). No secret and no `id-token`.
   e2e-on-chain:
