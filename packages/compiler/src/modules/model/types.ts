@@ -4,6 +4,7 @@ import type { BlueprintSource, SourceError } from "#modules/source/types.js";
 import type { ClockModel, MoveTimeModel } from "#modules/time/types.js";
 import type { ValueMeta as DeclaredMeta } from "orthograph";
 import type { MountModel } from "#modules/mounts/types.js";
+import type { AppModel } from "#modules/app/types.js";
 
 /** What an amount counts, in the model: an asset file's name (a token or a currency), or the field of the same row that holds the token. */
 export type MoneyAssetModel = { readonly token: string } | { readonly currency: string } | { readonly field: string };
@@ -249,6 +250,22 @@ export interface StoreFromModel {
   readonly store: string;
 }
 
+/** Where a secret was declared: the app's own `blueprint/secrets.ts`, or the plugin a mount brought in. */
+export type SecretFromModel =
+  | { readonly kind: "app" }
+  | { readonly kind: "feature" | "adapter" | "projection"; readonly mount: string; readonly package: string; readonly version: string };
+
+/** A declared secret, by the name derived from its mount and export: how it gets a value and who holds it. Never a value. */
+export interface SecretModel {
+  readonly how: "generated" | "stored";
+  /** `runtime` (a running place holds it), `release` (CI's) or `builder` (a developer's machine's). */
+  readonly kind: "runtime" | "release" | "builder";
+  /** The export's name in the declaring `secrets.ts`: what the plugin's layer reads it by. */
+  readonly export: string;
+  readonly from: SecretFromModel;
+  readonly describe?: string;
+}
+
 /** A store, named by its file (`blueprint/stores/ledger.ts` is `ledger`), or by its mount and path (`echo-ledger`). */
 export interface StoreModel {
   readonly name: string;
@@ -316,10 +333,14 @@ export interface Model {
   readonly blanks?: Readonly<Record<string, ReadonlyArray<string>>>;
   /** Where the application runs, by name: present only when the blueprint has an `environments/` folder. */
   readonly environments?: Readonly<Record<string, EnvironmentModel>>;
+  /** The declared secrets by derived name (`STRIPE_API_KEY`): present only when the app or a mount declares any. */
+  readonly secrets?: Readonly<Record<string, SecretModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
   /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
   readonly alertRules: ReadonlyArray<AlertRuleModel>;
+  /** The app's map: its pages, components and navigation (K31, K36). Present only when the blueprint has an `app/` folder. */
+  readonly app?: AppModel;
 }
 
 /** A blueprint the compiler refuses, with every problem found, each naming its file. */

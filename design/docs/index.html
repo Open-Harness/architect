@@ -659,7 +659,7 @@ export const webhookSigning = Blueprint.secret.stored({ describe: "The endpoint'
 STRIPE_API_KEY          stored     runtime   set 12 Nov
 STRIPE_WEBHOOK_SIGNING  stored     runtime   missing
 AUTH_SECRET             generated  runtime   set 2 Nov
-$ ortho secrets set stripe.apiKey --env production     # prompts without echo; never an argument</code></pre>
+$ printf %s "$VALUE" | ortho secrets set STRIPE_API_KEY --env production     # reads stdin only; never an argument</code></pre>
 <p>Worlds and local environments never need a real key. Generated secrets are made fresh, and stored ones use their
 declared test value or the stand-in's own credential. <code>promote</code> refuses an environment with a missing
 stored secret, and names it.</p>

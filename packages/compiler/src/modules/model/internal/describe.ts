@@ -14,6 +14,7 @@ import { unfillable } from "./fillable.ts";
 import { RUNS_NEEDS, deviceProblems } from "./device.ts";
 import { Times } from "#modules/time/service.js";
 import { environmentsOf } from "./environments.ts";
+import { secretsOf } from "./secrets.ts";
 import { allowedOf } from "./allowed.ts";
 import { storiesOf } from "./journeys.ts";
 import { hashOf } from "./hash.ts";
@@ -210,13 +211,14 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const refusals = refusalsOf(things, problems, hasChain);
   problems.push(...exitClashes(things), ...operationExitClashes(things, operations), ...notFoundShapes(things));
   const values = Object.fromEntries([...layout.values].sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => [n, metaOf(v.meta, `${layout.valueFiles.get(n) ?? "blueprint/values"}: value ${n}`, undefined, names, problems)]));
-  const environments = environmentsOf(layout, problems, tokensUsed(things, operations));
+  const secrets = secretsOf(layout, problems);
+  const environments = environmentsOf(layout, problems, tokensUsed(things, operations), secrets);
   const stores = storesOf(layout, problems);
   const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel, problems);
   const allBlanks = { ...blanks, ...journeyBlanks };
   const alertRules = alertRulesOf({ operations, refusals, things, journeys: stories.journeys, environments });
   return {
-    model: { refusals, values, ...(Object.keys(assets).length > 0 ? { assets } : {}), things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
+    model: { refusals, values, ...(Object.keys(assets).length > 0 ? { assets } : {}), things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(secrets).length > 0 ? { secrets } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
     problems,
     lock,
   };

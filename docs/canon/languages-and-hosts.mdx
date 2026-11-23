@@ -101,7 +101,7 @@ export type Runs = "client" | "server" | "chain";
 
    The compiler refuses the other two, and says what a project would need to run them:
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=101-102
+```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=102-103
 // On a chain store where it runs is the compiler's word, so a written `runs` is refused in operations.ts.
 if (!chain && op.runs !== "server" && !onDevice) problems.push(`${file}: runs "${op.runs}" is not supported yet: ${RUNS_NEEDS[op.runs] ?? "an unknown place"}`); else if (onDevice) problems.push(...deviceProblems(file, op));
 ```

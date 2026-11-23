@@ -21,3 +21,11 @@ Builds the model, the one description every generator reads, from a loaded bluep
   leaves `writes` unset is unknown and breaks the rules of a thing with no machine, `writes: []` is reads only). The exit-clash scan reads them too.
   A thing with no rule carries no `invariants` field, so its hash is unchanged.
   Tests: `invariants.test.ts`.
+- Secrets (M2.04): `blueprint/secrets.ts` (the app's) and each mounted plugin's own `blueprint/secrets.ts` are read by
+  export, each a `Blueprint.secret.generated(…)` or `.stored(…)`. The name is derived, never written: the mount, then the
+  export, each in UPPER_SNAKE (`stripe-eu` + `apiKey` is `STRIPE_EU_API_KEY`); the app's own have no mount in the name. The
+  model gets `secrets[NAME] = { how, kind, export, from }` (never a value; absent when nothing is declared), and every
+  environment's `secrets` also names every runtime secret (release and builder ones never reach a running place). Refused,
+  naming both places: two exports on one name (`internal/secrets.ts`), an export with digits or a run of capitals
+  (`key2`, `apiURL`) because its words could split two ways, and an environment that also names a declared secret by hand.
+  Tests: `e2e/m2/02` and `04`.
