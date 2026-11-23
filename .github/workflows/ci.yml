@@ -825,12 +825,12 @@ jobs:
       - run: pnpm nx run e2e:portal-next --outputStyle=static
 
   # Goal 5's done check, begun (`e2e/ui-layer/README.md`): the UI layer's checks through the ratchet, which passes while every failure is
-  # listed in e2e/ui-layer/expected-failing/ and fails on any other. Only for the goal's own branch: pull requests into goal/ui-layer and
-  # pushes to it. Skipped on a docs-only pull request, where a skip counts as passed (CI-docs-fast-path.md). Should `changes` itself fail,
+  # listed in e2e/ui-layer/expected-failing/ and fails on any other. For main and goal/ui-layer: pull requests into either and
+  # pushes to either (CI-main-ui-layer.md). Skipped on a docs-only pull request, where a skip counts as passed (CI-docs-fast-path.md). Should `changes` itself fail,
   # this runs. No Docker, no cloud, no secret: slice 1's check starts one HTTP server on a free port.
   e2e-ui-layer:
     needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && ((github.event_name == 'pull_request' && github.base_ref == 'goal/ui-layer') || github.ref == 'refs/heads/goal/ui-layer') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && ((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/ui-layer')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/ui-layer') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
