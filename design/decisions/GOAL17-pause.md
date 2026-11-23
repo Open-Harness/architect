@@ -46,6 +46,7 @@ release it asks the switch first.
 pausedFrom: Blueprint.optional(Blueprint.oneOf(["observing", "live"])),  // where resume returns to
 pausedAt:   Blueprint.optional(Blueprint.uint(64)),   // the world's clock, in ms, when the pause began
 pausedFor:  Blueprint.uint(64),                       // ms spent paused in every earlier pause; 0 at create
+passGen:    Blueprint.uint(32),                       // the live chain of the eval pass; `eval.due` bumps it
 
 // events.ts
 export const SuperagentPaused  = Blueprint.event({ superagent: Superagent.fields.id, from: Blueprint.text(), at: Blueprint.uint(64) });
@@ -189,23 +190,25 @@ a 60 s eval gives a deadline of 360, and a second pause adds its own length agai
 // plugins/intake/src/modules/evals/service.ts: one pass, then the next. Timers decides when; nothing sleeps by itself.
 // `Supers` is a port intake declares (types.ts) and the app implements from superagent's `pause` module: `get`, and
 // `expired`, the function above. Intake imports no other plugin.
-export const pass = (superagent: SuperagentId): Effect.Effect<void, never, Timers | Supers | Evals> =>
+export const pass = (superagent: SuperagentId, gen: number): Effect.Effect<void, never, Timers | Supers | Evals> =>
   Effect.gen(function* () {
     const timers = yield* Timers;
     const now = BigInt(yield* Clock.currentTimeMillis);
     const supers = yield* Supers;
     const sa = yield* supers.get(superagent);
-    if (sa.state === "paused" || sa.state === "retired") return;          // not re-armed: resume arms it
+    if (sa.state === "paused" || sa.state === "retired" || sa.passGen !== gen) return;   // not re-armed: resume arms it; a stale chain ends
     yield* (yield* Evals).batch(superagent);                                // waiting triggers become Evals
     yield* (yield* Evals).expire(superagent, (e) => supers.expired(e, sa, now));   // `delivered` and not decided in time
-    yield* timers.at(Number(now) + 2_000, owner(superagent), "evals.due", pass(superagent));
+    yield* timers.at(Number(now) + 2_000, owner(superagent), "evals.due", pass(superagent, gen));
   });
 
-// armed by `eval.due`, the unheld delivery of SuperagentCreated and SuperagentResumed; once only, because Timers.pending lists the owner's timers
+// armed by `eval.due`, the unheld delivery of SuperagentCreated and SuperagentResumed. Two arms (or an arm while the old chain's
+// last timer is still due) must not leave two chains. A check of `Timers.pending` and an `at` are two steps, so the chain
+// carries a generation: `arm` bumps `Superagent.passGen` in its commit (a row `pass` reads) and starts the chain with it, and
+// a pass whose generation is no longer the Superagent's ends at its next run.
 export const arm = (superagent: SuperagentId) => Effect.gen(function* () {
-  const timers = yield* Timers;
-  if ((yield* timers.pending).some((t) => t.owner === owner(superagent) && t.name === "evals.due")) return;
-  yield* timers.at(Number(yield* Clock.currentTimeMillis), owner(superagent), "evals.due", pass(superagent));
+  const gen = yield* (yield* Supers).bumpPassGen(superagent);                    // one commit on the Superagent row
+  yield* (yield* Timers).at(Number(yield* Clock.currentTimeMillis), owner(superagent), "evals.due", pass(superagent, gen));
 });
 ```
 

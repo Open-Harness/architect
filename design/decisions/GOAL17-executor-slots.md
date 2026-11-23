@@ -166,8 +166,7 @@ export default Blueprint.operation(Assignment, {
   Two things close it:
   1. `AgentIdled`, from the Agent's `working → idle` move, is delivered through the outbox, at least once and keyed
      by its event id, to `assignment.turnEnded`, which finds the Assignment by the agent (`oneLivePerExecutor`). A
-     second delivery meets `notFrom` and does nothing; it also does nothing if the Agent is `working` (a tell that
-     landed after the idling, section 5). It is **unheld** (GOAL17-pause): a turn that ends during a pause
+     second delivery meets `notFrom` and does nothing. It is **unheld** (GOAL17-pause): a turn that ends during a pause
      gives its seat back, and `fill` stays held.
   2. `superagent.reap` (system, in the same sweep as below, unheld: it moves no work) lists `running` rows and asks each executor's Agent for its
      state. The actor answers from its own SQLite (`host-cloudflare/src/modules/actors/types.ts:27-29`, `find`). An
@@ -238,8 +237,8 @@ where the seat is checked. Three hops decide what is told, and when:
 | Event | Calls | Held? | What it does |
 |---|---|---|---|
 | `InputStored` | `input.route` | no: rows only | by the ticket's live Assignment: **running**, the Input moves to `routed` and `InputRouted` is emitted; **pending**, it waits for the seat; **none**, an Assignment is queued (`why` from the Input, `input` = this Input) and the Input waits |
-| `InputRouted` | `agent.tell` | yes | `requestId` = the Input's id; a busy agent is steered |
-| `AssignmentStarted` | `agent.tell`, and `input.route` | yes, both | the first tells the Assignment's own `input`; the second routes every other Input that waited for the seat, oldest first |
+| `InputRouted` | `agent.tell` (a steer) | yes | `requestId` = the Input's id; refused by the Agent if its Assignment is not the current one |
+| `AssignmentStarted` | `agent.tell` (opens the Assignment), and `input.route` | yes, both | the first tells the Assignment's own `input`; the second routes every other Input that waited for the seat, oldest first |
 
 ```ts
 // plugins/tickets/blueprint/things/input/verbs/route.ts
@@ -251,33 +250,55 @@ export default Blueprint.operation(Input, {
     Blueprint.on(AssignmentStarted, (e) => ({ ticket: e.ticket })),   // the seat came: route what waited, oldest first
   ],
 });
-// the hops that tell, in the app's wiring (examples/superagent/blueprint/features/agents.ts). `Blueprint.text()` has a default
-// max of 200 (values/types.ts:39) and no long-text type exists, so the text stays on the Input row and the hop reads it.
-// A hop may read rows (read-only), and `still` is checked when the row is claimed; `else` is called in its place.
-Blueprint.on(InputRouted, (e, read) => ({ agent: e.agent, requestId: e.input, input: read(Input, e.input).text }),
-  { still: (e, read) => read(Assignment, e.assignment).state === "running", else: input.operations.requeue });
-Blueprint.on(AssignmentStarted, (e, read) => ({ agent: e.agent, requestId: e.input, input: read(Input, e.input).text }),
-  { still: (e, read) => read(Assignment, e.assignment).state === "running", else: input.operations.requeue });
+// the hops that tell, in the app's wiring (examples/superagent/blueprint/features/agents.ts). The event carries the text, because the
+// hop reads no row: `Blueprint.text({ max: 65536 })` (the default max is 200, values/types.ts:39), and `trigger.receive` clips a
+// trigger's text to that. Every tell names its Assignment.
+Blueprint.on(InputRouted, (e) => ({ agent: e.agent, requestId: e.input, input: e.text, assignment: e.assignment, opens: false }),
+  { onRefused: { error: StaleAssignment, then: input.operations.requeue } });
+Blueprint.on(AssignmentStarted, (e) => ({ agent: e.agent, requestId: e.input, input: e.text, assignment: e.assignment, opens: true }));
 ```
 
-**A tell never wakes an executor without a seat.** `AgentIdled` to `turnEnded` is unheld, so a turn can end, and its seat
-free, between `input.route` (which saw a running Assignment) and the tell. The tell hop therefore reads the
-Assignment when it is claimed (`still`). If it is no longer `running`, the hop does not call `agent.tell`. It calls
-`input.requeue` instead, the declared move `routed → waiting` (a failed Input's retry is the same move, `failed → waiting`),
-which emits `InputStored`. `input.route` then runs again: with no running Assignment it queues a new one, `fill`
-seats it, and the Input is told on that Assignment's `AssignmentStarted`. Two guards close the rest of the window. The
-check and the submit are not one commit, so `assignment.turnEnded` asks the Agent's own state first (as `reap` does) and
-does nothing if the Agent is `working`, and `reap` queues an Assignment for a `working` executor that has none
-(`why: "input"`). The worst case is one turn that runs for at most one sweep before it holds a seat. It is never a wake
-that the seat rules do not see.
+**A tell never wakes an executor without a seat, and the Agent is what says so.** `AgentIdled` to `turnEnded` is unheld,
+so a turn can end, and its seat free, between `input.route` (which saw a running Assignment) and the tell. Two commits
+on two rows cannot be made atomic by a check in the hop, so the check is made where the state lives, inside the
+Agent actor's own commit:
+
+```ts
+// @orthograph/agents: the Agent keeps the Assignment it is working for. `agent.tell` takes an optional `assignment` and `opens`
+// accept:   no assignment (the main agent) · opens: true (sets `current`) · opens: false and assignment === current
+// refuse:   opens: false and assignment !== current  →  StaleAssignment (declared), nothing submitted to Pi
+// AgentIdled (the same commit as working → idle) clears `current` and names the Assignment it was for
+export class StaleAssignment extends Blueprint.error("StaleAssignment", { assignment: Blueprint.text() }) {}
+```
+
+A steer for an Assignment that is no longer the Agent's is refused in that commit, so nothing is told. The outbox gets
+one small seam, asked of Goal 11: a hop may name `onRefused: { error, then: <operation> }`. When the hop fails with that
+declared error, the outbox runs the operation in its place and marks the row done, instead of retrying it or marking it
+refused. Here the operation is `input.requeue`, the declared move `routed → waiting` (below), which emits
+`InputStored`; `input.route` then runs again. If the Assignment has not yet been ended by `turnEnded`, `route` sees it
+`running` and tells again, and the Agent refuses again: the cycle repeats once per outbox pass until `AgentIdled`'s own
+delivery commits `turnEnded`, which is unheld and so ends it. Then `route` finds no live Assignment and queues a
+new one, `fill` seats it, and the Input is told on its `AssignmentStarted` (`opens: true`). So an executor is never woken
+by a steer without a seat; the only wake with no earlier seat is the opening tell, which is sent only by `fill`'s commit.
+A handoff or a stop ends the Assignment while the Agent finishes its turn: steers to that Assignment are still accepted,
+because the Agent still holds it as `current`, and no seat is queued for it. That is the prototype's "a handoff frees the slot" with
+the turn finishing.
+
+**Who calls `requeue`.** Two callers, one move. The refusal above (`onRefused`) for a routed Input, and, for a
+`failed` Input, the retry: `ticket.retry` and a person's "send again" call `input.requeue` on it
+(`from: ["routed", "failed"]`). `deliveryFailed` is what puts an Input in `failed` after the outbox gives up on the tell.
 
 ```ts
 // plugins/tickets/blueprint/things/input/machine.ts: the moves of the Input
 routed:    { from: ["waiting"],           to: "routed",    emits: InputRouted },
-requeued:  { from: ["routed", "failed"],  to: "waiting",   emits: InputStored },   // a tell that found no seat; a failed Input's retry
+requeued:  { from: ["routed", "failed"],  to: "waiting",   emits: InputStored },   // a refused tell; a failed Input's retry
 delivered: { from: ["routed"],            to: "delivered", emits: InputDelivered },
 failed:    { from: ["routed"],            to: "failed",    emits: InputFailed },
 ```
+
+**A second tell of one Input** (a hop's lease that overlaps a tell that did finish, then `requeue` and a second route) rests on
+Pi's `requestId`: the same Input id is dropped by Pi. That is K40's open risk ("`agent.tell` must submit inside Pi's own
+commit and mark the request key there"), and this design adds no second guard for it.
 
 **Order.** The outbox orders per `(to, subject)`, and a tell's subject is the Input (`InputRouted`) or the Assignment
 (`AssignmentStarted`), not the executor. That is enough: an Assignment's own `input` is the one waiting when it starts,
@@ -343,12 +364,12 @@ needs five things from it:
 
 ```ts
 export const InputStored       = Blueprint.event({ superagent, input, ticket });
-export const InputRouted       = Blueprint.event({ superagent, input, ticket, agent, assignment });   // ids only: the text stays on the Input row
+export const InputRouted       = Blueprint.event({ superagent, input, ticket, agent, assignment, text: Blueprint.text({ max: 65536 }) });
 export const AssignmentQueued  = Blueprint.event({ superagent, assignment, ticket, input, why: Why });
-export const AssignmentStarted = Blueprint.event({ superagent, assignment, ticket, agent, input, seat, why: Why });
+export const AssignmentStarted = Blueprint.event({ superagent, assignment, ticket, agent, input, text: Blueprint.text({ max: 65536 }), seat, why: Why });
 export const AssignmentEnded   = Blueprint.event({ superagent, assignment, ticket, seat, how: Blueprint.oneOf(["turnEnded", "interrupted"]) });
 // @orthograph/agents: the Agent's `working → idle` move. It names no superagent, which an agents package knows nothing of
-export const AgentIdled        = Blueprint.event({ agent: Agent.fields.id, about: Blueprint.text() });
+export const AgentIdled        = Blueprint.event({ agent: Agent.fields.id, about: Blueprint.text(), assignment: Blueprint.text() });   // the Assignment the Agent was working for
 ```
 
 All of them are written to the journal with their move (`language-effect/src/modules/journal/types.ts:4-13`), so
@@ -394,6 +415,36 @@ one holder per seat (`oneHolderPerSeat`), and a runner killed between the Agent 
 seat reaped by the next sweep. Pause's own journey (GOAL17-pause) adds: with the superagent paused, a person's message
 to a running executor and to an idle one both wait, a queued Assignment takes no seat, and on resume the person's starts first.
 
+## Two writers, one guard
+
+The bugs this design kept finding had one shape: two operations read one row's state and write **different** rows, so
+neither commit conflicts with the other and each decides on a state the other just changed. A single writer is safe by
+the store's version guard. Two writers need a row they both write, a unique rule, or a refusal made where the state
+lives. This is every such pair across the four records, with its guard. Rows marked **fixed** were found by this sweep.
+
+| Pair | What each reads, and writes | The one guard |
+|---|---|---|
+| `fill` and `fill`; `start` and `start` (seats) | both read the running seats; both write an Assignment | `oneHolderPerSeat`, a unique index: the loser conflicts and runs again |
+| `route` and `route`; `route` queuing an Assignment | both read "no live Assignment" and queue one | `oneLivePerExecutor`, a unique index |
+| `route` and `turnEnded` (an Input and a turn that ends) | `route` reads a running Assignment and writes an Input; `turnEnded` writes the Assignment | **the Agent actor's own commit**: a steer for an Assignment that is not its `current` is refused (`StaleAssignment`), and the Input is requeued. The seat state is never trusted across two commits |
+| `route` for a pending Assignment and `start` | `route` reads `pending` and leaves the Input waiting; `start` writes the Assignment | state only moves forward: `start`'s own `input.route` lists the waiting Inputs after the commit, and an Input stored later routes against `running`. Neither can miss the other |
+| `route`, `requeue` and `delivered` on one Input | each moves the Input | the Input's machine (`from` states) and the row's version |
+| `stop` or a handoff and `start` / `fill` | `stop` reads a pending Assignment; `fill` starts it | both write the Assignment row; `started` is `from: ["pending"]` and `interrupted` from `pending` or `running`, so one refuses |
+| `turnEnded` and `reap` | both end an Assignment | the Assignment's machine: the second meets `notFrom` |
+| `reply` and the head's `send` (**fixed**) | `reply` reads "a head exists", `send` reads "a later message exists"; they write different messages | both bump `Ticket.seq`, so any two conflict and the loser re-reads |
+| `retry`, the retry timer and the sweep (**fixed**) | each reads `notBefore` and writes the same message's outbox row | the message row: `notBefore` is cleared in the commit that emits, so the second does nothing |
+| `batch` and `batch`, the eval pass | two passes read the same waiting triggers | the Thread's machine (`idle → queued`), one write on one row |
+| `expire` and `decide` on one Eval | both move the Eval | the Eval's machine |
+| two chains of the eval pass (**fixed**) | `arm` checks that no chain exists, then starts one; two arms or an arm racing the last timer make two | `Superagent.passGen`: `arm` bumps it, and a pass of an older generation ends at its next run (GOAL17-pause) |
+| `proposal.approve` and `proposal.reject` | both move the Proposal | the Proposal's machine |
+| `approve` and any other save of what it changes | it reads a base version and writes the Policy, Prompts or Superagent | `versions:` (K40 fix 2): a stale base is refused and the Proposal keeps its draft |
+| two `thread.follow` of one thread by one ticket (**fixed**) | both read "not subscribed" and create a Subscription | a unique rule on `(ticket, thread)` while live: the second `follow` refuses and runs again |
+| `thread.unrelated` and `ticket.end` | both move the Subscription | the Subscription's machine |
+| two `account.seen` for one sender (**fixed**) | both read "no Account" and create one | a unique rule on `(superagent, source, id)` (the Account's key, GOAL17-source-from) |
+| `account.list` and `account.seen` | both move the Account | the Account's machine |
+| a pause and a claim | the claim reads the Superagent's state and writes the outbox row | one SQL statement: the claim's `NOT EXISTS` over the hold view (GOAL17-pause) |
+| a poll's failure count and `disable` | both write the Source | the Source row's version |
+
 ## What it touches
 
 | Dependent | Why it cares |
@@ -405,7 +456,8 @@ to a running executor and to an idle one both wait, a queued Assignment takes no
 | `@orthograph/tickets` | `input.route`, `assignment.*`, `ticket.report` and `ticket.accept` write Assignments; one new module `slots`, a pure value in, no import of superagent |
 | Overview page (brief :418) | "executor load" reads running seats, waiting count and whether the reserve is held |
 | Slice 8 and 9 | the check above; the builder writes the handlers to it |
-| Goal 11 (the outbox, M5.03) | an Ask: a hop may read rows (read-only), carry `still`, and name an `else` operation called in its place when `still` is false |
+| Goal 11 (the outbox, M5.03) | an Ask: a hop may name `onRefused: { error, then: <operation> }`; when the hop fails with that declared error the outbox runs the operation in its place and marks the row done |
+| `@orthograph/agents` (Goal 10) | the Agent keeps its `current` Assignment, refuses a stale steer with `StaleAssignment` inside its own commit, and `AgentIdled` names the Assignment |
 | `packages/orthograph`, `compiler` | nothing new: `unique ... while`, machines and events are in the framework; `oneOf` and `Blueprint.agent` are the brief's slice 5 |
 
 ## Evidence
@@ -446,6 +498,8 @@ to a running executor and to an idle one both wait, a queued Assignment takes no
 - **A pause holds no seat.** A launch that is still `pending` has none, so a long pause cannot leave a person's message
   waiting behind a launch that took a seat and did nothing. Seats held by running turns stay held; the portal shows
   "waiting for a seat" for the rest.
+- **A refused steer can cycle** for the few moments between the Agent going idle and `turnEnded` committing; it is bounded by that
+  delivery and costs rows, never a wrongly seated turn.
 - **An Input is told once per hop, and the hops are disjoint.** The Assignment's own `input` goes by
   `AssignmentStarted`'s tell, every other by `InputRouted`'s (their order is per Input or Assignment: section 5). Pi's `requestId` is the Input's id, so a second tell of one
   Input is dropped by Pi (K40 fix 3), but that depends on the open risk K40 names ("`agent.tell` must submit inside
@@ -461,3 +515,4 @@ The lead applied these to the brief with this record.
 - `design/goals/17-superagent.md`: "a launch is a workflow (prepare the sandbox, open the executor, send its first input); a delivery or relay is" → "a launch is an Assignment: its seat comes first, then `agent.tell` sends its first input, and its sandbox opens on the executor's first tool call (GOAL17-executor-slots); a delivery or relay is"
 - `design/goals/17-superagent.md`: "`attach`, `requestStatus`, `note` (main);" → "`attach`, `note` (main); `requestStatus` (main, or a person, whose request may use the reserve seat: GOAL17-executor-slots);"
 - `design/goals/17-superagent.md`: "| Input | thing, tickets | `delivered`, `read`, `deliveryFailed` (system) |" → "| Input | thing, tickets; `seq`, the ticket's count when it was made (GOAL17-derived-reads); `waiting ⇄ routed → delivered`, `failed → waiting` | `store` (system, person), `route` (system: to a running executor, or it queues an Assignment), `requeue` (system: a tell that finds no seat, or a retry), `delivered`, `read`, `deliveryFailed` (system) |"
+- `design/goals/17-superagent.md`: "| Subscription | thing, tickets; own, attached, context, bound |" → "| Subscription | thing, tickets; own, attached, context, bound; one per ticket and thread (GOAL17-executor-slots) |"

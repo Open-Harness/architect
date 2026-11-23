@@ -152,7 +152,7 @@ const blockedSince = (f: Facts) => (f.report?.state === "blocked" || f.report?.s
 
 **How two tables are put in order: `seq`.** A rowid counts one table, so an Input's and a Report's cannot be compared.
 Ticket gets a per-ticket sequence, bumped in the same commit as each Input and each Report, and each of those stores
-the value it was given:
+the value it was given. A reply's enqueue and a head's completion bump it too, without storing it (see "Order holds"):
 
 ```ts
 // plugins/tickets/blueprint/things/ticket/thing.ts, input/thing.ts, report/thing.ts
@@ -200,17 +200,33 @@ commit `failures`. So `send` catches the channel's error as a value and commits,
 // on a sent message:  state "sent", failures 0, and ReplyQueued for the next pending message of the conversation
 // on a `gone` error:  state "dropped" (the source's reply.gone list), and ReplyQueued for the next one
 // on any other error: failures + 1, notBefore = now + backoff(failures), and a Timers wait that runs `outgoing-message.retry`
+// `reply` (enqueue) and the head's `send` (complete or promote) each also bump Ticket.seq in their commit (see below)
 export const backoff = (failures: bigint): bigint => (5_000n << (failures - 1n)) > 300_000n ? 300_000n : 5_000n << (failures - 1n);   // 5 s, 10 s, … 300 s
 ```
 
-`retry` (system, armed by `Timers.at(notBefore)`, one wait per failed message) emits `ReplyQueued` for the same message.
-**Order holds because only the head of a conversation has a row in the outbox.** `reply` makes the message `pending`
-and emits `ReplyQueued` only when no earlier pending message of that ticket and conversation exists; otherwise the
-message waits behind the head. The head's `send` emits the next one's `ReplyQueued` in its own commit when it is `sent`
-or `dropped`, so the next is not tried until then, and a failing head holds everything behind it, as the prototype does.
+`retry` (system) emits `ReplyQueued` for the same message and clears `notBefore` in the same commit; it does nothing if
+`notBefore` is already clear. **The `Timers` wait is only the fast path.** A crash between the failed `send`'s commit and
+the arm, or a restart that drops in-memory timers, would leave a pending head with no row and no timer, blocking its
+conversation. So a sweep, every 30 seconds through `Timers.at` like the seat sweep (GOAL17-executor-slots) and as counted
+work, runs `outgoing-message.retry` for every `pending` message whose `notBefore` is set and has passed. A lost timer
+costs at most 30 seconds. Clearing `notBefore` with the row's emission makes the timer and the sweep safe together: the
+second finds it clear.
+
+**Order holds because only the head of a conversation has an outbox row, and every change of head is guarded by one row.**
+`reply` makes the message `pending` and emits `ReplyQueued` only when no earlier pending message of that ticket and
+conversation exists. The head's `send` emits the next one's `ReplyQueued` in its own commit when it is `sent` or
+`dropped`. Those two commits write different `OutgoingMessage` rows, so on their own neither would see the other: one
+could leave a message pending with no row (it read "a head exists" while the head finished), or two replies could each
+emit a head. So **both bump `Ticket.seq`** (the per-ticket sequence above) in their commits. Any two such commits on one
+ticket then conflict on the Ticket row's version, the loser runs again, re-reads the conversation and decides on the
+new state. No wake-up is lost and no second head appears. A duplicate `ReplyQueued` for one head is harmless: the second
+`send` finds the message `sent` and meets the machine's `notFrom`. The outbox orders rows per `(to, subject)`, with the
+conversation as subject, so two rows of one conversation never run at once. The slice 8 journey for this runs two
+replies together, and a head that sends at the same moment.
+
 `_outbox.attempts` and its 15-attempt limit play no part in replies: a message stays until it is sent or dropped, and
-health shows it from its third failure. A held `ReplyQueued` is held as before (GOAL17-pause), and a retry timer that
-fires during a pause only makes a row that waits. `OutgoingMessage.failures` is a field a derive can look at; `_outbox.attempts`
+health shows it from its third failure. A held `ReplyQueued` is held as before (GOAL17-pause), and a retry timer or sweep
+that fires during a pause only makes a row that waits. `OutgoingMessage.failures` is a field a derive can look at; `_outbox.attempts`
 is a host table it cannot, and it is the retry of every other hop, not of replies.
 
 **What health does not hold.** No count of held work, and no outbox row: a paused superagent shows from its own
@@ -383,7 +399,7 @@ The lead applied these to the brief with this record.
 - `design/goals/17-superagent.md`: "`Superagent.declare`, and proposals |" → "`Superagent.declare`, proposals, and slice 2's forms"
 - `design/goals/17-superagent.md`: "each source's, each kind of stored work's and each channel's problems, shown once one has failed three times in a row |" → "each source's and each channel's problems (each a record's `failures` count), shown once one has failed three times in a row; a paused superagent shows from its own `pausedAt` |"
 - `design/goals/17-superagent.md`: "| Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off` |" → "| Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off`; `failures` counts polls failed in a row and a success zeroes it, `failAfter` is 3 (GOAL17-derived-reads) |"
-- `design/goals/17-superagent.md`: "| Ticket | thing, tickets; `open → ended → open`, `stopped` |" → "| Ticket | thing, tickets; `open → ended → open`, `stopped`; `seq`, a count bumped in the commit of each Input and Report (GOAL17-derived-reads) |"
+- `design/goals/17-superagent.md`: "| Ticket | thing, tickets; `open → ended → open`, `stopped` |" → "| Ticket | thing, tickets; `open → ended → open`, `stopped`; `seq`, a count bumped in the commit of each Input and Report, and of each reply's enqueue and completion (GOAL17-derived-reads) |"
 - `design/goals/17-superagent.md`: "| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped |" → "| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped; each with `seq`, the ticket's count when it was made (GOAL17-derived-reads) |"
 - `design/goals/17-superagent.md`: "| Outgoing message | thing, tickets; `pending → sent`, `dropped` |" → "| Outgoing message | thing, tickets; `pending → sent`, `dropped`; `failures` counts sends failed in a row and a sent one zeroes it; `notBefore` is when a failed one may go again (GOAL17-derived-reads) |"
 - `design/goals/17-superagent.md`: "retried from 5 s doubling to 300 s, in order per ticket and conversation |" → "`send` (system, a held hop: a failed call is counted and the message queued again after 5 s doubling to 300 s through `Timers`, and the outbox sees a success); the head of a ticket's conversation holds the rest back, so order holds |"
