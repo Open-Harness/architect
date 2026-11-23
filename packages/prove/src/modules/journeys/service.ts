@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { Effect, Schema } from "effect";
 import type { AnyCall, Call, Operation, Principal, Read, Role, StartingWorld, Thing, ToolsCall, Via } from "orthograph";
 import { Blueprint } from "orthograph";
@@ -14,6 +15,7 @@ import { runChecks, show } from "./internal/checks.ts";
 import { standsUsed } from "./internal/uses.ts";
 import { bind, namesNoPerson, type Bound } from "./internal/bind.ts";
 import { recordOf, runnerDoor, standDoor, worldDoor } from "./internal/doors.ts";
+import { WorldClock } from "#modules/world-clock/service.js";
 
 /** A call that runs an operation, or lists the tools: what a starting world makes and `make` makes. */
 type Doable = Call | ToolsCall;
@@ -56,9 +58,12 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     // A world with a chain gives the journeys its keys and a payee as `s.world.chain` (K7 Q7); a starting world adds to it.
     const env: Record<string, unknown> = { cast: people, ...(device === undefined ? {} : { world: device.given }) };
     const facts = { facts: given ?? doorFacts(url), tableOf: tableOf(project), nameOf: (op: unknown) => nameOfOperation(project, op as Operation | Read) };
-    // Time is declared in the language (M8.09) and built later: a clock step or the keeper's call refuses, never pretends.
+    // `s.clock.now` is what the world's clock reads, from the start and after each step that moves it. A world with no clock door has none.
+    const reading = yield* WorldClock.read(url);
+    if (reading !== undefined) env["clock"] = { now: reading.now };
+    // The keeper's call is not built yet (M8.10): it refuses, never pretends.
     const unbuilt = (call: AnyCall, kept: ReadonlySet<string> = keepers): string | undefined =>
-      call.kind === "clock-call" ? "time is not built yet: M8.07 (a step that moves the world's clock)"
+      call.kind === "clock-call" ? undefined
       : call.kind === "runner-call" ? (harness?.runner === undefined ? `this world has no runner to ${call.move}: prove did not start it` : undefined)
       : call.kind === "stand-call" ? (harness?.stands?.[call.mount] === undefined ? `no stand-in is running for the mount "${call.mount}"` : undefined)
       : call.kind === "world-call" ? undefined
@@ -75,6 +80,27 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         if (made.problem === undefined) bound.set(actor, made);
         return made;
       });
+    /** A step that moves the world's clock: the world's door answers `{ now, fired }` once it is quiet at the target (M8.07). */
+    const moveClock = (step: string, call: Extract<AnyCall, { readonly kind: "clock-call" }>) =>
+      Effect.gen(function* () {
+        const moved = yield* WorldClock.move(url, call.move);
+        const answer = moved.body as { readonly now?: unknown } | null;
+        if (moved.status === 200) env["last"] = moved.body;
+        // Whatever the status: a refusal that came after the clock had moved (a wake that failed, a world that never went quiet) carries the
+        // instant the move reached, and the journey goes on from the world's real time, not from the one it asked at.
+        if (typeof answer?.now === "string" && Number.isFinite(Date.parse(answer.now))) env["clock"] = { now: answer.now };
+        const record: CallRecord = {
+          journey: journey.name, step, actor: "clock", person: "", operation: "clock", payload: { ...call.move }, status: moved.status, body: moved.body,
+          trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: [], clock: true,
+        };
+        calls.push(record);
+        return record;
+      });
+    /** What a refused clock step says, in the world's own words: a step that asks for a refusal names it, and any other fails. */
+    const refusal = (record: CallRecord) => {
+      const said = record.body as { readonly _tag?: string; readonly message?: string } | null;
+      return `the world refused the clock step: ${said?._tag ?? record.status}${said?.message === undefined ? "" : ` (${said.message})`}`;
+    };
     // Each credential the world minted for a cast member's way in, once per journey.
     const minted = new Map<string, string | undefined>();
     const tokenFor = (actor: string, via: Via | undefined) =>
@@ -151,6 +177,11 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       const keptHere = keepersIn(names, lineage.slice(0, at + 1).map((x) => x.cast));
       const script = Scripting.script(Object.fromEntries(names.map((n) => [n, Blueprint.signedIn])));
       for (const call of w.makes(script)) {
+        if (call.kind === "clock-call") {
+          const moved = yield* moveClock(`starting world ${w.name}`, call);
+          if (moved.status !== 200) return done(`starting world ${w.name}: ${refusal(moved)}`);
+          continue;
+        }
         const why = unbuilt(call, keptHere);
         if (why !== undefined) return done(`starting world ${w.name}: ${why}`);
         const { record } = yield* make(`starting world ${w.name}`, call as Doable, true);
@@ -186,6 +217,17 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       });
 
     for (const step of journey.steps(Scripting.script(journey.cast))) {
+      if (step.call.kind === "clock-call") {
+        const record = yield* moveClock(step.title, step.call);
+        const checked = yield* runChecks(step.checks, record, env, facts);
+        // A refused move that no check asks for is a failure, never a pass by silence.
+        const unasked = record.status !== 200 && !step.checks.some((c) => c.kind === "refuses") ? [refusal(record)] : [];
+        steps.push({
+          journey: journey.name, title: step.title, trace: record.trace, spans: checked.spans,
+          failures: [...unasked, ...checked.failures], findings: [...unasked.map((message) => ({ message })), ...checked.findings],
+        });
+        continue;
+      }
       const why = unbuilt(step.call);
       if (why !== undefined) return done(`"${step.title}": ${why}`);
       const gone = step.call.kind === "call" ? project.omitted?.get(step.call.operation) : undefined;

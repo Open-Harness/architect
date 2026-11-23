@@ -45,8 +45,7 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   parallel. A goal may run in any harness (Claude Code, Codex, OpenCode, Amp) and coordinates through the repository and
   GitHub: its brief's "Where it stands", its claims on the board, and Snag issues (K42;
   `design/decisions/K33-github-native.md`; the `github` skill says how).
-  A slice lands early, by a branch cut at the commit that ends it and merged into `main` (into `goal/stage-1` until
-  the lander retires it) by a merge commit, which is how the lander brings app work into `main` (K42, section 8;
+  A slice lands early, by a branch cut at the commit that ends it and merged into `main` by a merge commit, which is how the lander brings app work into `main` (K42, section 8;
   `K38-early-landing.md`).
 - **Spikes** answer one question in throwaway code under `spikes/<name>/`, on a `spike/<name>` branch. Each ends with
   a README (question, tried, found, the decision it supports, open risks) and is merged into `main` for the record.
@@ -64,8 +63,8 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   of it has passed it. The 🔍 pass is the gate. Codex is advisory (`design/decisions/CI-codex-advisory.md`): comment
   "@codex review" when it is available, and answer any finding it posts before the merge, but nobody waits on it; if
   Codex is down or slow, the pull request merges without it. Push on until actually blocked, and never end a turn waiting on CI without a background watcher that wakes you (`design/decisions/CI-integration.md`). GitHub enforces CI and
-  threads, admins included (`design/decisions/CI-branch-protection.md`): `main`, `m1` and `goal/stage-1` require their
-  CI jobs and every conversation resolved. `main` and `goal/stage-1` also require `builder-paths`: a `-build` pull
+  threads, admins included (`design/decisions/CI-branch-protection.md`): `main` and `m1` require their
+  CI jobs and every conversation resolved. `main` requires `builder-paths` too: a `-build` pull
   request may not touch journeys, evals or checks. On a docs-only pull request `e2e-layer1` and `e2e-layer2`
   pass without running their steps (`design/decisions/CI-docs-fast-path.md`). Open pull requests as drafts: a draft runs no CI, so test
   locally, get the 🔍 pass, then mark it ready and CI runs once; keep at most two ready pull requests per lane in CI at
@@ -112,7 +111,9 @@ Every thread is one type, titled with its emoji; the skills are in `.agents/skil
 word for starting, messaging, reading and archiving a thread), `conductor` (the loop), `spike` (running a spike),
 `author` (writing journeys and checks, and proving each fair), `reviewer` (the 🔍 review), `hashtags` (Aaron's `#shortcuts`), `portal-design` (designing portal and console screens:
 the process and the style guide), `kanban` (the board Aaron and the conductor track every slice on, its data saved
-in the repo, and `STATE.md`, where the project stands) and `ui-sdk` (UI SDK's own skill, vendored at the pinned version, for
-the generated pieces, pages and the portal's components on it; its `README.md` says how we use it), and `github` (how the
-work lives on GitHub: a milestone per goal, the issue kinds and forms, labels, the pull request template and the sync, K33). `.claude/skills` and `.claude/agents/reviewer.md`
+in the repo, and `STATE.md`, where the project stands), `ui-sdk` (UI SDK's own skill, vendored at the pinned version, for
+the generated pieces, pages and the portal's components on it; its `README.md` says how we use it) and `github` (how the
+work lives on GitHub: a milestone per goal, the issue kinds and forms, labels, the pull request template and the sync, K33).
+On `goal/on-chain`, the `goal-4` skill is how Goal 4's lead works and resumes; its state is
+`.agents/skills/goal-4/STATE.md`. `.claude/skills` and `.claude/agents/reviewer.md`
 are links to it; edit them only in `.agents/skills/`.

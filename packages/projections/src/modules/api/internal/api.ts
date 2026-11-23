@@ -118,16 +118,20 @@ const declarationOnly = (op: OperationModel): RenderedFile => {
   ));
 };
 
-const handlerType = (op: OperationModel): RenderedFile => {
+/** Some environment's clock is stepped or scaled (K23): the runtime then provides `Timers` to handlers, and the handler's type says so. */
+const isTimed = (model: Model): boolean =>
+  Object.values(model.environments ?? {}).some((e) => e.clock !== undefined && e.clock.kind !== "real");
+
+const handlerType = (op: OperationModel, timed: boolean): RenderedFile => {
   const path = `generated/api/src/${op.thing}/${op.verb}.handler.ts`;
   return file(path, lines(
     GENERATED,
     "// What the handler is given: its payload and steps; what it may return: its answer or a declared error.",
     `import type { SqlClient } from "effect/sql";`,
-    `import type { Auth, Handler as Of, Records } from "${Names.pkg("language-effect")}";`,
+    `import type { Auth, Handler as Of, Records${timed ? ", Timers" : ""} } from "${Names.pkg("language-effect")}";`,
     `import type declaration from "${declarationAt(path, op.file)}";`,
     "",
-    "export type Handler<R = Records | SqlClient.SqlClient | Auth> = Of<typeof declaration, R>;",
+    `export type Handler<R = Records | SqlClient.SqlClient | Auth${timed ? " | Timers" : ""}> = Of<typeof declaration, R>;`,
     // Where the move can end, as the machine's literal states: a handler's `Match` over it is exhaustive (K16).
     (op.move?.to.length ?? 0) > 1 ? ["/** Where the move can end: one of its outcomes, as the machine declares them. */", `export type Outcome = NonNullable<(typeof declaration)["move"]>["to"][number];`] : [],
   ));
@@ -173,6 +177,6 @@ export const renderApi = (model: Model, name: string, served: Model = model): Re
   errors(served),
   events(served),
   index(served, name),
-  ...Object.values(served.operations).flatMap((op) => (op.kind === "read" ? [endpoint(op, served)] : [endpoint(op, served), handlerType(op)])),
+  ...Object.values(served.operations).flatMap((op) => (op.kind === "read" ? [endpoint(op, served)] : [endpoint(op, served), handlerType(op, isTimed(served))])),
   ...Object.values(model.operations).filter(onDevice).map(declarationOnly),
 ];

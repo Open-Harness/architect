@@ -5,11 +5,11 @@ milestone: "Goal 5: the UI layer"
 release: beta
 branch: goal/ui-layer
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex | opencode, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude       # claude | amp | codex | opencode, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-22     # the date it started
 done_check: nx run e2e:ui-layer
 owns:
   - packages/orthograph/src/modules/actions/
@@ -282,6 +282,8 @@ allocator is needed: check the name is free, then list it here in the pull reque
 
 | ID | File | Taken by |
 |---|---|---|
+| CI-ratchet-suites | [`../decisions/CI-ratchet-suites.md`](../decisions/CI-ratchet-suites.md) | slice 1: a builder may shrink every e2e suite's ratchet list |
+| WEB-approval-declined | [`../decisions/WEB-approval-declined.md`](../decisions/WEB-approval-declined.md) | slice 1: a person's no is `ApprovalDeclined`, `AR-007` |
 
 ## The done check
 
@@ -320,3 +322,9 @@ From Goal 3's pace (a medium slice takes three to six hours from opening to merg
 - Both: about 20 to 32 hours of continuous running, with slice 5 waiting on Goal 3's ST1.03.
 
 ## Where it stands
+
+23 November 2026, parked under K42 (section 7). The lead stopped before updating this, so Goal 18 updated it from
+`goal/ui-layer`. Slices 1 and 2 landed: a program can ask a person before it acts, and a refusal tells the caller that
+nothing was written. Slice 3, one generated action per operation, landed on `goal/ui-layer` as a pair (#621, #655).
+Nothing was in review. Slice 4, the web building blocks, and the rest become items on the board at their stage; the
+lander brings `goal/ui-layer`'s finished slices into `main`.

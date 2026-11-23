@@ -76,7 +76,7 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    stranger never looks like work (`service.ts:52`).
 3. **The operation's span opens**, named after the operation, with the caller on it and the call's name, `call.id`, which every attempt of one call shares (O3):
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=166
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=169
    spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
    ```
 
@@ -102,7 +102,7 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    `refusal.code` (`AL-001`, or the machine's `AL-900`), and, when the handler logged something just before refusing,
    `refusal.log`:
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=157-165
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=160-168
    Effect.tapCause((cause) => {
      if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
      const refusal = Cause.squash(cause);
@@ -199,7 +199,7 @@ O2 records the three changes and their proof.
 
 `store.commit(…)` runs inside the `<operation>.commit` span.
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=143-152
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=144-153
 const writes = yield* unit.writes;
 const committed = yield* store.commit({ writes, entries, ...request }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({
@@ -208,8 +208,8 @@ const committed = yield* store.commit({ writes, entries, ...request }).pipe(
     ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
   })),
   spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
-);
-if (committed === "conflict") return yield* new Conflict();
+  // A write section: the commit happens only while the world still holds this request's token, and a reset waits for it (M8.07).
+  busy.fenced,
 ```
 
 The commit's `step.kind` is `commit`. The span records the write count, entry count and outcome. A version race

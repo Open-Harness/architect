@@ -1,5 +1,5 @@
 // What an adapter's door and its events say about who sent them (Goal 17 slice 11, GOAL17-slice11-build).
-import type { Secret } from "#modules/secrets/types.js";
+import type { SecretDeclaration } from "#modules/secrets/types.js";
 
 /** An outside account as an event names it: the service's stable id, a name for people, and whether it is a bot. */
 export interface EventActor {
@@ -14,7 +14,7 @@ export interface EventActor {
  * signing secret is the adapter's own `webhookSigning`; its name in an environment is `<MOUNT>_WEBHOOK_SIGNING`.
  */
 export interface AdapterDoor {
-  readonly signing: Secret;
+  readonly signing: SecretDeclaration;
   readonly verify: {
     /** The header holding the signature: `prefix` then HMAC-SHA256 in lowercase hex. */
     readonly header: string;

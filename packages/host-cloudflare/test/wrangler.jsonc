@@ -9,6 +9,6 @@
     { "binding": "DB", "database_name": "host-test", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" },
     { "binding": "DB_VAULT", "database_name": "host-test-vault", "database_id": "00000000-0000-0000-0000-000000000001", "migrations_dir": "migrations-vault" }
   ],
-  "durable_objects": { "bindings": [{ "name": "WORLD", "class_name": "World" }, { "name": "ACTORS", "class_name": "Actor" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["World"] }, { "tag": "v2", "new_sqlite_classes": ["Actor"] }]
+  "durable_objects": { "bindings": [{ "name": "WORLD", "class_name": "World" }, { "name": "ACTORS", "class_name": "Actor" }, { "name": "RELAYER", "class_name": "Relayer" }, { "name": "FOLLOWER", "class_name": "Follower" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["World"] }, { "tag": "v2", "new_sqlite_classes": ["Actor"] }, { "tag": "v3", "new_sqlite_classes": ["Relayer"] }, { "tag": "v4", "new_sqlite_classes": ["Follower"] }]
 }

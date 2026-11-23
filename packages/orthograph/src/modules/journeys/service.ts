@@ -5,6 +5,7 @@ import { isRef, pathOf, refTo, resolve } from "./internal/refs.ts";
 const actorOf = (name: string, via?: Via): Actor =>
   Object.freeze({
     person: refTo(["cast", name, "person"]),
+    account: refTo(["cast", name, "account"]),
     email: refTo(["cast", name, "email"]),
     password: refTo(["cast", name, "password"]),
     run: (operation: Call["operation"], payload: Call["payload"], options?: { readonly request?: string; readonly due?: string }): Call =>
@@ -24,6 +25,7 @@ const script = <C extends Record<string, unknown>>(cast: C): Script<any> => {
     last: refTo(["last"]),
     clock: Object.freeze({
       ...(Object.hasOwn(actors, "clock") ? actors["clock"] : {}),
+      now: refTo(["clock", "now"]),
       advance: (span: string): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ advance: span }) }),
       moveTo: (instant: string): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ moveTo: instant }) }),
       settle: (): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ advance: "0 seconds" }) }),

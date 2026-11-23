@@ -18,3 +18,6 @@ docs/canon/.preview/
 # HeroUI Pro build kept for the CI cache between runs: never committed.
 .cache/
 .alchemy/
+
+# The actions check's scratch program
+e2e/ui-layer/.types-*/

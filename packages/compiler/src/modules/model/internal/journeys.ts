@@ -61,7 +61,7 @@ export const storiesOf = (
     Object.fromEntries(Object.entries(cast).map(([name, role]) => [name, allowed(role, file)]));
 
   const callOf = (call: AnyCall) => {
-    // A step that moves the clock, kills the runner, commands a stand-in, reads a probe or calls together has no operation: the model leaves it out.
+    // A step that moves the clock, kills the runner, commands a stand-in, reads a probe or calls together has no operation: the model tells it as a step that is not in the model's operations (prove runs a clock step against the world's clock door, M8.07).
     if (call.kind !== "call") return undefined;
     // The tools list runs no operation: it is told as a step that is not in the model's operations.
     if (call.operation === undefined) return undefined;

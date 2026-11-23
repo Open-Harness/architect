@@ -37,7 +37,8 @@ const walk = (from: { thing: Thing | undefined; id: unknown }, keys: ReadonlyArr
 
 /**
  * A role decided on an instance: `grantee` on the operation's own subject, `owner.of("organization")` on the thing a
- * payload field points at, or a path that starts from the subject when the payload has no such field (a read).
+ * payload field points at, or a path that starts from the subject when the payload has no such field (a read). On a read
+ * by id, a path may name the subject's own thing first: `owner.of("membership.organization")` on `membership.get`.
  */
 const roleOn = (role: Role, path: string | undefined, payloadFields: Fields, payload: object, decide: (instance: InstanceOf<Thing>) => boolean, own: Thing | undefined) =>
   Effect.gen(function* () {
@@ -54,7 +55,12 @@ const roleOn = (role: Role, path: string | undefined, payloadFields: Fields, pay
           ? start(payloadFields, payload, subjectKey(payloadFields, role.thing) ?? "")
           : undefined;
     if (!origin) return false;
-    const target = yield* walk(origin, fromPayload ? keys.slice(1) : keys);
+    // On a payload `id` (a read by id, or a list filtered by `id`, which fails closed), a first key that is none of
+    // the subject's fields names the subject's own thing (`membership.organization`), the way the same words name the
+    // payload's subject field on an operation (#761). Only there: on an operation such a key is a typo, and it still
+    // admits nobody. Until #767, `check` doesn't catch a typo on a read.
+    const namesSubject = !fromPayload && subject === "id" && own !== undefined && first !== undefined && !(first in own.fields);
+    const target = yield* walk(origin, fromPayload || namesSubject ? keys.slice(1) : keys);
     if (!target || target.thing !== role.thing) return false;
     const instance = yield* records.find(role.thing, target.id);
     return instance !== undefined && decide(instance as never);

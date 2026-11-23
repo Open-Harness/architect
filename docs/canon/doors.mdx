@@ -97,7 +97,7 @@ The wrapper runs every call to an Effect operation through the same order (`pack
 
 The last four, as code:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=119-150
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=120-151
 // What the payload names, read once and handed in; a missing one is refused before the handler, then the from-check.
 const handed = yield* prehandle(op, notFound, payload, unit);
 const from = proposing ? undefined : yield* checkFrom(op, notFrom, handed.subject);
@@ -105,7 +105,7 @@ const chosen = yield* Ref.make<string | undefined>(undefined);
 const move = (to?: string) => chooseOutcome(name, op, to, operationSpan).pipe(Effect.flatMap((o) => Ref.set(chosen, o)));
 const alsoEntries = yield* Ref.make<ReadonlyArray<Entry>>([]);
 const also = makeAlso(name, unit, alsoEntries);
-const answer = yield* busy.counted((proposing ? proposeHandler(name, op) as unknown as AnyHandler : handler)(payload, { principal, steps, move, also, ...handed })).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
+const answer = yield* (proposing ? proposeHandler(name, op) as unknown as AnyHandler : handler)(payload, { principal, steps, move, also, ...handed }).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
 // Recorded before the check, so an answer outside its declaration is evidence `prove` can name.
 yield* Effect.annotateCurrentSpan(answerAttributes(answer, op.answer));
 // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.

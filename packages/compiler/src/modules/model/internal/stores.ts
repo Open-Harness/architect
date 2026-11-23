@@ -4,10 +4,10 @@ import { hashOf } from "./hash.ts";
 import type { Layout } from "./layout.ts";
 
 /**
- * The kinds the host supplies: `database` and `actor` from @orthograph/host-cloudflare. A kind another host or a
- * language supplies (`chain`, from @orthograph/language-solidity at M6) is added here when that package lands.
+ * The kinds the host supplies: `database` and `actor` from @orthograph/host-cloudflare, and `chain.evm`, a contract
+ * the Solidity language writes and `Host.chain` deploys (K25, K27). A kind another host or language supplies is added here.
  */
-export const STORE_KINDS: ReadonlyArray<string> = ["database", "actor"];
+export const STORE_KINDS: ReadonlyArray<string> = ["database", "actor", "chain.evm"];
 
 const byName = <V>(m: ReadonlyMap<string, V>) => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 

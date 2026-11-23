@@ -1,0 +1,3 @@
+# slice 9 (M6.07): the Relayer Durable Object is not exported from @orthograph/host-cloudflare yet. Comes off when that slice's builder turns it green.
+on-chain/10-m6-07-relayer.test.ts > the relayer actor: a Durable Object that holds one key and sends every call from it, in order > reconcile, called, replaces what the node dropped, at its nonce with a higher fee, and what was behind it lands (an alarm that gets there first does the same work)
+on-chain/10-m6-07-relayer.test.ts > the relayer actor: a Durable Object that holds one key and sends every call from it, in order > replaces a dropped transaction on its own, through its alarm, with no reconcile call

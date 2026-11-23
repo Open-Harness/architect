@@ -1,0 +1,38 @@
+No files changed, compilation skipped
+
+Ran 1 test for test/HatBudgetInvariant.t.sol:HatBudgetInvariantTest
+[PASS] invariant_budgetAccounting() (runs: 128, calls: 8192, reverts: 0)
+
+╭---------------+-------------+-------+---------+----------╮
+| Contract      | Selector    | Calls | Reverts | Discards |
++==========================================================+
+| BudgetActions | advance     | 2697  | 0       | 0        |
+|---------------+-------------+-------+---------+----------|
+| BudgetActions | changeLimit | 2773  | 0       | 0        |
+|---------------+-------------+-------+---------+----------|
+| BudgetActions | spend       | 2722  | 0       | 0        |
+╰---------------+-------------+-------+---------+----------╯
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 1.94s (1.92s CPU time)
+
+Ran 8 tests for test/HatBudgetModule.t.sol:HatBudgetModuleTest
+[PASS] testAgentQuotaAndParentAdmitsOrTurnsOffChild() (gas: 451180)
+[PASS] testOnlySafeCanAdministerAndRevokedRowCannotBeReused() (gas: 594401)
+[PASS] testPersonSpendsExactRemainingAndOverspendIsAtomic() (gas: 361777)
+[PASS] testRolloverRestoresFullBudgetAtExactBoundary() (gas: 324350)
+[PASS] testSameHatHasSeparateRowsForSixAndEighteenDecimalTokens() (gas: 1610177)
+[PASS] testSignatureCheckOrderAndSharedSpendNonce() (gas: 430920)
+[PASS] testTokenRevertRestoresBudgetAndNonce() (gas: 253860)
+[PASS] testUint128MaximumTransfersWithoutOverflow() (gas: 394227)
+Suite result: ok. 8 passed; 0 failed; 0 skipped; finished in 8.50ms (5.04ms CPU time)
+
+Ran 5 tests for test/HatSpendModule.t.sol:HatSpendModuleTest
+[PASS] testDisabledModuleCannotPay() (gas: 87460)
+[PASS] testInactiveHatIsRefused() (gas: 223755)
+[PASS] testIneligibleWearerIsRefused() (gas: 268615)
+[PASS] testNonWearerIsRefused() (gas: 197218)
+[PASS] testWearerSpendsEtherAndTokenFromSafe() (gas: 362435)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 1.93ms (894.58µs CPU time)
+
+Ran 3 test suites in 1.96s (1.95s CPU time): 14 tests passed, 0 failed, 0 skipped (14 total tests)
+Wall time: 2.104 s

@@ -1,0 +1,22 @@
+{
+  "name": "@budgets/source",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "orthograph": "workspace:*",
+    "@orthograph/host-cloudflare": "workspace:*",
+    "@orthograph/portal": "workspace:*",
+    "@orthograph/projections": "workspace:*",
+    "@orthograph/language-effect": "workspace:*",
+    "@effect/platform-node": "4.1.4",
+    "@effect/sql-d1": "4.1.4",
+    "effect": "4.1.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261101.1"
+  },
+  "bin": {
+    "budgets": "./generated/cli/src/main.ts"
+  }
+}

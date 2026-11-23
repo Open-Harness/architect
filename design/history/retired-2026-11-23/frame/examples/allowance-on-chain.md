@@ -34,9 +34,11 @@ export default Blueprint.store.chain.evm();
 // blueprint/things/allowance/thing.ts
 import budgets from "../../stores/budgets.ts";
 import { Safe } from "@orthograph/safe";   // sketch: the safe adapter (K9 stage 3); its package is set when it is built
+const token = Blueprint.account();          // the token contract that is paid
 export const Allowance = Blueprint.thing({
   description: "Money a member may spend from their organisation's Safe, up to a limit each month.",
-  fields: { id: Blueprint.id("alw"), safe: Safe.fields.account, member: Blueprint.account(), limit: Amount, spent: Amount },
+  fields: { id: Blueprint.id("alw"), safe: Safe.fields.account, member: Blueprint.account(), token,
+            limit: Blueprint.money.of(token), spent: Blueprint.money.of(token) },
   lives: budgets,   // was: the database
 });
 ```
@@ -46,8 +48,8 @@ The allowance names the Safe it spends from, not the organisation: the organisat
 its Safe with an ordinary field (K25).
 
 ```ts
-// blueprint/values/money.ts: a value says what it is in every language
-export const Amount = Blueprint.value(Blueprint.uint(128));   // bigint in Effect, uint128 in Solidity
+// an amount names its asset, and says what it is in every language (design/decisions/M6-money.md)
+limit: Blueprint.money.of(token),   // base units of the row's token: bigint in Effect, uint128 in Solidity (M6-money)
 ```
 
 `ortho impact` sees what the change means before anything is built:
@@ -117,7 +119,7 @@ signer signs it, and the relayer submits it (L4.06). The server checks the signa
 
 | Actor | One per | What it does | Build plan |
 |---|---|---|---|
-| relayer | relayer key | hands out nonces in order, replaces stuck transactions, writes receipts through | L3.06 |
+| relayer | relayer key | hands out nonces in order, rebroadcasts dropped transactions, writes receipts through | L3.06 |
 | chain follower | contract | follows the budgets module's logs with a checkpoint, handles reorgs, emits corrections | L3.08 |
 
 Both are Durable Objects inside the environment's one Worker, so each is a single writer with its own storage. The
