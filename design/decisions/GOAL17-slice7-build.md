@@ -62,6 +62,18 @@ GOAL17-stage-one call 8 (and the slice 6 README, point 14) says `observedRow` is
 for GitHub's and Slack's admission rows, and passed before this slice. I changed it, and two of its tests went red (the repository row, and the Slack channel rows); a builder may not edit a check and the ratchet must exit 0, so I put
 the old value back. The gate does not read this row (it reads the policy's cells, with call 8's defaults), so checks 19 and 23 pass either way. **Asked of 62's author:** change `OBSERVED` to `inferred`, then `observedRow` follows.
 
+### 10. Review of #756: what the 🔍 pass changed
+
+- **A first save cannot race.** A thing with versions holds one rule it does not declare: one row per revision of its key (`versionRule` in `orthograph`; `FieldModel`'s sibling `InvariantModel.framework`).
+  The compiler puts it in the model, so the migration makes the index (`policy_oneVersionPerRevision` over `superagent, revision`; `settings_...` over `revision`, since Settings is keyed by its own id), and the
+  generated server hands the runtime `Versions.rulesOf(...)`. The second of two first saves conflicts at commit, runs again, and is refused as stale. `settings.save` has the same rule with no code of its own.
+- **A derived list checks its cursor** with the same `CURSOR` check as a plain list (`NotAllowed`).
+- **`eval.due` reads each kind to its end,** a page of 100 at a time, where it read the oldest 1000. Test: 1100 triggers already covered, then one new one (`due.test.ts`).
+- **The migration is `0009_columns.sql`** (`0008_inbox.sql` is another's).
+- **`Versions.restore` is tested:** an old revision becomes a new version from its content; a never-saved one, and one made from an older version, are refused.
+- **Line counts.** `compiler/.../model/types.ts` was 303 lines and `describe.ts` 275 before this slice (both over by `wc -l`; the lint rule counts lines of code, and passes on both). This slice added about 5 and 2.
+- `observedRow` stays `explicit` until #760 changes check 62.
+
 ## What still fails, and what stays blank
 
 - `22-stage-one-doors` stays on the ratchet: prove cannot load a journey that imports `@orthograph/stand-in-model` or `outbox` until slices 8 and 9 build the harness surface (`s.runner`, `settle`, `outbox.rows`, `models.script`, the `actor:` cast form).
