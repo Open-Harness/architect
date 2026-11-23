@@ -19,6 +19,7 @@ Promise.all([fetch("/_portal/v1/blueprint").then((x) => x.json()), fetch("/_port
     for (const k of Object.keys(m.things[thing].machine.moves)) out[k] = { moved: [], refused: [] };
     const j = Object.entries(m.journeys).find(([f]) => f.split("/").pop().replace(/\\.ts$/, "") === file)?.[1];
     (j ? j.steps : []).forEach((s, i) => {
+      if (s.call === undefined) return;
       const op = m.operations[s.call.operation];
       if (op.thing !== thing || !op.move) return;
       if (s.checks.some((c) => c.kind === "emits")) out[op.move.key].moved.push(i + 1);

@@ -14,6 +14,9 @@ export const refusedBeforeSpan = (call: CallRecord | undefined): boolean =>
   call?.mayCall === false && call.status === 403 &&
   typeof call.body === "object" && call.body !== null && "_tag" in call.body && call.body._tag === "NotAllowed";
 
+/** A call that has no span of its own to wait for: a refusal the world's facts predicted, or the MCP door's tools list (`.tools()`), which runs no operation. */
+export const noSpanExpected = (call: CallRecord | undefined): boolean => call?.tools === true || refusedBeforeSpan(call);
+
 /** The distinct spans a call's trace held, by name: what a missing span is read against. Sorted, since start times of concurrent spans differ between runs. */
 const spansCame = (trace: Trace | undefined): string =>
   [...new Set((trace?.spans ?? []).map((s) => s.name))].sort().join(", ");
@@ -21,7 +24,7 @@ const spansCame = (trace: Trace | undefined): string =>
 /** A step's span checks, now that its trace is in, with what was expected and what came back. */
 const spanFindings = (step: StepResult, trace: Trace | undefined, call: CallRecord | undefined): ReadonlyArray<FailureDetail> => {
   const names = new Set((trace?.spans ?? []).map((s) => s.name));
-  if (names.size === 0 && !refusedBeforeSpan(call)) {
+  if (names.size === 0 && !noSpanExpected(call)) {
     return [{ message: "telemetry missing: no span of this call reached the collector", expected: "spans from the call", got: "none" }];
   }
   return [

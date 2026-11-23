@@ -78,11 +78,16 @@ export interface ThingModel {
   readonly hash: string;
 }
 
+/**
+ * One `allowed` entry. `via` is the ways in it keeps, sorted, when `.via` or `.notVia` narrowed it (M2-auth, fork 2): absent, every way in.
+ * `system` admits the runtime's own work only; a role with a `service` admits the service of that mount only.
+ */
 export type AllowedModel =
   | { readonly kind: "anyone" }
-  | { readonly kind: "signed-in" }
-  | { readonly kind: "role"; readonly role: string }
-  | { readonly kind: "role-of"; readonly role: string; readonly path: string };
+  | { readonly kind: "signed-in"; readonly via?: ReadonlyArray<string> }
+  | { readonly kind: "system" }
+  | { readonly kind: "role"; readonly role: string; readonly via?: ReadonlyArray<string>; readonly service?: string }
+  | { readonly kind: "role-of"; readonly role: string; readonly path: string; readonly via?: ReadonlyArray<string>; readonly service?: string };
 
 /** A step of an operation: its span's name and kind, and, for a call out, the adapter's call it makes. */
 export interface StepModel {
@@ -121,8 +126,15 @@ export interface OperationModel {
   /** A creating move's field (the answer's, else the payload's) that carries the id the runtime mints and hands in as `id`. */
   readonly mints?: string;
   readonly allowed: ReadonlyArray<AllowedModel>;
+  /**
+   * Whether the MCP door lists it as a tool: some `allowed` entry admits an agent, the mount's narrowing (`via`) keeps `agent`, and it does
+   * not run on the caller's device (M2-auth, fork 2). Said on every operation and read, so a projection never works it out again.
+   */
+  readonly agentTool: boolean;
   readonly steps: Readonly<Record<string, StepModel>>;
   readonly idempotent: "request" | null;
+  /** A person must say yes before it runs. Present only when declared, and only ever `true` (#466). */
+  readonly needsApproval?: true;
   /** Where it runs: `server`, or `client` (on the caller's device) for a plugin's operation that has a code entry per host. */
   readonly runs: "server" | "client";
   /** `network` when its guarantee needs a network test (a target sets it); `unit` otherwise. */
@@ -151,7 +163,10 @@ export interface EnvironmentModel {
   readonly name: string;
   readonly file: string;
   readonly runs: string;
-  readonly identity: "test-principals" | "better-auth";
+  /** Superseded by `issues` (M2-auth, "Smaller calls" 4); present only when the environment still says it. */
+  readonly identity?: "test-principals" | "better-auth";
+  /** The ways in it issues credentials for, sorted; present only when it names them (absent: every way in). */
+  readonly issues?: ReadonlyArray<string>;
   /** How long a world of this environment lives, when it has a lifetime. */
   readonly lifetimeMs: number | null;
   readonly cloud: { readonly provider: "cloudflare"; readonly database: "d1" | "d1-local" } | null;
@@ -173,6 +188,8 @@ export interface JourneyCallModel {
   readonly operation: string;
   readonly payload: Readonly<Record<string, unknown>>;
   readonly request?: string;
+  /** The way in the cast member's credential is made for, when the call says one (`s.ada.via(Via.key)`). */
+  readonly via?: string;
 }
 
 export interface JourneyModel {
@@ -221,6 +238,30 @@ export interface StoreModel {
   readonly hash: string;
 }
 
+/** One burn alert of an objective: it fires when the objective burns at `burn` or more over both windows (long, then short). */
+export interface BurnAlertModel {
+  readonly name: string;
+  readonly burn: number;
+  readonly windowsMs: ReadonlyArray<number>;
+  readonly severity: "page" | "ticket";
+}
+
+/**
+ * One alert condition the compiler derives (K18): the labels are exactly `environment` (`*` where the rule holds in every environment), its subject
+ * (`operation`, `code` or `journey`), `severity` and `owner`. A latency or defect rule is an objective with its burn alerts; a latency rule also holds the
+ * operation's `budget.p95Ms` as `thresholdMs`. An anomaly or a verdict has neither.
+ */
+export interface AlertRuleModel {
+  readonly id: string;
+  readonly kind: "latency" | "defect" | "anomaly" | "verdict";
+  readonly labels: Readonly<Record<string, string>>;
+  readonly target?: number;
+  readonly windowDays?: number;
+  readonly thresholdMs?: number;
+  readonly minCalls?: number;
+  readonly alerts?: ReadonlyArray<BurnAlertModel>;
+}
+
 export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;
@@ -242,6 +283,8 @@ export interface Model {
   readonly environments?: Readonly<Record<string, EnvironmentModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
+  /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
+  readonly alertRules: ReadonlyArray<AlertRuleModel>;
 }
 
 /** A blueprint the compiler refuses, with every problem found, each naming its file. */

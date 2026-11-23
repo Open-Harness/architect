@@ -1,0 +1,14 @@
+{
+  "name": "@fixture/auth",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": { "types": "./dist/feature.d.ts", "default": "./dist/feature.js" },
+    "./blueprint/*": { "types": "./dist/blueprint/*.d.ts", "default": "./dist/blueprint/*" },
+    "./src/*": { "types": "./dist/src/*.d.ts", "default": "./dist/src/*" }
+  },
+  "orthograph": { "kind": "feature", "blueprint": "./dist/blueprint", "src": "./dist/src" },
+  "files": ["dist"],
+  "peerDependencies": { "orthograph": "0.0.0", "@orthograph/language-effect": "0.0.0" }
+}

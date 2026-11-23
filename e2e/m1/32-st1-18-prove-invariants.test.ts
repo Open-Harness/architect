@@ -62,7 +62,7 @@ describe("32 ST1.18: prove holds the rules", () => {
     expect(proved.out, "no handler died on a lookup in prove's world").not.toMatch(/findBy|is not declared unique|Cannot read properties/);
     const coverage = coverageOf(proved.stdout);
     expect(coverage, proved.out).toBeDefined();
-    // Moves, outcomes and declared refusals are all reached. `runtime refusals` is not asked to be full: acme alone prints 14/17 and exits 0.
+    // Moves, outcomes and declared refusals are all reached. `runtime refusals` is not asked to be full: acme alone prints 15/17 and exits 0.
     for (const name of ["moves", "outcomes", "refusals"]) {
       const counter = coverage!.counters.find((c) => c.name === name);
       expect(counter, `${name} is on the coverage line`).toBeDefined();
