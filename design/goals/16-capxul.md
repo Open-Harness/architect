@@ -17,6 +17,7 @@ owns:
   - design/decisions/M7-capxul.md
   - design/decisions/K43-capxul-core.md
   - design/goals/16-capxul.md
+  - design/decisions/CX-grill.md
 slices:
   - "1 · Capxul's plugins mapped, the first map"
   - "2 · The first feature: one person gets paid (after 6)"
@@ -83,8 +84,8 @@ keep the numbers their issues already have.
 | 3 | The grill, with Aaron by voice: what is core, what is a module, what is paid and how a self-hosted Capxul reaches it, which licence Capxul carries, and K43's open list. A lawyer's read on the licence comes afterwards, by Aaron's call, and blocks nothing | — |
 | 4 | Spike: can Orthograph things, machines and journeys be scaffolded from ERPNext's record-type files (Sales Invoice, Payment Entry, GL Entry first)? If so, it becomes a scaffolder in the framework, built under K42's collision rule | — |
 | 5 | Spike: `ortho new adapter --from-openapi` on Bridge's published description; customers, KYC links, virtual accounts and transfers, against a stand-in | — |
-| 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge and the paid services as board items, each at its stage | 1, 3, 4, 5 |
-| 7 to 11 | The books, HR, payroll, the paid services and the CRM, as slice 6 writes them | as the front matter lists |
+| 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge as board items, each at its stage, with every record type Capxul takes in one catalogue (CX-grill) | 1, 3, 4, 5 |
+| 7 to 11 | The books, HR, payroll, Bridge's features built in full (their gating comes later, CX-grill) and the CRM, as slice 6 writes them | as the front matter lists |
 
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18
@@ -119,6 +120,8 @@ two apps (K42, section 3); organisations are separate, and Capxul's companies ar
 
 ## Where it stands
 
-23 November 2026: rewritten under K43. Slice 1 lands with #487. Slice 3 waits on Aaron. Slices 4 and 5 can start now.
+23 November 2026: rewritten under K43. Slice 1 lands with #487. Slices 4 and 5 are running. Slice 3 is decided
+(`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
+customers, built in full now, with what's paid sorted out later; the network dropped for now.
 The lead first merges `main` into `goal/capxul`, so this brief replaces the branch's old one. The lead rewrites this
 section at every slice merge.
