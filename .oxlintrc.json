@@ -34,6 +34,11 @@
             ]
           },
           {
+            "sourceTag": "scope:theme",
+            "onlyDependOnLibsWithTags": [],
+            "allowedExternalImports": []
+          },
+          {
             "sourceTag": "env:runtime",
             "onlyDependOnLibsWithTags": [
               "env:runtime"
@@ -139,6 +144,13 @@
                 "allowedExternalImports": [
                   "@heroui-pro/react",
                   "@heroui-pro/react/*",
+                  "vitest"
+                ]
+              },
+              {
+                "sourceTag": "scope:theme",
+                "onlyDependOnLibsWithTags": [],
+                "allowedExternalImports": [
                   "vitest"
                 ]
               },
