@@ -239,7 +239,7 @@ vote happened" are different facts.
 - **A submission has one lifecycle on every chain:** `simulated → submitted → included → confirmed`, ending in either
   `dropped` or `reverted`, and with `corrected` possible after `confirmed`.
 - **`confirmed` means the follower saw the declared event for this intent at the environment's confirmation level.**
-  For a vote the intent is `(proposal, voter)`. It never means "my transaction succeeded", so a lost race still
+  For a vote the intent is `(proposal, voter)` (Superseded by M6-chain, 21 November 2026: the intent of a chain call is `(contract, by, nonce)`). It never means "my transaction succeeded", so a lost race still
   confirms, because the vote happened.
 - **`dropped`** means the intent can no longer land:
   - EVM: the nonce was used by something else, or the deadline passed;
@@ -346,7 +346,7 @@ body. Two chains break that order by themselves:
    number, and the Aztec text. Codes are never taken from declaration order again. Today they are
    (`packages/compiler/src/modules/model/internal/describe.ts:79`, `i + 1`), so reordering two errors would silently
    swap their codes on every language, Effect included. Changing an error's shape gives it a new wire identity, and
-   the old one stays in the lock and keeps decoding. A rename of a published code is refused.
+   the old one stays in the lock and keeps decoding. A rename of a published code is refused (Superseded by M6-chain, 21 November 2026: a renamed error takes a new code and the old one is retired).
 2. **Per chain:**
    - EVM: one typed custom error per declared error, decoded by selector from the lock. That keeps typed errors in the
      ABI and in explorers, at 4 to 36 bytes. A single `Refused(code, data)` error was prototyped (`evm#20`) and is kept

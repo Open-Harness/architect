@@ -65,7 +65,7 @@ describe("stores in the model", () => {
 
   it("refuses a kind no host supplies, and a thing that lives in a store that isn't a stores/ file", async () => {
     const chain = await modelOf(project({ "stores/vault.ts": STORE(`kind("chain")`) }));
-    expect(problemsOf(chain)).toEqual([`blueprint/stores/vault.ts: a store of kind "chain", which no host of this project supplies (they supply database and actor)`]);
+    expect(problemsOf(chain)).toEqual([`blueprint/stores/vault.ts: a store of kind "chain", which no host of this project supplies (they supply database and actor and chain.evm)`]);
     const loose = await modelOf(project({ "things/entry/thing.ts": THING("Blueprint.store.database()") }));
     expect(problemsOf(loose)).toEqual(["blueprint/things/entry/thing.ts: lives in a store that isn't a default export of a stores/<name>.ts"]);
     const wrong = await modelOf(project({ "stores/ledger.ts": `export default { kind: "thing" };\n` }));

@@ -6,7 +6,13 @@ import { pagesOf } from "./internal/pages.ts";
 import { listen } from "./internal/static.ts";
 import { CLOCK_ISO, HOOKS, ServedPortalUnavailable, type OpenOptions, type Fetched, type PortalServerModule, type RenderedPage, type ServedPortal, type ServedPortalsApi } from "./types.ts";
 
-const DEFAULT_CLIENT = join(import.meta.dirname, "../../packages/portal/dist/client");
+/** The two clients (Goal 6): the old one, and the new one beside it. `PORTAL_CLIENT=old|next` picks which a check reads; unset is `old`. */
+export const CLIENTS = { old: join(import.meta.dirname, "../../packages/portal/dist/client"), next: join(import.meta.dirname, "../../packages/portal-next/dist/client") } as const;
+export const defaultClient = (which: string | undefined = process.env["PORTAL_CLIENT"]): string => {
+  if (which === undefined || which === "" || which === "old") return CLIENTS.old;
+  if (which === "next") return CLIENTS.next;
+  throw new ServedPortalUnavailable("no-client", `K19: PORTAL_CLIENT is "${which}", and the client is \`old\` (packages/portal) or \`next\` (packages/portal-next)`);
+};
 const READY_MS = 15_000;
 
 let browser: Promise<Browser> | undefined;
@@ -37,7 +43,7 @@ const newContext = (b: Browser): Promise<BrowserContext> =>
 
 /** The two halves of the Worker, played here: the data API from the server module, the built client from a folder. */
 const playWorker = async (options: OpenOptions): Promise<{ readonly url: string; readonly answer: (request: Request) => Promise<Response>; readonly stop: () => Promise<void> }> => {
-  const clientDir = options.clientDir ?? DEFAULT_CLIENT;
+  const clientDir = options.clientDir ?? defaultClient();
   const server = await serverOf(options.server, options.serverSpecifier);
   if (!existsSync(join(clientDir, "index.html"))) {
     throw new ServedPortalUnavailable("no-client", `K19: the portal's client is not built: ${join(clientDir, "index.html")} is missing. \`@orthograph/portal\` builds its pages once, with portal-ui and HeroUI Pro, into dist/client (HTML, JS, CSS) at our build.`);

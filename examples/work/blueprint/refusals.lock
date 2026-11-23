@@ -1,0 +1,296 @@
+{
+  "generated": "Generated from blueprint/. Append-only. Do not edit.",
+  "lockVersion": 1,
+  "refusals": {
+    "AR-001": {
+      "name": "NotAllowed",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotAllowed"
+        }
+      },
+      "earlier": []
+    },
+    "AR-002": {
+      "name": "IdempotencyConflict",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "IdempotencyConflict"
+        }
+      },
+      "earlier": []
+    },
+    "AT-900": {
+      "name": "AttentionNotOpen",
+      "owner": "attention",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttentionNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "AT-901": {
+      "name": "AttentionNotFound",
+      "owner": "attention",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "att"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttentionNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "ML-900": {
+      "name": "MilestoneNotActive",
+      "owner": "milestone",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "MilestoneNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "ML-901": {
+      "name": "MilestoneNotFound",
+      "owner": "milestone",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "mst"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "MilestoneNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "MS-001": {
+      "name": "MissionHasOpenQuestions",
+      "owner": "mission",
+      "from": "blueprint/things/mission/errors.ts",
+      "fields": {
+        "open": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "MissionHasOpenQuestions"
+        }
+      },
+      "earlier": []
+    },
+    "MS-002": {
+      "name": "MissionNotRunning",
+      "owner": "mission",
+      "from": "blueprint/things/mission/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "MissionNotRunning"
+        }
+      },
+      "earlier": []
+    },
+    "MS-003": {
+      "name": "MissionNotInIntake",
+      "owner": "mission",
+      "from": "blueprint/things/mission/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "MissionNotInIntake"
+        }
+      },
+      "earlier": []
+    },
+    "MS-004": {
+      "name": "MissionHasOpenTasks",
+      "owner": "mission",
+      "from": "blueprint/things/mission/errors.ts",
+      "fields": {
+        "open": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "MissionHasOpenTasks"
+        }
+      },
+      "earlier": []
+    },
+    "MS-005": {
+      "name": "MissionClosed",
+      "owner": "mission",
+      "from": "blueprint/things/mission/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "MissionClosed"
+        }
+      },
+      "earlier": []
+    },
+    "MS-900": {
+      "name": "MissionNotIntake",
+      "owner": "mission",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "MissionNotIntake"
+        }
+      },
+      "earlier": []
+    },
+    "QU-001": {
+      "name": "QuestionNoSuchOption",
+      "owner": "question",
+      "from": "blueprint/things/question/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "QuestionNoSuchOption"
+        }
+      },
+      "earlier": []
+    },
+    "QU-900": {
+      "name": "QuestionNotAsked",
+      "owner": "question",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "QuestionNotAsked"
+        }
+      },
+      "earlier": []
+    },
+    "QU-901": {
+      "name": "QuestionNotFound",
+      "owner": "question",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "qst"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "QuestionNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "RU-001": {
+      "name": "RunOverBudget",
+      "owner": "run",
+      "from": "blueprint/things/run/errors.ts",
+      "fields": {
+        "left": {
+          "value": "uint",
+          "bits": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RunOverBudget"
+        }
+      },
+      "earlier": []
+    },
+    "RU-002": {
+      "name": "RunAgentCannot",
+      "owner": "run",
+      "from": "blueprint/things/run/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RunAgentCannot"
+        }
+      },
+      "earlier": []
+    },
+    "RU-003": {
+      "name": "RunTaskClaimed",
+      "owner": "run",
+      "from": "blueprint/things/run/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RunTaskClaimed"
+        }
+      },
+      "earlier": []
+    },
+    "RU-900": {
+      "name": "RunNotRunning",
+      "owner": "run",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RunNotRunning"
+        }
+      },
+      "earlier": []
+    },
+    "RU-901": {
+      "name": "RunNotFound",
+      "owner": "run",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "run"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RunNotFound"
+        }
+      },
+      "earlier": []
+    }
+  },
+  "retired": {}
+}

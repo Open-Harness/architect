@@ -3892,7 +3892,7 @@
   "what": "The chain follower (L3.08), which also feeds the portal's committed chain events (K5 seam 10); its checkpoint is a block number plus a window of block hashes, and a take-back emits <Event>Corrected { wasConfirmed } (K7 Q6)"
  },
  "M6-10": {
-  "doneWhen": "ortho check reports the change as major; swapping two declared errors keeps both codes; renaming a published code is refused",
+  "doneWhen": "ortho check reports the change as major; swapping two declared errors keeps both codes; renaming a locked error gives it a new code and retires the old one, and ortho check reports it as major (M6-chain item 4)",
   "history": [],
   "id": "M6-10",
   "kind": "build",

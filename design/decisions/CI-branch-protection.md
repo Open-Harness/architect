@@ -78,6 +78,17 @@ conversation resolution required, no required approvals, and no force pushes or 
   `gh pr merge --merge` (the "Merge PR #n" subjects are set with `--subject`), and direct pushes go only to `goal-3/*`
   pull request branches.
 
+### `goal/on-chain`
+
+Goal 4's branch (K26 item 4), protected on 21 November 2026 in the same shape as `goal/stage-1`: `enforce_admins: true`,
+conversation resolution required, no required approvals, no force pushes or deletions, and `strict: false`. Its
+required checks are the nine `goal/stage-1` had that day: `check`, `portal-ui`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`,
+`e2e-m1`, `e2e-climb`, `e2e-grid` and `builder-paths`. Read back with
+`gh api repos/AaronAbuUsama/architect/branches/goal%2Fon-chain/protection` on 21 November 2026. A check added to
+`goal/stage-1` later (`e2e-stage1`, K28) joins this list only once `goal/on-chain` runs it. The done check's own job,
+`e2e-on-chain`, joined on 21 November 2026, once slice 2 had added it and it had run green
+([#279](https://github.com/AaronAbuUsama/architect/pull/279)): ten required checks, read back the same day.
+
 ## The checks that are new
 
 - **`codex-finished`** (`.github/workflows/codex-finished.yml`, `tools/ci/codex-state.sh`; Superseded by CI-codex-advisory, 20
@@ -121,13 +132,13 @@ conversation resolution required, no required approvals, and no force pushes or 
 ## Where they reach
 
 `codex-finished` runs from `main` for every pull request. The others run from the pull request's own copy of the
-workflows, so they reach `m1` and `goal/stage-1` when `main` is next merged into them; a branch's required list names a
+workflows, so they reach `m1`, `goal/stage-1` and `goal/on-chain` when `main` is next merged into them; a branch's required list names a
 job only once that branch runs it.
 
 ## Undoing it
 
 ```bash
-gh api -X DELETE repos/AaronAbuUsama/architect/branches/main/protection   # likewise m1, goal/stage-1
+gh api -X DELETE repos/AaronAbuUsama/architect/branches/main/protection   # likewise m1, goal/stage-1, goal/on-chain
 ```
 
 The workflows and scripts come out with a revert of the pull request that added them.

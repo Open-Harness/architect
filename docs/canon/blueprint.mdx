@@ -72,9 +72,9 @@ This is what the model says about it, rendered from the sign-up sheet's compiled
 3. **The path says what a file is.** `readLayout` splits each path and decides from it alone. Under `blueprint/things/`,
    the folder is the thing's name, and the rest of the path says which part of it the file holds:
 
-```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=134-141
+```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=174-181
 if (parts[0] !== "things" || parts.length < 3) {
-  layout.problems.push(`${at(path)}: not a place the blueprint reads (values/<file>.ts, environments/<name>.ts, stores/<name>.ts, things/<thing>/..., or a mount in features/, adapters/ or projections/)`);
+  layout.problems.push(`${at(path)}: not a place the blueprint reads (secrets.ts, values/<file>.ts, assets/<name>.ts, environments/<name>.ts, stores/<name>.ts, things/<thing>/..., or a mount in features/, adapters/ or projections/)`);
   continue;
 }
 const name = parts[1]!;
@@ -85,7 +85,7 @@ const file = parts.slice(2).join("/");
 
    A file in a thing's `verbs` folder is one operation, named by its file and nothing else:
 
-```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=159-165
+```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=199-205
 } else if (parts[2] === "verbs" && parts.length === 4) {
   const verb = parts[3]!;
   if (!NAME.test(verb)) layout.problems.push(`${at(path)}: verb "${verb}" must be lowercase words joined by dashes`);
@@ -111,13 +111,15 @@ declaration instead.
 
 ### The model
 
-The model is the one contract every projection is made from (K5, seam 1). Today it has eleven parts. This is its type:
+The model is the one contract every projection is made from (K5, seam 1). Today it has fifteen parts. This is its type:
 
-```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=272-295
+```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=315-344
 export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;
   readonly values: Readonly<Record<string, ValueMeta>>;
+  /** The declared assets, by name: present only when the blueprint declares any (M6-money). */
+  readonly assets?: Readonly<Record<string, AssetModel>>;
   /** The declared stores, by name: present only when the blueprint (or a mount) declares any. */
   readonly stores?: Readonly<Record<string, StoreModel>>;
   readonly things: Readonly<Record<string, ThingModel>>;
@@ -133,10 +135,14 @@ export interface Model {
   readonly blanks?: Readonly<Record<string, ReadonlyArray<string>>>;
   /** Where the application runs, by name: present only when the blueprint has an `environments/` folder. */
   readonly environments?: Readonly<Record<string, EnvironmentModel>>;
+  /** The declared secrets by derived name (`STRIPE_API_KEY`): present only when the app or a mount declares any. */
+  readonly secrets?: Readonly<Record<string, SecretModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
   /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
   readonly alertRules: ReadonlyArray<AlertRuleModel>;
+  /** The app's map: its pages, components and navigation (K31, K36). Present only when the blueprint has an `app/` folder. */
+  readonly app?: AppModel;
 }
 ```
 
