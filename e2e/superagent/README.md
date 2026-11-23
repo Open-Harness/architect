@@ -127,7 +127,7 @@ generated docs, the generated CLI and the generated MCP catalog, on a copy of th
 | `12-the-prompts-plugin` | `@orthograph/prompts`: the PromptSet, its operations, versions, `compose` for the system alone | model, docs, CLI, MCP |
 | `13-the-app` | the app: mounts (five features, three adapters), environments, Settings with versions and `settings.save`, `superagent.fill` and `reap` declared by the app for the system, `@orthograph/agents`' Agent (its states, `tell`, `close`, `AgentIdled`, `AgentClosed`, `StaleAssignment`), the declared `coder`, nothing else declared; the generated CLI starts; every operation of the model is in the docs, CLI and MCP | model, docs, CLI, MCP |
 | `14-the-framework-forms` | each form is accepted and in the model as its record says: `versions:` (K40 fix 2: Policy's four generated operations, `StaleRevision { current }`, a Mandate's pin), `actor:` and `agent:` (K40 fixes 1, 3), `Agent`, `Source.from` and `Source.timer` (the `sources` entries, their variables), `Blueprint.hold` (the held and unheld lists of GOAL17-pause), `Blueprint.problem` | model |
-| `15-the-framework-refusals` | each refusal a record states, with a named problem: `derive:`'s five (GOAL17-derived-reads), the hold's three (GOAL17-pause), a mount that leaves out what its source uses, a mapping of an event the adapter lacks, `listed.of` with no `superagent`, a prefix no thing owns; each against a copy that passes without the fault | `ortho generate`, `ortho check` |
+| `15-the-framework-refusals` | the refusals below, each a record states, with a named problem: `derive:`'s five (GOAL17-derived-reads), the hold's four (GOAL17-pause :133), a variable named against the record's rules (GOAL17-source-from :325), a mount that leaves out what its source uses, a mapping of an event the adapter lacks, `listed.of` with no `superagent`, a prefix no thing owns; each against a copy that passes without the fault. Three of source-from's are deferred to slice 11 (item 4b) | `ortho generate`, `ortho check` |
 | `16-the-derived-reads` | `ticket.stage`, `ticket.waiting`, `superagent.health`, `proposal.waiting` and `superagent.boot` exist as GOAL17-derived-reads declares them: looks, adds, `only`, pages, budgets, who may call | model |
 | `17-nothing-else-moves` | acme, plugged-in, signup, starter and work, regenerated, are the checked-in `generated/` byte for byte; the comparison is shown to see a changed, a missing and a new file | `ortho generate` |
 
@@ -154,13 +154,21 @@ changed stops and asks its author.
    - `things.<t>.versions`: `{ "key": "<a field of t>" }`; absent when the thing has none.
    - `things.<t>.roles` lists a role made with `actor:` or `agent:` like any other (`listed`, `itsMain`, `itsAgent`); an operation's
      `allowed` shows it as `{ kind: "role", role: "<thing>.<role>" }` or, through `.of`, `{ kind: "role-of", role, path }`.
+   - `things.<t>.fields.<f>.optional`: `true` for a `Blueprint.optional` field (`pausedAt`), absent otherwise, as an operation's payload shows it today.
+   - `things.thread.events` has `ThreadSubscribed` and `ThreadUnsubscribed` (the brief names the events, not their thing; fixed here).
+   - `agents.<name>`: one entry per `Blueprint.agent`, `<name>` its file's name (`main`, `executor`): `{ file, slots? }`, `file` relative to the plugin's folder
+     from the app (`blueprint/agents/executor.ts`), and `slots`, only where the declaration has one, `{ size: "<thing>.<field>", reserve: <n>, held: "<thing>" }`
+     (`{ size: "superagent.slots", reserve: 1, held: "assignment" }`, GOAL17-executor-slots :88 and :520).
    - `things.<t>.invariants.<name>`: `{ kind: "unique", fields, while, refuse }`, as today.
    - an operation's `derive`: `{ looks, adds, hash }` (GOAL17-derived-reads, "How it reaches"); `looks.<name>` is
      `{ thing, by, state?, where?, take, max }` with `thing` and `by` the look's thing and the field's names, and a problems look is
      `{ kind: "problems" }`; `hash` a string. A read's `only` is the object it pins, beside today's `list: { where, order, page }`
      and `budget: { p95Ms }`; a read with no derive has no `derive` key.
    - `sources.<mount>`: `{ mount, events, calls, variables, kinds }` (GOAL17-source-from, "How a door and a poll both feed it"), `events`
-     and `calls` the dotted names it uses, `variables` an object keyed by the variable's name, `kinds` the `Mapped.kind` values it makes.
+     and `calls` the dotted names it uses, `variables` an object keyed by the variable's name, `kinds` the sorted distinct `kind:` literals in the results of the
+     source's `on` mappings (the record doesn't say how `kinds` is read; this is the least that can be). Only an active source is there: in slice 5, GitHub and Slack.
+     PostHog has no events until slice 11 (GOAL17-names call 6), so it is not, and the checks say so. `sources.timer` is `{ mount: null, config: { every, says } }`,
+     `config` an object keyed by the two fields `Source.timer` takes.
    - `holds.<name>`: `{ thing, key, while, held, unheld }`, `<name>` the identifier the declaration is exported as (`processing`);
      `held` rows `{ event, to }` and `unheld` rows `{ event, to, reason }`, `event` the event's class name and `to` the operation's
      full name (`outgoing-message.send`).
@@ -186,7 +194,15 @@ changed stops and asks its author.
    | a held row of the hold thing's own move | the feature file, the event, and "own move", "deadlock" or "resume" |
    | a mapping of an event the adapter lacks | the event, "doesn't have" or "does not have" |
    | `listed.of("account")` with no `superagent` to compare | the operation, `superagent` |
+   | a hold on a thing in another store | `processing`, "store" |
+   | a variable ending in `_TOKEN`, or without its source's prefix | the variable |
    | an id prefix no thing owns | the prefix |
+
+4b. **Refusals deferred, not judged in slice 5** (so check 15 proves the refusals listed in its header, not every one a record states): GOAL17-source-from :322, a `gone`
+   error that is not in the reply call's errors; :324, `config` with no `me` of the `{ id, login }` shape; :326, a connection naming an event no `Mapped.kind` produces;
+   the second half of :325 (`environment.of` returning a key not in `variables`) because only a run reads `of`. Each is a fault TypeScript catches in the source's own file,
+   or a value only a running mapping gives, so the model's check can't be shown to refuse it alone. Slice 11's checks take them. GOAL17-derived-reads' fifth refusal and
+   GOAL17-pause's three more are in 15.
 
 5. **Two notes from the throwaway.** A thing named `eval` makes the generated CLI unloadable (`const eval = ...` is a syntax error in
    strict mode): the generator must make a reserved word a safe identifier and keep the operation's name `eval.due` (GOAL17-names call 1); check 13 starts the CLI. And two pairs of

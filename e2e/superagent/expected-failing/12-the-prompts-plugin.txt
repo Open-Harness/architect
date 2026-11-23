@@ -5,6 +5,7 @@ superagent/12-the-prompts-plugin.test.ts > 12 @orthograph/prompts: what the desi
 superagent/12-the-prompts-plugin.test.ts > 12 @orthograph/prompts: what the design names is in the model, and in the docs, CLI and MCP > each machine has exactly the states the design names, and each move it spells out
 superagent/12-the-prompts-plugin.test.ts > 12 @orthograph/prompts: what the design names is in the model, and in the docs, CLI and MCP > each of its things is in the model, and comes from this package
 superagent/12-the-prompts-plugin.test.ts > 12 @orthograph/prompts: what the design names is in the model, and in the docs, CLI and MCP > each operation and read it names is in the model, on its thing, and comes from this package
+superagent/12-the-prompts-plugin.test.ts > 12 @orthograph/prompts: what the design names is in the model, and in the docs, CLI and MCP > each thing has the fields the design names
 superagent/12-the-prompts-plugin.test.ts > 12 @orthograph/prompts: what the design names is in the model, and in the docs, CLI and MCP > the docs list every thing, operation, event and error: a page for each, linked from its thing's index
 superagent/12-the-prompts-plugin.test.ts > 12 @orthograph/prompts: what the design names is in the model, and in the docs, CLI and MCP > the generated CLI lists every operation: `<cli> <thing> --help` names each verb
 superagent/12-the-prompts-plugin.test.ts > 12 @orthograph/prompts: what the design names is in the model, and in the docs, CLI and MCP > the generated MCP catalog has a tool for every operation

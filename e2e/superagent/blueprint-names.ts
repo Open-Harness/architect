@@ -88,6 +88,9 @@ export const intake: PluginNames = {
     EvalDelivered: { thing: "eval", fields: ["superagent", "eval"] },
     DecisionRecorded: { thing: "decision" },
     PolicyChanged: { thing: "policy" },
+    // "Its events"; the brief does not say which thing declares them: the author fixes `thread`, the thing `thread.unsubscribe` is on (README, item 3)
+    ThreadSubscribed: { thing: "thread" },
+    ThreadUnsubscribed: { thing: "thread" },
   },
   // K40 fix 2: `policy.save` answers StaleRevision { current }
   errors: ["StaleRevision"],
@@ -162,7 +165,8 @@ export const tickets: PluginNames = {
 export const prompts: PluginNames = {
   package: "@orthograph/prompts",
   // "The folder structure": prompt-set/verbs/{save,preview,history,compose}.ts; the PromptSet row: a thing with versions
-  things: { "prompt-set": { ops: ["save", "preview", "history", "compose"] } },
+  // the design names no field beyond the id every thing has, so `fields` is just that: a check that read nothing here would be vacuous, this one reads the id
+  things: { "prompt-set": { fields: ["id"], ops: ["save", "preview", "history", "compose"] } },
   events: {},
   errors: [],
 };

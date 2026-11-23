@@ -12,6 +12,10 @@
 //   sources:  GOAL17-source-from, "The compiler binds the mapping to the adapter": an event the adapter does not have; an
 //             active source whose mount does not include an event or a call it uses
 //   actor:    GOAL17-source-from, "Account (K40 fix 1)": an operation that uses `listed.of("account")` with no `superagent` to compare
+//   deferred: GOAL17-source-from :322 (a `gone` error not in the reply call's errors), :324 (`config` with no `me` of the
+//             { id, login } shape) and :326 (a connection naming an event no kind produces) are not planted here: each fault is a
+//             TypeScript error in the source's own file or a declared value only a run reads, so slice 5 can't show the model's
+//             check refuses it alone. The README lists them. Slice 11, which builds the sources' runtime, judges them.
 //   id:       GOAL17-executor-slots: "the compiler refuses a prefix that names no thing's own id"
 import { afterEach, describe, expect, it } from "vitest";
 import { check, copyApp, edit, removeCopies, run, swapPlugin, write } from "./app.ts";
@@ -118,7 +122,7 @@ describe("15 hold: (GOAL17-pause) the lists of what the switch holds", () => {
   it("a delivery of an event that carries `superagent`, in neither list, is refused, naming the event and where it is delivered: `AssignmentEnded` to `input.route` is dropped, and `AssignmentEnded` to `fill` stays listed", () => {
     const root = copyApp();
     edit(root, FEATURE, (t) => t.replace(entry("AssignmentEnded", "input\\.operations\\.route"), ""));
-    refused(root, FEATURE, "AssignmentEnded", /input\.route|input\.operations\.route|route/);
+    refused(root, FEATURE, "AssignmentEnded", /input\.route/);
   });
 
   it("one event with deliveries on both lists is refused, naming the event: `AssignmentEnded` to `input.route` is moved to unheld, `AssignmentEnded` to `fill` stays held", () => {
@@ -127,10 +131,20 @@ describe("15 hold: (GOAL17-pause) the lists of what the switch holds", () => {
     refused(root, FEATURE, "AssignmentEnded");
   });
 
-  it("a held delivery of the hold thing's own move, `SuperagentResumed`, is refused, though no other rule is broken: every unheld row of it goes, and one held row takes its place", () => {
+  it("a held delivery of the hold thing's own move, `SuperagentResumed`, is refused for that reason alone: both its deliveries (`eval.due` and `fill`) are held, so no event is on both lists and none is in neither", () => {
     const root = copyApp();
-    edit(root, FEATURE, (t) => withLine("held", `{ event: superagent.events.SuperagentResumed, to: superagent.operations.fill }`)(t.replace(entries("SuperagentResumed"), "")));
-    refused(root, FEATURE, "SuperagentResumed", /own move|deadlock|resume/i);
+    edit(root, FEATURE, (t) => {
+      const rows = [...t.matchAll(entries("SuperagentResumed"))].map((m) => m[0].replace(/,\s*reason:\s*"[^"]*"/s, "").replace(/\s*,?\s*$/, ""));
+      expect(rows.length, "the design lists two unheld deliveries of SuperagentResumed: eval.due and fill").toBeGreaterThanOrEqual(2);
+      return rows.reduce((text, row) => withLine("held", row)(text), t.replace(entries("SuperagentResumed"), ""));
+    });
+    refused(root, FEATURE, "SuperagentResumed", /own move|deadlock/);
+  });
+
+  it("a hold on a thing that lives in another store than the one producing its events is refused, naming the hold (GOAL17-pause :133)", () => {
+    const root = copyApp();
+    swapPlugin(root, "superagent", (dir) => edit(dir, "blueprint/things/superagent/thing.ts", (t) => t.replace(/Blueprint\.thing\(\{/, `Blueprint.thing({\n  lives: "actor",`)));
+    refused(root, "processing", /store/);
   });
 });
 
@@ -152,6 +166,14 @@ describe("15 sources: (GOAL17-source-from) a source and the mount it maps over",
     const root = copyApp();
     swapPlugin(root, "intake", (dir) => edit(dir, "blueprint/sources/github.ts", (t) => t.replace(/\bon:\s*\{/, `on: {\n    issueComent: (() => undefined) as any,`)));
     refused(root, "issueComent", /doesn't have|does not have/);
+  });
+});
+
+describe("15 sources: (GOAL17-source-from :325) the variables a source declares, named by the record's rules", () => {
+  it.each([["GITHUB_REPOSITORY_TOKEN", "ends in _TOKEN"], ["REPO", "does not start with the source's own prefix"]])("a variable `%s`, which %s, is refused, naming it", (name) => {
+    const root = copyApp();
+    swapPlugin(root, "intake", (dir) => edit(dir, "blueprint/sources/github.ts", (t) => t.replace(/(variables:\s*\{\s*)GITHUB_REPOSITORY:/, `$1${name}:`)));
+    refused(root, name);
   });
 });
 

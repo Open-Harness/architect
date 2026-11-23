@@ -79,6 +79,24 @@ describe("14 the framework forms: each is accepted, and in the model as its reco
     });
   });
 
+  describe("Blueprint.agent and its slots (GOAL17-executor-slots :88 and :520, slice 5's)", () => {
+    it("the main agent and the executor are declared, one each; only the executor has slots: `{ size: superagent.slots, reserve: 1, held: Assignment }`", () => {
+      const agents = built().model["agents"] ?? {};
+      expect(keys(agents).sort()).toEqual(["executor", "main"]);
+      expect(agents["main"]?.slots, "the main agent holds no seat").toBeUndefined();
+      expect(agents["executor"]?.slots).toEqual({ size: "superagent.slots", reserve: 1, held: "assignment" });
+    });
+
+    it("each is declared in its file, in the superagent plugin: `blueprint/agents/main.ts` and `executor.ts`", () => {
+      for (const k of ["main", "executor"]) expect(built().model["agents"]?.[k]?.file, k).toBe(`blueprint/agents/${k}.ts`);
+    });
+
+    it("`slots.size` is a field of the Superagent, `held` a thing with a seat, and `reserve` the one seat kept for a person", () => {
+      expect(built().model["things"]["superagent"]?.fields?.["slots"]).toBeDefined();
+      expect(built().model["things"]["assignment"]?.fields?.["seat"]).toBeDefined();
+    });
+  });
+
   describe("Source.from and Source.timer (GOAL17-source-from)", () => {
     it("each active source folds into the model: its mount, the events and calls it uses, its variables and the kinds it makes", () => {
       const s = built().model["sources"] ?? {};
@@ -91,13 +109,18 @@ describe("14 the framework forms: each is accepted, and in the model as its reco
       expect(s["slack"]?.events).toEqual(expect.arrayContaining(["appMention", "message"]));
       expect(keys(s["slack"]?.variables)).toEqual(expect.arrayContaining(["SLACK_CHANNEL", "SLACK_THREAD"]));
       expect(s["slack"]?.kinds).toEqual(expect.arrayContaining(["mention", "message", "direct"]));
-      expect(s["posthog"]).toMatchObject({ mount: "posthog" });
-      expect(keys(s["posthog"]?.variables)).toEqual(expect.arrayContaining(["POSTHOG_PROJECT", "POSTHOG_ISSUE"]));
-      expect(s["posthog"]?.kinds).toEqual(expect.arrayContaining(["errorIssue"]));
+      // PostHog is not here: it has no events until slice 11 (GOAL17-names call 6), so it is not an active source in slice 5 (GOAL17-source-from :54)
+      expect(keys(s), "only the sources whose adapter has events are active").not.toContain("posthog");
+    });
+
+    it("a source's `kinds` is the `kind` its mapping gives each trigger, read from the `kind:` literals of its `on` results (the model's key, fixed in the README)", () => {
+      const s = built().model["sources"] ?? {};
+      expect([...(s["github"]?.kinds ?? [])].sort()).toEqual(expect.arrayContaining(["comment", "review"]));
+      expect([...(s["slack"]?.kinds ?? [])].sort()).toEqual(expect.arrayContaining(["direct", "mention", "message"]));
     });
 
     it("every variable a source declares is named from its own service, in capitals, and never as a secret (GOAL17-source-from, 'How `environment` reaches the executor')", () => {
-      const own: Record<string, string> = { github: "GITHUB_", slack: "SLACK_", posthog: "POSTHOG_" };
+      const own: Record<string, string> = { github: "GITHUB_", slack: "SLACK_" };
       for (const [name, s] of Object.entries<any>(built().model["sources"] ?? {})) {
         for (const v of keys(s.variables)) {
           expect(v, `${name}: ${v}`).toMatch(/^[A-Z][A-Z0-9_]*$/);
@@ -107,8 +130,14 @@ describe("14 the framework forms: each is accepted, and in the model as its reco
       }
     });
 
+    it("`Source.timer({ every, says })` is a source with no adapter: no mount, and its configuration is exactly an `every` and a `says` (GOAL17-source-from, the timer paragraph)", () => {
+      const timer = built().model["sources"]?.["timer"];
+      expect(timer?.mount, "no adapter").toBeNull();
+      expect(keys(timer?.config).sort()).toEqual(["every", "says"]);
+    });
+
     it("the intake plugin has one file per source kind the brief names, the timer among them", () => {
-      const missing = ["github", "slack", "posthog", "timer"].filter((s) => !existsSync(join(superagent, "plugins/intake/blueprint/sources", `${s}.ts`)));
+      const missing = ["github", "slack", "timer"].filter((s) => !existsSync(join(superagent, "plugins/intake/blueprint/sources", `${s}.ts`)));
       expect(missing, "plugins/intake/blueprint/sources/<name>.ts").toEqual([]);
     });
   });
