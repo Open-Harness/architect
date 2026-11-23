@@ -206,7 +206,7 @@ jobs:
   # hash, because HeroUI caps CI downloads per token per day. The secret is read in one step's `env`, never at workflow level and
   # never inside a script; the job never runs for a pull request from a fork, so the secret never reaches code we did not write.
   # Every other job installs the registry's empty shell of Pro and runs without it (portal-ui's typecheck says it was skipped).
-  # It is a required check on goal/stage-1, so it never skips on a ready run (CI-drafts-race.md): a pull request from a fork,
+  # It is a required check on main and goal/stage-1, so it never skips on a ready run (CI-drafts-race.md): a pull request from a fork,
   # and a pull request into another goal branch (the fast gate only, CI-integration.md, B1), pass without its steps.
   # It reads the scope flag itself rather than needing `changes`, so it also runs when `changes` fails.
   portal-ui:

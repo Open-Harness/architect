@@ -29,8 +29,9 @@ names. `strict` stays `false` and the rest of `CI-branch-protection.md` stands.
   15.3 minutes) and `prove-tests` (8.1 to 9.8); `portal-ui` took 1.1, `e2e-climb` 2.4, `e2e-grid` 2.2 and `e2e-m1`, the
   join of the shards, 1.4.
 - **They keep the required-job rules.** `main`'s `check-static` already runs `tools/ci/required-jobs.sh` over all four
-  (`.github/workflows/ci.yml`), so none skips on a ready run, and a docs-only or fast pull request passes them without
-  their steps (CI-docs-fast-path, CI-integration).
+  (`.github/workflows/ci.yml`), so none skips on a ready run. On a docs-only pull request `e2e-m1`, `e2e-climb` and `e2e-grid` pass without
+  their steps (CI-docs-fast-path); `portal-ui` runs its steps there and skips them only for a fork. No pull request into
+  `main` is fast (`tools/ci/scope.sh`).
 - **They are not redundant.** `e2e-m1` is Gate M1 (the ratchet over its four shards), `portal-ui` builds the portal
   client the shards and the grid read (K19), `e2e-climb` checks that a failing journey is explained (`e2e/climb/README.md`)
   and `e2e-grid` runs each capability on each example (`e2e/grid/README.md`).
