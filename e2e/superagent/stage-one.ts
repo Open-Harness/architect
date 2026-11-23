@@ -95,7 +95,9 @@ export const proveCopy = async (root: string) => {
     expect(ended.report, `prove wrote no readable report:\n${out.slice(-3000)}`).toBeDefined();
     const raw = ended.report as { readonly schemaVersion: number; readonly journeys: ReadonlyArray<JourneyRun>; readonly lines: ReadonlyArray<string> };
     expect(raw.schemaVersion).toBe(1);
-    const report = { ...raw, journeys: raw.journeys.map((j) => ({ ...j, line: raw.lines.find((l) => l.startsWith(`journey ${j.name} `)) })) };
+    const lineOf = (name: string): string | undefined => raw.lines.find((l) => l.startsWith(`journey ${name} `));
+    const journeys: ReadonlyArray<JourneyRun> = raw.journeys.map((j) => { const line = lineOf(j.name); return line === undefined ? j : { ...j, line }; });
+    const report = { ...raw, journeys };
     const left = await leftRunning(root);
     expect(left, "something of the copy is still running").toEqual([]);
     return report;
