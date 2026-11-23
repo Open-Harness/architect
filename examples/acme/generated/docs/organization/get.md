@@ -31,6 +31,12 @@ Read one organization by its id: name, owner, state.
 
 ## Worked examples
 
+### an agent passes the owner rule
+
+Starts from the world `founded`.
+
+- **ada's agent reads her organisation.** `ada` (role organization.owner) calls and sends id the world's organization, and gets back `Acme Demo` and gets back the cast's ada person.
+
 ### an owner makes an api key
 
 Starts from the world `founded`.

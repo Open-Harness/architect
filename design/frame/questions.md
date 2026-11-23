@@ -395,7 +395,8 @@ full template, so each gets its options and a recommendation in a line or two. T
   hosted models in staging. B: Pi's `faux` provider. C: no journey runs a model. **A**: B is our own fake (Q1 of the
   last round rules it out); C leaves durability unproved.
 - **S15. Who may start an agent run.** A: only a person, unless the app's mount allows agents. B: anyone signed in. C:
-  only `system`. **A**: an agent starting agents spends money with no person.
+  only `system`. K40 (22 November 2026) replaces all three: an agent is its own thing, made by any operation allowed
+  to create one, under that operation's roles.
 - **S16. The factory's run and the agents feature's run.** A: the factory references one. B: the agents run gains
   mission fields. C: the factory calls Pi itself. **A**: features never contain each other.
 - **S17. What the factory runs on.** A: the last released Forman. B: `main`. C: the revision it is building. **A.**

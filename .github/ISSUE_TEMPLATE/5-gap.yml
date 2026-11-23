@@ -1,0 +1,17 @@
+name: Gap from the ledger
+description: A row of design/ledger.md picked up as work. The ledger stays the full list; only rows being worked become issues.
+title: "<ledger id>: <the gap, in plain words>"
+type: Gap
+labels: ["kind:gap"]
+body:
+  - type: markdown
+    attributes:
+      value: Put it in the milestone of the goal that will close it, add the release label it blocks, and add this issue's link to the ledger row in the same pull request that closes it.
+  - type: input
+    id: ledger
+    attributes: { label: Ledger id, placeholder: "PRJ-56" }
+    validations: { required: true }
+  - type: textarea
+    id: gap
+    attributes: { label: The gap, description: "What the ledger row says is missing, and what done looks like" }
+    validations: { required: true }
