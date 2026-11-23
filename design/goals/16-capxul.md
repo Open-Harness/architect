@@ -4,7 +4,7 @@ title: Capxul core, rebuilt on Orthograph
 milestone: "Goal 16: Capxul on Orthograph"
 release: "1.0"
 branch: goal/capxul
-base: goal/stage-1     # main once Goal 18's slice 1 retires goal/stage-1
+base: goal/stage-1     # main once the lander's slice 1 retires goal/stage-1
 status: ready          # ready | running | landing | done | parked
 lead:
   harness: null        # claude | codex | opencode | amp, set by the lead when it starts
@@ -79,7 +79,7 @@ keep the numbers their issues already have.
 | # | Slice | After |
 |---|---|---|
 | 1 | Capxul's plugins mapped, the first map: #487 lands with K43's superseded marks | — |
-| 2 | The first feature, one person gets paid, which is the beta (K42; `M7-capxul.md`, section 4): a sales invoice with a pay link, paid from any wallet, settled only by the chain, with the ledger lines posted | 6 |
+| 2 | The first feature, one person gets paid (`M7-capxul.md`, section 4): a sales invoice with a pay link, paid from any wallet, settled only by the chain, with the ledger lines posted | 6 |
 | 3 | The grill, with Aaron by voice: what is core, what is a module, what is paid and how a self-hosted Capxul reaches it, which licence Capxul carries, and K43's open list. A lawyer's read on the licence comes afterwards, by Aaron's call, and blocks nothing | — |
 | 4 | Spike: can Orthograph things, machines and journeys be scaffolded from ERPNext's record-type files (Sales Invoice, Payment Entry, GL Entry first)? If so, it becomes a scaffolder in the framework, built under K42's collision rule | — |
 | 5 | Spike: `ortho new adapter --from-openapi` on Bridge's published description; customers, KYC links, virtual accounts and transfers, against a stand-in | — |
@@ -89,6 +89,14 @@ keep the numbers their issues already have.
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18
 sorts those asks in its slice 2.
+
+## The superagent goes first
+
+Under K42 (Aaron's call 9) the superagent goes first, because once it works its coding agent helps build Capxul. So
+this goal does its design grill, its two experiments and its provisional map now, and writes the map as tickets the
+superagent's coding agent can take. It builds now only what waits on nothing: money, the token adapter, the follower
+and its own things. Getting paid lands after the superagent's events and pages. Shared pieces are split between the
+two apps (K42, section 3); organisations are separate, and Capxul's companies are its own.
 
 ## How it runs
 

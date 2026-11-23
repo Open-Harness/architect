@@ -2,7 +2,7 @@
 goal: 17
 title: the superagent, an always-on agent for any job, built on Orthograph
 milestone: "Goal 17: the superagent"
-release: null          # off the 1.0 path: it tests the framework from outside
+release: beta           # K42: the beta is every framework piece the superagent proves
 branch: goal/superagent
 base: goal/stage-1
 status: ready          # ready | running | landing | done | parked
@@ -35,9 +35,14 @@ slices:
 ---
 # Goal 17: the superagent
 
-> **An app goal under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`). A framework fix is claimed
-> on the board and lands in `main` as soon as it is green; Goal 18, the framework goal, does what the conductor did
-> here; the base moves to `main` with Goal 18's slice 1. Where this brief and K42 disagree, K42 wins.
+> **An app goal under K42, and the first** (23 November 2026, `design/decisions/K42-goals-are-agents.md`). It goes
+> before Capxul, because once it works its coding agent helps build Capxul. It takes most framework pieces the two
+> apps share (K42, section 3); a fix is claimed on the board first. The lander (Goal 19) brings its green slices into
+> `main`, and this goal merges `main` in at each slice start, never rebasing; its base moves to `main` with the
+> lander's slice 1. Goal 18, the framework goal, does what the conductor did here. The beta is every framework piece
+> this goal proves, extracted and published. Its lead adds a slice 15, the launch: real sign-in, teams, a live deploy
+> with a public address for webhooks, and a sandbox and a model endpoint off Aaron's Mac. Where this brief and K42
+> disagree, K42 wins.
 
 Branch `goal/superagent`, cut from `goal/stage-1`: an integration branch, where the app and the framework fixes it
 needs are built together and handed back whole. Written 22 November 2026 by a 📐 designer thread with Aaron, from

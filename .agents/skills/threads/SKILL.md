@@ -10,7 +10,8 @@ session, an OpenCode session. Every thread is one **thread type**. Its title sta
 at a glance: `<emoji> <Type>: <subject>`, for example `🔨 Builder: L1.13 generators v0`. Where your
 agent has tags or labels, tag it `thread:<type>`, in your agent's form (the table at the end).
 
-> **K42 (23 November 2026):** a goal is one long-running agent; the 🎼 conductor is Goal 18, the framework goal. A gap is
+> **K42 (23 November 2026):** a goal is one long-running agent; the 🎼 conductor is Goal 18, the framework goal, and the
+> lander, Goal 19, brings app work into `main`. A gap is
 > claimed on the board (`lane:goal-<n>` and a "Touches" line), not asked for; an Ask is only for two goals' overlapping
 > claims. Where this skill and K42 disagree, K42 wins.
 

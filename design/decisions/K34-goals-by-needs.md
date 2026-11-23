@@ -18,7 +18,7 @@ what M2 builds, so the order costs parallel work and buys nothing.
    has claimed it or its paths.) **A goal builds a slice once what that slice needs has landed,** whatever milestone it sits in. A slice's `needs`
    column in `milestones.md` is the rule; the milestone order is not.
 2. **A milestone still counts as done only when its gate passes on `main`.** Releases (K28) are unchanged: the preview
-   is Gate M1 and the npm preview, the beta is Gate M2 and Goal 3's done check, 1.0 is the four stage gates (superseded by K42, 23 November 2026: 1.0 is Capxul core).
+   is Gate M1 and the npm preview, the beta is Gate M2 and Goal 3's done check (superseded by K42, 23 November 2026: the beta is the framework the superagent proves), 1.0 is the four stage gates (superseded by K42, 23 November 2026: 1.0 is Capxul core).
 3. (Superseded by K42, 23 November 2026: goals are long-running agents, one framework goal and app goals.) **Goals are drawn for independence** (`design/goals/map.md`): each owns its paths, adds new modules rather than
    editing the core, has one owner per shared seam, and writes its journeys and checks before what its builds need has
    landed.

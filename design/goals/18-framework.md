@@ -12,7 +12,6 @@ lead:
   since: null          # the date it started
 done_check: never done; it runs while Orthograph is being built (K42)
 owns:
-  - main
   - design/goals/
   - docs/canon/status.md
   - tools/github/
@@ -20,10 +19,9 @@ owns:
   - .agents/skills/github/
   - .agents/skills/threads/
 slices:
-  - "1 · goal/stage-1 lands in main, and main becomes the one integration branch"
-  - "2 · The goals K42 stops, wound down"
-  - "3 · The board: the status page's items, claims, and the sync that writes the Project"
-  - "4 · The loop (after 1, 2, 3)"
+  - "1 · The goals K42 stops, wound down"
+  - "2 · The board: the status page's items, claims, the split, and the sync that writes the Project"
+  - "3 · The loop (after 1, 2)"
 ---
 # Goal 18: the framework, always running
 
@@ -36,26 +34,25 @@ Milestone `Goal 18: the framework`, label `release:1.0`.
 ## The goal, in plain words
 
 - **In one sentence:** Keep Orthograph moving as a whole. Every round, find what can be built right now, start the most
-  important pieces in parallel, land them, and keep the board accurate.
-- **Why:** The apps (Capxul, the superagent) find what the framework is missing. Something has to see all of it at
-  once, keep the main branch green, and make sure the pieces an app is stuck on get built first.
+  important pieces in parallel, and keep the board and the roadmap accurate.
+- **Why:** The apps (the superagent first, then Capxul) find what the framework is missing. Something has to see all
+  of it at once and make sure the pieces an app is stuck on get built first.
 - **When it's done, you can:** it is never done. At any moment, the board shows where every piece stands, how close
   1.0 is, and which agent is on what.
-- **It is:** the one manager. It took over the conductor's job.
-- **It isn't:** an app. It doesn't build Capxul or the superagent; their goals do, building any framework gap
-  themselves unless another goal is already on it.
+- **It is:** the one manager. It took over the conductor's job, starting and briefing every other agent.
+- **It isn't:** an app, or the lander. The apps' goals build the apps and the framework gaps they find; the lander
+  brings their finished work into the main branch.
 - **Done when:** never; it stops only when Aaron says so.
 - **Waits on:** nothing.
 - **Words used:**
-  - a goal: one long-running agent driving one piece of work;
-  - an app goal: a goal building one real app;
+  - a goal: one long-running agent driving one piece of work; an app goal builds one real app;
   - the board: the "Orthograph" project on GitHub, listing every piece with its stage;
   - a claim: a goal marking a piece, and the code it touches, as its own while it works;
   - a grill: a question only Aaron can answer;
-  - the conductor: the agent that used to start, brief and land every other agent's work;
   - Capxul: the business app being rebuilt on Orthograph, the first real app;
-  - the superagent: an always-on agent anyone can make for a job, being built as the second app;
-  - 1.0: the first full release, reached when Capxul's core runs on Orthograph.
+  - the superagent: an always-on agent anyone can make for a job, built first because it then helps build Capxul;
+  - the lander: the goal that brings each app's finished work into the main branch;
+  - the beta and 1.0: framework releases, the beta proved by the superagent and 1.0 by Capxul's core.
 
 ## Read first
 
@@ -68,10 +65,9 @@ Milestone `Goal 18: the framework`, label `release:1.0`.
 
 | # | Slice | After |
 |---|---|---|
-| 1 | `goal/stage-1` lands in `main` once it is green, and is retired. Every goal branch is then cut from, and merges in, `main`. First check that `main` requires each protection `goal/stage-1` has (its CI jobs, `builder-paths`, resolved threads) | — |
-| 2 | The goals K42 stops, wound down: each lands what it has in review (K42, section 7), sets `status: parked` and stops. Its open slices become board items, and the 33 open Ask issues are sorted | — |
-| 3 | The board: the capability map in `docs/canon/status.md` rewritten as one row per item, with its stage, who pulled it and its release. `tools/github/sync.mjs` writes one issue per row and fills the Project's fields and views from them (K42, section 5): milestones as app features, a framework piece in the milestone of the first app feature that pulls it, "Not yet needed" for the rest, and a roadmap whose dates are computed every round. The `conductor` and `github` skills rewritten to match | — |
-| 4 | The loop (K42, section 4), run from then on | 1, 2, 3 |
+| 1 | The goals K42 stops, wound down: each lands what it has in review (K42, section 7), sets `status: parked` and stops; the lander brings their finished work into `main`. Their open slices become board items, and the 33 open Ask issues are sorted | — |
+| 2 | The board: the capability map in `docs/canon/status.md` rewritten as one row per item, with its stage, which app pulled it, the split (K42, section 3) and its release label. `tools/github/sync.mjs` writes one issue per row and fills the Project's fields and views from them (K42, section 5): the apps' milestones, a framework piece in the milestone of the first app milestone that pulls it, "Not yet needed" for the rest, and a roadmap whose dates are computed every round. The sync's `release:beta` label description (`tools/github/plan.mjs`) says K42's beta. The `conductor` and `github` skills rewritten to match | — |
+| 3 | The loop (K42, section 4), run from then on | 1, 2 |
 
 ## The loop
 
@@ -81,25 +77,25 @@ Each round:
 2. Find what can run now: items whose needs have landed and that nobody else has claimed.
 3. Rank them:
    1. an app goal is waiting on it now;
-   2. it is on Capxul's next feature;
+   2. it is on the superagent's next slice, then on Capxul's next feature;
    3. it makes scaffolding better for every app;
    4. it keeps `main` green and CI fast;
    5. a piece no app has pulled yet, and only with capacity to spare.
 4. Start workers from the top, as many as CI holds (20 jobs at once; at most two ready pull requests per goal).
-5. Merge what is green and reviewed. Rebuild the board. Send every running goal what landed and what was decided,
-   grills included.
+5. Rebuild the board as the lander lands work. Send every running goal what was decided, grills included.
 
 **The first items to rank**, from K42: `ortho new` for an app (M2.09); `ortho add` for events, errors, roles and moves
 (M2.14, M2.15); adapters from an ABI (#474); and the npm preview (M1.51).
 
 ## How it runs
 
-- **Collisions.** When two goals claim overlapping paths, this goal settles who builds it, or how they split it
-  (K42, section 3, case 2). Every other gap belongs to the app goal that found it.
+- **Collisions and the split.** When two goals claim overlapping paths, this goal settles who builds it, or how they
+  split it (K42, section 3, case 2). It keeps the split of shared pieces between the two apps on the board, and
+  reshuffles it as the pace shows.
 - **Grills.** A grill is a Decision issue labelled `needs-aaron`. Batch them and bring them to Aaron by voice, as the
   `threads` skill says in "Talking to Aaron". Record each answer as a decision and send it to every running goal.
-- **Merging.** Unchanged: drafts first, a 🔍 that wrote none of it, then ready, at most two ready per goal, and merge
-  when CI is green and every thread is resolved (`AGENTS.md`).
+- **Merging.** This goal's own pull requests: drafts first, a 🔍 that wrote none of it, then ready, at most two ready,
+  and merge when CI is green and every thread is resolved (`AGENTS.md`). App work reaches `main` through the lander.
 - **Limits.** `AGENTS.md`'s standing rules: at most $10 a day on cloud resources, no keys printed or written, every
   world destroyed, and processes stopped by their id.
 

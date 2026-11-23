@@ -5,9 +5,10 @@ Written 17 November 2026, from [the frame's `delta.md`](history/retired-2026-11-
 [`build-plan.md`](build-plan.md), its decision steps D4 to D6, the work steps W1 to W3 and the agent track A0 to A9.
 Layers 1 and 2 stay in the build plan as the record of what was built.
 
-Aaron's intent: Orthograph is the only focus until it is **workable, at the end of M2**. From there, Capxul's plugins are
-built on it, small and reusable, and Orthograph is refined by building them. The factory (M3) and agents (M4) make that
-faster but don't gate it.
+Aaron's intent (K42, 23 November 2026): the framework is built by the apps that dogfood it. The superagent goes first,
+then Capxul; each builds the framework pieces it needs, the lander brings them into `main`, and the releases are cut
+from there: the beta is what the superagent proved, 1.0 what Capxul core proved. The milestones below keep their
+slices and ids; an app pulls each slice when it needs it.
 
 ## What exists on `main`
 
@@ -35,9 +36,10 @@ The build plan's rules, unchanged except for names:
 1. **One slice, one session.** A slice ends green: every existing check passes. It is proved by its *done when*, a
    command and its expected output. A slice that won't fit a session is split before it starts.
 2. **Gates.** Each milestone ends in one e2e suite, `nx run e2e:m<n>`. A milestone is done when its gate
-   passes on `main` from a clean checkout, locally and in CI. A slice starts once what it `needs` has landed, in any
-   milestone order (K34). **After Gate M2 the order is by stage** ("v1.0: four
-   stages" below, K9): a stage's slices may come from any milestone, and each stage ends in its own gate.
+   passes on `main` from a clean checkout, locally and in CI. An app goal builds what it
+   needs in its own slice, unless a running goal has claimed it (K42, section 3), and Goal 18 ranks what runs next
+   (K42, section 4). Plugged In's stages ("Plugged In's four stages" below, K9) take slices from any milestone, and
+   each stage ends in its own gate.
 3. **Decisions just in time.** A decision slice sits right before the first slice that needs it and ends with a record
    in `design/decisions/`.
 4. **Checks first.** A checks slice (journeys and checks) is written by a different agent from the builder, and fails
@@ -60,8 +62,8 @@ adds the slices no milestone had (ids `ST<stage>.<n>`), and gives each stage its
 Codex's branch `links/stage-1` (#56) keeps its name. [`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md).
 
 **Three releases** ([`decisions/K28-releases.md`](decisions/K28-releases.md), Aaron, 21 November 2026). The **preview** is Gate M1 on `main` and
-the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is Capxul's first feature, one person gets paid, in Capxul's staging (K42). **v1.0** is
-the beta plus Capxul core (K43) and the release (K42), as the next paragraph says.
+the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is the framework with every piece the superagent pulled, extracted and published, the superagent running on it (K42). **v1.0** is
+the same for every piece Capxul core pulled (K43), plus the release (K42), as the next paragraph says.
 
 **v1.0** is Capxul core on Orthograph (K42, K43), plus the release: M7.01 to M7.04, M7.06 and M7.13 (the cloud passes for staging and for the release, the npm
 release, the infra projection, a deploy and destroy that leaves nothing, real releases), each credential with Aaron's
@@ -479,7 +481,7 @@ forced reorg is corrected; a pending chain call shows its in-between state (S25)
 **Goal.** Every local destination swapped for the real one, each credential created only with Aaron's written yes and
 the spend under $10 a day; then Capxul's first feature running on Orthograph.
 **Staging first** (K10 section 8, Aaron, 18 November): `spikes/staging-pass` any time (acme up on the shared, prefixed
-Cloudflare account, proved there, destroyed, the account listing nothing of the run's after); then, after Gate M2, M7.01, M7.03,
+Cloudflare account, proved there, destroyed, the account listing nothing of the run's after); then, once an app pulls them, M7.01, M7.03,
 M7.04 and M7.08 for staging alone. npm's `latest` tag, Homebrew and the rest of M7 still wait on 1.0 (Capxul core, K42); the preview under `next` is M1.51 (K28).
 **Gate.** `nx run e2e:m7`: acme goes from a pull request to test, staging and production on Cloudflare with a verdict
 in each, Orthograph's packages are released under `@orthograph` on npm, and everything the gate made is destroyed after.
@@ -585,7 +587,10 @@ in `spikes/` and D3's records exist, so they are done in substance.
 - The config file's `outputs`: never read (D3 #112); projections are mounted instead (M0.03, M1.11).
 - "Kit" and "dependency" as words: they become feature and adapter (K2, Q3).
 
-## The critical path to workable
+## Plugged In's path to workable, as planned before K42
+
+Since K42 the critical path is the superagent's next slice, ranked by Goal 18; this section is the plan of 19
+November, kept for Plugged In's own slices.
 
 Re-cut on 19 November 2026 by [`decisions/K13-lock-down-first.md`](decisions/K13-lock-down-first.md): first lock down
 what exists, with one Plugged In app dogfooded end to end; the actions, approvals and the agent's way in wait until M3. Changed
@@ -627,8 +632,8 @@ M1.34 (portal-ui) ────────────────────�
 
 The M1 and M2 gates need every slice, so the side slices must land before them.
 
-**After workable (K9):** stage 2 (wallets) next, then stage 3 (the vault), stage 4 (the club) and the release. Capxul's
-first plugin, the wallet, is stage 2.
+**After workable (K9), as planned before K42:** stage 2 (wallets) next, then stage 3 (the vault), stage 4 (the club)
+and the release. K42 and K43 replaced this order: the superagent goes first, then Capxul, starting with getting paid.
 Time (M8, K23) is built beside stage 2, from the same gate; stage 3's gate waits on Gate M8. Its decision and checks
 (M8.01 to M8.04) may land before then.
 

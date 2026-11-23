@@ -21,8 +21,8 @@ move with the account. The repository does, so everything needed is here or link
 
 - **Preview:** Gate M1 on `main`, and `@orthograph/*`, `orthograph` and the preset on npm under `next` (M1.51; Aaron
   runs `npm publish`). Goal 3's branch lands on `main` mid-goal once Gate M1's slices are green.
-- **Beta:** Capxul's first feature, one person gets paid, in Capxul's staging (K42).
-- **1.0:** the beta, then Capxul core on Orthograph (K43) and the release slices (K42).
+- **Beta:** the framework with every piece the superagent pulled, extracted and published, the superagent running on it (K42).
+- **1.0:** the same for every piece Capxul core pulled (K43), and the release slices (K42).
 
 Aaron's aim (21 November): in about 72 hours, be ready to rebuild Capxul from the ground up on Orthograph, in
 composable pieces (plugins) that another app (Plugged In, the link-in-bio app) also uses. So: parallelise wherever the
@@ -31,8 +31,9 @@ code allows. Narrowed on 22 November: see "The lanes".
 ## The lanes
 
 **23 November 2026: replaced by K42.** A goal is one long-running agent. Goal 18 (the framework) always runs and is
-the conductor; Goals 16 (Capxul core, 1.0) and 17 (the superagent) are the app goals; every other goal lands what it has
-in review and stops (`design/decisions/K42-goals-are-agents.md`, section 7). The table below is the 22 November index.
+the conductor; Goal 19 (the lander) always runs and brings app work into `main`; Goal 17 (the superagent) goes first
+and Goal 16 (Capxul core) second, as the app goals; every other goal lands what it has in review and stops
+(`design/decisions/K42-goals-are-agents.md`, section 7). The table below is the 22 November index.
 
 **22 November 2026: narrowed to the critical path** (Aaron: "Narrow to the path"). The Beta path and the two long
 poles run at full speed; the other goals finish the slice they were on, set `status: parked` in their brief and stop,

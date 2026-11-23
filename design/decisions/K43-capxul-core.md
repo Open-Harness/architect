@@ -51,7 +51,7 @@ meetups, mixers and workshops, "a really undecided thing".
    - **The network:** undecided. It becomes a grill when Capxul reaches the CRM.
 3. **The order:** the books, HR, payroll, then the CRM. Bridge and the paid services come alongside the books, because
    money moving between an account and a bank goes through them. The first feature stays Goal 16's (`M7-capxul.md`,
-   section 4; its slice 2, and the beta, K42), read as the books' first slice: a sales invoice with a pay link, the payment that settles it, and the
+   section 4; its slice 2), read as the books' first slice: a sales invoice with a pay link, the payment that settles it, and the
    ledger lines it posts.
 4. **Where it is built:** in this repository, on `goal/capxul`. The app goes in `examples/capxul/` and its plugins in
    `examples/capxul/plugins/` (K39's call 7 shape). Framework gaps are built there under K42's collision rule. It moves

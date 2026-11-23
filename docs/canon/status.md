@@ -21,11 +21,11 @@ Status words: **Built** (in `packages/`, with a check that passes), **Partial** 
 | Release | A person outside can… | Done when | Left to build |
 |---|---|---|---|
 | **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last piece, the machine graphs (M1.50, check 40 still red); the npm preview itself (publish refuses npmjs today); Goal 3's branch landing on `main` |
-| **Beta** (Capxul gets paid, K42) | raise an invoice in Capxul with a pay link, have anyone pay it from any wallet, and see the chain settle it and the books record it, in Capxul's staging | Capxul's first feature's journeys green in Capxul's staging (Goal 16, slice 2) | whatever that feature pulls from the framework: the pieces Plugged In's stage 1 planned (sign-in and organisations as plugins, secrets, `ortho new`, the screens) are built when an app needs them, not as a release |
-| **1.0** (Capxul core, K42) | run Capxul's books, HR and payroll for free, and buy identity checks (KYC, KYB) and a bank account through Bridge | Capxul core's journeys green in Capxul's staging, plus M7.01 to M7.04, M7.06 and M7.13 | Capxul core and whatever it pulls from the framework; the real release |
+| **Beta** (the framework the superagent proves, K42) | build an always-on agent app on Orthograph from npm: things with versions, events in and the outbox, agents that live for weeks, secrets and lent tokens, signed webhook doors, the pages on UI SDK | every framework piece the superagent pulled, extracted into Orthograph's packages and published, with the superagent running on that published framework | the superagent's slices 6 to 14 and what they pull; its launch is its own milestone, not the beta's |
+| **1.0** (Capxul core, K42) | build a business app on Orthograph from npm: everything Capxul core needed for its books, HR, payroll, identity checks and bank accounts through Bridge | every framework piece Capxul core pulled, extracted into Orthograph's packages and published, with Capxul core running on it in its staging, plus M7.01 to M7.04, M7.06 and M7.13 | what Capxul core pulls (K43), and the real release |
 
-Since K42 (23 November 2026), 1.0 is Capxul core on Orthograph (K43). The stage headings below (stages 2 to 4) are
-Plugged In's, no longer 1.0's; Goal 18's slice 3 rewrites this map as the board's items, each with its stage.
+Since K42 (23 November 2026), the releases are the framework's: the beta is what the superagent proves and 1.0 what Capxul core proves (K43). The stage headings below (stages 2 to 4) are
+Plugged In's, no longer 1.0's; Goal 18's slice 2 rewrites this map as the board's items, each with its stage.
 
 **Where Goal 4 falls.** Goal 4 (on chain, end to end) served 1.0 until K42, not the preview or the beta: its slices 2 and 9 to
 11 are stage 2 work, and slices 1, 3 to 8 and 12 are stage 3. Only slice 1 (the language and host seam) touches the

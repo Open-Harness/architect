@@ -36,17 +36,18 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   is done when its gate passes on `main`. The running goals and the collision rule are in `design/goals/map.md`. Ideas
   for later go in `design/later.md`, never into code.
 - **Goals.** A goal is one long-running agent, today a thread that manages other threads, later a superagent (K42).
-  The framework goal (Goal 18) always runs: it ranks what can run now, starts it, lands it and keeps the board. An app
-  goal (Capxul, Goal 16; the superagent, Goal 17) builds one app and every gap that app finds. A goal exists while its
+  The framework goal (Goal 18) always runs: it ranks what can run now, starts it and keeps the board. The lander (Goal
+  19) always runs: it brings each app goal's green slices into `main`. An app goal (the superagent, Goal 17, first;
+  then Capxul, Goal 16) builds one app and its share of the framework pieces the apps need, and dogfoods the framework. A goal exists while its
   agent runs. Its brief in `design/goals/` has one done check; it works one commit per slice, each ending green with
   its "done when" check. It loops generate, run, fix until the check passes, then moves on. Its work reaches `main` by
   pull requests, merged when CI is green and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
   parallel. A goal may run in any harness (Claude Code, Codex, OpenCode, Amp) and coordinates through the repository and
   GitHub: its brief's "Where it stands", its claims on the board, and Snag issues (K42;
   `design/decisions/K33-github-native.md`; the `github` skill says how).
-  A slice another goal needs lands early, by a branch cut at the commit that ends it and merged into `main` (into
-  `goal/stage-1` until Goal 18 retires it) by a merge commit, so two goals never wait on each other's whole landing
-  (`K38-early-landing.md`).
+  A slice lands early, by a branch cut at the commit that ends it and merged into `main` (into `goal/stage-1` until
+  the lander retires it) by a merge commit, which is how the lander brings app work into `main` (K42, section 8;
+  `K38-early-landing.md`).
 - **Spikes** answer one question in throwaway code under `spikes/<name>/`, on a `spike/<name>` branch. Each ends with
   a README (question, tried, found, the decision it supports, open risks) and is merged into `main` for the record.
   Spike code is never imported by packages.
