@@ -8,7 +8,7 @@ export class EmployeeAlreadyHired extends Blueprint.error({ person: Employee.fie
 export class DepartmentNotInCompany extends Blueprint.error({}, { exit: 42 }) {}
 /** The designation named belongs to another company. */
 export class DesignationNotInCompany extends Blueprint.error({}, { exit: 43 }) {}
-/** ERPNext: "Date of Joining must be greater than Date of Birth". */
+/** A joining day before the birthday. ERPNext v15 (`employee.py`, `validate_from_to_dates("date_of_birth", "date_of_joining")`) allows the same day. */
 export class JoinedBeforeBorn extends Blueprint.error({ dateOfBirth: Day }, { exit: 44 }) {}
-/** ERPNext: "Relieving Date must be greater than or equal to Date of Joining". */
+/** A relieving day before the joining day; the same day is allowed (`validate_from_to_dates("date_of_joining", "relieving_date")`). */
 export class RelievedBeforeJoined extends Blueprint.error({ dateOfJoining: Day }, { exit: 45 }) {}

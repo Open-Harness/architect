@@ -1684,7 +1684,7 @@
           ]
         },
         {
-          "title": "Olga still reads her old record, which shows she has left",
+          "title": "Olga still reads her old record, unchanged but for showing she has left",
           "call": {
             "actor": "olga",
             "operation": "employee.get",
@@ -1701,7 +1701,35 @@
             {
               "kind": "expect-equal",
               "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "cast",
+                    "olga",
+                    "person"
+                  ]
+                },
+                "Olga Petrova",
+                "Female",
+                "1994-03-17",
                 "2026-01-05",
+                {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                },
                 "left"
               ]
             },
@@ -1795,9 +1823,94 @@
               "state": "left"
             }
           ]
+        },
+        {
+          "title": "the new employee can't be relieved the day before rejoining",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "relievingDate": "2027-01-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "RelievedBeforeJoined",
+              "fields": {
+                "dateOfJoining": "2027-02-01"
+              }
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee",
+              "id": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "but may be relieved on the day of rejoining itself",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "relievingDate": "2027-02-01"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "2027-02-01"
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeRelieved",
+              "fields": {
+                "employee": {
+                  "ref": [
+                    "last",
+                    "employee"
+                  ]
+                },
+                "relievingDate": "2027-02-01"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee",
+              "id": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "state": "left"
+            }
+          ]
         }
       ],
-      "sourceHash": "da225c6fb3b5cbb8d1f672480782360c1fbb08206ffc73a24ec3cb0bb58c4661"
+      "sourceHash": "81d391a0867f3f42a9b7a01889f753e0efa86ca76c2df558867d86b0ee031456"
     },
     "journeys/another-companys-department-is-refused.ts": {
       "name": "another company's department is refused",
@@ -2662,9 +2775,145 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Ada may hire Bo on the day he was born, which ERPNext allows",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.hire",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "person": {
+                "ref": [
+                  "cast",
+                  "bo",
+                  "person"
+                ]
+              },
+              "firstName": "Bo Mensah",
+              "gender": "Male",
+              "dateOfBirth": "1990-06-01",
+              "dateOfJoining": "1990-06-01",
+              "department": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              },
+              "designation": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^emp_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeHired",
+              "fields": {
+                "employee": {
+                  "ref": [
+                    "last",
+                    "employee"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee",
+              "id": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads Bo's record back with every field she typed for him",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "Bo Mensah",
+                "Male",
+                "1990-06-01",
+                "1990-06-01",
+                {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "23d5ed5bab091dd5f013109d43897d28704ba73f82f1f0be1640917718d10f98"
+      "sourceHash": "6e2023de8208f08c539a7456df6f07aa29b34d6aaa29b8face5841376fb4b3ba"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
