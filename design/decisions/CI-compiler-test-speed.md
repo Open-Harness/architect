@@ -87,6 +87,22 @@ The 20 runs in a row, default timeout, at load average 164 to 224, all green: wa
 | 19 | 13 s | 160 of 160 | 2.0 s | `needs-approval.test.ts` |
 | 20 | 16 s | 160 of 160 | 2.1 s | `vault.test.ts` |
 
+## The scratch-folder race
+
+Added the same day. After this landed, `retired-unique.test.ts` failed once on a docs-only pull request (run
+45149408093, attempt 1): `ERR_MODULE_NOT_FOUND` for a file of its own copy of Plugged In, under
+`test/tmp/retired-unique/`. The cause was older than this change, which only exposed it. `model.test.ts` kept its copies in
+`test/tmp` and removed all of `test/tmp` in its `afterAll`, and three other files keep theirs beneath it
+(`retired-unique`, `refusal-field-schema`, `rule-name-case`). While `model.test.ts` was the slowest file (17 s on CI), it
+ended after them. At 2.5 to 4 s it ends while they still run, and its cleanup deleted their copies as they loaded.
+
+Reproduced locally with CI's three workers (`--maxWorkers=3`): 4 runs of 25 failed. Three times a case of
+`refusal-field-schema` or `retired-unique` could not load or copy a file of its own copy, and each time that file was
+running when `model.test.ts` ended. Once `model.test.ts` itself failed after all its cases passed, at its cleanup.
+`model.test.ts` now keeps its copies in `test/tmp/model` and removes only that: 40 runs of 40 green, at load average 123
+to 205.
+No assertion changed, and every file now removes only its own folder.
+
 ## Open
 
 - Other packages time out the same way and are not covered here: `packages/logbook`'s `local.test.ts`, on local workerd (run
