@@ -52,7 +52,7 @@ export const storiesOf = (
     Object.fromEntries(Object.entries(cast).map(([name, role]) => [name, allowed(role, file)]));
 
   const callOf = (call: AnyCall) => {
-    // A step that moves the world's clock has no operation: the model leaves it out until time is built (M8.07).
+    // A step that moves the world's clock has no operation: the model tells it as a step that is not in the model's operations, and prove runs it against the world's clock door (M8.07).
     if (call.kind === "clock-call") return undefined;
     // The tools list runs no operation: it is told as a step that is not in the model's operations.
     if (call.operation === undefined) return undefined;
@@ -112,7 +112,7 @@ export const storiesOf = (
     const steps = declared.map((step) => {
       const call = callOf(step.call);
       return call === undefined
-        ? { title: step.title, skipped: step.call.kind === "clock-call" ? "time is not built yet: M8.07" : step.call.operation === undefined ? "the tools list is not an operation" : "operation is outside the model" }
+        ? { title: step.title, skipped: step.call.kind === "clock-call" ? "a step that moves the world's clock is not an operation" : step.call.operation === undefined ? "the tools list is not an operation" : "operation is outside the model" }
         : { title: step.title, call, checks: step.checks.filter((c) => !Blanks.isBlank(c)).map(checkOf) };
     });
     const starts = Blanks.isBlank(j.starts) ? null : j.starts ?? null;
