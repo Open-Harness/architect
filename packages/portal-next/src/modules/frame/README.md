@@ -13,5 +13,5 @@ check 21 reads:
 
 `Frame.Page` is the page's one root (`data-portal="page"`, `data-ready`, `data-status`) and, when it has data, the frame around its children.
 Every link is a typed link of `generated/app/links.ts` or an address of `navigation.json`; moving goes through the shell's router (`FrameEnv.go`).
-⌘K is the portal's own search over the model: the shell's palette lists only the map's pages, so this one takes the key first (see `search.tsx`).
+⌘K is the shell's palette: the portal hands it the model's rows as `extra` (`panels`), and the top bar's trigger sends its key (see `search.tsx`).
 Test: `frame.test.ts`, which renders the frame on the server and reads the hooks.

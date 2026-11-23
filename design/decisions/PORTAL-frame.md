@@ -18,10 +18,11 @@ and the shell's contract (`MAP-shell`). The pages stay as `portal.md` agreed the
 3. **The data is the data API, as it is.** `data` reads `/_portal/v1/blueprint` and the snapshot for its digest, as an Effect, into one store;
    `main.ts` (the one entry that runs an effect) settles it. Types are the wire's own (`@orthograph/portal`, type imports only). `live` derives the
    rail's numbers from the snapshot's `telemetry` and says `not yet` where there is none. No field was invented.
-4. **⌘K is the portal's own search over the model.** The shell's palette lists the map's pages and operations; the portal's search is things,
-   operations, journeys, refusal codes, environments and monitor, from one index in the page (`search-index`). The shell opens its palette on the
-   same keys, so the portal's listener takes the key first, in the capture phase. That is a workaround the shell should make unnecessary
-   (Snag: the shell's palette takes no entries from data).
+4. **⌘K is the shell's palette, with the model's rows added.** The portal passes `extra` (MAP-shell 12): things, operations, journeys, refusal
+   codes, environments and monitor, read from the store, shown after the map's pages. The top bar keeps the `search-trigger` button and the
+   `search-index` script check 21 reads; with layout `none` the shell draws no button, so the trigger sends the palette's own key. The app's 404
+   (`notFound`, MAP-shell 13) draws the page hook and the frame, and `?tab=` reaches a page as its third argument (MAP-shell 14). (Snags #665 and
+   #666 first had the portal take the key in the capture phase; removed.)
 5. **Pages beyond the frame are stubs** carrying their `data-portal="page"` hook and the frame; slices 7 to 10 fill them. A route naming a thing,
    an operation or an environment the blueprint does not declare is a 404 page.
 6. **Dependencies:** `react` and `react-dom` at the workspace pin, `@ui-sdk/core` and `@ui-sdk/react` at exactly `0.1.0-beta.10`, `effect` at the
@@ -30,9 +31,8 @@ and the shell's contract (`MAP-shell`). The pages stay as `portal.md` agreed the
 
 ## What the data API lacks, for the lead
 
-Nothing the frame needed. For slice 7, the operation page's tabs are `?tab=` (check 21 J), and the shell's router matches the pathname only and
-gives a page its parameters, not the query; a page reads `location.search` itself, and a move between tabs does not repaint it. If the tabs should
-be addresses the map knows, that is a map decision, not the data API's.
+Nothing the frame needed. For slice 7, the operation page's tabs are `?tab=` (check 21 J); a page gets the query as `URLSearchParams`, and a change
+of query paints it again (MAP-shell 14); `Body` already passes it.
 
 ## Supersedes
 
