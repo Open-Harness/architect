@@ -374,7 +374,7 @@ its author.
     own, in `connection-worlds/` (overlaid on `blueprint/starting-worlds/`; slice 8 keeps its own in `starting-worlds/`): `a-live-superagent-listening-to-acme-widgets` (the `coder`, live, ann listed,
     its connections naming `acme/widgets` and `C024BE91L`) and `a-live-superagent-with-a-ticket` (one ticket on issue 12, accepted while the superagent is
     paused so it holds no seat, as slice 8's `a-paused-ticket` is; it gives `superagent`, `ticket` and `executor`, and the journey scripts the executor's model
-    and resumes). Both stand on `reply-…` worlds, the chain slice 8 builds under other names.
+    and resumes). Both stand on `reply-…` worlds, the chain slice 8 builds under other names. An operation that answers `{}` (`superagent.goLive`, `account.list`) runs in a world of its own, which takes the id from the world before, since prove's `s.last` is the last step's answer.
 
 ## Not judged here, and why
 

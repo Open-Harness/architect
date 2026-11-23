@@ -30,7 +30,7 @@ describe("66 the connection journeys run through `ortho prove`", () => {
 
   it("the starting worlds the journeys name are in `connection-worlds/`, each by the name a journey gives", () => {
     const found = readdirSync(worlds).filter((f) => f.endsWith(".ts")).flatMap((f) => [...readFileSync(join(worlds, f), "utf8").matchAll(/startingWorld\("([^"]+)"/g)].map((m) => m[1]!)).sort();
-    expect(found).toEqual(["a-live-superagent-listening-to-acme-widgets", "a-live-superagent-with-a-ticket", "reply-a-listed-account", "reply-a-live-superagent", "reply-a-main-agent-exists", "reply-an-executor-waits"]);
+    expect(found).toEqual(["a-live-superagent-listening-to-acme-widgets", "a-live-superagent-with-a-ticket", "reply-a-listed-account", "reply-a-live-superagent", "reply-a-main-agent-exists", "reply-an-account-was-seen", "reply-an-executor-waits", "reply-an-observing-superagent"]);
     const named = new Set(readdirSync(mine).flatMap((f) => [...readFileSync(join(mine, f), "utf8").matchAll(/starts: "([^"]+)"/g)].map((m) => m[1]!)));
     for (const w of named) expect(found, `${w} is a world of this check`).toContain(w);
   });
