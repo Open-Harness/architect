@@ -29,7 +29,7 @@ export interface Count {
   readonly admit: () => void;
   readonly closed: () => boolean;
   /** Wait until no write section is open, for at most `limit` milliseconds of real time; a reset has begun, so nothing new opens. */
-  readonly drain: (limit: number) => Effect.Effect<void>;
+  readonly drain: (limit: number) => Effect.Effect<void, NeverQuiet>;
   /** Start a new generation: every token of the old one is forgotten, and waiters are released. */
   readonly reset: () => void;
   /** Wait until nothing is held; `NeverQuiet` naming who is, when `limit` milliseconds of real time pass first. */
@@ -104,7 +104,11 @@ export const makeCount = (): Count => {
       if (sections.size === 0) return Effect.void;
       const d = Deferred.makeUnsafe<void>();
       draining.push(d);
-      return Deferred.await(d).pipe(Effect.timeoutOption(Duration.millis(limit)), Effect.asVoid);
+      // Sections still open at the bound are named by their owners: the reset fails there, rather than wipe under a write.
+      return Deferred.await(d).pipe(
+        Effect.timeoutOption(Duration.millis(limit)),
+        Effect.flatMap((done) => (Option.isSome(done) || sections.size === 0 ? Effect.void : Effect.fail(new NeverQuiet({ busy: [...sections.keys()].map((id) => tokens.get(id) ?? id).sort() })))),
+      );
     },
     generation: () => generation,
     reset: () => {

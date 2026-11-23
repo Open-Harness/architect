@@ -13,6 +13,7 @@ import { facts } from "./internal/facts.ts";
 import { end, live } from "./internal/leases.ts";
 import { resetDatabases } from "./internal/reset.ts";
 import { worldsDoor } from "./internal/worlds.ts";
+import { fenced, section } from "./internal/fence.ts";
 import { work } from "./internal/work.ts";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -63,20 +64,38 @@ export class World extends DurableObject<WorldEnv> {
     const clock = WorldClock.door(this.clock, request, this.timers.controller);
     if (clock) return clock;
     // The wipe of the databases is over: the world admits requests again.
+    // It names its world as the reset did: a request that does not (a page, another world) cannot open it early.
+    const nonce = this.env.ORTHO_WORLD_NONCE;
+    const named = !nonce || request.headers.get(RESET_HEADER) === nonce;
     if (pathname === "/_world/reset/done" && request.method === "POST") {
+      if (!named) return Promise.resolve(json({ error: "not this world's reset" }, 403));
       this.timers.admit();
       return Promise.resolve(json({ admitted: true }));
     }
     // The cast signs up and in through Better Auth, which reads `Date`: at the world's instant, not the machine's.
     // The cast, the credentials and the other front-door routes run Better Auth, which reads `Date`: each is counted work for its whole life,
     // so a move does not pass one that is in flight (a real world counts nothing).
-    const token = this.clock.kind === "real" ? undefined : this.timers.rpc.countEnter(`world:${pathname.replace("/_world/", "")}`);
     const resetting = pathname === "/_world/reset" && request.method === "POST";
+    // A reset that does not name this world closes nothing.
+    if (resetting && !named) return Promise.resolve(json({ error: "not this world's reset" }, 403));
+    // While the world is closed for a reset, a read (health, clock, facts) answers as always, and a write is refused as a conflict, not a crash.
+    if (this.clock.kind !== "real" && this.timers.closed() && !resetting) {
+      if (request.method !== "GET" && request.method !== "HEAD") return Promise.resolve(json({ error: "the world is being reset" }, 409));
+      return this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, nonce)));
+    }
+    const token = this.clock.kind === "real" || this.timers.closed() ? undefined : this.timers.rpc.countEnter(`world:${pathname.replace("/_world/", "")}`);
     // A reset first closes the world to new tokens and to writes and lets the writes in progress end; the databases are wiped next, by
-    // `toWorld`, and only then (`/_world/reset/done`) does the world admit requests again.
-    const closed = resetting ? Effect.runPromise(this.timers.close()) : Promise.resolve();
-    const answered = closed
-      .then(() => this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE))))
+    // `toWorld`, and only then (`/_world/reset/done`) does the world admit requests again. A write still open at the bound fails the reset,
+    // naming it: the world opens again and nothing is wiped.
+    const refused = resetting
+      ? Effect.runPromise(Effect.result(this.timers.close())).then((done) => (done._tag === "Success" ? undefined : done.failure.busy))
+      : Promise.resolve(undefined);
+    const answered = refused
+      .then((busy) => {
+        if (busy === undefined) return this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, nonce)));
+        this.timers.admit();
+        return json({ error: "NeverQuiet", busy }, 409);
+      })
       .finally(() => { if (token !== undefined) this.timers.rpc.countLeave(token); });
     // The warm reset between runs (ST1.24) is the one way back: the clock returns to its declared start, a scaled one re-anchored now.
     // Only the reset the world itself accepted (its nonce matched) does it.
@@ -158,7 +177,7 @@ export class World extends DurableObject<WorldEnv> {
  * and `queue`; `within` wraps any other promise-returning entry (a Workflows step), and `withinNow` an RPC method that
  * answers at once. A real world runs each as it is.
  */
-export const WorldEntry = { entry, within, withinNow, work };
+export const WorldEntry = { entry, within, withinNow, work, fenced, section };
 export type { WorldWakes };
 
 /**
@@ -175,7 +194,7 @@ export const toWorld = (world: WorldHost, request: Request): Promise<Response> =
     if (world.leases) return Promise.resolve(json({ error: "a world with leases is ended, not reset" }, 404));
     if (!request.headers.get(RESET_HEADER)) return Promise.resolve(json({ error: `a reset names its world in ${RESET_HEADER}` }, 400));
     const keeper = world.worlds.get(world.worlds.idFromName("world"));
-    const admit = () => keeper.fetch(new Request("http://world/_world/reset/done", { method: "POST" }));
+    const admit = () => keeper.fetch(new Request("http://world/_world/reset/done", { method: "POST", headers: { [RESET_HEADER]: request.headers.get(RESET_HEADER) ?? "" } }));
     return keeper.fetch(request).then((cast) =>
       cast.ok
         // The world is closed from the reset until the wipe is over, however the wipe ends.

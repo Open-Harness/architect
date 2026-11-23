@@ -46,12 +46,17 @@ const requestOf = (at: EntryEnv, program: (gate: () => Promise<void>) => Effect.
 };
 
 describe("what a request forks stays counted while it runs", () => {
-  for (const [kind, branch] of [
-    ["Effect.all", (sleep: Effect.Effect<void, never, Timers>, long: Effect.Effect<void>) => Effect.all([sleep, long], { concurrency: "unbounded" })],
-    ["raceFirst", (sleep: Effect.Effect<void, never, Timers>, long: Effect.Effect<void>) => Effect.raceFirst(sleep, long)],
-    ["a detached child", (sleep: Effect.Effect<void, never, Timers>, long: Effect.Effect<void>) => Effect.andThen(Effect.forkDetach(long), sleep)],
-  ] as const) {
-    it(`${kind}: a move made while one branch sleeps and another works fails NeverQuiet naming the request; once it is done, the move goes`, async () => {
+  type Branch = (sleep: Effect.Effect<void, never, Timers>, long: Effect.Effect<void>) => Effect.Effect<unknown, never, Timers | Busy>;
+  // Counted conservatively: a parent that merely waits is still counted, with its children, until every one is done. Only a combinator of ours
+  // that says it joins (`Timers.all`, `Timers.raceFirst`) frees the world to fire the sleeper while the others work.
+  for (const [kind, branch, goes] of [
+    ["Effect.all", (sleep, long) => Effect.all([sleep, long], { concurrency: "unbounded" }), false],
+    ["Timers.all", (sleep, long) => Timers.all([sleep, long], { concurrency: "unbounded" }), true],
+    ["raceFirst", (sleep, long) => Effect.raceFirst(sleep, long), true],
+    ["Timers.raceFirst", (sleep, long) => Timers.raceFirst(sleep, long), true],
+    ["a detached child", (sleep, long) => Effect.andThen(Effect.forkDetach(long), sleep), true],
+  ] as ReadonlyArray<readonly [string, Branch, boolean]>) {
+    it(`${kind}: a move made while one branch sleeps and another works fails NeverQuiet naming the request; once the work is done, the move ${goes ? "goes" : "still fails, for the request is still counted"}`, async () => {
       await worldOf(`fence-${kind}`, async (timers, _clock, at) => {
         const request = requestOf(at, (gate) => Effect.gen(function* () {
           const busy = yield* Busy;
@@ -63,6 +68,11 @@ describe("what a request forks stays counted while it runs", () => {
         expect(await settle(timers, T + DAY)).toMatchObject({ _tag: "Failure", failure: { _tag: "NeverQuiet", busy: ["probe.spin"] } });
         await request.open();
         await pause(50);
+        if (!goes) {
+          // The sleeper is still a child of a counted parent: the move names the request, and the request ends only when the sleep does.
+          expect(await settle(timers, T + DAY)).toMatchObject({ _tag: "Failure", failure: { _tag: "NeverQuiet", busy: ["probe.spin"] } });
+          return;
+        }
         expect(timers.held()).toEqual([]);
         // The long branch is over; what remains is the sleeper, which the move wakes.
         expect(await settle(timers, T + DAY)).toMatchObject({ _tag: "Success" });

@@ -21,3 +21,5 @@ A durable row is woken by its kind through the wake route (`WorldWakes`, a map o
 empty today; `WorldTimers.route`), in the world's own isolate and the world's time, counted under the row's owner while it runs.
 A kind nobody registered fails the step, naming it, and the row stays (the keeper, M8.10, and Goals 8 and 10 each add a kind). Decision: `design/decisions/M8-07-timers-and-quiet.md`.
 Test: `timers.test.ts`.
+
+Closing for a reset (`close`) fails with `NeverQuiet`, naming the owners of the write sections still open at `ORTHO_QUIET_MS`; `closed()` says whether the world is shut. Decision call 13.

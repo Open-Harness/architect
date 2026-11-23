@@ -55,6 +55,12 @@ describe("server", () => {
     expect(file(stepped, "main.ts")).toContain("const wakes: WorldWakes = {};");
     expect(file(plain, "main.ts")).toContain("export { World } from");
     expect(file(stepped, "main.ts")).not.toContain("BusyLive");
+    // Every statement and every auth write of a request is a write section of its token (M8.07, I2); the wipe at reset is not.
+    expect(file(stepped, "main.ts")).toContain("Database.d1(WorldEntry.fenced(env, env.DB))");
+    expect(file(stepped, "main.ts")).toContain("AuthD1.make({ db: WorldEntry.fenced(env, env.DB)");
+    expect(file(stepped, "main.ts")).toContain("WorldEntry.section(env, () => Effect.runPromise(AuthD1.handle(routesOf(env), request)))");
+    expect(file(stepped, "main.ts")).toContain("toWorld({ worlds: env.WORLD, db: env.DB,");
+    expect(file(plain, "main.ts")).not.toContain("fenced");
     expect(file(stepped, "main.ts")).toContain("Auth, Timers, DurableTimers)");
     // Only those two files differ.
     expect(stepped.filter((f) => f.content !== plain.find((p) => p.path === f.path)?.content).map((f) => f.path).sort()).toEqual(["main.ts", "wrangler.jsonc"]);

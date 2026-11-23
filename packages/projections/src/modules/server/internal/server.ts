@@ -30,6 +30,8 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const storeOption = stores.length > 0 ? `, stores: [${stores.map((s) => `[${camel(s.name)}Store, env.${bindingOf(s)}]`).join(", ")}]` : "";
   // Counted work and timers: one process's own, or (a world with a clock) the world's, reported to its Durable Object (M8.07).
   const work = timed ? "WorldEntry.work(env, wakes)" : "BusyLive";
+  // A world whose clock steps is reset under its requests: every statement of a request is a write section its token holds (M8.07, I2).
+  const db = timed ? "WorldEntry.fenced(env, env.DB)" : "env.DB";
   const journal = stores.length > 0 ? `JournalD1.across([${stores.map((s) => `env.${bindingOf(s)}`).join(", ")}])` : "JournalD1.layer";
   const apart = new Set(Object.values(model.things).filter((t) => t.store !== undefined && stores.some((s) => s.name === t.store)).map((t) => t.name));
   const world = stores.length > 0
@@ -141,15 +143,15 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "// Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the",
       "// layer's instance, so a session either one issues is a person to both.",
       "let routes: ReturnType<typeof AuthD1.make> | undefined;",
-      `const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, cli: "${name}-cli", worlds: hostsWorlds(env) }));`,
+      `const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: ${db}, secret: env.AUTH_SECRET, cli: "${name}-cli", worlds: hostsWorlds(env) }));`,
       "",
       "const build = (env: Env) =>",
       "  HttpRouter.toWebHandler(",
       "    HttpApiBuilder.layer(CallApi).pipe(",
       `      Layer.provide([${groups.map((t) => `${pascal(t)}Live`).join(", ")}]),`,
       "      Layer.provideMerge(CallTelemetry.layer),",
-      `      Layer.provide([StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, ${work}, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),`,
-      "      Layer.provideMerge(Database.d1(env.DB)),",
+      `      Layer.provide([StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, ${work}, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: ${db}, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),`,
+      `      Layer.provideMerge(Database.d1(${db})),`,
       "      Layer.provide(HttpServer.layerServices),",
       "    ),",
       "  );",
@@ -179,7 +181,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "let mcpRuntime: ManagedRuntime.ManagedRuntime<Services, never> | undefined;",
       "const runtimeOf = (env: Env) =>",
       "  (mcpRuntime ??= ManagedRuntime.make(",
-      `    Layer.mergeAll(StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, ${work}, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(env.DB))),`,
+      `    Layer.mergeAll(StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, ${work}, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: ${db}, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(${db}))),`,
       "  ));",
       "",
       "const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/;",
@@ -222,7 +224,9 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "        : Promise.resolve(Response.json({ _tag: \"NotAnEnvironment\" }, { status: 404 }));",
       "    }",
       "    if (portal.owns(new URL(request.url).pathname)) return portal.serve(request, env);",
-      "    if (new URL(request.url).pathname.startsWith(\"/api/auth/\")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));",
+      timed
+        ? "    if (new URL(request.url).pathname.startsWith(\"/api/auth/\")) return WorldEntry.section(env, () => Effect.runPromise(AuthD1.handle(routesOf(env), request)));"
+        : "    if (new URL(request.url).pathname.startsWith(\"/api/auth/\")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));",
       "    if (new URL(request.url).pathname.startsWith(\"/.well-known/\")) {",
       "      return Effect.runPromise(AuthD1.oauth.discovery(routesOf(env), request)).then((found) => found ?? Response.json({ error: \"not found\" }, { status: 404 }));",
       "    }",

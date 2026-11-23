@@ -4,15 +4,18 @@ import { Deferred, Effect, Fiber, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { Busy, WorldCount, makeBox, type BusyBox, type BusyShape } from "./types.ts";
 import { BusyReporting } from "./service.ts";
+import { Timers } from "#modules/timers/types.js";
 
 const makeWorld = (request: BusyBox) => {
   const tokens = new Map<string, string>([[request.id!, request.owner]]);
   const sections = new Map<string, number>();
   let generation = 0;
   let next = 0;
+  /** How many times the world's count went empty. */
+  let idled = 0;
   const count = Layer.succeed(WorldCount, WorldCount.of({
     enter: (owner) => Effect.sync(() => { const id = `${generation}.${next++}`; tokens.set(id, owner); return id; }),
-    leave: (id) => Effect.sync(() => void tokens.delete(id)),
+    leave: (id) => Effect.sync(() => { tokens.delete(id); if (tokens.size === 0) idled += 1; }),
     name: (id, owner) => Effect.sync(() => void (tokens.has(id) && tokens.set(id, owner))),
     valid: (id) => Effect.sync(() => tokens.has(id)),
     section: (id) => Effect.sync(() => { if (!tokens.has(id)) return false; sections.set(id, (sections.get(id) ?? 0) + 1); return true; }),
@@ -21,6 +24,7 @@ const makeWorld = (request: BusyBox) => {
   }));
   return {
     held: () => [...tokens.values()].sort(),
+    idled: () => idled,
     open: () => [...sections.values()].reduce((a, b) => a + b, 0),
     reset: () => { generation += 1; tokens.clear(); },
     layer: BusyReporting.pipe(Layer.provide(count)),
@@ -92,6 +96,64 @@ describe("a request's forked fibers are counted for as long as they run", () => 
       yield* Deferred.succeed(long, undefined);
       yield* turns;
       expect(world.held()).toEqual([]);
+    }));
+  });
+});
+
+describe("counted conservatively (the lead's call): a fiber with live children stays counted, unless a combinator of ours says it is joining", () => {
+  it("plain Effect.all: the request stays counted until every child is done, the sleeper included, so a move fails NeverQuiet rather than passing a working fiber", async () => {
+    const entry = makeBox("entry:/probe/spin", { id: "0.0", pinned: true });
+    const world = makeWorld(entry);
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const [wake, long] = [yield* Deferred.make<void>(), yield* Deferred.make<void>()];
+      const request = yield* Effect.forkChild(busy.as("probe.spin").counted(Effect.all([sleeps(busy, wake), Deferred.await(long)], { concurrency: "unbounded" })));
+      yield* turns;
+      expect(world.held()).toEqual(["probe.spin"]);
+      // The long branch is done; the sleeper is lent out; the parent, which only waits, is still counted: loud, not silent.
+      yield* Deferred.succeed(long, undefined);
+      yield* turns;
+      expect(world.held()).toEqual(["probe.spin"]);
+      yield* Deferred.succeed(wake, undefined);
+      yield* Fiber.join(request);
+    }));
+  });
+
+  it("Timers.all: a parent that joins is not counted while it waits, so the sleeper can be fired once the working branches are done, and not before", async () => {
+    const entry = makeBox("entry:/probe/spin", { id: "0.0", pinned: true });
+    const world = makeWorld(entry);
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const [wake, long] = [yield* Deferred.make<void>(), yield* Deferred.make<void>()];
+      const request = yield* Effect.forkChild(busy.as("probe.spin").counted(Timers.all([sleeps(busy, wake), Deferred.await(long)], { concurrency: "unbounded" })));
+      yield* turns;
+      // The sleeper is lent out, the other branch works (the other branches start after it has lent: the world waits for them before it lets go):
+      // the world's count was never empty on the way.
+      expect(world.held()).toEqual(["probe.spin"]);
+      expect(world.idled()).toBe(0);
+      yield* Deferred.succeed(long, undefined);
+      yield* turns;
+      expect(world.held()).toEqual([]);
+      yield* Deferred.succeed(wake, undefined);
+      yield* Fiber.join(request);
+    }));
+  });
+
+  it("fork and continue: the parent that keeps working while its child sleeps is counted", async () => {
+    const entry = makeBox("entry:/probe/spin", { id: "0.0", pinned: true });
+    const world = makeWorld(entry);
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const [wake, own] = [yield* Deferred.make<void>(), yield* Deferred.make<void>()];
+      const request = yield* Effect.forkChild(busy.as("probe.spin").counted(Effect.gen(function* () {
+        yield* Effect.forkChild(sleeps(busy, wake));
+        yield* Deferred.await(own);
+      })));
+      yield* turns;
+      expect(world.held()).toEqual(["probe.spin"]);
+      yield* Deferred.succeed(own, undefined);
+      yield* Deferred.succeed(wake, undefined);
+      yield* Fiber.join(request);
     }));
   });
 });

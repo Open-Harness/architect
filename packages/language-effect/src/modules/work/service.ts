@@ -1,6 +1,6 @@
 import { Context, Deferred, Effect, Layer, Metric } from "effect";
 import { Busy, BusyBoxRef, WorldCount, makeBox, type BusyBox, type BusyShape, type Lease } from "./types.ts";
-import { currentFiber, ended, runningId } from "./internal/fibers.ts";
+import { runningId } from "./internal/fibers.ts";
 
 type Report = {
   readonly enter: (owner: string) => Effect.Effect<string>;
@@ -20,17 +20,12 @@ const counting = (world?: Report): BusyShape => {
   const shared = new Map<string, BusyBox>();
   let waiters: Array<Deferred.Deferred<void>> = [];
   /**
-   * How many fibers of a box are working now: every fiber it holds, but not one that is only waiting for children it forked (`Effect.all`,
-   * `race`, a timeout; the children are counted instead) and not one that has lent its token out (a sleep).
+   * How many fibers of a box are working now: every fiber it holds (the one that took the token, and every fiber the runtime says started
+   * under it, daemon or not, whether or not it forked others), less those that have lent the token out (a sleep) and those that are joining
+   * (a combinator of ours waiting for its children). Conservative on purpose: an uncounted fiber that is still working corrupts a run without
+   * a sound, and an over-count fails loudly, as `NeverQuiet` naming the owner.
    */
-  const activity = (box: BusyBox): number => {
-    const waiting = [...box.kids].filter(([id, n]) => {
-      const forker = box.parents.get(id);
-      return n > 0 && forker !== undefined && !ended(forker);
-    }).length;
-    const parked = [...box.lentIds].filter((id) => (box.kids.get(id) ?? 0) === 0).length + Math.max(0, box.lent - box.lentIds.size);
-    return Math.max(0, box.holders - waiting - parked);
-  };
+  const activity = (box: BusyBox): number => Math.max(0, box.holders - box.lent - box.joining.size);
   /** The fibers running now: a lent one is parked, not running. */
   const running = () => [...active].reduce((n, box) => n + activity(box), 0);
   // Waiters are let go from a fiber of their own, on the next turn: whoever lent a token out finishes recording its lease before any
@@ -89,31 +84,10 @@ const counting = (world?: Report): BusyShape => {
       active.add(box);
       // A branch that starts after the others have lent the token out takes it back.
       if (box.id === undefined && !box.stale && box.holders > 1) Effect.runFork(Effect.ignore(sync(box)));
-      const forker = currentFiber();
-      const parent = forker?.id;
-      if (forker === undefined || parent === undefined) return;
-      box.parents.set(parent, forker);
-      box.kids.set(parent, (box.kids.get(parent) ?? 0) + 1);
-      const byParent = box.kidsByContext.get(context) ?? new Map<number, number>();
-      byParent.set(parent, (byParent.get(parent) ?? 0) + 1);
-      box.kidsByContext.set(context, byParent);
     },
     recordFiberEnd: (context, exit) => {
       previous?.recordFiberEnd(context, exit);
       if (Context.get(context, BusyBoxRef) !== box) return;
-      // The runtime does not say which fiber ended, only the context it had: of the parents that forked with it, the deepest (the newest) is
-      // taken to be the one, so a parent can look done a moment early, never late.
-      const byParent = box.kidsByContext.get(context);
-      const parent = byParent === undefined ? undefined : Math.max(-1, ...[...byParent].filter(([, n]) => n > 0).map(([id]) => id));
-      if (byParent !== undefined && parent !== undefined && parent >= 0) {
-        const left = (byParent.get(parent) ?? 1) - 1;
-        if (left <= 0) byParent.delete(parent);
-        else byParent.set(parent, left);
-        if (byParent.size === 0) box.kidsByContext.delete(context);
-        const kids = (box.kids.get(parent) ?? 1) - 1;
-        if (kids <= 0) box.kids.delete(parent);
-        else box.kids.set(parent, kids);
-      }
       box.holders = Math.max(0, box.holders - 1);
       if (box.holders <= 0) active.delete(box);
       // On the next turn, and in a fiber of its own, outside the request: telling the world takes time.
@@ -130,7 +104,7 @@ const counting = (world?: Report): BusyShape => {
         Effect.flatMap(Effect.service(Metric.FiberRuntimeMetrics), (previous) =>
           Effect.provideService(Effect.provideService(work, BusyBoxRef, box), Metric.FiberRuntimeMetrics, hook(box, previous))),
         // The root is done with its work: whatever it forked and left running is working on its own, and the root is no longer waiting for it.
-        Effect.sync(() => { if (root !== undefined) { box.rootIds.delete(root); box.parents.delete(root); } }),
+        Effect.sync(() => { if (root !== undefined) box.rootIds.delete(root); }),
       );
     });
   /** The box this fiber runs under, or its request's, when there is one. */
@@ -192,18 +166,25 @@ const counting = (world?: Report): BusyShape => {
       leave: Effect.uninterruptible(Effect.flatMap(boxOf(fixed), release)),
       lend: Effect.uninterruptible(Effect.flatMap(boxOf(fixed), (box) => Effect.suspend(() => {
         let taken = false;
-        // The fiber that lends is parked until it takes the token back.
-        const lender = runningId();
         const lease: Lease = {
           // Reclaimed once: a second reclaim of the same lease changes nothing.
           reclaim: Effect.suspend(() => {
             if (taken) return Effect.void;
             taken = true;
-            return Effect.uninterruptible(Effect.andThen(Effect.sync(() => { box.lent--; if (lender !== undefined) box.lentIds.delete(lender); }), sync(box)));
+            return Effect.uninterruptible(Effect.andThen(Effect.sync(() => { box.lent--; }), sync(box)));
           }),
         };
-        return Effect.as(Effect.andThen(Effect.sync(() => { box.lent++; if (lender !== undefined) box.lentIds.add(lender); }), Effect.andThen(sync(box), wake)), lease);
+        return Effect.as(Effect.andThen(Effect.sync(() => { box.lent++; }), Effect.andThen(sync(box), wake)), lease);
       }))),
+      joining: (work) => Effect.flatMap(requestBox, (box) => {
+        const id = runningId();
+        if (box === undefined || id === undefined) return work;
+        return Effect.uninterruptibleMask((restore) =>
+          Effect.andThen(
+            // Marked, and not synced: the children are not forked yet, and the token is let go only when one of them lends it out or ends.
+            Effect.sync(() => void box.joining.add(id)),
+            Effect.ensuring(restore(work), Effect.andThen(Effect.sync(() => void box.joining.delete(id)), sync(box)))));
+      }),
       fenced: (work) => Effect.gen(function* () {
         const box = yield* requestBox;
         if (box?.stale === true) return yield* Effect.interrupt;

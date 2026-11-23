@@ -114,6 +114,7 @@ export const WorldTimers = {
         return sweep;
       },
       held: () => count.held(),
+      closed: () => count.closed(),
       close: () => Effect.suspend(() => {
         if (real) return Effect.void;
         closedAt = WorldClock.wall();

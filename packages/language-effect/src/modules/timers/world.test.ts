@@ -136,13 +136,13 @@ describe("Timers on the world's table", () => {
     }));
   });
 
-  it("a sleep in parallel with a long branch lends the token out once the long one has ended, so the world can fire it", async () => {
+  it("Timers.all: a sleep in parallel with a long branch lends the token out once the long one has ended, so the world can fire it", async () => {
     const world = makeWorld();
     await run(world, Effect.gen(function* () {
       const busy = yield* Busy;
       const timers = yield* Timers;
       const long = yield* Deferred.make<void>();
-      const fiber = yield* Effect.forkChild(busy.as("probe.nap").counted(Effect.all([timers.sleep("probe.nap", "1 day"), Deferred.await(long)], { concurrency: "unbounded" })));
+      const fiber = yield* Effect.forkChild(busy.as("probe.nap").counted(Timers.all([timers.sleep("probe.nap", "1 day"), Deferred.await(long)], { concurrency: "unbounded" })));
       for (let i = 0; i < 6; i++) yield* Effect.yieldNow;
       expect(world.held()).toEqual(["probe.nap"]);
       yield* Deferred.succeed(long, undefined);

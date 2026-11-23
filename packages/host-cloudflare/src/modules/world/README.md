@@ -53,3 +53,7 @@ rows survive a world's end (open, K3 "What M1.17 built").
 ## Reset (ST1.24)
 
 `POST /_world/reset` (a world without leases only) empties every table of the default database and of each declared store, and keeps the cast: the Durable Object answers who is in it, and the Worker deletes everything but those people's `auth_user` and `auth_account` rows (`internal/reset.ts`). It is how a warm world (`ortho dev`) starts a prove run with none of the last run's records. Not reset: actor storage.
+
+## Reset sequence and the fence (M8.07 call 13)
+
+`/_world/reset` needs the nonce header, closes the world, drains open write sections for at most `ORTHO_QUIET_MS` and, if one is still open, fails 409 `NeverQuiet` naming it (nothing wiped, world reopened). `/_world/reset/done` needs the same header. While closed, reads answer and writes are 409. A request of a reset-over run writes nothing: `WorldEntry.fenced(env, env.DB)` makes every statement a write section and `WorldEntry.section` wraps `/api/auth/*`; `timerAdd` and `timerSet` interrupt a stale request before the RPC.

@@ -2,6 +2,7 @@
 // reaches them through the object's RPC (`WorldTimersRpc`); the controller walks the clock over them.
 import type { Effect } from "effect";
 import type { DurableTimer, Wake } from "@orthograph/language-effect";
+import type { NeverQuiet } from "./internal/count.ts";
 import type { ClockSource, ClockState, Controller } from "#modules/clock/types.js";
 
 /**
@@ -61,7 +62,9 @@ export interface WorldTimersState {
    * The first half of the warm reset: the world closes to new tokens and to writes, and waits (bounded) for the write sections already open
    * to end. A request that begins now is refused, rather than admitted into a world that is about to be wiped.
    */
-  readonly close: () => Effect.Effect<void>;
+  readonly close: () => Effect.Effect<void, NeverQuiet>;
+  /** Is the world closed for a reset now? */
+  readonly closed: () => boolean;
   /** The second half: the databases are wiped, and the world admits requests again. Also happens by itself, a while after `close`. */
   readonly admit: () => void;
   /** The warm reset between runs: no row survives, and a sleeper still waiting on a row is woken rather than left hanging. */

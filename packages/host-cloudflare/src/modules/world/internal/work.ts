@@ -41,7 +41,10 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
   const table = Layer.succeed(WorldTable, WorldTable.of({
     // A call carries the request's own token: one the world no longer holds is from a run a reset ended, and is refused.
     add: (owner, name, at, holder) => Effect.suspend(() => {
-      const token = WorldClock.box()?.id;
+      const box = WorldClock.box();
+      // A request the world no longer holds is stale: it sets nothing in the new run's table, before any call is made.
+      if (box?.stale === true) return Effect.interrupt;
+      const token = box?.id;
       return call(env, (keeper) => keeper.timerAdd(owner, name, at, holder, token));
     }),
     // The wake is the instant the world fired the row at: this request's own clock is pointed at it before the code goes on.
@@ -53,7 +56,9 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
     cancel: (id) => call(env, (keeper) => keeper.timerCancel(id)).pipe(Effect.tap(() => resumed(env))),
     sleeping: call(env, (keeper) => keeper.timersSleeping()),
     set: (at, owner, name, wake) => Effect.suspend(() => {
-      const token = WorldClock.box()?.id;
+      const box = WorldClock.box();
+      if (box?.stale === true) return Effect.interrupt;
+      const token = box?.id;
       return call(env, (keeper) => keeper.timerSet(at, owner, name, wake, token));
     }),
     clear: (owner, name) => call(env, (keeper) => keeper.timerClear(owner, name)),
