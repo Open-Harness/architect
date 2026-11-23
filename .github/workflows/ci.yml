@@ -518,7 +518,7 @@ jobs:
   # Not a required check yet: branch protection is the lead's call (CI-branch-protection.md).
   e2e-m2:
     needs: changes
-    if: ${{ !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    if: ${{ !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
