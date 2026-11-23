@@ -27,6 +27,8 @@ export const relay = (parts: Parts, call: { readonly to: Hex; readonly data: Hex
   store.add({ id, nonce, state: "submitting", hash: NO_HASH, serialized: "0x", fromBlock: 0n, fill: false, note: "", createdAt });
   live.held.set(id, { reservation });
   live.inflight.add(id);
+  // An alarm is asked for now, with the row, before any more work that can fail or hang: a row that is open always has one coming.
+  yield* parts.arm;
   const giveUp = (error: unknown) => Effect.gen(function* () {
     store.toFill(id, reason(error));
     live.held.set(id, { reservation });

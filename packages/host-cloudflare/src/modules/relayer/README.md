@@ -22,8 +22,9 @@ the broadcast when it never got to. There is no fee bump, so a transaction sent 
 behind it waits; `health` names it. Fee-bump replacement is a later slice (`design/later.md`).
 
 **The alarm.** With `pollIntervalMs` configured, an alarm runs `reconcile` that often while any submission may still change (it is
-set by `configure` and `relay`, and by itself again after each run, and stops when everything is mined). With none configured there
-is no alarm. `reconcile` and the alarm take one lock, so a dropped transaction is rebroadcast once.
+set when a `relay` stores its row, before any more work, and at a restart that finds open rows and no alarm, and by itself again after each run, and stops when everything is mined). With none configured there
+is no alarm. `reconcile`, the alarm and `status` take one lock (`status` around its read and any terminal write), so a dropped transaction is rebroadcast once and a mined row is never
+reopened; the store itself refuses to move a row out of `included`, `reverted` or `lost`.
 
 **The store owns the nonces.** The moment `prepare` reserves a nonce, `relay` writes a row for it (the nonce, no bytes yet), before anything
 that can fail, and holds that row's reservation object in a map keyed by the row's id. Only that reservation is ever filled:

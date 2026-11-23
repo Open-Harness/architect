@@ -32,9 +32,10 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
     // configuration, no key, a node that does not answer) starts on its first call instead, which waits for the same step; a failure to take
     // a nonce back is a defect and is not caught here, so the Durable Object restarts rather than serve calls that could be handed a nonce
     // a row holds.
-    void ctx.blockConcurrencyWhile(() => this.store.config() === undefined || !env.RELAYER_KEY
+    // Then, whether or not that worked, an open row has an alarm coming: it is armed here if the last one is gone.
+    void ctx.blockConcurrencyWhile(() => this.store.config() === undefined
       ? Promise.resolve()
-      : Effect.runPromise(this.parts.pipe(Effect.asVoid, Effect.catch(() => Effect.void))));
+      : Effect.runPromise((env.RELAYER_KEY ? this.parts.pipe(Effect.asVoid, Effect.catch(() => Effect.void)) : Effect.void).pipe(Effect.andThen(this.arm))));
   }
 
   /** Run an Effect for a caller across Durable Object RPC: a failure arrives as an Error whose message holds no secret. */
@@ -101,8 +102,13 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
     return this.run(Clock.currentTimeMillis.pipe(Effect.map((now) => health(this.store, now))));
   }
 
+  /**
+   * Under the reconcile lock, around the read and any terminal write, so it cannot interleave with a rebroadcast of the same row. The lock order
+   * is `configure`: lock, then every swap permit; `relay`: one swap permit; `status`, `reconcile` and the alarm: the lock only. None waits on a
+   * lock it already holds, and `relay` never takes the lock.
+   */
   status(id: string) {
-    return this.run(this.parts.pipe(Effect.flatMap((parts) => status(parts, id))));
+    return this.run(Effect.suspend(() => this.lock.withPermit(this.parts.pipe(Effect.flatMap((parts) => status(parts, id))))));
   }
 
   reconcile() {

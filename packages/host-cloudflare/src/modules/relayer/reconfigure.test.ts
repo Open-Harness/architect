@@ -1,6 +1,6 @@
 // The relayer against a scripted JSON-RPC node, in workerd: `configure` with a new `rpcUrl` while a call is in flight builds one Live and sends
 // nothing twice at a nonce (round 5), and a failure to read the head before the broadcast never loses the call (the cut to rebroadcast).
-import { env, runInDurableObject } from "cloudflare:test";
+import { abortAllDurableObjects, env, runInDurableObject } from "cloudflare:test";
 import { Keys } from "@orthograph/chain-evm/device";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { makeStore } from "./internal/store.ts";
@@ -52,8 +52,8 @@ const stubNode = (overrides: Record<string, Answer> = {}) => {
   });
   return node;
 };
-const inRelayer = (name: string, body: (relayer: Relayer, store: ReturnType<typeof makeStore>) => Promise<void>) =>
-  runInDurableObject(env.RELAYER.getByName(name) as DurableObjectStub<Relayer>, (instance, state) => body(instance as Relayer, makeStore(state.storage.sql)));
+const inRelayer = (name: string, body: (relayer: Relayer, store: ReturnType<typeof makeStore>, state: DurableObjectState) => Promise<void>) =>
+  runInDurableObject(env.RELAYER.getByName(name) as DurableObjectStub<Relayer>, (instance, state) => body(instance as Relayer, makeStore(state.storage.sql), state));
 
 describe("the relayer against a node", () => {
   afterEach(() => { vi.unstubAllGlobals(); });
@@ -140,6 +140,64 @@ describe("the relayer against a node", () => {
       await expect(relayer.relay({ to: ADDRESS as `0x${string}`, data: "0x" })).rejects.toThrow(/^funds:/);
       expect(node.sends, "nothing reached the pool").toEqual([]);
       expect(store.open().map((r) => [r.nonce, r.fill, r.serialized])).toEqual([[0, true, "0x"]]);
+    });
+  }, 60_000);
+
+  it("an open row always has an alarm coming: set when its row is stored, before any more work, and set again at a restart that finds open rows and none", async () => {
+    const entered = deferred();
+    const gate = deferred();
+    let calls = 0;
+    stubNode({ eth_call: async () => { if (++calls === 2) { entered.open(); await gate.wait; } return "0x"; } });
+    await inRelayer("eip155:31341", async (relayer, store, state) => {
+      await relayer.configure({ rpcUrl: "http://rpc-a.test", chainId: 31337, pollIntervalMs: 60_000 });
+      expect(await state.storage.getAlarm(), "nothing is open, so no alarm yet").toBeNull();
+      const sending = relayer.relay({ to: ADDRESS as `0x${string}`, data: "0x" });
+      await entered.wait;
+      expect(store.open(), "the call has its row and has not finished").toHaveLength(1);
+      expect(await state.storage.getAlarm(), "an alarm is set already, though the call is still working and may never finish").not.toBeNull();
+      gate.open();
+      await sending;
+    });
+    // A restart that finds an open row and no alarm (the last one is gone) arms one.
+    await inRelayer("eip155:31342", async (_relayer, store, state) => {
+      store.keep({ rpcUrl: "http://rpc-a.test", chainId: 31337, pollIntervalMs: 60_000 });
+      store.add({ id: "left", nonce: 0, state: "submitting", hash: `0x${"0".repeat(64)}`, serialized: "0x", fromBlock: 0n, fill: false, note: "", createdAt: 0 });
+      await state.storage.deleteAlarm();
+    });
+    await abortAllDurableObjects();
+    await inRelayer("eip155:31342", async (_relayer, store, state) => {
+      expect(store.open().map((r) => r.id)).toEqual(["left"]);
+      expect(await state.storage.getAlarm(), "the new instance armed the alarm").not.toBeNull();
+    });
+  }, 60_000);
+
+  it("a status call while a rebroadcast is being sent, whose transaction is mined meanwhile, leaves the row terminal", async () => {
+    const entered = deferred();
+    const gate = deferred();
+    let gated = false;
+    const node = stubNode({
+      eth_sendRawTransaction: async (params) => {
+        if (gated) { entered.open(); await gate.wait; }
+        node.sends.push(String(params[0]));
+        node.evicted = false;
+        return hashOf(String(params[0]));
+      },
+    });
+    await inRelayer("eip155:31343", async (relayer, store) => {
+      await relayer.configure({ rpcUrl: "http://rpc-a.test", chainId: 31337 });
+      const sent = await relayer.relay({ to: ADDRESS as `0x${string}`, data: "0x" });
+      node.evicted = true;
+      gated = true;
+      const alarm = relayer.reconcile();
+      await entered.wait;
+      node.mined = true;
+      const reading = relayer.status(sent.id);
+      await pause(50);
+      gate.open();
+      await alarm;
+      expect((await reading).state).toBe("included");
+      expect(store.find(sent.id), "terminal, and not reopened by the rebroadcast that finished after it").toMatchObject({ state: "included", hash: sent.hash });
+      expect(store.open(), "so nothing is left for the alarm").toEqual([]);
     });
   }, 60_000);
 });

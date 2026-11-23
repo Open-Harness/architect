@@ -39,6 +39,8 @@ const SCHEMA = [
 ];
 
 const OPEN = "state IN ('submitting', 'submitted', 'dropped')";
+/** A row that is `included`, `reverted` or `lost` cannot change back: every write that could reopen it is guarded by the store, not by the order of the callers. */
+const LIVE = "state NOT IN ('included', 'reverted', 'lost')";
 const rowOf = (raw: Raw): Row => ({
   id: raw.id, nonce: raw.nonce, state: raw.state, hash: raw.hash as Hex, serialized: raw.serialized as Hex,
   fromBlock: BigInt(raw.from_block), fill: raw.fill === 1, note: raw.note, createdAt: raw.created_at,
@@ -60,18 +62,18 @@ export const makeStore = (sql: SqlStorage) => {
       sql.exec("INSERT INTO submissions (id, nonce, state, hash, serialized, from_block, fill, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         row.id, row.nonce, row.state, row.hash, row.serialized, row.fromBlock.toString(), row.fill ? 1 : 0, row.note, row.createdAt);
     },
-    setState: (id: string, state: Kept) => { sql.exec("UPDATE submissions SET state = ? WHERE id = ?", state, id); },
+    setState: (id: string, state: Kept) => { sql.exec(`UPDATE submissions SET state = ? WHERE id = ? AND ${LIVE}`, state, id); },
     /** The node accepted it: it is `submitted`, from this block. */
-    sent: (id: string, fromBlock: bigint) => { sql.exec("UPDATE submissions SET state = 'submitted', from_block = ?, note = '' WHERE id = ?", fromBlock.toString(), id); },
+    sent: (id: string, fromBlock: bigint) => { sql.exec(`UPDATE submissions SET state = 'submitted', from_block = ?, note = '' WHERE id = ? AND ${LIVE}`, fromBlock.toString(), id); },
     /** The call was signed: its bytes join the row that has held its nonce since `prepare`. */
-    bytes: (id: string, hash: Hex, serialized: Hex) => { sql.exec("UPDATE submissions SET hash = ?, serialized = ? WHERE id = ?", hash, serialized, id); },
+    bytes: (id: string, hash: Hex, serialized: Hex) => { sql.exec(`UPDATE submissions SET hash = ?, serialized = ? WHERE id = ? AND ${LIVE}`, hash, serialized, id); },
     /** The call can no longer be sent: the row keeps its nonce, without bytes, for the alarm to fill. */
-    toFill: (id: string, note: string) => { sql.exec("UPDATE submissions SET fill = 1, state = 'submitting', serialized = '0x', note = ? WHERE id = ?", note, id); },
+    toFill: (id: string, note: string) => { sql.exec(`UPDATE submissions SET fill = 1, state = 'submitting', serialized = '0x', note = ? WHERE id = ? AND ${LIVE}`, note, id); },
     /** The fill was signed and sent (or may have been): it is the row's transaction now. */
     filled: (id: string, hash: Hex, serialized: Hex, fromBlock: bigint) => {
-      sql.exec("UPDATE submissions SET state = 'submitted', fill = 1, hash = ?, serialized = ?, from_block = ?, note = '' WHERE id = ?", hash, serialized, fromBlock.toString(), id);
+      sql.exec(`UPDATE submissions SET state = 'submitted', fill = 1, hash = ?, serialized = ?, from_block = ?, note = '' WHERE id = ? AND ${LIVE}`, hash, serialized, fromBlock.toString(), id);
     },
-    note: (id: string, note: string) => { sql.exec("UPDATE submissions SET note = ? WHERE id = ?", note, id); },
+    note: (id: string, note: string) => { sql.exec(`UPDATE submissions SET note = ? WHERE id = ? AND ${LIVE}`, note, id); },
   };
 };
 
