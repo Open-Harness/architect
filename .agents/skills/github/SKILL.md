@@ -5,9 +5,9 @@ description: How Orthograph's work lives on GitHub (K33), for every agent in any
 
 # Orthograph on GitHub
 
-> **K41 (23 November 2026) changes three things here**, and Goal 18's slice 3 rewrites this skill to match. A gap is
+> **K42 (23 November 2026) changes three things here**, and Goal 18's slice 3 rewrites this skill to match. A gap is
 > **claimed**, not asked for: the `lane:goal-<n>` label on its issue and a "Touches" line naming its paths; an Ask is
-> only for two goals' overlapping claims. The board's truth becomes `design/scope.md`, one row per item with its stage
+> only for two goals' overlapping claims. The board's truth becomes the capability map in `docs/canon/status.md`, one row per item with its stage
 > (provisional, spiked, scaffoldable, building, built, extracted). Milestones become the releases (Preview, Beta,
 > 1.0), each goal's milestone closing as its goal stops. Until slice 3 lands, the sync below runs as it is.
 

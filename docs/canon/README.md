@@ -13,15 +13,16 @@ is built to the page. When the two disagree, one of them is wrong, and the chang
 - Written so far: layer 1, the shape ([`orthograph`](orthograph.mdx), [`blueprint`](blueprint.mdx), [`languages-and-hosts`](languages-and-hosts.mdx), [`plugins`](plugins.mdx), [`data`](data.mdx), [`doors`](doors.mdx)); from layer 2, [`things`](things.mdx), [`machines`](machines.mdx), [`operations`](operations.mdx) and [`handlers`](handlers.mdx); the samples [`stores`](stores.mdx) (a draft, rewritten in layer 4) and [`traces`](traces.mdx); and [`chains-and-wallets`](chains-and-wallets.mdx), the chain port and the wallet, written from the code (M1.39).
 
 The canon describes all of 1.0, built or not, for Aaron and for anyone who builds on Orthograph or helps build it.
-One example runs through it: Plugged In, [`examples/plugged-in`](../../examples/plugged-in), in the four stages 1.0 is
-built as (K9). `outline.md` says which stage teaches which page, and K37 records the switch. acme stays the fixture the
+One example runs through it: Plugged In, [`examples/plugged-in`](../../examples/plugged-in), in the four stages it is
+built in (K9); 1.0 itself is Capxul core on Orthograph (K42, K43). `outline.md` says which stage teaches which page, and K37 records the switch. acme stays the fixture the
 tests and gates run on.
 
 The map behind this plan, drawn for Aaron's review, is the canon board (a convenience: the link dies with the account,
 and `outline.md` and K37 are the record): https://claude.ai/code/artifact/1ec0cf04-7096-44f5-a182-7c42b55ee37b.
 
-`design/docs/index.html` stays the single source until the canon covers what it covers. Then the canon replaces it,
-and the decisions record the switch.
+The canon replaced the old one-page docs, `design/docs/index.html`, on 23 November 2026 (K41). That page is a record now,
+in `design/history/retired-2026-11-23/docs/`, and the canon's check took over its link check. What is built, what is
+left and the package map are on the status page, [`status.md`](status.md), which the check reads like this README.
 
 ## How a page earns its place
 

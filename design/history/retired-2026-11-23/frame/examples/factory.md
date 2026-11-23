@@ -12,7 +12,7 @@ from your blueprint, starts agents on the tasks, and waits for proof. It moves a
 an eval row, a verdict, a release. It stops and asks you for the few things that are yours: a promote, money, a
 credential, a question it can't answer. When production drifts or a measure gets worse, that becomes a new task.
 
-> **Partly superseded by [K11](../../decisions/K11-work-board.md) (18 November 2026).** Work items are stored and
+> **Partly superseded by [K11](../../../../decisions/K11-work-board.md) (18 November 2026).** Work items are stored and
 > arrive through an inbox; the derived tasks below are one source the manager files items from. Rule 2 holds for
 > agents; an authority in person may also close an item, recorded as an `accepted` verdict. Missions are K11's goals.
 

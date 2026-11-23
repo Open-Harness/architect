@@ -50,10 +50,10 @@ slices:
 ---
 # Goal 3: stage 1 of Plugged In, hill-climbed through its journeys
 
-> **Winding down under K41** (23 November 2026, `design/decisions/K41-goals-are-agents.md`, section 7). This goal
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
 > lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
-> slices become items on the board. Gaps go by K41's collision rule, not by Ask issues; where this brief and K41
-> disagree, K41 wins.
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
 
 **To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 3. Read `AGENTS.md` and
 `design/goals/03-stage-1-hill-climbed.md`, and run it." Nothing else is needed. Milestone `Goal 3: stage 1, hill-climbed`, label

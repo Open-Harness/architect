@@ -5,10 +5,11 @@
 ## What this repository is
 
 Orthograph, the framework (command `ortho`, packages `@orthograph/*`); what you write with it is the blueprint. The name
-was decided on 18 November 2026 (`design/decisions/K6-orthograph.md`), and `design/naming.md` maps every name. Its design is in `design/`: the frame
-(`frame/`), the milestones (`milestones.md`: M0 to M7, each slice with what it needs and the check that proves it), the
-decisions (`decisions/`), `packages.md`, `spikes.md` and `spikes/`, and the design docs in `design/docs/`. Layers 1 and
-2 are recorded in `build-plan.md`.
+was decided on 18 November 2026 (`design/decisions/K6-orthograph.md`), and `design/naming.md` maps every name. Its documentation is the canon,
+`docs/canon/`, and its status page, `docs/canon/status.md`, says what is built and maps the packages (K41). Its design is
+in `design/`: the milestones (`milestones.md`: M0 to M7, each slice with what it needs and the check that proves it), the
+decisions (`decisions/`), `spikes.md` and `spikes/`. The retired frame and the old docs page are records in
+`design/history/retired-2026-11-23/`. Layers 1 and 2 are recorded in `build-plan.md`.
 
 ## Who decides (Aaron, 16 November 2026)
 
@@ -31,17 +32,17 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 ## How work flows
 
 - **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). An
-  app goal builds what it needs in its own slice, unless a running goal has claimed it or its paths (K41); a milestone
+  app goal builds what it needs in its own slice, unless a running goal has claimed it or its paths (K42); a milestone
   is done when its gate passes on `main`. The running goals and the collision rule are in `design/goals/map.md`. Ideas
   for later go in `design/later.md`, never into code.
-- **Goals.** A goal is one long-running agent, today a thread that manages other threads, later a superagent (K41).
+- **Goals.** A goal is one long-running agent, today a thread that manages other threads, later a superagent (K42).
   The framework goal (Goal 18) always runs: it ranks what can run now, starts it, lands it and keeps the board. An app
   goal (Capxul, Goal 16; the superagent, Goal 17) builds one app and every gap that app finds. A goal exists while its
   agent runs. Its brief in `design/goals/` has one done check; it works one commit per slice, each ending green with
   its "done when" check. It loops generate, run, fix until the check passes, then moves on. Its work reaches `main` by
   pull requests, merged when CI is green and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
   parallel. A goal may run in any harness (Claude Code, Codex, OpenCode, Amp) and coordinates through the repository and
-  GitHub: its brief's "Where it stands", its claims on the board, and Snag issues (K41;
+  GitHub: its brief's "Where it stands", its claims on the board, and Snag issues (K42;
   `design/decisions/K33-github-native.md`; the `github` skill says how).
   A slice another goal needs lands early, by a branch cut at the commit that ends it and merged into `main` (into
   `goal/stage-1` until Goal 18 retires it) by a merge commit, so two goals never wait on each other's whole landing

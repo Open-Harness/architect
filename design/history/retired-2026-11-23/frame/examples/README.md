@@ -19,4 +19,4 @@ examples assume it.
 | [`private-membership.md`](private-membership.md) | proving without revealing: the Noir language, client proofs, an on-chain verifier |
 | [`python-sdk.md`](python-sdk.md) | a second language for a client, released to a package index |
 
-Every question these raised is collected in [`../questions.md`](../questions.md).
+Every question these raised is collected in [`../questions.md`](../../../../frame/questions.md).

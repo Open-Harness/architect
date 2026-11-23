@@ -5,7 +5,7 @@
   "id": "M0",
   "name": "Land and rename",
   "order": 0,
-  "ships": "The frame on main; @orthograph/* packages; the ortho command; the design docs rewritten around plugins and frame/story.md.",
+  "ships": "The frame on main (retired by K41); @orthograph/* packages; the ortho command; the design docs rewritten around plugins and design/history/retired-2026-11-23/frame/story.md.",
   "summary": "The code from layers 1 and 2 moved into this repository and was renamed Orthograph. Gate M0 has passed.",
   "workable": false
  },
@@ -15,7 +15,7 @@
   "id": "M1",
   "name": "The complete model and plugins",
   "order": 1,
-  "ships": "Plugin descriptors (Blueprint.feature, Blueprint.adapter, Blueprint.projection), mounts under blueprint/{features,adapters,projections}/, the mount verbs (choose, include, narrow, omit), needs, choices and settings, ortho add, adapter calls out as steps, stores (K3), the three trace fixes (O2), the projections re-homed as plugins, and the first real plugin, @orthograph/wallets, on @orthograph/chain-evm with Anvil in worlds (K7 F4) (frame/mounting.md, frame/projections.md).",
+  "ships": "Plugin descriptors (Blueprint.feature, Blueprint.adapter, Blueprint.projection), mounts under blueprint/{features,adapters,projections}/, the mount verbs (choose, include, narrow, omit), needs, choices and settings, ortho add, adapter calls out as steps, stores (K3), the three trace fixes (O2), the projections re-homed as plugins, and the first real plugin, @orthograph/wallets, on @orthograph/chain-evm with Anvil in worlds (K7 F4) (design/history/retired-2026-11-23/frame/mounting.md, design/history/retired-2026-11-23/frame/projections.md).",
   "summary": "A plugin, whether a feature, an adapter or a projection, is a package you mount with one file. The model holds everything you declared, every proof knows exactly what it judged, and the first real plugin (wallets) and the portal ship here.",
   "workable": false
  },
@@ -25,7 +25,7 @@
   "id": "M2",
   "name": "Auth and organizations (workable)",
   "order": 2,
-  "ships": "@orthograph/auth and @orthograph/organizations (K2); principals agent, service, system and Via; roles as rules, or declared with who and holds (K20); secrets by declaration (frame/secrets.md); ortho new; ortho new feature with its own CI.",
+  "ships": "@orthograph/auth and @orthograph/organizations (K2); principals agent, service, system and Via; roles as rules, or declared with who and holds (K20); secrets by declaration (design/history/retired-2026-11-23/frame/secrets.md); ortho new; ortho new feature with its own CI.",
   "summary": "The workable point. Sign-in and organisations stop being copied into each app and become two plugins, every kind of caller exists (people, agents acting for them, services), secrets come from the plugins that need them, and ortho new makes an app in one command. Its gate is also stage 1's: the links app.",
   "workable": true
  },
@@ -35,7 +35,7 @@
   "id": "M3",
   "name": "The factory, with people as workers",
   "order": 4,
-  "ships": "The factory plugin (frame/examples/factory.md); declared workflows on Effect's Cloudflare engine; the logbook adapter; the generated agent kit (frame/generators.md); ortho ci.",
+  "ships": "The factory plugin (design/history/retired-2026-11-23/frame/examples/factory.md); declared workflows on Effect's Cloudflare engine; the logbook adapter; the generated agent kit (design/history/retired-2026-11-23/frame/generators.md); ortho ci.",
   "summary": "The factory, with people as workers: durable workflows that wait for events and pick up where they left off, and the work board where work is filed, claimed and closed.",
   "workable": false
  },
@@ -45,7 +45,7 @@
   "id": "M4",
   "name": "Agents, proved with the factory",
   "order": 5,
-  "ships": "The agents feature (frame/examples/agents.md); model adapters with a local stand-in model; Blueprint.agent; the builder's code-mode tools and telemetry tools (frame/builder.md); the join, workers: agents.",
+  "ships": "The agents feature (design/history/retired-2026-11-23/frame/examples/agents.md); model adapters with a local stand-in model; Blueprint.agent; the builder's code-mode tools and telemetry tools (design/history/retired-2026-11-23/frame/builder.md); the join, workers: agents.",
   "summary": "Agents, proved with the factory: agent runs that survive restarts, doing the factory's work through the same operations people use, and the portal's chat.",
   "workable": false
  },
@@ -55,7 +55,7 @@
   "id": "M5",
   "name": "Reach out",
   "order": 6,
-  "ships": "frame/examples/payments.md and frame/examples/notifications.md; @orthograph/stripe, @orthograph/resend; views (K2 Q1); the general outbox; declared workflows in apps.",
+  "ships": "design/history/retired-2026-11-23/frame/examples/payments.md and design/history/retired-2026-11-23/frame/examples/notifications.md; @orthograph/stripe, @orthograph/resend; views (K2 Q1); the general outbox; declared workflows in apps.",
   "summary": "Reaching out: views rebuilt from events, an outbox that delivers reliably, and steps that wait for outside events.",
   "workable": false
  },
@@ -65,7 +65,7 @@
   "id": "M6",
   "name": "On chain",
   "order": 7,
-  "ships": "@orthograph/language-solidity, the relayer and follower, one budgets module per network, enabled by each organisation's Safe (S27, K25); frame/examples/allowance-on-chain.md.",
+  "ships": "@orthograph/language-solidity, the relayer and follower, one budgets module per network, enabled by each organisation's Safe (S27, K25); design/history/retired-2026-11-23/frame/examples/allowance-on-chain.md.",
   "summary": "On chain: contracts as the enforcer, chain events in the model and the portal, adapters from a contract's ABI. Wallets and the EVM adapter already moved up into M1.",
   "workable": false
  },

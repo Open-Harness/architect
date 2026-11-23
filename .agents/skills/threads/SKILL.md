@@ -10,6 +10,10 @@ session, an OpenCode session. Every thread is one **thread type**. Its title sta
 at a glance: `<emoji> <Type>: <subject>`, for example `🔨 Builder: L1.13 generators v0`. Where your
 agent has tags or labels, tag it `thread:<type>`, in your agent's form (the table at the end).
 
+> **K42 (23 November 2026):** a goal is one long-running agent; the 🎼 conductor is Goal 18, the framework goal. A gap is
+> claimed on the board (`lane:goal-<n>` and a "Touches" line), not asked for; an Ask is only for two goals' overlapping
+> claims. Where this skill and K42 disagree, K42 wins.
+
 A goal reports through its own files and GitHub, not to a chat (K32): its brief's "Where it stands", rewritten at
 every merge; Snag issues in its milestone; its milestone and `goal-<n>` label on its pull requests and issues; and an Ask issue
 in another goal's milestone when it needs that goal to act (K33, the `github` skill). A goal may run in any harness and never depends on reaching the conductor. A thread

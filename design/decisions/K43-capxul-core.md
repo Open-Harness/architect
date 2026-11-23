@@ -1,7 +1,7 @@
-# K42: Capxul core is free software in ERPNext's shapes; people pay for verification, bank accounts and incorporation
+# K43: Capxul core is free software in ERPNext's shapes; people pay for verification, bank accounts and incorporation
 
-**Decided 23 November 2026** with Aaron, by voice, in the same conversation as K41, and with it (#694). It
-says what "Capxul runs on Orthograph" means. K41 makes that the 1.0 release, and this record gives the Capxul goal
+**Decided 23 November 2026** with Aaron, by voice, in the same conversation as K42, and with it (#694). It
+says what "Capxul runs on Orthograph" means. K42 makes that the 1.0 release, and this record gives the Capxul goal
 (Goal 16) its shape.
 
 ## The problem
@@ -43,16 +43,16 @@ meetups, mixers and workshops, "a really undecided thing".
      the Bridge adapter.
    - **Capxul modules,** also free, each a plugin a running Capxul mounts when someone switches it on, starting with the
      CRM. Orthograph hasn't proved it can mount a plugin into an app that already holds data. Capxul pulls that
-     capability (K41).
+     capability (K42).
    - **Capxul's paid services,** hosted by Capxul and reached from any Capxul through an adapter unlocked by a key:
      KYC and KYB; bank accounts through Bridge, both opening them and keeping them open; and help with incorporation.
    - **The network:** undecided. It becomes a grill when Capxul reaches the CRM.
 3. **The order:** the books, HR, payroll, then the CRM. Bridge and the paid services come alongside the books, because
    money moving between an account and a bank goes through them. The first feature stays Goal 16's (`M7-capxul.md`,
-   section 4), read as the books' first slice: a sales invoice with a pay link, the payment that settles it, and the
+   section 4; its slice 2), read as the books' first slice: a sales invoice with a pay link, the payment that settles it, and the
    ledger lines it posts.
 4. **Where it is built:** in this repository, on `goal/capxul`. The app goes in `examples/capxul/` and its plugins in
-   `examples/capxul/plugins/` (K39's call 7 shape). Framework gaps are built there under K41's collision rule. It moves
+   `examples/capxul/plugins/` (K39's call 7 shape). Framework gaps are built there under K42's collision rule. It moves
    to Capxul's own repository, as K30's option A planned, once Orthograph is on npm and Capxul's staging run passes.
 5. **Licences:** ERPNext is under GPL version 3 and Frappe CRM under AGPL version 3 (Frappe's licence page,
    https://docs.frappe.io/legal/others/license-and-trademark). Frappe HRMS's licence is still to be read from its
@@ -80,13 +80,13 @@ meetups, mixers and workshops, "a really undecided thing".
 
 ## Supersedes
 
-Applied with K41:
+- `design/goals/16-capxul.md`: "Work out which of Capxul's parts Orthograph already has, which it needs, and which stay Capxul's own" → "Rebuild Capxul as one product on Orthograph"
+- `design/goals/16-capxul.md`: "It owns no package here. Every Orthograph gap the map finds is an Ask issue" → "Capxul owns every framework gap it finds"
 
-- `design/goals/16-capxul.md`: rewritten in this pull request (a live brief).
-- `M7-capxul.md` (on #487, not yet on `main`): "Frappe, ERPNext, HRMS, Frappe CRM, and the site service | books, HR,
-  CRM; the business site | **Capxul's own**" → "translated into Capxul core and modules (K42)"; "until then Frappe's
-  desk keeps them" → "until then, none: Capxul builds its own reports"; "It is built in `capxul-next`, Capxul's own
-  repository" → "It is built in this repository on `goal/capxul`, and moves out once Orthograph is on npm (K42)". These
-  are marked "Superseded by K42" in that record when #487 lands.
-- `design/scope.md`, section 5, item 4: "Answered by K30, section 2: after the beta, beside the stages, never gating
-  1.0" → "Capxul core is 1.0 (K41, K42)"
+## What else it touches
+
+- `M7-capxul.md`, on #487 and not yet on `main`, is a dated record. When it lands it gains "Superseded by K43, 23
+  November 2026" beside three things: Frappe, ERPNext, HRMS and Frappe CRM as "Capxul's own"; "Frappe's desk keeps
+  them"; and "It is built in `capxul-next`, Capxul's own repository".
+- `K30-the-model-and-the-map.md` and `K38-early-landing.md` gain "Superseded by K43" beside Capxul's repository and
+  ERPNext. `docs/canon/status.md`'s Capxul section gains a K43 note.

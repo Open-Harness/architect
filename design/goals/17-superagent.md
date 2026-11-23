@@ -35,6 +35,10 @@ slices:
 ---
 # Goal 17: the superagent
 
+> **An app goal under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`). A framework fix is claimed
+> on the board and lands in `main` as soon as it is green; Goal 18, the framework goal, does what the conductor did
+> here; the base moves to `main` with Goal 18's slice 1. Where this brief and K42 disagree, K42 wins.
+
 Branch `goal/superagent`, cut from `goal/stage-1`: an integration branch, where the app and the framework fixes it
 needs are built together and handed back whole. Written 22 November 2026 by a 📐 designer thread with Aaron, from
 DeepSeek's `dsh-superagent-prototype` (its `README.md` and `docs/000` to `008`), Pi Durable 1.5.0, the calls in
@@ -95,7 +99,7 @@ label: it is off the 1.0 path.
   `000-philosophy.md` to `008-cookbook.md`. Its domain (`001`), authorization (`002`), execution (`003`), prompts
   (`004`) and panel (`005`) are the behaviour the slices port; its architecture (`007`) is the one to *not* copy, since
   Orthograph and Pi replace its engine, store and effects queue. Its Feishu source becomes Slack (K39 call 12).
-- `design/frame/adapters.md` (an adapter's six parts, and `--from-openapi`), `design/decisions/M4-agents.md` (#469),
+- `design/history/retired-2026-11-23/frame/adapters.md` (an adapter's six parts, and `--from-openapi`), `design/decisions/M4-agents.md` (#469),
   K31 and K36 (pages and components), and the briefs of Goals 3, 10 and 11.
 
 ## The pieces
@@ -176,7 +180,7 @@ The rest is designed by its owner; where the owner hasn't built it when a slice 
 |---|---|
 | an adapter's `events`, `door` and `secrets`; `Blueprint.on`, `on:`, `idempotent: { by }` | Goal 11 (M5.03), Goal 3 (M2.04); `by` is M3.26 |
 | `Blueprint.role(T, { service })`, `Blueprint.system`, `Via.*` | Goal 3 (M2.03, `M2-auth.md`) |
-| `ortho new adapter --from-openapi`, the conformance harness | `design/frame/adapters.md` (M5.07), built here first |
+| `ortho new adapter --from-openapi`, the conformance harness | `design/history/retired-2026-11-23/frame/adapters.md` (M5.07), built here first |
 | the door's account and the `actor:` role form; `versions:`; an `Agent` thing, `agent.tell`, the `agent:` role form; the sandbox adapter; catch-up and object keys; `lend` | K40, fixes 1 to 6 |
 | `Source.from`, executor slots, pause, derived reads | this goal, slice 2 (`GOAL17-<slug>` records) |
 | `Superagent.declare` (a create at the first deploy), proposals a person approves | this goal, slice 5 |
@@ -562,7 +566,7 @@ the conductor merges each fix back.
 ## What it owns, and the seams it touches
 
 It owns the paths in the front matter. On its integration branch it also changes the framework where the gaps above
-need it, to K40's design or slice 2's (K39 call 6, an exception to the map's rule 1): every such change is listed in
+need it, to K40's design or slice 2's (K39 call 6, now every app goal's rule (K42)): every such change is listed in
 the slice's pull request, the owner hears through an Ask issue, and the conductor merges it back. It reads Goal 9's
 `Timers` for every wait and never changes it.
 
@@ -583,8 +587,8 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
   edits them.
 - **Merging.** Draft first, test locally, a 🔍 pass from a reviewer that wrote none of it, then ready; merge when CI is
   green and every thread is resolved. At most two ready pull requests in CI at once.
-- **Claims.** Since K41 this is an app goal like Capxul's. A framework fix made here is claimed on the board first
-  (`lane:goal-17` and a "Touches" line, K41, section 3), built here unless a running goal has it or its paths, and
+- **Claims.** Since K42 this is an app goal like Capxul's. A framework fix made here is claimed on the board first
+  (`lane:goal-17` and a "Touches" line, K42, section 3), built here unless a running goal has it or its paths, and
   landed in `main` as soon as it is green. An Ask issue is only for overlapping claims.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 17: the superagent` and the label `goal-17`;
   every comment an agent posts starts `[goal-17 · <role> · <harness> · <model>]` (the `github` skill).

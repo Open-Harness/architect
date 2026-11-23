@@ -36,7 +36,7 @@ conductor integrates; it is not the switchboard.
    - **A milestone per release** (K28): `Preview`, `Beta` and `1.0`. Every goal pull request carries its release's
      milestone, so the milestone page shows what each release still waits on. Superseded by K33, 21 November 2026: a
      milestone per goal, and the release as a `release:<name>` label.
-   - Superseded by K41, 23 November 2026: a gap goes by K41's collision rule; an ask is only for overlapping claims.
+   - Superseded by K42, 23 November 2026: a gap goes by K42's collision rule; an ask is only for overlapping claims.
      **A cross-goal ask is an issue** labelled with the goal that must act (superseded by K33, 21 November 2026: an
      Ask issue in the milestone of the goal that must act), naming the asker's goal and what done looks
      like, or a pull request into the owner's branch that only the owner's lead merges (a line in its snag log, a
