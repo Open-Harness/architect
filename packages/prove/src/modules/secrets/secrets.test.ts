@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect } from "effect";
@@ -39,5 +39,16 @@ describe("secrets in an environment", () => {
     for (const [env, name, value] of [["local", "NOPE", "v"], ["nowhere", "STRIPE_API_KEY", "v"], ["local", "NPM_TOKEN", "v"], ["local", "STRIPE_API_KEY", ""], ["local", "STRIPE_API_KEY", "a\nb"]] as const) {
       expect((await run(Secrets.set({ root: dir, env, name, value, model })))._tag, `${env} ${name}`).toBe("Failure");
     }
+  });
+
+  // Codex P2 on #690: `STRIPE_API_KEY=` in secrets.env counted as set, so promote passed with no credential.
+  it("a name with an empty value in secrets.env is not set, in the listing and for promote alike", async () => {
+    const dir = root();
+    mkdirSync(join(dir, ".ortho/environments/production"), { recursive: true });
+    writeFileSync(join(dir, ".ortho/environments/production/secrets.env"), "STRIPE_API_KEY=\nAUTH_SECRET=\n", { mode: 0o600 });
+    expect(await Effect.runPromise(Secrets.missing({ root: dir, target: "production", model }))).toEqual(["STRIPE_API_KEY"]);
+    const rows = await Effect.runPromise(Secrets.rows({ root: dir, env: "production", model }));
+    expect(rows.find((r) => r.name === "STRIPE_API_KEY")?.status).toBe("missing");
+    expect(rows.find((r) => r.name === "AUTH_SECRET")?.status).toMatch(/^missing/);
   });
 });
