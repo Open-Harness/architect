@@ -20,7 +20,10 @@ const save: Handler<Records | Store> = ({ base, variables, blocked }, { principa
     const store = yield* Store;
     const [latest] = (yield* store.list({ thing: Settings, where: {}, state: undefined, order: "newest", limit: 1, after: undefined })).items;
     const current = (latest?.["revision"] as bigint | undefined) ?? 0n;
-    if (base !== current) return yield* new StaleRevision({ current });
+    if (base !== current) {
+      yield* Effect.logInfo("the save was made from an older version").pipe(Effect.annotateLogs({ base: String(base), current: String(current) }));
+      return yield* new StaleRevision({ current });
+    }
     const settings = id as NonNullable<typeof id>;
     if (latest !== undefined) yield* records.update(Settings, String(latest["id"]), {});
     const at = yield* Clock.currentTimeMillis;
