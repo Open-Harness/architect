@@ -1,6 +1,7 @@
 # Written before slice 5. Red until slice 5 builds @orthograph/intake and the forms it uses (versions, actor, Source.from); due before slice 5 merges.
 superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > Policy has versions, keyed by superagent (K39: one per superagent; K40's example keyed it by repository)
-superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > an Account is unique by (superagent, source, id) (GOAL17-source-from; GOAL17-executor-slots, 'Two writers, one guard')
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > an Account is unique by (superagent, source, external): the outside id is `external`, `id` is the row's own (GOAL17-account-key)
+superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > an Account's row key is its own id, and the outside account's id is the text field `external` (GOAL17-account-key)
 superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > an Eval's activeAtStart and timeoutMs are uint(64) milliseconds on the world's clock (GOAL17-pause)
 superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > the Account's `listed` role is a role of the Account (K40 fix 1: the `actor:` form)
 superagent/10-the-intake-plugin.test.ts > 10 @orthograph/intake: what only this plugin's design says > the Source's failures count and its failAfter are whole numbers (GOAL17-derived-reads)
