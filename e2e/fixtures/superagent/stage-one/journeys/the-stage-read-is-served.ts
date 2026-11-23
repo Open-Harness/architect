@@ -3,7 +3,6 @@
 // `ReadNotServed`. These are the rows of the stage read a journey can reach with no ticket: an empty page, a ticket that is not
 // there, and who may read. The table's rows themselves are `20-the-stage-table`; their journeys wait on the harness.
 import { Blueprint, expect, refuses } from "orthograph";
-import { Ticket } from "@orthograph/tickets/blueprint/things/ticket/thing.ts";
 import stage from "@orthograph/tickets/blueprint/things/ticket/verbs/stage.ts";
 import waiting from "@orthograph/tickets/blueprint/things/ticket/verbs/waiting.ts";
 
@@ -17,9 +16,9 @@ export default Blueprint.journey("the stage read is served", {
       expect((a) => a.next).toBe(null),
     ),
     s.step(
-      "ada reads the stage of a ticket there is none of: it is not found",
+      "ada reads the stage of a ticket there is none of: refused, since a read never says what exists",
       s.ada.run(stage, { id: "tkt_nothere1" }),
-      refuses(Ticket.notFound, { id: "tkt_nothere1" }),
+      refuses(Blueprint.NotAllowed),
     ),
     s.step(
       "someone who is not signed in is refused the waiting list",

@@ -372,8 +372,8 @@ A trigger on a thread a ticket follows goes straight to that ticket's executor a
 gate passes waits on its thread; `eval.due` batches each thread's waiting triggers into an Eval and tells the main
 agent. The main agent reads the batch and its context, records one judgement per enabled rule (`eval.decide`) and
 routes it (`decision.route`). An accept makes the Ticket, its Mandate, its Subscriptions, its first Assignment and its
-first Input, in one commit, for an executor opened first; its acknowledgement follows as a reply. In `observe` an accept is recorded as "would accept" and starts
-nothing.
+first Input, in one commit, for an executor opened first; its acknowledgement follows as a reply. An explicit request makes its ticket in every mode;
+in `observe` an inferred accept is recorded as "would accept" and starts nothing.
 
 ### The two agents: K40 Agents, one durable conversation each
 

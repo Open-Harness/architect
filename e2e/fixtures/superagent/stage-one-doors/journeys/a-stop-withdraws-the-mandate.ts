@@ -14,7 +14,8 @@ export default Blueprint.journey("a stop withdraws the mandate", {
   starts: "a-trigger-was-received",
   steps: (s) => [
     s.step("the main agent is scripted to accept ann's ask", models.script({ for: { kind: "main" }, turns: [
-      { call: [{ tool: "decision.route", args: { items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." } ] })),
+      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." },
+      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "ignore" }] } }] }, { say: "Ignored." } ] })),
     s.step("the executor's first turn is held open", models.script({ for: { kind: "executor" }, turns: [{ say: "On it.", hold: "before-reply" }] })),
     s.step("the eval pass runs and the ticket is made", s.clock.advance("5 seconds")),
     s.step("the world settles", s.clock.settle()),
@@ -23,7 +24,7 @@ export default Blueprint.journey("a stop withdraws the mandate", {
     s.step("ada stops the ticket while its executor runs", s.ada.run(stop, { superagent: s.world.superagent, ticket: s.last.rows[0].subject }), emits(TicketStopped, { superagent: s.world.superagent })),
     s.step("the world settles", s.clock.settle()),
     s.step("the running assignment was interrupted, not cancelled", outbox.rows({ name: "AssignmentInterrupted", afterSeq: "journey" }), expect((a) => a.rows.length).toBe(1)),
-    s.step("the Agent was told to close it", outbox.rows({ to: "op:agent.close", afterSeq: "journey" }), expect((a) => a.rows.length).toBe(1)),
+    s.step("the Agent closed its turn", outbox.rows({ name: "AgentClosed", to: "op:assignment.turn-ended", afterSeq: "journey" }), expect((a) => a.rows.length).toBe(1)),
     s.step("the ticket's row, again", outbox.rows({ name: "TicketCreated", afterSeq: "journey" })),
     s.step("the ticket is ended", s.ada.run(stage, { id: s.last.rows[0].subject }), expect((a) => [a.stage, a.why, a.label]).toEqual(["ended", "none", "Ended"])),
     s.step("ann writes on its thread again, as a person", s.source.run(receive, {

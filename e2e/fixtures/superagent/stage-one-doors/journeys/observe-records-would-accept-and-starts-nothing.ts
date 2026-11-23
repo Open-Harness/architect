@@ -11,7 +11,7 @@ export default Blueprint.journey("observe records would accept and starts nothin
   starts: "an-inferred-candidate-waits",
   steps: (s) => [
     s.step("the main agent is scripted to accept the candidate", models.script({ for: { kind: "main" }, turns: [
-      { call: [{ tool: "decision.route", args: { items: [{ action: "accept", trigger: s.world.trigger, title: "fix the build on main" }] } }] },
+      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "accept", trigger: s.world.trigger, title: "fix the build on main" }] } }] },
       { say: "Recorded." },
     ] })),
     s.step("the eval pass runs and the main agent decides", s.clock.advance("5 seconds"), emits(DecisionRecorded, { superagent: s.world.superagent })),

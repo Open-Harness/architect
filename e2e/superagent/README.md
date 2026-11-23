@@ -245,7 +245,7 @@ empty handlers"; slice 7's is "slice 6 passes". `GOAL17-stage-one.md` makes the 
 1. **Where the journeys are.** `e2e/fixtures/superagent/stage-one/` (19) and `.../stage-one-doors/` (22), each with `journeys/` and `starting-worlds/`. `stage-one.ts`
    copies them into a copy of the app, generates, and runs `ortho prove --env local --report`. A builder never edits them. The app's own `journeys/` is the builder's.
 2. **Who calls.** `trigger.receive`, `account.seen` and `eval.due` are called as the system (their declared `allowed`), standing in for the source's caller and the clock;
-   `account.list`, `account.unlist`, `policy.*` and the reads as a signed-in person; `22` also casts the main agent's tool calls through the scripted model.
+   `account.list`, `account.unlist`, `policy.*` and the reads as a signed-in person; `22` also casts the main agent's tool calls through the scripted model. The shapes `22` keeps where no record gave one are call 11.
 3. **A superagent needs an Agent first** (call 4). `superagent.create` takes `main`, an Agent that exists, so a starting world calls `agent.open` (`kind: "main"`) as the system and
    passes its answer; `create` takes no `policy`, and the first `policy.save` is from base 0. Four of 19's six journeys start there, so they pass only once `agent.open` has a handler.
 4. **A connection is `{ source, config }`.** The world's one connection is `{ source: "slack", config: { me: { id: "UBOT", login: "agent" }, channels: ["C1"], directMessages: false } }`.
@@ -254,7 +254,7 @@ empty handlers"; slice 7's is "slice 6 passes". `GOAL17-stage-one.md` makes the 
 6. **The first policy is a save from base 0.** `allowed`, `bots` and `admission` are stored and read back as written; a `bots` entry is `"<source>:<external>"`, and `admission` is
    `{ <row>: { listed?, unlisted?, unnamed? } }` with a strength in each (call 8).
 7. **What `trigger.receive` answers.** `outcome` is `stored`, `duplicate` or `filtered`. Only `stored` records anything: the call's journal then holds `TriggerReceived`. `duplicate` and `filtered`
-   record nothing (`noEvents`), and an event the gate filtered, delivered again, is `filtered` again (it was never kept). A duplicate answers the first trigger's id.
+   record nothing (`noEvents`), and an event the gate filtered, delivered again, is `filtered` again (it was never kept). A duplicate answers the first trigger's id. A filtered trigger records nothing at all, not even the sender's Account (call 2); the answer then has no `trigger`.
 8. **`account.seen` of a known account** answers its id, records nothing and leaves its state.
 9. **`policy.history` rows** are `{ revision, at, by, from }` as numbers and a person id, newest first; a save's `from` is its `base`; a restore's `from` is not read.
 10. **`eval.due`'s `started`** counts the evals one pass made: one per thread with a waiting trigger and no eval running on it (call 5: `eval.due` calls `eval.start` and `eval.expire`).
@@ -276,6 +276,12 @@ empty handlers"; slice 7's is "slice 6 passes". `GOAL17-stage-one.md` makes the 
 
 Shapes the records do not give, which `22` guesses and says so in its journeys: `decision.route`'s items (`{ action, trigger, title }`); that `outbox.rows`' `subject` for `TicketCreated` is the ticket's id;
 that the `actor:` cast member is named by the world's listed account (`U1`). Slice 9 or the lead settles each when the door is built.
+
+## What proving 19 found
+
+`19` passes, all six journeys, on a throwaway app (`SUPERAGENT_APP`) with handlers and blueprint edits written only for the proof. It needed four framework fixes the blueprint cannot work round
+(`GOAL17-stage-one` call 12: facts for actor-lived things, nullable optional fields, booleans, `Unknown` as JSON), and corrected two steps that no correct implementation could pass
+(a read of a missing ticket answers `NotAllowed`, not not-found; `trigger.receive`'s answer has no `trigger` when it filters).
 
 ## Gaps in the records that are now closed
 

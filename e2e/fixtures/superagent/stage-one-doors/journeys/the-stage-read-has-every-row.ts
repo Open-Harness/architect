@@ -16,7 +16,7 @@ export default Blueprint.journey("the stage read has every row", {
   starts: "a-trigger-was-received",
   steps: (s) => [
     s.step("the main agent is scripted to accept ann's ask", models.script({ for: { kind: "main" }, turns: [
-      { call: [{ tool: "decision.route", args: { items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." } ] })),
+      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." } ] })),
     s.step("the seat sweep is held back", outbox.hold({ name: "AssignmentQueued", to: "op:superagent.fill" })),
     s.step("the eval pass runs and the ticket is made", s.clock.advance("5 seconds")),
     s.step("the world settles", s.clock.settle()),

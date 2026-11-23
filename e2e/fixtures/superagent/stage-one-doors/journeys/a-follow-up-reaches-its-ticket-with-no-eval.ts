@@ -10,7 +10,7 @@ export default Blueprint.journey("a follow-up reaches its ticket with no eval", 
   starts: "a-trigger-was-received",
   steps: (s) => [
     s.step("the main agent is scripted to accept ann's ask", models.script({ for: { kind: "main" }, turns: [
-      { call: [{ tool: "decision.route", args: { items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." } ] })),
+      { call: [{ tool: "decision.route", args: { eval: "$eval", items: [{ action: "accept", trigger: s.world.trigger, title: "fix the flaky login test" }] } }] }, { say: "Accepted." } ] })),
     s.step("the executor is scripted to answer each message once", models.script({ for: { kind: "executor" }, turns: [{ say: "On it." }, { say: "Added the case." }] })),
     s.step("the eval pass runs: one ticket is made", s.clock.advance("5 seconds"), emits(TicketCreated, { superagent: s.world.superagent })),
     s.step("the world settles", s.clock.settle()),
