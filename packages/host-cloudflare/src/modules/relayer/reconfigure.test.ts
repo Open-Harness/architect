@@ -200,4 +200,17 @@ describe("the relayer against a node", () => {
       expect(store.open(), "so nothing is left for the alarm").toEqual([]);
     });
   }, 60_000);
+
+  it("configure with a new pollIntervalMs while the node is down still leaves an alarm for the open rows", async () => {
+    let down = false;
+    stubNode({ eth_chainId: () => { if (down) throw new Error("the node is down"); return "0x7a69"; } });
+    await inRelayer("eip155:31344", async (relayer, store, state) => {
+      await relayer.configure({ rpcUrl: "http://rpc-a.test", chainId: 31337, pollIntervalMs: 60_000 });
+      store.add({ id: "open", nonce: 0, state: "submitting", hash: `0x${"0".repeat(64)}`, serialized: "0x", fromBlock: 0n, fill: true, note: "", createdAt: 0 });
+      await state.storage.deleteAlarm();
+      down = true;
+      await expect(relayer.configure({ rpcUrl: "http://rpc-b.test", chainId: 31337, pollIntervalMs: 30_000 }), "configure still fails when the node is down").rejects.toThrow();
+      expect(await state.storage.getAlarm(), "but the open row has an alarm coming").not.toBeNull();
+    });
+  }, 60_000);
 });

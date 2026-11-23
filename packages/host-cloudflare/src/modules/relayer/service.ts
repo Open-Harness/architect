@@ -88,8 +88,8 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
         });
       }
       if (changed) this.live = undefined;
-      const { live, arm } = yield* this.parts;
-      yield* arm;
+      // The alarm is asked for whether or not the new Live starts (the node may be down): an open row always has one coming. If it fails, `configure` fails.
+      const { live } = yield* this.parts.pipe(Effect.ensuring(this.arm));
       return { address: live.key.address as Hex };
     }))));
   }
