@@ -88,6 +88,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 23 November 2026, about 23:45 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
 every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
 agreed on #707.
+
 - **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`, with all ten required checks green.
   `goal/stage-1` is retired: it is locked read-only with its protections kept, and not deleted. `main` requires all ten
   checks, `e2e-stage1` among them (CI-main-stage1). Every goal bases on `main` and merges it in, never by rebasing
