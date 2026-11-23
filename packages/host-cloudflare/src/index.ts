@@ -12,4 +12,4 @@ export type { AuthInstance, AuthOptions, CastMember } from "#modules/auth/types.
 export { World, WorldEntry, toWorld } from "#modules/world/service.js";
 export type { Cast, EntryEnv, WorldEnv, WorldHost } from "#modules/world/types.js";
 export { WorldClock } from "#modules/clock/service.js";
-export type { ClockDeclaration, ClockEnv } from "#modules/clock/types.js";
+export type { ClockDeclaration, ClockEnv, ClockSource } from "#modules/clock/types.js";

@@ -9,7 +9,7 @@ const T = RealDate.parse("2027-01-10T09:00:00.000Z");
 const CLOCKS = JSON.stringify({ local: { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" } });
 
 /** A world namespace whose Durable Object only says the instant: what the entry looks up. */
-const keeping = (instant: number): DurableObjectNamespace => ({ idFromName: (name: string) => name, get: () => ({ now: () => Promise.resolve(instant) }) }) as unknown as DurableObjectNamespace;
+const keeping = (instant: number): DurableObjectNamespace => ({ idFromName: (name: string) => name, get: () => ({ source: () => Promise.resolve({ kind: "stepped", instant }) }) }) as unknown as DurableObjectNamespace;
 
 const stepped: EntryEnv = { WORLD: keeping(T), DB: env.DB, ORTHO_CLOCKS: CLOCKS, ORTHO_ENVIRONMENT: "local" };
 const real: EntryEnv = { WORLD: keeping(T), DB: env.DB };
@@ -19,7 +19,7 @@ const reading = () => new Response(String(Date.now()));
 describe("a real world", () => {
   it("runs each entry as it is: no lookup of the world, and Date is never replaced", async () => {
     let asked = 0;
-    const world = { idFromName: (name: string) => name, get: () => { asked += 1; return { now: () => Promise.resolve(T) }; } } as unknown as DurableObjectNamespace;
+    const world = { idFromName: (name: string) => name, get: () => { asked += 1; return { source: () => Promise.resolve({ kind: "stepped", instant: T }) }; } } as unknown as DurableObjectNamespace;
     const entry = WorldEntry.entry<EntryEnv>({ fetch: reading, scheduled: () => Promise.resolve(), queue: () => Promise.resolve() });
     const before = Date.now();
     const seen = Number(await (await entry.fetch!(new Request("http://app/x"), { ...real, WORLD: world }, undefined as never)).text());

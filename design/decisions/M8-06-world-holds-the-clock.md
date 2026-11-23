@@ -60,8 +60,16 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
 
 4. **The `Date` proxy is installed once and only for a world that is not real.** `WorldClock.within` installs it the first
    time it is asked, so a real world never replaces `Date` and pays nothing: no lookup, no patch. Each request runs inside
-   `AsyncLocalStorage.run(instant, …)`; outside any request the proxy reads real time. Never a global assignment: tested
+   `AsyncLocalStorage.run(source, …)`; outside any request the proxy reads real time. Never a global assignment: tested
    with 40 interleaved requests in two worlds a year apart, each across a real timer and a D1 query, with no leak.
+   **The store holds a clock source, not a number** (review of #615, Codex P2). A scaled world stores `{ kind: "scaled",
+   realAnchor, worldAnchor, speed }` and each `Date` read works out `worldAnchor + (real now − realAnchor) × speed`, from
+   the real clock captured before the proxy went in, synchronously and with no lookup, so a request that awaits I/O sees
+   the world move on (a workerd test awaits about 50 ms of real I/O and reads a second instant about 50 ms × speed later).
+   A stepped world stores `{ kind: "stepped", instant }`, a fixed instant per request, which is live enough because an
+   advance waits for quiet (M8.07's `NeverQuiet`), so the instant cannot change while a request is in flight. **M8.07
+   must make a durable sleep's wake rewrap its continuation with a fresh source** (`WorldEntry.within`), since a sleep is
+   exactly where a request outlives a move.
 5. **Effect's `Clock` is the world's because its default reads `Date`.** Effect 4.1.4's default `Clock` reads `Date.now()`
    at each call (`effect/dist/internal/effect.js:2935`), so under the proxy `Clock.currentTimeMillis` is the world's
    instant, live: a handler that reads it after a durable sleep reads the instant the sleep woke at (M8-checks call 12).

@@ -5,7 +5,7 @@ import { frontDoor, RESET_HEADER } from "./internal/front-door.ts";
 import { AuthD1 } from "#modules/auth/service.js";
 import type { AuthInstance } from "#modules/auth/types.js";
 import { WorldClock } from "#modules/clock/service.js";
-import type { ClockState } from "#modules/clock/types.js";
+import type { ClockSource, ClockState } from "#modules/clock/types.js";
 import { entry, within, withinNow } from "./internal/entry.ts";
 import { facts } from "./internal/facts.ts";
 import { end, live } from "./internal/leases.ts";
@@ -42,13 +42,19 @@ export class World extends DurableObject<WorldEnv> {
     return this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)));
   }
 
-  /** The world's instant now. Every other entry (the Worker, the actors) asks this over RPC, to run in this world's time. */
+  /** The world's instant now. */
   now(): number {
     return this.clock.now();
   }
 
+  /** What to read the world's time from. Every other entry (the Worker, the actors) asks this over RPC, once, to run in this world's time. */
+  source(): ClockSource | undefined {
+    return this.clock.source();
+  }
+
   private inTime<A>(f: () => Promise<A>): Promise<A> {
-    return this.clock.kind === "real" ? f() : WorldClock.within(this.clock.now(), f);
+    const source = this.clock.source();
+    return source === undefined ? f() : WorldClock.within(source, f);
   }
 
   /** Remember the world's id and wake at its expiry. */

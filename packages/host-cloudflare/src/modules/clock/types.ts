@@ -8,6 +8,14 @@ export type ClockDeclaration =
   | { readonly kind: "stepped"; readonly starts: string }
   | { readonly kind: "scaled"; readonly starts: string; readonly speed: number };
 
+/**
+ * What a request reads the world's time from (kept in the async-local store, so it is per request): a fixed instant for a
+ * stepped world, or the anchors of a scaled one, from which every read works out the instant now, with no lookup.
+ */
+export type ClockSource =
+  | { readonly kind: "stepped"; readonly instant: number }
+  | { readonly kind: "scaled"; readonly realAnchor: number; readonly worldAnchor: number; readonly speed: number };
+
 /** The Worker's bindings that say how this world tells time. The generated config sets `ORTHO_CLOCKS`, only when some environment is not real. */
 export interface ClockEnv {
   /** JSON: each environment's declared clock, by the environment's name. Absent: every world is real. */
@@ -32,6 +40,8 @@ export interface ClockState {
   readonly kind: ClockDeclaration["kind"];
   /** The world's instant now, in epoch milliseconds. Real: the wall clock. Stepped: where it stands. Scaled: it flows at its speed. */
   readonly now: () => number;
+  /** What a request runs inside to read this clock: `undefined` for a real clock, which is never patched. */
+  readonly source: () => ClockSource | undefined;
   /** Move by a span in words (`"1 month"`; months and years on the calendar, in UTC). A real clock refuses. */
   readonly advance: (span: string) => Moved;
   /** Move to an instant (ISO 8601). It never goes back. A real clock refuses. */
@@ -46,11 +56,12 @@ export interface WorldClockApi {
   /** `/_world/clock` (GET), `/_world/clock/advance` and `/_world/clock/move-to` (POST); nothing for any other request. */
   readonly door: (state: ClockState, request: Request) => Promise<Response> | undefined;
   /**
-   * Run `f` with `Date` and Effect's `Clock` reading `instant`, through every await, timer and `waitUntil` it starts. The
-   * `Date` proxy is installed once, here, the first time it is asked; the instant is per async context
-   * (`AsyncLocalStorage`), never a global assignment. Callers ask only for a world that is not real.
+   * Run `f` with `Date` and Effect's `Clock` reading `source`, through every await, timer and `waitUntil` it starts. The
+   * `Date` proxy is installed once, here, the first time it is asked; the source is per async context
+   * (`AsyncLocalStorage`), never a global assignment. A scaled source is read live: each read works out the instant now.
+   * Callers ask only for a world that is not real.
    */
-  readonly within: <A>(instant: number, f: () => A) => A;
+  readonly within: <A>(source: ClockSource, f: () => A) => A;
   /** The wall clock, for the world's own lifetime and for a scaled clock to anchor against. Never patched. */
   readonly wall: () => number;
 }

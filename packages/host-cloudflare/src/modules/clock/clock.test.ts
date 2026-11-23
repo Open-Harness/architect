@@ -59,7 +59,7 @@ describe("the instant a world keeps", () => {
       expect([door.status, (await door.json() as { now: string }).now]).toEqual([200, "2027-01-10T09:00:00.000Z"]);
       const over = await WorldClock.door(clock, new Request("http://world/_world/clock/advance", { method: "POST", body: JSON.stringify({ span: "300000 years" }) }))!;
       expect(over.status).toBe(400);
-      expect(WorldClock.within(clock.now(), () => new Date().getTime())).toBe(at);
+      expect(WorldClock.within({ kind: "stepped", instant: clock.now() }, () => new Date().getTime())).toBe(at);
     });
   });
 
@@ -77,6 +77,7 @@ describe("the instant a world keeps", () => {
       const a = clock.now();
       expect(a).toBeGreaterThanOrEqual(ms("2027-01-10T09:00:00.000Z"));
       expect(a).toBeLessThan(ms("2027-01-10T09:00:00.000Z") + 3_600_000);
+      expect(clock.source()).toMatchObject({ kind: "scaled", speed: 3600, worldAnchor: ms("2027-01-10T09:00:00.000Z") });
       expect(clock.advance("1 day")).toMatchObject({ ok: true });
       expect(clock.now() - ms("2027-01-11T09:00:00.000Z")).toBeLessThan(3_600_000);
     });
@@ -109,7 +110,7 @@ describe("the entry's lookup", () => {
   it("makes Date and Effect's Clock read the world's instant, through every await and timer, and never leaks between two worlds", async () => {
     const [a, b] = [ms("2027-01-10T09:00:00.000Z"), ms("2028-06-01T00:00:00.000Z")];
     const read = (instant: number) =>
-      WorldClock.within(instant, async () => {
+      WorldClock.within({ kind: "stepped", instant }, async () => {
         const seen = [Date.now(), new Date().getTime()];
         await new Promise<void>((resolve) => { setTimeout(resolve, 5); });
         await env.DB.prepare("SELECT 1").first();
@@ -127,8 +128,32 @@ describe("the entry's lookup", () => {
     expect(new Date(0) instanceof RealDate).toBe(true);
     expect(Date.parse("2027-01-10T09:00:00Z")).toBe(ms("2027-01-10T09:00:00.000Z"));
     class Derived extends Date { label() { return "derived"; } }
-    const inside = WorldClock.within(ms("2027-01-10T09:00:00.000Z"), () => new Derived());
+    const inside = WorldClock.within({ kind: "stepped", instant: ms("2027-01-10T09:00:00.000Z") }, () => new Derived());
     expect([inside.getTime(), inside.label(), inside instanceof Date]).toEqual([ms("2027-01-10T09:00:00.000Z"), "derived", true]);
-    expect(WorldClock.within(1, () => typeof Date())).toBe("string");
+    expect(WorldClock.within({ kind: "stepped", instant: 1 }, () => typeof Date())).toBe("string");
+  });
+
+  it("reads a scaled world live: a request that awaits real I/O sees the world move on at its speed, and a stepped one stands still", async () => {
+    const speed = 3600;
+    const start = ms("2027-01-10T09:00:00.000Z");
+    const realAnchor = WorldClock.wall();
+    const scaled = await WorldClock.within({ kind: "scaled", realAnchor, worldAnchor: start, speed }, async () => {
+      const first = Date.now();
+      // About 50 ms of real I/O: a timer and a D1 query.
+      await new Promise<void>((resolve) => { setTimeout(resolve, 50); });
+      await env.DB.prepare("SELECT 1").first();
+      const second = await Effect.runPromise(Clock.currentTimeMillis);
+      return { first, second, viaNew: new Date().getTime() };
+    });
+    expect(scaled.first - start).toBeLessThan(5 * speed);
+    const waited = WorldClock.wall() - realAnchor;
+    expect(scaled.second - scaled.first).toBeGreaterThanOrEqual(45 * speed);
+    expect(scaled.second - scaled.first).toBeLessThanOrEqual(waited * speed);
+    expect(scaled.viaNew).toBeGreaterThanOrEqual(scaled.second);
+    const fixed = await WorldClock.within({ kind: "stepped", instant: start }, async () => {
+      await new Promise<void>((resolve) => { setTimeout(resolve, 50); });
+      return Date.now();
+    });
+    expect(fixed).toBe(start);
   });
 });
