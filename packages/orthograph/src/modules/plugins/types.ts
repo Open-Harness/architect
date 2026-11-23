@@ -128,6 +128,8 @@ export interface AdapterDoor {
   };
   /** Where the event's name is, as the sender writes it (`issue_comment`); the adapter's name for it is the camel case (`issueComment`). */
   readonly event: { readonly header: string } | { readonly path: ReadonlyArray<string> };
+  /** Top-level parts of the body that say who delivered it, not what it says (GitHub's `installation`): left out when the event is judged, kept in what is stored. */
+  readonly envelope?: ReadonlyArray<string>;
   /** A signed request whose body has `field` equal to `is` is answered with the body's `answer` and written nowhere (Slack's url_verification). */
   readonly challenge?: { readonly field: string; readonly is: string; readonly answer: string };
 }

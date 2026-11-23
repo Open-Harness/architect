@@ -29,6 +29,10 @@ const taken = (door: Door, name: string, payload: unknown): Effect.Effect<boolea
         }).pipe(Effect.catch(() => Effect.succeed(true)));
       }).pipe(Effect.map((each) => each.some(Boolean)));
 
+/** The body as the event's schema judges it: without the parts that only say who delivered it. */
+const judged = (body: unknown, envelope: ReadonlyArray<string> | undefined): unknown =>
+  envelope === undefined || typeof body !== "object" || body === null ? body : Object.fromEntries(Object.entries(body).filter(([k]) => !envelope.includes(k)));
+
 const deliver = (door: Door, options: InboundOptions, request: Request): Effect.Effect<Response> =>
   Effect.gen(function* () {
     const rule = door.adapter.door;
@@ -45,7 +49,7 @@ const deliver = (door: Door, options: InboundOptions, request: Request): Effect.
     if (handshake !== undefined) return json({ challenge: handshake });
     const name = eventNameOf(rule.event, request.headers, parsed);
     const event = name === undefined || !door.events.includes(name) ? undefined : (door.adapter.events as Readonly<Record<string, AdapterEvent<unknown>>>)[name];
-    const decoded = event === undefined || name === undefined ? Option.none() : Schema.decodeUnknownOption(event.schema as unknown as Schema.Decoder<unknown>)(parsed);
+    const decoded = event === undefined || name === undefined ? Option.none() : Schema.decodeUnknownOption(event.schema as unknown as Schema.Decoder<unknown>)(judged(parsed, rule.envelope));
     // A type the mount leaves out, a type nobody knows, and an included event that does not decode are each acknowledged and written nowhere:
     // a 4xx would have the sender retry for days (M5-reach-out Q2.2).
     if (event === undefined || name === undefined || Option.isNone(decoded) || event.id === undefined) {
@@ -58,7 +62,7 @@ const deliver = (door: Door, options: InboundOptions, request: Request): Effect.
       return json({ ignored: true });
     }
     const id = `${door.mount}:${event.id(decoded.value)}`;
-    const settled = yield* accept(options.db, { id, trace: traceOf(request), mount: door.mount, event: name, fields: decoded.value, actor: event.actor?.(decoded.value) });
+    const settled = yield* accept(options.db, { id, trace: traceOf(request), mount: door.mount, event: name, fields: parsed, actor: event.actor?.(decoded.value) });
     yield* outcome(door.mount, settled);
     return json(settled === "accepted" ? { accepted: true } : { seen: true });
   }).pipe(Effect.withSpan(`in.${door.mount}`));

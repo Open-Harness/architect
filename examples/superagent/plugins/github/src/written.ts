@@ -45,4 +45,5 @@ export const door: AdapterDoor = {
   signing: webhookSigning,
   verify: { header: "x-hub-signature-256", prefix: "sha256=", signs: "body" },
   event: { header: "x-github-event" },
+  envelope: ["installation", "organization", "enterprise"],
 };
