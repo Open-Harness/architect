@@ -60,6 +60,9 @@ const roleOn = (role: Role, path: string | undefined, payloadFields: Fields, pay
   });
 
 const allows = (a: Allowed, payloadFields: Fields, payload: object, principal: Principal, own: Thing | undefined): Effect.Effect<boolean, never, Records> => {
+  // The keeper calls only what lists it, even an operation open to anyone; and only the keeper may call what lists it (M8-checks call 4).
+  if (a.kind === "keeper") return Effect.succeed(principal.kind === "keeper");
+  if (principal.kind === "keeper") return Effect.succeed(false);
   if (a.kind === "anyone") return Effect.succeed(true);
   if (principal.kind !== "person") return Effect.succeed(false);
   if (a.kind === "signed-in") return Effect.succeed(true);
@@ -69,6 +72,7 @@ const allows = (a: Allowed, payloadFields: Fields, payload: object, principal: P
 
 /** The role an `allowed` entry names, if it names one. */
 const roleOf = (a: Allowed): Role | undefined => (a.kind === "role" ? a : a.kind === "role-of" ? a.role : undefined);
+
 
 export const Access: AccessApi = {
   holds: ({ allowed, payloadFields, payload, principal, thing }) =>

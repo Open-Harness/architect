@@ -12,4 +12,5 @@ export const Roles: RolesApi = {
   },
   anyone: Object.freeze({ kind: "anyone" }),
   signedIn: Object.freeze({ kind: "signed-in" }),
+  keeper: Object.freeze({ kind: "keeper" }),
 };

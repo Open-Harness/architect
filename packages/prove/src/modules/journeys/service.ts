@@ -1,9 +1,10 @@
 import { Effect, Schema } from "effect";
-import type { Call, Operation, Principal, Read, StartingWorld, Thing } from "orthograph";
+import type { Call, ClockCall, Operation, Principal, Read, StartingWorld, Thing } from "orthograph";
 import { Blueprint } from "orthograph";
 import { Scripting } from "orthograph/server";
 import type { CallRecord, JourneyRun, JourneysApi, Project, StepResult } from "./types.ts";
 import { callDevice, onDevice } from "./internal/device.ts";
+import { keepersIn } from "./internal/keepers.ts";
 import { loadProject } from "./internal/load.ts";
 import { callOperation, castPeople, doorFacts, mayCall, signUpPeople, stateOf } from "./internal/world.ts";
 import { databaseFacts } from "./internal/database-facts.ts";
@@ -33,17 +34,25 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     // Each journey has its own people: the same name in two journeys is two people.
     const names = [...new Set([...Object.keys(journey.cast), ...lineage.flatMap((w) => Object.keys(w.cast))])];
     // Cast as anyone: not signed up, so the script can sign them up itself; everyone else is, for real.
+    // The keeper is no one to sign up: it is the system's own principal, and it is not built yet (M8.10).
+    const keepers = keepersIn(names, [journey.cast, ...lineage.map((w) => w.cast)]);
     const anyone = names.filter((n) => (journey.cast[n] as { readonly kind?: string } | undefined)?.kind === "anyone" && !lineage.some((w) => n in w.cast));
-    const wanted = [names.filter((n) => !anyone.includes(n)).map((n) => `j${index}.${n}`), anyone.map((n) => `j${index}.${n}`)] as const;
+    const wanted = [names.filter((n) => !anyone.includes(n) && !keepers.has(n)).map((n) => `j${index}.${n}`), anyone.map((n) => `j${index}.${n}`)] as const;
     const casting = yield* how === "world"
       ? castPeople(url, ...wanted).pipe(Effect.map((c) => ({ cast: c })))
       : signUpPeople(url, ...wanted).pipe(Effect.map((c) => ({ cast: c })), Effect.catch((problem: string) => Effect.succeed({ problem })));
     if ("problem" in casting) return done(`its people couldn't be made: ${casting.problem}`);
     const cast = casting.cast;
-    const people = Object.fromEntries(names.map((n) => [n, cast[`j${index}.${n}`]!]));
+    const people = Object.fromEntries(names.filter((n) => !keepers.has(n)).map((n) => [n, cast[`j${index}.${n}`]!]));
     // A world with a chain gives the journeys its keys and a payee as `s.world.chain` (K7 Q7); a starting world adds to it.
     const env: Record<string, unknown> = { cast: people, ...(device === undefined ? {} : { world: device.given }) };
     const facts = { facts: given ?? doorFacts(url), tableOf: tableOf(project) };
+
+    // Time is declared in the language (M8.09) and built later: a clock step or the keeper's call refuses, never pretends.
+    const unbuilt = (call: Call | ClockCall): string | undefined =>
+      call.kind === "clock-call" ? "time is not built yet: M8.07 (a step that moves the world's clock)"
+      : keepers.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)"
+      : undefined;
 
     const make = (step: string, call: Call, startingWorld = false) =>
       Effect.gen(function* () {
@@ -75,7 +84,9 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     for (const w of lineage) {
       const script = Scripting.script(Object.fromEntries(names.map((n) => [n, Blueprint.signedIn])));
       for (const call of w.makes(script)) {
-        const { record } = yield* make(`starting world ${w.name}`, call, true);
+        const why = unbuilt(call);
+        if (why !== undefined) return done(`starting world ${w.name}: ${why}`);
+        const { record } = yield* make(`starting world ${w.name}`, call as Call, true);
         if (record.status !== 200) return done(`starting world ${w.name}: ${record.operation} ${record.status === 500 ? "died" : `answered ${record.status}`}: ${show(record.body)}`);
       }
       const gives = Scripting.resolve(w.gives(script), env);
@@ -84,9 +95,12 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     }
 
     for (const step of journey.steps(Scripting.script(journey.cast))) {
-      const gone = project.omitted?.get(step.call.operation);
+      const why = unbuilt(step.call);
+      if (why !== undefined) return done(`"${step.title}": ${why}`);
+      const called = step.call as Call;
+      const gone = project.omitted?.get(called.operation);
       if (gone) { skipped.push({ step: step.title, ...gone }); continue; }
-      const { record, missing } = yield* make(step.title, step.call);
+      const { record, missing } = yield* make(step.title, called);
       const checked = yield* runChecks(step.checks, record, env, facts);
       steps.push({
         journey: journey.name, title: step.title, trace: record.trace, spans: checked.spans,

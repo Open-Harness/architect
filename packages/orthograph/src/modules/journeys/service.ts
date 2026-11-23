@@ -1,6 +1,8 @@
-import type { Assertion, Call, ChecksApi, JourneysApi, Script, Scripts } from "./types.ts";
+import type { Assertion, Call, ChecksApi, ClockCall, JourneysApi, Script, Scripts } from "./types.ts";
 import { isRef, pathOf, refTo, resolve } from "./internal/refs.ts";
 
+// The script's own words (`clock`, `world`, `last`, `step`) win over a cast member of the same name. The compiler refuses
+// such a cast before any script is made (`castClashes`), so nothing is hidden silently.
 const script = <C extends Record<string, unknown>>(cast: C): Script<any> => {
   const actors = Object.fromEntries(
     Object.keys(cast).map((name) => [
@@ -9,8 +11,8 @@ const script = <C extends Record<string, unknown>>(cast: C): Script<any> => {
         person: refTo(["cast", name, "person"]),
         email: refTo(["cast", name, "email"]),
         password: refTo(["cast", name, "password"]),
-        run: (operation: Call["operation"], payload: Call["payload"], options?: { readonly request?: string }): Call =>
-          Object.freeze({ kind: "call", actor: name, operation, payload, request: options?.request }),
+        run: (operation: Call["operation"], payload: Call["payload"], options?: { readonly request?: string; readonly due?: string }): Call =>
+          Object.freeze({ kind: "call", actor: name, operation, payload, request: options?.request, ...(options?.due === undefined ? {} : { due: options.due }) }),
       }),
     ]),
   );
@@ -18,7 +20,11 @@ const script = <C extends Record<string, unknown>>(cast: C): Script<any> => {
     ...actors,
     world: refTo(["world"]),
     last: refTo(["last"]),
-    step: (title: string, call: Call, ...checks: ReadonlyArray<Assertion>) => Object.freeze({ kind: "step" as const, title, call, checks }),
+    clock: Object.freeze({
+      advance: (span: string): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ advance: span }) }),
+      moveTo: (instant: string): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ moveTo: instant }) }),
+    }),
+    step: (title: string, call: Call | ClockCall,...checks: ReadonlyArray<Assertion>) => Object.freeze({ kind: "step" as const, title, call, checks }),
   }) as Script<any>;
 };
 

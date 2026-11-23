@@ -27,7 +27,7 @@ describe("journeys", () => {
   it("describes steps without running anything", () => {
     const steps = journey.steps(Scripting.script(journey.cast) as never);
     want(steps).toHaveLength(1);
-    want(steps[0]!.call.actor).toBe("ada");
+    want((steps[0]!.call as { readonly actor: string }).actor).toBe("ada");
     want(steps[0]!.checks.map((c) => c.kind)).toEqual(["emits", "is-in"]);
   });
 
