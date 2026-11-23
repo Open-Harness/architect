@@ -1,12 +1,10 @@
 // The runtime every generated adapter carries (json-schema, client, types) is this module's own source, copied in under the
-// Generated line, so a plugin imports only `orthograph` and `effect`. Reading it is this module's one piece of I/O.
-import { readFileSync } from "node:fs";
-
-const NAMES = ["types", "json-schema", "client"] as const;
+// Generated line, so a plugin imports only `orthograph` and `effect`. It is read from `runtime-sources.ts` (embed.ts says why).
+import { RUNTIME } from "./runtime-sources.ts";
 
 /** Each runtime file's path inside a plugin, and its source as it is here. */
 export const runtimeFiles = (): ReadonlyArray<{ readonly path: string; readonly source: string }> =>
-  NAMES.map((name) => ({ path: `src/runtime/${name}.ts`, source: readFileSync(new URL(`./runtime/${name}.ts`, import.meta.url), "utf8") }));
+  Object.entries(RUNTIME).map(([name, source]) => ({ path: `src/runtime/${name}.ts`, source }));
 
 export const packageJson = (name: string, title: string, version: string) =>
   `${JSON.stringify({

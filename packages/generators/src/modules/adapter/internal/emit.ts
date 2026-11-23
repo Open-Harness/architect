@@ -12,7 +12,7 @@ const byParts = (ops: ReadonlyArray<Op>) => [...ops].sort((a, b) => { const [x, 
 
 export const operationsFile = (ops: ReadonlyArray<Op>) => [
   `import type { Operation } from "../runtime/types.ts";`, "",
-  `export const operations = ${json(byParts(ops).map((o) => ({ name: o.parts, method: o.method, path: o.path, params: o.params, success: o.success })), "ReadonlyArray<Operation>")};`, "",
+  `export const operations = ${json(byParts(ops).map((o) => ({ name: o.parts, method: o.method, path: o.path, params: o.params, successes: o.successes })), "ReadonlyArray<Operation>")};`, "",
 ].join("\n");
 
 export const componentsFile = (components: Readonly<Record<string, Node>>) => [

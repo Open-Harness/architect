@@ -18,7 +18,7 @@ const generate: AdapterApi["generate"] = ({ name, spec }) =>
     if (clashes.length > 0) return yield* new AdapterRefused({ message: `a name is both a call and a group of calls, so the descriptor can't hold it: ${clashes.slice(0, 5).join(", ")}` });
     const [title, version] = [String(spec["info"]?.["title"] ?? name), String(spec["info"]?.["version"] ?? "0")];
     const events = eventsOf(d);
-    const components = componentsOf(d, [...ops.flatMap((o) => [...(o.success ? [o.success.schema] : []), ...o.params.map((p) => p.schema)]), ...events.flatMap((e) => e.payloads)]);
+    const components = componentsOf(d, [...ops.flatMap((o) => [...o.successes.flatMap((x) => (x.schema === null ? [] : [x.schema])), ...o.params.map((p) => p.schema)]), ...events.flatMap((e) => e.payloads)]);
     const head = generatedLine(title, version);
     const generated = (path: string, content: string): PluginFile => ({ path, content, how: "generated" });
     const files: ReadonlyArray<PluginFile> = [

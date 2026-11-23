@@ -11,14 +11,14 @@ export interface Param {
   readonly schema: JsonSchema;
 }
 
-/** One call: its name as groups (`["issues", "createComment"]`), its request, and the schema of its success answer. */
+/** One call: its name as groups (`["issues", "createComment"]`), its request, and the schema of each success answer it documents, by status (null: no body). */
 export interface Operation {
   readonly name: ReadonlyArray<string>;
   readonly method: "get" | "post" | "put" | "patch" | "delete";
   /** The path with its base path (Swagger's `basePath`) in front. */
   readonly path: string;
   readonly params: ReadonlyArray<Param>;
-  readonly success: { readonly status: number; readonly schema: JsonSchema } | null;
+  readonly successes: ReadonlyArray<{ readonly status: number; readonly schema: JsonSchema | null }>;
 }
 
 /** One event: the payloads its service sends, one schema per action it documents. */

@@ -51,8 +51,7 @@ builds M5.07 (`ortho new adapter --from-openapi`) on the integration branch, as 
 
 - Declared error classes per response; types of event payloads from the schemas (they decode to `unknown`).
 - The door's signature check, `catchUp` and `lend` (slices 10 and 11).
-- The generator reads its runtime from its own source folder at run time, so a published `dist` build of `@orthograph/generators`
-  would need `internal/runtime/*.ts` shipped beside it.
+- The generator carries its runtime as text (`internal/runtime-sources.ts`, written by `packages/generators/scripts/embed-runtime.ts`, kept in sync by a test), so a built package needs no source folder.
 - Swagger's and OpenAPI's non-JSON request bodies: a body is sent as JSON. Array and object query values are stringified (`String(value)`), not encoded by the spec's `style` and `explode`.
 - Events are generated GitHub-shaped only: from a webhook's `x-github.subcategory`. A description that lists webhooks another way gets no events from the generator; they are written by hand in `src/written.ts`.
 - A path parameter and a body field of one name (GitHub's `actions/update-org-variable` has `name` in both, PostHog's `update` has `id`) can't be one flat input: the generator keeps both, so the whole spec still generates, and the client refuses that call before sending, naming the field, rather than merging them; a `token` in the query or body is the client's bearer and never a field, but a `token` in the path is a field.

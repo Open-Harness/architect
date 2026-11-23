@@ -17,7 +17,8 @@ export interface Op {
   readonly method: "get" | "post" | "put" | "patch" | "delete";
   readonly path: string;
   readonly params: ReadonlyArray<Param>;
-  readonly success: { readonly status: number; readonly schema: Node } | null;
+  /** One per documented 2xx status; a null schema is a status with no body (204). */
+  readonly successes: ReadonlyArray<{ readonly status: number; readonly schema: Node | null }>;
 }
 export interface Event { readonly name: string; readonly payloads: ReadonlyArray<Node> }
 
@@ -65,7 +66,14 @@ const paramsOf = (d: Description, item: Node, op: Node): ReadonlyArray<Param> =>
     const { properties, required } = fieldsOf(d, body);
     for (const [name, schema] of Object.entries<Node>(properties)) found.push({ name, in: "body", required: required.includes(name), schema });
   }
-  return found.filter((p, i) => found.findIndex((q) => q.name === p.name && q.in === p.in) === i);
+  // an operation's own parameter overrides the path item's of the same name and place
+  const merged: Array<Param> = [];
+  for (const p of found) {
+    const at = merged.findIndex((q) => q.name === p.name && q.in === p.in);
+    if (at >= 0) merged[at] = p;
+    else merged.push(p);
+  }
+  return merged;
 };
 
 /** Every operation that has an `operationId`, in the description's order. */
@@ -77,11 +85,14 @@ export const operationsOf = (d: Description): ReadonlyArray<Op> => {
       const op = item[method] as Node | undefined;
       if (op === undefined || typeof op["operationId"] !== "string") continue;
       const statuses = Object.keys(op["responses"] ?? {}).map(Number).filter((s) => s >= 200 && s < 300).sort((a, b) => a - b);
-      const response = statuses[0] === undefined ? undefined : deref(d, op["responses"][String(statuses[0])]);
-      const schema = response === undefined ? undefined : d.swagger ? response["schema"] : response["content"]?.["application/json"]?.["schema"];
+      const successes = statuses.map((status) => {
+        const response = deref(d, op["responses"][String(status)]);
+        const schema: Node | undefined = d.swagger ? response["schema"] : response["content"]?.["application/json"]?.["schema"];
+        return { status, schema: schema ?? null };
+      });
       found.push({
         id: op["operationId"], parts: nameParts(op["operationId"]), method, path: base + path, params: paramsOf(d, item, op),
-        success: statuses[0] === undefined || schema === undefined ? null : { status: statuses[0], schema },
+        successes,
       });
     }
   }

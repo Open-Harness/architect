@@ -77,9 +77,12 @@ const call = (components: Components, op: Operation, options: ClientOptions, inp
     const body = json._tag === "Some" ? json.value : text;
     if (response.status >= 400) return yield* new ApiFailure({ status: response.status, body });
     if (isRecord(body) && body["ok"] === false && typeof body["error"] === "string") return yield* new ApiFailure({ status: response.status, code: body["error"], body });
-    if (op.success === null) return json._tag === "Some" ? json.value : undefined;
+    // each documented success status has its own schema; a status with none (204) takes an empty body
+    const documented = op.successes.find((s) => s.status === response.status);
+    if (op.successes.length > 0 && documented === undefined) return yield* new AnswerRefused({ call: name, problems: [`${name}: status ${response.status} is not one of ${op.successes.map((s) => s.status).join(", ")}`] });
+    if (documented === undefined || documented.schema === null) return json._tag === "Some" ? json.value : undefined;
     if (json._tag === "None") return yield* new AnswerRefused({ call: name, problems: [`${name}: the answer is not JSON`] });
-    const misfit = problems(components, op.success.schema, json.value);
+    const misfit = problems(components, documented.schema, json.value);
     return misfit.length > 0 ? yield* new AnswerRefused({ call: name, problems: misfit }) : json.value;
   });
 };

@@ -1,9 +1,12 @@
 // The generator on a small description: the names, the files, the refusals, and the client it makes, run against a probe.
+import { spawnSync } from "node:child_process";
+import { readFileSync, rmSync } from "node:fs";
 import { Effect } from "effect";
 import { createServer } from "node:http";
 import { describe, expect, it } from "vitest";
 import { Adapter } from "./service.ts";
 import { camel, nameParts } from "./internal/names.ts";
+import { embeddedText, RUNTIME_NAMES } from "./internal/embed.ts";
 
 const spec = {
   openapi: "3.1.0", info: { title: "Widgets", version: "2.0.0" },
@@ -63,7 +66,7 @@ describe("what the generator keeps and refuses", () => {
     const spec = one("a/b", "/a/{id}", [{ name: "id", in: "path", required: true, schema: { type: "string" } }], { requestBody: { content: { "application/json": { schema: { type: "object", properties: { id: { type: "string" } } } } } } });
     expect(files(spec).find((f) => f.path === "src/spec/operations.ts")!.content).toContain('\\"in\\":\\"body\\"');
     const { makeClient } = await import("./internal/runtime/client.ts");
-    const clash = makeClient([{ name: ["a", "b"], method: "post", path: "/a/{id}", params: [{ name: "id", in: "path", required: true, schema: {} }, { name: "id", in: "body", required: false, schema: {} }], success: null }], {}, { baseUrl: "http://127.0.0.1:1" });
+    const clash = makeClient([{ name: ["a", "b"], method: "post", path: "/a/{id}", params: [{ name: "id", in: "path", required: true, schema: {} }, { name: "id", in: "body", required: false, schema: {} }], successes: [] }], {}, { baseUrl: "http://127.0.0.1:1" });
     await expect((clash.calls["a"] as Record<string, (i: unknown) => Promise<unknown>>)["b"]!({ id: "x" })).rejects.toMatchObject({ _tag: "InputRefused", problems: [expect.stringMatching(/id is both a path field and a body field/)] });
   });
 
@@ -91,7 +94,7 @@ describe("the client a plugin carries", () => {
     const seen: Array<string> = [];
     const server = createServer((req, res) => { seen.push(String(req.url)); res.writeHead(200, { "content-type": "application/json" }); res.end("{}"); });
     await new Promise<void>((ready) => server.listen(0, "127.0.0.1", ready));
-    const calls = makeClient([{ name: ["constructor", "toString"], method: "get", path: "/a/{x-y}", params: [{ name: "x-y", in: "path", required: true, schema: { type: "string" } }], success: null }], {}, { baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}` }).calls;
+    const calls = makeClient([{ name: ["constructor", "toString"], method: "get", path: "/a/{x-y}", params: [{ name: "x-y", in: "path", required: true, schema: { type: "string" } }], successes: [] }], {}, { baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}` }).calls;
     await (calls["constructor"] as Record<string, (i: unknown) => Promise<unknown>>)["toString"]!({ "x-y": "q" });
     expect(seen).toEqual(["/a/q"]);
     server.closeAllConnections();
@@ -110,7 +113,7 @@ describe("the client a plugin carries", () => {
     });
     await new Promise<void>((ready) => server.listen(0, "127.0.0.1", ready));
     const port = (server.address() as { port: number }).port;
-    const operations = [{ name: ["widgets", "getOne"], method: "get" as const, path: "/widgets/{id}", params: [{ name: "id", in: "path" as const, required: true, schema: { type: "string", pattern: "^w-\\d+$" } }], success: { status: 200, schema: { $ref: "#/components/schemas/widget" } } }];
+    const operations = [{ name: ["widgets", "getOne"], method: "get" as const, path: "/widgets/{id}", params: [{ name: "id", in: "path" as const, required: true, schema: { type: "string", pattern: "^w-\\d+$" } }], successes: [{ status: 200, schema: { $ref: "#/components/schemas/widget" } }] }];
     const calls = makeClient(operations, { "#/components/schemas/widget": spec.components.schemas.widget }, { baseUrl: `http://127.0.0.1:${port}`, token: "t" }).calls;
     const get = (calls["widgets"] as Record<string, (i?: unknown) => Promise<unknown>>)["getOne"]!;
     expect(await get({ id: "w-1" })).toEqual({ id: "w-1" });
@@ -120,6 +123,59 @@ describe("the client a plugin carries", () => {
     await expect(get({ id: "w-2" })).rejects.toMatchObject({ _tag: "AnswerRefused" });
     await expect(get({ id: "w-3" })).rejects.toMatchObject({ _tag: "ApiFailure", status: 404 });
     expect(seen).toHaveLength(3);
+    server.closeAllConnections();
+    server.close();
+  });
+});
+
+const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
+const dataOf = (spec: unknown) => JSON.parse(JSON.parse(/JSON\.parse\((".*")\) as/.exec(files(spec).find((f) => f.path === "src/spec/operations.ts")!.content)![1]!) as string) as ReadonlyArray<{ params: ReadonlyArray<{ name: string; in: string; schema: { maximum?: number } }>; successes: ReadonlyArray<{ status: number; schema: unknown }> }>;
+
+describe("the runtime a plugin carries", () => {
+  it("is embedded as text that is the runtime's own source, so a built package needs no source folder", () => {
+    const sources = Object.fromEntries(RUNTIME_NAMES.map((n) => [n, read(`./internal/runtime/${n}.ts`)])) as Record<(typeof RUNTIME_NAMES)[number], string>;
+    expect(read("./internal/runtime-sources.ts"), "run: node packages/generators/scripts/embed-runtime.ts").toBe(embeddedText(sources));
+    expect(read("./internal/templates.ts")).not.toMatch(/node:fs|readFileSync/);
+  });
+
+  it("generates from the built output, where no runtime/*.ts is shipped", () => {
+    const out = new URL("../../../tmp/adapter-dist/", import.meta.url).pathname;
+    rmSync(out, { recursive: true, force: true });
+    const root = new URL("../../", import.meta.url).pathname;
+    const built = spawnSync("../../node_modules/.bin/tsc", ["--ignoreConfig", "--outDir", out, "--rootDir", root, "--module", "nodenext", "--moduleResolution", "nodenext", "--target", "es2024", "--rewriteRelativeImportExtensions", "--skipLibCheck", "--types", "node", `${root}modules/adapter/service.ts`], { cwd: new URL("../../../", import.meta.url).pathname, encoding: "utf8" });
+    expect(built.status, built.stdout + built.stderr).toBe(0);
+    const ran = spawnSync(process.execPath, ["--input-type=module", "-e", `import { Effect } from "effect"; import { Adapter } from ${JSON.stringify(`${out}modules/adapter/service.js`)};
+      const r = await Effect.runPromise(Adapter.generate({ name: "w", spec: ${JSON.stringify(spec)} })); process.stdout.write(String(r.files.filter((f) => f.path.startsWith("src/runtime/")).length));`], { cwd: new URL("../../../", import.meta.url).pathname, encoding: "utf8" });
+    rmSync(out, { recursive: true, force: true });
+    expect(ran.stdout.trim(), ran.stderr).toBe("3");
+  });
+});
+
+describe("what a description says of its parameters and answers", () => {
+  const limit = (maximum: number) => ({ name: "limit", in: "query", schema: { type: "integer", maximum } });
+  it("an operation's parameter overrides the path item's of the same name and place", () => {
+    const spec = { openapi: "3.1.0", info: { title: "T", version: "1" }, paths: { "/x": { parameters: [limit(10)], get: { operationId: "list", parameters: [limit(100)], responses: { "200": { description: "ok" } } } } } };
+    expect(dataOf(spec)[0]!.params.map((p) => [p.name, p.schema.maximum])).toEqual([["limit", 100]]);
+  });
+
+  it("keeps a schema for each documented 2xx status, none for one with no body", () => {
+    const json = (type: string) => ({ content: { "application/json": { schema: { type } } } });
+    const spec = { openapi: "3.1.0", info: { title: "T", version: "1" }, paths: { "/x": { post: { operationId: "make", responses: { "200": json("object"), "201": json("array"), "204": { description: "none" } } } } } };
+    expect(dataOf(spec)[0]!.successes).toEqual([{ status: 200, schema: { type: "object" } }, { status: 201, schema: { type: "array" } }, { status: 204, schema: null }]);
+  });
+
+  it("the client chooses by the answer's status: a 204 takes an empty body, and 200 and 201 are judged by their own schemas", async () => {
+    const { makeClient } = await import("./internal/runtime/client.ts");
+    const answers: Array<{ status: number; body: string }> = [{ status: 204, body: "" }, { status: 200, body: "{}" }, { status: 201, body: "[]" }, { status: 201, body: "{}" }, { status: 202, body: "{}" }];
+    const server = createServer((_, res) => { const a = answers.shift()!; res.writeHead(a.status, { "content-type": "application/json" }); res.end(a.body); });
+    await new Promise<void>((ready) => server.listen(0, "127.0.0.1", ready));
+    const op = { name: ["make"], method: "post" as const, path: "/x", params: [], successes: [{ status: 200, schema: { type: "object" } }, { status: 201, schema: { type: "array" } }, { status: 204, schema: null }] };
+    const make = makeClient([op], {}, { baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}` }).calls["make"] as (i: unknown) => Promise<unknown>;
+    expect(await make({})).toBeUndefined();
+    expect(await make({})).toEqual({});
+    expect(await make({})).toEqual([]);
+    await expect(make({}), "201 is an array, not an object").rejects.toMatchObject({ _tag: "AnswerRefused" });
+    await expect(make({}), "202 is not documented").rejects.toMatchObject({ _tag: "AnswerRefused" });
     server.closeAllConnections();
     server.close();
   });
