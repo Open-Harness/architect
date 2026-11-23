@@ -19,6 +19,8 @@ export interface MountModel {
   readonly needs?: ReadonlyArray<string>;
   /** An adapter's calls this mount includes, by the adapter's name for each: the only ones an operation may call. */
   readonly calls?: ReadonlyArray<string>;
+  /** An adapter's events this mount includes, by the adapter's name for each: the only ones its door accepts. */
+  readonly events?: ReadonlyArray<string>;
   /** An adapter that ships a `layer.js`: the services its calls need, provided to its calls and to nothing else. */
   readonly layer?: true;
   /** What stands in for an adapter's outside system in a world, as the adapter declared it. */
