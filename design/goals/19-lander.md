@@ -7,9 +7,10 @@ branch: main
 base: main
 status: running        # ready | running | landing | done | parked
 lead:
-  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  harness: amp         # claude | codex | opencode | amp, set by the lead when it starts
   model: claude-opus-5-5 # the model id it runs on
   since: 2026-11-23    # the date it started
+  thread: https://ampcode.com/threads/T-01a209a1-9868-7586-bf92-78d1f6c34e13 # the Amp loop, a round every 30 minutes
 done_check: never done; it runs while the apps are being built (K42, section 8)
 owns:
   - main
@@ -84,15 +85,23 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-23 November 2026, the lead's first round (Claude Code, Opus 5.5).
+23 November 2026, 18:30 UTC. The lead is the Amp lander loop, which runs a round every 30 minutes for Aaron (the
+thread in `lead:`). A second lead in Claude Code started this goal and owns #707, which it is working. The Amp lead's
+comment on #707 (18:22) gives each pull request one owner. If #707 goes a round with no activity from its lead, the Amp
+lead takes it over and says so there. The Claude Code lead hasn't replied yet.
 
-- **Slice 1, `goal/stage-1` into `main`: under way.** The lander took over #707 from Goal 3. It brings `goal/stage-1`
-  at `f89ce822` to `main`; Goal 3's 🔍 of it is running. `goal/stage-1` has moved on since (#679 and #701, Goal 4's
-  follower), and #690, secrets by declaration, is still to land there. When #690 is in, the lander merges
-  `goal/stage-1` into #707, has a 🔍 read what is new, marks it ready and lands it.
-- **Protections.** `main` required nine of `goal/stage-1`'s ten checks; `e2e-stage1`, Plugged In's journeys, ran only
-  for `goal/stage-1`. CI-main-stage1 runs it on `main` too, and the lander makes it required once it is green there.
-  Threads, admins, no force push and no deletion already match.
-- **Not blocking slice 1:** #696 (Goal 9, timers) and #697 (Goal 6, the map) are open into `goal/stage-1`. When it
-  retires they are retargeted to `main`.
-- **Next:** slice 2 (the parked goals' finished work), then the landing loop for the superagent and Capxul.
+- **Slice 1, `goal/stage-1` into `main`: under way.** #690 (secrets by declaration) and #697 (the map) are in
+  `goal/stage-1`, at f6462537. #707 (owned by the Claude Code lead) has merged both and `main` at 7f87cc28, and is
+  ready, in CI.
+- **`e2e-portal-next` would turn `main` red.** It is green on `main` and red on `goal/stage-1` since #697. The parity
+  self-test expects `ERROR:` where GitHub Actions prints `::error::`, and 39 monitor checks now pass but are still on
+  the parity list. The fix is #754 into `goal/stage-1` (the lander's, as a draft, 🔍 running). Once it merges,
+  `goal/stage-1` is merged into #707 again. The job isn't required.
+- **Protections.** `e2e-stage1` runs its steps and is green on `main`'s push runs (7f87cc28, 727bc47a). Adding it to
+  `main`'s required checks waits on Aaron's written yes (CI-main-stage1 has the command; the token gets 403).
+- **#696 (Goal 9, timers) may still make it.** Goal 9 pushed 56d17af3 at 18:27 and resolved both Codex P1s. Its 🔍
+  passed at 18:28, and Codex was clean at 18:30. Its CI is pending, and `e2e-m0` was last red at ce83e6d4. If it merges
+  into `goal/stage-1` before #707 lands, it comes along. If not, it is retargeted to `main` once `goal/stage-1` retires.
+  #737 (Goal 3 parks) is open into `goal/stage-1`.
+- **Next:** land #754, then #707. Ask Aaron to retire `goal/stage-1`, then tell every goal to base on `main`. Slice 2
+  starts with `goal/time`.
