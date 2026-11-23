@@ -290,8 +290,8 @@ jobs:
   # e2e-m1, e2e-stage1) pass without running their steps, since a required job never skips (CI-drafts-race.md), and
   # prove-tests, the M1 shards, e2e-m2 and e2e-m8 skip (design/decisions/CI-docs-fast-path.md, CI-speed.md): main is
   # strict, so every pull request reruns all of CI each time another lands, and a docs change cannot move them.
-  # Docs-only is every changed path under design/, or a *.md file outside packages/, e2e/ and examples/
-  # (tools/ci/docs-only.sh). A push, or a pull request with any other change, runs everything. check-static, `e2e-m0` and
+  # Docs-only is every changed path under design/ (but not design/grid/), a *.md file outside packages/, e2e/ and examples/,
+  # or a path no gated suite reads: spikes/, .agents/, .claude/, issue templates (tools/ci/docs-only.sh, CI-docs-inert.md). A push, or a pull request with any other change, runs everything. check-static, `e2e-m0` and
   # portal-ui always run, since they lint the docs, build the design docs and run the supersedes guard.
   # Never workflow-level `paths-ignore`: a workflow that never starts leaves its required checks pending forever.
   changes:

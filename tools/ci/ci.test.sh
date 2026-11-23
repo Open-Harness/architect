@@ -189,6 +189,28 @@ r=$(repo); mkdir -p "$r/design"; echo d > "$r/design/heroui-pro-notes.md"; commi
 expect "docs-only: a doc named for HeroUI Pro is not docs (check 15 scans paths)" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/design"; name=HEROUI_AUTH; echo "${name}_TOKEN=$(printf 'a%.0s' {1..16})" > "$r/design/setup.md"; commit "$r"
 expect "docs-only: a doc that adds a line naming the token is not docs (check 15 scans text)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design/grid"; echo d > "$r/design/grid/grid.json"; commit "$r"
+expect "docs-only: design/grid is read by e2e/grid, so not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design/goals"; echo d > "$r/design/goals/g.json"; commit "$r"
+expect "docs-only: the rest of design/ is still docs" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x" "$r/.agents/skills/kanban/data" "$r/.claude/agents" "$r/.github/ISSUE_TEMPLATE"; echo d > "$r/spikes/x/a.ts"; echo d > "$r/.agents/skills/kanban/data/tasks.json"; echo d > "$r/.claude/settings.json"; echo d > "$r/.github/ISSUE_TEMPLATE/1.yml"; echo d > "$r/skills-lock.json"; commit "$r"
+expect "docs-only: spikes, agent skills, claude config and issue templates are read by no gated suite" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; echo t >> "$r/src/handler.ts"; commit "$r"
+expect "docs-only: an inert path beside a code change is not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/x.yml"; mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; commit "$r"
+expect "docs-only: a workflow among inert paths is not docs" 0 docs "$r" false
+# the Pro name is written in pieces, so check 15 does not read this file as naming Pro
+pro="@heroui-""pro/react"
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"; commit "$r"
+expect "docs-only: a line naming HeroUI Pro in an agents file runs check 15 (not docs)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"; echo d > "$r/.agents/skills/x/SKILL.md"; commit "$r"
+expect "docs-only: the same line beside a markdown file still runs check 15" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "see $pro" > "$r/.agents/skills/x/SKILL.md"; commit "$r"
+expect "docs-only: a markdown page naming Pro is a doc (check 15 exempts *.md)" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/.agents/skills/big"; { echo "import \"$pro\""; seq 1 60000; } > "$r/.agents/skills/big/a.ts"; commit "$r"
+expect "docs-only: a Pro name at the top of a large diff is still found (no SIGPIPE under pipefail)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/spikes/x"; echo "const x = 1" > "$r/spikes/x/a.ts"; commit "$r"
+expect "docs-only: an inert file that does not name Pro is docs" 0 docs "$r" true
 r=$(repo)
 expect "docs-only: an empty diff is not docs" 0 docs "$r" false
 r=$(repo); echo d > "$r/README.md"; commit "$r"
