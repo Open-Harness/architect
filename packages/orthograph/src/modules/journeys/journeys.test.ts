@@ -36,6 +36,8 @@ describe("journeys", () => {
     want(s.clock.run).toBeTypeOf("function");
     want(s.clock.advance("1 month")).toEqual({ kind: "clock-call", move: { advance: "1 month" } });
     want(s.clock.moveTo("2027-02-01T00:00:00.000Z")).toEqual({ kind: "clock-call", move: { moveTo: "2027-02-01T00:00:00.000Z" } });
+    want(Scripting.pathOf(s.clock.now)).toEqual(["clock", "now"]);
+    want(Scripting.resolve({ at: s.clock.now }, { clock: { now: "2027-01-10T09:00:00.000Z" } }).value).toEqual({ at: "2027-01-10T09:00:00.000Z" });
     want((Scripting.script({ ada: Roles.signedIn }) as any).clock.run).toBeUndefined();
   });
 

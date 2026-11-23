@@ -66,4 +66,12 @@ describe("time", () => {
     expect(Times.clock({ file: "f", clock: Blueprint.clock.real() })).toEqual({ clock: { kind: "real" }, problems: [] });
     expect(Times.clock({ file: "f", clock: Blueprint.clock.stepped({ starts: "someday" }) }).problems).toHaveLength(1);
   });
+
+  it("refuses a stepped or scaled clock on an environment in a promotion chain, naming it, and lets a real one through (K23 section 1)", () => {
+    const refused = (clock: Parameters<typeof Times.clock>[0]["clock"]) => Times.clock({ file: "environments/staging.ts", clock, environment: "staging", promotes: true });
+    expect(refused(Blueprint.clock.stepped({ starts: "2027-01-10T09:00:00Z" })).problems).toEqual([expect.stringMatching(/environments\/staging\.ts: environment "staging" promotes to production, so its clock must be real: a stepped clock/)]);
+    expect(refused(Blueprint.clock.scaled({ starts: "2027-01-10T09:00:00Z" })).problems).toHaveLength(1);
+    expect(refused(Blueprint.clock.real())).toEqual({ clock: { kind: "real" }, problems: [] });
+    expect(Times.clock({ file: "f", clock: Blueprint.clock.stepped({ starts: "2027-01-10T09:00:00Z" }), environment: "local", promotes: false }).problems).toEqual([]);
+  });
 });
