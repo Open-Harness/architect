@@ -378,7 +378,7 @@ the generated SDK, the docs and the agent's tools see them; Pi's `ExecutionEnv` 
 (`env`, K40:193).
 
 ```ts
-// packages/sandbox/blueprint/adapter.ts
+// packages/sandbox/blueprint/adapter.ts   // Superseded by GOAL17-slice9-sandbox, 23 November 2026: packages/sandbox/src/adapter.ts (call 1)
 export class OutsideSandbox extends Blueprint.error("OutsideSandbox", { path: Blueprint.text(), root: Blueprint.text(), resolved: Blueprint.text() }) {}
 export class BlockedCommand extends Blueprint.error("BlockedCommand", { command: Blueprint.text() }) {}
 export class SandboxGone extends Blueprint.error("SandboxGone", { sandbox: Blueprint.text() }) {}
@@ -395,7 +395,7 @@ export default Blueprint.adapter({
     list:  Blueprint.call({ input: { tag: Blueprint.optional(text) }, answer: { sandboxes: Sandboxes }, errors: [] }),   // the sweep's read
   },
   env: (sandbox) => new RemoteExecutionEnv({ connection: socketConnection(sandbox.address), id: sandbox.id, cwd: "/work" }),
-  standIn: Stand.process("packages/sandbox/src/stand-in/main.ts"),   // the bridge: `--port 0 --dir <state>`, one `pi-env serve` per sandbox
+  standIn: Stand.process("packages/sandbox/src/stand-in/main.ts"),   // the bridge: `--port 0 --dir <state>`, one `pi-env serve` per sandbox   // Superseded by GOAL17-slice9-sandbox, 23 November 2026: "packages/sandbox/src/main.ts" (call 1)
 });
 ```
 
@@ -435,7 +435,7 @@ then Settings' `variables`. A credential reaches a process only as `exec`'s `len
 **The bridge's commands and what a check counts.**
 
 ```ts
-// packages/sandbox/src/stand-in/commands.ts
+// packages/sandbox/src/stand-in/commands.ts   // Superseded by GOAL17-slice9-sandbox, 23 November 2026: the types are in modules/sandboxes/types.ts; the `Stand.command` descriptors come with the harness surface (call 1)
 export interface SeenSandbox {
   readonly sandbox: string; readonly owner: string; readonly tag: string; readonly root: string; readonly state: "open" | "closed" | "swept";
   readonly env: ReadonlyArray<{ readonly name: string; readonly from: "built-in" | "source" | "settings"; readonly value: string }>;   // a credential is never here
