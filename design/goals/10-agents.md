@@ -5,17 +5,20 @@ milestone: "Goal 10: agents"
 release: "1.0"
 branch: goal/agents
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5  # the model id it runs on
+  since: 2026-11-22    # the date it started
 done_check: nx run e2e:agents
 owns:
   - packages/agents/
   - packages/anthropic/
+  - packages/openai/
   - packages/stand-in-model/
   - e2e/agents/
+  - e2e/fixtures/agents/
+  - packages/prove/src/modules/agent-world/
   - design/decisions/M4-agents.md
   - design/goals/10-agents.md
 slices:
@@ -28,7 +31,7 @@ slices:
   - "7 · Tools made from an app's operations (after 4)"
   - "8 · Run telemetry (after 4)"
   - "9 · One host per run, resumed after eviction (after 4)"
-  - "10 · The agents feature (after 2, 9)"
+  - "10 · The agents feature (after 2, 8, 9)"
   - "11 · The portal's chat on a durable agent (after 10)"
   - "12 · Agent waits on the world's clock (after 9)"
 ---
@@ -37,14 +40,14 @@ slices:
 Branch `goal/agents`, cut from `goal/stage-1`. Written 21 November 2026 by the 🎼 conductor, from the goal map
 (`design/goals/map.md`, K34) and K35. Milestone `Goal 10: agents`, label `release:1.0` (K33).
 
-**To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 10. Read `AGENTS.md` and
+**To start it, in any harness** (Claude Code, Codex, OpenCode, Amp): "You lead Goal 10. Read `AGENTS.md` and
 `design/goals/10-agents.md`, and run it." Nothing else is needed.
 
 ## The goal, in plain words
 
 - **In one sentence:** Let an app run an AI agent that keeps going through crashes and restarts, uses the app's own actions as its tools, and is checked by the same rules as a person.
-- **Why:** The vault's agent spends under its own role, the portal needs a chat, and both need a run that never loses its place or repeats a paid model call.
-- **When it's done, you can:** start an agent on a task, stop the machine in the middle of its turn, and watch it resume with no second model call; and chat with an app in its portal.
+- **Why:** The vault's agent spends under its own role, the portal needs a chat, and both need a run that never loses its place or pays twice for a model answer it already has.
+- **When it's done, you can:** start an agent on a task, stop the machine in the middle of its turn, and watch it resume without asking the model again for any answer it already had; and chat with an app in its portal.
 - **It is:** the durable agent run, adapters for real models and a free local stand-in, tools made from the app's actions, and the portal's chat built on it.
 - **It isn't:** the builder's own agents or the bench (they come later), or any change to who may do what: an agent is a caller like any other.
 - **Done when:** the agents tests pass, a chat resumes after eviction, and an agent's retry moves when a test world's clock is moved.
@@ -72,7 +75,7 @@ table. "After" names this goal's own earlier slices; "Waits on" names work anoth
 | 7 | Tools made from an app's operations | M4.07 | 4 | — |
 | 8 | Run telemetry | M4.08 | 4 | — |
 | 9 | One host per run, resumed after eviction | M4.09 | 4 | — |
-| 10 | The agents feature | M4.10 | 2, 9 | — |
+| 10 | The agents feature | M4.10 | 2, 8, 9 | — |
 | 11 | The portal's chat on a durable agent | M4.16 | 10 | M1.24 (Goal 3); M1.34 is ✅ on `goal/stage-1`; mounting it in the portal client is an ask to Goal 6 |
 | 12 | Agent waits on the world's clock | M4.26 | 9 | `Timers` across processes, M8.07 (Goal 9) |
 
@@ -101,6 +104,9 @@ The rules every goal shares, so this brief stays short. Where they and this file
   requests in CI at once.
 - **Its needs.** A slice builds once what it needs has landed (K34, `design/goals/map.md`). A slice that needs another
   goal's work writes its checks first and waits for the build; it never builds a stand-in for the other goal.
+  A slice another goal needs lands early, once its check is green: a branch `goal/<name>-early-<slice>` cut at the
+  commit that ends it, merged into `goal/stage-1` by a merge commit, never squashed (K38). Ask for one by an Ask
+  issue in the owning goal's milestone.
 - **Asks.** Anything outside "What it owns" is an Ask issue in the owning goal's milestone, naming this goal and what
   done looks like (K32, K33). Read this goal's own open issues at every slice start.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 10: agents` and the label `release:1.0`;
@@ -111,4 +117,31 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+**Parked on 22 November 2026** by the conductor's word (Aaron: "Narrow to the path"). It resumes when the conductor
+says so; the lead was claude (claude-opus-5-5).
+
+**Landed:** `goal/agents` merged `goal/stage-1` in (#460). Slice 1 is decided in `design/decisions/M4-agents.md`:
+- The Run is a thing of the `@orthograph/agents` feature.
+- Pi Durable 1.5.0 runs in one SQLite Durable Object per run, or one SQLite file per run on Node.
+- "No second model call" covers committed steps. It is proved by an eviction in the tool phase, with a separate check
+  for a request cut in flight.
+- Time is the world's. Goal 9's `DurableTimers` (#464) is agreed.
+- The packages are `@orthograph/anthropic`, `@orthograph/openai` and `@orthograph/stand-in-model`. The stand-in is
+  llama.cpp b12503 serving Qwen3 0.6B, pinned by checksum.
+- Goal 10 builds the journeys' world doors, in a new `prove` module, `agent-world`.
+- M4.10 now needs M4.08.
+
+**Open:**
+- Slice 2's journeys are a draft (#490). Its review passed after three blockers: two are fixed in the decision, and the
+  request-key journey is still to fix (the same key with another payload or another caller). Its proofs 2 and 3 wait on
+  M4.10 (Snag #489).
+- Slices 3 and 4's checks are part-written and unreviewed, saved as WIP on `goal-10/s3-runner-check` and
+  `goal-10/s4-durable-check` (no pull requests). On resume, their authors pick them up from there.
+- The `e2e/agents/` scaffolding (`goal-10/e2e-scaffold`) rides in with #490.
+- Ask to Goal 3, #473 (builders may shrink every `e2e/<area>/expected-failing/`), is open.
+
+**Next, on resume:**
+1. Merge `goal/stage-1` in.
+2. Fix #490's request-key blocker and land it.
+3. Write slices 3 and 4's checks, then build slice 3 (the run record, the scorer, the first runner).
+4. Slice 6 needs a 640 MB model and llama.cpp downloaded into a cache: ask before downloading.
