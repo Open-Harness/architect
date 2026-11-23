@@ -86,6 +86,8 @@ export const oneLivePerExecutor = Blueprint.invariant.unique(
 
 // the executor's declaration (brief :388) says which thing holds its seats, and where the size is
 export default Blueprint.agent({ /* … */ slots: { size: superagent.slots, reserve: 1, held: Assignment } });
+// Superseded by GOAL17-slice5-forms, call 15, 23 November 2026: `@orthograph/superagent` declares `held: Blueprint.id("asg")`, the id the
+// Assignment owns, so the plugin imports nothing of `tickets`; the compiler resolves the prefix to the one thing that owns it.
 ```
 
 These forms exist today: a composite `unique` with `while` (`packages/orthograph/src/modules/invariants/types.ts:26-30`,

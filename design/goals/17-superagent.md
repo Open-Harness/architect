@@ -397,7 +397,7 @@ export default Blueprint.agent({
   model: superagent.playbook.model,
   instructions: prompts.compose("executor"),
   env: sandbox,                                 // K40 fix 4: the ticket's sandbox as Pi's ExecutionEnv
-  slots: { size: superagent.slots, reserve: 1, held: Assignment },   // GOAL17-executor-slots: a pool of seats, plus one kept for a person's message
+  slots: { size: superagent.slots, reserve: 1, held: Blueprint.id("asg") },   // GOAL17-slice5-forms call 15: the id the Assignment owns, so no import of tickets; GOAL17-executor-slots: a pool of seats, plus one kept for a person's message
   tools: [
     read, ticket.ack, ticket.report, thread.unrelated, thread.follow, trigger.handback,   // allowed: [itsAgent]
     ...superagent.connections.tools,            // the mounts' calls, typed from each spec

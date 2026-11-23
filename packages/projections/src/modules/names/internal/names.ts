@@ -48,11 +48,13 @@ export const handlerAt = (from: string, op: OperationModel) =>
 export const lines = (...parts: ReadonlyArray<string | ReadonlyArray<string>>) => parts.flat().join("\n") + "\n";
 
 /** HTTP status per kind of refusal: a declared data error, a machine in the wrong state, nothing with that id, a caller without the role. */
-export const STATUS = { declared: 422, notFrom: 409, notFound: 404, notAllowed: 403, idempotencyConflict: 409 } as const;
+export const STATUS = { declared: 422, notFrom: 409, notFound: 404, notAllowed: 403, idempotencyConflict: 409, notServed: 501 } as const;
 export const NOT_ALLOWED_EXIT = 3;
 /** The runtime keeps 120 to 125 (G3): a request key reused with another payload exits 120 and is a 409. */
 export const IDEMPOTENCY_CONFLICT_EXIT = 120;
-export { IDEMPOTENCY_CONFLICT } from "@orthograph/compiler";
+/** A read the runtime does not serve yet (a pinned or derived one, until slice 7 of Goal 17) exits 121, the first the runtime keeps after 120. */
+export const READ_NOT_SERVED_EXIT = 121;
+export { IDEMPOTENCY_CONFLICT, READ_NOT_SERVED } from "@orthograph/compiler";
 
 /** An operation that runs on the caller's device (a plugin's `runs: "client"`): never on the server, in no API route or tool. */
 export const onDevice = (op: OperationModel) => op.runs === "client";
