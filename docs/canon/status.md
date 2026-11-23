@@ -21,10 +21,13 @@ Status words: **Built** (in `packages/`, with a check that passes), **Partial** 
 | Release | A person outside can… | Done when | Left to build |
 |---|---|---|---|
 | **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last piece, the machine graphs (M1.50, check 40 still red); the npm preview itself (publish refuses npmjs today); Goal 3's branch landing on `main` |
-| **Beta** (stage 1, "workable") | start an app with `npm create orthograph`, sign people in, claim `@name` on a real page, and deploy it to Cloudflare and tear it down | Gate M2 (M2.12) and Goal 3's done check (`e2e:stage1`, staging included) | all of milestone 2 (kinds of caller, auth and organizations as plugins, secrets, `ortho new`), the handles plugin, actions and the pieces on UI SDK, the three screens, a live staging run |
-| **1.0** (stages 2 to 4) | wallets and pay by handle; a Safe with budgets, agents and time; a private club on Aztec | the stage 2, 3 and 4 gates on `main`, plus M7.01 to M7.04, M7.06 and M7.13 | most of the on-chain milestone, webhooks, workflows, agents, time, all of stage 4, the real release |
+| **Beta** (the framework the superagent proves, K42) | build an always-on agent app on Orthograph from npm: things with versions, events in and the outbox, agents that live for weeks, secrets and lent tokens, signed webhook doors, the pages on UI SDK | every framework piece the superagent pulled, extracted into Orthograph's packages and published, with the superagent running on that published framework | the superagent's slices 6 to 14 and what they pull; its launch is its own milestone, not the beta's |
+| **1.0** (Capxul core, K42) | build a business app on Orthograph from npm: everything Capxul core needed for its books, HR, payroll, identity checks and bank accounts through Bridge | every framework piece Capxul core pulled, extracted into Orthograph's packages and published, with Capxul core running on it in its staging, plus M7.01 to M7.04, M7.06 and M7.13 | what Capxul core pulls (K43), and the real release |
 
-**Where Goal 4 falls.** Goal 4 (on chain, end to end) serves 1.0, not the preview or the beta: its slices 2 and 9 to
+Since K42 (23 November 2026), the releases are the framework's: the beta is what the superagent proves and 1.0 what Capxul core proves (K43). The stage headings below (stages 2 to 4) are
+Plugged In's, no longer 1.0's; Goal 18's slice 2 rewrites this map as the board's items, each with its stage.
+
+**Where Goal 4 falls.** Goal 4 (on chain, end to end) served 1.0 until K42, not the preview or the beta: its slices 2 and 9 to
 11 are stage 2 work, and slices 1, 3 to 8 and 12 are stage 3. Only slice 1 (the language and host seam) touches the
 core everything else uses.
 
@@ -57,7 +60,7 @@ core everything else uses.
 | A Node host | None | the server runs only as a Cloudflare Worker; no slice | none (Goal 4 slice 1 names `Host.node`) |
 | npm preview of the framework | None | publish goes only to Verdaccio | M1.51 |
 
-### Stage 1: workable (beta)
+### Stage 1: workable (Plugged In's first stage)
 
 | Capability | Status | Evidence, or what is missing | Slices |
 |---|---|---|---|
@@ -77,7 +80,7 @@ core everything else uses.
 | The infra projection and `ortho env up` / `destroy` staging | Built | checks 37 and 41, run here with no credential and no network (K41, clash 6) | M7.03, M7.04 |
 | A live staging run: deploy, run the story, destroy | Partial | the staging workflow (`.github/workflows/staging.yml`) runs it; five clean runs in `spikes/staging-pass` before it | M7.01, M7.04 |
 
-### App UI (beta for the screens, then 1.0)
+### App UI (built as an app needs it)
 
 The UI is pieces, not hooks (K29, K41 clash 2): one UI SDK piece per operation, in place of the React hooks ST1.01
 once planned.
@@ -134,7 +137,7 @@ once planned.
 
 The factory and the work board (M3.04 to M3.21), the bench and the builder's tools (M4.11 to M4.14), workspaces and
 the building agents (M4.17 to M4.25; M4.25 is Goal 17's since K39), Stripe, Resend, adapters from OpenAPI, outbox and
-views (M5.04 to M5.13), and Capxul on Orthograph (M7.07 to M7.11). Most are None; the work board and E2B workspaces are
+views (M5.04 to M5.13), and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) proves 1.0 (K42, K43). Most are None; the work board and E2B workspaces are
 Spiked.
 
 ## 3. Holes no slice owns
@@ -192,7 +195,8 @@ published to npm before the preview; every milestone before it publishes to the 
 
 ### Capxul's own pieces
 
-Capxul is not built on Orthograph yet. It has its own blueprint package and generator, with the same ideas by hand, so
+Capxul is not built on Orthograph yet; since K43 (23 November 2026) it is rebuilt in this repository on
+`goal/capxul`, in ERPNext's shapes, and it proves 1.0. What follows is the earlier plan K43 replaces. It has its own blueprint package and generator, with the same ideas by hand, so
 moving it onto Orthograph means declaring it again. Hats, budgets and the Safe adapter become standard library, because
 Plugged In's stage 3 needs them too. What stays Capxul's is what only it needs: approvals as its directors run them,
 payments into ERPNext, and the Frappe bench (a source through an adapter, K3). Two repositories (K30, section 2):
@@ -237,7 +241,7 @@ packages/
   logbook/           @orthograph/logbook           verdicts and the model, kept per project
   services/          @orthograph/services          private: the stand-ins tests and gates start as processes; never published
 examples/
-  plugged-in/        the canon's one example, the app 1.0 is built as (K9)
+  plugged-in/        the canon's one example (K9)
   acme/              the fixture the tests and gates run on
   work/              the work app (F5)
   starter/           what the preset copies into a new project

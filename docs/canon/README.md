@@ -13,8 +13,8 @@ is built to the page. When the two disagree, one of them is wrong, and the chang
 - Written so far: layer 1, the shape ([`orthograph`](orthograph.mdx), [`blueprint`](blueprint.mdx), [`languages-and-hosts`](languages-and-hosts.mdx), [`plugins`](plugins.mdx), [`data`](data.mdx), [`doors`](doors.mdx)); from layer 2, [`things`](things.mdx), [`machines`](machines.mdx), [`operations`](operations.mdx) and [`handlers`](handlers.mdx); the samples [`stores`](stores.mdx) (a draft, rewritten in layer 4) and [`traces`](traces.mdx); and [`chains-and-wallets`](chains-and-wallets.mdx), the chain port and the wallet, written from the code (M1.39).
 
 The canon describes all of 1.0, built or not, for Aaron and for anyone who builds on Orthograph or helps build it.
-One example runs through it: Plugged In, [`examples/plugged-in`](../../examples/plugged-in), in the four stages 1.0 is
-built as (K9). `outline.md` says which stage teaches which page, and K37 records the switch. acme stays the fixture the
+One example runs through it: Plugged In, [`examples/plugged-in`](../../examples/plugged-in), in the four stages it is
+built in (K9); 1.0 itself is the framework Capxul core proves (K42, K43). `outline.md` says which stage teaches which page, and K37 records the switch. acme stays the fixture the
 tests and gates run on.
 
 The map behind this plan, drawn for Aaron's review, is the canon board (a convenience: the link dies with the account,
