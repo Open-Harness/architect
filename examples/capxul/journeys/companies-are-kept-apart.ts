@@ -33,6 +33,26 @@ export default Blueprint.journey("companies are kept apart", {
       machine.isIn(s.last.company, "active"),
     ),
     s.step(
+      "Ada sets up a second company under other names, which she runs too",
+      s.ada.run(create, { companyName: "Acme Holdings", abbr: "AH", country: "Uganda", defaultCurrency: "UGX" }),
+      expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
+      emits(CompanyCreated, { company: s.last.company, owner: s.ada.person }),
+      machine.isIn(s.last.company, "active"),
+    ),
+    s.step(
+      "her second company reads back as she typed it, not as her first",
+      s.ada.run(get, { id: s.last.company }),
+      expect((a) => [a.companyName, a.abbr, a.country, a.defaultCurrency, a.owner, a.state]).toEqual([
+        "Acme Holdings",
+        "AH",
+        "Uganda",
+        "UGX",
+        s.ada.person,
+        "active",
+      ]),
+      noEvents(),
+    ),
+    s.step(
       "Bo still can't read Ada's",
       s.bo.run(get, { id: s.world.company }),
       refuses(Blueprint.NotAllowed),

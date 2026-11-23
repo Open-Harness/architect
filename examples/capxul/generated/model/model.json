@@ -2156,6 +2156,93 @@
           ]
         },
         {
+          "title": "Ada sets up a second company under other names, which she runs too",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Holdings",
+              "abbr": "AH",
+              "country": "Uganda",
+              "defaultCurrency": "UGX"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "CompanyCreated",
+              "fields": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "owner": {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "company",
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "her second company reads back as she typed it, not as her first",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Holdings",
+                "AH",
+                "Uganda",
+                "UGX",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Bo still can't read Ada's",
           "call": {
             "actor": "bo",
@@ -2218,7 +2305,7 @@
           ]
         }
       ],
-      "sourceHash": "68af707f20264a3493f7ca285ee3ebbc8c6f77c447c2a7164857365442e5a3a7"
+      "sourceHash": "ef131afdf39ece71ee0a0f30111be7d4a39ac55871982f4f876cf49c3be9f525"
     },
     "journeys/hire-an-employee.ts": {
       "name": "hire an employee",
