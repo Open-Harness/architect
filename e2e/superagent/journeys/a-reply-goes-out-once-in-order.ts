@@ -25,6 +25,6 @@ export default Blueprint.journey("a reply goes out once, in order", {
     s.step("the runner is killed and started again", s.runner.restart()),
     s.step("an hour passes", s.clock.advance("1 hour")),
     s.step("still once each: nothing was sent again", github.replies({ issue: 12 }), expect((a) => ours(a).length).toBe(2)),
-    s.step("the scripted turn was used, none left over", models.done({}), expect((a) => a.unused).toEqual([])),
+    s.step("the scripted turn was used, none left over", models.done({}), expect((a) => a.unused).toBe(0)),
   ],
 });
