@@ -67,6 +67,8 @@ the old value back. The gate does not read this row (it reads the policy's cells
 - **A first save cannot race.** A thing with versions holds one rule it does not declare: one row per revision of its key (`versionRule` in `orthograph`; `FieldModel`'s sibling `InvariantModel.framework`).
   The compiler puts it in the model, so the migration makes the index (`policy_oneVersionPerRevision` over `superagent, revision`; `settings_...` over `revision`, since Settings is keyed by its own id), and the
   generated server hands the runtime `Versions.rulesOf(...)`. The second of two first saves conflicts at commit, runs again, and is refused as stale. `settings.save` has the same rule with no code of its own.
+- **A lost race at that rule is a retry, not a defect.** `versionRule` marks the rule `framework`; a call whose pre-commit check finds it broken by another save that already committed goes
+  through `settleViolation` as the call's retry (`Conflict`), so it reruns and is refused `StaleRevision { current }`. Test: the first attempt reads no version, the rival commits its revision 1, the check finds it.
 - **A derived list checks its cursor** with the same `CURSOR` check as a plain list (`NotAllowed`).
 - **`eval.due` reads each kind to its end,** a page of 100 at a time, where it read the oldest 1000. Test: 1100 triggers already covered, then one new one (`due.test.ts`).
 - **The migration is `0009_columns.sql`** (`0008_inbox.sql` is another's).

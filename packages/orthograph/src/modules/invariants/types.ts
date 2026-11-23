@@ -32,6 +32,8 @@ export interface Unique<F extends FieldsInput = FieldsInput, Key = unknown> exte
   readonly refuse: AnyErrorClass | undefined;
   /** Words that replace the sentence generated from the rule. */
   readonly description: string | undefined;
+  /** The framework's own rule (a thing with versions holds one): a save that breaks it lost a race, so it is refused as stale, never as a defect. Absent on a declared rule. */
+  readonly framework?: true;
   readonly "~key"?: Key;
 }
 

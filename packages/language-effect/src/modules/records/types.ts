@@ -106,6 +106,8 @@ export interface Violation {
   readonly row: Instance;
   /** The other holder is a row this call wrote too: the handler's own bug, never a refusal or a race. */
   readonly own: boolean;
+  /** The rule is the framework's own (a thing with versions): breaking it is a lost race, which the call runs again and is refused as stale. */
+  readonly framework?: boolean;
 }
 
 export interface Unit {

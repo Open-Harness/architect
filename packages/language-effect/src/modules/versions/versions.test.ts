@@ -76,6 +76,30 @@ describe("versions", () => {
     expect(value(await call(store, "get", { owner: "own_1", revision: 1n }))).toMatchObject({ revision: 1n });
   });
 
+  it("a save whose pre-commit check finds the other first save already committed is refused as stale, not a defect", async () => {
+    const store = stocked();
+    let attempts = 0;
+    const real = Versions.handler("save", Rule, Stale);
+    // The first attempt reads no version and makes its revision 1; then the other save commits its own revision 1, before this call's check runs.
+    const racing = (payload: unknown, context: unknown) =>
+      Effect.gen(function* () {
+        attempts += 1;
+        const answer = yield* real(payload, context);
+        if (attempts === 1) {
+          const rival = { kind: "insert" as const, thing: Rule, fields: { id: "rul_rival", owner: "own_1", revision: 1n, mode: "b" }, state: "current" };
+          expect(yield* Effect.flatMap(Store, (s) => s.commit({ writes: [rival], entries: [] }))).toBe("committed");
+        }
+        return answer;
+      });
+    const served = Handlers.serve({ name: "rule.save", operation: save, handler: racing as never });
+    const exit = await Effect.runPromiseExit((served.run({ owner: "own_1", base: 0n, mode: "a" } as never, who) as Effect.Effect<unknown, unknown, never>).pipe(Effect.provide(Layer.mergeAll(BusyLive, store.layer))));
+    const refused = value(exit);
+    expect(refused).toBeInstanceOf(Stale);
+    expect(refused).toMatchObject({ current: 1n });
+    expect(attempts).toBe(2);
+    expect(value(await call(store, "get", { owner: "own_1" }))).toMatchObject({ revision: 1n, mode: "b" });
+  });
+
   it("the rule is what refuses a second revision 1 when both saves read no version: the store answers a conflict", async () => {
     const store = stocked();
     const row = (id: string) => ({ kind: "insert" as const, thing: Rule, fields: { id, owner: "own_1", revision: 1n, mode: "a" }, state: "current" });
