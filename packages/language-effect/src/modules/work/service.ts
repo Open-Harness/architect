@@ -27,26 +27,24 @@ const counting = (world?: Report): BusyShape => {
       return Effect.forEach(ready, (d) => Deferred.succeed(d, undefined), { discard: true });
     }))));
   });
+  /** Does the world hold this box's token now: a fiber of it runs, or (a request's box) it is between its fibers; never while every fiber is lent. */
+  const wants = (box: BusyBox) => box.holders > box.lent || (box.pinned && box.holders === 0 && box.lent === 0);
   /**
-   * The world holds a box's token while a fiber of it runs, or (a request's box) between its fibers; never while every fiber is
-   * lent. One step at a time per box, so two fibers cannot take two tokens.
+   * One step at a time per box (`box.gate`, which the entry's end takes too), so two fibers cannot take two tokens and the entry cannot
+   * end between a take and its record. Telling the world takes time, and what the box wants can change meanwhile: it is read again
+   * afterwards, and a token just taken that nothing needs now is given back, so none is left that nobody will release.
    */
   const sync = (box: BusyBox): Effect.Effect<void> =>
-    box.gate.withPermits(1)(Effect.suspend(() => {
-      if (world === undefined) return Effect.void;
-      const want = box.holders > box.lent || (box.pinned && box.holders === 0 && box.lent === 0);
-      if (want && box.id === undefined) return Effect.map(world.enter(box.owner), (id) => void (box.id = id));
+    box.gate.withPermits(1)(Effect.gen(function* () {
+      if (world === undefined) return;
+      if (wants(box) && box.id === undefined) box.id = yield* world.enter(box.owner);
       // The box holds an id: the world must still know it. After a reset it does not, and the request would run unseen.
-      if (want && world.valid !== undefined) {
-        const held = box.id!;
-        return Effect.flatMap(world.valid(held), (known) => (known ? Effect.void : Effect.map(world.enter(box.owner), (id) => void (box.id = id))));
-      }
-      if (!want && box.id !== undefined) {
+      else if (wants(box) && box.id !== undefined && world.valid !== undefined && !(yield* world.valid(box.id))) box.id = yield* world.enter(box.owner);
+      if (!wants(box) && box.id !== undefined) {
         const id = box.id;
         box.id = undefined;
-        return world.leave(id);
+        yield* world.leave(id);
       }
-      return Effect.void;
     }));
   const acquire = (box: BusyBox) => Effect.andThen(Effect.sync(() => { box.holders++; active.add(box); }), sync(box));
   const release = (box: BusyBox) =>

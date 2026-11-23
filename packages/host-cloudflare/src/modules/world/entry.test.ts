@@ -178,3 +178,35 @@ describe("an entry whose callback throws", () => {
     });
   });
 });
+
+describe("the entry ends while a fiber of it is telling the world", () => {
+  it("leaves nothing counted: the entry's end and a release's check of its id cannot cross", async () => {
+    await worldOf("entry-ends-during-valid", async (stub, timers, _clock, at) => {
+      let checks = 0;
+      let answer: (known: boolean) => void = () => undefined;
+      // The second check of an id (the release's) is slow, and says the world does not know it (a reset since).
+      const slow = { ...stub, countHas: (id: string) => (++checks < 2 ? Promise.resolve(timers.rpc.countHas(id)) : new Promise<boolean>((resolve) => { answer = resolve; })) };
+      const slowAt = { ...at, WORLD: { idFromName: (n: string) => n, get: () => slow } as unknown as DurableObjectNamespace };
+      const entry = WorldEntry.entry<EntryEnv>({
+        fetch: async () => {
+          const program = Effect.gen(function* () {
+            const busy = yield* Busy;
+            // A fiber of the request, left running when the response goes out.
+            yield* Effect.forkDetach(busy.as("probe.spin").counted(Effect.void));
+          }).pipe(Effect.provide(work(slowAt)));
+          await Effect.runPromise(program);
+          await pause(20);
+          return new Response("ok");
+        },
+      });
+      const response = entry.fetch!(new Request("http://app/probe/spin"), slowAt, undefined as never);
+      await pause(60);
+      // A reset while the release's check is in flight: the world no longer holds the box's id.
+      timers.reset();
+      answer(false);
+      await response;
+      await pause(30);
+      expect(timers.held()).toEqual([]);
+    });
+  });
+});

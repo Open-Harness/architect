@@ -117,6 +117,25 @@ describe("Timers on the world's table", () => {
     }));
   });
 
+  it("a forgotten row ends a whole `within` call and an `at` waiter, not only the losing branch of a race", async () => {
+    const world = makeWorld();
+    let committed = false;
+    let ran = false;
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const timers = yield* Timers;
+      const waiting = yield* Effect.forkChild(busy.as("agents/run/run_1").counted(Effect.andThen(timers.within!("agents/run/run_1", "1 day", Effect.never), Effect.sync(() => { committed = true; }))));
+      yield* timers.at(5000, "keeper/x", "due", Effect.sync(() => { ran = true; }));
+      yield* Effect.yieldNow;
+      yield* Effect.yieldNow;
+      yield* world.forget(1);
+      yield* world.forget(2);
+      expect((yield* Fiber.await(waiting))._tag).toBe("Failure");
+      for (let i = 0; i < 10; i++) yield* Effect.yieldNow;
+      expect([committed, ran, world.rows, world.held(), yield* busy.count]).toEqual([false, false, [], [], 0]);
+    }));
+  });
+
   it("an interrupted sleep takes its row back and its token with it", async () => {
     const world = makeWorld();
     await run(world, Effect.gen(function* () {

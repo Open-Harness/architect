@@ -191,6 +191,7 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | a call carrying a token of the old run (`timerAdd`, `timerSet`) | n/a | ✓ refused | n/a | n/a | n/a |
     | a DO rebuilt on the same storage, or another world | ✓ | ✓ ids carry the incarnation's epoch: an old id is not held | ✓ `firing` recovered | n/a | n/a |
     | front door: `cast`, `credential`, `facts`, `reset` | ✓ `world:<route>` for its whole life | ✓ | n/a | n/a | n/a |
+    | the entry ends while a fiber of its box is telling the world (a release's check of its id, a take) | ✓ the entry's end runs under the box's own gate, so it cannot end between a take and the record of it; after the world answers, what the box wants is read again and a token just taken that nothing needs is given back | ✓ a stale id is replaced, never kept | n/a | n/a | n/a |
     | a durable row whose wake fails, with rows due after it | ✓ | ✓ | ✓ stays pending with its retry; the rows after it fire in order | ✓ | n/a |
     | limits (`ORTHO_QUIET_MS`, `ORTHO_FIRE_LIMIT`) | n/a | n/a | n/a | ✓ whole numbers above nought, no longer than 2^31-2 ms (a longer timer would fire at once) | n/a |
     | instants and payloads into SQL | n/a | n/a | ✓ refused before SQL (finite, within a Date's range, JSON) | n/a | n/a |
@@ -201,7 +202,7 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     the old object's ids; a reset during a move fails `WorldReset` and the clock stays at the reset start; a reset during a running wake leaves no
     row of the old run; a call with an old token is refused), `timers/timers.test.ts` and `timers/settled.test.ts` (a reset tells parked
     sleepers they were forgotten), `world/work.test.ts` and `timers/world.test.ts` (the forgotten sleeper is interrupted and commits nothing),
-    `work/world-count.test.ts` (a box with a stale id takes a fresh token), `world/front-door.test.ts` (the front door is counted). I3: `timers/reset.test.ts` (a failing head row does not starve the rows after it), `timers/crash.test.ts` (a firing survives a rebuild; replacement wins; success leaves no record), `timers/settled.test.ts` (a wake
+    `work/world-count.test.ts` (a box with a stale id takes a fresh token), `world/front-door.test.ts` (the front door is counted), `world/entry.test.ts` (an entry that ends while a release is checking its id, after a reset, leaves nothing counted), `timers/world.test.ts` (a forgotten row ends a whole `within` call and an `at` waiter). I3: `timers/reset.test.ts` (a failing head row does not starve the rows after it), `timers/crash.test.ts` (a firing survives a rebuild; replacement wins; success leaves no record), `timers/settled.test.ts` (a wake
     that clears its sibling; a replacement set during a failing wake). I4: `timers/reset.test.ts` (a real-world wake slower than the quiet bound fires once; the alarm sweep is bounded; the limits), `timers/settled.test.ts` (a wake that never acknowledges fails
     `NeverQuiet` within the bound, its row recoverable and nothing counted; the lock frees; a self re-registering timer is bounded). I5:
     `world/work.test.ts` (parked with a two-day deadline, the world advances a day, the request reads day +1), `world/entry.test.ts` (a sleeping request wakes on the instant the world moved to).

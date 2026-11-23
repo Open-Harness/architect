@@ -53,13 +53,15 @@ export const within = <A>(env: EntryEnv, f: () => Promise<A>, owner = "entry:ste
  * The entry is over: the box is no longer pinned, and if no fiber of it is running (every one lent, or none) its token goes back. A
  * fiber still running (work detached from the response) keeps the token, and gives it back itself when it ends.
  */
-const endRequest = (keeper: Keeper, box: BusyBox): Promise<unknown> => {
-  box.pinned = false;
-  if (box.id === undefined || box.holders > box.lent) return Promise.resolve();
-  const id = box.id;
-  box.id = undefined;
-  return Promise.resolve(keeper.countLeave(id));
-};
+const endRequest = (keeper: Keeper, box: BusyBox): Promise<unknown> =>
+  // Under the box's own gate, so it cannot end between a fiber's take of the box's token and the record of it: that token would never be released.
+  Effect.runPromise(box.gate.withPermits(1)(Effect.sync(() => {
+    box.pinned = false;
+    if (box.id === undefined || box.holders > box.lent) return undefined;
+    const id = box.id;
+    box.id = undefined;
+    return id;
+  }))).then((id) => (id === undefined ? undefined : keeper.countLeave(id)));
 
 /** The same for an entry that answers at once (an RPC method): a real world still answers at once, with no promise made. */
 export const withinNow = <A>(env: EntryEnv, f: () => A, owner = "entry:rpc"): A | Promise<A> =>
