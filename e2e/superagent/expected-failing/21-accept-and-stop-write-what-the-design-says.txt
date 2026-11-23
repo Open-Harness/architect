@@ -1,0 +1,2 @@
+# Written before slice 7 (Goal 17, slice 6). `ticket.stop` declares no database step, so it may write neither the mandate it withdraws nor the assignment it closes. Due before slice 7 merges.
+superagent/21-accept-and-stop-write-what-the-design-says.test.ts > 21 accept and stop: what the app declares > `ticket.stop` writes its ticket, the mandate it withdraws and the assignment it closes in one database step

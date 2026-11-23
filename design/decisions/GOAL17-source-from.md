@@ -185,6 +185,7 @@ Types are in the block above. Each function below is the plugin's own, with its 
 // plugins/intake/src/modules/source/service.ts: shared, pure
 export const mentions = (text: string, login: string): boolean => new RegExp(`(^|\\W)@${login}(\\W|$)`, "i").test(text);
 export const observedRow: Cells = { listed: "explicit", unlisted: "none", unnamed: "none" };       // a person's own words, or nothing
+// (Superseded by GOAL17-stage-one, 23 November 2026, call 8: `observedRow` is `{ listed: "inferred", unlisted: "none", unnamed: "none" }`)
 export const inferredOnly: Cells = { listed: "none", unlisted: "none", unnamed: "inferred" };      // a service with no sender (PostHog)
 // plugins/intake/blueprint/sources/github.ts
 const groups = { issue: "issues", comment: "comments", review: "reviews", check: "checks" } as const;
@@ -345,7 +346,7 @@ timer  Timers tick ────────────────────�
                                                                               │ seen → nothing        accepted → the outbox
                                                                               ▼
   trigger.receive   on: [Source.deliveries]   allowed: [Source.sender]    called as service(github, actor)
-        map = (e, meta) → `source.on[event](e, ctx)` → payload { source, mapped, author: meta.actor, id: meta.id }
+        map = (e, meta) → `source.on[event](e, ctx)` → payload { source, mapped, author: meta.actor, id: meta.id }   (Superseded by GOAL17-stage-one, 23 November 2026: the payload carries `actor` and `addressed`, and no `author`)
 ```
 
 `Source.deliveries` and `Source.sender` are markers the compiler expands. One `Blueprint.on(mount.events.X, map)` is made

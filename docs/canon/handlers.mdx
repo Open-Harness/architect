@@ -71,7 +71,7 @@ Three kinds of line carry the declaration: the declared steps (`steps.load`, `st
 
 The frame is one type, made from the operation:
 
-```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=65-66
+```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=67-68
 /** What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out. */
 export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O>, R>;
 ```
@@ -80,7 +80,7 @@ export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: Han
 - **The context**: the caller as a `principal`, one runner per declared step, `move`, and what the runtime read or
   made before the handler ran (K16): the `subject`, each thing the payload names in `refs`, and a creating move's `id`:
 
-  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=25-45
+  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=27-47
   export interface HandlerContext<O, C = {}> {
     readonly principal: Principal;
     readonly steps: StepRunners<StepsOf<O>, C>;
@@ -406,7 +406,7 @@ would be committed for a call that changed nothing (see `operations`).
   The frame's own comment says a project writes its handler in `<verb>.handler.ts`
   (`packages/language-effect/src/modules/handler/types.ts:29`). That is the generated frame's name; the project
   writes `src/<thing>/<verb>.ts`. The design docs' handler example uses an `instance` in the context and
-  `steps.record` with a patch (`design/docs/index.html:435`); the real handler reads through `Records` and passes
+  `steps.record` with a patch (`design/history/retired-2026-11-23/docs/index.html:435`); the real handler reads through `Records` and passes
   each step its work. Both should match the code. Ledger: HAN-05.
 </Note>
 

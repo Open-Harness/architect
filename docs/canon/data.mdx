@@ -79,9 +79,7 @@ workshop, from layer 4.
 `lives` is the one place a declaration says where a thing's state is. It takes a built-in kind or a declared store,
 and the default is a D1 row:
 
-```ts file=packages/orthograph/src/modules/things/types.ts name=Thing,Lives lines=36-61
-  /** Type only, never present: the declared fields, so a machine and a rule can tell this thing from another (G5). */
-  readonly "~fields"?: F;
+```ts file=packages/orthograph/src/modules/things/types.ts name=Thing,Lives lines=38-63
   /** The kind of place its state is kept: a D1 row with a version column (the default), or a Durable Object per instance (D1 #1). */
   readonly lives: StoreKind;
   /** The declared store it lives in (K3), when `lives` named one; absent for the project's default store. */
@@ -90,6 +88,8 @@ and the default is a D1 row:
   readonly code: string | undefined;
   /** The runtime's refusal when a call names an instance of this thing that isn't there (K16, M1.46): `<Thing>NotFound`. */
   readonly notFound: NotFound;
+  /** A thing with versions (K40 fix 2): one current version per `key`, every save kept, a stale save refused. Absent when it has none. */
+  readonly versions: { readonly key: string } | undefined;
 }
 
 /**

@@ -10,6 +10,11 @@ session, an OpenCode session. Every thread is one **thread type**. Its title sta
 at a glance: `<emoji> <Type>: <subject>`, for example `🔨 Builder: L1.13 generators v0`. Where your
 agent has tags or labels, tag it `thread:<type>`, in your agent's form (the table at the end).
 
+> **K42 (23 November 2026):** a goal is one long-running agent; the 🎼 conductor is Goal 18, the framework goal, and the
+> lander, Goal 19, brings app work into `main`. A gap is
+> claimed on the board (`lane:goal-<n>` and a "Touches" line), not asked for; an Ask is only for two goals' overlapping
+> claims. Where this skill and K42 disagree, K42 wins.
+
 A goal reports through its own files and GitHub, not to a chat (K32): its brief's "Where it stands", rewritten at
 every merge; Snag issues in its milestone; its milestone and `goal-<n>` label on its pull requests and issues; and an Ask issue
 in another goal's milestone when it needs that goal to act (K33, the `github` skill). A goal may run in any harness and never depends on reaching the conductor. A thread
@@ -40,7 +45,8 @@ its agent can, but anything a message settles is written into a file or an issue
   Bring a branch up to date only for a real conflict or a change it needs.
 - **Never end a turn waiting without a watcher** (`design/decisions/CI-integration.md`, part A). Nothing wakes a
   thread when CI finishes. After every push to a ready pull request, start one background command that ends with the
-  required checks, `gh pr checks <n> -R Open-Harness/orthograph --watch --required`, so you are woken; then fix what is
+  required checks, `tools/ci/watch-required.sh <n>` (it waits for every check the base branch requires, so a job that
+  waits on other jobs is not missed), so you are woken; then fix what is
   red, or answer and resolve every review thread and merge after the 🔍 pass. Comment `@codex review` when you mark it ready, so Codex's
   findings arrive while CI runs. A check you may not edit that fails twice goes to its owner as an Ask the same hour.
 - **Every build pull request needs a 🔍 pass,** as well as CI: a builder's pull request into a goal or milestone branch
