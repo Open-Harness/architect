@@ -1,0 +1,24 @@
+name: Ask another goal
+description: One goal asking another to act (K32, K33). Goes in the milestone of the goal that must act.
+title: "Ask from Goal <n>: <what you need>"
+type: Ask
+labels: ["kind:ask"]
+body:
+  - type: markdown
+    attributes:
+      value: Set the milestone to the goal that must act. Never edit another goal's paths to get around this; its lead answers by closing this with a pull request.
+  - type: input
+    id: from
+    attributes: { label: Asking goal, placeholder: "Goal 6" }
+    validations: { required: true }
+  - type: textarea
+    id: need
+    attributes: { label: What we need, description: "The change, in their terms, and why" }
+    validations: { required: true }
+  - type: textarea
+    id: done
+    attributes: { label: Done looks like, description: "How both goals can tell it is done: a check, a field, a file" }
+    validations: { required: true }
+  - type: input
+    id: waits
+    attributes: { label: What waits on it, placeholder: "Goal 6 slice 7, or nothing yet" }

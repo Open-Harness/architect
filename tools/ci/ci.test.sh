@@ -313,6 +313,51 @@ expect "m1-reports: hook errors and unhandled errors carry over" 0 jq -e '(.suit
 d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts; echo 'not json' > "$d/m1-report-1/m1-errors.json"
 expect "m1-reports: a broken hook-error file fails" 1 join "$d"
 
+# required-jobs: no draft run, and no stale draft payload, can pass a required check (design/decisions/CI-drafts-race.md)
+wf() { # <body of one job, its keys indented four spaces>; prints the path of a workflow holding it as job `gate`
+  local f; f="$(mktemp "$scratch/wf.XXXX")"
+  printf 'name: ci\njobs:\n  ready:\n    runs-on: ubuntu-latest\n  other:\n    runs-on: ubuntu-latest\n  gate:\n%s\n    runs-on: ubuntu-latest\n' "$1" > "$f"
+  echo "$f"
+}
+req() { "$here/required-jobs.sh" "$@"; }
+dname="    name: \${{ needs.ready.outputs.draft != 'false' && 'gate (draft)' || 'gate' }}"
+dlive="    if: needs.ready.outputs.draft == 'false'"
+dlive_c="    if: \${{ needs.ready.outputs.draft == 'false' && !cancelled() }}"
+expect "required-jobs: ready, the live guard and the draft name pass" 0 req "$(wf "$dname
+    needs: ready
+$dlive")" gate
+expect "required-jobs: with other needs, the live guard and !cancelled() pass" 0 req "$(wf "$dname
+    needs: [ready, other]
+$dlive_c")" gate
+expect "required-jobs: this repository's ci.yml passes" 0 req "$here/../../.github/workflows/ci.yml" \
+  check e2e-layer1 e2e-layer2 e2e-m0 builder-paths
+expect "required-jobs: this repository's ci.yml passes for goal/stage-1's required checks" 0 req "$here/../../.github/workflows/ci.yml" \
+  check portal-ui e2e-layer1 e2e-layer2 e2e-m0 e2e-m1 e2e-climb e2e-grid e2e-stage1 builder-paths
+expect "required-jobs: a plain name fails" 1 req "$(wf "    name: gate
+    needs: ready
+$dlive")" gate
+expect "required-jobs: a name keyed on the payload fails" 1 req "$(wf "    name: \${{ github.event.pull_request.draft && 'gate (draft)' || 'gate' }}
+    needs: ready
+$dlive")" gate
+expect "required-jobs: no name fails" 1 req "$(wf "    needs: ready
+$dlive")" gate
+expect "required-jobs: not needing ready fails" 1 req "$(wf "$dname
+    needs: other
+$dlive_c")" gate
+expect "required-jobs: the payload's draft guard fails" 1 req "$(wf "$dname
+    needs: ready
+    if: github.event.pull_request.draft != true")" gate
+expect "required-jobs: another skip condition fails" 1 req "$(wf "$dname
+    needs: ready
+    if: needs.ready.outputs.draft == 'false' && endsWith(github.head_ref, '-build')")" gate
+expect "required-jobs: other needs without !cancelled() fail" 1 req "$(wf "$dname
+    needs: [ready, other]
+$dlive")" gate
+expect "required-jobs: a job not in the workflow fails" 1 req "$(wf "$dname
+    needs: ready
+$dlive")" nope
+expect "required-jobs: no job ids is a usage error" 2 req "$(wf "$dname")"
+
 # scope: the flag that makes a pull request into a goal branch run the fast gate only (CI-integration.md, B1)
 scope() { # <event> <base ref> <wanted flag>
   local got; got=$("$here/scope.sh" "$1" "$2")
