@@ -462,6 +462,8 @@ const s = Blueprint.journey("a full pool keeps its slot for a person", { world: 
   .step("a duplicate start is refused", call(assignment.start, { id: s.world.first }), refuses(machine.notFrom));   // Superseded by GOAL17-names, 23 November 2026: `assignment.started`
 ```
 
+Superseded by GOAL17-check-harness, 23 November 2026: the sketch's `{ world, size }`, `stand.finishTurn` and `world.restart` do not exist; the journey is written with `starts`, `models.release` and `s.runner.restart()` (calls 0 to 2 there).
+
 What proves it, each from a place a journey already reads (`journeys/types.ts:57-66`): the machine's state
 (`machine.isIn`, `machines/types.ts:53`), the events with their fields (`emits`), and the unique rule's refusal
 (`refuses`). Two further checks are for the builder's own test, because they need a race: two `fill`s at once leave
