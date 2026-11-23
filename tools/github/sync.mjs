@@ -14,18 +14,24 @@
 //                                                      labels and release milestones to goal milestones and labels
 //   node tools/github/sync.mjs --board --dry-run       also the board: print the plan for the status page's rows,
 //                                                      and the counts by stage and by who pulled them
-//   node tools/github/sync.mjs --board --project       also the Project's fields for those rows
+//   node tools/github/sync.mjs --board --project       also the Project's fields for those rows, and the roadmap's dates
 //   node tools/github/sync.mjs --apply                 do it
+//
+// A row adopts an existing issue (`issue #531` in its Evidence cell) and folds duplicates into it (`folds #533`);
+// docs/canon/status.md's column legend says how. Writes are paced (pace.mjs) and a rate-limit refusal is waited out.
 //
 // It needs `gh`, signed in with the `repo` scope (in CI, GH_TOKEN). It never deletes anything. Run one at a time: two
 // runs at once can both create the same issue, so the workflow (.github/workflows/goals.yml) runs it in one queue.
 import { execFileSync, spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
-import { boardCounts, boardPlan, claimOverlaps, parseBoard } from "./board.mjs";
+import { boardCounts, claimOverlaps, parseBoard } from "./board.mjs";
+import { adoptionProblems, boardPlan, foldComment } from "./boardPlan.mjs";
 import { readGoal } from "./frontmatter.mjs";
+import { PAUSE_CREATE_MS, PAUSE_WRITE_MS, pause, withRetry } from "./pace.mjs";
 import { plan, typeOf } from "./plan.mjs";
-import { projectPlan } from "./project.mjs";
+import { boardValues, projectPlan } from "./project.mjs";
 import { applyProject, hasProjectScope, readProject, tokenScopes } from "./projectGh.mjs";
+import { readRoadmap } from "./roadmapGh.mjs";
 
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
@@ -46,7 +52,7 @@ const isBrief = (f) => briefName.test(f) && !f.endsWith("-snags.md");
 const gh = (path, { method = "GET", body } = {}) => {
   const argv = ["api", "-H", "Accept: application/vnd.github+json", "-X", method, path];
   if (body) argv.push("--input", "-");
-  const out = execFileSync("gh", argv, { input: body ? JSON.stringify(body) : undefined, encoding: "utf8", maxBuffer: 64 << 20 });
+  const out = withRetry(() => execFileSync("gh", argv, { input: body ? JSON.stringify(body) : undefined, encoding: "utf8", maxBuffer: 64 << 20, stdio: ["pipe", "pipe", "pipe"] }));
   return out.trim() === "" ? null : JSON.parse(out);
 };
 const ghAll = (path) => {
@@ -135,7 +141,7 @@ return {
   ownerId: owner_.repositoryOwner.id,
   types: (owner_.repository.issueTypes?.nodes ?? []).map((x) => x.name),
   labels: ghAll(`repos/${repo}/labels?per_page=100`).map((l) => ({ name: l.name, color: l.color, description: l.description ?? "" })),
-  milestones: ghAll(`repos/${repo}/milestones?state=all&per_page=100`).map((m) => ({ number: m.number, title: m.title, description: m.description ?? "" })),
+  milestones: ghAll(`repos/${repo}/milestones?state=all&per_page=100`).map((m) => ({ number: m.number, title: m.title, description: m.description ?? "", dueOn: m.due_on ? m.due_on.slice(0, 10) : null })),
   issues: issues.map((i) => ({
     number: i.number,
     id: i.id,
@@ -169,11 +175,19 @@ if (withBoard) {
     process.exit(2);
   }
   rows = parsed.rows;
+  // An adoption that cannot be planned (no such issue, a pull request, another row's) stops the run before any write.
+  const problems = adoptionProblems(rows, state.issues);
+  if (problems.length) {
+    process.stderr.write(`docs/canon/status.md: adoptions that cannot be planned:\n${problems.map((e) => `  ${e}`).join("\n")}\n`);
+    process.exit(2);
+  }
 }
+// The roadmap (K42, section 5): actual dates from the pull requests and the claims, the rest forecast. Read-only.
+const roadmap = rows ? readRoadmap({ repo, rows }) : null;
 const statusUrl = `https://github.com/${repo}/blob/main/docs/canon/status.md`;
 const steps = [
   ...plan({ goals: live, state, briefUrl, migrate }),
-  ...(rows ? boardPlan({ rows, state, statusUrl, typeOf }) : []),
+  ...(rows ? boardPlan({ rows, state, statusUrl, typeOf, due: roadmap.due }) : []),
 ];
 for (const s of steps) process.stdout.write(`${apply ? "do" : "would"} ${s.do} ${s.title ?? s.name ?? s.number ?? ""}${s.child ? ` ← ${s.child}` : ""}\n`);
 const say = (line) => process.stdout.write(`${line}\n`);
@@ -182,7 +196,9 @@ if (rows) {
   const list = (o) => Object.entries(o).map(([k, n]) => `${k} ${n}`).join(", ");
   say(`Board: ${c.rows} rows. By stage: ${list(c.byStage)}. By who pulled them: ${list(c.byPulledBy)}.`);
   const n = (kind) => steps.filter((s) => s.board && s.do === kind).length;
-  say(`Board steps: ${n("createIssue")} issue(s) to create, ${n("updateIssue")} to update, ${n("closeIssue")} to close.`);
+  const adopted = steps.filter((s) => s.board && s.do === "updateIssue" && s.adopt).length;
+  say(`Board steps: ${adopted} issue(s) to adopt, ${n("createIssue")} to create, ${n("updateIssue") - adopted} to update, ${n("closeIssue")} new issue(s) to close, ${n("foldIssue")} duplicate(s) to fold and close, ${steps.filter((s) => s.do === "setMilestoneDue").length} milestone date(s) to set.`);
+  say(`Roadmap: pace ${roadmap.pace.toFixed(1)} pull requests a day over the last 3 days, ${roadmap.perItem.toFixed(1)} per item. Milestone dates: ${Object.entries(roadmap.due).map(([t, d]) => `${t} ${d}`).join("; ")}.`);
   for (const o of claimOverlaps(rows)) say(`claims overlap: ${o.a} (${o.lanes[0]}) and ${o.b} (${o.lanes[1]}) both touch ${o.path}; the framework goal settles it (K42, section 3, case 2)`);
 }
 // An organization's issue types need `admin:org`: stop before writing anything rather than halfway through.
@@ -194,9 +210,16 @@ if (!apply) {
   if (withProject) {
     const project = projectScope ? readProject(owner, repo).project : null;
     if (!projectScope) say("(no project scope: the Project's plan from nothing; run gh auth refresh -s project)");
-    const pSteps = projectPlan({ goals: live, issues: state.issues, project, rows });
+    const pSteps = projectPlan({ goals: live, issues: state.issues, project, rows, dates: roadmap?.dates });
     for (const s of pSteps) say(`would ${s.do} ${s.title ?? s.name ?? ""}`);
-    say(`${pSteps.length} Project step(s), not counting the items for issues this run would create.`);
+    say(`${pSteps.length} Project step(s) for the issues that exist (${pSteps.filter((s) => s.do === "setValue").length} field values set, ${pSteps.filter((s) => s.do === "addItem").length} issues added).`);
+    if (rows) {
+      // An issue this run would create has no number yet, so its fields are counted from its row.
+      const byId = new Map(rows.map((r) => [r.id, r]));
+      const made = steps.filter((s) => s.do === "createIssue" && s.board).map((s) => byId.get(s.key.slice(5)));
+      const writes = made.reduce((n, r) => n + Object.values(boardValues(r, { state: "open" }, live, { byId, dates: roadmap.dates })).filter((v) => v !== undefined && v !== null).length, 0);
+      say(`Plus about ${writes} field value(s) and ${made.length} item(s) for the ${made.length} issue(s) it would create.`);
+    }
   }
   say(`${steps.length} step(s). Dry run: nothing written. Add --apply to write.`);
   process.exit();
@@ -205,20 +228,29 @@ if (!apply) {
 const milestones = new Map(state.milestones.map((m) => [m.title, m.number]));
 const created = new Map();
 const issueRef = (x) => (typeof x === "number" ? { number: x, id: state.issues.find((i) => i.number === x).id } : created.get(x));
+const rowById = new Map((rows ?? []).map((r) => [r.id, r]));
 for (const s of steps) {
   if (s.do === "createLabel") gh(`repos/${repo}/labels`, { method: "POST", body: { name: s.name, color: s.color, description: s.description } });
   if (s.do === "updateLabel") gh(`repos/${repo}/labels/${encodeURIComponent(s.name)}`, { method: "PATCH", body: { color: s.color, description: s.description } });
   if (s.do === "createMilestone") milestones.set(s.title, gh(`repos/${repo}/milestones`, { method: "POST", body: { title: s.title, description: s.description } }).number);
   if (s.do === "updateMilestone") gh(`repos/${repo}/milestones/${s.number}`, { method: "PATCH", body: { description: s.description } });
+  if (s.do === "setMilestoneDue") gh(`repos/${repo}/milestones/${milestones.get(s.title)}`, { method: "PATCH", body: { due_on: `${s.day}T12:00:00Z` } });
   if (s.do === "createIssue") {
     const i = gh(`repos/${repo}/issues`, { method: "POST", body: { title: s.title, body: s.body, labels: s.labels, milestone: milestones.get(s.milestone), type: s.type } });
     created.set(s.key, { number: i.number, id: i.id });
   }
   if (s.do === "updateIssue") {
-    const extra = { ...(s.body ? { body: s.body } : {}), ...(s.labels ? { labels: s.labels } : {}), ...(s.state ? { state: s.state } : {}), ...(s.milestone ? { milestone: milestones.get(s.milestone) } : {}) };
+    const extra = { ...(s.body ? { body: s.body } : {}), ...(s.labels ? { labels: s.labels } : {}), ...(s.state ? { state: s.state } : {}), ...(s.milestone ? { milestone: milestones.get(s.milestone) } : {}), ...(s.type ? { type: s.type } : {}) };
     gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { title: s.title, ...extra } });
   }
   if (s.do === "closeIssue") gh(`repos/${repo}/issues/${issueRef(s.issue).number}`, { method: "PATCH", body: { state: "closed" } });
+  if (s.do === "foldIssue") {
+    // The comment first, then the close; a hidden line in the comment keeps a re-run from saying it twice.
+    const into = issueRef(s.into).number;
+    const said = ghAll(`repos/${repo}/issues/${s.number}/comments?per_page=100`).some((c) => (c.body ?? "").includes(`orthograph:folded=${s.row}`));
+    if (!said) gh(`repos/${repo}/issues/${s.number}/comments`, { method: "POST", body: { body: foldComment(rowById.get(s.row), into) } });
+    gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { state: "closed", state_reason: "duplicate" } });
+  }
   if (s.do === "createIssueType") {
     const q = "mutation($o:ID!,$n:String!,$c:IssueTypeColor!,$d:String!){createIssueType(input:{ownerId:$o,name:$n,color:$c,description:$d,isEnabled:true}){issueType{id}}}";
     execFileSync("gh", ["api", "graphql", "-f", `query=${q}`, "-f", `o=${state.ownerId}`, "-f", `n=${s.name}`, "-f", `c=${s.color}`, "-f", `d=${s.description}`], { encoding: "utf8" });
@@ -230,6 +262,7 @@ for (const s of steps) {
     if (s.milestone) gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { milestone: milestones.get(s.milestone) } });
     if (s.addLabels.length) gh(`repos/${repo}/issues/${s.number}/labels`, { method: "POST", body: { labels: s.addLabels } });
   }
+  pause(s.do === "createIssue" || s.do === "foldIssue" ? PAUSE_CREATE_MS : PAUSE_WRITE_MS);
 }
 say(`${steps.length} step(s) written to ${repo}.`);
-if (withProject) say(`The Project: ${applyProject({ owner, repo, goals: live, issues: readState().issues, log: say, rows: rows ?? undefined })}`);
+if (withProject) say(`The Project: ${applyProject({ owner, repo, goals: live, issues: readState().issues, log: say, rows: rows ?? undefined, dates: roadmap?.dates })}`);

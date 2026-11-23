@@ -2,9 +2,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { APP_MILESTONES, BOARD_COLUMNS, NOT_YET_NEEDED, boardCounts, boardPlan, claimOverlaps, itemBody, itemLabels, itemMarker, issueOfRow, parseBoard } from "./board.mjs";
+import { APP_MILESTONES, BOARD_COLUMNS, NOT_YET_NEEDED, boardCounts, claimOverlaps, parseBoard } from "./board.mjs";
+import { ORIGINAL, adoptionProblems, boardPlan, foldComment, itemBody, itemLabels, itemMarker, issueOfRow } from "./boardPlan.mjs";
 import { LABELS, typeOf } from "./plan.mjs";
-import { boardValues, projectFields, projectPlan } from "./project.mjs";
+import { boardStatus, boardValues, projectFields, projectPlan } from "./project.mjs";
 
 const head = `| ${BOARD_COLUMNS.join(" | ")} |\n|${BOARD_COLUMNS.map(() => "---").join("|")}|`;
 const page = (...lines) => `# Status\n\n## 1. The releases\n\n| id | other |\n|---|---|\n| x | y |\n\n## 2. The capability map\n\nProse.\n\n### A group\n\n${head}\n${lines.join("\n")}\n\n## 3. Holes\n`;
@@ -13,10 +14,10 @@ const row = (id, item, stage, by, release, milestone, lane, touches, needs, evid
 
 const sample = page(
   row("secrets", "Secrets by declaration: per environment only", "building", "superagent", "beta", "coding agent", "goal-17", "`packages/host-cloudflare`, `packages/orthograph/src/modules/secrets`", "—", "#690; slice M2.04"),
-  row("things", "Things, fields, machines", "built", "framework", "preview", "—", "none", "`packages/orthograph/src/modules/things`", "—", "slice M1.03"),
-  row("sign-in", "Sign-in as the auth plugin (`@orthograph/auth`: people, sessions): Better Auth", "provisional", "superagent", "1.0", "launch", "none", "`packages/auth`", "secrets, things", "slices M2.05"),
+  row("things", "Things: fields, machines", "built", "framework", "preview", "—", "none", "`packages/orthograph/src/modules/things`", "—", "slice M1.03"),
+  row("sign-in", "Sign-in (`@orthograph/auth`: people, sessions): Better Auth", "provisional", "superagent", "1.0", "launch", "none", "`packages/auth`", "secrets, things", "slices M2.05"),
   row("reports", "Reports: the books' statements", "provisional", "Capxul", "1.0", "books", "none", "`packages/projections`", "things", "K42"),
-  row("gap-node-host", "A Node host: the server runs only as a Worker", "provisional", "framework", "—", "—", "none", "—", "—", "no slice"),
+  row("gap-node-host", "Node host: the server runs only as a Worker", "provisional", "framework", "—", "—", "none", "—", "—", "no slice"),
 );
 
 test("the page's rows: every column read, the kind from the id, the name from the item, the tables outside section 2 ignored", () => {
@@ -26,7 +27,7 @@ test("the page's rows: every column read, the kind from the id, the name from th
   const secrets = rows[0];
   assert.deepEqual([secrets.kind, secrets.name, secrets.stage, secrets.pulledBy, secrets.release, secrets.milestone, secrets.lane], ["capability", "Secrets by declaration", "building", "superagent", "beta", "coding agent", "goal-17"]);
   assert.deepEqual(secrets.touches, ["packages/host-cloudflare", "packages/orthograph/src/modules/secrets"]);
-  assert.equal(rows[2].name, "Sign-in as the auth plugin (`@orthograph/auth`: people, sessions)", "a colon inside parentheses is not the end of the name");
+  assert.equal(rows[2].name, "Sign-in (`@orthograph/auth`: people, sessions)", "a colon inside parentheses is not the end of the name");
   assert.deepEqual(rows[2].needs, ["secrets", "things"]);
   assert.equal(rows[4].kind, "gap");
   assert.deepEqual([rows[4].release, rows[4].milestone, rows[4].lane, rows[4].touches], [null, null, null, []]);
@@ -37,19 +38,19 @@ test("the page's rows: every column read, the kind from the id, the name from th
 test("a row that does not read is an error naming it, never a silent skip", () => {
   const bad = (line) => parseBoard(page(line)).errors.join("\n");
   assert.match(bad(row("A_b", "x", "building", "framework", "—", "—", "none", "—", "—", "")), /id is not lowercase/);
-  assert.match(bad(row("a", "x", "half-built", "framework", "—", "—", "none", "—", "—", "")), /stage 'half-built'/);
-  assert.match(bad(row("a", "x", "built", "everyone", "—", "—", "none", "—", "—", "")), /pulled by 'everyone'/);
-  assert.match(bad(row("a", "x", "built", "framework", "2.0", "—", "none", "—", "—", "")), /release '2.0'/);
-  assert.match(bad(row("a", "x", "built", "framework", "—", "someday", "none", "—", "—", "")), /milestone 'someday'/);
-  assert.match(bad(row("a", "x", "built", "framework", "—", "—", "team-4", "—", "—", "")), /lane 'team-4'/);
-  assert.match(bad(row("a", "x", "built", "framework", "—", "—", "none", "packages/x", "—", "")), /touches is not a list/);
-  assert.match(bad(row("a", "x", "built", "framework", "—", "—", "none", "—", "ghost", "")), /needs 'ghost', which is no row/);
+  assert.match(bad(row("a", "x: y", "half-built", "framework", "—", "—", "none", "—", "—", "")), /stage 'half-built'/);
+  assert.match(bad(row("a", "x: y", "built", "everyone", "—", "—", "none", "—", "—", "")), /pulled by 'everyone'/);
+  assert.match(bad(row("a", "x: y", "built", "framework", "2.0", "—", "none", "—", "—", "")), /release '2.0'/);
+  assert.match(bad(row("a", "x: y", "built", "framework", "—", "someday", "none", "—", "—", "")), /milestone 'someday'/);
+  assert.match(bad(row("a", "x: y", "built", "framework", "—", "—", "team-4", "—", "—", "")), /lane 'team-4'/);
+  assert.match(bad(row("a", "x: y", "built", "framework", "—", "—", "none", "packages/x", "—", "")), /touches is not a list/);
+  assert.match(bad(row("a", "x: y", "built", "framework", "—", "—", "none", "—", "ghost", "")), /needs 'ghost', which is no row/);
   assert.match(bad("| a | too | few |"), /3 cells/);
   assert.match(parseBoard("# no map\n").errors[0], /no section/);
 });
 
 test("fail closed: a table in the map whose header is misspelt is an error, and the legend is the one table allowed", () => {
-  const good = row("a", "x", "built", "framework", "—", "—", "none", "—", "—", "");
+  const good = row("a", "x: y", "built", "framework", "—", "—", "none", "—", "—", "");
   const misspelt = page(good).replace("| Stage |", "| Stag |");
   const { errors } = parseBoard(misspelt);
   assert.equal(errors.length, 1);
@@ -62,14 +63,14 @@ test("fail closed: a table in the map whose header is misspelt is an error, and 
 
 test("the split and the releases: a framework row has no app milestone, and K42 decides the release", () => {
   const bad = (line) => parseBoard(page(line)).errors.join("\n");
-  assert.match(bad(row("a", "x", "built", "framework", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by framework/);
-  assert.match(bad(row("a", "x", "built", "superagent", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by superagent/);
-  assert.match(bad(row("a", "x", "built", "Capxul", "beta", "books", "none", "—", "—", "")), /only Capxul pulls ships in 1.0/);
-  assert.match(bad(row("a", "x", "built", "superagent", "1.0", "coding agent", "none", "—", "—", "")), /ships in beta/);
-  assert.match(bad(row("a", "x", "built", "superagent", "beta", "launch", "none", "—", "—", "")), /ships in 1.0/);
-  const twice = page(row("a", "x", "built", "framework", "—", "—", "none", "—", "—", ""), row("a", "y", "built", "framework", "—", "—", "none", "—", "—", ""));
+  assert.match(bad(row("a", "x: y", "built", "framework", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by framework/);
+  assert.match(bad(row("a", "x: y", "built", "superagent", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by superagent/);
+  assert.match(bad(row("a", "x: y", "built", "Capxul", "beta", "books", "none", "—", "—", "")), /only Capxul pulls ships in 1.0/);
+  assert.match(bad(row("a", "x: y", "built", "superagent", "1.0", "coding agent", "none", "—", "—", "")), /ships in beta/);
+  assert.match(bad(row("a", "x: y", "built", "superagent", "beta", "launch", "none", "—", "—", "")), /ships in 1.0/);
+  const twice = page(row("a", "x: y", "built", "framework", "—", "—", "none", "—", "—", ""), row("a", "y: z", "built", "framework", "—", "—", "none", "—", "—", ""));
   assert.match(parseBoard(twice).errors.join(), /duplicate id/);
-  const circle = page(row("a", "x", "built", "framework", "—", "—", "none", "—", "b", ""), row("b", "y", "built", "framework", "—", "—", "none", "—", "a", ""));
+  const circle = page(row("a", "x: y", "built", "framework", "—", "—", "none", "—", "b", ""), row("b", "y: z", "built", "framework", "—", "—", "none", "—", "a", ""));
   assert.match(parseBoard(circle).errors.join(), /run in a circle/);
 });
 
@@ -178,9 +179,90 @@ test("the Project: Stage, Pulled by and Lane join the fields, the board's items 
 
 test("the Project, run twice: once it holds each board item's fields there is nothing to do", () => {
   const state = held(rows);
+  const byId = new Map(rows.map((r) => [r.id, r]));
   const issues = state.issues.map((i) => ({ ...i, nodeId: `I${i.number}` }));
   const fields = projectFields([goal], rows).map((f) => ({ id: `F-${f.name}`, name: f.name, dataType: f.dataType, options: f.options.map((o, k) => ({ id: `${f.name}${k}`, name: o.name })) }));
-  const items = rows.map((r, k) => ({ id: `T${k}`, number: 100 + k, values: Object.fromEntries(Object.entries(boardValues(r, issues[k], [goal])).filter(([, v]) => v !== null && v !== undefined)) }));
+  const items = rows.map((r, k) => ({ id: `T${k}`, number: 100 + k, values: Object.fromEntries(Object.entries(boardValues(r, issues[k], [goal], { byId, dates: null })).filter(([, v]) => v !== null && v !== undefined)) }));
   const views = projectPlan({ goals: [goal], issues, project: null, rows }).filter((s) => s.do === "createView").map((s, k) => ({ id: `V${k}`, name: s.name, layout: s.layout, filter: s.filter }));
   assert.deepEqual(projectPlan({ goals: [goal], issues, project: { id: "P", fields, items, views }, rows }), []);
+});
+
+test("every Item starts with a short name and a colon, and the issue's title is the name", () => {
+  const bad = (item) => parseBoard(page(row("a", item, "built", "framework", "—", "—", "none", "—", "—", ""))).errors.join();
+  assert.match(bad("no name here"), /short name and a colon/);
+  assert.match(bad(`${"long ".repeat(14)}name: what it is`), /short name and a colon/);
+  assert.equal(bad("Short name: what it is"), "");
+});
+
+const ask = (number, body = "The ask, in its own words.\r\nSecond line.", extra = {}) => ({
+  number, title: `Ask (Goal 16, for Goal 3): something #${number}`, body, state: "open", trusted: true, pullRequest: false,
+  labels: ["kind:ask", "release:1.0", "goal-17", "harness:amp"], milestone: "Goal 17: the superagent", type: "Ask", ...extra,
+});
+const adopting = parseBoard(page(
+  row("principals", "Principals: agent, service and system callers", "building", "superagent", "beta", "coding agent", "goal-17", "`packages/orthograph/src/modules/roles`", "—", "`issue #531`, `folds #533`; K40 fix 1"),
+  row("versions", "Versions: things with `versions:`", "provisional", "superagent", "beta", "coding agent", "none", "`packages/orthograph`", "principals", "`issue #532`"),
+)).rows;
+
+test("adopting: the row's issue is an existing one, relabelled and moved, its words kept beneath the page, the others folded", () => {
+  assert.deepEqual([adopting[0].adopts, adopting[0].folds, adopting[1].adopts, adopting[1].folds], [531, [533], 532, []]);
+  const state = { ...empty, issues: [ask(531), ask(532), ask(533)] };
+  const steps = plan(adopting, state);
+  assert.equal(steps.filter((s) => s.do === "createIssue").length, 0, "nothing is created beside an adopted issue");
+  const first = steps.find((s) => s.do === "updateIssue" && s.number === 531);
+  assert.deepEqual([first.adopt, first.title, first.milestone, first.type], [true, "Principals", "Superagent: the coding agent end to end", "Capability"]);
+  assert.deepEqual(first.labels, ["goal-17", "harness:amp", "kind:capability", "release:beta", "lane:goal-17"], "kind:ask goes, the others stay");
+  assert.ok(first.body.startsWith(itemMarker("principals")));
+  assert.ok(first.body.includes(`\n\n${ORIGINAL}\n> The text this issue had before the board adopted it`));
+  assert.ok(first.body.endsWith("The ask, in its own words.\nSecond line."), "line endings normalised, words intact");
+  assert.deepEqual(steps.filter((s) => s.do === "foldIssue").map((s) => [s.number, s.into, s.row]), [[533, 531, "principals"]]);
+  assert.match(foldComment(adopting[0], 531), /same item as #531/);
+});
+
+test("adopting, run twice: the marker is on the issue, so there is no second adoption, no lost text and no second fold", () => {
+  const first = plan(adopting, { ...empty, issues: [ask(531), ask(532), ask(533)] });
+  const issues = [531, 532, 533].map((n) => {
+    const s = first.find((x) => x.do === "updateIssue" && x.number === n);
+    const folded = first.some((x) => x.do === "foldIssue" && x.number === n);
+    return s ? ask(n, s.body, { labels: s.labels, milestone: s.milestone, type: s.type, title: s.title }) : ask(n, undefined, { state: folded ? "closed" : "open" });
+  });
+  const state = {
+    ...empty,
+    issues,
+    labels: [{ name: "lane:goal-17" }],
+    milestones: first.filter((s) => s.do === "createMilestone").map((s, k) => ({ number: k + 1, title: s.title, description: s.description })),
+  };
+  const second = plan(adopting, state);
+  assert.deepEqual(second.filter((s) => s.do === "updateIssue" || s.do === "foldIssue").map((s) => [s.do, s.number]), [], "nothing left to write");
+  assert.ok(issueOfRow(adopting[0], issues), "found again, by its number or its marker");
+});
+
+test("adoption problems: an issue that is missing, a pull request, an outsider's or another row's is named before anything is written", () => {
+  const rowsBad = parseBoard(page(
+    row("a", "A: one", "building", "framework", "—", "—", "none", "—", "—", "`issue #1`, `folds #2, #3`"),
+    row("b", "B: two", "building", "framework", "—", "—", "none", "—", "—", "`issue #4`, `folds #5`"),
+  )).rows;
+  const issues = [ask(1), ask(2, "x", { pullRequest: true }), ask(3, "x", { trusted: false }), ask(4, `${itemMarker("c")}\nbody`, { labels: ["kind:capability"] })];
+  assert.deepEqual(adoptionProblems(rowsBad, issues), [
+    "a folds #2, which is a pull request",
+    "a folds #3, which an outsider opened",
+    "b adopts #4, which is the board's issue for c",
+    "b folds #5, which is no issue",
+  ]);
+  const bad = (cell) => parseBoard(page(row("a", "A: one", "building", "framework", "—", "—", "none", "—", "—", cell), row("b", "B: two", "building", "framework", "—", "—", "none", "—", "—", "`issue #7`"))).errors.join();
+  assert.match(bad("`issue #1`, `issue #2`"), /adopts 2 issues/);
+  assert.match(bad("`folds #1`"), /folds issues but adopts none/);
+  assert.match(bad("`issue #7`"), /already adopted or folded by row a/);
+});
+
+test("Status (K42, section 5): done when built, running with a lane, ready only when every need is built, else blocked", () => {
+  const mk = (id, stage, lane, ...needs) => ({ id, stage, lane, needs });
+  const all = [mk("a", "built", null), mk("b", "extracted", null), mk("c", "building", null), mk("d", "provisional", null, "a", "b"), mk("e", "provisional", null, "a", "c"), mk("f", "building", "goal-17", "c"), mk("g", "built", "goal-17", "c")];
+  const byId = new Map(all.map((r) => [r.id, r]));
+  assert.deepEqual(all.map((r) => boardStatus(r, byId)), ["Done", "Done", "Ready", "Ready", "Blocked", "Running", "Done"]);
+});
+
+test("a milestone's due date is written when it differs, and not for 'Not yet needed'", () => {
+  const state = { ...empty, milestones: [{ number: 1, title: "Capxul: the books", description: "x", dueOn: "2026-12-01" }] };
+  const steps = boardPlan({ rows: [], state, statusUrl: url, typeOf, due: { "Capxul: the books": "2026-12-01", "Capxul: banking": "2026-12-09", [NOT_YET_NEEDED]: "2027-01-01" } });
+  assert.deepEqual(steps.filter((s) => s.do === "setMilestoneDue"), [{ do: "setMilestoneDue", title: "Capxul: banking", day: "2026-12-09" }]);
 });
