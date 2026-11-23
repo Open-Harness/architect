@@ -32,13 +32,19 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
     name: (id, owner) => (counted ? call(env, (keeper) => keeper.countName(id, owner)) : Effect.void),
     // A box that holds an id the world no longer knows (a reset since) takes a fresh token.
     valid: (id) => (counted ? call(env, (keeper) => keeper.countHas(id)) : Effect.succeed(true)),
+    // A write section: the world holds the request's token, and waits for the section to end before it wipes anything.
+    section: (id) => (counted ? call(env, (keeper) => keeper.countSection(id)) : Effect.succeed(true)),
+    sectionEnd: (id) => (counted ? call(env, (keeper) => keeper.countSectionEnd(id)) : Effect.void),
     // The box of the request this fiber runs in, taken at its entry: the work counts under it instead of taking another token.
     request: Effect.sync(() => WorldClock.box()),
   }));
   const table = Layer.succeed(WorldTable, WorldTable.of({
     // A call carries the request's own token: one the world no longer holds is from a run a reset ended, and is refused.
     add: (owner, name, at, holder) => Effect.suspend(() => {
-      const token = WorldClock.box()?.id;
+      const box = WorldClock.box();
+      // A request the world no longer holds is stale: it sets nothing in the new run's table, before any call is made.
+      if (box?.stale === true) return Effect.interrupt;
+      const token = box?.id;
       return call(env, (keeper) => keeper.timerAdd(owner, name, at, holder, token));
     }),
     // The wake is the instant the world fired the row at: this request's own clock is pointed at it before the code goes on.
@@ -50,10 +56,18 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
     cancel: (id) => call(env, (keeper) => keeper.timerCancel(id)).pipe(Effect.tap(() => resumed(env))),
     sleeping: call(env, (keeper) => keeper.timersSleeping()),
     set: (at, owner, name, wake) => Effect.suspend(() => {
-      const token = WorldClock.box()?.id;
+      const box = WorldClock.box();
+      if (box?.stale === true) return Effect.interrupt;
+      const token = box?.id;
       return call(env, (keeper) => keeper.timerSet(at, owner, name, wake, token));
     }),
-    clear: (owner, name) => call(env, (keeper) => keeper.timerClear(owner, name)),
+    // A stale request must not delete a row of the new run that has the same owner and name.
+    clear: (owner, name) => Effect.suspend(() => {
+      const box = WorldClock.box();
+      if (box?.stale === true) return Effect.interrupt;
+      const token = box?.id;
+      return call(env, (keeper) => keeper.timerClear(owner, name, token));
+    }),
     durable: call(env, (keeper) => keeper.timersDurable()),
   }));
   const busy = BusyReporting.pipe(Layer.provide(count));

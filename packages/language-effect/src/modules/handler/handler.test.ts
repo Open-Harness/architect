@@ -2,8 +2,8 @@ import { Cause, Deferred, Effect, Exit, Fiber, Layer, Tracer } from "effect";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { Blueprint } from "orthograph";
 import { ErrorNames } from "orthograph/server";
-import { Busy } from "#modules/work/types.js";
-import { BusyLive } from "#modules/work/service.js";
+import { Busy, WorldCount, makeBox } from "#modules/work/types.js";
+import { BusyLive, BusyReporting } from "#modules/work/service.js";
 import { storeMemory } from "#modules/records/service.js";
 import { Records, Store } from "#modules/records/types.js";
 import { EventNames } from "orthograph/server";
@@ -351,5 +351,30 @@ describe("counted work spans the whole operation (M8.07)", () => {
       return { during, after: yield* busy.held };
     }), layer));
     expect(seen).toEqual({ during: ["allowance.grant"], after: [] });
+  });
+});
+
+describe("the commit is a write section (M8.07)", () => {
+  it("a request the world no longer holds is interrupted at its commit, and nothing is committed; one it holds commits inside the section", async () => {
+    const run = async (open: boolean) => {
+      const rec = recording();
+      const sections: Array<string> = [];
+      const request = makeBox("entry:/allowance/grant", { id: "0.0", pinned: true });
+      const world = Layer.succeed(WorldCount, WorldCount.of({
+        enter: () => Effect.succeed("0.1"), leave: () => Effect.void, valid: () => Effect.succeed(open),
+        section: (id) => Effect.sync(() => { sections.push(`open ${id}`); return open; }),
+        sectionEnd: (id) => Effect.sync(() => void sections.push(`end ${id}`)),
+        request: Effect.succeed(request),
+      }));
+      let commits = 0;
+      const exit = await Effect.runPromiseExit(Effect.gen(function* () {
+        const base = yield* Store;
+        const counted = { ...base, commit: (c: Parameters<typeof base.commit>[0]) => Effect.suspend(() => { commits += 1; return base.commit(c); }) };
+        return yield* Effect.provideService(served.call({ member: "per_olga", limit: "500" }, ada), Store, counted);
+      }).pipe(Effect.provide(Layer.mergeAll(BusyReporting.pipe(Layer.provide(world)), rec.store.layer))));
+      return { ok: Exit.isSuccess(exit), commits, sections };
+    };
+    expect(await run(false)).toEqual({ ok: false, commits: 0, sections: [] });
+    expect(await run(true)).toEqual({ ok: true, commits: 1, sections: ["open 0.0", "end 0.0"] });
   });
 });

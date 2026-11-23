@@ -141,6 +141,8 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
             ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
           })),
           spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
+          // A write section: the commit happens only while the world still holds this request's token, and a reset waits for it (M8.07).
+          busy.fenced,
         );
         if (committed === "conflict") return yield* new Conflict();
         return answer;

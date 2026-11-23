@@ -10,6 +10,8 @@ import { makeTable } from "./internal/table.ts";
 const DEFAULT_QUIET_MS = 5_000;
 /** The most timers one move fires at one instant (`ORTHO_FIRE_LIMIT`): a timer that sets itself again at that instant would never end. */
 const DEFAULT_FIRE_LIMIT = 10_000;
+/** A world closed for a reset opens again by itself after this long (real milliseconds). */
+const REOPEN_AFTER_MS = 30_000;
 
 export const WorldTimers = {
   /** The wake for a durable timer, by its kind: `wakesByKind` over `kinds`. A kind with no handler is a defect, which fails the wake. */
@@ -28,6 +30,16 @@ export const WorldTimers = {
     // could not be aborted and would run twice.
     const table = makeTable(sql, count, wakes, !real, real ? Number.POSITIVE_INFINITY : limitOf(env.ORTHO_QUIET_MS, DEFAULT_QUIET_MS));
     const fireLimit = limitOf(env.ORTHO_FIRE_LIMIT, DEFAULT_FIRE_LIMIT);
+    // The world closes to new tokens and to writes while a reset wipes the databases. It opens again when told the wipe is done, or by
+    // itself after a while, so a wipe that never finishes cannot keep it shut.
+    let closedAt: number | undefined;
+    const admit = () => {
+      closedAt = undefined;
+      count.admit();
+    };
+    const guard = () => {
+      if (closedAt !== undefined && WorldClock.wall() - closedAt > REOPEN_AFTER_MS) admit();
+    };
     /** A call that carries a token of a run that is over is refused before it touches the table. */
     const live = (token: string | undefined, what: string): void => {
       if (token !== undefined && !real && !count.has(token)) Effect.runSync(Effect.die(new Error(`${what} came from a run the world has reset`)));
@@ -41,7 +53,19 @@ export const WorldTimers = {
     return {
       rpc: {
         // A real world counts nothing: its tokens are never taken, so they cannot be missed.
-        countEnter: (owner) => (real ? "real" : count.enter(owner)),
+        countEnter: (owner) => {
+          if (real) return "real";
+          guard();
+          // Closed for a reset: a request admitted now would lose its writes to the wipe. It is refused.
+          if (count.closed()) return Effect.runSync(Effect.die(new Error(`${owner} was refused: the world is being reset`)));
+          return count.enter(owner);
+        },
+        countSection: (id) => {
+          if (real) return true;
+          guard();
+          return count.section(id);
+        },
+        countSectionEnd: (id) => (real ? undefined : count.sectionEnd(id)),
         countLeave: (id) => (real ? undefined : count.leave(id)),
         countName: (id, owner) => (real ? undefined : count.name(id, owner)),
         countHas: (id) => (real ? true : count.has(id)),
@@ -55,7 +79,10 @@ export const WorldTimers = {
           live(token, `a durable timer for ${owner} ${name}`);
           return touched(table.set(at, owner, name, wake));
         },
-        timerClear: (owner, name) => touched(table.clear(owner, name)),
+        timerClear: (owner, name, token) => {
+          live(token, `a clear of ${owner} ${name}`);
+          return touched(table.clear(owner, name));
+        },
         timersSleeping: () => table.sleeping(),
         timersDurable: () => table.durable(),
       },
@@ -90,6 +117,17 @@ export const WorldTimers = {
         return sweep;
       },
       held: () => count.held(),
+      closed: () => {
+        guard();
+        return count.closed();
+      },
+      close: () => Effect.suspend(() => {
+        if (real) return Effect.void;
+        closedAt = WorldClock.wall();
+        count.close();
+        return count.drain(limitOf(env.ORTHO_QUIET_MS, DEFAULT_QUIET_MS));
+      }),
+      admit,
       reset: () => {
         table.reset();
         count.reset();

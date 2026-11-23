@@ -85,13 +85,13 @@ describe("Timers on the world's table", () => {
       const timers = yield* Timers;
       const done = yield* Deferred.make<void>();
       yield* busy.as("probe.nap").spawn(timers.sleep("probe.nap", Duration.seconds(20)).pipe(Effect.andThen(Deferred.succeed(done, undefined))));
-      yield* Effect.yieldNow;
-      yield* Effect.yieldNow;
+      for (let i = 0; i < 16; i++) yield* Effect.yieldNow;
       expect(world.held()).toEqual([]);
       expect(yield* timers.pending).toEqual([{ id: 1, at: 20_000, owner: "probe.nap", name: "sleep" }]);
       yield* world.fire(1);
       yield* Deferred.await(done);
       yield* busy.quiet;
+      for (let i = 0; i < 16; i++) yield* Effect.yieldNow;
       expect(world.held()).toEqual([]);
       // The token is lent out before the world can look; the world holds one for the sleeper from the firing; the sleeper takes its own
       // before the world lets go of that one; the work then ends and gives its token back.
@@ -133,6 +133,22 @@ describe("Timers on the world's table", () => {
       expect((yield* Fiber.await(waiting))._tag).toBe("Failure");
       for (let i = 0; i < 10; i++) yield* Effect.yieldNow;
       expect([committed, ran, world.rows, world.held(), yield* busy.count]).toEqual([false, false, [], [], 0]);
+    }));
+  });
+
+  it("Timers.all: a sleep in parallel with a long branch lends the token out once the long one has ended, so the world can fire it", async () => {
+    const world = makeWorld();
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const timers = yield* Timers;
+      const long = yield* Deferred.make<void>();
+      const fiber = yield* Effect.forkChild(busy.as("probe.nap").counted(Timers.all([timers.sleep("probe.nap", "1 day"), Deferred.await(long)], { concurrency: "unbounded" })));
+      for (let i = 0; i < 6; i++) yield* Effect.yieldNow;
+      expect(world.held()).toEqual(["probe.nap"]);
+      yield* Deferred.succeed(long, undefined);
+      for (let i = 0; i < 16; i++) yield* Effect.yieldNow;
+      expect(world.held()).toEqual([]);
+      yield* Fiber.interrupt(fiber);
     }));
   });
 
