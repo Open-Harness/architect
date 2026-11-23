@@ -2,6 +2,7 @@
 // (GOAL17-source-from, "The model"; built in slice 11): a `gone` error the reply call does not declare, a config with no `me`
 // of the `{ id, login }` shape, an `environment.of` whose keys are not the names `variables` declares, and a connection
 // naming an event no kind the source makes produces.
+import { Effect } from "effect";
 import type { SourceKind } from "orthograph";
 import type { Layout } from "./layout.ts";
 
@@ -24,11 +25,7 @@ const meShape = (config: unknown): boolean => {
 /** The names `environment.of` answers for a trigger whose address answers any property with text; `undefined` where it cannot be read that way. */
 const keysOf = (spec: Spec): ReadonlyArray<string> | undefined => {
   const anything: object = new Proxy({}, { get: (_t, key) => (key === Symbol.toPrimitive ? () => "x" : "x") });
-  try {
-    return Object.keys(spec.environment.of({ kind: "x", thread: "x", text: "x", channel: anything })).sort();
-  } catch {
-    return undefined;
-  }
+  return Effect.runSync(Effect.try(() => Object.keys(spec.environment.of({ kind: "x", thread: "x", text: "x", channel: anything })).sort()).pipe(Effect.catch(() => Effect.succeed(undefined))));
 };
 
 export const refuseSpec = (problems: Array<string>, file: string, exportName: string, spec: Spec, callName: (call: unknown) => string | undefined): void => {
