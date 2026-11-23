@@ -4,7 +4,7 @@
 import { describe, expect, it } from "vitest";
 import { NEEDS } from "./needs.ts";
 import { NAMES, PINS, sha256, trimmed } from "./pins.ts";
-import { plants, problems, sample } from "./schema.ts";
+import { plants, problems, sample, stringFor } from "./schema.ts";
 import { nameParts, operationNamed, operations, readSpec, webhooks } from "./spec.ts";
 
 describe("00 the oracle: names", () => {
@@ -50,6 +50,32 @@ describe.each(NAMES)("00 the oracle: %s's examples and wrong values", (name) => 
     }
   });
 
+});
+
+describe.each(NAMES)("00 the oracle: %s's patterns", (name) => {
+  it("every pattern in the fixture has a sample that matches it, and one that breaks it is refused", () => {
+    const found = new Set<string>();
+    const walk = (n: unknown): void => {
+      if (Array.isArray(n)) n.forEach(walk);
+      else if (typeof n === "object" && n !== null) {
+        const p = (n as Record<string, unknown>)["pattern"];
+        if (typeof p === "string") found.add(p);
+        Object.values(n).forEach(walk);
+      }
+    };
+    walk(readSpec(trimmed(name)).raw);
+    for (const pattern of found) {
+      const made = stringFor(pattern);
+      expect(new RegExp(pattern).test(made), `${pattern} -> ${made}`).toBe(true);
+      expect(problems(readSpec(trimmed(name)), { type: "string", pattern }, made), pattern).toEqual([]);
+      expect(problems(readSpec(trimmed(name)), { type: "string", pattern }, "not matching !"), pattern).not.toEqual([]);
+    }
+    // Slack's ids and times are the patterns the other checks lean on
+    if (name === "slack") {
+      expect([...found]).toEqual(expect.arrayContaining(["^[CGD][A-Z0-9]{8,}$", "^\\d{10}\\.\\d{6}$"]));
+      expect(stringFor("^\\d{10}\\.\\d{6}$")).toMatch(/^\d{10}\.\d{6}$/);
+    }
+  });
 });
 
 describe("00 the oracle: github's events and wrong values", () => {

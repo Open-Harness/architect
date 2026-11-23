@@ -118,6 +118,22 @@ describe.each(NAMES)("03 %s: each included call", (name: Name) => {
   });
 
   if (name === "slack") {
+    it("chatPostMessage: an answer whose channel, ts or message.ts breaks the spec's pattern is refused, and a matching one is not", async () => {
+      const op = operationNamed(spec, "chatPostMessage");
+      const good = sample(spec, op.success!.schema) as Record<string, any>;
+      const bad = (change: (b: Record<string, any>) => void) => { const b = JSON.parse(JSON.stringify(good)) as Record<string, any>; change(b); return b; };
+      const cases: ReadonlyArray<readonly [string, Record<string, any>]> = [
+        ["channel", bad((b) => { b["channel"] = "x1"; })],
+        ["ts", bad((b) => { b["ts"] = "1.1"; })],
+        ["message.ts", bad((b) => { b["message"]["ts"] = "1.1"; })],
+      ];
+      for (const [label, body] of [["a matching answer", good] as const, ...cases.map(([l, b]) => [`${l} breaks its pattern`, b] as const)]) {
+        const p = await serve(() => reply(op, body));
+        const result = await (await callOf("chatPostMessage", p.url, TOKEN))({ channel: "C024BE91L", text: "x" }).then(() => "resolved", () => "rejected");
+        expect(result, label).toBe(label === "a matching answer" ? "resolved" : "rejected");
+      }
+    });
+
     it("conversationsReplies: a ts the spec types as a number may be the string Slack gives, and is sent as written; nothing else is", async () => {
       const op = operationNamed(spec, "conversationsReplies");
       const p = await serve(() => reply(op, sample(spec, op.success!.schema)));
