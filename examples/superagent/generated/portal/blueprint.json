@@ -10319,10 +10319,6 @@
         "file": "blueprint/environments/local.ts",
         "runs": "on this machine",
         "identity": "test-principals",
-        "clock": {
-          "kind": "stepped",
-          "starts": "2026-12-01T09:00:00.000Z"
-        },
         "lifetimeMs": null,
         "cloud": null,
         "database": "d1-local",
@@ -10335,7 +10331,7 @@
         ],
         "deploy": {},
         "publish": {},
-        "hash": "3203bdcf48498b69"
+        "hash": "0f14705e03d3bc97"
       },
       "test": {
         "name": "test",
@@ -15150,5 +15146,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "5aecb160374e77719b5fb78b71fcfc28e2d5d521320cc2aa827af878717ed2f4"
+  "digest": "55fa4b40960fdcff2549aa8ba393591dd14cca89b168cae4141a268bd63525d6"
 }
