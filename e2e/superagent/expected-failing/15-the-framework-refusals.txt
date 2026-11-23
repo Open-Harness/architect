@@ -1,3 +1,0 @@
-# Written before slice 5. Red until slice 5 builds the forms and the compiler checks their records name; due before slice 5 merges.
-superagent/15-the-framework-refusals.test.ts > 15 derive: (GOAL17-derived-reads) the five refusals, each against a probe that passes without it > control for `max`: 1 and 100 are inside the range, and pass
-superagent/15-the-framework-refusals.test.ts > 15 derive: (GOAL17-derived-reads) the five refusals, each against a probe that passes without it > control: the probe, written as the record writes a derive, passes `ortho check`
