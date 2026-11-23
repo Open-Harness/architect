@@ -98,7 +98,9 @@ ended after them. At 2.5 to 4 s it ends while they still run, and its cleanup de
 
 Reproduced locally with CI's three workers (`--maxWorkers=3`): 4 runs of 25 failed. Three times a case of
 `refusal-field-schema` or `retired-unique` could not load or copy a file of its own copy, and each time that file was
-running when `model.test.ts` ended. Once `model.test.ts` itself failed after all its cases passed, at its cleanup. `model.test.ts` now keeps its copies in `test/tmp/model` and removes only that: 40 runs of 40 green, at load average 123 to 205.
+running when `model.test.ts` ended. Once `model.test.ts` itself failed after all its cases passed, at its cleanup.
+`model.test.ts` now keeps its copies in `test/tmp/model` and removes only that: 40 runs of 40 green, at load average 123
+to 205.
 No assertion changed, and every file now removes only its own folder.
 
 ## Open
