@@ -167,6 +167,18 @@ r=$(repo); mkdir -p "$r/design"; echo d > "$r/design/heroui-pro-notes.md"; commi
 expect "docs-only: a doc named for HeroUI Pro is not docs (check 15 scans paths)" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/design"; name=HEROUI_AUTH; echo "${name}_TOKEN=$(printf 'a%.0s' {1..16})" > "$r/design/setup.md"; commit "$r"
 expect "docs-only: a doc that adds a line naming the token is not docs (check 15 scans text)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design/grid"; echo d > "$r/design/grid/grid.json"; commit "$r"
+expect "docs-only: design/grid is read by e2e/grid, so not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design/goals"; echo d > "$r/design/goals/g.json"; commit "$r"
+expect "docs-only: the rest of design/ is still docs" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x" "$r/.agents/skills/kanban/data" "$r/.claude/agents" "$r/.github/ISSUE_TEMPLATE"; echo d > "$r/spikes/x/a.ts"; echo d > "$r/.agents/skills/kanban/data/tasks.json"; echo d > "$r/.claude/settings.json"; echo d > "$r/.github/ISSUE_TEMPLATE/1.yml"; echo d > "$r/skills-lock.json"; commit "$r"
+expect "docs-only: spikes, agent skills, claude config and issue templates are read by no gated suite" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; echo t >> "$r/src/handler.ts"; commit "$r"
+expect "docs-only: an inert path beside a code change is not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/x.yml"; mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; commit "$r"
+expect "docs-only: a workflow among inert paths is not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo '{"dep":"@heroui-pro/react"}' > "$r/.agents/skills/x/skill.json"; commit "$r"
+expect "docs-only: a line naming HeroUI Pro in an agents file runs check 15 (not docs)" 0 docs "$r" false
 r=$(repo)
 expect "docs-only: an empty diff is not docs" 0 docs "$r" false
 r=$(repo); echo d > "$r/README.md"; commit "$r"
