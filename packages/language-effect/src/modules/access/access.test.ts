@@ -45,6 +45,14 @@ describe("Access", () => {
     expect(await read([owner.of("organization")], bob)).toBe(false);
   });
 
+  it("on an operation, a path whose first key is no payload field still admits nobody: only a read by id names its own thing first", async () => {
+    const op = (principal: Principal) =>
+      Effect.runPromiseExit(
+        Access.check({ allowed: [owner.of("budget.organization")] as never, payloadFields: { allowance: Allowance.fields.id }, payload: { allowance: "alw_1" }, principal, thing: Allowance }).pipe(Effect.provide(records)),
+      ).then(Exit.isSuccess);
+    expect(await op(ada)).toBe(false);
+  });
+
   it("the keeper is allowed only where it is listed, even by an operation open to anyone, and no one else may be the keeper", async () => {
     const keeper: Principal = { kind: "keeper" };
     expect(Exit.isSuccess(await check([Blueprint.keeper] as never, {}, {}, keeper))).toBe(true);
