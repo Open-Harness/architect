@@ -1,2 +1,0 @@
-# Written before slice 7 (Goal 17, slice 6). `stageOf` has no row for an assignment that is closing; GOAL17-stage-one call 6 gives it `working`, `none`, "Stopping". Due before slice 7 merges.
-superagent/20-the-stage-table.test.ts > 20 the stage table: the app's stageOf > names an assignment that is closing as stopping

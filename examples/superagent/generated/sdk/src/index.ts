@@ -37,6 +37,6 @@ export type { Settings, SettingsState, SettingsSaved } from "./settings/types.ts
 export type { Source, SourceState, SourceDisabled, SourceEnabled, SourceFailed, SourcePositionAdvanced, SourceSaved } from "./source/types.ts";
 export type { Subscription, SubscriptionState, SubscriptionEnded, SubscriptionStarted } from "./subscription/types.ts";
 export type { Superagent, SuperagentState, SuperagentCreated, SuperagentPaused, SuperagentResumed, SuperagentRetired, SuperagentWentLive } from "./superagent/types.ts";
-export type { Thread, ThreadState, ThreadClosed, ThreadEvaluating, ThreadQueued, ThreadReleased, ThreadSubscribed, ThreadUnsubscribed } from "./thread/types.ts";
+export type { Thread, ThreadState, ThreadClosed, ThreadSubscribed, ThreadUnsubscribed } from "./thread/types.ts";
 export type { Ticket, TicketState, TicketCreated, TicketEnded, TicketResumed, TicketStopped } from "./ticket/types.ts";
 export type { Trigger, TriggerState, TriggerReceived, TriggerRequeued } from "./trigger/types.ts";

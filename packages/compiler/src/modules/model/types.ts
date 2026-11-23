@@ -22,6 +22,8 @@ export interface FieldModel {
   readonly ref?: string;
   /** A payload field the caller may leave out (a list's filters and cursor). */
   readonly optional?: true;
+  /** The value may be null (a union with null): its column may be NULL too. Absent for every other field. */
+  readonly nullable?: true;
   /** What the field is for, as the blueprint says (`Blueprint.described`); every output carries it (M1.42). */
   readonly description?: string;
   /** Absent means public, the default. Only a public field's value may be a span attribute, a log line or a journal field. */
@@ -50,6 +52,8 @@ export interface InvariantModel {
   readonly refuse?: string;
   /** Written words that replace the sentence generated from the rule. */
   readonly description?: string;
+  /** The framework's own, held by every thing with versions and declared in no `invariants.ts`: one row per revision of a key. */
+  readonly framework?: true;
 }
 
 export interface ThingModel {

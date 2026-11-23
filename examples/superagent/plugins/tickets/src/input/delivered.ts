@@ -1,7 +1,8 @@
-import { Handlers, type Handler } from "@orthograph/language-effect";
+import { Effect } from "effect";
+import type { Handler } from "@orthograph/language-effect";
 import type declaration from "../../blueprint/things/input/verbs/delivered.ts";
 
-/** The executor took the Input. Not written yet: slice 7 gives it its body. */
-const delivered: Handler<typeof declaration> = () => Handlers.blank("input.delivered is not written yet");
+/** The executor took the Input (the machine refuses one that was not routed). */
+const delivered: Handler<typeof declaration> = (_payload, { move }) => Effect.as(move(), {});
 
 export default delivered;

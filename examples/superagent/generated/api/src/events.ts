@@ -68,9 +68,6 @@ EventNames.name(Superagent.SuperagentResumed, "SuperagentResumed");
 EventNames.name(Superagent.SuperagentRetired, "SuperagentRetired");
 EventNames.name(Superagent.SuperagentWentLive, "SuperagentWentLive");
 EventNames.name(Thread.ThreadClosed, "ThreadClosed");
-EventNames.name(Thread.ThreadEvaluating, "ThreadEvaluating");
-EventNames.name(Thread.ThreadQueued, "ThreadQueued");
-EventNames.name(Thread.ThreadReleased, "ThreadReleased");
 EventNames.name(Thread.ThreadSubscribed, "ThreadSubscribed");
 EventNames.name(Thread.ThreadUnsubscribed, "ThreadUnsubscribed");
 EventNames.name(Ticket.TicketCreated, "TicketCreated");
@@ -80,4 +77,4 @@ EventNames.name(Ticket.TicketStopped, "TicketStopped");
 EventNames.name(Trigger.TriggerReceived, "TriggerReceived");
 EventNames.name(Trigger.TriggerRequeued, "TriggerRequeued");
 
-export const names = ["AccountListed", "AccountSeen", "AccountUnlisted", "AgentClosed", "AgentIdled", "AgentOpened", "AgentTold", "AssignmentEnded", "AssignmentInterrupted", "AssignmentPromoted", "AssignmentQueued", "AssignmentStarted", "AttentionRaised", "DecisionDismissed", "DecisionRecorded", "EvalDecided", "EvalDelivered", "EvalExpired", "EvalStarted", "InputDelivered", "InputFailed", "InputRouted", "InputStored", "MandateHeld", "MandateRevalidated", "MandateWithdrawn", "ReplyQueued", "ReplySettled", "ReplyWithdrawn", "PolicyChanged", "ProposalApproved", "ProposalRecorded", "ProposalRejected", "ReportMade", "SettingsSaved", "SourceDisabled", "SourceEnabled", "SourceFailed", "SourcePositionAdvanced", "SourceSaved", "SubscriptionEnded", "SubscriptionStarted", "SuperagentCreated", "SuperagentPaused", "SuperagentResumed", "SuperagentRetired", "SuperagentWentLive", "ThreadClosed", "ThreadEvaluating", "ThreadQueued", "ThreadReleased", "ThreadSubscribed", "ThreadUnsubscribed", "TicketCreated", "TicketEnded", "TicketResumed", "TicketStopped", "TriggerReceived", "TriggerRequeued"] as const;
+export const names = ["AccountListed", "AccountSeen", "AccountUnlisted", "AgentClosed", "AgentIdled", "AgentOpened", "AgentTold", "AssignmentEnded", "AssignmentInterrupted", "AssignmentPromoted", "AssignmentQueued", "AssignmentStarted", "AttentionRaised", "DecisionDismissed", "DecisionRecorded", "EvalDecided", "EvalDelivered", "EvalExpired", "EvalStarted", "InputDelivered", "InputFailed", "InputRouted", "InputStored", "MandateHeld", "MandateRevalidated", "MandateWithdrawn", "ReplyQueued", "ReplySettled", "ReplyWithdrawn", "PolicyChanged", "ProposalApproved", "ProposalRecorded", "ProposalRejected", "ReportMade", "SettingsSaved", "SourceDisabled", "SourceEnabled", "SourceFailed", "SourcePositionAdvanced", "SourceSaved", "SubscriptionEnded", "SubscriptionStarted", "SuperagentCreated", "SuperagentPaused", "SuperagentResumed", "SuperagentRetired", "SuperagentWentLive", "ThreadClosed", "ThreadSubscribed", "ThreadUnsubscribed", "TicketCreated", "TicketEnded", "TicketResumed", "TicketStopped", "TriggerReceived", "TriggerRequeued"] as const;

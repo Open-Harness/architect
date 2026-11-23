@@ -3,7 +3,7 @@ import { NotAllowed, type Principal, type Read } from "orthograph";
 import { Access } from "#modules/access/service.js";
 import { Unit } from "#modules/records/service.js";
 import { Records, Store, type Unit as UnitOf } from "#modules/records/types.js";
-import { ReadNotServed } from "../types.ts";
+import { CURSOR, derivedOne, derivedPage, notServed, unserved } from "./derived.ts";
 import { answerAttributes, payloadAttributes, principalAttributes } from "./attributes.ts";
 import { CALL_ID, newCallId } from "./call-id.ts";
 import { measureCall } from "./call-metrics.ts";
@@ -24,8 +24,14 @@ const byId = (read: Read<any, any, any>, payload: ReadPayload, unit: UnitOf) =>
     return Object.fromEntries(read.fields.map((f) => [f, f === "state" ? (found.state ?? "none") : found[f]])) as ReadAnswer;
   });
 
-/** A cursor is the position of the last instance of the page before; anything else is not one this read handed out. */
-const CURSOR = /^[0-9]{1,15}$/;
+/** One instance by its id, and what its derive adds; a missing one is `NotAllowed` as well. */
+const derivedById = (read: Read<any, any, any>, payload: ReadPayload, unit: UnitOf) =>
+  Effect.gen(function* () {
+    const found = yield* unit.read(read.thing, String(payload["id"]));
+    if (!found) return yield* new NotAllowed();
+    return yield* derivedOne(read, found);
+  });
+
 const refusals = new Set(["NotAllowed", "ReadNotServed"]);
 const callRefusals = new Set([...refusals, "SchemaError"]);
 
@@ -35,10 +41,12 @@ const byList = (read: Read<any, any, any>, payload: ReadPayload) =>
     const store = yield* Store;
     const { cursor, state, ...filters } = payload as { readonly cursor?: string; readonly state?: string; readonly [field: string]: unknown };
     if (cursor !== undefined && !CURSOR.test(cursor)) return yield* new NotAllowed();
+    // A field the read pins (`only`) is never the caller's to set: it is the read's own filter, whatever the payload says.
+    const { state: pinnedState, ...pinned } = (read.only ?? {}) as { readonly state?: string; readonly [field: string]: unknown };
     const listed = yield* store.list({
       thing: read.thing,
-      where: Object.fromEntries(Object.entries(filters).filter(([k]) => read.where.includes(k))),
-      state,
+      where: { ...Object.fromEntries(Object.entries(filters).filter(([k]) => read.where.includes(k))), ...pinned },
+      state: pinnedState ?? state,
       order: read.order ?? "newest",
       limit: read.page ?? 50,
       after: cursor,
@@ -61,11 +69,11 @@ export const Reads: ReadsApi = {
         );
         return yield* Effect.gen(function* () {
           yield* Effect.annotateCurrentSpan(payloadAttributes(payload, read.payload));
-          // Fail closed: a pinned or derived read is served from slice 7, and serving it as a plain read would drop `only` and its adds.
-          if (read.only !== undefined || read.derive !== undefined) {
-            return yield* new ReadNotServed({ read: name, message: `${name}: derived and pinned reads are served from slice 7 of Goal 17` });
-          }
-          const answer = read.by === "list" ? yield* byList(read, payload) : yield* byId(read, payload, unit);
+          // Fail closed: a derive that looks at something no store can list is not served, and serving it as a plain read would drop its adds.
+          if (read.derive !== undefined && unserved(read.derive)) return yield* notServed(name);
+          const answer = read.by === "list"
+            ? (read.derive === undefined ? yield* byList(read, payload) : yield* derivedPage(read, payload))
+            : (read.derive === undefined ? yield* byId(read, payload, unit) : yield* derivedById(read, payload, unit));
           yield* Effect.annotateCurrentSpan(answerAttributes(answer, read.answer, read.by === "list" ? read.thing.fields : undefined));
           yield* check(answer).pipe(Effect.mapError((e) => new Error(`${name} answered outside its declaration: ${e.message}`)), Effect.orDie);
           return answer;

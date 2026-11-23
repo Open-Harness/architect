@@ -16,14 +16,15 @@ Store one event a connection brought, once: a second delivery of the same event 
 | kind | trigger.kind |
 | text | trigger.text |
 | url (optional) | trigger.url |
-| author (optional) | trigger.author |
+| addressed (optional) | schema |
+| actor (optional) | schema |
 | channel | trigger.channel |
 
 ## Answer
 
 | field | value |
 |---|---|
-| trigger | trigger.id |
+| trigger (optional) | id |
 | outcome | schema |
 
 ## Move
@@ -39,7 +40,7 @@ Store one event a connection brought, once: a second delivery of the same event 
 ## How to call
 
 ```sh
-superagent trigger receive --superagent <superagent> --source <source> --event <event> --thread <thread> --kind <kind> --text <text> [--url <url>] [--author <author>] --channel <channel>
+superagent trigger receive --superagent <superagent> --source <source> --event <event> --thread <thread> --kind <kind> --text <text> [--url <url>] [--addressed <addressed>] [--actor <actor>] --channel <channel>
 ```
 
 HTTP: `POST /trigger/receive` with the payload as JSON. SDK: `Sdk.trigger.receive(payload)`.

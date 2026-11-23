@@ -1,7 +1,0 @@
-# Written before slice 7 builds the handlers (Goal 17, slice 6). Red on the empty handlers: a starting world stops on `agent.open` (a blank handler of @orthograph/agents), the policy journey dies on `policy.save`, and the stage read answers 500 (it is not served until slice 7). Due before slice 7 merges; the journeys that need a superagent also need `agent.open` written (README, "Slice 6", point 3).
-superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "a stale policy save is refused": 12 steps, each green
-superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "a trigger twice is stored once": 4 steps, each green
-superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "an account is seen once": 10 steps, each green
-superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "an eval batches a thread": 6 steps, each green
-superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "the gate lets the right ones through": 27 steps, each green
-superagent/19-stage-one-journeys.test.ts > 19 stage one's journeys > journey "the stage read is served": 4 steps, each green

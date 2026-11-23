@@ -8,23 +8,11 @@ import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, p
 import { notFromOf } from "./not-from.ts";
 import { doorsOf } from "./doors.ts";
 import { renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
+import { actorOptionOf } from "./actors.ts";
+import { rulesByOrigin, staleOf, versioned } from "./versioned.ts";
+import { peopleOf } from "./people.ts";
 
 const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
-
-/**
- * Where the identity keeps its users: Better Auth's table, today the identity behind `AuthD1`. Named here, in what the
- * generated server says, never in host code; the identity plugin (M2.05) will own it.
- */
-const IDENTITY_USERS = "auth_user";
-/**
- * The thing the identity keeps, bound explicitly: the identity's users are what a `Principal` calls a `person`, so its
- * thing is the one named `person` (K16 review, 22.1). Never found by its id prefix: an app thing may use `per_` too.
- */
-const IDENTITY_THING = "person";
-const peopleOf = (model: Model) => {
-  const people = model.things[IDENTITY_THING];
-  return people ? `, people: { thing: thingIn(${camel(people.name)}Thing), table: "${IDENTITY_USERS}" }` : "";
-};
 
 const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const ops = Object.values(model.operations);
@@ -35,6 +23,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   // The things with rules (G5): their `invariants.ts` is imported, and the store and the runtime are handed each rule under its full name.
   const ruled = things.filter((t) => Object.keys(t.invariants ?? {}).length > 0);
   const rulesOption = ruled.length > 0 ? ", rules" : "";
+  const { declaredRules, versionedRules } = rulesByOrigin(ruled);
   // Each mount a served operation came from, imported once: its plugin's handlers run under it (Mount.serving).
   const mounted = [...new Set(handled.flatMap((o) => (o.from.kind !== "app" ? [o.from.mount] : [])))].filter((m) => model.mounts?.[m]);
   const mountVar = (mount: string) => `${camel(mount)}Mount`;
@@ -42,15 +31,20 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const serviced = [...new Set(ops.flatMap((o) => o.allowed.flatMap((a) => ("service" in a && a.service !== undefined ? [a.service] : []))))].filter((m) => model.mounts?.[m]).sort();
   const doors = doorsOf(model, name, mountVar, [...mounted, ...serviced]);
   const mountsOption = serviced.length > 0 ? ", mounts" : "";
-  const served = (o: OperationModel) => (o.from.kind !== "app" && mounted.includes(o.from.mount) ? `Mount.serving(${mountVar(o.from.mount)}, ${opVar(o)}Handler)` : `${opVar(o)}Handler`);
+  // The four operations of a thing with versions are the framework's (see versioned.ts): no handler file.
+  const framework = (o: OperationModel) => versioned(model, o);
+  const served = (o: OperationModel) =>
+    framework(o) ? `Versions.handler("${o.verb}", thingIn(${camel(o.thing)}Thing), ${staleOf(o)}${o.move === null ? ", false" : ""})`
+    : o.from.kind !== "app" && mounted.includes(o.from.mount) ? `Mount.serving(${mountVar(o.from.mount)}, ${opVar(o)}Handler)` : `${opVar(o)}Handler`;
   // Each declared database store (K3) has a D1 binding of its own, and its own journal and request keys.
   const stores = databaseStores(model);
   const storeOption = stores.length > 0 ? `, stores: [${stores.map((s) => `[${camel(s.name)}Store, env.${bindingOf(s)}]`).join(", ")}]` : "";
   const journal = stores.length > 0 ? `JournalD1.across([${stores.map((s) => `env.${bindingOf(s)}`).join(", ")}])` : "JournalD1.layer";
   const apart = new Set(Object.values(model.things).filter((t) => t.store !== undefined && stores.some((s) => s.name === t.store)).map((t) => t.name));
-  const world = stores.length > 0
+  const actorOption = actorOptionOf(model);
+  const world = (stores.length > 0
     ? `tables: [${Object.values(model.things).filter((t) => !apart.has(t.name)).map((t) => `"${t.name}"`).join(", ")}], stores: [${stores.map((s) => `{ db: env.${bindingOf(s)}, tables: [${Object.values(model.things).filter((t) => t.store === s.name).map((t) => `"${t.name}"`).join(", ")}] }`).join(", ")}]`
-    : "tables: tables.map(([, table]) => table)";
+    : "tables: tables.map(([, table]) => table)") + actorOption;
   const group = (t: string) => {
     const handles = ops
       .filter((o) => o.thing === t)
@@ -82,20 +76,20 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `import { SqlClient } from "effect/sql";`,
       `import type { Principal } from "${Names.frontDoor}";`,
       `import { AuthD1, Database, ${doors.any ? "Inbound, " : ""}JournalD1, StoreD1, Telemetry, toWorld } from "${Names.pkg("host-cloudflare")}";`,
-      `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, Wire, ${ruled.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
+      `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, ${handled.some(framework) || versionedRules.length > 0 ? "Versions, " : ""}Wire, ${declaredRules.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
       `import { Mcp, type McpResult, type ShownOperation } from "${Names.pkg("language-effect")}";`,
       `import { Api, Errors } from "../api/src/index.ts";`,
       `import * as portal from "../portal/main.ts";`,
       `import { catalog } from "../mcp/src/index.ts";`,
       ops.map((o) => `import * as ${opVar(o)} from "../api/src/${o.thing}/${o.verb}.ts";`),
-      handled.map((o) => `import ${opVar(o)}Handler from "${handlerAt("generated/server/main.ts", o)}";`),
+      handled.filter((o) => !framework(o)).map((o) => `import ${opVar(o)}Handler from "${handlerAt("generated/server/main.ts", o)}";`),
       empty ? handled.map((o) => `import ${opVar(o)}Blank from "./${emptyPath(o)}";`) : [],
       callImports(model),
       mounted.map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
       serviced.filter((m) => !mounted.includes(m)).map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
       doors.imports,
       things.map((t) => `import * as ${camel(t.name)}Thing from "${thingFileAt("generated/server/main.ts", t, "thing")}";`),
-      ruled.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
+      declaredRules.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
       stores.map((s) => `import ${camel(s.name)}Store from "${storeFileAt("generated/server/main.ts", s)}";`),
       "",
       actors ? `export { Actor, World } from "${Names.pkg("host-cloudflare")}";` : `export { World } from "${Names.pkg("host-cloudflare")}";`,
@@ -109,7 +103,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "",
       "/** Each thing and its table: a D1 table, or the name its actors go by. */",
       `const tables = [${things.map((t) => `[thingIn(${camel(t.name)}Thing), "${t.name}"]`).join(", ")}] as const;`,
-      ruled.length > 0 ? ["", "/** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */", `const rules = [${ruled.map((t) => `...invariantsIn("${t.name}", ${camel(t.name)}Invariants)`).join(", ")}] as const;`] : [],
+      ruled.length > 0 ? ["", "/** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */", `const rules = [${[...declaredRules.map((t) => `...invariantsIn("${t.name}", ${camel(t.name)}Invariants)`), ...versionedRules.map((t) => `...Versions.rulesOf("${t.name}", thingIn(${camel(t.name)}Thing))`)].join(", ")}] as const;`] : [],
       "",
       doors.table,
       "const refusals = Wire.refusals(Errors.wire);",

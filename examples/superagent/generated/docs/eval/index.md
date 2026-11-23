@@ -15,6 +15,7 @@ Lives in the database.
 | triggers | schema |
 | activeAtStart | uint |
 | timeoutMs | uint |
+| deliveredAt (optional) | uint |
 
 ## Machine
 
@@ -26,6 +27,10 @@ States: queued, delivered, decided, unavailable. A move from the wrong state is 
 | delivered | queued | delivered | EvalDelivered |
 | decided | delivered | decided | EvalDecided |
 | expired | delivered | unavailable | EvalExpired |
+
+## Invariants
+
+- `eval.oneLiveEvalPerThread`: another queued or delivered eval holds this thread. Unique on thread, while queued or delivered; refuses nothing, a break is a defect.
 
 ## Events
 
@@ -40,5 +45,6 @@ States: queued, delivered, decided, unavailable. A move from the wrong state is 
 - [eval.decide](decide.md): Record one judgement per enabled rule.
 - [eval.delivered](delivered.md): Start an eval's clock when it is told to the main agent: a held hop, so a pause never starts it.
 - [eval.due](due.md): One pass of the eval clock: batch each thread's waiting triggers into an eval, and expire the ones that ran out of time. Not armed again while paused.
+- [eval.expire](expire.md): Give up on an eval that ran out of time: it is unavailable, and its triggers wait for another.
 - [eval.read](read.md): Read one page of a thread, through its connection.
 - [eval.start](start.md): Make an eval for one thread's waiting triggers.

@@ -22,6 +22,7 @@ export type Superagent = {
   readonly "pausedAt": Of<Declared["pausedAt"]>;
   readonly "pausedFor": Of<Declared["pausedFor"]>;
   readonly "passGen": Of<Declared["passGen"]>;
+  readonly "saved": Of<Declared["saved"]>;
   readonly "state": SuperagentState;
 };
 

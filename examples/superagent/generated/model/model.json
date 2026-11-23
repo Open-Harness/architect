@@ -1395,9 +1395,28 @@
             "type": "uint",
             "bits": 64
           }
+        },
+        "deliveredAt": {
+          "value": {
+            "type": "uint",
+            "bits": 64
+          },
+          "optional": true
         }
       },
       "lives": "database",
+      "invariants": {
+        "oneLiveEvalPerThread": {
+          "kind": "unique",
+          "fields": [
+            "thread"
+          ],
+          "while": [
+            "queued",
+            "delivered"
+          ]
+        }
+      },
       "machine": {
         "states": [
           "queued",
@@ -1521,7 +1540,7 @@
         "version": "0.0.0",
         "thing": "eval"
       },
-      "hash": "cd99cfd16e5d49a7"
+      "hash": "07cccbf8098cb160"
     },
     "input": {
       "name": "input",
@@ -2140,12 +2159,28 @@
           "value": {
             "type": "schema"
           }
+        },
+        "saved": {
+          "value": {
+            "type": "schema"
+          },
+          "optional": true
         }
       },
       "versions": {
         "key": "superagent"
       },
       "lives": "database",
+      "invariants": {
+        "oneVersionPerRevision": {
+          "kind": "unique",
+          "fields": [
+            "superagent",
+            "revision"
+          ],
+          "framework": true
+        }
+      },
       "machine": {
         "states": [
           "current"
@@ -2159,9 +2194,7 @@
             "emits": "PolicyChanged"
           },
           "restore": {
-            "from": [
-              "current"
-            ],
+            "from": [],
             "to": [
               "current"
             ],
@@ -2202,7 +2235,7 @@
         "version": "0.0.0",
         "thing": "policy"
       },
-      "hash": "db67566f8ec86ff3"
+      "hash": "cb2866374f37c419"
     },
     "prompt-set": {
       "name": "prompt-set",
@@ -2242,12 +2275,28 @@
           "value": {
             "type": "schema"
           }
+        },
+        "saved": {
+          "value": {
+            "type": "schema"
+          },
+          "optional": true
         }
       },
       "versions": {
         "key": "superagent"
       },
       "lives": "database",
+      "invariants": {
+        "oneVersionPerRevision": {
+          "kind": "unique",
+          "fields": [
+            "superagent",
+            "revision"
+          ],
+          "framework": true
+        }
+      },
       "machine": null,
       "events": {},
       "errors": {},
@@ -2260,7 +2309,7 @@
         "version": "0.0.0",
         "thing": "prompt-set"
       },
-      "hash": "e48b3fb742a57ad8"
+      "hash": "1a9041cb1424418f"
     },
     "proposal": {
       "name": "proposal",
@@ -2524,12 +2573,27 @@
           "value": {
             "type": "schema"
           }
+        },
+        "saved": {
+          "value": {
+            "type": "schema"
+          },
+          "optional": true
         }
       },
       "versions": {
         "key": "id"
       },
       "lives": "database",
+      "invariants": {
+        "oneVersionPerRevision": {
+          "kind": "unique",
+          "fields": [
+            "revision"
+          ],
+          "framework": true
+        }
+      },
       "machine": {
         "states": [
           "current"
@@ -2573,7 +2637,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "47ef41013560609b"
+      "hash": "21618af26da198bf"
     },
     "source": {
       "name": "source",
@@ -2997,6 +3061,12 @@
             "type": "uint",
             "bits": 32
           }
+        },
+        "saved": {
+          "value": {
+            "type": "schema"
+          },
+          "optional": true
         }
       },
       "versions": {
@@ -3187,7 +3257,7 @@
         "version": "0.0.0",
         "thing": "superagent"
       },
-      "hash": "e55ebb477c1aa89e"
+      "hash": "7239711b73e83825"
     },
     "thread": {
       "name": "thread",
@@ -3226,11 +3296,19 @@
         }
       },
       "lives": "database",
+      "invariants": {
+        "oneThreadPerKey": {
+          "kind": "unique",
+          "fields": [
+            "superagent",
+            "source",
+            "key"
+          ]
+        }
+      },
       "machine": {
         "states": [
-          "idle",
-          "queued",
-          "evaluating"
+          "idle"
         ],
         "moves": {
           "bind": {
@@ -3242,9 +3320,7 @@
           },
           "closed": {
             "from": [
-              "idle",
-              "queued",
-              "evaluating"
+              "idle"
             ],
             "to": [
               "idle"
@@ -3253,41 +3329,12 @@
           },
           "unsubscribe": {
             "from": [
-              "idle",
-              "queued",
-              "evaluating"
+              "idle"
             ],
             "to": [
               "idle"
             ],
             "emits": "ThreadUnsubscribed"
-          },
-          "queue": {
-            "from": [
-              "idle"
-            ],
-            "to": [
-              "queued"
-            ],
-            "emits": "ThreadQueued"
-          },
-          "evaluate": {
-            "from": [
-              "queued"
-            ],
-            "to": [
-              "evaluating"
-            ],
-            "emits": "ThreadEvaluating"
-          },
-          "release": {
-            "from": [
-              "evaluating"
-            ],
-            "to": [
-              "idle"
-            ],
-            "emits": "ThreadReleased"
           }
         },
         "notFrom": {
@@ -3298,33 +3345,6 @@
       },
       "events": {
         "ThreadClosed": {
-          "thread": {
-            "value": {
-              "type": "id",
-              "prefix": "thr"
-            },
-            "ref": "thread.id"
-          }
-        },
-        "ThreadEvaluating": {
-          "thread": {
-            "value": {
-              "type": "id",
-              "prefix": "thr"
-            },
-            "ref": "thread.id"
-          }
-        },
-        "ThreadQueued": {
-          "thread": {
-            "value": {
-              "type": "id",
-              "prefix": "thr"
-            },
-            "ref": "thread.id"
-          }
-        },
-        "ThreadReleased": {
           "thread": {
             "value": {
               "type": "id",
@@ -3381,7 +3401,7 @@
         "version": "0.0.0",
         "thing": "thread"
       },
-      "hash": "7a740b7cd00bdaa7"
+      "hash": "605b68a909d28291"
     },
     "ticket": {
       "name": "ticket",
@@ -3627,6 +3647,16 @@
         }
       },
       "lives": "database",
+      "invariants": {
+        "oneTriggerPerEvent": {
+          "kind": "unique",
+          "fields": [
+            "superagent",
+            "source",
+            "event"
+          ]
+        }
+      },
       "machine": {
         "states": [
           "stored"
@@ -3718,7 +3748,7 @@
         "version": "0.0.0",
         "thing": "trigger"
       },
-      "hash": "5e75dc64966f7450"
+      "hash": "11d0bc1aa3c79f78"
     }
   },
   "operations": {
@@ -4765,8 +4795,7 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed",
-        "ReadNotServed"
+        "NotAllowed"
       ],
       "allowed": [
         {
@@ -4789,7 +4818,7 @@
       "only": {
         "state": "pending"
       },
-      "hash": "d580e8fa00869c6f"
+      "hash": "e5dee96c1e703657"
     },
     "decision.dismiss": {
       "kind": "operation",
@@ -4866,7 +4895,7 @@
         "version": "0.0.0",
         "thing": "decision"
       },
-      "description": "Route an eval's items: one to twenty, each accept, attach, stop or ignore. In observe an accept is only recorded as one it would make.",
+      "description": "Route an eval's items: one to twenty, each accept, attach, stop or ignore. An explicit request makes its ticket in every mode; in observe an inferred accept is only recorded as one it would make.",
       "payload": {
         "superagent": {
           "value": {
@@ -4925,7 +4954,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "a24f0e2beeb3d2ca"
+      "hash": "ac441b2f522969a7"
     },
     "eval.context": {
       "kind": "operation",
@@ -5111,7 +5140,9 @@
           "thing": "eval"
         }
       ],
-      "breaks": [],
+      "breaks": [
+        "eval.oneLiveEvalPerThread"
+      ],
       "refusals": [
         "EvalNotQueued",
         "EvalNotFound",
@@ -5134,7 +5165,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "1fddde75e7d27c02"
+      "hash": "370d30168f40fc86"
     },
     "eval.due": {
       "kind": "operation",
@@ -5212,6 +5243,67 @@
       "test": "unit",
       "budget": null,
       "hash": "1bbf1f0796b4d583"
+    },
+    "eval.expire": {
+      "kind": "operation",
+      "name": "eval.expire",
+      "thing": "eval",
+      "verb": "expire",
+      "identifier": "expire",
+      "file": "@orthograph/intake/blueprint/things/eval/verbs/expire.ts",
+      "from": {
+        "kind": "feature",
+        "mount": "intake",
+        "package": "@orthograph/intake",
+        "version": "0.0.0",
+        "thing": "eval"
+      },
+      "description": "Give up on an eval that ran out of time: it is unavailable, and its triggers wait for another.",
+      "payload": {
+        "eval": {
+          "value": {
+            "type": "id",
+            "prefix": "evl"
+          },
+          "ref": "eval.id"
+        }
+      },
+      "answer": {},
+      "move": {
+        "key": "expired",
+        "from": [
+          "delivered"
+        ],
+        "to": [
+          "unavailable"
+        ],
+        "emits": "EvalExpired"
+      },
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "EvalNotQueued",
+        "EvalNotFound",
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "refs": {
+        "eval": "eval"
+      },
+      "notFound": {
+        "eval": "EvalNotFound"
+      },
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": null,
+      "hash": "34fb4eb71fe4941c"
     },
     "eval.read": {
       "kind": "operation",
@@ -5350,7 +5442,9 @@
         "emits": "EvalStarted"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "eval.oneLiveEvalPerThread"
+      ],
       "refusals": [
         "NotAllowed"
       ],
@@ -5366,7 +5460,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "7a4010b5ebcb1162"
+      "hash": "d8fcfd706b639037"
     },
     "input.delivered": {
       "kind": "operation",
@@ -6407,9 +6501,7 @@
       },
       "move": {
         "key": "restore",
-        "from": [
-          "current"
-        ],
+        "from": [],
         "to": [
           "current"
         ],
@@ -6418,10 +6510,11 @@
       "errors": [
         "StaleRevision"
       ],
-      "breaks": [],
+      "breaks": [
+        "policy.oneVersionPerRevision"
+      ],
       "refusals": [
         "StaleRevision",
-        "PolicyNotCurrent",
         "NotAllowed"
       ],
       "allowed": [
@@ -6435,7 +6528,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "4672082ab8ee4dee"
+      "hash": "d4ace5c00b4f0164"
     },
     "policy.save": {
       "kind": "operation",
@@ -6525,7 +6618,9 @@
       "errors": [
         "StaleRevision"
       ],
-      "breaks": [],
+      "breaks": [
+        "policy.oneVersionPerRevision"
+      ],
       "refusals": [
         "StaleRevision",
         "NotAllowed"
@@ -6541,7 +6636,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "d5d935ac80365502"
+      "hash": "33c292fd382278c6"
     },
     "policy.sync": {
       "kind": "operation",
@@ -7110,8 +7205,7 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed",
-        "ReadNotServed"
+        "NotAllowed"
       ],
       "allowed": [
         {
@@ -7139,7 +7233,7 @@
       "only": {
         "state": "waiting"
       },
-      "hash": "71bb29fd20c8b76e"
+      "hash": "921ac4d518271d25"
     },
     "settings.save": {
       "kind": "operation",
@@ -7199,7 +7293,9 @@
       "errors": [
         "StaleRevision"
       ],
-      "breaks": [],
+      "breaks": [
+        "settings.oneVersionPerRevision"
+      ],
       "refusals": [
         "StaleRevision",
         "NotAllowed"
@@ -7216,7 +7312,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "721d6328c9186a11"
+      "hash": "218f6a4b4ede1b5c"
     },
     "source.disable": {
       "kind": "operation",
@@ -8402,7 +8498,9 @@
         "emits": "ThreadSubscribed"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "thread.oneThreadPerKey"
+      ],
       "refusals": [
         "NotAllowed"
       ],
@@ -8418,7 +8516,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "a74ba0bd4c1759d4"
+      "hash": "0235ab53239f5c0e"
     },
     "thread.closed": {
       "kind": "operation",
@@ -8448,9 +8546,7 @@
       "move": {
         "key": "closed",
         "from": [
-          "idle",
-          "queued",
-          "evaluating"
+          "idle"
         ],
         "to": [
           "idle"
@@ -8458,7 +8554,9 @@
         "emits": "ThreadClosed"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "thread.oneThreadPerKey"
+      ],
       "refusals": [
         "ThreadNotIdle",
         "ThreadNotFound",
@@ -8481,7 +8579,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "c26312f0d1d905da"
+      "hash": "6c001463703bf110"
     },
     "thread.follow": {
       "kind": "operation",
@@ -8656,9 +8754,7 @@
       "move": {
         "key": "unsubscribe",
         "from": [
-          "idle",
-          "queued",
-          "evaluating"
+          "idle"
         ],
         "to": [
           "idle"
@@ -8666,7 +8762,9 @@
         "emits": "ThreadUnsubscribed"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "thread.oneThreadPerKey"
+      ],
       "refusals": [
         "ThreadNotIdle",
         "ThreadNotFound",
@@ -8694,7 +8792,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "aab90b2a0c6b7739"
+      "hash": "7f9e95b4cbd6e9c8"
     },
     "ticket.accept": {
       "kind": "operation",
@@ -9486,8 +9584,7 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed",
-        "ReadNotServed"
+        "NotAllowed"
       ],
       "allowed": [
         {
@@ -9582,9 +9679,9 @@
             }
           }
         },
-        "hash": "bb99b754f041580a"
+        "hash": "99e71d604a813db7"
       },
-      "hash": "aab2805c64688435"
+      "hash": "6d74660c97146385"
     },
     "ticket.stop": {
       "kind": "operation",
@@ -9630,8 +9727,17 @@
         "emits": "TicketStopped"
       },
       "errors": [],
-      "breaks": [],
+      "invariants": {
+        "SeatTaken": "assignment.oneHolderPerSeat",
+        "ExecutorAlreadyQueued": "assignment.oneLivePerExecutor"
+      },
+      "breaks": [
+        "assignment.oneHolderPerSeat",
+        "assignment.oneLivePerExecutor"
+      ],
       "refusals": [
+        "SeatTaken",
+        "ExecutorAlreadyQueued",
         "TicketNotOpen",
         "TicketNotFound",
         "NotAllowed"
@@ -9653,12 +9759,22 @@
       "notFound": {
         "ticket": "TicketNotFound"
       },
-      "steps": {},
+      "steps": {
+        "write": {
+          "name": "ticket.stop.write",
+          "type": "database",
+          "writes": [
+            "ticket",
+            "mandate",
+            "assignment"
+          ]
+        }
+      },
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "ee2a2ab0f1de6087"
+      "hash": "3f773ba3fee96889"
     },
     "ticket.waiting": {
       "kind": "read",
@@ -9708,8 +9824,7 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed",
-        "ReadNotServed"
+        "NotAllowed"
       ],
       "allowed": [
         {
@@ -9812,9 +9927,9 @@
             }
           }
         },
-        "hash": "bb99b754f041580a"
+        "hash": "99e71d604a813db7"
       },
-      "hash": "7cffbbbab73c5d62"
+      "hash": "f03d0f0a2cf0c4ff"
     },
     "trigger.handback": {
       "kind": "operation",
@@ -9943,13 +10058,22 @@
           "optional": true,
           "ref": "trigger.url"
         },
-        "author": {
+        "addressed": {
           "value": {
-            "type": "text",
-            "max": 120
+            "type": "schema",
+            "format": "choice",
+            "options": [
+              "mention",
+              "direct"
+            ]
           },
-          "optional": true,
-          "ref": "trigger.author"
+          "optional": true
+        },
+        "actor": {
+          "value": {
+            "type": "schema"
+          },
+          "optional": true
         },
         "channel": {
           "value": {
@@ -9964,7 +10088,7 @@
             "type": "id",
             "prefix": "trg"
           },
-          "ref": "trigger.id"
+          "optional": true
         },
         "outcome": {
           "value": {
@@ -9987,7 +10111,9 @@
         "emits": "TriggerReceived"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "trigger.oneTriggerPerEvent"
+      ],
       "refusals": [
         "NotAllowed"
       ],
@@ -9997,13 +10123,12 @@
         }
       ],
       "agentTool": false,
-      "mints": "trigger",
       "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "6f3d6859900d2060"
+      "hash": "5f87abd8e682d3cd"
     },
     "trigger.reevaluate": {
       "kind": "operation",
@@ -10099,7 +10224,9 @@
         "emits": "TriggerRequeued"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "trigger.oneTriggerPerEvent"
+      ],
       "refusals": [
         "TriggerNotStored",
         "TriggerNotFound",
@@ -10124,7 +10251,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "7fb955183e33e46c"
+      "hash": "788e6c271e3025f1"
     }
   },
   "journeys": {},
@@ -11404,6 +11531,48 @@
         "operation": "eval.due",
         "severity": "page",
         "owner": "@orthograph/intake/blueprint/things/eval/verbs/due.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:eval.expire",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "eval.expire",
+        "severity": "page",
+        "owner": "@orthograph/intake/blueprint/things/eval/verbs/expire.ts"
       },
       "target": 0.999,
       "windowDays": 28,
@@ -14219,9 +14388,9 @@
       "file": "blueprint/features/agents.ts",
       "package": "@orthograph/agents",
       "version": "0.0.0",
-      "integrity": "sha256-DEWsMF1M3ArhEI34NebeQcPrnaJnaZGToj2VBVMnL0A=",
+      "integrity": "sha256-EGyb2YiamN0KyeslAuFTqUdoegkF+BTOCikuJ7xTiHo=",
       "chosen": {},
-      "hash": "cd00fef3ef7d1a43"
+      "hash": "295eae320672a7aa"
     },
     "github": {
       "kind": "adapter",
@@ -14263,9 +14432,9 @@
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-RbCkPMbTs5KuG/1Y6ztry3A4lJTQB7249IJ+qDpJDtc=",
+      "integrity": "sha256-ZIAhRWmfb75mbi+6xBAAJtf4qRPVlNsywVCvKuqO1Lc=",
       "chosen": {},
-      "hash": "556ff9cc33185967"
+      "hash": "6cd4dbc0883d6532"
     },
     "posthog": {
       "kind": "adapter",
@@ -14294,9 +14463,9 @@
       "file": "blueprint/features/prompts.ts",
       "package": "@orthograph/prompts",
       "version": "0.0.0",
-      "integrity": "sha256-jrHu0OsSPcdnCGbvUeXhlZNRpLOiH+UpRS3q0DMOCGY=",
+      "integrity": "sha256-3yK5qNmq6uddT7Afi8BzQY9jqT/awzjWaEulc1U1kIU=",
       "chosen": {},
-      "hash": "c6854e473f6011f4"
+      "hash": "16b21e58785b27a0"
     },
     "slack": {
       "kind": "adapter",
@@ -14328,18 +14497,18 @@
       "file": "blueprint/features/superagent.ts",
       "package": "@orthograph/superagent",
       "version": "0.0.0",
-      "integrity": "sha256-FpwTCQHlxdWqbnlyjbkzluaEo/rkjHQcFHpnbabimg4=",
+      "integrity": "sha256-KC1OF0wPw5jOYNIuRHQEfE+ZzjsETyckxAquI7AkpSw=",
       "chosen": {},
-      "hash": "f3df96b0f94e21f2"
+      "hash": "7f91db8fbcdaf2a4"
     },
     "tickets": {
       "kind": "feature",
       "file": "blueprint/features/tickets.ts",
       "package": "@orthograph/tickets",
       "version": "0.0.0",
-      "integrity": "sha256-KjX/vUQXYPIVy+J0IpKhBNQV5xzLliEAJ5ARK+JmM2U=",
+      "integrity": "sha256-61lN6KZx3yulQcvX6wyH/0J5v3iIlNemBF9wypw5w9w=",
       "chosen": {},
-      "hash": "5eb1a2c3b6e384c0"
+      "hash": "c0d5ee27abf08b5c"
     }
   }
 }

@@ -29,6 +29,10 @@ States: stored. A move from the wrong state is refused TriggerNotStored (exit 83
 | receive | (creates) | stored | TriggerReceived |
 | requeue | stored | stored | TriggerRequeued |
 
+## Invariants
+
+- `trigger.oneTriggerPerEvent`: another trigger holds this superagent, source and event. Unique on superagent, source, event, in every state; refuses nothing, a break is a defect.
+
 ## Events
 
 - `TriggerReceived`: carries superagent (trigger.superagent), trigger (trigger.id), thread (trigger.thread), text (trigger.text); emitted by the move receive

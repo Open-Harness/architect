@@ -5,7 +5,7 @@ import type { Cells } from "orthograph";
 export const AccountRef = Schema.Struct({ id: Schema.String, login: Schema.String });
 export type AccountRef = typeof AccountRef.Type;
 
-/** A person's own words, or nothing: the cells of a service whose messages have a sender. */
-export const observedRow: Cells = { listed: "explicit", unlisted: "none", unnamed: "none" };
+/** A listed person's plain message is inferred, never explicit; a stranger's, and one with no sender, admit nothing (GOAL17-stage-one, call 8). */
+export const observedRow: Cells = { listed: "inferred", unlisted: "none", unnamed: "none" };
 /** A service with no sender (PostHog): only an admission row makes it inferred. */
 export const inferredOnly: Cells = { listed: "none", unlisted: "none", unnamed: "inferred" };

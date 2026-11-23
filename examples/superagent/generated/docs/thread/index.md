@@ -17,23 +17,21 @@ Lives in the database.
 
 ## Machine
 
-States: idle, queued, evaluating. A move from the wrong state is refused ThreadNotIdle (exit 84).
+States: idle. A move from the wrong state is refused ThreadNotIdle (exit 84).
 
 | move | from | to | emits |
 |---|---|---|---|
 | bind | (creates) | idle | ThreadSubscribed |
-| closed | idle, queued, evaluating | idle | ThreadClosed |
-| unsubscribe | idle, queued, evaluating | idle | ThreadUnsubscribed |
-| queue | idle | queued | ThreadQueued |
-| evaluate | queued | evaluating | ThreadEvaluating |
-| release | evaluating | idle | ThreadReleased |
+| closed | idle | idle | ThreadClosed |
+| unsubscribe | idle | idle | ThreadUnsubscribed |
+
+## Invariants
+
+- `thread.oneThreadPerKey`: another thread holds this superagent, source and key. Unique on superagent, source, key, in every state; refuses nothing, a break is a defect.
 
 ## Events
 
 - `ThreadClosed`: carries thread (thread.id); emitted by the move closed
-- `ThreadEvaluating`: carries thread (thread.id); emitted by the move evaluate
-- `ThreadQueued`: carries thread (thread.id); emitted by the move queue
-- `ThreadReleased`: carries thread (thread.id); emitted by the move release
 - `ThreadSubscribed`: carries superagent (thread.superagent), thread (thread.id); emitted by the move bind
 - `ThreadUnsubscribed`: carries superagent (thread.superagent), thread (thread.id); emitted by the move unsubscribe
 

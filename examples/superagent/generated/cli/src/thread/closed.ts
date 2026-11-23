@@ -10,4 +10,4 @@ export const closed = Command.make(
   "closed",
   { thread: Flag.String("thread").pipe(Flag.withMetavar("id"), Flag.withDescription("Thread id: an id (thr_...).")), json: Flag.Boolean("json").pipe(Flag.withDefault(false)) },
   ({ json, ...flags }) => Schema.decodeUnknownEffect(Declaration.payloadSchema)(flags).pipe(Effect.flatMap(Sdk.thread.closed), Output.answer(json)),
-).pipe(Command.withDescription("Say a thread closed: a merged pull request, a closed issue. Moves a thread from idle or queued or evaluating to idle."));
+).pipe(Command.withDescription("Say a thread closed: a merged pull request, a closed issue. Moves a thread from idle to idle."));

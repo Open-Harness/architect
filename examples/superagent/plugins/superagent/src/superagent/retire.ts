@@ -1,7 +1,8 @@
-import { Handlers, type Handler } from "@orthograph/language-effect";
+import { Effect } from "effect";
+import type { Handler } from "@orthograph/language-effect";
 import type declaration from "../../blueprint/things/superagent/verbs/retire.ts";
 
-/** Close a superagent's connections and agents. Not written yet: slice 7 gives it its body. */
-const retire: Handler<typeof declaration> = () => Handlers.blank("superagent.retire is not written yet");
+/** Retire a superagent for good. Closing its connections and agents follows from `SuperagentRetired`, which slices 9 and 11 deliver. */
+const retire: Handler<typeof declaration> = (_payload, { move }) => Effect.as(move(), {});
 
 export default retire;

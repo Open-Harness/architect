@@ -6,7 +6,7 @@ CREATE TABLE "account" (
   "source" TEXT NOT NULL,
   "external" TEXT NOT NULL,
   "login" TEXT NOT NULL,
-  "bot" TEXT NOT NULL,
+  "bot" INTEGER NOT NULL,
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
@@ -54,9 +54,11 @@ CREATE TABLE "eval" (
   "triggers" TEXT NOT NULL,
   "activeAtStart" TEXT NOT NULL,
   "timeoutMs" TEXT NOT NULL,
+  "deliveredAt" TEXT,
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "eval_oneLiveEvalPerThread" ON "eval" ("thread") WHERE "state" IN ('queued', 'delivered');
 CREATE TABLE "input" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -99,9 +101,11 @@ CREATE TABLE "policy" (
   "bots" TEXT NOT NULL,
   "admission" TEXT NOT NULL,
   "rules" TEXT NOT NULL,
+  "saved" TEXT,
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "policy_oneVersionPerRevision" ON "policy" ("superagent", "revision");
 CREATE TABLE "prompt-set" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -109,8 +113,10 @@ CREATE TABLE "prompt-set" (
   "sections" TEXT NOT NULL,
   "skills" TEXT NOT NULL,
   "overrides" TEXT NOT NULL,
+  "saved" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "prompt-set_oneVersionPerRevision" ON "prompt-set" ("superagent", "revision");
 CREATE TABLE "proposal" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -134,9 +140,11 @@ CREATE TABLE "settings" (
   "revision" TEXT NOT NULL,
   "variables" TEXT NOT NULL,
   "blocked" TEXT NOT NULL,
+  "saved" TEXT,
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "settings_oneVersionPerRevision" ON "settings" ("revision");
 CREATE TABLE "source" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -167,10 +175,11 @@ CREATE TABLE "superagent" (
   "playbook" TEXT NOT NULL,
   "slots" TEXT NOT NULL,
   "main" TEXT NOT NULL,
-  "pausedFrom" TEXT NOT NULL,
-  "pausedAt" TEXT NOT NULL,
+  "pausedFrom" TEXT,
+  "pausedAt" TEXT,
   "pausedFor" TEXT NOT NULL,
   "passGen" TEXT NOT NULL,
+  "saved" TEXT,
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
@@ -183,6 +192,7 @@ CREATE TABLE "thread" (
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "thread_oneThreadPerKey" ON "thread" ("superagent", "source", "key");
 CREATE TABLE "ticket" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -200,12 +210,13 @@ CREATE TABLE "trigger" (
   "thread" TEXT NOT NULL,
   "kind" TEXT NOT NULL,
   "text" TEXT NOT NULL,
-  "url" TEXT NOT NULL,
-  "author" TEXT NOT NULL,
+  "url" TEXT,
+  "author" TEXT,
   "channel" TEXT NOT NULL,
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "trigger_oneTriggerPerEvent" ON "trigger" ("superagent", "source", "event");
 -- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).
 CREATE TABLE "_journal" (
   "seq" INTEGER PRIMARY KEY AUTOINCREMENT,

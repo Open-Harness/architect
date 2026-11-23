@@ -18,7 +18,7 @@ Stop a ticket following a thread: a person's call, or the main agent's.
 
 ## Move
 
-`unsubscribe`: from idle or queued or evaluating to idle, emitting ThreadUnsubscribed.
+`unsubscribe`: from idle to idle, emitting ThreadUnsubscribed.
 
 ## Refusals
 

@@ -9,6 +9,8 @@ export const Eval = Blueprint.thing({
     triggers: Blueprint.list(Blueprint.text({ max: 120 })),
     activeAtStart: Blueprint.uint(64),
     timeoutMs: Blueprint.uint(64),
+    /** The superagent's active clock (the wall clock less its pauses) when the main agent was told (`eval.delivered`): an overdue eval is judged from it, on the same clock. */
+    deliveredAt: Blueprint.optional(Blueprint.uint(64)),
   },
   code: "EV",
 });

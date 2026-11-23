@@ -9,7 +9,7 @@ import type { Busy } from "#modules/work/types.js";
 
 /** A request key used again with a payload other than the one it was first used with: refused, never answered with the kept answer. It carries no field: the key is never shown. */
 export class IdempotencyConflict extends Data.TaggedError("IdempotencyConflict")<{}> {}
-/** A read that works its answer out from other records (`derive`) or pins a field (`only`) is served from slice 7 of Goal 17: until then it refuses, by name, and never answers as if it had no `only`. */
+/** A read whose derive looks at the problems every plugin declares has no store to list them from yet: it refuses, by name, and never answers as if it had no adds (a pinned or other derived read is served, slice 7 of Goal 17). */
 export class ReadNotServed extends Data.TaggedError("ReadNotServed")<{ readonly read: string; readonly message: string }> {}
 /** The payload didn't match the operation's declaration. Refused before the handler runs. */
 export class InvalidPayload extends Data.TaggedError("InvalidPayload")<{ readonly issues: string }> {}

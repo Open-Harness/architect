@@ -17,6 +17,7 @@ Lives in the database.
 | bots | schema |
 | admission | schema |
 | rules | schema |
+| saved (optional) | schema |
 
 ## Machine
 
@@ -25,7 +26,11 @@ States: current. A move from the wrong state is refused PolicyNotCurrent (exit 8
 | move | from | to | emits |
 |---|---|---|---|
 | save | (creates) | current | PolicyChanged |
-| restore | current | current | PolicyChanged |
+| restore | (creates) | current | PolicyChanged |
+
+## Invariants
+
+- `policy.oneVersionPerRevision`: another policy holds this superagent and revision. Unique on superagent, revision, in every state; refuses nothing, a break is a defect.
 
 ## Events
 

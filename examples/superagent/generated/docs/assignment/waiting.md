@@ -26,7 +26,6 @@ List assignments, oldest first, 255 to a page, filtered by superagent.
 | refusal | exit | code | when |
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |
-| ReadNotServed | 94 | AR-008 | the assignment is in a state this can't start from; carries `state` |
 
 ## How to call
 

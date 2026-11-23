@@ -20,6 +20,7 @@ Lives in the database.
 | pausedAt (optional) | uint |
 | pausedFor | uint |
 | passGen | uint |
+| saved (optional) | schema |
 
 ## Machine
 
