@@ -28,6 +28,16 @@ describe("values", () => {
     expect(Schema.encodeSync(Values.uint(128).schema)(2n ** 100n)).toBe("1267650600228229401496703205376");
   });
 
+  it("an instant is a real moment in its canonical spelling", () => {
+    const Instant = Values.instant();
+    expect(Instant.meta).toEqual({ type: "instant" });
+    expect(decode(Instant.schema, "2027-01-10T09:00:00.000Z")).toBe("Success");
+    expect(decode(Instant.schema, "2028-02-29T23:59:59.999Z")).toBe("Success");
+    for (const bad of ["2027-02-30T09:00:00.000Z", "2027-99-99T99:99:99.000Z", "2027-02-29T09:00:00.000Z", "2027-01-10T24:00:00.000Z", "2027-01-10T09:00:00Z", "2027-01-10"]) {
+      expect(decode(Instant.schema, bad), bad).toBe("Failure");
+    }
+  });
+
   it("whole numbers travel as base-unit digits only: no leading zero, no plus, no minus zero, no point, no exponent, no space", () => {
     const U8 = Values.uint(8);
     for (const bad of ["007", "-0", "+1", "1.5", "1e3", " 1", "1 ", "0x10"]) expect(decode(U8.schema, bad), bad).toBe("Failure");

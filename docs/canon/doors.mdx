@@ -97,7 +97,7 @@ The wrapper runs every call to an Effect operation through the same order (`pack
 
 The last four, as code:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=112-140
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=114-142
 // What the payload names, read once and handed in; a missing one is refused before the handler, then the from-check.
 const handed = yield* prehandle(op, notFound, payload, unit);
 const from = yield* checkFrom(op, notFrom, handed.subject);

@@ -2,6 +2,7 @@
 // what comes in and goes out, every refusal, the thing's machine with this call's rows marked, and what the runtime does
 // so the handler doesn't. Each part cites the blueprint file it came from; files only, never lines (K16 d).
 import type { Model, OperationModel } from "@orthograph/compiler";
+import { timeMoveOf, whenWords } from "#modules/names/service.js";
 import { allowedFile, callerOf, columns, label, listed, refusalsOf, ruleOf, seenBy, thingFile, who } from "./words.ts";
 
 /** What the runtime reads before the handler and hands in (K16 g): the subject, each referenced thing, a minted id. */
@@ -108,6 +109,7 @@ const runtimeLines = (model: Model, op: OperationModel) => {
 export const header = (model: Model, op: OperationModel): ReadonlyArray<string> => {
   const promises = [
     op.idempotent === "request" ? `Idempotent by request, from ${op.file}: the same request key from the same caller is one call.` : "",
+    timeMoveOf(model, op) ? `Made by time, from ${thingFile(model, op.thing, "machine")}: ${whenWords(op.thing, timeMoveOf(model, op)!, "")}.` : "",
     op.budget ? `Budget, from ${op.file}: p95 ${op.budget.p95Ms}ms.` : "",
   ].filter(Boolean);
   const parts = [

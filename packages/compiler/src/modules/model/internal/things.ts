@@ -1,6 +1,7 @@
 // The things of the model: fields, machine, events, errors and roles, and the refusals lock that gives each refusal its code.
 import type { AnyErrorClass, Event, Store, Thing } from "orthograph";
 import { Blanks } from "orthograph/server";
+import { Times } from "#modules/time/service.js";
 import { RefusalLock } from "#modules/lock/service.js";
 import type { Lock, Wanted } from "#modules/lock/types.js";
 import type { ThingModel } from "../types.ts";
@@ -67,6 +68,7 @@ export const thingsOf = (env: ThingsEnv): { readonly things: Record<string, Thin
           states,
           moves: Object.fromEntries(Object.entries(m.moves).map(([k, mv]) => [k, {
             from: mv.from, to: mv.to, emits: eventNames.get(mv.emits) ?? problem(problems, `${where}/machine.ts move ${k}: emits an event not exported from events.ts`),
+            ...Times.timed({ name, thing: t.thing!, key: k, move: mv, file: `${where}/machine.ts`, problems }),
           }])),
           notFrom: { error: `${pascal(name)}Not${pascal(states[0] ?? "")}`, exit: m.notFrom.exit },
         }

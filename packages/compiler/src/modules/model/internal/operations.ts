@@ -1,5 +1,5 @@
 // What an operation of a chain-stored thing may and may not declare (M6-chain items 1, 5, 7 and 8).
-import type { Allowed, Operation, Read, Role } from "orthograph";
+import type { Allowed, Operation, Read, Role, ServiceRole } from "orthograph";
 import type { FieldsModel } from "../types.ts";
 import { canonical } from "./hash.ts";
 
@@ -24,7 +24,8 @@ export interface ChainOperation {
   readonly mints: string | undefined;
 }
 
-const roleOf = (a: Allowed): Role | undefined => (a.kind === "role" ? a : a.kind === "role-of" ? a.role : undefined);
+/** The role an entry names, person's or service's. */
+const roleOf = (a: Allowed): Role | ServiceRole | undefined => (a.kind === "role" ? a : a.kind === "role-of" ? a.role : undefined);
 
 /** A step the generated contract can't take: it reaches only its own store and the account adapter (item 8). */
 const FOREIGN_STEPS = ["database", "actor"];
@@ -38,11 +39,20 @@ export const chainOperationProblems = ({ file, name, thing, op, roleNames, paylo
   for (const [key, step] of Object.entries(op.steps)) {
     if (FOREIGN_STEPS.includes(step.type)) problems.push(`${said} declares the ${step.type} step ${key}: an operation of a chain-stored thing reaches only its own store and the account adapter, so it has no ${step.type} step`);
   }
-  for (const a of op.allowed) {
+  for (const entry of op.allowed) {
+    // A contract sees only the signer: how a caller arrived, the runtime's own work and an outside service mean nothing to it.
+    if (entry.kind === "narrowed") problems.push(`${said} narrows an entry with .via or .notVia: how a caller arrived means nothing to a contract, which sees only the signer`);
+    const a = entry.kind === "narrowed" ? entry.entry : entry;
+    if (a.kind === "system") problems.push(`${said} is allowed to Blueprint.system: the runtime's own work is no signer, so a contract can't tell it from anyone: allow a who role or Blueprint.anyone`);
     if (a.kind === "signed-in") problems.push(`${said} is allowed to Blueprint.signedIn: every caller on chain has signed, so allow a who role or Blueprint.anyone`);
-    const role = roleOf(a);
-    if (role === undefined) continue;
-    const named = roleNames.get(role) ?? "a role";
+    const found = roleOf(a);
+    if (found === undefined) continue;
+    const named = roleNames.get(found as Role) ?? "a role";
+    if (found.service !== undefined) {
+      problems.push(`${said} is allowed to the service role ${named}: a contract sees only the signer, so an outside service is no one it can admit: use a who role on an account() field`);
+      continue;
+    }
+    const role = found;
     if (role.who === undefined) problems.push(`${said} is allowed to the role ${named}, whose rule is TypeScript only: a contract can't run it, so use a who role on an account() field`);
     else if (role.who.value.meta.type !== "account") problems.push(`${said} is allowed to the who role ${named} on ${role.who.key}, which is no account(): on a chain store a who role is the account that signed`);
     else if (a.kind === "role" && op.move?.from.length === 0 && role.thing === op.thing && !(role.who.key in payload)) {

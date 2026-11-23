@@ -37,8 +37,8 @@ const get = Blueprint.read(Purse, { by: "id", fields: ["member", "spent", "pin"]
 const spender: Handler<typeof spend, Records> = ({ amount }) =>
   amount > 100n ? Effect.fail(new TooMuch({ left: 7n, limit: 100n })) : Effect.succeed({ spent: amount, balance: 93n, pin: "1234" });
 
-const olga = { kind: "person", person: "per_olga" } as const;
-const bob = { kind: "person", person: "per_bob" } as const;
+const olga = { kind: "person", person: "per_olga", via: "session" } as const;
+const bob = { kind: "person", person: "per_bob", via: "session" } as const;
 const memory = storeMemory([[Purse, { id: "pur_1", member: "per_olga", spent: 7n, pin: "1234" }]]);
 const services = Layer.mergeAll(BusyLive, memory.layer);
 

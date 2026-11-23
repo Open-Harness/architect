@@ -99,11 +99,13 @@ export const copiedFrom = (proDir: string, files: Record<string, string>): Reado
 
 type Value = string | boolean | null | undefined;
 export const contexts = {
-  fork: { event_name: "pull_request", repository: "owner/repo", head: "someone/fork", isFork: true },
-  sameRepo: { event_name: "pull_request", repository: "owner/repo", head: "owner/repo", isFork: false },
-  push: { event_name: "push", repository: "owner/repo", head: undefined, isFork: undefined },
+  fork: { event_name: "pull_request", repository: "owner/repo", head: "someone/fork", isFork: true, draft: "false" },
+  sameRepo: { event_name: "pull_request", repository: "owner/repo", head: "owner/repo", isFork: false, draft: "false" },
+  push: { event_name: "push", repository: "owner/repo", head: undefined, isFork: undefined, draft: "false" },
 } as const;
-export type Context = { readonly event_name: string; readonly repository: string; readonly head: string | undefined; readonly isFork: boolean | undefined };
+/** `draft` is what the `ready` job outputs (`needs.ready.outputs.draft`): "false" on a push, and on a live, non-draft pull request.
+ * The check judges a live run; a draft run starts no job but `ready`, so it reads no secret. */
+export type Context = { readonly event_name: string; readonly repository: string; readonly head: string | undefined; readonly isFork: boolean | undefined; readonly draft: string };
 
 /** Evaluates a GitHub `if` (==, !=, &&, ||, !, parentheses, strings, contexts, always() and success()); anything else throws. */
 export const evaluate = (source: unknown, ctx: Context): boolean => {
@@ -117,6 +119,7 @@ export const evaluate = (source: unknown, ctx: Context): boolean => {
   const lookup = (name: string): Value => ({
     "github.event_name": ctx.event_name, "github.repository": ctx.repository,
     "github.event.pull_request.head.repo.full_name": ctx.head, "github.event.pull_request.head.repo.fork": ctx.isFork,
+    "needs.ready.outputs.draft": ctx.draft,
   } as Record<string, Value>)[name];
   const truthy = (value: Value) => !(value === undefined || value === null || value === false || value === "");
   const primary = (): Value => {

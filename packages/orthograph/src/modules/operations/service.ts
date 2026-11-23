@@ -73,6 +73,7 @@ export const Operations: OperationsApi = {
       allowed: spec.allowed,
       steps: spec.steps ?? {},
       idempotent: spec.idempotent,
+      ...("needsApproval" in spec ? { needsApproval: spec.needsApproval } : {}),
       budget: spec.budget,
       runs: spec.runs ?? "server",
       runsDeclared: spec.runs,

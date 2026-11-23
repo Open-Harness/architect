@@ -33,6 +33,7 @@ export type ValueMeta =
   | { readonly type: "id"; readonly prefix: string }
   | { readonly type: "uint"; readonly bits: number }
   | { readonly type: "text"; readonly max: number }
+  | { readonly type: "instant" }
   | { readonly type: "account" }
   | { readonly type: "money"; readonly bits: number; readonly signed: boolean; readonly asset: AssetRef }
   | { readonly type: "schema"; readonly format?: "ref-any" };
@@ -59,11 +60,12 @@ export interface ValuesApi {
   readonly value: <S extends Schema.Constraint>(schema: S | Value<S>) => Value<S>;
   /** An identifier with a short prefix, such as `alw_7f3k`. Ids of different things never mix. */
   readonly id: <const P extends string>(prefix: P) => Value<Schema.brand<Schema.String, P>>;
-  /** A whole number from 0 below 2^bits, carried as a bigint. */
   /** A whole number below 2^bits. In code a `bigint`; on the wire a decimal string, since JSON numbers lose precision. */
   readonly uint: (bits: number) => Value<Schema.BigIntFromString>;
   /** Text, never empty, at most `max` characters (default 200). */
   readonly text: (options?: { readonly max?: number }) => Value<Schema.String>;
+  /** A moment: stored as a UTC instant, written on the wire, in answers, events and reads as ISO 8601 with milliseconds (`"2027-01-10T09:00:00.000Z"`). A move made by time anchors on a field of this type (M8-checks, call 1). */
+  readonly instant: () => Value<Schema.String>;
   /** A reference carrying a thing’s declaration name and the id of one instance. */
   readonly refAny: () => Value<Schema.Struct<{ readonly declaration: Schema.String; readonly id: Schema.String }>>;
   /**

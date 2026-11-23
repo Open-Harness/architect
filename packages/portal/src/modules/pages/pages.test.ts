@@ -99,3 +99,20 @@ describe("rulesBroken", () => {
     expect(rulesBroken(blueprint, op({}))).toEqual([]);
   });
 });
+
+describe("a journey step that calls no operation (`.tools()`)", () => {
+  it("is on the wire as a skipped step, so the journeys page and callsOf read it without a call", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const { Wire } = await import("#modules/wire/service.js");
+    const { callsOf, journeysOf } = await import("./internal/model.ts");
+    const raw = JSON.parse(readFileSync(resolve(import.meta.dirname, "../../../../../examples/acme/generated/portal/blueprint.json"), "utf8")) as unknown;
+    const wire = await Effect.runPromise(Wire.decode(raw));
+    const consent = journeysOf(wire).find((j) => j.name === "an agent cannot consent for a person")!;
+    const tools = consent.steps.find((s) => s.title.startsWith("an agent's tools"))!;
+    expect("call" in tools).toBe(false);
+    expect(tools).toMatchObject({ skipped: expect.stringContaining("tools list") });
+    expect(callsOf(consent)).not.toContain(undefined);
+    expect(callsOf(consent).length).toBeGreaterThan(0);
+  });
+});
