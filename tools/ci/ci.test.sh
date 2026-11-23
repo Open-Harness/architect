@@ -28,6 +28,8 @@ repo() { # a fresh repository with a base commit; prints its path
   mkdir -p "$dir/e2e/ui-layer/expected-failing"
   printf 'ui-layer/01.test.ts > u1\nui-layer/01.test.ts > u2\n' > "$dir/e2e/ui-layer/expected-failing/01.txt"
   echo t > "$dir/e2e/ui-layer/01.test.ts"
+  mkdir -p "$dir/e2e/m8/expected-failing"
+  printf 'm8/a.test.ts > a\nm8/a.test.ts > a2\n' > "$dir/e2e/m8/expected-failing/a.txt"
   mkdir -p "$dir/e2e/m2/expected-failing"
   printf 'm2/a.test.ts > a\nm2/a.test.ts > a2\n' > "$dir/e2e/m2/expected-failing/a.txt"
   mkdir -p "$dir/packages/foo/expected-failing"
@@ -110,6 +112,14 @@ r=$(repo); mkdir -p "$r/e2e/stage1/expected-failing"; printf 'stage1/x.test.ts >
 expect "a ratchet file in a new suite fails" 1 guard "$r"
 r=$(repo); echo changed > "$r/e2e/ui-layer/01.test.ts"; commit "$r"
 expect "editing another suite's check still fails" 1 guard "$r"
+r=$(repo); printf 'm8/a.test.ts > a\n' > "$r/e2e/m8/expected-failing/a.txt"; commit "$r"
+expect "deleting a line from a later milestone's ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'm8/a.test.ts > a\nm8/a.test.ts > a2\nm8/a.test.ts > a3\n' > "$r/e2e/m8/expected-failing/a.txt"; commit "$r"
+expect "adding a line to a later milestone's ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'm8/c.test.ts > c\n' > "$r/e2e/m8/expected-failing/c.txt"; commit "$r"
+expect "adding a later milestone's ratchet file fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/e2e/mx/expected-failing-x"; printf 'x\n' > "$r/e2e/mx/expected-failing-x/a.txt"; git -C "$r" add -A; git -C "$r" commit -qm x; git -C "$r" branch -f base; git -C "$r" checkout -q x-build; git -C "$r" reset -q --hard base; printf '' > "$r/e2e/mx/expected-failing-x/a.txt"; commit "$r"
+expect "a look-alike of a ratchet folder (expected-failing-x/) may not shrink" 1 guard "$r"
 r=$(repo); printf 'm2/a.test.ts > a\n' > "$r/e2e/m2/expected-failing/a.txt"; commit "$r"
 expect "deleting a line from an m2 ratchet file passes" 0 guard "$r"
 r=$(repo); git -C "$r" rm -q e2e/m2/expected-failing/a.txt; commit "$r"
@@ -374,6 +384,48 @@ expect "scope: a push to a goal branch is never fast" 0 scope push goal/on-chain
 expect "scope: a bare goal/ base is not a goal branch" 0 scope pull_request goal/ false
 expect "scope: an empty base runs everything" 0 scope pull_request "" false
 expect "scope: no arguments is a usage error" 1 "$here/scope.sh"
+
+# affected: which suites a pull request touches (CI-integration.md, B3). The two nx calls are stood in for by files.
+aff_repo() { # <changed file>...; a repository whose branch x-build changes those files
+  local dir; dir="$(mktemp -d "$scratch/aff.XXXX")"
+  git -C "$dir" init -q -b base; git -C "$dir" config user.email ci@example.invalid; git -C "$dir" config user.name ci
+  mkdir -p "$dir/packages/prove" "$dir/packages/cli" "$dir/packages/portal" "$dir/e2e" "$dir/docs/canon" "$dir/design/docs"
+  mkdir -p "$dir/packages/cli/test/fixtures" "$dir/e2e/fixtures"
+  printf '**/test/fixtures/**\n' > "$dir/.nxignore"
+  for f in packages/prove/a packages/cli/a packages/cli/test/fixtures/a packages/portal/a e2e/a e2e/fixtures/a docs/canon/a design/docs/a root.json; do echo 1 > "$dir/$f"; done
+  git -C "$dir" add -A && git -C "$dir" commit -qm base && git -C "$dir" checkout -qb x-build
+  local f; for f in "$@"; do echo 2 >> "$dir/$f"; done
+  git -C "$dir" add -A && git -C "$dir" commit -qm change
+  echo "$dir"
+}
+printf '%s' '{"graph":{"nodes":{"prove":{"data":{"root":"packages/prove"}},"cli":{"data":{"root":"packages/cli"}},"portal":{"data":{"root":"packages/portal"}},"e2e":{"data":{"root":"e2e"}},"canon":{"data":{"root":"docs/canon"}},"docs":{"data":{"root":"design/docs"}},"workspace":{"data":{"root":"."}}}}}' > "$scratch/graph.json"
+aff() { # <repo> <affected list, space separated> -> flags for e2e and prove, on one line
+  local list="$scratch/list"; printf '%s\n' $2 > "$list"
+  (cd "$1" && AFFECTED_GRAPH="$scratch/graph.json" AFFECTED_LIST="$list" "$here/affected.sh" base x-build e2e prove 2> /dev/null | tr '\n' ' ')
+}
+want() { local got; got=$(aff "$1" "$2"); [ "$got" = "$3 " ] || { echo "got: $got"; return 1; }; }
+r=$(aff_repo packages/portal/a)
+expect "affected: a portal change reaches prove and e2e by the graph" 0 want "$r" "portal prove e2e" "affected_e2e=true affected_prove=true"
+r=$(aff_repo packages/cli/a)
+expect "affected: a cli change reaches e2e and prove (prove runs the CLI)" 0 want "$r" "cli e2e" "affected_e2e=true affected_prove=true"
+r=$(aff_repo docs/canon/a)
+expect "affected: a canon change reaches e2e (e2e/m1 reads it), not prove" 0 want "$r" "canon" "affected_e2e=true affected_prove=false"
+r=$(aff_repo design/docs/a)
+expect "affected: a design-docs project change touches neither suite" 0 want "$r" "docs" "affected_e2e=false affected_prove=false"
+r=$(aff_repo packages/cli/test/fixtures/a)
+expect "affected: a file .nxignore hides from Nx runs everything" 0 want "$r" "" "affected_e2e=true affected_prove=true"
+r=$(aff_repo e2e/fixtures/a)
+expect "affected: e2e/fixtures is copied by prove's tests, so everything runs" 0 want "$r" "e2e" "affected_e2e=true affected_prove=true"
+r=$(aff_repo e2e/a)
+expect "affected: an e2e change runs e2e, not prove" 0 want "$r" "e2e" "affected_e2e=true affected_prove=false"
+r=$(aff_repo root.json)
+expect "affected: a file in no project runs everything" 0 want "$r" "canon" "affected_e2e=true affected_prove=true"
+r=$(aff_repo docs/canon/a root.json)
+expect "affected: one unowned file among owned ones runs everything" 0 want "$r" "canon" "affected_e2e=true affected_prove=true"
+r=$(aff_repo packages/cli/a)
+expect "affected: an unreadable graph runs everything" 0 bash -c "cd '$r' && echo nonsense > '$scratch/bad.json' && AFFECTED_GRAPH='$scratch/bad.json' AFFECTED_LIST=/dev/null '$here/affected.sh' base x-build e2e prove 2>/dev/null | tr '\n' ' ' | grep -qx 'affected_e2e=true affected_prove=true '"
+expect "affected: a base that does not exist runs everything" 0 bash -c "cd '$r' && AFFECTED_GRAPH='$scratch/graph.json' AFFECTED_LIST=/dev/null '$here/affected.sh' no-such-base x-build e2e prove 2>/dev/null | tr '\n' ' ' | grep -qx 'affected_e2e=true affected_prove=true '"
+expect "affected: no projects is a usage error" 2 "$here/affected.sh" base x-build
 
 if [ "$failures" -gt 0 ]; then echo "$failures case(s) failed"; exit 1; fi
 echo "all tools/ci cases pass"

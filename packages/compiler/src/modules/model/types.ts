@@ -1,6 +1,7 @@
 // The model: every declaration in the blueprint, named, described and hashed. Generators and evals read only this.
 import { Data, type Effect } from "effect";
 import type { BlueprintSource, SourceError } from "#modules/source/types.js";
+import type { ClockModel, MoveTimeModel } from "#modules/time/types.js";
 import type { ValueMeta } from "orthograph";
 import type { MountModel } from "#modules/mounts/types.js";
 
@@ -32,7 +33,8 @@ export type FieldsModel = Readonly<Record<string, FieldModel>>;
 
 export interface MachineModel {
   readonly states: ReadonlyArray<string>;
-  readonly moves: Readonly<Record<string, { readonly from: ReadonlyArray<string>; readonly to: ReadonlyArray<string>; readonly emits: string }>>;
+  /** A move made by time also carries `by`, and `late` and `lazy` when declared (M8.09); a move made by a person carries none. */
+  readonly moves: Readonly<Record<string, { readonly from: ReadonlyArray<string>; readonly to: ReadonlyArray<string>; readonly emits: string } & Partial<MoveTimeModel>>>;
   /** The generated refusal: `<Thing>Not<State>`, named after the machine's first state. */
   readonly notFrom: { readonly error: string; readonly exit: number; readonly code: string };
 }
@@ -86,6 +88,7 @@ export type AllowedModel =
   | { readonly kind: "anyone" }
   | { readonly kind: "signed-in"; readonly via?: ReadonlyArray<string> }
   | { readonly kind: "system" }
+  | { readonly kind: "keeper" }
   | { readonly kind: "role"; readonly role: string; readonly via?: ReadonlyArray<string>; readonly service?: string }
   | { readonly kind: "role-of"; readonly role: string; readonly path: string; readonly via?: ReadonlyArray<string>; readonly service?: string };
 
@@ -167,6 +170,8 @@ export interface EnvironmentModel {
   readonly identity?: "test-principals" | "better-auth";
   /** The ways in it issues credentials for, sorted; present only when it names them (absent: every way in). */
   readonly issues?: ReadonlyArray<string>;
+  /** How its worlds tell time; present only when it declares a clock (M8.09). */
+  readonly clock?: ClockModel;
   /** How long a world of this environment lives, when it has a lifetime. */
   readonly lifetimeMs: number | null;
   readonly cloud: { readonly provider: "cloudflare"; readonly database: "d1" | "d1-local" } | null;
@@ -190,6 +195,8 @@ export interface JourneyCallModel {
   readonly request?: string;
   /** The way in the cast member's credential is made for, when the call says one (`s.ada.via(Via.key)`). */
   readonly via?: string;
+  /** The keeper's call: the instant the move made by time was due (M8-checks call 4). */
+  readonly due?: string;
 }
 
 export interface JourneyModel {

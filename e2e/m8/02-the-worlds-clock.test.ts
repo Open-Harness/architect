@@ -172,6 +172,8 @@ describe("02 M8.03: one clock drives the world", () => {
     try {
       await inWorld(root, "m8-quiet", async ({ url }) => {
         const spinning = call(url, "probe.spin", { origin });
+        // If a step below fails first, the world is torn down under this call: it is awaited at the end, never orphaned.
+        spinning.catch(() => undefined);
         await until(() => Promise.resolve(held.length), (n) => n > 0, 60_000);
         expect(held.length, "probe.spin never reached its gate").toBe(1);
         const refused = await advance(url, "1 day");
