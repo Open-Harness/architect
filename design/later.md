@@ -216,7 +216,7 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
 ## From the Goal 4 relayer review rounds (23 November 2026)
 
 Five rounds of review on the relayer (M6.07) each found a valid nonce fault. The cause was the same every time: the relayer and `chain-evm`'s port
-each owned a piece of one nonce's state, and the relayer guessed the rest. Both entries below are cut from that slice by
+each owned a piece of one nonce's state, and the relayer guessed the rest. The first two entries below are cut from that slice by
 `decisions/M6-relayer-rebroadcast.md`.
 
 - **Fee-bump replacement of a dropped or stuck transaction** (its own slice). Today the relayer sends a dropped transaction again, byte for byte,
