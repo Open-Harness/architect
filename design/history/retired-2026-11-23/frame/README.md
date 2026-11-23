@@ -20,15 +20,15 @@ records are brought in line.
 | [`generators.md`](generators.md) | everything Orthograph generates and scaffolds, including the agent files that close the loop |
 | [`skills.md`](skills.md) | the skills any agent uses to build on Blueprint, from an idea to a watched operation; the workflows; the tools ([`skills-questions.md`](skills-questions.md): Aaron's round) |
 | [`examples/`](examples/README.md) | worked examples: agents, the factory, payments, notifications, on chain, Noir, Python |
-| [`questions.md`](questions.md) | every open question, in one round |
-| [`../milestones.md`](../milestones.md) | the recut: milestones M0 to M7, their slices and gates; workable at the end of M2 |
+| [`questions.md`](../../../frame/questions.md) | every open question, in one round |
+| [`../milestones.md`](../../../milestones.md) | the recut: milestones M0 to M7, their slices and gates; workable at the end of M2 |
 | [`delta.md`](delta.md) | every weakness found, how this frame answers it, and the order to close the gap |
 
 ## The name (Aaron, 18 November 2026)
 
 The framework is **Orthograph**: the command `ortho`, the npm scope `@orthograph`, and the front door the plain
 package `orthograph` (`decisions/K6-orthograph.md`). **Blueprint** is still what you write: the `blueprint/` folder
-and the `Blueprint.*` API. How every name is spelled, and where it lives, is in [`../naming.md`](../naming.md).
+and the `Blueprint.*` API. How every name is spelled, and where it lives, is in [`../naming.md`](../../../naming.md).
 Where a frame document says Blueprint for the framework itself, read Orthograph.
 
 ## In one breath
