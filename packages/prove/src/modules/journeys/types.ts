@@ -30,6 +30,8 @@ export interface CallRecord {
   readonly tools?: true;
   /** The step moved the world's clock (`s.clock.advance`, `.moveTo`): no operation ran and no span comes; `body` is the door's `{ now, fired }` or its refusal. */
   readonly clock?: true;
+  /** The step went through one of the harness's doors (the runner, a stand-in, a probe, several calls at once): no operation ran and no span comes. */
+  readonly door?: true;
 }
 
 export type { D1Access } from "./internal/d1-facts.ts";

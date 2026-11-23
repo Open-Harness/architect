@@ -1,6 +1,7 @@
 // The harness's doors a journey step goes through (GOAL17-check-harness, call 0): the runner of the world prove started, a stand-in's
 // own `/_stand/*` routes, and the world's `/_world/*` probe routes. Each answers JSON, and a step reads it with `expect(pick)`.
 // A step records what it got as a `CallRecord` with no trace, as the tools list does: nothing here runs an operation.
+import { randomBytes } from "node:crypto";
 import { Effect, Option, Schema } from "effect";
 import type { RunnerCall, StandCall, WorldCall } from "orthograph";
 import type { CallRecord } from "../types.ts";
@@ -21,7 +22,7 @@ const json = (v: unknown) => JSON.stringify(v, (_, x: unknown) => (typeof x === 
 
 /** A door's answer as a record the step's checks read: no operation, no trace, no journal. */
 export const recordOf = (journey: string, step: string, operation: string, payload: Readonly<Record<string, unknown>>, status: number, body: unknown): CallRecord =>
-  ({ journey, step, actor: "", person: "", operation, payload, status, body, trace: "", parent: "", mayCall: true, journal: [] });
+  ({ journey, step, actor: "", person: "", operation, payload, status, body, trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: [], door: true });
 
 /** `POST <stand-in>/_stand/<command>`: a non-200 is the step's failure, naming the mount, the command and the answer. */
 export const standDoor = (harness: Harness | undefined, journey: string, step: string, call: StandCall, args: unknown) =>

@@ -233,6 +233,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       const gone = step.call.kind === "call" ? project.omitted?.get(step.call.operation) : undefined;
       if (gone) { skipped.push({ step: step.title, ...gone }); continue; }
       const { record, missing } = yield* doorOf(step.title, step.call);
+      if (record.door === true) calls.push(record);
       const door = step.call.kind === "runner-call" || step.call.kind === "stand-call" || step.call.kind === "world-call";
       const checked = yield* runChecks(step.checks, record, env, facts);
       steps.push({
