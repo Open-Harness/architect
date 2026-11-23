@@ -43,6 +43,18 @@ Set up a company; the person who sets it up runs it.
 
 ## Worked examples
 
+### another company's department is refused
+
+Starts from the world `a team`.
+
+- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
+### another company's job title is refused
+
+Starts from the world `a team`.
+
+- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
 ### companies are kept apart
 
 Starts from the world `a company`.
@@ -58,6 +70,12 @@ Starts from an empty world.
 
 - **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.
 - **Bo sets up a company of his own, which he runs.** `bo` (signed in) calls and sends companyName `Kilimanjaro Coffee Exporters`, abbr `KCE`, country `Tanzania`, defaultCurrency `TZS`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
+### set up departments and job titles
+
+Starts from the world `a company`.
+
+- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
 ## How to call
 
