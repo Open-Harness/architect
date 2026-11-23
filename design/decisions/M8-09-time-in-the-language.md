@@ -43,6 +43,14 @@ The model's shapes, as the M8.09 row fixes them:
    text field of the thing.** A path through another thing (`"company.zone"`) is not read yet: it is refused naming the zone.
 7b. **The tz list is what `Intl.supportedValuesOf("timeZone")` gives, plus `UTC`.** That is the canonical names, so a link such as `US/Pacific` or `Etc/UTC` is refused (use `America/Los_Angeles`, `UTC`), and the list depends on the Node ICU build the compiler runs on. A zone the build does not list is a problem naming the move and the zone, never a silent guess.
 8. **A clock's `starts` is normalised** to ISO 8601 with milliseconds in the model, as every instant is on the wire.
+9. **A cast member may be named `clock`; `world`, `last` and `step` are refused.** Those four are the script's own words,
+   and a cast member of the same name used to be overwritten without a word (a Codex finding on #517). The compiler now
+   refuses a cast named `world`, `last` or `step` in a journey or a starting world, naming the clash. `clock` stays
+   allowed because a check on `goal/stage-1` already casts it:
+   `e2e/fixtures/m1/service-caller/blueprint/journeys/a-service-is-nobody-signed-in.ts:17` has
+   `clock: Blueprint.system` and calls `s.clock.run(tick, {})`, and a builder never edits a check. So a cast member
+   named `clock` keeps its `run`, `person`, `email` and `password`, and gains the world's `advance` and `moveTo`, which
+   no actor has. One name then means "whoever acts on time" in both uses.
 
 ## Supersedes
 
