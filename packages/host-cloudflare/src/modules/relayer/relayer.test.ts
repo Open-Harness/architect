@@ -17,10 +17,10 @@ describe("the relayer, in workerd (the chain side is checked on Anvil by e2e/on-
     });
   });
 
-  it("will not configure without its key, or for a bad chain id, and its refusals hold nothing it was given", async () => {
+  it("will not configure for a bad chain id or poll interval, or for a node that does not answer, and its refusals hold nothing it was given", async () => {
     await runInDurableObject(env.RELAYER.getByName("eip155:2") as DurableObjectStub<Relayer>, async (instance) => {
       const relayer = instance as Relayer;
-      await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 2 })).rejects.toThrow(/bind RELAYER_KEY/);
+      await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 2 })).rejects.toThrow(/^transport: EVM RPC request failed$/);
       await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 0 })).rejects.toThrow(/chainId/);
       await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 2, pollIntervalMs: -5 })).rejects.toThrow(/pollIntervalMs/);
     });

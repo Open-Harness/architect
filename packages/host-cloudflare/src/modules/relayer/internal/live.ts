@@ -1,7 +1,7 @@
 // What the relayer builds once it has its configuration and its key: the chain port, the key, and the signed transaction it holds
 // for each submission that may still change (the port replaces from these). Built again after a restart from what the store kept.
 import { ChainFault, Keys, makeChainPort, type ChainError, type ChainPort, type Key, type NonceReservation, type Signed } from "@orthograph/chain-evm/device";
-import { Effect, Redacted, type Semaphore } from "effect";
+import { Effect, Redacted } from "effect";
 import type { RelayerConfig } from "../types.ts";
 import { register } from "./adopt.ts";
 import type { Store } from "./store.ts";
@@ -21,11 +21,10 @@ export interface Live {
   readonly inflight: Set<string>;
 }
 
-/** What each piece of the relayer's work is given: the live parts, the store, the lock `reconcile` takes, and the way to ask for the next alarm. */
+/** What each piece of the relayer's work is given: the live parts, the store, and the way to ask for the next alarm. */
 export interface Parts {
   readonly live: Live;
   readonly store: Store;
-  readonly lock: Semaphore.Semaphore;
   readonly arm: Effect.Effect<void>;
 }
 

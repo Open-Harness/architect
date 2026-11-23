@@ -3,7 +3,7 @@
 // e2e/on-chain/10-m6-07-relayer.test.ts and by chain-evm's tx/resume.test.ts.
 import { env, runInDurableObject } from "cloudflare:test";
 import { ChainFault, type ChainPort, type NonceReservation, type Signed } from "@orthograph/chain-evm/device";
-import { Effect, Semaphore } from "effect";
+import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
 import { register } from "./internal/adopt.ts";
 import { reconcile, status } from "./internal/check.ts";
@@ -29,6 +29,8 @@ interface Script {
   resume: Array<Signed | ChainFault>;
   /** What each `fill` answers, in order. */
   fill: Array<ChainFault | "ok">;
+  /** What each `replace` answers, in order. */
+  replace: Array<ChainFault | "ok">;
   /** Every call the port was given, by name: what the relayer asked for. */
   calls: Array<{ name: string; arg?: unknown }>;
   /** What the store held for each row when the port was asked to `simulate` and to `submit`. */
@@ -54,9 +56,10 @@ const harness = (store: Store, script: Script, held: Map<string, Held> = new Map
       const out = next(script.fill);
       return out === "ok" ? Effect.succeed(signedAt(owned.nonce, 60 + owned.nonce)) : Effect.fail(out);
     }),
-    replace: (signed: Signed, _signer: unknown, policy: { strategy: string }) => Effect.sync(() => {
+    replace: (signed: Signed, _signer: unknown, policy: { strategy: string }) => Effect.suspend(() => {
       script.calls.push({ name: "replace", arg: { replaces: signed.hash, strategy: policy.strategy } });
-      return signedAt(signed.prepared.transaction.nonce, made++);
+      const out = next(script.replace);
+      return out === "ok" ? Effect.succeed(signedAt(signed.prepared.transaction.nonce, made++)) : Effect.fail(out);
     }),
     submit: () => Effect.suspend(() => {
       script.atSubmit.push(store.open());
@@ -65,10 +68,10 @@ const harness = (store: Store, script: Script, held: Map<string, Held> = new Map
     }),
   };
   const live = { key: { address: FROM, signer: {} }, port: port as unknown as ChainPort, held, inflight: new Set<string>() } as unknown as Live;
-  return { live, store, lock: Semaphore.makeUnsafe(1), arm: Effect.void };
+  return { live, store, arm: Effect.void };
 };
 const script = (over: Partial<Script> = {}): Script => ({
-  probe: [{ _tag: "Held" }], submit: ["ok"], simulate: ["ok"], resume: [], fill: ["ok"], calls: [], atSimulate: [], atSubmit: [], ...over,
+  probe: [{ _tag: "Held" }], submit: ["ok"], simulate: ["ok"], resume: [], fill: ["ok"], replace: ["ok"], calls: [], atSimulate: [], atSubmit: [], ...over,
 });
 const inDo = (name: string, body: (store: Store) => Promise<void>) =>
   runInDurableObject(env.RELAYER.getByName(name) as DurableObjectStub<Relayer>, (_relayer, state) => body(makeStore(state.storage.sql)));
@@ -97,6 +100,33 @@ describe("a replacement that fails in transit", () => {
     expect((await run(reconcile(parts))).replaced).toEqual([]);
     expect(store.find("b")).toMatchObject({ hash: hash(1), replaces: [], note: "the relayer cannot pay" });
     expect(await run(status(parts, "b"))).toMatchObject({ id: "b", hash: hash(1), state: "dropped", problem: "the relayer cannot pay" });
+  }));
+});
+
+describe("a send the node refused for good", () => {
+  it("ends as a fill row, never as a sent call: the port's own error says the refusal is final, and a later call goes through", () => inDo("eip155:20", async (store) => {
+    const s = script({ submit: [new ChainFault({ kind: "rejected", message: "The node refused the transaction for good" }), "ok"], probe: [{ _tag: "Dropped" }, { _tag: "Held" }] });
+    const parts = harness(store, s);
+    await expect(run(relay(parts, call))).rejects.toMatchObject({ kind: "rejected" });
+    const [kept] = store.open();
+    expect(kept).toMatchObject({ nonce: 7, fill: true, serialized: "0x" });
+    const later = await run(relay(parts, call));
+    expect(later.nonce).toBe(8);
+    await run(reconcile(parts));
+    expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 7 }]);
+    expect(store.open().map((r) => [r.nonce, r.state])).toEqual([[7, "submitted"], [8, "submitted"]]);
+  }));
+
+  it("and a replacement the port will not make (nothing is broadcast at the nonce) turns the row into a fill, which the alarm then fills", () => inDo("eip155:21", async (store) => {
+    store.add(row("w", 5, 1));
+    const s = script({ probe: [{ _tag: "Dropped" }], replace: [new ChainFault({ kind: "nonce", message: "The transaction is not the one broadcast at its nonce" })] });
+    const parts = harness(store, s, holding(["w", 5, 1]));
+    expect((await run(reconcile(parts))).replaced).toEqual([]);
+    expect(store.find("w")).toMatchObject({ fill: true, serialized: "0x", state: "submitting" });
+    expect(parts.live.held.get("w")).toEqual({ reservation: reservation(5) });
+    await run(reconcile(parts));
+    expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 5 }]);
+    expect(s.calls.filter((c) => c.name === "replace")).toHaveLength(1);
   }));
 });
 

@@ -403,6 +403,7 @@ The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m
   again with an id it has taken; `seen` is harmless, and what may never happen twice is `accepted` for one id.
 - **The relayer writes before it sends, and never leaves a gap.** A submission is stored, with its signed bytes, before it is sent, so a crash cannot orphan it; the alarm retries anything whose send was uncertain, and a nonce left unusable by a definite failure is filled with a zero-value transfer to the relayer itself, so the nonces after it still go through (🔍 on #677, 23 November 2026).
 - **The relayer's store owns its nonces.** A nonce is reserved for exactly one stored submission from the moment it is taken, before anything that can fail; only that submission's reservation is ever released or replaced, and only once the node has passed the nonce (review-loop reset on #677, 23 November 2026).
+- **The port alone decides whether a refusal is definite.** `chain-evm`'s `submit` returns a refusal it has acted on (the nonce reset or left held by its owner) as a `ChainFault` of kind `rejected`, or another final kind, and `isDefinite` says which kinds are final; the relayer never classifies an error itself (round 5 on #677, 23 November 2026).
 
 ## The budgets example, as the journey author will write it
 

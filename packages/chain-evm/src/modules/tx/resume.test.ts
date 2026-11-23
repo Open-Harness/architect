@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { createPublicClient, createTestClient } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { expect, test } from "vitest";
+import { isDefinite } from "../../device.ts";
 import { makeChainPort } from "../../main.ts";
 import { fixtureRpc, liveFixtureTimers, withAnvil } from "./internal/anvil-fixture.ts";
 test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("probes a submission, and a port that never saw it takes it back from its signed bytes and replaces it", () =>
@@ -116,4 +117,36 @@ test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("a refused broadcast k
     yield* port.submit(again);
     yield* fixtureRpc(() => testClient.mine({ blocks: 1 }));
     expect((yield* fixtureRpc(() => publicClient.getTransactionReceipt({ hash: again.hash }))).status, "the fill lands").toBe("success");
+  }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 30_000);
+
+test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("a fee-cap refusal is final for its call: the error says so, the nonce stays held, nothing can replace it, and a fill lands", () =>
+  Effect.runPromise(Effect.gen(function* () {
+    const { chain, rpcUrl, transport } = yield* withAnvil;
+    const account = yield* Effect.sync(() => privateKeyToAccount(generatePrivateKey()));
+    const recipient = yield* Effect.sync(() => privateKeyToAccount(generatePrivateKey()).address);
+    const testClient = createTestClient({ chain, transport, mode: "anvil" });
+    const publicClient = createPublicClient({ chain, transport });
+    yield* fixtureRpc(() => testClient.setBalance({ address: account.address, value: 10n ** 20n }));
+    const signer = {
+      address: account.address,
+      signTransaction: (transaction: Parameters<typeof account.signTransaction>[0]) =>
+        Effect.tryPromise({ try: () => account.signTransaction(transaction), catch: () => new Error("Anvil fixture signing failed") }).pipe(Effect.orDie),
+    };
+    const port = yield* makeChainPort({ chainId: chain.id, rpcUrl, keepOnReject: true });
+    const call = { from: account.address, to: recipient, value: 1n };
+    const first = yield* port.prepare(call);
+    yield* port.simulate(first);
+    const signed = yield* port.sign(first, signer);
+    // The base fee rises after the transaction was priced: the node refuses it for a fee cap below the base fee.
+    yield* fixtureRpc(() => testClient.setNextBlockBaseFeePerGas({ baseFeePerGas: 10n ** 11n }));
+    yield* fixtureRpc(() => testClient.mine({ blocks: 1 }));
+    const refused = yield* port.submit(signed).pipe(Effect.flip);
+    expect(refused, "the port says the refusal is final").toMatchObject({ _tag: "ChainFault", kind: "rejected" });
+    expect(isDefinite(refused)).toBe(true);
+    expect(yield* port.replace(signed, signer, { strategy: "speedup", maxFeePerGas: 10n ** 13n }).pipe(Effect.flip), "nothing was broadcast, so nothing is replaced").toMatchObject({ kind: "nonce" });
+    const filler = yield* port.fill(port.reservationOf(first)!, signer);
+    yield* port.submit(filler);
+    yield* fixtureRpc(() => testClient.mine({ blocks: 1 }));
+    expect((yield* fixtureRpc(() => publicClient.getTransactionReceipt({ hash: filler.hash }))).status, "the fill lands").toBe("success");
+    expect((yield* port.prepare(call)).transaction.nonce, "a later call goes through at the next nonce").toBe(first.transaction.nonce + 1);
   }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 30_000);

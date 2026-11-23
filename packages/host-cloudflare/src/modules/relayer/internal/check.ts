@@ -56,7 +56,13 @@ const resend = (parts: Parts, row: Row) => Effect.gen(function* () {
   const { live, store } = parts;
   const held = live.held.get(row.id);
   if (held?.signed === undefined) return undefined;
-  const next = yield* live.port.replace(held.signed, live.key.signer, { strategy: row.fill ? "cancel" : "speedup", maxFeePerGas: row.cap });
+  const next = yield* live.port.replace(held.signed, live.key.signer, { strategy: row.fill ? "cancel" : "speedup", maxFeePerGas: row.cap }).pipe(
+    Effect.catch((error) => error.kind === "nonce"
+      // Nothing is broadcast at this nonce (its send was refused and the port let it go): there is nothing to replace, so the row fills it.
+      ? Effect.sync(() => { store.toFill(row.id, "nothing is broadcast at its nonce"); live.held.set(row.id, { reservation: held.reservation }); return undefined; })
+      : Effect.fail(error)),
+  );
+  if (next === undefined) return undefined;
   const submission = yield* live.port.submit(next).pipe(Effect.catch((error) => definite(error) ? Effect.fail(error) : Effect.succeed(undefined)));
   live.held.set(row.id, { reservation: held.reservation, signed: next });
   store.replace(row, next.hash, next.serialized, submission?.fromBlock ?? row.fromBlock);
@@ -112,11 +118,11 @@ const settle = (parts: Parts, row: Row) => Effect.gen(function* () {
 
 /**
  * Every submission that may still change is read from the chain, lowest nonce first, and every dropped one is sent again. One at a
- * time (the lock): an alarm that comes while a call is reconciling waits, then finds nothing left to replace. A submission a `relay`
+ * time (the caller holds the reconcile lock): an alarm that comes while a call is reconciling waits, then finds nothing left to replace. A submission a `relay`
  * call is still working on is left to that call. One that cannot be read or sent now is left for the next time, with the reason on its
  * row (`status` shows it as `problem`).
  */
-export const reconcile = (parts: Parts) => parts.lock.withPermit(Effect.gen(function* () {
+export const reconcile = (parts: Parts) => Effect.gen(function* () {
   const replaced: Replaced[] = [];
   for (const row of parts.store.open()) {
     if (parts.live.inflight.has(row.id)) continue;
@@ -124,4 +130,4 @@ export const reconcile = (parts: Parts) => parts.lock.withPermit(Effect.gen(func
     if (done !== undefined && !row.fill) replaced.push(done);
   }
   return { replaced };
-}));
+});

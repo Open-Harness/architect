@@ -25,6 +25,12 @@ node refuses for good leaves the nonce held by its owner instead of handing it b
 passed it (the allocator prunes it). On a restart, inside `blockConcurrencyWhile`, every open row takes back its own reservation before a
 call is served: `resume` for rows with bytes, `hold` for rows without. A failure there is a defect and restarts the Durable Object.
 
+**One Live at a time, and one owner of "final".** `configure` runs under the reconcile lock with every `relay` drained (each `relay` holds one
+permit of a swap semaphore, `configure` takes them all), so a new Live is built, and takes every open row's reservation back, only when nothing
+is working on the old one. Whether a refusal is final is the port's call (`isDefinite`): `submit` says so in the error it returns whenever it
+reset the nonce, so a fee-cap refusal ends as a fill row, never as a call answered as sent. The port also refuses to `replace` a
+transaction that is not the one broadcast at its nonce, and a row that reaches that state becomes a fill.
+
 **Write before send.** `relay` first asks the node to run the call (`port.read`), so a call that would revert never takes a nonce. It
 then simulates and signs, stores the signed bytes on the row (state `submitting`) before it sends, and, while it works, the alarm leaves
 the row alone. A send that fails in transit (or that the node does not explain) is answered as sent and left to the alarm, which looks

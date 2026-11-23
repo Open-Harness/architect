@@ -1,10 +1,8 @@
 // What the relayer's store owns: every open row holds its own nonce reservation, and on a restart each takes it back before any call is served.
-import { ChainRefusal } from "@orthograph/chain-evm/device";
+import { ChainRefusal, isDefinite } from "@orthograph/chain-evm/device";
 import { Effect } from "effect";
 import type { Live } from "./live.ts";
 import type { Row, Store } from "./store.ts";
-
-const DEFINITE = new Set(["funds", "rejected", "revert", "panic", "signing", "configuration", "unsupported"]);
 
 /** The hash a row holds while it has no transaction yet (a fill that is waiting to be sent). */
 export const NO_HASH = `0x${"0".repeat(64)}` as const;
@@ -12,13 +10,8 @@ export const NO_HASH = `0x${"0".repeat(64)}` as const;
 /** A row with no bytes: its nonce is held for a fill (its call was never signed, or could not be sent). */
 export const unsent = (row: Row) => row.serialized === "0x";
 
-/**
- * A failure that sending again cannot cure: the call itself is refused (a revert, no funds). Anything else, a transport error, a
- * timeout, or a fault the node did not explain, may have left the transaction on the node or may be gone tomorrow, so the alarm
- * looks again.
- */
-export const definite = (error: unknown): boolean =>
-  error instanceof ChainRefusal || (typeof error === "object" && error !== null && "kind" in error && typeof error.kind === "string" && DEFINITE.has(error.kind));
+/** Whether a failure ends its call for good. The port decides (`isDefinite`): the relayer does not classify errors itself. */
+export const definite = isDefinite;
 
 /** What a failure says, for a row's note and for nothing else: no value that was given is in it. */
 export const reason = (error: unknown): string =>

@@ -8,6 +8,7 @@ import { relay } from "./internal/relay.ts";
 import { makeStore } from "./internal/store.ts";
 import type { RelayerApi, RelayerConfig, RelayerEnv } from "./types.ts";
 
+const SWAP_PERMITS = 1_000_000;
 const invalid = (message: string) => new ChainFault({ kind: "configuration", message });
 
 /**
@@ -20,6 +21,8 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
   private readonly store = makeStore(this.ctx.storage.sql);
   private readonly lock = Semaphore.makeUnsafe(1);
   private readonly starting = Semaphore.makeUnsafe(1);
+  /** Every `relay` holds one permit while it works; `configure` takes them all, so a Live is only swapped when no call is using it. */
+  private readonly swap = Semaphore.makeUnsafe(SWAP_PERMITS);
   private live: Live | undefined;
 
   constructor(ctx: DurableObjectState, env: RelayerEnv) {
@@ -59,11 +62,15 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
       this.live = yield* startLive(config, this.env.RELAYER_KEY, this.store).pipe(Effect.provide(TimersLive));
       return this.live;
     })));
-    return { live, store: this.store, lock: this.lock, arm: this.arm };
+    return { live, store: this.store, arm: this.arm };
   });
 
+  /**
+   * Configure under the reconcile lock and with every `relay` drained, so there is only ever one Live: a new one is built (and takes every open
+   * row's reservation back) only when nothing is working on the old one, and nothing is working on both. A relay that arrives meanwhile waits.
+   */
   configure(config: RelayerConfig): Promise<{ readonly address: Hex }> {
-    return this.run(Effect.gen({ self: this }, function* () {
+    return this.run(this.lock.withPermit(this.swap.withPermits(SWAP_PERMITS)(Effect.gen({ self: this }, function* () {
       const kept = this.store.config();
       if (!Number.isSafeInteger(config.chainId) || config.chainId <= 0) return yield* invalid("chainId must be a positive integer");
       if (config.pollIntervalMs !== undefined && (!Number.isSafeInteger(config.pollIntervalMs) || config.pollIntervalMs <= 0)) return yield* invalid("pollIntervalMs must be a positive integer");
@@ -76,11 +83,11 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
       const { live, arm } = yield* this.parts;
       yield* arm;
       return { address: live.key.address as Hex };
-    }));
+    }))));
   }
 
   relay(call: { readonly to: Hex; readonly data: Hex }) {
-    return this.run(this.parts.pipe(Effect.flatMap((parts) => relay(parts, call))));
+    return this.run(this.swap.withPermits(1)(this.parts.pipe(Effect.flatMap((parts) => relay(parts, call)))));
   }
 
   status(id: string) {
@@ -88,13 +95,15 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
   }
 
   reconcile() {
-    return this.run(this.parts.pipe(Effect.flatMap(reconcile)));
+    return this.run(this.reconciling);
   }
+
+  /** The Live is read after the lock is taken, so a `configure` that swapped it meanwhile is not worked around. */
+  private readonly reconciling = Effect.suspend(() => this.lock.withPermit(this.parts.pipe(Effect.flatMap(reconcile))));
 
   /** The alarm does what `reconcile` does, and asks for the next one while anything may still change. */
   override alarm(): Promise<void> {
-    return this.run(this.parts.pipe(
-      Effect.flatMap(reconcile),
+    return this.run(this.reconciling.pipe(
       Effect.ignore,
       Effect.andThen(Effect.suspend(() => this.store.config()?.pollIntervalMs === undefined || this.store.open().length === 0
         ? Effect.void

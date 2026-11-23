@@ -9,7 +9,7 @@ export { Abi } from "./modules/abi/service.ts";
 export type {
   AbiApi, AbiConstructor, AbiDocument, AbiError, AbiEvent, AbiFunction, AbiParameter,
 } from "./modules/abi/types.ts";
-export { decodeRevert, mapRpcError } from "./modules/faults/service.ts";
+export { decodeRevert, isDefinite, mapRpcError } from "./modules/faults/service.ts";
 export { ChainFault, ChainRefusal, type ChainError, type FaultKind, type RefusalLockEntry } from "./modules/faults/types.ts";
 export { makeEventSource } from "./modules/events/service.ts";
 export type {

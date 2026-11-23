@@ -2,7 +2,7 @@
 import { Effect, Option, Semaphore } from "effect";
 import { keccak256, type Hash, type TransactionSerialized } from "viem";
 import { hasMessage, isDefiniteRejection, isPendingReceipt, rpcFaultKind } from "../../faults/internal/viem-mapper.ts";
-import { mapRpcError, rpcFault } from "../../faults/service.ts";
+import { isDefinite, mapRpcError, rpcFault } from "../../faults/service.ts";
 import { ChainFault, type ChainError } from "../../faults/types.ts";
 import { makeNonces } from "../../nonce/service.ts";
 import type { NonceReservation } from "../../nonce/types.ts";
@@ -86,8 +86,14 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
             );
             if (found?.hash === signed.hash) return signed.hash;
           }
-          if (isDefiniteRejection(error)) yield* nonces.rejectBroadcast(reservation, attempt);
-          return yield* mapRpcError(error, transaction.to ?? undefined, options.refusals);
+          const mapped = mapRpcError(error, transaction.to ?? undefined, options.refusals);
+          if (!isDefiniteRejection(error)) return yield* mapped;
+          // The nonce is reset (or, with keepOnReject, left held by its owner): the error says the refusal is final, whatever the node's wording mapped to.
+          yield* nonces.rejectBroadcast(reservation, attempt);
+          const refusal = yield* Effect.flip(mapped);
+          return yield* (isDefinite(refusal) ? Effect.fail(refusal) : Effect.fail(new ChainFault({
+            kind: "rejected", ...(transaction.to == null ? {} : { program: transaction.to }), message: "The node refused the transaction for good",
+          })));
         })));
         if (hash.toLowerCase() !== signed.hash.toLowerCase()) {
           return yield* new ChainFault({ kind: "transport", message: "EVM RPC returned an unexpected transaction hash" });
@@ -103,7 +109,13 @@ export const makeTransactionManager = (rpc: Rpc, options: ChainPortOptions) =>
 
     const replace: ChainPort["replace"] = (signed, signer, policy) => Effect.gen(function* () {
       const original = signedTransactions.get(signed)?.transaction;
-      if (original === undefined) return yield* unavailable();
+      const reserved = reservations.get(signed.prepared);
+      if (original === undefined || reserved === undefined) return yield* unavailable();
+      // Only the transaction broadcast at the nonce can be replaced: a nonce whose broadcast was refused (and reset) has nothing to replace.
+      const owned = yield* nonces.ownership(reserved.nonce);
+      if (owned?.broadcast?.hash !== signed.hash) {
+        return yield* new ChainFault({ kind: "nonce", message: "The transaction is not the one broadcast at its nonce" });
+      }
       const bumped = yield* replacementTransaction(rpc, original, policy.maxFeePerGas);
       const transaction = Object.freeze(policy.strategy === "speedup"
         ? bumped
