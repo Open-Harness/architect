@@ -20,8 +20,8 @@ export interface Count {
   readonly name: (id: string, owner: string) => void;
   /** The owner of each token held, once per token, sorted. */
   readonly held: () => ReadonlyArray<string>;
-  /** Open a write section for a token (a commit): false when the world does not hold it, or is closed to writes while it resets. */
-  readonly section: (id: string) => boolean;
+  /** Open a write section for a token (a commit): `false` when the world does not hold it (stale), `"closed"` when it does but is closed to writes while it resets. */
+  readonly section: (id: string) => boolean | "closed";
   /** The write section ended. */
   readonly sectionEnd: (id: string) => void;
   /** Closed to writes and to new tokens (a reset is wiping the databases), until `admit`. */
@@ -86,7 +86,8 @@ export const makeCount = (): Count => {
     held,
     has: (id) => tokens.has(id),
     section: (id) => {
-      if (closed || !tokens.has(id)) return false;
+      if (!tokens.has(id)) return false;
+      if (closed) return "closed";
       sections.set(id, (sections.get(id) ?? 0) + 1);
       return true;
     },

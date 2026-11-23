@@ -104,6 +104,30 @@ describe("a request whose world was reset under it", () => {
     }));
   });
 
+  it("a write refused because the world is closed for a reset keeps the token, so the request's cleanup releases it and the count empties", async () => {
+    const entry = makeBox("entry:/probe/spin", { id: "0.0", pinned: true });
+    const world = makeWorld(entry);
+    let written = false;
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const slow = yield* Deferred.make<void>();
+      const request = yield* Effect.forkChild(busy.as("probe.spin").counted(
+        Effect.andThen(Deferred.await(slow), busy.fenced(Effect.sync(() => { written = true; }))),
+      ));
+      yield* turns;
+      // A reset is draining another write: the world is closed, and still holds this request's token.
+      world.close();
+      yield* Deferred.succeed(slow, undefined);
+      expect((yield* Fiber.await(request))._tag).toBe("Failure");
+      yield* turns;
+      expect(written).toBe(false);
+      // Refused, not stale: the box keeps its id, which the entry's end gives back. The reset may fail and the world open again, and nothing leaks.
+      expect([entry.stale, entry.id]).toEqual([false, "0.0"]);
+      world.admit();
+      expect(world.held()).toEqual(["probe.spin"]);
+    }));
+  });
+
   it("a request that is still live writes inside its section, which the world counts while it runs", async () => {
     const entry = makeBox("entry:/probe/spin", { id: "0.0", pinned: true });
     const world = makeWorld(entry);

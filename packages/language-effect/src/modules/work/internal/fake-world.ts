@@ -8,6 +8,8 @@ export const makeWorld = (request: BusyBox | undefined) => {
   const sections = new Map<string, number>();
   let generation = 0;
   let next = 0;
+  /** Closed to writes (a reset is draining): a token the world holds is refused a section as "closed", one it does not hold as stale. */
+  let closed = false;
   /** How many times the world's count went empty. */
   let idled = 0;
   const count = Layer.succeed(WorldCount, WorldCount.of({
@@ -15,7 +17,7 @@ export const makeWorld = (request: BusyBox | undefined) => {
     leave: (id) => Effect.sync(() => { tokens.delete(id); if (tokens.size === 0) idled += 1; }),
     name: (id, owner) => Effect.sync(() => void (tokens.has(id) && tokens.set(id, owner))),
     valid: (id) => Effect.sync(() => tokens.has(id)),
-    section: (id) => Effect.sync(() => { if (!tokens.has(id)) return false; sections.set(id, (sections.get(id) ?? 0) + 1); return true; }),
+    section: (id) => Effect.sync(() => { if (!tokens.has(id)) return false; if (closed) return "closed" as const; sections.set(id, (sections.get(id) ?? 0) + 1); return true; }),
     sectionEnd: (id) => Effect.sync(() => void sections.set(id, (sections.get(id) ?? 1) - 1)),
     request: Effect.succeed(request),
   }));
@@ -24,6 +26,8 @@ export const makeWorld = (request: BusyBox | undefined) => {
     idled: () => idled,
     open: () => [...sections.values()].reduce((a, b) => a + b, 0),
     reset: () => { generation += 1; tokens.clear(); },
+    close: () => { closed = true; },
+    admit: () => { closed = false; },
     layer: BusyReporting.pipe(Layer.provide(count)),
   };
 };

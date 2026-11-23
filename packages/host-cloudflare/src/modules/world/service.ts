@@ -164,7 +164,7 @@ export class World extends DurableObject<WorldEnv> {
   countLeave(id: string): void { return this.timers.rpc.countLeave(id); }
   countName(id: string, owner: string): void { return this.timers.rpc.countName(id, owner); }
   countHas(id: string): boolean { return this.timers.rpc.countHas(id); }
-  countSection(id: string): boolean { return this.timers.rpc.countSection(id); }
+  countSection(id: string): boolean | "closed" { return this.timers.rpc.countSection(id); }
   countSectionEnd(id: string): void { return this.timers.rpc.countSectionEnd(id); }
   timerAdd(...args: Parameters<WorldTimersRpc["timerAdd"]>): number { return this.timers.rpc.timerAdd(...args); }
   timerWait(id: number): ReturnType<WorldTimersRpc["timerWait"]> { return this.timers.rpc.timerWait(id); }

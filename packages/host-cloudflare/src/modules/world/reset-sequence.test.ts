@@ -10,7 +10,7 @@ const HEADER = "x-ortho-world";
 const pause = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
 
 interface Internals {
-  readonly rpc: { readonly countEnter: (owner: string) => string; readonly countSection: (id: string) => boolean; readonly countSectionEnd: (id: string) => void };
+  readonly rpc: { readonly countEnter: (owner: string) => string; readonly countSection: (id: string) => boolean | "closed"; readonly countSectionEnd: (id: string) => void };
   readonly closed: () => boolean;
   readonly held: () => ReadonlyArray<string>;
 }

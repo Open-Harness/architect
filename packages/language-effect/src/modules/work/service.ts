@@ -8,7 +8,7 @@ type Report = {
   readonly name?: ((id: string, owner: string) => Effect.Effect<void>) | undefined;
   readonly valid?: ((id: string) => Effect.Effect<boolean>) | undefined;
   readonly request?: Effect.Effect<BusyBox | undefined> | undefined;
-  readonly section?: ((id: string) => Effect.Effect<boolean>) | undefined;
+  readonly section?: ((id: string) => Effect.Effect<boolean | "closed">) | undefined;
   readonly sectionEnd?: ((id: string) => Effect.Effect<void>) | undefined;
 };
 
@@ -217,9 +217,10 @@ const counting = (world?: Report): BusyShape => {
             if (id === undefined) return yield* restore(Effect.interrupt);
             const done = held === undefined ? world.leave(id) : Effect.void;
             const open = yield* world.section!(id);
-            if (!open) {
-              // The world no longer holds this request's token: it belongs to a run that is over, and it writes nothing.
-              if (held !== undefined) { box.stale = true; box.id = undefined; }
+            if (open !== true) {
+              // `false`: the world no longer holds this request's token, so it belongs to a run that is over, and it writes nothing. `"closed"`:
+              // the world holds the token and is draining for a reset: refused, with the id kept so the request's cleanup still releases it.
+              if (open === false && held !== undefined) { box.stale = true; box.id = undefined; }
               yield* done;
               return yield* restore(Effect.interrupt);
             }

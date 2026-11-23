@@ -92,8 +92,12 @@ export class WorldCount extends Context.Service<WorldCount, {
   readonly leave: (id: string) => Effect.Effect<void>;
   /** Is this token still held by the world? A box whose id the world no longer knows (a reset) takes a fresh token. */
   readonly valid?: (id: string) => Effect.Effect<boolean>;
-  /** Open a write section for this token: false when the world no longer holds it (a reset) or is closed to writes while it resets. */
-  readonly section?: (id: string) => Effect.Effect<boolean>;
+  /**
+   * Open a write section for this token. `true`: open. `false`: the world no longer holds the token (a reset ended the run), so the request is
+   * stale. `"closed"`: the world holds it, and is closed to writes while a reset drains: the write is refused but the token is still the
+   * request's, and normal cleanup releases it (a reset that fails opens the world again).
+   */
+  readonly section?: (id: string) => Effect.Effect<boolean | "closed">;
   /** The write section ended. */
   readonly sectionEnd?: (id: string) => Effect.Effect<void>;
   /** A request's token was taken at its entry under the entry's name; the operation names it when it begins. */

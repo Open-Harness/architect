@@ -34,7 +34,7 @@ export interface WorldTimersRpc {
   /** Is this token held by the world now? False after a reset, a restart, or its release. */
   countHas(id: string): boolean;
   /** Open a write section for a token (a commit): false when the world no longer holds it, or is closed to writes while it resets. */
-  countSection(id: string): boolean;
+  countSection(id: string): boolean | "closed";
   countSectionEnd(id: string): void;
   /** `token` is the caller's own, when it has one: a call that carries a token the world no longer holds is from a run that is over, and is refused. */
   timerAdd(owner: string, name: string, at: number, holder: string, token?: string): number;

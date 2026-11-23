@@ -197,6 +197,45 @@ describe("a request that went stale across a reset", () => {
     });
   });
 
+  it("a statement refused because a reset is draining another write keeps the request's token, so the request ends clean and the next move is not NeverQuiet", async () => {
+    await worldOf("stale-closed", async (timers, _clock, at) => {
+      const long = timers.rpc.countEnter("long.write");
+      timers.rpc.countSection(long);
+      const ran: Array<string> = [];
+      const statement = (sql: string) => {
+        const self = { bind: () => self, run: () => { ran.push(sql); return Promise.resolve({ results: [] }); }, all: () => Promise.resolve({ results: [] }), first: () => Promise.resolve(null), raw: () => Promise.resolve([]) };
+        return self;
+      };
+      const db = { prepare: (sql: string) => statement(sql), batch: () => Promise.resolve([]), exec: () => Promise.resolve({ count: 0, duration: 0 }) } as unknown as D1Database;
+      const guarded = WorldEntry.fenced(at, db);
+      let refusal = "";
+      const request = requestOf(at, async (gate) => {
+        await Effect.runPromise(Effect.gen(function* () {
+          const busy = yield* Busy;
+          yield* busy.as("probe.spin").counted(Effect.gen(function* () {
+            yield* Effect.promise(() => gate());
+            yield* Effect.promise(() => guarded.prepare("INSERT closing").run().catch((e: Error) => { refusal = e.message; }));
+          }));
+        }).pipe(Effect.provide(work(at))));
+      });
+      const response = request.send();
+      await pause(30);
+      // The reset closes the world and waits on the long write.
+      const closing = Effect.runPromiseExit(timers.close());
+      await pause(20);
+      await request.open();
+      await response;
+      expect(ran).toEqual([]);
+      expect(refusal).toMatch(/being reset/);
+      // The long write outlasts the bound: the reset fails and the world opens again.
+      expect((await closing)._tag).toBe("Failure");
+      timers.admit();
+      timers.rpc.countSectionEnd(long);
+      timers.rpc.countLeave(long);
+      expect(timers.held()).toEqual([]);
+    });
+  });
+
   it("cannot write through the auth routes: a section around them refuses it", async () => {
     await worldOf("stale-auth", async (timers, clock, at) => {
       let wrote = false;

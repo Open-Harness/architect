@@ -6,6 +6,7 @@ import { WorldClock } from "#modules/clock/service.js";
 import type { EntryEnv } from "../types.ts";
 import { keeperOf } from "./entry.ts";
 
+const closing = () => Promise.reject(new Error("the world is being reset: this write is refused, and the request keeps its place"));
 const refused = () => Promise.reject(new Error("this request belongs to a run the world has reset: nothing it does is written"));
 
 /**
@@ -31,12 +32,14 @@ export const section = <A>(env: EntryEnv, f: () => Promise<A>): Promise<A> => {
       if (box.gen === undefined) box.gen = genOf(id);
       return Promise.resolve(keeper.countSection(id)).then((open) => {
       const done = () => Promise.resolve(held === undefined ? keeper.countLeave(id) : undefined);
-      if (!open) {
-        if (held !== undefined) {
+      if (open !== true) {
+        // Stale (the world does not hold the token): the box is of a run that is over. Closed (it does, and a reset is draining): refused, and the
+        // box keeps its id so its own cleanup releases the token, which a reset that fails leaves in the count.
+        if (open === false && held !== undefined) {
           box.stale = true;
           box.id = undefined;
         }
-        return done().then(refused);
+        return done().then(open === "closed" ? closing : refused);
       }
       return f().finally(() => Promise.resolve(keeper.countSectionEnd(id)).then(done));
       });

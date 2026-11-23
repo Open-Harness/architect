@@ -119,7 +119,7 @@ describe("a reset fences a request that is mid-I/O", () => {
       const closing = Effect.runPromise(timers.close());
       await pause(20);
       // A write section already open is waited for; a new one, and a new token, are refused.
-      expect(timers.rpc.countSection(live)).toBe(false);
+      expect(timers.rpc.countSection(live)).toBe("closed");
       expect(() => timers.rpc.countEnter("probe.nap")).toThrow(/being reset/);
       await expect(WorldEntry.within(at, () => Promise.resolve("ran"))).rejects.toThrow(/being reset/);
       timers.rpc.countSectionEnd(live);
