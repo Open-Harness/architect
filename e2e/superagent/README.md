@@ -295,10 +295,12 @@ its author.
     another repository (404) and another group (`no_such_subteam`).
 11. **A refusal's form** (64, 65): a problem line `<file>.ts…: <sentence>` holding the words asked for, with no stack trace, exception name or `TS` error,
     so a crash is never a refusal.
-12. **The journeys' imports** (66): `github` from `@orthograph/github/stand`, `slack` from `@orthograph/slack/stand`, `outbox`, `spans`, `emits`, `noEvents`
-    and `expect` from `orthograph`; the starting worlds `a-live-superagent-listening-to-acme-widgets` (the declared `coder`, live, its GitHub
-    and Slack connections naming `acme/widgets` and `C024BE91L`) and slice 8's `a-live-superagent-with-a-ticket` (which gives `superagent` and
-    `ticket`) are the lanes' to build.
+12. **The journeys' imports and worlds** (66): `github` from `@orthograph/github/stand`, `slack` from `@orthograph/slack/stand`, `models` from
+    `@orthograph/stand-in-model/stand`, `outbox`, `spans`, `emits`, `noEvents` and `expect` from `orthograph`. The starting worlds are this check's
+    own, in `starting-worlds/` (overlaid on `blueprint/starting-worlds/`): `a-live-superagent-listening-to-acme-widgets` (the `coder`, live, ann listed,
+    its connections naming `acme/widgets` and `C024BE91L`) and `a-live-superagent-with-a-ticket` (one ticket on issue 12, accepted while the superagent is
+    paused so it holds no seat, as slice 8's `a-paused-ticket` is; it gives `superagent`, `ticket` and `executor`, and the journey scripts the executor's model
+    and resumes). Both stand on `reply-…` worlds, the chain slice 8 builds under other names.
 
 ## Not judged here, and why
 
