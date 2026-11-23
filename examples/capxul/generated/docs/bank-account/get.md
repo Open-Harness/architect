@@ -38,11 +38,12 @@ Read one bank-account by its id: company, business, accountName, currency, bankN
 
 ### bridge: a bank account closes
 
-Starts from the world `a bank account`.
+Starts from the world `two bank accounts`.
 
 - **Ada reads it back with the deposit details she was given.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].
 - **the new account is a different one.** `ada` (role company.owner) calls and sends id the last call's account, and gets back `open`.
-- **and the old one stays closed.** `ada` (role company.owner) calls and sends id the world's account, and gets back [`Operating`, `closed`].
+- **and the old one stays closed.** `ada` (role company.owner) calls and sends id the world's account, and gets back [`Operating`, the world's bankName, the world's accountNumber, the world's routingNumber, `closed`].
+- **the euro account is untouched, with the details it was opened with.** `ada` (role company.owner) calls and sends id the world's payroll, and gets back [`Payroll`, `EUR`, the world's payrollBankName, the world's payrollAccountNumber, the world's payrollRoutingNumber, `open`].
 
 ### bridge: open a bank account
 

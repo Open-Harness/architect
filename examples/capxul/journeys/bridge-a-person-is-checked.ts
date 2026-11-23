@@ -91,7 +91,7 @@ export default Blueprint.journey("bridge: a person is checked", {
     s.step(
       "Bo reads his own back, turned down",
       s.bo.run(get, { id: s.last.individual }),
-      expect((a) => [a.person, a.fullName, a.state]).toEqual([s.bo.person, "Bo Otieno", "rejected"]),
+      expect((a) => [a.person, a.fullName, a.email, a.state]).toEqual([s.bo.person, "Bo Otieno", "bo@bo-ltd.test", "rejected"]),
       noEvents(),
     ),
   ],

@@ -12,6 +12,7 @@ CREATE TABLE "bank-account" (
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "bank-account_oneAccountPerDetails" ON "bank-account" ("routingNumber", "accountNumber");
 CREATE UNIQUE INDEX "bank-account_oneNamePerCompany" ON "bank-account" ("company", "accountName") WHERE "state" IN ('open');
 CREATE TABLE "bridge-business" (
   "id" TEXT PRIMARY KEY,

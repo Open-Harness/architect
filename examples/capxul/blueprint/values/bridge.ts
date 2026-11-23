@@ -11,9 +11,10 @@ export const LegalName = Blueprint.value(Blueprint.text({ max: 140 }));
 /** Why Bridge turned a check down, in its words (a `kyc_status` of `rejected` comes with `rejection_reasons`). */
 export const RejectionReason = Blueprint.value(Blueprint.text({ max: 500 }));
 /**
- * A currency a Bridge virtual account takes deposits in: Bridge's `EuroInclusiveFiatCurrency` (`usd`, `eur`, `mxn`,
- * `brl`, `cop`, `gbp`), written as ISO 4217 codes like a company's `defaultCurrency`.
+ * A currency a Bridge virtual account takes deposits in, written as an ISO 4217 code like a company's
+ * `defaultCurrency`. Bridge's `EuroInclusiveFiatCurrency` also has `mxn`, `brl`, `cop` and `gbp`; each joins with the
+ * check of its deposit details (journeys/README.md, "Bridge, part two").
  */
-export const AccountCurrency = Blueprint.value(Schema.Literals(["USD", "EUR", "MXN", "BRL", "COP", "GBP"]));
+export const AccountCurrency = Blueprint.value(Schema.Literals(["USD", "EUR"]));
 /** A detail of the bank deposit instructions Bridge gives for a virtual account: a bank's name, an account or routing number. */
 export const DepositDetail = Blueprint.value(Blueprint.text({ max: 140 }));

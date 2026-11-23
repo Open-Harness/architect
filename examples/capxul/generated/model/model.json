@@ -120,6 +120,13 @@
       },
       "lives": "database",
       "invariants": {
+        "oneAccountPerDetails": {
+          "kind": "unique",
+          "fields": [
+            "routingNumber",
+            "accountNumber"
+          ]
+        },
         "oneNamePerCompany": {
           "kind": "unique",
           "fields": [
@@ -231,7 +238,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "65f812f2fb459b71"
+      "hash": "cc48d3eb41db3d32"
     },
     "bridge-business": {
       "name": "bridge-business",
@@ -760,7 +767,9 @@
         "emits": "BankAccountClosed"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "bank-account.oneAccountPerDetails"
+      ],
       "refusals": [
         "BankAccountNotOpen",
         "NotAllowed",
@@ -789,7 +798,7 @@
       "budget": {
         "p95Ms": 800
       },
-      "hash": "cf72f259c850a123"
+      "hash": "0821f87742afb120"
     },
     "bank-account.get": {
       "kind": "read",
@@ -990,6 +999,7 @@
         "BankAccountNameTaken": "bank-account.oneNamePerCompany"
       },
       "breaks": [
+        "bank-account.oneAccountPerDetails",
         "bank-account.oneNamePerCompany"
       ],
       "refusals": [
@@ -1026,7 +1036,7 @@
       "budget": {
         "p95Ms": 800
       },
-      "hash": "a8897bcc6ef45f27"
+      "hash": "12b119e751e61654"
     },
     "bridge-business.approve": {
       "kind": "operation",
@@ -1944,7 +1954,7 @@
           "kind": "signed-in"
         }
       },
-      "starts": "a bank account",
+      "starts": "two bank accounts",
       "steps": [
         {
           "title": "Ada reads it back with the deposit details she was given",
@@ -2229,7 +2239,71 @@
               "kind": "expect-equal",
               "value": [
                 "Operating",
+                {
+                  "ref": [
+                    "world",
+                    "bankName"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "accountNumber"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "routingNumber"
+                  ]
+                },
                 "closed"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the euro account is untouched, with the details it was opened with",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "payroll"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Payroll",
+                "EUR",
+                {
+                  "ref": [
+                    "world",
+                    "payrollBankName"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "payrollAccountNumber"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "payrollRoutingNumber"
+                  ]
+                },
+                "open"
               ]
             },
             {
@@ -2238,7 +2312,160 @@
           ]
         }
       ],
-      "sourceHash": "17fb2131c8e8b01db01a792c1caa7f1a9470a09ec4b88a8219421c8a12aaf18b"
+      "sourceHash": "1f791f53e0f84a1bd2f9416e2b098d165d452db577d2b41e648e44b8843f2c5f"
+    },
+    "journeys/bridge-a-kyc-keeps-what-bridge-gave.ts": {
+      "name": "bridge: a kyc keeps what bridge gave",
+      "file": "journeys/bridge-a-kyc-keeps-what-bridge-gave.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "bridge-individual.self"
+        },
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "starts": "kyc started",
+      "steps": [
+        {
+          "title": "Ada reads her KYC back with the form and terms she was given",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "Ada Wanjiru Kamau",
+                "ada@acme-trading.test",
+                {
+                  "ref": [
+                    "world",
+                    "kycLink"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "tosLink"
+                  ]
+                },
+                "started"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bridge turns her down",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-individual.reject",
+            "payload": {
+              "individual": {
+                "ref": [
+                  "world",
+                  "individual"
+                ]
+              },
+              "reason": "document photo too dark"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "KycRejected",
+              "fields": {
+                "individual": {
+                  "ref": [
+                    "world",
+                    "individual"
+                  ]
+                },
+                "reason": "document photo too dark"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-individual",
+              "id": {
+                "ref": [
+                  "world",
+                  "individual"
+                ]
+              },
+              "state": "rejected"
+            }
+          ]
+        },
+        {
+          "title": "the decision changes nothing else she was given",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "Ada Wanjiru Kamau",
+                "ada@acme-trading.test",
+                {
+                  "ref": [
+                    "world",
+                    "kycLink"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "tosLink"
+                  ]
+                },
+                "rejected"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "9789b35fc790040006df3e243ab502529c50efd052e79cfc1fd8e62383deb725"
     },
     "journeys/bridge-a-person-is-checked.ts": {
       "name": "bridge: a person is checked",
@@ -2674,6 +2901,7 @@
                   ]
                 },
                 "Bo Otieno",
+                "bo@bo-ltd.test",
                 "rejected"
               ]
             },
@@ -2683,7 +2911,7 @@
           ]
         }
       ],
-      "sourceHash": "c38616dc4a992c8a79dc4c846d246d704cd7ba746b2872690038553fc432e72b"
+      "sourceHash": "561f552fb30e1a085a6a81ec90bd22213bf302b2d89b153a628c9ff44cf524f6"
     },
     "journeys/bridge-kyb-is-decided-by-bridge.ts": {
       "name": "bridge: kyb is decided by bridge",
@@ -2899,7 +3127,7 @@
           ]
         },
         {
-          "title": "Ada reads it back as approved",
+          "title": "Ada reads it back approved, with everything else as it was started",
           "call": {
             "actor": "ada",
             "operation": "bridge-business.get",
@@ -2920,6 +3148,20 @@
                   "ref": [
                     "world",
                     "company"
+                  ]
+                },
+                "Acme Trading Limited",
+                "finance@acme-trading.test",
+                {
+                  "ref": [
+                    "world",
+                    "kybLink"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "tosLink"
                   ]
                 },
                 "approved"
@@ -3132,6 +3374,34 @@
           ]
         },
         {
+          "title": "Bo reads his back turned down, as he typed it",
+          "call": {
+            "actor": "bo",
+            "operation": "bridge-business.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Bo Limited",
+                "bo@bo-ltd.test",
+                "rejected"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Ada's approval is untouched by Bo's refusal",
           "call": {
             "actor": "ada",
@@ -3156,7 +3426,7 @@
           ]
         }
       ],
-      "sourceHash": "2d6ab310476794d429fb871f1387cbdce6bba02159737a249c7c33bff2363104"
+      "sourceHash": "746a5f15f0fc85d2157d36d57eaf0ecf8098da9e327e24ba42088b10f9b4e9f8"
     },
     "journeys/bridge-open-a-bank-account.ts": {
       "name": "bridge: open a bank account",
@@ -4393,6 +4663,139 @@
           "ref": [
             "last",
             "tosLink"
+          ]
+        }
+      }
+    },
+    "kyc started": {
+      "name": "kyc started",
+      "file": "blueprint/starting-worlds/kyc-started.ts",
+      "from": null,
+      "cast": {
+        "ada": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "d401fb9be0d571ea26e0747c886b505560a00522564bf1f5864020193403efc5",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "bridge-individual.start",
+          "payload": {
+            "fullName": "Ada Wanjiru Kamau",
+            "email": "ada@acme-trading.test"
+          },
+          "request": "ada-kyc"
+        }
+      ],
+      "gives": {
+        "individual": {
+          "ref": [
+            "last",
+            "individual"
+          ]
+        },
+        "kycLink": {
+          "ref": [
+            "last",
+            "kycLink"
+          ]
+        },
+        "tosLink": {
+          "ref": [
+            "last",
+            "tosLink"
+          ]
+        }
+      }
+    },
+    "two bank accounts": {
+      "name": "two bank accounts",
+      "file": "blueprint/starting-worlds/two-bank-accounts.ts",
+      "from": "a bank account",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "31d8b36367994938ac13d6bbd7b382a1a05c4dc81b814847d06151a48846e30e",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "bank-account.open",
+          "payload": {
+            "business": {
+              "ref": [
+                "world",
+                "business"
+              ]
+            },
+            "accountName": "Payroll",
+            "currency": "EUR"
+          },
+          "request": "acme-payroll"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "business": {
+          "ref": [
+            "world",
+            "business"
+          ]
+        },
+        "account": {
+          "ref": [
+            "world",
+            "account"
+          ]
+        },
+        "bankName": {
+          "ref": [
+            "world",
+            "bankName"
+          ]
+        },
+        "accountNumber": {
+          "ref": [
+            "world",
+            "accountNumber"
+          ]
+        },
+        "routingNumber": {
+          "ref": [
+            "world",
+            "routingNumber"
+          ]
+        },
+        "payroll": {
+          "ref": [
+            "last",
+            "account"
+          ]
+        },
+        "payrollBankName": {
+          "ref": [
+            "last",
+            "bankName"
+          ]
+        },
+        "payrollAccountNumber": {
+          "ref": [
+            "last",
+            "accountNumber"
+          ]
+        },
+        "payrollRoutingNumber": {
+          "ref": [
+            "last",
+            "routingNumber"
           ]
         }
       }
@@ -5673,6 +6076,16 @@
         "journey": "bridge: a bank account closes",
         "severity": "page",
         "owner": "journeys/bridge-a-bank-account-closes.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: a kyc keeps what bridge gave:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: a kyc keeps what bridge gave",
+        "severity": "page",
+        "owner": "journeys/bridge-a-kyc-keeps-what-bridge-gave.ts"
       }
     },
     {

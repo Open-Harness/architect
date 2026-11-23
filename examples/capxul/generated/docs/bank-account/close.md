@@ -41,7 +41,7 @@ Close a company's bank account; it takes no more deposits.
 
 ### bridge: a bank account closes
 
-Starts from the world `a bank account`.
+Starts from the world `two bank accounts`.
 
 - **Bo can't close it.** `bo` (signed in) calls and sends account the world's account, and is refused with NotAllowed, AR-001.
 - **Ada closes it.** `ada` (role company.owner) calls and sends account the world's account, and gets back the world's account.

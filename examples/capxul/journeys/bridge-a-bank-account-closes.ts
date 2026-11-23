@@ -9,9 +9,9 @@ import close from "../blueprint/things/bank-account/verbs/close.ts";
 import get from "../blueprint/things/bank-account/verbs/get.ts";
 
 export default Blueprint.journey("bridge: a bank account closes", {
-  // Acme Trading's US dollar account, Operating, is open.
+  // Acme Trading's US dollar account, Operating, and its euro account, Payroll, are open.
   cast: { ada: owner, bo: Blueprint.signedIn },
-  starts: "a bank account",
+  starts: "two bank accounts",
   steps: (s) => [
     s.step(
       "Ada reads it back with the deposit details she was given",
@@ -66,7 +66,26 @@ export default Blueprint.journey("bridge: a bank account closes", {
     s.step(
       "and the old one stays closed",
       s.ada.run(get, { id: s.world.account }),
-      expect((a) => [a.accountName, a.state]).toEqual(["Operating", "closed"]),
+      expect((a) => [a.accountName, a.bankName, a.accountNumber, a.routingNumber, a.state]).toEqual([
+        "Operating",
+        s.world.bankName,
+        s.world.accountNumber,
+        s.world.routingNumber,
+        "closed",
+      ]),
+      noEvents(),
+    ),
+    s.step(
+      "the euro account is untouched, with the details it was opened with",
+      s.ada.run(get, { id: s.world.payroll }),
+      expect((a) => [a.accountName, a.currency, a.bankName, a.accountNumber, a.routingNumber, a.state]).toEqual([
+        "Payroll",
+        "EUR",
+        s.world.payrollBankName,
+        s.world.payrollAccountNumber,
+        s.world.payrollRoutingNumber,
+        "open",
+      ]),
       noEvents(),
     ),
   ],

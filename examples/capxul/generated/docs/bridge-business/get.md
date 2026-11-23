@@ -38,7 +38,8 @@ Read one bridge-business by its id: company, legalName, email, kybLink, tosLink,
 
 Starts from the world `kyb started`.
 
-- **Ada reads it back as approved.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `approved`].
+- **Ada reads it back approved, with everything else as it was started.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, the world's kybLink, the world's tosLink, `approved`].
+- **Bo reads his back turned down, as he typed it.** `bo` (signed in) calls and sends id the last call's business, and gets back [`Bo Limited`, `bo@bo-ltd.test`, `rejected`].
 - **Ada's approval is untouched by Bo's refusal.** `ada` (role company.owner) calls and sends id the world's business, and gets back `approved`.
 
 ### bridge: start a kyb

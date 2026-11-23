@@ -54,9 +54,16 @@ export default Blueprint.journey("bridge: kyb is decided by bridge", {
       machine.isIn(s.world.business, "approved"),
     ),
     s.step(
-      "Ada reads it back as approved",
+      "Ada reads it back approved, with everything else as it was started",
       s.ada.run(get, { id: s.world.business }),
-      expect((a) => [a.company, a.state]).toEqual([s.world.company, "approved"]),
+      expect((a) => [a.company, a.legalName, a.email, a.kybLink, a.tosLink, a.state]).toEqual([
+        s.world.company,
+        "Acme Trading Limited",
+        "finance@acme-trading.test",
+        s.world.kybLink,
+        s.world.tosLink,
+        "approved",
+      ]),
       noEvents(),
     ),
     s.step(
@@ -96,6 +103,12 @@ export default Blueprint.journey("bridge: kyb is decided by bridge", {
       refuses(KybNotApproved),
       noEvents(),
       spans({ absent: ["bank-account.open.insert"] }),
+    ),
+    s.step(
+      "Bo reads his back turned down, as he typed it",
+      s.bo.run(get, { id: s.last.business }),
+      expect((a) => [a.legalName, a.email, a.state]).toEqual(["Bo Limited", "bo@bo-ltd.test", "rejected"]),
+      noEvents(),
     ),
     s.step(
       "Ada's approval is untouched by Bo's refusal",

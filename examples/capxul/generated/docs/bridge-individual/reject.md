@@ -42,6 +42,12 @@ Record that Bridge turned down a person's KYC, and why.
 
 ## Worked examples
 
+### bridge: a kyc keeps what bridge gave
+
+Starts from the world `kyc started`.
+
+- **Bridge turns her down.** `bridge` (system) calls and sends individual the world's individual, reason `document photo too dark`, and is answered.
+
 ### bridge: a person is checked
 
 Starts from an empty world.

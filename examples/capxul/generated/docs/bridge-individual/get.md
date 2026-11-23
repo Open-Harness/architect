@@ -34,13 +34,20 @@ Read one bridge-individual by its id: person, fullName, email, kycLink, tosLink,
 
 ## Worked examples
 
+### bridge: a kyc keeps what bridge gave
+
+Starts from the world `kyc started`.
+
+- **Ada reads her KYC back with the form and terms she was given.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `started`].
+- **the decision changes nothing else she was given.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `rejected`].
+
 ### bridge: a person is checked
 
 Starts from an empty world.
 
 - **Bo can't read Ada's KYC.** `bo` (signed in) calls and sends id the last call's individual, and is refused with NotAllowed, AR-001.
 - **she reads it back as she typed it, approved, with a form and terms that differ.** `ada` (signed in) calls and sends id the last call's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, `approved`] and gets back false.
-- **Bo reads his own back, turned down.** `bo` (signed in) calls and sends id the last call's individual, and gets back [the cast's bo person, `Bo Otieno`, `rejected`].
+- **Bo reads his own back, turned down.** `bo` (signed in) calls and sends id the last call's individual, and gets back [the cast's bo person, `Bo Otieno`, `bo@bo-ltd.test`, `rejected`].
 
 ## How to call
 

@@ -48,7 +48,7 @@ Open a bank account for a company whose KYB Bridge approved: answers where to se
 
 ### bridge: a bank account closes
 
-Starts from the world `a bank account`.
+Starts from the world `two bank accounts`.
 
 - **a closed account frees its name for a new one.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, and gets back an answer matching `^bac_[0-9a-z]+$`.
 

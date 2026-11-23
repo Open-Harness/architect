@@ -29,6 +29,7 @@ States: open, closed. A move from the wrong state is refused BankAccountNotOpen 
 
 ## Invariants
 
+- `bank-account.oneAccountPerDetails`: another bank account holds this routing number and account number. Unique on routingNumber, accountNumber, in every state; refuses nothing, a break is a defect.
 - `bank-account.oneNamePerCompany`: another open bank account holds this company and account name. Unique on company, accountName, while open; refused BankAccountNameTaken.
 
 ## Events
