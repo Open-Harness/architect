@@ -1,7 +1,8 @@
-import { Handlers, type Handler } from "@orthograph/language-effect";
+import { Effect } from "effect";
+import type { Handler } from "@orthograph/language-effect";
 import type declaration from "../../blueprint/things/assignment/verbs/cancelled.ts";
 
-/** End a pending Assignment that was never seated or told. Not written yet: slice 7 gives it its body. */
-const cancelled: Handler<typeof declaration> = () => Handlers.blank("assignment.cancelled is not written yet");
+/** A pending Assignment that was never seated or told ends at once: nothing ran (the machine refuses any other state). */
+const cancelled: Handler<typeof declaration> = (_payload, { move }) => Effect.as(move(), {});
 
 export default cancelled;

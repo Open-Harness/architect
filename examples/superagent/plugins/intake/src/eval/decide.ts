@@ -1,7 +1,8 @@
-import { Handlers, type Handler } from "@orthograph/language-effect";
+import { Effect } from "effect";
+import type { Handler } from "@orthograph/language-effect";
 import type declaration from "../../blueprint/things/eval/verbs/decide.ts";
 
-/** Record one judgement per enabled rule. Not written yet: slice 7 gives it its body. */
-const decide: Handler<typeof declaration> = () => Handlers.blank("eval.decide is not written yet");
+/** The main agent has judged the eval: it is decided, and the triggers it held are covered for good (the machine refuses any state but delivered). */
+const decide: Handler<typeof declaration> = (_payload, { move }) => Effect.as(move(), {});
 
 export default decide;

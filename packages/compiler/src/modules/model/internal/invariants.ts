@@ -1,6 +1,6 @@
 // A thing's rules (G5): what the model carries for each, what the compiler refuses before it does, and which operations can break one.
 import type { AnyErrorClass, Field, Thing, Unique } from "orthograph";
-import { Blanks } from "orthograph/server";
+import { Blanks, VERSION_RULE, versionRule } from "orthograph/server";
 import type { InvariantModel, StepModel, ThingModel } from "../types.ts";
 import { pascal, type ThingFiles } from "./layout.ts";
 import { describeValue, sameValue, valueOfInput } from "./same-value.ts";
@@ -47,12 +47,15 @@ const scopeOf = (rule: Unique, t: ThingFiles, at: string, problems: Array<string
  * is owned by another rule, is in a verb's `errors:`, or carries a field outside the key.
  */
 export const invariantsOf = (t: ThingFiles, ctx: RuleContext, problems: Array<string>): ThingModel["invariants"] => {
-  if (t.invariants.size === 0) return undefined;
+  // A thing with versions holds one more rule that no file declares (see `versionRule`): the framework's, so two first saves cannot both be revision 1.
+  const own = t.thing === undefined || t.invariants.has(VERSION_RULE) ? undefined : versionRule(t.thing);
+  const rules = own === undefined ? t.invariants : new Map([...t.invariants, [VERSION_RULE, own]]);
+  if (rules.size === 0) return undefined;
   const file = `${t.base}/invariants.ts`;
   const owners = new Map<AnyErrorClass, string>();
   const model: Record<string, InvariantModel> = {};
   const spelled = new Map<string, string>();
-  for (const [name, rule] of [...t.invariants].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+  for (const [name, rule] of [...rules].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
     const at = `${file}: ${t.name}.${name}`;
     const clash = spelled.get(name.toLowerCase());
     if (clash !== undefined) problems.push(`${at}: ${t.name}.${clash} and ${t.name}.${name} differ only in case, and the database compares index names without regard to case (the second index would fail to be created); rename one`);
@@ -64,6 +67,7 @@ export const invariantsOf = (t: ThingFiles, ctx: RuleContext, problems: Array<st
     const refuse = rule.refuse === undefined ? undefined : refusalOf(rule, t, name, fields ?? [], file, ctx, owners, problems);
     model[name] = {
       kind: "unique", fields: fields ?? [],
+      ...(rule === own ? { framework: true as const } : {}),
       ...(scope === undefined ? {} : { while: scope }),
       ...(refuse === undefined ? {} : { refuse }),
       ...(rule.description === undefined ? {} : { description: rule.description }),

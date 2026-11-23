@@ -26,6 +26,7 @@ import { context as evalContext } from "./eval/context.ts";
 import { decide as evalDecide } from "./eval/decide.ts";
 import { delivered as evalDelivered } from "./eval/delivered.ts";
 import { due as evalDue } from "./eval/due.ts";
+import { expire as evalExpire } from "./eval/expire.ts";
 import { read as evalRead } from "./eval/read.ts";
 import { start as evalStart } from "./eval/start.ts";
 import { delivered as inputDelivered } from "./input/delivered.ts";
@@ -98,7 +99,7 @@ const account = Command.make("account").pipe(Command.withSubcommands([accountLis
 const agent = Command.make("agent").pipe(Command.withSubcommands([agentClose, agentOpen, agentTell]));
 const assignment = Command.make("assignment").pipe(Command.withSubcommands([assignmentCancelled, assignmentInterrupted, assignmentPromoted, assignmentQueued, assignmentStarted, assignmentTurnEnded, assignmentWaiting]));
 const decision = Command.make("decision").pipe(Command.withSubcommands([decisionDismiss, decisionRoute]));
-const eval_ = Command.make("eval").pipe(Command.withSubcommands([evalContext, evalDecide, evalDelivered, evalDue, evalRead, evalStart]));
+const eval_ = Command.make("eval").pipe(Command.withSubcommands([evalContext, evalDecide, evalDelivered, evalDue, evalExpire, evalRead, evalStart]));
 const input = Command.make("input").pipe(Command.withSubcommands([inputDelivered, inputDeliveryFailed, inputRead, inputRequeue, inputRoute, inputStore]));
 const mandate = Command.make("mandate").pipe(Command.withSubcommands([mandateRevalidate]));
 const outgoingMessage = Command.make("outgoing-message").pipe(Command.withSubcommands([outgoingMessageReply, outgoingMessageRetry, outgoingMessageSend, outgoingMessageWithdraw]));

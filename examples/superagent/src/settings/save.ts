@@ -1,59 +1,35 @@
 // Scaffolded from blueprint/things/settings/verbs/save.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Clock, Effect } from "effect";
+import { acting } from "orthograph";
+import { Records, Store } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/settings/save.handler.ts";
+import { Settings } from "../../blueprint/things/settings/thing.ts";
 
 const { StaleRevision } = Errors.declared;
 
 /**
- * settings.save: Save a new version of the settings. A save made from an older version is refused, with the current one. A main agent may only propose it.
+ * settings.save: the app's one Settings has no key of its own, so every save is a row and the newest is current. A save made from any
+ * other version is refused with the current one; the newest row is touched in the same commit, so two saves from one base cannot both land.
  *
- * Who may call, from blueprint/things/settings/verbs/save.ts:
- *   anyone signed in
- *
- * Payload, from blueprint/things/settings/verbs/save.ts:
- *   base       uint
- *   variables  settings.variables
- *   blocked    settings.blocked
- *
- * Answer, from blueprint/things/settings/verbs/save.ts:
- *   settings  settings.id
- *   revision  settings.revision
- *
- * Refusals:
- *   StaleRevision  exit 62  SU-002  yours to refuse below, carrying current; from @orthograph/superagent/blueprint/things/superagent/errors.js
- *   NotAllowed     exit 3   AR-001  the runtime's, when the caller isn't anyone signed in; from blueprint/things/settings/verbs/save.ts
- *
- * The settings's machine, from blueprint/things/settings/machine.ts (▶ marks this call):
- *     from       move  to       emits
- *   ▶ (creates)  save  current  SettingsSaved
- *
- * What the runtime does, so this handler doesn't:
- *   before it runs, it refuses NotAllowed unless the caller is signed in;
- *   before it runs, it mints the settings's new id and hands it in as id;
- *   once it answers, it sets the settings's state to current;
- *   once it answers, it writes SettingsSaved: settings and revision from the answer;
- *   the call is the span settings.save, and its commit settings.save.commit.
+ * Who may call, from blueprint/things/settings/verbs/save.ts: anyone signed in. A main agent may only propose it (`proposal.propose`).
  */
-const save: Handler = (_payload, { move, id }) =>
+const save: Handler<Records | Store> = ({ base, variables, blocked }, { principal, move, id }) =>
   Effect.gen(function* () {
-    // StaleRevision: exit 62, SU-002.
-    if (yield* Handlers.blank<boolean>("refuse StaleRevision when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why StaleRevision was refused"));
-      return yield* new StaleRevision({
-        current: yield* Handlers.blank("StaleRevision.current, an uint"),
-      });
+    const records = yield* Records;
+    const store = yield* Store;
+    const [latest] = (yield* store.list({ thing: Settings, where: {}, state: undefined, order: "newest", limit: 1, after: undefined })).items;
+    const current = (latest?.["revision"] as bigint | undefined) ?? 0n;
+    if (base !== current) {
+      yield* Effect.logInfo("the save was made from an older version").pipe(Effect.annotateLogs({ base: String(base), current: String(current) }));
+      return yield* new StaleRevision({ current });
     }
-
-    // The move save, to current.
+    const settings = id as NonNullable<typeof id>;
+    if (latest !== undefined) yield* records.update(Settings, String(latest["id"]), {});
+    const at = yield* Clock.currentTimeMillis;
+    yield* records.insert(Settings, { id: settings, revision: current + 1n, variables, blocked, saved: { at, by: acting(principal)?.person ?? principal.kind, from: Number(base) } } as never);
     yield* move();
-
-    return {
-      // SettingsSaved needs settings, and only the answer can give it.
-      settings: id,
-      revision: yield* Handlers.blank("revision, a settings.revision"),
-    };
+    return { settings, revision: current + 1n };
   });
 
 export default save;

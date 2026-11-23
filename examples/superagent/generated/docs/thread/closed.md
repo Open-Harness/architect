@@ -17,7 +17,7 @@ Say a thread closed: a merged pull request, a closed issue.
 
 ## Move
 
-`closed`: from idle or queued or evaluating to idle, emitting ThreadClosed.
+`closed`: from idle to idle, emitting ThreadClosed.
 
 ## Refusals
 

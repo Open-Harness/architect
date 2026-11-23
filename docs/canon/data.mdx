@@ -79,7 +79,7 @@ workshop, from layer 4.
 `lives` is the one place a declaration says where a thing's state is. It takes a built-in kind or a declared store,
 and the default is a D1 row:
 
-```ts file=packages/orthograph/src/modules/things/types.ts name=Thing,Lives lines=38-63
+```ts file=packages/orthograph/src/modules/things/types.ts name=Thing,Lives lines=39-64
   /** The kind of place its state is kept: a D1 row with a version column (the default), or a Durable Object per instance (D1 #1). */
   readonly lives: StoreKind;
   /** The declared store it lives in (K3), when `lives` named one; absent for the project's default store. */

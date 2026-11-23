@@ -1,7 +1,7 @@
 <!-- Generated from the blueprint. Do not edit. -->
 # decision.route
 
-Route an eval's items: one to twenty, each accept, attach, stop or ignore. In observe an accept is only recorded as one it would make.
+Route an eval's items: one to twenty, each accept, attach, stop or ignore. An explicit request makes its ticket in every mode; in observe an inferred accept is only recorded as one it would make.
 
 **Who may call:** the itsMain of its superagent.
 

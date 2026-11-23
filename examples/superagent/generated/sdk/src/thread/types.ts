@@ -7,7 +7,7 @@ type Declared = Extract<(typeof Source)[keyof typeof Source], { readonly kind: "
 type Of<F> = F extends { readonly value: { readonly schema: { readonly Type: infer T } } } ? T : F extends { readonly schema: { readonly Type: infer T } } ? T : never;
 
 /** The states a thread moves between, as its machine declares them. */
-export type ThreadState = "idle" | "queued" | "evaluating";
+export type ThreadState = "idle";
 
 /** An issue, a pull request or a Slack thread a superagent listens to. One eval runs on it at a time. A field not every caller is shown (secret, or private to roles) may be missing from what a call returns. */
 export type Thread = {
@@ -22,21 +22,6 @@ export type Thread = {
 /** The event ThreadClosed: what it carries when a thread moves. */
 export type ThreadClosed = {
   readonly "thread": Of<(typeof Events)["ThreadClosed"]["fields"]["thread"]>;
-};
-
-/** The event ThreadEvaluating: what it carries when a thread moves. */
-export type ThreadEvaluating = {
-  readonly "thread": Of<(typeof Events)["ThreadEvaluating"]["fields"]["thread"]>;
-};
-
-/** The event ThreadQueued: what it carries when a thread moves. */
-export type ThreadQueued = {
-  readonly "thread": Of<(typeof Events)["ThreadQueued"]["fields"]["thread"]>;
-};
-
-/** The event ThreadReleased: what it carries when a thread moves. */
-export type ThreadReleased = {
-  readonly "thread": Of<(typeof Events)["ThreadReleased"]["fields"]["thread"]>;
 };
 
 /** The event ThreadSubscribed: what it carries when a thread moves. */

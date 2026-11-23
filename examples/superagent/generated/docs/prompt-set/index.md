@@ -15,6 +15,11 @@ Lives in the database.
 | sections | schema |
 | skills | schema |
 | overrides | schema |
+| saved (optional) | schema |
+
+## Invariants
+
+- `prompt-set.oneVersionPerRevision`: another prompt set holds this superagent and revision. Unique on superagent, revision, in every state; refuses nothing, a break is a defect.
 
 ## Operations
 

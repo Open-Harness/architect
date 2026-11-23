@@ -14,5 +14,7 @@ export const stageOf = (ticket: { readonly state: string }, f: Facts): StageRow 
   : f.report?.state === "ready" ? row("person", "review", "Awaiting review")
   : blockedSince(f) ? row("person", f.report?.state === "failed" ? "failed" : "blocked", f.report?.state === "failed" ? "Failed" : "Blocked")
   : f.assignment === undefined || f.assignment.state === "pending" ? row("working", "queued", "Queued")
+  // Stopping (GOAL17-stage-one, call 6): the executor's turn is being closed, and nobody is waited for.
+  : f.assignment.state === "closing" ? row("working", "none", "Stopping")
   : f.report?.state === "waiting" || f.assignment.state === "ended" ? row("idle", "none", "Waiting for a Trigger")
   : row("working", "none", "Working");

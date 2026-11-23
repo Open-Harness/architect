@@ -26,4 +26,6 @@ export type { ShownOperation, WireClasses } from "#modules/wire/types.js";
 export { BusyLive, BusyReporting } from "#modules/work/service.js";
 export { Busy, BusyBoxRef, WorldCount, genOf, makeBox, type BusyBox, type BusyShape, type Lease } from "#modules/work/types.js";
 export { Mount } from "#modules/mount/service.js";
+export { Versions } from "#modules/versions/service.js";
+export type { VersionContext, VersionHandler, VersionVerb } from "#modules/versions/types.js";
 export { Mounted, type MountApi } from "#modules/mount/types.js";

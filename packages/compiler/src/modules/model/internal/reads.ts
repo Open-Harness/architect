@@ -50,8 +50,8 @@ export const readModelOf = (c: ReadContext, thing: string, verb: string, file: s
       : `Read one ${thing} by its id: ${read.fields.map(String).join(", ")}.`,
     payload, answer,
     move: null, errors: [], breaks: [],
-    // A pinned or derived read is not served before slice 7: it can refuse that, by name.
-    refusals: [...(c.openToAll(allowed) ? [] : ["NotAllowed"]), ...(read.only !== undefined || read.derive !== undefined ? [READ_NOT_SERVED] : [])], allowed, agentTool: admitsAgent(read.allowed),
+    // A pinned or derived read is served (slice 7), but for a derive that looks at the app's problems, which no store lists yet: that one can refuse it, by name.
+    refusals: [...(c.openToAll(allowed) ? [] : ["NotAllowed"]), ...(derive !== undefined && Object.values(derive.looks as Readonly<Record<string, object>>).some((l) => "kind" in l) ? [READ_NOT_SERVED] : [])], allowed, agentTool: admitsAgent(read.allowed),
     steps: {}, idempotent: null, runs: (chain ? "chain" : "server") as OperationModel["runs"], test: "unit" as const,
     budget: read.budget ? { p95Ms: Duration.toMillis(read.budget.p95) } : null,
     ...(list ? { list: { where: read.where.filter((n) => !pinned.includes(n)), order: read.order ?? "newest", page: read.page ?? 0 } } : {}),

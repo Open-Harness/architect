@@ -19,6 +19,7 @@ export type Policy = {
   readonly "bots": Of<Declared["bots"]>;
   readonly "admission": Of<Declared["admission"]>;
   readonly "rules": Of<Declared["rules"]>;
+  readonly "saved": Of<Declared["saved"]>;
   readonly "state": PolicyState;
 };
 

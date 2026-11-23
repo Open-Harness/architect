@@ -1,7 +1,8 @@
-import { Handlers, type Handler } from "@orthograph/language-effect";
+import { Effect } from "effect";
+import type { Handler } from "@orthograph/language-effect";
 import type declaration from "../../blueprint/things/assignment/verbs/interrupted.ts";
 
-/** Close a running Assignment: a stop, a retire or a reap. It keeps its seat until the Agent says it closed. Not written yet: slice 7 gives it its body. */
-const interrupted: Handler<typeof declaration> = () => Handlers.blank("assignment.interrupted is not written yet");
+/** A running Assignment is closing: it keeps its seat until the Agent says its turn closed (the machine refuses any other state). */
+const interrupted: Handler<typeof declaration> = (_payload, { move }) => Effect.as(move(), {});
 
 export default interrupted;
