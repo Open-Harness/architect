@@ -7,9 +7,9 @@ branch: goal/ui-layer
 base: goal/stage-1
 status: parked         # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex | opencode, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude       # claude | amp | codex | opencode, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-22     # the date it started
 done_check: nx run e2e:ui-layer
 owns:
   - packages/orthograph/src/modules/actions/
@@ -282,6 +282,8 @@ allocator is needed: check the name is free, then list it here in the pull reque
 
 | ID | File | Taken by |
 |---|---|---|
+| CI-ratchet-suites | [`../decisions/CI-ratchet-suites.md`](../decisions/CI-ratchet-suites.md) | slice 1: a builder may shrink every e2e suite's ratchet list |
+| WEB-approval-declined | [`../decisions/WEB-approval-declined.md`](../decisions/WEB-approval-declined.md) | slice 1: a person's no is `ApprovalDeclined`, `AR-007` |
 
 ## The done check
 

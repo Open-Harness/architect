@@ -119,7 +119,7 @@ signer signs it, and the relayer submits it (L4.06). The server checks the signa
 
 | Actor | One per | What it does | Build plan |
 |---|---|---|---|
-| relayer | relayer key | hands out nonces in order, replaces stuck transactions, writes receipts through | L3.06 |
+| relayer | relayer key | hands out nonces in order, rebroadcasts dropped transactions, writes receipts through | L3.06 |
 | chain follower | contract | follows the budgets module's logs with a checkpoint, handles reorgs, emits corrections | L3.08 |
 
 Both are Durable Objects inside the environment's one Worker, so each is a single writer with its own storage. The
