@@ -33,6 +33,11 @@ export interface ProveApi {
     /** Run one journey by its declared name, without recording proof verdicts. */
     readonly only?: string;
     /**
+     * `--through web`: make each journey step in a headless browser, through the project's generated pieces (`generated/web/`), instead of over
+     * HTTP. The checks, the spans and the evals are the same: a piece that sends something else, or nothing, fails the step it was meant for.
+     */
+    readonly through?: "web";
+    /**
      * Run only the journeys a change since the last proof's record touches (and judge the evals of what changed), naming each
      * it skipped; run everything, saying why, when it cannot tell. The proof it leaves is recorded as a full run's is.
      */

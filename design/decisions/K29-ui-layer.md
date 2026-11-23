@@ -92,6 +92,7 @@ export default Blueprint.use(actions);
 import { Blueprint } from "orthograph";
 import { web } from "@orthograph/projections";
 
+// Superseded by ST1-25-web-projection, 23 November 2026: `Blueprint.use(web)`, React being the one framework of the beta (Q4).
 export default Blueprint.use(web, { frameworks: ["react"] });
 ```
 
@@ -144,6 +145,7 @@ import type { HandleClaimAnswer } from "../../sdk/src/handle/types.ts";
 /** Claim a free name and make it the address of your public page, with its profile. */
 export const handleClaim = definePrimitive({
   name: "handle-claim",
+  // Superseded by ST1-25-web-projection, 23 November 2026: `options: { ...piece.options }`, and `api` below is `piece.api(context, { fields: ["name"] })`.
   options: { onDone: "callback", onSubmittedChange: "callback" },
   state: (_: PieceOptions<HandleClaimAnswer>) => piece.state<HandleClaimAnswer>(),
   api: (context) => piece.api(context, options, { requestKey: "per-open", fields: { name: "text" } }),
@@ -289,6 +291,7 @@ import { createContext, useContext } from "react";
 import type { WebHost } from "@orthograph/web";
 
 const HostContext = createContext<WebHost | null>(null);
+// Superseded by ST1-25-web-projection, 23 November 2026: `PluggedInHost = HostContext` and `usePieceHost = (options) => hostOf().wire(options)`.
 export const PluggedInHost = HostContext.Provider;
 export const usePieceHost = () => ({ host: useContext(HostContext) ?? WebHost.missing });
 ```

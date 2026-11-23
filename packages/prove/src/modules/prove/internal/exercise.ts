@@ -7,6 +7,7 @@ import { Journeys } from "#modules/journeys/service.js";
 import type { DeviceHost, Facts, Project } from "#modules/journeys/types.js";
 import { exportRoots, rootOf } from "#modules/telemetry/service.js";
 import type { TraceSource } from "#modules/telemetry/types.js";
+import type { WebCaller } from "#modules/web/types.js";
 import { proofVerdicts } from "./proof-verdicts.ts";
 import { handlerHashes } from "#modules/verdicts/internal/proof.js";
 import type { Result } from "#modules/verdicts/types.js";
@@ -32,10 +33,12 @@ export const exercise = (
   handlers?: ReturnType<typeof handlerHashes>, device?: DeviceHost,
   /** `prove --changed`: judge the evals of these operations only (what changed); the rest keep their recorded verdicts. */
   judging?: ReadonlySet<string>,
+  /** `prove --through web`: the journeys' steps are made through the project's generated pieces, in a browser. */
+  web?: WebCaller,
 ): Effect.Effect<Exercised> =>
   Effect.gen(function* () {
     const bodies = handlers ?? handlerHashes(project.root, model);
-    const runs = yield* Effect.forEach(project.journeys, (j, i) => Journeys.run(project, url, j, i, people, facts, empty, device));
+    const runs = yield* Effect.forEach(project.journeys, (j, i) => Journeys.run(project, url, j, i, people, facts, empty, device, web));
     const calls = runs.flatMap((r) => r.calls);
     const first = yield* collector.traces(calls.map((c) => ({ trace: c.trace, parent: c.parent, mayBeEmpty: noSpanExpected(c) })));
     const roots = otlp === undefined ? [] : calls.filter((c) => c.tools !== true).flatMap((c) => rootOf({ trace: c.trace, span: c.parent, journey: c.journey, step: c.step, operation: c.operation, status: c.status }, first.get(c.trace)) ?? []);

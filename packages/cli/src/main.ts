@@ -71,6 +71,8 @@ const prove = Command.make(
     port: Flag.Int("port").pipe(Flag.withDefault(0)),
     empty: Flag.Boolean("empty").pipe(Flag.withDefault(false)),
     only: Flag.String("only").pipe(Flag.optional),
+    // Make each journey step in a headless browser, through the project's generated web pieces, not over HTTP (ST1.25, K29 section 8).
+    through: Flag.Literals("through", ["web"]).pipe(Flag.optional),
     // Only the journeys a change since the last proof's record touches; everything, saying why, when it cannot tell (ST1.23).
     changed: Flag.Boolean("changed").pipe(Flag.withDefault(false)),
     // The run as data (per journey, per step: verdict, expected, got, handler and declaration files; totals; timings).
@@ -79,8 +81,9 @@ const prove = Command.make(
     // The run whose deployed Worker is judged (`--env staging` only): the address is formed from it and the account's subdomain.
     run: Flag.String("run").pipe(Flag.optional),
   },
-  ({ env, root, port, empty, only, changed, json, report, run }) => {
+  ({ env, root, port, empty, only, through, changed, json, report, run }) => {
     if (env !== "staging" && Option.isSome(run)) return fail("--run requires --env staging", 2);
+    if (Option.isSome(through) && (env !== "local" || empty)) return fail("--through web requires --env local, and can't be combined with --empty: it replays the journeys through the project's pieces in a world of its own", 2);
     if (env === "staging" && (empty || changed)) return fail(`${empty ? "--empty" : "--changed"} can't be used with --env staging: it judges the deployed Worker, not a world of its own`, 2);
     if (env === "test" && (empty || Option.isSome(only))) return fail("--empty and --only require --env local", 2);
     if (env === "test" && changed) return fail("--changed requires --env local", 2);
@@ -105,7 +108,7 @@ const prove = Command.make(
           Effect.tap((report) => Effect.sync(() => (process.exitCode = report.passed ? 0 : 1))),
           Effect.catchTag("EnvironmentFailed", (e) => Effect.fail(new ProveFailed({ message: e.message }))),
         )
-      : Effect.scoped(Prove.run({ root, port, empty, changed, env: process.env, ...(changed && !json ? { say: (line: string) => Console.log(line) } : {}), ...(Option.isSome(only) ? { only: only.value } : {}) })).pipe(
+      : Effect.scoped(Prove.run({ root, port, empty, changed, env: process.env, ...(changed && !json ? { say: (line: string) => Console.log(line) } : {}), ...(Option.isSome(only) ? { only: only.value } : {}), ...(Option.isSome(through) ? { through: through.value } : {}) })).pipe(
           Effect.tap((proved) => Effect.sync(() => {
             if (Option.isSome(report)) writeFileSync(report.value, JSON.stringify(proved.structured, null, 2) + "\n");
             process.stdout.write(json ? JSON.stringify(proved.structured, null, 2) + "\n" : proved.lines.slice(proved.said ?? 0).join("\n") + "\n");

@@ -1,0 +1,34 @@
+{
+  "name": "web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/web/src",
+  "projectType": "library",
+  "tags": [
+    "scope:web",
+    "env:runtime",
+    "layer:2"
+  ],
+  "targets": {
+    "lint": {},
+    "typecheck": {},
+    "test": {},
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p {projectRoot}/tsconfig.build.json"
+      },
+      "dependsOn": [
+        "^build"
+      ],
+      "cache": true,
+      "inputs": [
+        "production",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/tsconfig.build.base.json"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
+    }
+  }
+}

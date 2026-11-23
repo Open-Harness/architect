@@ -3999,6 +3999,15 @@
         "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
         "chosen": {},
         "hash": "a8f9f814f58bfd10"
+      },
+      "web": {
+        "kind": "projection",
+        "file": "blueprint/projections/web.ts",
+        "package": "@orthograph/projections",
+        "version": "0.0.0",
+        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "chosen": {},
+        "hash": "a8f9f814f58bfd10"
       }
     }
   },
@@ -4065,5 +4074,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "2bd0993a1e3d5f55ff91f180f5ac99970ceb649091286af713b9293bf6b5d986"
+  "digest": "54f33c3380cd5d6a1392e906b02a1f21302b648d8e057ee497efd1b936ba9904"
 }

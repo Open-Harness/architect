@@ -3995,6 +3995,15 @@
       "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
       "chosen": {},
       "hash": "a8f9f814f58bfd10"
+    },
+    "web": {
+      "kind": "projection",
+      "file": "blueprint/projections/web.ts",
+      "package": "@orthograph/projections",
+      "version": "0.0.0",
+      "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+      "chosen": {},
+      "hash": "a8f9f814f58bfd10"
     }
   }
 }

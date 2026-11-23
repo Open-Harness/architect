@@ -39,6 +39,18 @@
             "allowedExternalImports": []
           },
           {
+            "sourceTag": "scope:web",
+            "onlyDependOnLibsWithTags": [
+              "scope:orthograph"
+            ],
+            "allowedExternalImports": [
+              "effect",
+              "effect/*",
+              "@ui-sdk/core",
+              "@ui-sdk/core/*"
+            ]
+          },
+          {
             "sourceTag": "env:runtime",
             "onlyDependOnLibsWithTags": [
               "env:runtime"
@@ -155,6 +167,19 @@
                 ]
               },
               {
+                "sourceTag": "scope:web",
+                "onlyDependOnLibsWithTags": [
+                  "scope:orthograph"
+                ],
+                "allowedExternalImports": [
+                  "effect",
+                  "effect/*",
+                  "@ui-sdk/core",
+                  "@ui-sdk/core/*",
+                  "vitest"
+                ]
+              },
+              {
                 "sourceTag": "env:runtime",
                 "onlyDependOnLibsWithTags": [
                   "env:runtime",
@@ -228,6 +253,14 @@
       "files": [
         "**/packages/portal/src/main.ts",
         "**/packages/portal/src/modules/pages/**"
+      ],
+      "rules": {
+        "ortho/no-ui-in-worker": "off"
+      }
+    },
+    {
+      "files": [
+        "**/generated/web/**"
       ],
       "rules": {
         "ortho/no-ui-in-worker": "off"

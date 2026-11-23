@@ -10,6 +10,9 @@ stopped when its scope closes. Test: `prove.test.ts` (acme passes; each planted 
 scaffolds in that same world. It reports the blank reached on a red step and labels a passing step "proved by the
 description". It records no verdicts. `--only` selects a journey by its declared name.
 
+`ortho prove --through web` (ST1.25, K29 section 8) makes each journey step in headless Chromium, through the project's generated pieces, and records what the
+world answers the browser's own request: the same checks, spans and evals judge it. A starting world stays over HTTP. See `modules/web/README.md`.
+
 A failing step is followed by a line naming the handler (`src/<thing>/<verb>.ts`) and the declaration it answers to, and a
 missing span says what was expected and which spans the call produced (sorted, since concurrent spans start in no fixed
 order). `Report.structured` is the same run as data (journeys, steps with verdict, expected, got, handler and declaration

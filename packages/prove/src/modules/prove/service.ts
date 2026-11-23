@@ -1,12 +1,13 @@
 import { Names } from "orthograph/server";
 import { randomBytes } from "node:crypto";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 import { Clock, Duration, Effect } from "effect";
 import { Compiler, nodeSource } from "@orthograph/compiler";
 import { Collectors, FileMetrics, privateKeys } from "#modules/telemetry/service.js";
 import { PortalFeed } from "#modules/portal-feed/service.js";
 import { Sinks } from "#modules/sinks/service.js";
 import { Journeys } from "#modules/journeys/service.js";
+import { Web } from "#modules/web/service.js";
 import { Worlds } from "#modules/world/service.js";
 import { Impact } from "#modules/impact/service.js";
 import { ProveFailed, type ProveApi } from "./types.ts";
@@ -40,7 +41,7 @@ const unfinishedIn = (project: { readonly unfinished?: ReadonlyArray<string> }) 
   (project.unfinished ?? []).map((file) => `journey ${file} skipped: it still has blanks (ortho check names them)`);
 
 export const Prove: ProveApi = {
-  run: ({ root, port, empty = false, only, env, changed = false, say }) =>
+  run: ({ root, port, empty = false, only, env, changed = false, say, through }) =>
     Effect.gen(function* () {
       const { model, project: loaded } = yield* load(root, empty);
       // `--changed`: what the last proof's record and today's files say to run; with nothing to run or judge, no world is made at all.
@@ -62,7 +63,8 @@ export const Prove: ProveApi = {
       const bodies = handlerHashes(root, model);
       const world = empty ? yield* emptyWorld(root, model) : root;
       const stand = yield* standWorld({ root, world, model, port, empty, env });
-      const [took, done] = yield* Effect.timed(exercise(model, { ...project, journeys }, stand.url, stand.collector, undefined, stand.otlp, undefined, empty, bodies, stand.device, judging));
+      const web = through === "web" ? yield* Web.open({ root, url: stand.url, model, name: basename(resolve(root)) }).pipe(Effect.mapError(failed)) : undefined;
+      const [took, done] = yield* Effect.timed(exercise(model, { ...project, journeys }, stand.url, stand.collector, undefined, stand.otlp, undefined, empty, bodies, stand.device, judging, web));
       // A run with a failing journey proves nothing: its operations are recorded as judged and not passed (D2 #80).
       if (stamp !== undefined) {
         yield* Impact.record(root, model, done.judged, judging === undefined ? done.results : done.results.filter((r) => judging.has(r.operation)));

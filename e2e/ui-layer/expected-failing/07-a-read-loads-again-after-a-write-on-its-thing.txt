@@ -1,2 +1,0 @@
-# ST1.26 (Goal 5, slice 2): a read loads again after a write on its thing. Written before the web projection (ST1.25, slice 4): no piece exists, so the file stops in its beforeAll, which names the missing files.
-ui-layer/07-a-read-loads-again-after-a-write-on-its-thing.test.ts > [file error]

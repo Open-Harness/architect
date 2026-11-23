@@ -7,6 +7,7 @@ import type { Operation, Read, Principal, Thing } from "orthograph";
 import { structOf } from "orthograph/server";
 import { Access, Records, type Instance } from "@orthograph/language-effect";
 import type { CallRecord, Facts } from "../types.ts";
+import type { WebCaller } from "#modules/web/types.js";
 import { PROVE_SPAN_PREFIX } from "#modules/telemetry/types.js";
 
 type Codec = Schema.Codec<Record<string, unknown>, Record<string, unknown>>;
@@ -125,13 +126,14 @@ export const doorFacts = (url: string): Facts => {
   };
 };
 
-export const callOperation = (url: string, facts: Facts, name: string, op: Operation | Read, payload: Record<string, unknown>, token: string, request: string | undefined, startingWorld = false) =>
+export const callOperation = (url: string, facts: Facts, name: string, op: Operation | Read, payload: Record<string, unknown>, token: string, request: string | undefined, startingWorld = false, web?: WebCaller) =>
   Effect.gen(function* () {
     const wire = yield* Schema.encodeUnknownEffect(op.payloadSchema as unknown as Codec)(payload).pipe(Effect.orElseSucceed(() => payload));
     const trace = randomBytes(16).toString("hex");
     const parent = `${PROVE_SPAN_PREFIX}${randomBytes(4).toString("hex")}`;
     const [thing, verb] = name.split(".");
-    const r = yield* fetchJson(`${url}/${thing}/${verb}`, {
+    // `--through web`: a browser makes the request, through the project's generated piece, and the world answers it.
+    const r = web !== undefined ? yield* web.send({ operation: name, wire: wire as Record<string, unknown>, trace, parent, token, request }) : yield* fetchJson(`${url}/${thing}/${verb}`, {
       method: "POST",
       headers: {
         "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}), traceparent: `00-${trace}-${parent}-01`,

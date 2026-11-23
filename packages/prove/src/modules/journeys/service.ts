@@ -20,7 +20,7 @@ type Codec = Schema.Codec<Record<string, unknown>, Record<string, unknown>>;
 const nameOfOperation = (project: Project, op: Operation | Read) => [...project.operations].find(([, o]) => o === op)?.[0];
 const tableOf = (project: Project) => (thing: Thing) => [...project.things].find(([, t]) => t === thing)?.[0];
 
-const run: JourneysApi["run"] = (project, url, journey, index, how = "world", given, empty = false, device) =>
+const run: JourneysApi["run"] = (project, url, journey, index, how = "world", given, empty = false, device, web) =>
   Effect.gen(function* () {
     const world = journey.starts === undefined ? undefined : project.startingWorlds.get(journey.starts);
     // A starting world may begin from another: make the oldest first, so each sees what the one before it gave.
@@ -108,7 +108,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         // A plugin's operation that runs on the device is run in this process, by its `world` entry, never sent to the server.
         const r = device !== undefined && onDevice(model)
           ? yield* callDevice(project, device, operation, call.operation, payload)
-          : yield* callOperation(url, facts.facts, operation, call.operation, payload, yield* tokenFor(call.actor, call.via), call.request, empty && startingWorld);
+          : yield* callOperation(url, facts.facts, operation, call.operation, payload, yield* tokenFor(call.actor, call.via), call.request, empty && startingWorld, startingWorld ? undefined : web);
         const id = model?.move && r.status === 200 ? subjectId(model, r.wire, r.body) : undefined;
         const state = id === undefined ? undefined : yield* stateOf(facts.facts, model!.thing, id);
         const record: CallRecord = {

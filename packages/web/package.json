@@ -1,0 +1,35 @@
+{
+  "name": "@orthograph/web",
+  "version": "0.0.0",
+  "description": "The browser host and the piece runtime: what every generated piece of generated/web/ shares, on UI SDK.",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "orthograph": "workspace:*",
+    "@ui-sdk/core": "0.1.0-beta.10",
+    "effect": "4.1.4"
+  },
+  "imports": {
+    "#modules/*.js": "./src/modules/*.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "imports": {
+      "#modules/*.js": "./dist/modules/*.js"
+    }
+  }
+}

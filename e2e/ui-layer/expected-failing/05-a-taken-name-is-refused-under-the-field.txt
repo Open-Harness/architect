@@ -1,2 +1,0 @@
-# ST1.26 (Goal 5, slice 2): a taken name shows HandleTaken with HN-001 under the field and fails an agent's step. Written before the web projection (ST1.25, slice 4): no piece exists, so the file stops in its beforeAll, which names the missing files.
-ui-layer/05-a-taken-name-is-refused-under-the-field.test.ts > [file error]

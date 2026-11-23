@@ -4,6 +4,7 @@ import { Data, type Effect } from "effect";
 import type { Journey, Operation, Read, StartingWorld, Thing } from "orthograph";
 import type { Model } from "@orthograph/compiler";
 import type { DeviceWorldOf } from "@orthograph/language-effect/device";
+import type { WebCaller } from "#modules/web/types.js";
 
 /** One HTTP call to the world, as `prove` saw it. */
 export interface CallRecord {
@@ -107,6 +108,7 @@ export interface JourneysApi {
    * closed the door (staging) gives its database instead.
    * `device`: where a plugin's operation that runs on the device is run (its `world` entry, in this process). Without
    * one such a call goes to the server like any other, which has no route for it.
+   * `web` (`--through web`): the journey's own steps are made by a browser through the project's generated pieces, not over HTTP; a starting world stays HTTP.
    */
-  readonly run: (project: Project, url: string, journey: Journey, index: number, people?: "world" | "sign-up", facts?: Facts, empty?: boolean, device?: DeviceHost) => Effect.Effect<JourneyRun>;
+  readonly run: (project: Project, url: string, journey: Journey, index: number, people?: "world" | "sign-up", facts?: Facts, empty?: boolean, device?: DeviceHost, web?: WebCaller) => Effect.Effect<JourneyRun>;
 }
