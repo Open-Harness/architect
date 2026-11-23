@@ -5,11 +5,11 @@ milestone: "Goal 19: the lander"
 release: beta
 branch: main
 base: main
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-23    # the date it started
 done_check: never done; it runs while the apps are being built (K42, section 8)
 owns:
   - main
@@ -84,5 +84,15 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-Not started: written 23 November 2026 with K42 (#694). Aaron starts it with the line above. The lead rewrites this
-section every round that changes it.
+23 November 2026, the lead's first round (Claude Code, Opus 5.5).
+
+- **Slice 1, `goal/stage-1` into `main`: under way.** The lander took over #707 from Goal 3. It brings `goal/stage-1`
+  at `f89ce822` to `main`; Goal 3's 🔍 of it is running. `goal/stage-1` has moved on since (#679 and #701, Goal 4's
+  follower), and #690, secrets by declaration, is still to land there. When #690 is in, the lander merges
+  `goal/stage-1` into #707, has a 🔍 read what is new, marks it ready and lands it.
+- **Protections.** `main` required nine of `goal/stage-1`'s ten checks; `e2e-stage1`, Plugged In's journeys, ran only
+  for `goal/stage-1`. CI-main-stage1 runs it on `main` too, and the lander makes it required once it is green there.
+  Threads, admins, no force push and no deletion already match.
+- **Not blocking slice 1:** #696 (Goal 9, timers) and #697 (Goal 6, the map) are open into `goal/stage-1`. When it
+  retires they are retargeted to `main`.
+- **Next:** slice 2 (the parked goals' finished work), then the landing loop for the superagent and Capxul.
