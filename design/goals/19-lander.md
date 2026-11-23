@@ -88,17 +88,17 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 23 November 2026, about 23:45 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
 every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
 agreed on #707.
-
 - **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`, with all ten required checks green.
   `goal/stage-1` is retired: it is locked read-only with its protections kept, and not deleted. `main` requires all ten
   checks, `e2e-stage1` among them (CI-main-stage1). Every goal bases on `main` and merges it in, never by rebasing
   (CI-stage-1-retired). Codex's two findings on #707 are Snags #765 and #766.
 - **Slice 2 is done.** Every parked goal's finished work is in `main`, and each of their branches is 0 commits ahead of
   it. `goal/time` came in with #707, through #696. Then, in order: #294 (Goal 7's spike, for the record), #777
-  (workflows, wallets and club), #774 (portal), #778 (on-chain), #785 (ui-layer, which also runs
-  `e2e-ui-layer` on `main`, not required: CI-main-ui-layer), #789 (release), #793 (agents) and #794 (events).
-  #793 and #794 applied K40's fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board sync then took #535 and #536 over as capability rows
-  and reopened them (Snag #898). The parked goals' unfinished drafts (#490, #498, #497 and #708) stay on their branches.
+  (workflows, wallets and club), #774 (portal), #778 (on-chain), #785 (ui-layer, which also runs `e2e-ui-layer` on
+  `main`, not required: CI-main-ui-layer), #789 (release), #793 (agents) and #794 (events). #793 and #794 applied K40's
+  fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
+  sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
+  drafts (#490, #498, #497 and #708) stay on their branches.
 - **Slice 3, the landing loop, has started.** #832 lands `goal/capxul` through #786. Its 🔍 passed, after checking a
   recorded 🔍 pass and green CI for each of its ten slices, and it is in CI. #887 lands `goal/superagent` through #790
   and stays a draft. Its merge, ratchet and checks hold, but 18 of its 26 pull requests have no 🔍 pass recorded on
