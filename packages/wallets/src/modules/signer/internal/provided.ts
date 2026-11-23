@@ -81,6 +81,12 @@ export const provided = (name: SignerName, chain: ChainSetting, provider: Eip119
         const address = yield* addressOf(label);
         const hand: Hand = (target, amount) =>
           Effect.gen(function* () {
+            // Asked here, right before the send, so a network switch while the transfer was simulated is caught.
+            const walletChain = yield* ask("eth_chainId");
+            if (typeof walletChain !== "string" || !/^0x[0-9a-fA-F]+$/.test(walletChain)) return yield* Effect.die(new Error("the wallet's provider answered eth_chainId with no chain id"));
+            if (BigInt(walletChain) !== BigInt(chain.chainId)) {
+              return yield* locked(`the wallet is on chain ${BigInt(walletChain)}, and this wallet sends on ${chain.chainId}: switch the wallet's network`);
+            }
             const before = yield* ask("eth_blockNumber");
             const hash = yield* ask("eth_sendTransaction", [{ from: address, to: target, value: quantity(amount) }]);
             if (typeof hash !== "string" || typeof before !== "string") return yield* Effect.die(new Error("the wallet's provider answered eth_sendTransaction with no hash"));

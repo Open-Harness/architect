@@ -92,7 +92,7 @@ describe("02 runtime: the plugin's handler answers in a real world", () => {
     const report = await Effect.runPromise(Effect.scoped(Prove.run({ root: copy.root, port: PORTS.prove })));
     expect(report.passed, report.lines.join("\n")).toBe(true);
     expect(report.lines).toContain(`journey ${echoJourneyTitle} ✔ 2/2 steps`);
-    expect(report.lines.filter((line) => /^journey .* ✔ \d+\/\d+ steps$/.test(line))).toHaveLength(12);
+    expect(report.lines.filter((line) => /^journey .* ✔ \d+\/\d+ steps$/.test(line))).toHaveLength(16);
     for (const name of ["echo.repeat", "echo.shout", "allowance.spend", "system.health"]) expect(report.lines.some((line) => line.startsWith(`${name} 9 evals ✔`)), name).toBe(true);
     expect(report.lines.filter((line) => / 9 evals ✔ /.test(line))).toHaveLength(17);
     nothingRunning(copy.root);

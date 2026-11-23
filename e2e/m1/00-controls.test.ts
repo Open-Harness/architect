@@ -107,10 +107,10 @@ describe("00 controls: a project that mounts nothing is untouched by an installe
     const proved = run(root, "prove", "--env", "local", "--port", String(PORTS.control));
     expect(proved.status, proved.out).toBe(0);
     const lines = proved.stdout.trimEnd().split("\n");
-    expect(lines.filter((l) => /^journey .* ✔ \d+\/\d+ steps$/.test(l))).toHaveLength(11);
+    expect(lines.filter((l) => /^journey .* ✔ \d+\/\d+ steps$/.test(l))).toHaveLength(15);
     expect(lines.filter((l) => / 9 evals ✔ /.test(l))).toHaveLength(15);
     expect(lines.some((l) => l.includes("echo"))).toBe(false);
-    expect(lines).toContain(coverageLine("moves 7/7 · outcomes 7/7 · refusals 4/4 · runtime refusals 14/17", JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8"))));
+    expect(lines).toContain(coverageLine("moves 7/7 · outcomes 7/7 · refusals 4/4 · runtime refusals 15/17", JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8"))));
     expect(lines.at(-1)).toBe("prove ✔");
     nothingRunning(root);
   });

@@ -61,6 +61,8 @@ export interface McpTool<R> {
   readonly move?: McpMove;
   /** A read changes nothing. */
   readonly readOnly: boolean;
+  /** Some `allowed` entry admits an agent: only then is an agent shown the tool. Absent: shown. */
+  readonly agentTool?: boolean;
   /** Never fails: a refusal is a result, and a defect is told as `[AR-500]` without its detail. */
   readonly call: (args: { readonly [field: string]: unknown }, principal: Principal) => Effect.Effect<McpResult, never, R>;
 }

@@ -378,9 +378,12 @@ const reap = Command.make(
 );
 const worlds = Command.make("worlds").pipe(Command.withSubcommands([reap]));
 
+// The CLI's own version is the one in its package.json, which sits next to `src/` and next to `dist/`, so one path serves source and the published package.
+const ownVersion: string = (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { readonly version: string }).version;
+
 Command.make(Names.short).pipe(
   Command.withSubcommands([model, dev, prove, promote, add, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
-  Command.run({ version: "0.0.0" }),
+  Command.run({ version: ownVersion }),
   Effect.provide(NodeServices.layer),
   NodeRuntime.runMain,
 );

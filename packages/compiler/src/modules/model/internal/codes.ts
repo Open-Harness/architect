@@ -14,6 +14,9 @@ export const IDEMPOTENCY_CONFLICT = "IdempotencyConflict";
 /** Refusals the runtime makes for every thing, numbered in the order it gained them: who may call (before any handler runs), then a request key reused with another payload. */
 export const RUNTIME_CODES = { NotAllowed: "AR-001", [IDEMPOTENCY_CONFLICT]: "AR-002" } as const;
 
+/** Codes held for refusals the Worker never returns, so no model lists them: the caller's door makes this one when a person says no (#466). Kept apart from RUNTIME_CODES, which feeds every model's `refusals`. */
+export const RESERVED_CODES = { ApprovalDeclined: "AR-007" } as const;
+
 const PREFIX = /^[A-Z]{2,4}$/;
 
 /** The thing's own prefix, or the first two letters of its name. */
@@ -54,7 +57,8 @@ export const refusalsOf = (
   const owner = new Map<string, string>(Object.entries(RUNTIME_CODES).map(([name, code]) => [code, name]));
   const declaredIn = new Map<string, string>();
   const add = (name: string, code: string, where: string) => {
-    if (name in out) problems.push(`${where}: the refusal ${name} is declared twice${declaredIn.has(name) ? `, also in ${declaredIn.get(name)}` : " (the runtime has it)"}, and refusals are named for the whole project`);
+    if (name in RESERVED_CODES) problems.push(`${where}: ${name} is reserved (${RESERVED_CODES[name as keyof typeof RESERVED_CODES]}): the caller makes it when a person declines, so a thing cannot declare it`);
+    else if (name in out) problems.push(`${where}: the refusal ${name} is declared twice${declaredIn.has(name) ? `, also in ${declaredIn.get(name)}` : " (the runtime has it)"}, and refusals are named for the whole project`);
     else declaredIn.set(name, where);
     const other = owner.get(code);
     if (other !== undefined) problems.push(`${where}: ${other} and ${name} share ${code}; refusal codes must be unique (a machine reserves number ${MACHINE_NUMBER}); codes are never silently renumbered`);

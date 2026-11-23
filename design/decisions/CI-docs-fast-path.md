@@ -24,7 +24,8 @@ other one behind, and each catch-up merge reruns all of CI, 9 to 20 minutes, the
    ([`tools/ci/docs-only.sh`](../../tools/ci/docs-only.sh), its cases in `tools/ci/ci.test.sh`). Docs-only means every
    changed path is under `design/`, or is a `*.md` file outside `packages/`, `e2e/` and `examples/`: a module's
    `README.md` is one of its six slots, and the e2e READMEs carry generated totals. An empty diff is not docs-only.
-3. **`e2e-layer1` and `e2e-layer2` need `changes` and skip through a job-level `if:`** when the flag is set. A skipped
+3. **`e2e-layer1` and `e2e-layer2` need `changes` and skip through a job-level `if:`** when the flag is set (_Superseded by CI-drafts-race, 21 November 2026: they run and
+   pass without their steps, since a required job never skips_). A skipped
    job counts as passed for a required check, so `main`'s required checks are unchanged. Should `changes` fail, the
    gates run: the condition skips only on a `changes` that succeeded and said docs-only.
 4. **`check` and `e2e-m0` always run.** `check` lints, runs `e2e:totals` and the CI guards' cases; `e2e-m0` runs

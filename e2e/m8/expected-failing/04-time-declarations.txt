@@ -3,11 +3,3 @@
 m8/04-time-declarations.test.ts > 04 M8.04: the on-time eval > a keeper five minutes late is within renew's ten-minute window, and fails lapse, which declares none
 m8/04-time-declarations.test.ts > 04 M8.04: the on-time eval > a keeper two hours late fails on time for renew, naming the instant it was due
 m8/04-time-declarations.test.ts > 04 M8.04: the on-time eval > on time passes every move made by time when the keeper fires at the due instant, and each such move has ten evals
-m8/04-time-declarations.test.ts > 04 M8.04: what is declared about time > ortho check passes the club as declared
-m8/04-time-declarations.test.ts > 04 M8.04: what is declared about time > ortho check refuses a calendar anchor in a zone that does not exist, naming the move and why
-m8/04-time-declarations.test.ts > 04 M8.04: what is declared about time > ortho check refuses a calendar anchor with no zone, naming the move and why
-m8/04-time-declarations.test.ts > 04 M8.04: what is declared about time > ortho check refuses an after on a field that is not a time, naming the move and why
-m8/04-time-declarations.test.ts > 04 M8.04: what is declared about time > ortho check refuses an anchor on a field that is not a time, naming the move and why
-m8/04-time-declarations.test.ts > 04 M8.04: what is declared about time > ortho check refuses an anchor on a field the thing does not have, naming the move and why
-m8/04-time-declarations.test.ts > 04 M8.04: what is declared about time > ortho check refuses by on a move with no from, naming the move and why
-m8/04-time-declarations.test.ts > 04 M8.04: what is declared about time > the generated docs and MCP say when each move made by time happens
