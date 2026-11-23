@@ -31,8 +31,8 @@ export const stepBlanks = (step: { readonly call: AnyCall; readonly checks: Read
     : c.kind === "emits" || c.kind === "refuses" ? blanksIn(c.fields) : c.kind === "is-in" ? blanksIn(c.id) : c.kind === "expect-equal" ? blanksIn(c.value) : [])),
 ];
 
-/** The script's own words, which a cast member may not take: `s.clock`, `s.world`, `s.last` and `s.step` are the script's. */
-const SCRIPT_WORDS: Readonly<Record<string, string>> = { clock: "the world's clock", world: "what the starting world gave", last: "the last answer", step: "its steps" };
+/** The script's own words, which a cast member may not take: `s.world`, `s.last` and `s.step` are the script's. (`s.clock` is shared: a member may be named it.) */
+const SCRIPT_WORDS: Readonly<Record<string, string>> = { world: "what the starting world gave", last: "the last answer", step: "its steps" };
 
 /** The cast members whose names the script already uses, each refused with a plain message naming where it is cast. */
 export const castClashes = (cast: Readonly<Record<string, unknown>>, file: string, who: string): ReadonlyArray<string> =>

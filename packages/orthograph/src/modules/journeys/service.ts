@@ -13,8 +13,9 @@ const actorOf = (name: string, via?: Via): Actor =>
     tools: (): ToolsCall => Object.freeze({ kind: "call", actor: name, tools: true as const, ...(via === undefined ? {} : { via }) }),
   }) as Actor;
 
-// The script's own words (`clock`, `world`, `last`, `step`) win over a cast member of the same name. The compiler refuses
-// such a cast before any script is made (`castClashes`), so nothing is hidden silently.
+// The script's own words `world`, `last` and `step` win over a cast member of the same name: the compiler refuses such a cast
+// before any script is made (`castClashes`), so nothing is hidden silently. `clock` is both: a cast member may be named it
+// (acme's system principal is), and then it is that member with the world's clock controls beside its `run`.
 const script = <C extends Record<string, unknown>>(cast: C): Script<any> => {
   const actors = Object.fromEntries(Object.keys(cast).map((name) => [name, actorOf(name)]));
   return Object.freeze({
@@ -22,6 +23,7 @@ const script = <C extends Record<string, unknown>>(cast: C): Script<any> => {
     world: refTo(["world"]),
     last: refTo(["last"]),
     clock: Object.freeze({
+      ...(Object.hasOwn(actors, "clock") ? actors["clock"] : {}),
       advance: (span: string): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ advance: span }) }),
       moveTo: (instant: string): ClockCall => Object.freeze({ kind: "clock-call", move: Object.freeze({ moveTo: instant }) }),
     }),

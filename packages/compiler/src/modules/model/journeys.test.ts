@@ -16,17 +16,19 @@ describe("a journey step's blanks", () => {
 });
 
 describe("a cast member the script's own words would hide", () => {
-  const cast = { aaron: Blueprint.anyone, clock: Blueprint.anyone };
+  const cast = { aaron: Blueprint.anyone, world: Blueprint.anyone };
 
   it("is refused in a journey and in a starting world, naming the member and what it clashes with", () => {
     expect(castClashes(cast, "journeys/a.ts", 'the journey "a month"')).toEqual([
-      "journeys/a.ts: the journey \"a month\" casts a member `clock`, which takes a name the script already uses for the world's clock; rename it",
+      "journeys/a.ts: the journey \"a month\" casts a member `world`, which takes a name the script already uses for what the starting world gave; rename it",
     ]);
     expect(castClashes({ world: Blueprint.anyone, last: Blueprint.anyone, step: Blueprint.anyone }, "w.ts", 'the starting world "w"')).toHaveLength(3);
+    // `clock` is shared, not refused: acme's system principal is cast under that name.
+    expect(castClashes({ clock: Blueprint.system }, "w.ts", "x")).toEqual([]);
     expect(castClashes({ aaron: Blueprint.anyone, keeper: Blueprint.keeper }, "w.ts", "x")).toEqual([]);
   });
 
-  it("stops the compiler: a journey and a starting world that cast `clock` are each a problem", () => {
+  it("stops the compiler: a journey and a starting world that cast `world` are each a problem", () => {
     const op = { kind: "operation" } as never;
     const layout = {
       things: new Map(),
@@ -36,6 +38,6 @@ describe("a cast member the script's own words would hide", () => {
     const problems: Array<string> = [];
     storiesOf(layout, { op } as never, () => ({ kind: "anyone" }), problems);
     expect(problems).toHaveLength(2);
-    expect(problems.every((p) => p.includes("`clock`"))).toBe(true);
+    expect(problems.every((p) => p.includes("`world`"))).toBe(true);
   });
 });

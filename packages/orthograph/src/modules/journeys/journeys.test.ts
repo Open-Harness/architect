@@ -31,6 +31,14 @@ describe("journeys", () => {
     want(steps[0]!.checks.map((c) => c.kind)).toEqual(["emits", "is-in"]);
   });
 
+  it("keeps a cast member named clock, and gives it the world's clock controls beside its run", () => {
+    const s = Scripting.script({ clock: Roles.signedIn, ada: Roles.signedIn }) as any;
+    want(s.clock.run).toBeTypeOf("function");
+    want(s.clock.advance("1 month")).toEqual({ kind: "clock-call", move: { advance: "1 month" } });
+    want(s.clock.moveTo("2027-02-01T00:00:00.000Z")).toEqual({ kind: "clock-call", move: { moveTo: "2027-02-01T00:00:00.000Z" } });
+    want((Scripting.script({ ada: Roles.signedIn }) as any).clock.run).toBeUndefined();
+  });
+
   it("reads refs once the world has said them, and names the ones it hasn't", () => {
     const s = Scripting.script({ ada: Roles.signedIn }) as any;
     const payload = { who: s.ada.person, box: s.last.box, n: 1n };
