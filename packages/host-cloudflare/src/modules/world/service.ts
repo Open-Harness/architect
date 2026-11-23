@@ -7,7 +7,7 @@ import type { AuthInstance } from "#modules/auth/types.js";
 import { WorldClock } from "#modules/clock/service.js";
 import type { ClockSource, ClockState } from "#modules/clock/types.js";
 import { WorldTimers } from "#modules/timers/service.js";
-import type { WorldTimersRpc, WorldTimersState } from "#modules/timers/types.js";
+import type { WorldTimersRpc, WorldTimersState, WorldWakes } from "#modules/timers/types.js";
 import { entry, within, withinNow } from "./internal/entry.ts";
 import { facts } from "./internal/facts.ts";
 import { end, live } from "./internal/leases.ts";
@@ -32,9 +32,23 @@ export class World extends DurableObject<WorldEnv> {
   constructor(ctx: DurableObjectState, env: WorldEnv) {
     super(ctx, env);
     this.clock = WorldClock.state(ctx.storage.sql, WorldClock.declared(env));
-    this.timers = WorldTimers.state({ sql: ctx.storage.sql, clock: this.clock, env, changed: () => void this.schedule() });
+    const kinds = this.wakeKinds();
+    // A due durable row is woken by its kind's code, here in the world's own isolate and in the world's time (fresh source).
+    const wakes = kinds === undefined ? undefined : WorldTimers.route(kinds);
+    this.timers = WorldTimers.state({
+      sql: ctx.storage.sql, clock: this.clock, env, changed: () => void this.schedule(),
+      ...(wakes === undefined ? {} : { wakes: (timer) => Effect.promise(() => this.inTime(() => Effect.runPromise(wakes(timer)))) }),
+    });
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS cast (name TEXT PRIMARY KEY, person TEXT, email TEXT NOT NULL, password TEXT NOT NULL)");
     this.auth = AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: true });
+  }
+
+  /**
+   * Which code wakes each kind of durable timer (M8.07). The generated Worker for a blueprint with a stepped or scaled clock
+   * extends this class and answers its wake map, empty until a feature registers a kind; no map, no route, and a due row fails.
+   */
+  protected wakeKinds(): WorldWakes | undefined {
+    return undefined;
   }
 
   override fetch(request: Request): Promise<Response> {
@@ -54,6 +68,12 @@ export class World extends DurableObject<WorldEnv> {
   /** The world's instant now. */
   now(): number {
     return this.clock.now();
+  }
+
+  /** An entry begins (M8.07): the world counts it under `owner` (`entry:<path>`) and answers the source its request reads time from. */
+  begin(owner: string): ClockSource | undefined {
+    if (this.clock.kind !== "real") this.timers.rpc.countEnter(owner);
+    return this.clock.source();
   }
 
   /** What to read the world's time from. Every other entry (the Worker, the actors) asks this over RPC, once, to run in this world's time. */
@@ -118,6 +138,7 @@ export class World extends DurableObject<WorldEnv> {
  * answers at once. A real world runs each as it is.
  */
 export const WorldEntry = { entry, within, withinNow, work };
+export type { WorldWakes };
 
 /**
  * A `/_world/*` request. Facts come straight from the database. `/_world/worlds` is the environment's registry of worlds,

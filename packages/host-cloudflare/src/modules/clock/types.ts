@@ -95,6 +95,13 @@ export interface WorldClockApi {
    */
   readonly within: <A>(source: ClockSource, f: () => A) => A;
   /**
+   * `within` for an entry that holds a token of the world's count (`owner`, `entry:<path>`) while it runs: `leave` gives it
+   * back when the entry ends, unless the work handed it over first (`release`).
+   */
+  readonly entered: <A>(source: ClockSource, owner: string, f: () => Promise<A>, leave: (owner: string) => Promise<unknown>) => Promise<A>;
+  /** The running request's entry token, taken out of it so the caller can give it back; nothing once taken, or outside a request. */
+  readonly release: () => string | undefined;
+  /**
    * Point the request that is running at a fresh source: a durable sleep's wake does it, because the request outlived a move
    * of the world's clock (M8.06 call 4). Only this request's own cell changes. False outside a request.
    */

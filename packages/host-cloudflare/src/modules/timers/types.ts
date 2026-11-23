@@ -4,6 +4,13 @@ import type { Effect } from "effect";
 import type { DurableTimer, Wake } from "@orthograph/language-effect";
 import type { ClockSource, ClockState, Controller } from "#modules/clock/types.js";
 
+/**
+ * The wake route (M8.07): each kind of durable timer to the code that wakes what set it. The generated Worker declares the map
+ * (empty today; Goals 8 and 10 and the keeper register a kind) and the world's Durable Object runs it, in the world's time,
+ * when a durable row falls due. A kind nobody registered fails the wake, and its row stays pending.
+ */
+export type WorldWakes = Readonly<Record<string, (timer: DurableTimer) => Effect.Effect<void>>>;
+
 /** One row, as the Worker sees it. */
 export interface TimerRow {
   readonly id: number;
@@ -36,7 +43,9 @@ export interface WorldTimersState {
   readonly nextAlarm: () => number | undefined;
   /** A real world's alarm: fire every row that has fallen due, as counted work. */
   readonly fireDue: () => Effect.Effect<void>;
-  /** The warm reset between runs: no row, no token survives. */
+  /** The owner of each token the world holds now, once per token, sorted. */
+  readonly held: () => ReadonlyArray<string>;
+  /** The warm reset between runs: no row survives, and a sleeper still waiting on a row is woken rather than left hanging. */
   readonly reset: () => void;
 }
 

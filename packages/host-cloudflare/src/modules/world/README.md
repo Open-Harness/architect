@@ -17,7 +17,8 @@ reads its world's instant from the world's Durable Object and runs inside `World
 `Clock` read it. A real world skips all of it. The world's `alarm`, `/_world/worlds` and `/_world/arm` and `/_world/end` keep
 real time: they are the world's lifetime. Decision: `design/decisions/M8-06-world-holds-the-clock.md`.
 
-`WorldEntry.work(env)` is the Worker's counted work and timers (M8.07): a layer of `Busy`, `Timers` and `DurableTimers` whose
+Each entry also takes a token in the world's count, `entry:<path>`, from the moment it begins; the work hands it over to its own
+(M8.07). `WorldEntry.work(env, wakes)` is the Worker's counted work and timers (M8.07): a layer of `Busy`, `Timers` and `DurableTimers` whose
 tokens and rows are the world's, kept in its Durable Object. The generated Worker uses it, only for a blueprint with a stepped
 or scaled clock. Decision: `design/decisions/M8-07-timers-and-quiet.md`.
 

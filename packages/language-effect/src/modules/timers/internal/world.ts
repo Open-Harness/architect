@@ -3,12 +3,13 @@
 // after it has counted the sleeper, so the world is never quiet between the firing and the wake.
 import { Clock, Context, Duration, Effect, Layer, Option } from "effect";
 import { Busy, BusyOwner } from "#modules/work/types.js";
-import { DurableTimers, Timers, WorldTable } from "../types.ts";
+import { DurableTimers, TimerWakes, Timers, WorldTable } from "../types.ts";
 
 export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | WorldTable> = Layer.effectContext(
   Effect.gen(function* () {
     const busy = yield* Busy;
     const table = yield* WorldTable;
+    const wakes = yield* Effect.serviceOption(TimerWakes);
     /** A row taken back: when it had not fired the sleeper takes its token again, and when it had the world already counted it. */
     const giveUp = (id: number) => Effect.flatMap(table.cancel(id), (removed) => (removed ? busy.enter : busy.adopt));
     const timers = Timers.of({
@@ -44,7 +45,13 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
       fire: () => Effect.succeed([]),
       pending: table.sleeping,
     });
-    const durable = DurableTimers.of({ set: table.set, clear: table.clear, pending: table.durable });
+    // Rule 6 of M8-timers-shape: nothing could fire a durable timer where no `TimerWakes` is provided, so setting one is a defect.
+    const durable = DurableTimers.of({
+      set: (at, owner, name, wake) =>
+        Option.isNone(wakes) ? Effect.die(new Error(`no TimerWakes to fire ${owner} ${name}: provide the host's`)) : table.set(at, owner, name, wake),
+      clear: table.clear,
+      pending: table.durable,
+    });
     return Context.make(Timers, timers).pipe(Context.add(DurableTimers, durable));
   }),
 );

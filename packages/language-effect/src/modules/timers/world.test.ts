@@ -5,7 +5,7 @@ import { TestClock } from "effect/testing";
 import { describe, expect, it } from "vitest";
 import { Busy, WorldCount } from "#modules/work/types.js";
 import { BusyReporting } from "#modules/work/service.js";
-import { DurableTimers, Timers, WorldTable, type DurableTimer } from "./types.ts";
+import { DurableTimers, TimerWakes, Timers, WorldTable, type DurableTimer } from "./types.ts";
 import { TimersWorld } from "./service.ts";
 
 interface Row { readonly id: number; readonly at: number; readonly owner: string; readonly name: string; readonly holder: string; readonly woken: Deferred.Deferred<void> }
@@ -58,7 +58,9 @@ const makeWorld = () => {
   return { events, held: () => [...held].filter(([, n]) => n !== 0), rows, durable, fire, layer: TimersWorld.pipe(Layer.provide(table), Layer.provideMerge(BusyReporting.pipe(Layer.provide(count))), Layer.provideMerge(TestClock.layer())) };
 };
 
-const run = <A, E>(world: ReturnType<typeof makeWorld>, e: Effect.Effect<A, E, Busy | Timers | DurableTimers>) => Effect.runPromise(Effect.provide(e, world.layer));
+const wakes = Layer.succeed(TimerWakes, TimerWakes.of({ wake: () => Effect.void }));
+const run = <A, E>(world: ReturnType<typeof makeWorld>, e: Effect.Effect<A, E, Busy | Timers | DurableTimers>, provided = true) =>
+  Effect.runPromise(Effect.provide(e, provided ? Layer.provideMerge(world.layer, wakes) : world.layer));
 
 describe("Timers on the world's table", () => {
   it("a sleep is a row, gives its token back while parked, and is counted again by the world before it wakes", async () => {
@@ -110,6 +112,16 @@ describe("Timers on the world's table", () => {
       expect(yield* Fiber.join(late)).toEqual(Option.none());
       expect([yield* busy.count, world.held()]).toEqual([0, []]);
     }));
+  });
+
+  it("a durable timer with no TimerWakes provided is a defect, and nothing reaches the table", async () => {
+    const world = makeWorld();
+    const set = Effect.gen(function* () {
+      const durable = yield* DurableTimers;
+      yield* durable.set(5000, "keeper/membership.renew/mem_1", "due", { kind: "keeper", payload: "due" });
+    });
+    await expect(run(world, set, false)).rejects.toThrow(/no TimerWakes/);
+    expect(world.durable).toEqual([]);
   });
 
   it("DurableTimers go to the world's table", async () => {

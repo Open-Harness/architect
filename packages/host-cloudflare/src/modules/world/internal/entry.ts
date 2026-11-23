@@ -12,6 +12,8 @@ import { live } from "./leases.ts";
 /** What the Worker calls on its world's Durable Object, over RPC. */
 export interface Keeper extends WorldTimersRpc {
   readonly source: () => Promise<ClockSource | undefined>;
+  /** An entry begins: the world counts it under `owner` and answers the source its request reads time from. */
+  readonly begin: (owner: string) => Promise<ClockSource | undefined>;
 }
 
 /** The world's Durable Object stub: the live world's own instance in an environment with leases, the one named `world` otherwise. */
@@ -30,13 +32,21 @@ export const sourceOf = (env: EntryEnv): Promise<ClockSource | undefined> => {
   return keeperOf(env).then((keeper) => keeper.source());
 };
 
-/** Run `f` in this request's world: `Date` and Effect's `Clock` read the world's time. A real world runs `f` as it is. */
-export const within = <A>(env: EntryEnv, f: () => Promise<A>): Promise<A> =>
-  WorldClock.declared(env).kind === "real" ? f() : sourceOf(env).then((source) => (source === undefined ? f() : WorldClock.within(source, f)));
+/**
+ * Run `f` in this request's world: `Date` and Effect's `Clock` read the world's time, and the world's count holds a token for
+ * the request (`owner`, `entry:<path>`) from the moment it arrives, so nothing that is in flight goes uncounted: a read, the
+ * portal, a sign-in, an operation before its handler. The work hands the token over to its own (`BusyReporting`), which a
+ * sleep can give back. A real world runs `f` as it is.
+ */
+export const within = <A>(env: EntryEnv, f: () => Promise<A>, owner = "entry:step"): Promise<A> => {
+  if (WorldClock.declared(env).kind === "real") return f();
+  return keeperOf(env).then((keeper) =>
+    keeper.begin(owner).then((source) => (source === undefined ? Promise.resolve(keeper.countLeave(owner)).then(f) : WorldClock.entered(source, owner, f, (held) => Promise.resolve(keeper.countLeave(held))))));
+};
 
 /** The same for an entry that answers at once (an RPC method): a real world still answers at once, with no promise made. */
-export const withinNow = <A>(env: EntryEnv, f: () => A): A | Promise<A> =>
-  WorldClock.declared(env).kind === "real" ? f() : sourceOf(env).then((source) => (source === undefined ? f() : WorldClock.within(source, f)));
+export const withinNow = <A>(env: EntryEnv, f: () => A, owner = "entry:rpc"): A | Promise<A> =>
+  WorldClock.declared(env).kind === "real" ? f() : within(env, () => Promise.resolve(f()), owner);
 
 /**
  * A Worker's entry, wrapped. `/_world/*` is the world's own door: the Durable Object wraps what reads the world's time,
@@ -47,8 +57,8 @@ export const entry = <Env extends EntryEnv>(handler: ExportedHandler<Env>): Expo
     ...handler,
     ...(handler.fetch === undefined
       ? {}
-      : { fetch: (request, env, ctx) => (new URL(request.url).pathname.startsWith("/_world/") ? handler.fetch!(request, env, ctx) : within(env, () => Promise.resolve(handler.fetch!(request, env, ctx)))) }),
-    ...(handler.scheduled === undefined ? {} : { scheduled: (controller, env, ctx) => within(env, () => Promise.resolve(handler.scheduled!(controller, env, ctx))) }),
-    ...(handler.queue === undefined ? {} : { queue: (batch, env, ctx) => within(env, () => Promise.resolve(handler.queue!(batch, env, ctx))) }),
+      : { fetch: (request, env, ctx) => (new URL(request.url).pathname.startsWith("/_world/") ? handler.fetch!(request, env, ctx) : within(env, () => Promise.resolve(handler.fetch!(request, env, ctx)), `entry:${new URL(request.url).pathname}`)) }),
+    ...(handler.scheduled === undefined ? {} : { scheduled: (controller, env, ctx) => within(env, () => Promise.resolve(handler.scheduled!(controller, env, ctx)), "entry:scheduled") }),
+    ...(handler.queue === undefined ? {} : { queue: (batch, env, ctx) => within(env, () => Promise.resolve(handler.queue!(batch, env, ctx)), "entry:queue") }),
   };
 };

@@ -126,3 +126,42 @@ describe("a real world", () => {
     });
   });
 });
+
+describe("the wake route", () => {
+  it("an empty map fails the wake for any kind and leaves the row pending; the step names it", async () => {
+    await inWorld("timers-route-empty", STEPPED, async (world) => {
+      world.rpc.timerSet(START + DAY, "keeper/membership.renew/mem_1", "due", { kind: "keeper", payload: "mem_1" });
+      expect(await settle(world, START + 2 * DAY)).toMatchObject({ _tag: "Failure", failure: { _tag: "WakeFailed", owner: "keeper/membership.renew/mem_1" } });
+      expect(world.rpc.timersDurable()).toHaveLength(1);
+      expect(world.held()).toEqual([]);
+    }, WorldTimers.route({}));
+  });
+
+  it("a registered kind is woken once, counted while it runs, and its row is gone", async () => {
+    const woke: Array<{ readonly payload: unknown; readonly held: ReadonlyArray<string> }> = [];
+    let world: WorldTimersState | undefined;
+    await inWorld("timers-route-kind", STEPPED, async (state) => {
+      world = state;
+      state.rpc.timerSet(START + DAY, "keeper/membership.renew/mem_1", "due", { kind: "keeper", payload: "mem_1" });
+      expect(await settle(state, START + 2 * DAY)).toMatchObject({ _tag: "Success", success: { fired: [{ owner: "keeper/membership.renew/mem_1" }] } });
+      expect(woke).toEqual([{ payload: "mem_1", held: ["keeper/membership.renew/mem_1"] }]);
+      expect(state.rpc.timersDurable()).toEqual([]);
+      expect(state.held()).toEqual([]);
+      // A second walk fires nothing more.
+      expect(await settle(state, START + 3 * DAY)).toMatchObject({ _tag: "Success", success: { fired: [] } });
+      expect(woke).toHaveLength(1);
+    }, WorldTimers.route({ keeper: (timer) => Effect.sync(() => void woke.push({ payload: timer.wake.payload, held: world!.held() })) }));
+  });
+});
+
+describe("a reset", () => {
+  it("wakes a sleeper still waiting on a row, rather than leaving it hanging", async () => {
+    await inWorld("timers-reset", STEPPED, async (world) => {
+      const id = world.rpc.timerAdd("probe.nap", "sleep", START + DAY, "probe.nap");
+      const waiting = world.rpc.timerWait(id);
+      world.reset();
+      expect(await waiting).toBeUndefined();
+      expect(world.controller.timers()).toEqual([]);
+    });
+  });
+});

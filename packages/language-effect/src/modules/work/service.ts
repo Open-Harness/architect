@@ -1,7 +1,7 @@
 import { Deferred, Effect, Layer } from "effect";
 import { Busy, BusyOwner, WorldCount, type BusyShape } from "./types.ts";
 
-type Report = { readonly enter: (owner: string) => Effect.Effect<void>; readonly leave: (owner: string) => Effect.Effect<void> };
+type Report = { readonly enter: (owner: string) => Effect.Effect<void>; readonly leave: (owner: string) => Effect.Effect<void>; readonly handover?: Effect.Effect<void> };
 
 /** One process's count, its tokens by owner; when `world` is given, each token is reported to the world's count too. */
 const counting = (world?: Report): BusyShape => {
@@ -12,7 +12,7 @@ const counting = (world?: Report): BusyShape => {
     count++;
     owners.set(owner, (owners.get(owner) ?? 0) + 1);
   });
-  const take = (owner: string) => Effect.andThen(adopted(owner), world === undefined ? Effect.void : world.enter(owner));
+  const take = (owner: string) => Effect.andThen(adopted(owner), world === undefined ? Effect.void : Effect.andThen(world.enter(owner), world.handover ?? Effect.void));
   const give = (owner: string) => Effect.suspend(() => {
     count--;
     if (count < 0) return Effect.die(new Error("Busy: a token was given back that was never taken"));

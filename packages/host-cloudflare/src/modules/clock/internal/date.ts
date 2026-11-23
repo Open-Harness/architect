@@ -11,6 +11,8 @@ const RealDate = globalThis.Date;
 /** One cell per request: its source can be replaced when a durable sleep wakes (`refresh`), and nothing else can reach it. */
 interface Cell {
   source: ClockSource;
+  /** The token the entry took for this request (`entry:<path>`), until the work hands it over or the request ends. */
+  held?: string | undefined;
 }
 const store = new AsyncLocalStorage<Cell>();
 
@@ -34,6 +36,27 @@ export const install = (): void => {
 
 /** Run `f` with the proxy reading `source` for it and everything it starts. */
 export const inWorld = <A>(source: ClockSource, f: () => A): A => store.run({ source }, f);
+
+/**
+ * Run an entry in its world's time holding `owner`'s token for as long as it runs: `leave` gives the token back when the
+ * entry ends, unless the work has already handed it over (`release`).
+ */
+export const inEntry = <A>(source: ClockSource, owner: string, f: () => Promise<A>, leave: (owner: string) => Promise<unknown>): Promise<A> => {
+  const cell: Cell = { source, held: owner };
+  return store.run(cell, f).finally(() => {
+    const held = cell.held;
+    cell.held = undefined;
+    return held === undefined ? undefined : leave(held);
+  });
+};
+
+/** Take the running request's entry token out of its cell, so the caller can give it back: once, and nothing outside a request. */
+export const release = (): string | undefined => {
+  const cell = store.getStore();
+  const held = cell?.held;
+  if (cell !== undefined) cell.held = undefined;
+  return held;
+};
 
 /** Point the running request at a fresh source, as a durable sleep's wake does: only this request's cell, never another's. False outside a request. */
 export const refresh = (source: ClockSource): boolean => {

@@ -35,4 +35,9 @@ export const BusyOwner = Context.Reference<string>("@orthograph/language-effect/
 export class WorldCount extends Context.Service<WorldCount, {
   readonly enter: (owner: string) => Effect.Effect<void>;
   readonly leave: (owner: string) => Effect.Effect<void>;
+  /**
+   * Called right after this process takes a token of its own: the entry that began the request holds a token (`entry:<path>`)
+   * until then, and gives it up here, so the work's own token (which a sleep can give back) is the only one left.
+   */
+  readonly handover?: Effect.Effect<void>;
 }>()("@orthograph/language-effect/WorldCount") {}

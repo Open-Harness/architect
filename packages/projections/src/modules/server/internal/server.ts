@@ -5,35 +5,8 @@ import type { Model, OperationModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
 import { callImports, renderHandlerScaffold, wired } from "#modules/handlers/service.js";
 import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, pascal, storeFileAt, thingFileAt, toRoot } from "#modules/names/service.js";
+import { emptyPath, notFromOf, peopleOf, worldExports } from "./helpers.ts";
 import { clocksOf, renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
-
-const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
-
-/** The runtime's refusals the generated code names: the machine's, when the move starts from a state (D2 #37), and each not-found. */
-const notFromOf = (model: Model, o: OperationModel) => {
-  const machine = model.things[o.thing]?.machine;
-  const notFrom = o.move && o.move.from.length > 0 && machine ? `, notFrom: "${machine.notFrom.error}"` : "";
-  // Each payload field no role check reads, and the `<Thing>NotFound` a missing one is refused with (K16, M1.46).
-  const missing = Object.entries(o.notFound ?? {});
-  // Each refusal the runtime makes for a rule this operation can break (G5), and the rule it is for.
-  const ruled = Object.entries(o.invariants ?? {});
-  return `${notFrom}${missing.length > 0 ? `, notFound: { ${missing.map(([k, e]) => `${k}: "${e}"`).join(", ")} }` : ""}${ruled.length > 0 ? `, invariants: { ${ruled.map(([tag, rule]) => `${tag}: "${rule}"`).join(", ")} }` : ""}`;
-};
-
-/**
- * Where the identity keeps its users: Better Auth's table, today the identity behind `AuthD1`. Named here, in what the
- * generated server says, never in host code; the identity plugin (M2.05) will own it.
- */
-const IDENTITY_USERS = "auth_user";
-/**
- * The thing the identity keeps, bound explicitly: the identity's users are what a `Principal` calls a `person`, so its
- * thing is the one named `person` (K16 review, 22.1). Never found by its id prefix: an app thing may use `per_` too.
- */
-const IDENTITY_THING = "person";
-const peopleOf = (model: Model) => {
-  const people = model.things[IDENTITY_THING];
-  return people ? `, people: { thing: thingIn(${camel(people.name)}Thing), table: "${IDENTITY_USERS}" }` : "";
-};
 
 const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const ops = Object.values(model.operations);
@@ -56,7 +29,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const stores = databaseStores(model);
   const storeOption = stores.length > 0 ? `, stores: [${stores.map((s) => `[${camel(s.name)}Store, env.${bindingOf(s)}]`).join(", ")}]` : "";
   // Counted work and timers: one process's own, or (a world with a clock) the world's, reported to its Durable Object (M8.07).
-  const work = timed ? "WorldEntry.work(env)" : "BusyLive";
+  const work = timed ? "WorldEntry.work(env, wakes)" : "BusyLive";
   const journal = stores.length > 0 ? `JournalD1.across([${stores.map((s) => `env.${bindingOf(s)}`).join(", ")}])` : "JournalD1.layer";
   const apart = new Set(Object.values(model.things).filter((t) => t.store !== undefined && stores.some((s) => s.name === t.store)).map((t) => t.name));
   const world = stores.length > 0
@@ -108,7 +81,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       ruled.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
       stores.map((s) => `import ${camel(s.name)}Store from "${storeFileAt("generated/server/main.ts", s)}";`),
       "",
-      actors ? `export { Actor, World } from "${Names.pkg("host-cloudflare")}";` : `export { World } from "${Names.pkg("host-cloudflare")}";`,
+      worldExports(timed, actors),
       "",
       serviced.length > 0 ? ["/** Each adapter's mount by the name it is mounted under: what a `service` role in `allowed` is read against. */", `const mounts = new Map<unknown, string>([${serviced.map((m) => `[${mountVar(m)}, "${m}"]`).join(", ")}]);`, ""] : [],
       ops.map((o) =>

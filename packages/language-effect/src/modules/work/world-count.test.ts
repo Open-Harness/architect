@@ -56,6 +56,25 @@ describe("BusyReporting", () => {
       expect(reported).toEqual(["+probe.spin", "-probe.spin", "+probe.nap", "-probe.nap", "+probe.nap", "-probe.nap"]);
     }), BusyReporting.pipe(Layer.provide(world))));
 
+  it("hands the entry's token over once the work has taken its own: the work's token is then the only one", async () => {
+    const entry = ["entry:/probe/spin"];
+    const handing = Layer.succeed(WorldCount, WorldCount.of({
+      enter: (owner) => Effect.sync(() => void reported.push(`+${owner}`)),
+      leave: (owner) => Effect.sync(() => void reported.push(`-${owner}`)),
+      handover: Effect.sync(() => {
+        const held = entry.pop();
+        if (held !== undefined) reported.push(`-${held}`);
+      }),
+    }));
+    await run(Effect.gen(function* () {
+      const busy = yield* Busy;
+      yield* busy.as("probe.spin").counted(Effect.void);
+      yield* busy.as("probe.spin").counted(Effect.void);
+    }), BusyReporting.pipe(Layer.provide(handing)));
+    // The world's own token is taken before the entry's is given up, and the entry's goes once.
+    expect(reported).toEqual(["+probe.spin", "-entry:/probe/spin", "-probe.spin", "+probe.spin", "-probe.spin"]);
+  });
+
   it("keeps a token the world already counted without reporting it again (a timer counts its sleeper before waking it)", () =>
     run(Effect.gen(function* () {
       const busy = yield* Busy;

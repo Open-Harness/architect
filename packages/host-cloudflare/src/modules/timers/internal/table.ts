@@ -132,6 +132,8 @@ export const makeTable = (
       }),
     reset: () => {
       sql.exec("DELETE FROM timers");
+      // A sleeper still waiting on a row is woken, uncounted (the count is the world's and starts again), not left hanging.
+      for (const gate of waiting.values()) Deferred.doneUnsafe(gate, Effect.succeed(undefined));
       waiting.clear();
     },
   };

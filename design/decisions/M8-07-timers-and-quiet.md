@@ -33,7 +33,7 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
 | The count: tokens by owner, quiet on two reads that agree, `NeverQuiet` naming each owner | `.../timers/internal/count.ts` |
 | The controller: the walk from timer to timer, one move at a time | `.../timers/internal/controller.ts` |
 | The door: `advance` and `move-to` settle through the controller; `GET /_world/clock` lists the table | `host-cloudflare/src/modules/clock/internal/door.ts` |
-| The Worker's side: `WorldEntry.work(env)`, a layer of `Busy`, `Timers` and `DurableTimers` over the Durable Object's RPC | `host-cloudflare/src/modules/world/internal/work.ts` |
+| The Worker's side: `WorldEntry.work(env, wakes)`, a layer of `Busy`, `Timers` and `DurableTimers` over the Durable Object's RPC | `host-cloudflare/src/modules/world/internal/work.ts` |
 | `Busy.as(owner)`, `held`, `adopt`; `BusyReporting` and `WorldCount` | `language-effect/src/modules/work` |
 | `TimersWorld` and the `WorldTable` port | `language-effect/src/modules/timers/internal/world.ts` |
 | `s.clock.advance`, `.moveTo` and `.now` run in journeys | `prove/src/modules/world-clock`, `prove/src/modules/journeys/service.ts`, `orthograph` journeys |
@@ -53,15 +53,19 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
    sleep takes its row back (`timerCancel`): if it was still there the sleeper takes its token again, and if it had fired the
    world has already counted it. `within` is the same pair. `Timers.at` is in-process only, as in the shape: its row is the
    world's and its closure runs, counted, in the process that set it.
-3. **How busy is counted across processes: each process reports to the world's count over RPC, by owner.** `BusyReporting`
-   does what `BusyLive` did and also tells the world each token it takes and gives back (`countEnter(owner)`,
-   `countLeave(owner)`). A token's owner is an operation's name for a handler (`Handlers` now takes `busy.as(name)`), or
-   whatever the work passes to `Busy.as(owner)`. `counted` and `spawn` put the owner in a fiber reference (`BusyOwner`), so a
-   `sleep` inside the work gives back that same token whatever owner the sleep's own argument names. In a real world nobody
-   waits for quiet, so the Worker reports nothing and the world counts nothing.
-   **What it does not count:** the gap between a request reaching the Worker and its handler taking its token. A move made in that
-   gap can pass a request that has not started counting; the checks wait for the handler to be in flight, and an entry-level
-   token would have to be given back by a sleep, which only the handler's own token can be. Recorded as a limit.
+3. **How busy is counted across processes: each process reports to the world's count over RPC, by owner, from the moment a
+   request arrives.** `BusyReporting` does what `BusyLive` did and also tells the world each token it takes and gives back
+   (`countEnter(owner)`, `countLeave(owner)`). Every wrapped entry (the Worker's `fetch`, `scheduled` and `queue`, a
+   Workflows step, an actor's RPC) takes a token under `entry:<path>` (`entry:/portal/x`, `entry:scheduled`) in the same
+   RPC that asks for the world's instant (`begin`), and gives it back when the entry ends. So a read, an MCP read, the portal,
+   a sign-in, a session request and an operation before its handler are all in flight as far as the world knows. The work's
+   own token takes over: the first token a request's work takes (`Busy.as(name).counted`; a handler's owner is its operation's
+   name) hands the entry's token over (`WorldCount.handover`, which takes it out of the request's cell and gives it back to the
+   world, after the new token is counted), so a `sleep`, which gives back the work's token, leaves nothing counted. `counted`
+   and `spawn` put the owner in a fiber reference (`BusyOwner`), so a sleep gives back that same token whatever owner its
+   own argument names. In a real world nobody waits for quiet, so the Worker reports nothing and the world counts nothing.
+   Tested in workerd (`world/entry.test.ts`): a request held before it does anything makes the controller fail as
+   `NeverQuiet` naming `entry:/portal/x`; one that has handed over is named by its operation.
 4. **The firing order is the table's: by due instant, then the order set (the id), then owner.** The id is unique, so the owner
    only breaks a tie that cannot happen; it is in the query (`ORDER BY at, id, owner`) for a table that someday has two
    writers. A timer already past due fires where the world stands: the clock never goes back. Rows set while the world fires
@@ -95,13 +99,23 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
    of its own (M8-checks call 3) and a real clock's journey being refused before it starts; both need the keeper's
    moves to matter and are M8.10's.
 9. **Handlers are given `Timers` only when some environment's clock is stepped or scaled.** The generated Worker for such a
-   blueprint takes its `Busy`, `Timers` and `DurableTimers` from `WorldEntry.work(env)`, picks `Timers` and `DurableTimers`
+   blueprint takes its `Busy`, `Timers` and `DurableTimers` from `WorldEntry.work(env, wakes)`, picks `Timers` and `DurableTimers`
    into the handlers' services, and its `Handler` type says `Timers` is in `R`. A blueprint with no clock, or a real one,
    generates what it always did (proved below), so a deployed real world still counts with `BusyLive` and has no `Timers` until
    Goals 8 and 10 give it a reason to (the wiring is the same line).
-10. **The wake route.** `TimerWakes` has no handlers in a world yet: a durable row that falls due fails the move as `WakeFailed`,
-    naming its kind, and stays in the table. Goals 8 and 10 and the keeper (M8.10) each add a route by kind; the table, the order,
-    the counting and the put-back are here and tested (`timers.test.ts`).
+10. **The wake route: the world's own isolate runs it.** A generated Worker for a blueprint with a stepped or scaled clock
+    exports `World` as a subclass of the host's, answering `wakeKinds()` with a map of kind to wake (`const wakes: WorldWakes = {}`,
+    empty today). When a durable row falls due the world's Durable Object runs `WorldTimers.route(wakes)` (`wakesByKind`) in
+    the world's time (a fresh source, `inTime`), counted under the row's owner for as long as it runs. The same map is given to
+    the Worker's `WorldEntry.work(env, wakes)`, which provides `TimerWakes`, so `DurableTimers.set` works there; without a map
+    (`work(env)`) setting one is a defect (`M8-timers-shape` rule 6). A kind nobody registered fails the wake as a defect: the
+    row goes back into the table and the move fails as `WakeFailed`, naming it. A subclass in the same bundle needs no service
+    binding and no change to `wrangler.jsonc`. Goals 8 and 10 and the keeper (M8.10) only add a kind to the map (their handler
+    reaches the process that owns the work by its binding, and returns once that work holds its own token). Tested: an empty
+    map fails and leaves the row; a registered kind is woken once, counted while it runs, and its row is gone (`timers.test.ts`).
+11. **A reset wakes what it forgets.** The warm reset empties the table and wakes any sleeper still waiting on a row, uncounted,
+    instead of leaving its request hanging. A `NeverQuiet` after the first quiet wait leaves the clock where the walk had
+    reached (call 5), and says so in `now`: it is recorded, not undone.
 
 ## Evidence
 
@@ -122,4 +136,3 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
 
 - design/decisions/M8-06-world-holds-the-clock.md: "must make a durable sleep's wake rewrap its continuation with a fresh source" → "a durable sleep's wake points its own request's cell at a fresh source (`WorldClock.refresh`), which changes only that request's clock"
 - design/decisions/M8-06-world-holds-the-clock.md: "(M8.07) the timer table's alarm | **must wrap**" → "the timer alarm is a real world's only, and runs through `inTime`, a plain call there"
-- design/decisions/M8-timers-shape.md: "which counts each one and gives it the world's `Clock`" → "which gives each the world's `Clock`; the work inside counts itself with `Busy.as(owner)`"

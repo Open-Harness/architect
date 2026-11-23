@@ -1,6 +1,7 @@
 import { Effect } from "effect";
+import { TimerWakes, wakesByKind, type DurableTimer } from "@orthograph/language-effect";
 import { WorldClock } from "#modules/clock/service.js";
-import type { WorldTimersOptions, WorldTimersState } from "./types.ts";
+import type { WorldTimersOptions, WorldTimersState, WorldWakes } from "./types.ts";
 import { makeController } from "./internal/controller.ts";
 import { makeCount } from "./internal/count.ts";
 import { makeTable } from "./internal/table.ts";
@@ -14,6 +15,10 @@ const limitOf = (text: string | undefined): number => {
 };
 
 export const WorldTimers = {
+  /** The wake for a durable timer, by its kind: `wakesByKind` over `kinds`. A kind with no handler is a defect, which fails the wake. */
+  route: (kinds: WorldWakes) => (timer: DurableTimer): Effect.Effect<void> =>
+    Effect.flatMap(Effect.service(TimerWakes), (route) => route.wake(timer)).pipe(Effect.provide(wakesByKind(kinds))),
+
   /**
    * The timer table and the count of work in flight, over the world's own SQLite storage. A real world counts nothing and
    * fires its rows from an alarm; a stepped or scaled one is walked by the controller (`/_world/clock`).
@@ -53,6 +58,7 @@ export const WorldTimers = {
             onFailure: () => void (retryAt = WorldClock.wall() + 1_000),
           }),
         ),
+      held: () => count.held(),
       reset: () => table.reset(),
     };
   },

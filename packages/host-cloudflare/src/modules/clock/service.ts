@@ -1,6 +1,6 @@
 import type { ClockDeclaration, ClockEnv, WorldClockApi } from "./types.ts";
 import { clockDoor } from "./internal/door.ts";
-import { install, inWorld, refresh, wall } from "./internal/date.ts";
+import { inEntry, install, inWorld, refresh, release, wall } from "./internal/date.ts";
 import { stateOf } from "./internal/state.ts";
 
 const REAL: ClockDeclaration = { kind: "real" };
@@ -28,6 +28,11 @@ export const WorldClock: WorldClockApi = {
     install();
     return inWorld(instant, f);
   },
+  entered: (source, owner, f, leave) => {
+    install();
+    return inEntry(source, owner, f, leave);
+  },
+  release,
   refresh,
   wall,
 };
