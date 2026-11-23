@@ -25,6 +25,9 @@ repo() { # a fresh repository with a base commit; prints its path
     "$dir/packages/prove/src/modules/evals" "$dir/packages/prove/src/modules/journeys" "$dir/src"
   printf 'm1/a.test.ts > a\nm1/a.test.ts > a2\n' > "$dir/e2e/m1/expected-failing/a.txt"
   printf 'm1/b.test.ts > b\n' > "$dir/e2e/m1/expected-failing/b.txt"
+  mkdir -p "$dir/e2e/ui-layer/expected-failing"
+  printf 'ui-layer/01.test.ts > u1\nui-layer/01.test.ts > u2\n' > "$dir/e2e/ui-layer/expected-failing/01.txt"
+  echo t > "$dir/e2e/ui-layer/01.test.ts"
   mkdir -p "$dir/e2e/m8/expected-failing"
   printf 'm8/a.test.ts > a\nm8/a.test.ts > a2\n' > "$dir/e2e/m8/expected-failing/a.txt"
   mkdir -p "$dir/e2e/m2/expected-failing"
@@ -99,14 +102,24 @@ r=$(repo); printf 'm1/a.test.ts > a\nm1/a.test.ts > swapped\n' > "$r/e2e/m1/expe
 expect "swapping a ratchet line fails" 1 guard "$r"
 r=$(repo); printf '' > "$r/e2e/m1/expected-failing/c.txt"; commit "$r"
 expect "adding an empty ratchet file fails" 1 guard "$r"
+r=$(repo); printf 'ui-layer/01.test.ts > u1\n' > "$r/e2e/ui-layer/expected-failing/01.txt"; commit "$r"
+expect "deleting a line from another suite's ratchet file passes" 0 guard "$r"
+r=$(repo); git -C "$r" rm -q e2e/ui-layer/expected-failing/01.txt; commit "$r"
+expect "deleting another suite's ratchet file passes" 0 guard "$r"
+r=$(repo); printf 'ui-layer/01.test.ts > u1\nui-layer/01.test.ts > u2\nui-layer/01.test.ts > u3\n' > "$r/e2e/ui-layer/expected-failing/01.txt"; commit "$r"
+expect "adding a line to another suite's ratchet file fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/e2e/stage1/expected-failing"; printf 'stage1/x.test.ts > x\n' > "$r/e2e/stage1/expected-failing/x.txt"; commit "$r"
+expect "a ratchet file in a new suite fails" 1 guard "$r"
+r=$(repo); echo changed > "$r/e2e/ui-layer/01.test.ts"; commit "$r"
+expect "editing another suite's check still fails" 1 guard "$r"
 r=$(repo); printf 'm8/a.test.ts > a\n' > "$r/e2e/m8/expected-failing/a.txt"; commit "$r"
 expect "deleting a line from a later milestone's ratchet file passes" 0 guard "$r"
 r=$(repo); printf 'm8/a.test.ts > a\nm8/a.test.ts > a2\nm8/a.test.ts > a3\n' > "$r/e2e/m8/expected-failing/a.txt"; commit "$r"
 expect "adding a line to a later milestone's ratchet file fails" 1 guard "$r"
 r=$(repo); printf 'm8/c.test.ts > c\n' > "$r/e2e/m8/expected-failing/c.txt"; commit "$r"
 expect "adding a later milestone's ratchet file fails" 1 guard "$r"
-r=$(repo); mkdir -p "$r/e2e/mx/expected-failing"; printf 'x\n' > "$r/e2e/mx/expected-failing/a.txt"; git -C "$r" add -A; git -C "$r" commit -qm x; git -C "$r" branch -f base; git -C "$r" checkout -q x-build; git -C "$r" reset -q --hard base; printf '' > "$r/e2e/mx/expected-failing/a.txt"; commit "$r"
-expect "a folder that is not a milestone's may not shrink" 1 guard "$r"
+r=$(repo); mkdir -p "$r/e2e/mx/expected-failing-x"; printf 'x\n' > "$r/e2e/mx/expected-failing-x/a.txt"; git -C "$r" add -A; git -C "$r" commit -qm x; git -C "$r" branch -f base; git -C "$r" checkout -q x-build; git -C "$r" reset -q --hard base; printf '' > "$r/e2e/mx/expected-failing-x/a.txt"; commit "$r"
+expect "a look-alike of a ratchet folder (expected-failing-x/) may not shrink" 1 guard "$r"
 r=$(repo); printf 'm2/a.test.ts > a\n' > "$r/e2e/m2/expected-failing/a.txt"; commit "$r"
 expect "deleting a line from an m2 ratchet file passes" 0 guard "$r"
 r=$(repo); git -C "$r" rm -q e2e/m2/expected-failing/a.txt; commit "$r"
@@ -115,6 +128,15 @@ r=$(repo); printf 'm2/a.test.ts > a\nm2/a.test.ts > a2\nm2/a.test.ts > a3\n' > "
 expect "adding a line to an m2 ratchet file fails" 1 guard "$r"
 r=$(repo); printf 'm2/c.test.ts > c\n' > "$r/e2e/m2/expected-failing/c.txt"; commit "$r"
 expect "adding an m2 ratchet file fails" 1 guard "$r"
+# What the narrower guards held (m2 #267, m<n> M8-timers-shape) the every-suite pattern still holds:
+r=$(repo); printf 'm2/a.test.ts > a\nm2/a.test.ts > zz\n' > "$r/e2e/m2/expected-failing/a.txt"; commit "$r"
+expect "swapping an m2 ratchet line fails" 1 guard "$r"
+r=$(repo); printf 'm8/a.test.ts > a\nm8/a.test.ts > zz\n' > "$r/e2e/m8/expected-failing/a.txt"; commit "$r"
+expect "swapping a later milestone's ratchet line fails" 1 guard "$r"
+r=$(repo); git -C "$r" mv e2e/m2/expected-failing/a.txt e2e/m2/expected-failing/b.txt; commit "$r"
+expect "renaming an m2 ratchet file fails" 1 guard "$r"
+r=$(repo); mkdir -p "$r/e2e/m2/sub/expected-failing"; printf 'x\ny\n' > "$r/e2e/m2/sub/expected-failing/a.txt"; git -C "$r" add -A; git -C "$r" commit -qm x; git -C "$r" branch -f base; git -C "$r" checkout -q x-build; git -C "$r" reset -q --hard base; printf 'x\n' > "$r/e2e/m2/sub/expected-failing/a.txt"; commit "$r"
+expect "a ratchet folder nested below a suite may not shrink" 1 guard "$r"
 r=$(repo); printf 'src/a.test.ts > t1\n' > "$r/packages/foo/expected-failing/a.txt"; commit "$r"
 expect "deleting a line from a package's ratchet file passes" 0 guard "$r"
 r=$(repo); git -C "$r" rm -q packages/foo/expected-failing/a.txt; commit "$r"
@@ -167,6 +189,28 @@ r=$(repo); mkdir -p "$r/design"; echo d > "$r/design/heroui-pro-notes.md"; commi
 expect "docs-only: a doc named for HeroUI Pro is not docs (check 15 scans paths)" 0 docs "$r" false
 r=$(repo); mkdir -p "$r/design"; name=HEROUI_AUTH; echo "${name}_TOKEN=$(printf 'a%.0s' {1..16})" > "$r/design/setup.md"; commit "$r"
 expect "docs-only: a doc that adds a line naming the token is not docs (check 15 scans text)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design/grid"; echo d > "$r/design/grid/grid.json"; commit "$r"
+expect "docs-only: design/grid is read by e2e/grid, so not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/design/goals"; echo d > "$r/design/goals/g.json"; commit "$r"
+expect "docs-only: the rest of design/ is still docs" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x" "$r/.agents/skills/kanban/data" "$r/.claude/agents" "$r/.github/ISSUE_TEMPLATE"; echo d > "$r/spikes/x/a.ts"; echo d > "$r/.agents/skills/kanban/data/tasks.json"; echo d > "$r/.claude/settings.json"; echo d > "$r/.github/ISSUE_TEMPLATE/1.yml"; echo d > "$r/skills-lock.json"; commit "$r"
+expect "docs-only: spikes, agent skills, claude config and issue templates are read by no gated suite" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; echo t >> "$r/src/handler.ts"; commit "$r"
+expect "docs-only: an inert path beside a code change is not docs" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/x.yml"; mkdir -p "$r/spikes/x"; echo d > "$r/spikes/x/a.ts"; commit "$r"
+expect "docs-only: a workflow among inert paths is not docs" 0 docs "$r" false
+# the Pro name is written in pieces, so check 15 does not read this file as naming Pro
+pro="@heroui-""pro/react"
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"; commit "$r"
+expect "docs-only: a line naming HeroUI Pro in an agents file runs check 15 (not docs)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "{\"dep\":\"$pro\"}" > "$r/.agents/skills/x/skill.json"; echo d > "$r/.agents/skills/x/SKILL.md"; commit "$r"
+expect "docs-only: the same line beside a markdown file still runs check 15" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/.agents/skills/x"; echo "see $pro" > "$r/.agents/skills/x/SKILL.md"; commit "$r"
+expect "docs-only: a markdown page naming Pro is a doc (check 15 exempts *.md)" 0 docs "$r" true
+r=$(repo); mkdir -p "$r/.agents/skills/big"; { echo "import \"$pro\""; seq 1 60000; } > "$r/.agents/skills/big/a.ts"; commit "$r"
+expect "docs-only: a Pro name at the top of a large diff is still found (no SIGPIPE under pipefail)" 0 docs "$r" false
+r=$(repo); mkdir -p "$r/spikes/x"; echo "const x = 1" > "$r/spikes/x/a.ts"; commit "$r"
+expect "docs-only: an inert file that does not name Pro is docs" 0 docs "$r" true
 r=$(repo)
 expect "docs-only: an empty diff is not docs" 0 docs "$r" false
 r=$(repo); echo d > "$r/README.md"; commit "$r"

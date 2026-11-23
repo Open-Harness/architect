@@ -8,7 +8,9 @@
 #   tools/ci/docs-only.sh <base> <head>
 # Prints `docs_only=true` or `docs_only=false` (append it to $GITHUB_OUTPUT) and exits 0; any git failure exits non-zero,
 # so a broken diff never skips a gate.
-# Docs-only: every changed path is under design/, or is a *.md file outside packages/, e2e/ and examples/ (a module's
+# Docs-only: every changed path is under design/ (but not design/grid/, which e2e/grid reads), or is a *.md file outside
+# packages/, e2e/ and examples/, or is a path no gated suite reads (spikes/, .agents/, .claude/, .codex/, .pi/, issue and pull-request
+# templates, skills-lock.json, .mcp.json; design/decisions/CI-docs-inert.md) (a module's
 # README.md is one of its six slots, and an e2e README is part of the checks). An empty diff is not docs-only.
 set -euo pipefail
 
@@ -23,8 +25,13 @@ if [ -n "$changed" ]; then
   docs_only=true
   while IFS= read -r file; do
     case "$file" in
+      # e2e/grid reads design/grid/grid.json, so a change there is not a doc (CI-docs-inert.md).
+      design/grid/*) docs_only=false ;;
       design/*) ;;
       packages/* | e2e/* | examples/*) docs_only=false ;;
+      # Paths no gated suite reads (CI-docs-inert.md): the agents' skills, the spikes, the editor and agent config.
+      spikes/* | .agents/* | .claude/* | .codex/* | .pi/* | .github/ISSUE_TEMPLATE/* | .github/pull_request_template.md) ;;
+      skills-lock.json | .mcp.json) ;;
       *.md) ;;
       *) docs_only=false ;;
     esac
@@ -38,8 +45,20 @@ fi
 if [ "$docs_only" = true ]; then
   if grep -qi 'heroui-pro' <<< "$changed"; then
     docs_only=false; echo "docs-only: no, a changed path is named for HeroUI Pro." >&2
-  elif git diff --no-renames -U0 "$base...$head" | grep '^+' | grep -q 'HEROUI_AUTH_TOKEN'; then
+  elif added=$(git diff --no-renames -U0 "$base...$head" | grep '^+' || true); grep -q 'HEROUI_AUTH_TOKEN' <<< "$added"; then
     docs_only=false; echo "docs-only: no, an added line names HEROUI_AUTH_TOKEN." >&2
+  else
+    # Check 15 exempts docs (design/, docs/, *.md), spikes/ and the kanban data, but not the rest of what counts as docs-only
+    # here (the agents', editor and template files). A line naming HeroUI Pro in one of those, even beside a *.md file, runs it.
+    while IFS= read -r file; do
+      case "$file" in design/* | docs/* | spikes/* | .agents/skills/kanban/data/* | *.md | *.mdx) continue ;; esac   # what check 15 exempts
+      # Read the whole diff into a variable before matching: `grep -q` on a pipe exits at the first hit, the writer gets SIGPIPE,
+      # and under pipefail a match would read as no match.
+      added=$(git diff --no-renames -U0 "$base...$head" -- "$file" | grep '^+' | grep -v '^+++' || true)
+      if grep -qi 'heroui-pro' <<< "$added"; then
+        docs_only=false; echo "docs-only: no, an added line in $file names HeroUI Pro." >&2; break
+      fi
+    done <<< "$changed"
   fi
 fi
 

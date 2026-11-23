@@ -1,0 +1,20 @@
+# M1.51 (the npm preview, K28): tools/release/preview.mjs and the root LICENSE are not built yet, so each check that runs the command or reads the licence fails; the controls and the 'nothing but Node ran' tripwire pass. Due when M1.51 lands.
+m1/44-m1-51-npm-preview.test.ts > 44 (a) a package that says `private: false` is public > is listed with the rest, and `hidden` still is not
+m1/44-m1-51-npm-preview.test.ts > 44 (a) the list against npmjs > a fixture workspace: each package's own version, tag next, its licence and files, in a run that succeeds
+m1/44-m1-51-npm-preview.test.ts > 44 (a) the list against npmjs > the repository: one block per public package, its name, version, tag next, licence field and files; no private package, none twice
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > --tag "Next" against npmjs is refused, naming it, and lists nothing
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > --tag "beta" against npmjs is refused, naming it, and lists nothing
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > --tag "latest" against npmjs is refused, naming it, and lists nothing
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > --tag "nex" against npmjs is refused, naming it, and lists nothing
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > --tag "next " against npmjs is refused, naming it, and lists nothing
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > --tag "rc" against npmjs is refused, naming it, and lists nothing
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > --tag next against npmjs, and no tag at all, both say next on every package
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > --tag=latest, and npmjs spelled another way, are refused as well
+m1/44-m1-51-npm-preview.test.ts > 44 (b) the tag > a registry of this machine takes another tag, and says next when given none: the refusal is npmjs's
+m1/44-m1-51-npm-preview.test.ts > 44 (c) the licence is Apache-2.0, exactly > a missing licence, an empty one, MIT and a near miss each fail, naming the package
+m1/44-m1-51-npm-preview.test.ts > 44 (c) the licence is Apache-2.0, exactly > a private package with a wrong licence is not judged
+m1/44-m1-51-npm-preview.test.ts > 44 (c) the licence is Apache-2.0, exactly > a run that fails still prints every block right: the version, tag, licence as it is (`none` when missing) and the files npm would send
+m1/44-m1-51-npm-preview.test.ts > 44 (c) the licence is Apache-2.0, exactly > every package of the fixture says Apache-2.0: the run passes and names no licence refusal
+m1/44-m1-51-npm-preview.test.ts > 44 (c) the licence is Apache-2.0, exactly > the repository fails, naming each public package whose licence is not Apache-2.0, and no other
+m1/44-m1-51-npm-preview.test.ts > 44 (c) the licence is Apache-2.0, exactly > the repository has a root LICENSE that is the Apache License 2.0
+m1/44-m1-51-npm-preview.test.ts > 44 (c) the licence is Apache-2.0, exactly > two bad packages are both named, and the one that is fine is not
