@@ -353,7 +353,7 @@ jobs:
       SKIP: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false') }}
     steps:
       - if: env.SKIP == 'true'
-        run: echo "A docs-only pull request or a pull request into a goal branch, where this gate waits for the landing (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
+        run: echo "A docs-only pull request, one into a goal branch (this gate waits for the landing) or one no e2e project is affected by (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
       - if: env.SKIP != 'true'
         uses: actions/checkout@v7.0.1
       - if: env.SKIP != 'true'
@@ -401,7 +401,7 @@ jobs:
       SKIP: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false') }}
     steps:
       - if: env.SKIP == 'true'
-        run: echo "A docs-only pull request or a pull request into a goal branch, where this gate waits for the landing (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
+        run: echo "A docs-only pull request, one into a goal branch (this gate waits for the landing) or one no e2e project is affected by (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
       - if: env.SKIP != 'true'
         uses: actions/checkout@v7.0.1
         with:
