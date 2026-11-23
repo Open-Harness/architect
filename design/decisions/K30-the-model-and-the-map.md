@@ -163,11 +163,11 @@ orthograph/examples/capxul/   orthograph/plugins/capxul-*/
 
 **The call: A.** Capxul is the first real outside user, which is the test the framework needs. It moves onto
 Orthograph after the beta (workable, the end of M2, as `design/milestones.md` opens by saying), beside the stages, and
-never gates 1.0: that is both halves of the scope map's fourth disagreement, which said "built on it from M2" in one
+never gates 1.0 (superseded by K42 and K43, 23 November 2026: Capxul core is 1.0, built here first): that is both halves of the scope map's fourth disagreement, which said "built on it from M2" in one
 place and "off v1.0's path" in another. Until then `capxul-next` goes on as it is. The standard library
 moves to a repository of its own only if its release pace ever differs from the core's. Hats, budgets and the Safe
 adapter are standard library, because stage 3 needs them too; approvals, payments into ERPNext and the bench stay ours
-until a second app needs them.
+until a second app needs them (superseded by K43, 23 November 2026: ERPNext's shapes are translated into Capxul core; no Frappe runs in it).
 
 ## 3 — How does "declare what you know" work?
 

@@ -1,7 +1,8 @@
 # The canon's outline
 
 There are thirty-two concept pages and three reference pages, in the order a newcomer reads them. Each page explains
-one idea, and each word in the glossary (`design/docs/index.html`, the table headed "Word") has exactly one page that
+one idea, and each word in the glossary (the words in each page's `owns`; the old glossary table is a record in
+`design/history/retired-2026-11-23/docs/index.html`) has exactly one page that
 owns it. Other pages link to that page and never explain the word again.
 
 A page's **job** is the one idea it carries. Its **questions** are the ones a reader brings to it: if a question
@@ -40,8 +41,8 @@ level, and the details wait for the layers that own them.
 | 6 · running | `time`, `workflows`, `environments` | 4 and 5 |
 | 7 · what Orthograph ships | `auth`, `agents`; after 1.0, `factory` and `agent-kit` | everything above |
 
-**Examples.** One example runs through the whole canon: Plugged In, `examples/plugged-in`, the app 1.0 is built as
-(K9). Each page takes its example from the stage that needs it. Stage 1 (claim `@name`, a public page of links) teaches
+**Examples.** One example runs through the whole canon: Plugged In, `examples/plugged-in`, the app the canon is built around
+(K9); 1.0 is the framework Capxul core proves (K42, K43). Each page takes its example from the stage that needs it. Stage 1 (claim `@name`, a public page of links) teaches
 layers 1 to 3, the database and actor stores, the projections, `ui`, `portal`, `secrets`, `environments` (locally; the cloud is M7) and sign-in.
 Stage 2 (a wallet, paid by handle) teaches `chains-and-wallets`, the chain store, adapters from an ABI, `on:` and the
 stand-in chain. Stage 3 (a Safe with the budgets plugin) teaches `features` by a plugin of our own, `time` (budgets are
@@ -167,8 +168,8 @@ links there. It doesn't guess.
   that is `ui`'s alone.
 - **`time`** has its own page, apart from `workflows` (K23). A move made by time needs no workflow, and a world moving
   the clock is a question about proof and every store at once, not about durable work.
-- **`portal`** replaces "the app" (K5 decision 1). It is our own template on pieces ported from agent-native, for the
-  builder, not an agent-native app.
+- **`portal`** replaces "the app" (K5 decision 1). It is the builder's place, not an agent-native app: a new client built
+  on UI SDK with a declared map (K29, K31), which replaces the old one in one cutover (Goal 6).
 - **`agents`** and **`agent-kit`** stay apart. One is durable agents inside your app (a feature, M4); the other is
   agents building your app (parked). K2 says each is usable without the other.
 - **`stand-ins`** has its own page. "Local, never fake" is a standing rule of Aaron's, and the ladder is asked about

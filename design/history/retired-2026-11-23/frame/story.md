@@ -199,7 +199,7 @@ A step that passes on an empty handler is not a bug: it tells you that part is a
 Here the role keeps olga out with no code at all.
 
 The starting world runs its declared setup calls with the real handlers. Journey steps then call the scaffolds
-over HTTP, after the same role and machine checks. See [M1 scaffold proof](../decisions/M1-scaffold-proof.md).
+over HTTP, after the same role and machine checks. See [M1 scaffold proof](../../../decisions/M1-scaffold-proof.md).
 
 ## 5. Compile
 
@@ -257,7 +257,7 @@ The **manager agent** picks them up. It is itself a durable run: one Durable Obj
 conversation, while the mission's state lives in the work app's own things (`mission`, `milestone`, `question`, `run`,
 `attention`). It turns each task into a bounded brief and starts one **builder** run per brief.
 
-A builder run is a **Pi Durable** run on a Durable Object ([`decisions/H1-agent-harness.md`](../decisions/H1-agent-harness.md)).
+A builder run is a **Pi Durable** run on a Durable Object ([`decisions/H1-agent-harness.md`](../../../decisions/H1-agent-harness.md)).
 Its whole world is the brief:
 
 ```text
@@ -273,7 +273,7 @@ brief  build allowance.spend
 It loops on its own: write, `check`, `prove`, read the trace by name, fix. Then a **trusted scorer**, outside the
 builder's sandbox, decides. It checks that nothing but the one file changed, puts the journeys back, runs `check` and
 `prove`, and marks the task `solved` only if every eval for the operation passes. Eight of nine is a broken handler
-([`decisions/H2-agent-runs-and-benchmarks.md`](../decisions/H2-agent-runs-and-benchmarks.md), H2.7).
+([`decisions/H2-agent-runs-and-benchmarks.md`](../../../decisions/H2-agent-runs-and-benchmarks.md), H2.7).
 
 **Verdicts are the facts.** Only CI writes them, signed. The task board moves because a verdict appeared, never because
 an agent said "done". That is what lets the factory run without you watching.
@@ -286,8 +286,8 @@ A blank that only a person can answer, like the month's end, becomes a **questio
 A step that needs money, a credential or production becomes an **attention**, and waits on your yes.
 
 > **Today.** The work app is declared and compiles: 6 things, 26 operations, 26 MCP tools
-> ([`decisions/F5-work-blueprint.md`](../decisions/F5-work-blueprint.md)). Task kinds are designed
-> ([`briefs/F4-portal-plan-and-state.md`](../briefs/F4-portal-plan-and-state.md), section 3). The scorer, the record and the
+> ([`decisions/F5-work-blueprint.md`](../../../decisions/F5-work-blueprint.md)). Task kinds are designed
+> ([`briefs/F4-portal-plan-and-state.md`](../../../briefs/F4-portal-plan-and-state.md), section 3). The scorer, the record and the
 > runners are designed in H2. The agent feature and the work app are being built on `layer/3`; the harness is not
 > built. The builder has only the CLI.
 > **Proposed.** The builder's code mode and telemetry tools ([`builder.md`](builder.md)); ratchets as a standing rule.
