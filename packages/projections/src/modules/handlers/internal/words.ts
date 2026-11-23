@@ -20,6 +20,7 @@ const roleThing = (role: string) => role.split(".")[0] ?? role;
 export const callerOf = (a: AllowedModel) => {
   if (a.kind === "anyone") return "anyone";
   if (a.kind === "system") return "the system";
+  if (a.kind === "keeper") return "the keeper";
   // A narrowed entry says which ways in it keeps (M2-auth, fork 2): `.via(Via.session)` is "by session".
   const by = "via" in a && a.via !== undefined ? ` by ${a.via.join(" or ")}` : "";
   if (a.kind === "signed-in") return `anyone signed in${by}`;
@@ -108,7 +109,7 @@ export const refusalsOf = (model: Model, op: OperationModel): ReadonlyArray<Refu
     }
     if (r === "NotAllowed") {
       const first = op.allowed[0];
-      return { name: r, exit: NOT_ALLOWED_EXIT, code: code(r), giver: "runtime", fields: [], fieldModels: {}, file: first ? allowedFile(model, op, first) : op.file, said: `the runtime's, when the caller isn't ${who(op)}` };
+      return { name: r, exit: NOT_ALLOWED_EXIT, code: code(r), giver: "runtime", fields: [], fieldModels: {}, file: first ? allowedFile(model, op, first) : op.file, said: op.allowed.every((a) => a.kind === "anyone") ? "the runtime's, when the caller is the keeper, which calls only the moves time makes" : `the runtime's, when the caller isn't ${who(op)}` };
     }
     const missing = notFoundOf(model, r);
     if (missing) {

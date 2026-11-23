@@ -28,6 +28,7 @@ export const allowedOf = (layout: Layout, roleNames: ReadonlyMap<Role<any>, stri
     const via = entry.kind === "narrowed" ? { via: [...entry.via] } : {};
     if (a.kind === "anyone") return { kind: "anyone" };
     if (a.kind === "system") return { kind: "system" };
+    if (a.kind === "keeper") return { kind: "keeper" };
     if (a.kind === "signed-in") return { kind: "signed-in", ...via };
     const name = (r: unknown) => roleNames.get(r as never) ?? unknown(problems, `${where}: uses a role not exported from a roles.ts`);
     const role = a.kind === "role" ? a : a.role;

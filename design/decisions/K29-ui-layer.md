@@ -355,7 +355,7 @@ form field by hand for a payload the blueprint declares.
 
 ## 5. A component of the app's own
 
-`/edit`'s list of links, dragged or moved with the keyboard, is nothing the blueprint can generate: it is
+`/edit`'s list of links, dragged or moved with the keyboard, is nothing the blueprint can generate (_superseded by K36, 21 November 2026: it is declared as a component, its wiring generated, its behaviour still hand-written_): it is
 `profile.get`'s answer laid out, with `link.order` and `link.remove` as its moves. It joins as a UI SDK primitive of
 the app's own, with its order as `controlled` state, so an agent reads it, and its saves through the generated actions:
 

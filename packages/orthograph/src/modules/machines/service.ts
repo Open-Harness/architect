@@ -17,6 +17,7 @@ export const Machines: MachinesApi = {
     for (const [key, m] of Object.entries(spec.moves as Record<string, MoveSpec<string>>)) {
       moves[key] = Object.freeze({
         kind: "move", machine, key, from: m.from, to: typeof m.to === "string" ? [m.to] : m.to, emits: m.emits,
+        ...(m.by === undefined ? {} : { by: m.by }), ...(m.late === undefined ? {} : { late: m.late }), ...(m.lazy === undefined ? {} : { lazy: m.lazy }),
       });
     }
     (machine as { notFrom: unknown }).notFrom = Object.freeze({ kind: "not-from", machine, exit: spec.notFrom.exit });

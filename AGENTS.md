@@ -31,16 +31,19 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 ## How work flows
 
 - **Milestones.** Orthograph is built in milestones M0 to M7 (`design/milestones.md`; layers 1 and 2 came first). No slice
-  starts until what it needs has landed, in any milestone order (K34); a milestone is done when its gate passes on `main`.
+  starts until what it needs has landed, in any milestone order (K34), except on an integration branch, which builds
+  what it needs there to its owner's design and is merged back by the conductor (Goal 17's, K39); a milestone is done when its gate passes on `main`.
   The goals and what each needs are in `design/goals/map.md`. Ideas for later go in `design/later.md`,
   never into code.
 - **Goals.** Work runs as goals in `design/goals/`: one long autonomous run with a bound and a single done check. A
   goal works on `m<n>`, one commit per milestone slice, each ending green with its "done when" check. It loops
   generate, run, fix until the check passes, then moves on. The milestone reaches `main` by one pull request, merged
   when CI is green, its gate passes and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
-  parallel. A goal may run in any harness (Claude Code, Amp, Codex) and coordinates only through the repository and
-  GitHub: its brief's "Where it stands", a `goal-<n>` label, the release milestones, and issues for asks between goals
-  (`design/decisions/K32-goals-coordinate-themselves.md`).
+  parallel. A goal may run in any harness (Claude Code, Codex, OpenCode, Amp) and coordinates only through the repository and
+  GitHub: its brief's "Where it stands", its goal's milestone and `goal-<n>` label, and Snag and Ask issues in that milestone
+  (`design/decisions/K32-goals-coordinate-themselves.md`, `K33-github-native.md`; the `github` skill says how).
+  A slice another goal needs lands early, by a branch cut at the commit that ends it and merged into `goal/stage-1`
+  by a merge commit, so two goals never wait on each other's whole landing (`K38-early-landing.md`).
 - **Spikes** answer one question in throwaway code under `spikes/<name>/`, on a `spike/<name>` branch. Each ends with
   a README (question, tried, found, the decision it supports, open risks) and is merged into `main` for the record.
   Spike code is never imported by packages.
@@ -56,13 +59,14 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 - **Merge your own pull requests when CI is green,** every review thread is resolved and a 🔍 reviewer that wrote none
   of it has passed it. The 🔍 pass is the gate. Codex is advisory (`design/decisions/CI-codex-advisory.md`): comment
   "@codex review" when it is available, and answer any finding it posts before the merge, but nobody waits on it; if
-  Codex is down or slow, the pull request merges without it. Push on until actually blocked. GitHub enforces CI and
+  Codex is down or slow, the pull request merges without it. Push on until actually blocked, and never end a turn waiting on CI without a background watcher that wakes you (`design/decisions/CI-integration.md`). GitHub enforces CI and
   threads, admins included (`design/decisions/CI-branch-protection.md`): `main`, `m1` and `goal/stage-1` require their
   CI jobs and every conversation resolved. `main` and `goal/stage-1` also require `builder-paths`: a `-build` pull
-  request may not touch journeys, evals or checks. A docs-only pull request skips `e2e-layer1` and `e2e-layer2`, and a
-  skip passes (`design/decisions/CI-docs-fast-path.md`). Open pull requests as drafts: a draft runs no CI, so test
+  request may not touch journeys, evals or checks. On a docs-only pull request `e2e-layer1` and `e2e-layer2`
+  pass without running their steps (`design/decisions/CI-docs-fast-path.md`). Open pull requests as drafts: a draft runs no CI, so test
   locally, get the 🔍 pass, then mark it ready and CI runs once; keep at most two ready pull requests per lane in CI at
-  once (`design/decisions/CI-drafts.md`). Bring a branch up to date by merging its base in, never by
+  once (`design/decisions/CI-drafts.md`). CI goes by the pull request's live draft state, never the event's payload, so a
+  push just before `gh pr ready` still runs CI (`design/decisions/CI-drafts-race.md`). Bring a branch up to date by merging its base in, never by
   rebasing, so the commits a reviewer already read keep their identity.
 
 ## The code's own rules (enforced by lint and check as soon as they exist)
@@ -105,5 +109,6 @@ word for starting, messaging, reading and archiving a thread), `conductor` (the 
 `author` (writing journeys and checks, and proving each fair), `reviewer` (the 🔍 review), `hashtags` (Aaron's `#shortcuts`), `portal-design` (designing portal and console screens:
 the process and the style guide), `kanban` (the board Aaron and the conductor track every slice on, its data saved
 in the repo, and `STATE.md`, where the project stands) and `ui-sdk` (UI SDK's own skill, vendored at the pinned version, for
-the generated pieces, pages and the portal's components on it; its `README.md` says how we use it). `.claude/skills` and `.claude/agents/reviewer.md`
+the generated pieces, pages and the portal's components on it; its `README.md` says how we use it), and `github` (how the
+work lives on GitHub: a milestone per goal, the issue kinds and forms, labels, the pull request template and the sync, K33). `.claude/skills` and `.claude/agents/reviewer.md`
 are links to it; edit them only in `.agents/skills/`.

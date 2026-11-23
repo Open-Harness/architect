@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Does a pull request change only docs? CI's `changes` job runs this and, when it does, skips the layer gates
-# (e2e-layer1, e2e-layer2) and prove-tests through a job-level `if:`; a skipped job counts as passed where it is required,
-# and the `check` gate accepts the skipped shards only on this flag (design/decisions/CI-docs-fast-path.md, CI-speed.md).
+# Does a pull request change only docs? CI's `changes` job runs this and, when it does, the layer gates (e2e-layer1,
+# e2e-layer2) pass without running their steps, since a required job never skips (CI-drafts-race.md), prove-tests skips
+# through a job-level `if:`, and the `check` gate accepts the skipped shards only on this flag
+# (design/decisions/CI-docs-fast-path.md, CI-speed.md).
 # check-static and `e2e-m0` always run: they lint the docs, run canon:check over the design docs
 # and the supersedes guard.
 #   tools/ci/docs-only.sh <base> <head>

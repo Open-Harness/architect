@@ -30,6 +30,10 @@ look-alike folder (`expected-failing-x/`) is still protected. `tools/ci/ci.test.
 Goal 3 widened the guard the same way for `e2e/m2/` alone (#267, a list of two folders) while this was in review. The
 pattern above covers `e2e/m2/` too, so the merge keeps the pattern and both sets of test cases.
 
+Goal 9 then widened it to every milestone folder, `^e2e/m[0-9]+/expected-failing/` (M8-timers-shape), with a case that
+a non-milestone suite (`e2e/mx/`) may not shrink. Under this call every suite's list may shrink, so the 23 November
+merge keeps this pattern, and that case now checks a look-alike folder (`e2e/mx/expected-failing-x/`) instead.
+
 ## Supersedes
 
 - `AGENTS.md`: "in `e2e/m1/expected-failing/` and a file per test file" → "in an e2e suite's `expected-failing/` (`e2e/m1/`, `e2e/ui-layer/` and the rest; CI-ratchet-suites) and a file per test file"

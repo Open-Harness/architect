@@ -1,0 +1,19 @@
+name: Decision to make
+description: A call that needs making. Closed by the pull request that records it in design/decisions/.
+title: "Decide: <the question>"
+type: Decision
+labels: ["kind:decision"]
+body:
+  - type: markdown
+    attributes:
+      value: A goal names its own decisions by area and a slug (`WEB-piece-state`); a call that crosses goals takes a lettered id from the conductor. Add `needs-aaron` only if the goal itself is unclear, or it needs money, a credential or production.
+  - type: textarea
+    id: question
+    attributes: { label: The question, description: "With the code or evidence it rests on (file:line)" }
+    validations: { required: true }
+  - type: textarea
+    id: options
+    attributes: { label: Options, description: "Each option as code or a concrete sketch, and the recommendation" }
+  - type: input
+    id: blocks
+    attributes: { label: Blocks, placeholder: "the slice or issue that waits on it" }

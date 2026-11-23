@@ -1,0 +1,671 @@
+45053728419	pull_request	claude/superagent-plan-6bbca1	completed	cancelled	2026-11-22T18:12:19Z	2026-11-22T18:12:19Z	2026-11-22T18:12:20Z	1	515	main
+45053728630	pull_request	claude/superagent-plan-6bbca1	in_progress		2026-11-22T18:12:19Z	2026-11-22T18:12:19Z	2026-11-22T18:12:36Z	1	515	main
+45053660059	pull_request	claude/superagent-plan-6bbca1	completed	success	2026-11-22T18:11:36Z	2026-11-22T18:11:36Z	2026-11-22T18:11:42Z	1	515	main
+45052813763	pull_request	claude/superagent-plan-6bbca1	completed	success	2026-11-22T18:02:49Z	2026-11-22T18:02:49Z	2026-11-22T18:02:55Z	1	515	main
+45052792167	push	goal/superagent	in_progress		2026-11-22T18:02:35Z	2026-11-22T18:02:35Z	2026-11-22T18:12:24Z	1		
+45047901564	pull_request	goal-11/m5-01	completed	success	2026-11-22T17:10:07Z	2026-11-22T17:10:07Z	2026-11-22T17:14:04Z	1	479	goal/events
+45047596278	pull_request	goal-11/m5-01	completed	cancelled	2026-11-22T17:06:55Z	2026-11-22T17:06:55Z	2026-11-22T17:10:25Z	1	479	goal/events
+45047213869	pull_request	goal-11/m5-01	completed	cancelled	2026-11-22T17:02:59Z	2026-11-22T17:02:59Z	2026-11-22T17:06:58Z	1	479	goal/events
+45042170560	push	main	completed	success	2026-11-22T16:08:47Z	2026-11-22T16:08:47Z	2026-11-22T16:14:56Z	1		
+45032955042	push	goal/portal	completed	success	2026-11-22T14:27:58Z	2026-11-22T14:27:58Z	2026-11-22T15:14:29Z	1		
+45032937149	push	goal/time	completed	success	2026-11-22T14:27:45Z	2026-11-22T14:27:45Z	2026-11-22T15:14:29Z	1		
+45032522790	pull_request	goal-6/shell-check	completed	skipped	2026-11-22T14:23:02Z	2026-11-22T14:23:02Z	2026-11-22T14:23:04Z	1	511	goal/portal
+45032378592	pull_request	goal-6/shell-check	completed	skipped	2026-11-22T14:21:28Z	2026-11-22T14:21:28Z	2026-11-22T14:21:29Z	1	511	goal/portal
+45031955139	pull_request	spike/aztec-club	completed	success	2026-11-22T14:16:51Z	2026-11-22T14:16:51Z	2026-11-22T14:54:43Z	1	504	main
+45031493419	pull_request	goal-6/map-check	completed	failure	2026-11-22T14:11:51Z	2026-11-22T14:11:51Z	2026-11-22T15:05:32Z	1	510	goal/portal
+45031492914	pull_request	goal-6/map-check	completed	skipped	2026-11-22T14:11:51Z	2026-11-22T14:11:51Z	2026-11-22T14:12:01Z	1	510	goal/portal
+45031219645	push	goal/on-chain	completed	success	2026-11-22T14:08:55Z	2026-11-22T14:08:55Z	2026-11-22T15:06:13Z	1		
+45031162971	pull_request	goal-6/shell-check	completed	skipped	2026-11-22T14:08:16Z	2026-11-22T14:08:16Z	2026-11-22T14:08:18Z	1	511	goal/portal
+45031151780	pull_request	goal-6/map-check	completed	skipped	2026-11-22T14:08:08Z	2026-11-22T14:08:08Z	2026-11-22T14:08:09Z	1	510	goal/portal
+45031139825	pull_request	goal-3/m2-03-check	completed	failure	2026-11-22T14:08:00Z	2026-11-22T14:08:00Z	2026-11-22T15:02:00Z	1	297	goal/stage-1
+45031078555	pull_request	goal-4/m607-m609-check	completed	skipped	2026-11-22T14:07:19Z	2026-11-22T14:07:19Z	2026-11-22T14:07:21Z	1	513	goal/on-chain
+45030908851	pull_request	goal-6/map-build	completed	skipped	2026-11-22T14:05:26Z	2026-11-22T14:05:26Z	2026-11-22T14:05:27Z	1	512	goal/portal
+45030625675	pull_request	goal-4/abi-codec-check	completed	failure	2026-11-22T14:02:22Z	2026-11-22T14:02:22Z	2026-11-22T15:03:14Z	1	509	goal/stage-1
+45030564571	pull_request	goal-6/shell-check	completed	skipped	2026-11-22T14:01:42Z	2026-11-22T14:01:42Z	2026-11-22T14:01:43Z	1	511	goal/portal
+45030175111	pull_request	goal-4/abi-codec-check	completed	skipped	2026-11-22T13:57:19Z	2026-11-22T13:57:19Z	2026-11-22T13:57:20Z	1	509	goal/stage-1
+45029546997	pull_request	goal-15/m7-05-check	completed	failure	2026-11-22T13:50:00Z	2026-11-22T13:50:00Z	2026-11-22T14:59:18Z	1	500	goal/release
+45029529814	pull_request	goal-15/m7-05-check	completed	cancelled	2026-11-22T13:49:48Z	2026-11-22T13:49:48Z	2026-11-22T13:50:01Z	1	500	goal/release
+45029228480	push	goal/club	completed	success	2026-11-22T13:46:16Z	2026-11-22T13:46:16Z	2026-11-22T14:48:23Z	1		
+45029076056	pull_request	goal-6/shell-check	completed	skipped	2026-11-22T13:44:36Z	2026-11-22T13:44:36Z	2026-11-22T13:44:43Z	1	511	goal/portal
+45029072386	pull_request	goal-15/m7-05-check	completed	skipped	2026-11-22T13:44:33Z	2026-11-22T13:44:33Z	2026-11-22T13:44:34Z	1	500	goal/release
+45028854113	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-22T13:42:03Z	2026-11-22T13:42:03Z	2026-11-22T13:42:05Z	1	297	goal/stage-1
+45028738847	pull_request	goal-4/abi-codec-check	completed	skipped	2026-11-22T13:40:45Z	2026-11-22T13:40:45Z	2026-11-22T13:40:53Z	1	509	goal/stage-1
+45028686239	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-22T13:40:11Z	2026-11-22T13:40:11Z	2026-11-22T13:40:12Z	1	297	goal/stage-1
+45028475184	pull_request	goal-15/m7-05-check	completed	skipped	2026-11-22T13:37:42Z	2026-11-22T13:37:42Z	2026-11-22T13:37:43Z	1	500	goal/release
+45028372019	pull_request	goal-6/map-check	completed	skipped	2026-11-22T13:36:27Z	2026-11-22T13:36:27Z	2026-11-22T13:36:28Z	1	510	goal/portal
+45027578820	pull_request	goal-4/abi-codec-check	completed	skipped	2026-11-22T13:27:27Z	2026-11-22T13:27:27Z	2026-11-22T13:27:36Z	1	509	goal/stage-1
+45027499499	push	goal/release	completed	success	2026-11-22T13:26:29Z	2026-11-22T13:26:29Z	2026-11-22T14:47:26Z	1		
+45027452440	pull_request	goal-5/actions-module-build	completed	failure	2026-11-22T13:25:57Z	2026-11-22T13:25:57Z	2026-11-22T14:51:21Z	1	508	goal/ui-layer
+45027445967	pull_request	goal-4/abi-codec-check	completed	skipped	2026-11-22T13:25:52Z	2026-11-22T13:25:52Z	2026-11-22T13:25:54Z	1	509	goal/stage-1
+45027432405	pull_request	goal-5/actions-module-build	completed	skipped	2026-11-22T13:25:43Z	2026-11-22T13:25:43Z	2026-11-22T13:25:44Z	1	508	goal/ui-layer
+45027395567	pull_request	goal-15/m7-05-check	completed	skipped	2026-11-22T13:25:19Z	2026-11-22T13:25:19Z	2026-11-22T13:25:28Z	1	500	goal/release
+45027132522	pull_request	conductor/narrow-path	completed	success	2026-11-22T13:22:20Z	2026-11-22T13:22:20Z	2026-11-22T13:45:58Z	1		
+45027051878	pull_request	goal-8/m3-01	completed	success	2026-11-22T13:21:26Z	2026-11-22T13:21:26Z	2026-11-22T14:02:03Z	1	472	goal/workflows
+45027035646	pull_request	conductor/narrow-path	completed	cancelled	2026-11-22T13:21:16Z	2026-11-22T13:21:16Z	2026-11-22T13:22:21Z	1		
+45027031706	pull_request	goal-6/theme-build	completed	success	2026-11-22T13:21:13Z	2026-11-22T13:21:13Z	2026-11-22T14:27:29Z	1		
+45027025479	pull_request	goal-4/k38-order	completed	skipped	2026-11-22T13:21:09Z	2026-11-22T13:21:09Z	2026-11-22T13:21:20Z	1		
+45027025305	pull_request	goal-4/k38-order	completed	success	2026-11-22T13:21:09Z	2026-11-22T13:28:44Z	2026-11-22T14:07:07Z	2		
+45027009723	push	goal/portal	completed	failure	2026-11-22T13:20:59Z	2026-11-22T13:20:59Z	2026-11-22T14:57:59Z	1		
+45027001114	pull_request	goal-14/park	completed	success	2026-11-22T13:20:54Z	2026-11-22T13:20:54Z	2026-11-22T13:45:59Z	1		
+45026997011	pull_request	spike/aztec-club	completed	success	2026-11-22T13:20:51Z	2026-11-22T13:20:51Z	2026-11-22T14:10:56Z	1	504	main
+45026995465	pull_request	goal-14/park	completed	skipped	2026-11-22T13:20:50Z	2026-11-22T13:20:50Z	2026-11-22T13:20:51Z	1		
+45026990146	pull_request	goal-5/actions-module-build	completed	skipped	2026-11-22T13:20:47Z	2026-11-22T13:20:47Z	2026-11-22T13:20:48Z	1	508	goal/ui-layer
+45026942333	pull_request	spike/aztec-club	completed	cancelled	2026-11-22T13:20:16Z	2026-11-22T13:20:16Z	2026-11-22T13:20:53Z	1	504	main
+45026901452	pull_request	conductor/narrow-path	completed	cancelled	2026-11-22T13:19:51Z	2026-11-22T13:19:51Z	2026-11-22T13:21:17Z	1		
+45026851639	pull_request	goal-8/m3-01	completed	cancelled	2026-11-22T13:19:18Z	2026-11-22T13:19:18Z	2026-11-22T13:21:30Z	1	472	goal/workflows
+45026788223	pull_request	goal-16/m7-10-capxul-map	completed	success	2026-11-22T13:18:35Z	2026-11-22T13:18:35Z	2026-11-22T14:33:00Z	1	487	goal/capxul
+45026785219	push	goal/workflows	completed	success	2026-11-22T13:18:33Z	2026-11-22T13:18:33Z	2026-11-22T14:12:07Z	1		
+45026771322	pull_request	goal-4/k38-order	completed	skipped	2026-11-22T13:18:22Z	2026-11-22T13:18:22Z	2026-11-22T13:18:23Z	1		
+45026763650	pull_request	goal-8/m3-01	completed	cancelled	2026-11-22T13:18:17Z	2026-11-22T13:18:17Z	2026-11-22T13:19:19Z	1	472	goal/workflows
+45026742801	pull_request	goal-14/park	completed	skipped	2026-11-22T13:18:02Z	2026-11-22T13:18:02Z	2026-11-22T13:18:03Z	1		
+45026696870	pull_request	goal-5/actions-module-check	completed	success	2026-11-22T13:17:31Z	2026-11-22T13:17:31Z	2026-11-22T14:22:28Z	1	494	goal/ui-layer
+45026661358	pull_request	spike/aztec-club	completed	success	2026-11-22T13:17:07Z	2026-11-22T13:17:07Z	2026-11-22T13:17:30Z	1	504	main
+45026551005	pull_request	conductor/narrow-path	completed	success	2026-11-22T13:15:50Z	2026-11-22T13:15:50Z	2026-11-22T13:18:49Z	1		
+45026533110	pull_request	goal-11/m5-01	completed	success	2026-11-22T13:15:38Z	2026-11-22T13:15:38Z	2026-11-22T13:42:45Z	1	479	goal/events
+45026505633	pull_request	goal-10/s1-decision	completed	success	2026-11-22T13:15:21Z	2026-11-22T13:15:21Z	2026-11-22T14:36:51Z	1	469	goal/agents
+45026489548	pull_request	goal-6/theme-build	completed	cancelled	2026-11-22T13:15:09Z	2026-11-22T13:15:09Z	2026-11-22T13:21:14Z	1		
+45026487078	push	goal/events	completed	success	2026-11-22T13:15:08Z	2026-11-22T13:15:08Z	2026-11-22T14:44:30Z	1		
+45026471367	pull_request	goal-6/theme-build	completed	cancelled	2026-11-22T13:14:57Z	2026-11-22T13:14:57Z	2026-11-22T13:15:11Z	1		
+45026462696	pull_request	goal-15/m7-13-release-pass	completed	success	2026-11-22T13:14:50Z	2026-11-22T13:14:50Z	2026-11-22T13:25:39Z	1		
+45026454053	pull_request	goal-11/m5-01	completed	cancelled	2026-11-22T13:14:43Z	2026-11-22T13:14:43Z	2026-11-22T13:15:39Z	1	479	goal/events
+45026452016	pull_request	goal-9/timers-shape	completed	success	2026-11-22T13:14:42Z	2026-11-22T13:14:42Z	2026-11-22T14:27:09Z	1	483	goal/time
+45026450902	pull_request	goal-15/m7-05-check	completed	skipped	2026-11-22T13:14:41Z	2026-11-22T13:14:41Z	2026-11-22T13:14:42Z	1	500	goal/release
+45026449162	pull_request	goal-9/m8-14-build	completed	success	2026-11-22T13:14:40Z	2026-11-22T14:19:08Z	2026-11-22T14:26:45Z	2		
+45026435907	pull_request	goal-12/park	completed	success	2026-11-22T13:14:30Z	2026-11-22T13:14:30Z	2026-11-22T13:45:52Z	1	499	goal/wallets
+45026389800	pull_request	goal-11/m5-02-check	completed	skipped	2026-11-22T13:13:57Z	2026-11-22T13:13:57Z	2026-11-22T13:13:59Z	1	498	goal/events
+45026381063	pull_request	goal-10/s1-decision	completed	cancelled	2026-11-22T13:13:51Z	2026-11-22T13:13:51Z	2026-11-22T13:15:26Z	1	469	goal/agents
+45026360536	pull_request	goal-12/st2-02-check	completed	skipped	2026-11-22T13:13:36Z	2026-11-22T13:13:36Z	2026-11-22T13:13:37Z	1	497	goal/wallets
+45026344396	push	goal/agents	completed	success	2026-11-22T13:13:25Z	2026-11-22T13:13:25Z	2026-11-22T13:56:53Z	1		
+45026337856	push	goal/wallets	completed	success	2026-11-22T13:13:21Z	2026-11-22T13:13:21Z	2026-11-22T14:03:46Z	1		
+45026336742	push	goal/time	completed	failure	2026-11-22T13:13:20Z	2026-11-22T13:13:20Z	2026-11-22T13:57:02Z	1		
+45026329896	push	goal/club	completed	success	2026-11-22T13:13:15Z	2026-11-22T13:13:15Z	2026-11-22T14:06:59Z	1		
+45026320735	push	goal/capxul	completed	failure	2026-11-22T13:13:09Z	2026-11-22T13:13:09Z	2026-11-22T13:36:06Z	1		
+45026286089	pull_request	goal-15/m7-13-release-pass	completed	skipped	2026-11-22T13:12:47Z	2026-11-22T13:12:47Z	2026-11-22T13:12:48Z	1		
+45004266743	pull_request	goal-10/s1-decision	completed	success	2026-11-22T08:45:13Z	2026-11-22T08:45:13Z	2026-11-22T09:31:20Z	1	469	goal/agents
+45004142016	push	goal/release	completed	success	2026-11-22T08:43:34Z	2026-11-22T08:43:34Z	2026-11-22T09:25:23Z	1		
+45004101436	pull_request	goal-5/actions-module-check	completed	success	2026-11-22T08:43:03Z	2026-11-22T08:43:03Z	2026-11-22T09:38:33Z	1	494	goal/ui-layer
+45004039338	push	goal/portal	completed	success	2026-11-22T08:42:14Z	2026-11-22T08:42:14Z	2026-11-22T09:33:32Z	1		
+45003515817	push	goal/ui-layer	completed	success	2026-11-22T08:35:20Z	2026-11-22T08:35:20Z	2026-11-22T09:24:53Z	1		
+45003506163	pull_request	goal-10/s1-decision	completed	cancelled	2026-11-22T08:35:13Z	2026-11-22T08:35:13Z	2026-11-22T08:45:14Z	1	469	goal/agents
+45003457622	pull_request	goal-10/s1-decision	completed	cancelled	2026-11-22T08:34:40Z	2026-11-22T08:34:40Z	2026-11-22T08:35:14Z	1	469	goal/agents
+45002334649	pull_request	goal-10/s2-journeys-check	completed	skipped	2026-11-22T08:20:17Z	2026-11-22T08:20:17Z	2026-11-22T08:20:18Z	1	490	goal/agents
+45002160198	pull_request	goal-16/m7-10-capxul-map	completed	failure	2026-11-22T08:18:05Z	2026-11-22T08:18:05Z	2026-11-22T09:10:54Z	1	487	goal/capxul
+45002080372	pull_request	goal-16/m7-10-capxul-map	completed	skipped	2026-11-22T08:17:04Z	2026-11-22T08:17:04Z	2026-11-22T08:17:05Z	1	487	goal/capxul
+45001923308	pull_request	goal-6/theme-check	completed	failure	2026-11-22T08:15:09Z	2026-11-22T08:15:09Z	2026-11-22T09:21:16Z	1		
+45001893868	pull_request	goal-16/m7-10-capxul-map	completed	skipped	2026-11-22T08:14:47Z	2026-11-22T08:14:47Z	2026-11-22T08:14:48Z	1	487	goal/capxul
+45001343871	pull_request	goal-9/timers-shape	completed	skipped	2026-11-22T08:07:43Z	2026-11-22T08:07:43Z	2026-11-22T08:07:44Z	1	483	goal/time
+45001243026	pull_request	goal-6/theme-build	completed	failure	2026-11-22T08:06:24Z	2026-11-22T08:06:24Z	2026-11-22T09:04:44Z	1		
+45001182090	pull_request	goal-16/m7-10-capxul-map	completed	skipped	2026-11-22T08:05:37Z	2026-11-22T08:05:37Z	2026-11-22T08:05:38Z	1	487	goal/capxul
+45001132008	pull_request	goal-9/m8-14-build	completed	skipped	2026-11-22T08:05:01Z	2026-11-22T08:05:01Z	2026-11-22T08:05:03Z	1		
+45001087611	pull_request	goal-9/m8-14-build	completed	skipped	2026-11-22T08:04:24Z	2026-11-22T08:04:24Z	2026-11-22T08:04:25Z	1		
+45000833681	pull_request	goal-9/timers-shape	completed	skipped	2026-11-22T08:01:12Z	2026-11-22T08:01:12Z	2026-11-22T08:01:13Z	1	483	goal/time
+45000417902	pull_request	goal-6/theme-check	completed	cancelled	2026-11-22T07:55:34Z	2026-11-22T07:55:34Z	2026-11-22T08:15:13Z	1		
+45000190230	pull_request	goal-11/m5-01	completed	success	2026-11-22T07:52:27Z	2026-11-22T07:52:27Z	2026-11-22T09:22:29Z	1	479	goal/events
+45000167904	pull_request	goal-10/s1-decision	completed	cancelled	2026-11-22T07:52:10Z	2026-11-22T07:52:10Z	2026-11-22T08:34:56Z	1	469	goal/agents
+45000133210	pull_request	goal-10/s1-decision	completed	skipped	2026-11-22T07:51:41Z	2026-11-22T07:51:41Z	2026-11-22T07:51:43Z	1	469	goal/agents
+44999965692	pull_request	goal-10/s1-decision	completed	skipped	2026-11-22T07:49:25Z	2026-11-22T07:49:25Z	2026-11-22T07:49:26Z	1	469	goal/agents
+44999812567	pull_request	goal-8/m3-01	completed	failure	2026-11-22T07:47:22Z	2026-11-22T07:47:22Z	2026-11-22T08:49:49Z	1	472	goal/workflows
+44999810156	pull_request	goal-8/m3-01	completed	skipped	2026-11-22T07:47:20Z	2026-11-22T07:47:20Z	2026-11-22T07:47:22Z	1	472	goal/workflows
+44999701507	pull_request	goal-8/m3-01	completed	skipped	2026-11-22T07:45:53Z	2026-11-22T07:45:53Z	2026-11-22T07:45:54Z	1	472	goal/workflows
+44999636683	pull_request	goal-10/s1-decision	completed	skipped	2026-11-22T07:45:04Z	2026-11-22T07:45:04Z	2026-11-22T07:45:06Z	1	469	goal/agents
+44999596728	push	goal/stage-1	completed	success	2026-11-22T07:44:32Z	2026-11-22T07:44:32Z	2026-11-22T08:52:25Z	1		
+44999505073	pull_request	goal-15/m7-13-release-pass	completed	skipped	2026-11-22T07:43:17Z	2026-11-22T07:43:17Z	2026-11-22T07:43:18Z	1		
+44999392411	pull_request	goal-14/merge-stage-1	completed	success	2026-11-22T07:41:46Z	2026-11-22T07:41:46Z	2026-11-22T08:52:45Z	1		
+44999370787	pull_request	goal-9/merge-stage-1	completed	success	2026-11-22T07:41:28Z	2026-11-22T08:34:36Z	2026-11-22T09:12:10Z	3		
+44999349817	pull_request	goal-15/sync-stage-1	completed	success	2026-11-22T07:41:11Z	2026-11-22T07:41:11Z	2026-11-22T08:42:07Z	1		
+44999340980	pull_request	goal-16/sync-stage-1	completed	success	2026-11-22T07:41:04Z	2026-11-22T07:41:04Z	2026-11-22T08:40:52Z	1		
+44999322130	pull_request	goal-12/start	completed	success	2026-11-22T07:40:48Z	2026-11-22T07:40:48Z	2026-11-22T08:39:39Z	1		
+44999313431	pull_request	goal-9/merge-stage-1	completed	skipped	2026-11-22T07:40:41Z	2026-11-22T07:40:41Z	2026-11-22T07:40:52Z	1		
+44999307758	pull_request	goal-10/sync-stage-1	completed	success	2026-11-22T07:40:37Z	2026-11-22T08:38:33Z	2026-11-22T08:52:07Z	2		
+44999299359	pull_request	goal-14/merge-stage-1	completed	skipped	2026-11-22T07:40:31Z	2026-11-22T07:40:31Z	2026-11-22T07:40:41Z	1		
+44999291925	pull_request	goal-16/sync-stage-1	completed	cancelled	2026-11-22T07:40:25Z	2026-11-22T07:40:25Z	2026-11-22T07:41:21Z	1		
+44999291893	pull_request	goal-6/merge-stage-1	completed	success	2026-11-22T07:40:25Z	2026-11-22T08:21:53Z	2026-11-22T08:37:32Z	2		
+44999289430	pull_request	goal-8/stage-1-sync	completed	success	2026-11-22T07:40:23Z	2026-11-22T07:40:23Z	2026-11-22T08:24:52Z	1		
+44999288322	pull_request	goal-15/sync-stage-1	completed	skipped	2026-11-22T07:40:22Z	2026-11-22T07:40:22Z	2026-11-22T07:40:33Z	1		
+44999282279	pull_request	goal-11/sync-stage-1	completed	success	2026-11-22T07:40:18Z	2026-11-22T07:40:18Z	2026-11-22T08:22:34Z	1		
+44999252208	pull_request	goal-5/merge-stage-1	completed	success	2026-11-22T07:39:55Z	2026-11-22T07:39:55Z	2026-11-22T08:22:39Z	1		
+44940742403	push	main	completed	success	2026-11-21T19:24:09Z	2026-11-21T19:24:09Z	2026-11-21T19:34:09Z	1		
+44940430019	pull_request	goal-3/m1-49-check	completed	success	2026-11-21T19:20:41Z	2026-11-22T07:38:24Z	2026-11-22T07:43:22Z	2		
+44940380742	push	goal/stage-1	completed	success	2026-11-21T19:20:12Z	2026-11-21T19:20:12Z	2026-11-21T19:36:52Z	1		
+44939811534	pull_request	goal-3/m1-49-check	completed	cancelled	2026-11-21T19:13:54Z	2026-11-21T19:13:54Z	2026-11-21T19:20:59Z	1		
+44939495633	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T19:10:24Z	2026-11-21T19:10:24Z	2026-11-21T19:10:25Z	1		
+44938616823	pull_request	goal-3/m7-04-check	completed	success	2026-11-21T19:00:55Z	2026-11-21T19:00:55Z	2026-11-21T19:19:33Z	1		
+44938606085	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T19:00:49Z	2026-11-21T19:00:49Z	2026-11-21T19:00:56Z	1		
+44937970480	pull_request	goal-3/m7-04-check	completed	cancelled	2026-11-21T18:53:30Z	2026-11-21T18:53:30Z	2026-11-21T19:01:13Z	1		
+44937815153	pull_request	goal-3/m2-03-check	completed	failure	2026-11-21T18:51:48Z	2026-11-21T18:51:48Z	2026-11-21T19:11:12Z	1	297	goal/stage-1
+44937739874	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T18:50:55Z	2026-11-21T18:50:55Z	2026-11-21T18:51:05Z	1		
+44937472550	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T18:47:54Z	2026-11-21T18:47:54Z	2026-11-21T18:48:10Z	1		
+44936719731	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-21T18:39:30Z	2026-11-21T18:39:30Z	2026-11-21T18:39:32Z	1	297	goal/stage-1
+44936308525	pull_request	goal-3/m7-04-check	completed	success	2026-11-21T18:34:52Z	2026-11-21T18:34:52Z	2026-11-21T18:49:47Z	1		
+44936189086	pull_request	goal-3/m1-49-check	completed	cancelled	2026-11-21T18:33:34Z	2026-11-21T18:33:34Z	2026-11-21T18:48:10Z	1		
+44935853705	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T18:30:01Z	2026-11-21T18:30:01Z	2026-11-21T18:30:19Z	1		
+44935622895	pull_request	goal-3/m7-04-check	completed	skipped	2026-11-21T18:27:20Z	2026-11-21T18:27:20Z	2026-11-21T18:27:22Z	1		
+44934864775	pull_request	goal-3/m1-49-check	completed	cancelled	2026-11-21T18:19:13Z	2026-11-21T18:19:13Z	2026-11-21T18:30:18Z	1		
+44934655926	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-21T18:16:55Z	2026-11-21T18:16:55Z	2026-11-21T18:16:57Z	1	297	goal/stage-1
+44934393853	pull_request	goal-3/m1-49-check	completed	cancelled	2026-11-21T18:14:12Z	2026-11-21T18:14:12Z	2026-11-21T18:19:31Z	1		
+44933756705	pull_request	goal-3/m7-04-check	completed	skipped	2026-11-21T18:07:16Z	2026-11-21T18:07:16Z	2026-11-21T18:07:26Z	1		
+44933749797	pull_request	goal-3/m1-49-check	completed	cancelled	2026-11-21T18:07:11Z	2026-11-21T18:07:11Z	2026-11-21T18:14:29Z	1		
+44933727588	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T18:06:58Z	2026-11-21T18:06:58Z	2026-11-21T18:06:59Z	1		
+44933546772	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T18:05:03Z	2026-11-21T18:05:03Z	2026-11-21T18:05:04Z	1		
+44933494952	pull_request	goal-3/m1-49-build	completed	skipped	2026-11-21T18:04:30Z	2026-11-21T18:04:30Z	2026-11-21T18:04:31Z	1		
+44933209151	pull_request	goal-3/m7-04-prove-build	completed	skipped	2026-11-21T18:01:25Z	2026-11-21T18:01:25Z	2026-11-21T18:01:26Z	1		
+44930902771	pull_request	goal-3/m7-04-prove-build	completed	success	2026-11-21T17:35:41Z	2026-11-21T17:35:41Z	2026-11-21T17:50:01Z	1		
+44930873137	pull_request	goal-3/m7-04-prove-build	completed	skipped	2026-11-21T17:35:21Z	2026-11-21T17:35:21Z	2026-11-21T17:35:22Z	1		
+44930574743	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-21T17:32:09Z	2026-11-21T17:32:09Z	2026-11-21T17:32:20Z	1	297	goal/stage-1
+44929786732	pull_request	goal-3/m7-04-prove-build	completed	skipped	2026-11-21T17:23:29Z	2026-11-21T17:23:29Z	2026-11-21T17:23:31Z	1		
+44929611928	pull_request	conductor/goal-cycles	completed	success	2026-11-21T17:21:37Z	2026-11-21T17:21:37Z	2026-11-21T17:24:46Z	1		
+44929574045	pull_request	conductor/goal-cycles	completed	success	2026-11-21T17:21:13Z	2026-11-21T17:21:13Z	2026-11-21T17:21:23Z	1		
+44929305314	pull_request	conductor/goal-cycles	completed	success	2026-11-21T17:18:24Z	2026-11-21T17:18:24Z	2026-11-21T17:18:32Z	1		
+44929006669	push	goal/stage-1	completed	success	2026-11-21T17:15:07Z	2026-11-21T17:15:07Z	2026-11-21T17:34:27Z	1		
+44928888828	push	main	completed	success	2026-11-21T17:13:48Z	2026-11-21T17:13:48Z	2026-11-21T17:19:59Z	1		
+44928791906	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-21T17:12:42Z	2026-11-21T17:12:42Z	2026-11-21T17:12:44Z	1	297	goal/stage-1
+44928095732	pull_request	conductor/k36-composites	completed	success	2026-11-21T17:05:13Z	2026-11-21T17:05:13Z	2026-11-21T17:07:59Z	1		
+44927828773	push	main	completed	success	2026-11-21T17:02:21Z	2026-11-21T17:02:21Z	2026-11-21T17:11:12Z	1		
+44927751966	pull_request	conductor/k36-composites	completed	skipped	2026-11-21T17:01:32Z	2026-11-21T17:01:32Z	2026-11-21T17:01:33Z	1		
+44927752370	pull_request	conductor/k36-composites	completed	success	2026-11-21T17:01:32Z	2026-11-21T17:01:32Z	2026-11-21T17:04:15Z	1		
+44927659688	pull_request	conductor/k36-composites	completed	skipped	2026-11-21T17:00:39Z	2026-11-21T17:00:39Z	2026-11-21T17:00:40Z	1		
+44927420718	pull_request	goal-3/main-into-stage1-nov21b	completed	success	2026-11-21T16:57:58Z	2026-11-21T16:57:58Z	2026-11-21T17:13:32Z	1		
+44927378224	pull_request	conductor/k36-composites	completed	skipped	2026-11-21T16:57:29Z	2026-11-21T16:57:29Z	2026-11-21T16:57:30Z	1		
+44926124712	pull_request	ci/drafts-race	completed	success	2026-11-21T16:43:30Z	2026-11-21T16:53:30Z	2026-11-21T17:00:46Z	2		
+44926125141	pull_request	ci/drafts-race	completed	success	2026-11-21T16:43:30Z	2026-11-21T16:43:30Z	2026-11-21T16:51:45Z	1		
+44925905157	pull_request	ci/drafts-race	completed	success	2026-11-21T16:41:03Z	2026-11-21T16:41:03Z	2026-11-21T16:42:56Z	1		
+44925411857	pull_request	goal-3/m1-49-build	completed	failure	2026-11-21T16:35:30Z	2026-11-21T16:35:30Z	2026-11-21T17:13:49Z	1		
+44925363011	pull_request	goal-3/m1-49-build	completed	skipped	2026-11-21T16:35:00Z	2026-11-21T16:35:00Z	2026-11-21T16:35:01Z	1		
+44925352743	pull_request	goal-3/main-into-stage1-nov21b	completed	failure	2026-11-21T16:34:53Z	2026-11-21T16:34:53Z	2026-11-21T16:56:21Z	1		
+44925346050	push	goal/stage-1	completed	success	2026-11-21T16:34:49Z	2026-11-21T16:34:49Z	2026-11-21T16:53:43Z	1		
+44925214608	pull_request	goal-3/m1-49-build	completed	skipped	2026-11-21T16:33:25Z	2026-11-21T16:33:25Z	2026-11-21T16:33:26Z	1		
+44924620420	pull_request	goal-3/m1-49-build	completed	skipped	2026-11-21T16:26:50Z	2026-11-21T16:26:50Z	2026-11-21T16:26:51Z	1		
+44924410374	pull_request	ci/drafts-race	completed	skipped	2026-11-21T16:24:31Z	2026-11-21T16:24:31Z	2026-11-21T16:24:32Z	1		
+44924408749	pull_request	ci/drafts-race	completed	success	2026-11-21T16:24:30Z	2026-11-21T16:24:30Z	2026-11-21T16:34:26Z	1		
+44924138902	pull_request	ci/drafts-race	completed	skipped	2026-11-21T16:21:33Z	2026-11-21T16:21:33Z	2026-11-21T16:21:42Z	1		
+44924075512	pull_request	goal-3/m1-49-build	completed	skipped	2026-11-21T16:20:51Z	2026-11-21T16:20:51Z	2026-11-21T16:20:52Z	1		
+44923797864	push	main	completed	success	2026-11-21T16:17:55Z	2026-11-21T16:17:55Z	2026-11-21T16:27:43Z	1		
+44923278807	pull_request	goal-3/staging-up-build	completed	success	2026-11-21T16:12:23Z	2026-11-21T16:12:23Z	2026-11-21T16:33:39Z	1		
+44923264672	push	goal/stage-1	completed	success	2026-11-21T16:12:14Z	2026-11-21T16:12:14Z	2026-11-21T16:27:12Z	1		
+44923154638	pull_request	claude/harness-opencode	completed	success	2026-11-21T16:11:06Z	2026-11-21T16:11:06Z	2026-11-21T16:17:31Z	1		
+44923145022	push	main	completed	success	2026-11-21T16:10:59Z	2026-11-21T16:10:59Z	2026-11-21T16:16:46Z	1		
+44923107411	pull_request	claude/harness-opencode	completed	cancelled	2026-11-21T16:10:34Z	2026-11-21T16:10:34Z	2026-11-21T16:11:12Z	1		
+44922986768	pull_request	claude/harness-opencode	completed	cancelled	2026-11-21T16:09:19Z	2026-11-21T16:09:19Z	2026-11-21T16:10:51Z	1		
+44922916586	pull_request	claude/harness-opencode	completed	skipped	2026-11-21T16:08:31Z	2026-11-21T16:08:31Z	2026-11-21T16:08:42Z	1		
+44922767020	pull_request	conductor/opencode-harness	completed	success	2026-11-21T16:06:56Z	2026-11-21T16:06:56Z	2026-11-21T16:10:05Z	1		
+44922680859	pull_request	conductor/opencode-harness	completed	skipped	2026-11-21T16:05:58Z	2026-11-21T16:05:58Z	2026-11-21T16:05:59Z	1		
+44921770813	push	main	completed	success	2026-11-21T15:55:50Z	2026-11-21T15:55:50Z	2026-11-21T16:04:36Z	1		
+44921727254	pull_request	claude/github-native	completed	skipped	2026-11-21T15:55:19Z	2026-11-21T15:55:19Z	2026-11-21T15:55:21Z	1		
+44921725636	pull_request	claude/github-native	completed	cancelled	2026-11-21T15:55:18Z	2026-11-21T15:55:18Z	2026-11-21T15:55:21Z	1		
+44921619437	pull_request	goal-3/check39-envs-check	completed	success	2026-11-21T15:54:02Z	2026-11-21T15:54:02Z	2026-11-21T16:12:02Z	1		
+44921564072	pull_request	goal-3/check39-envs-check	completed	skipped	2026-11-21T15:53:22Z	2026-11-21T15:53:22Z	2026-11-21T15:53:24Z	1		
+44921392481	push	main	completed	failure	2026-11-21T15:51:25Z	2026-11-21T15:51:25Z	2026-11-21T15:57:50Z	1		
+44920571760	pull_request	goal-3/staging-up-build	completed	failure	2026-11-21T15:42:05Z	2026-11-21T15:42:05Z	2026-11-21T15:59:27Z	1		
+44920548860	push	goal/stage-1	completed	failure	2026-11-21T15:41:50Z	2026-11-21T15:41:50Z	2026-11-21T15:58:31Z	1		
+44919431995	pull_request	goal-3/main-into-stage1-nov21b	completed	skipped	2026-11-21T15:29:21Z	2026-11-21T15:29:21Z	2026-11-21T15:29:23Z	1		
+44919166151	pull_request	goal-3/staging-up-build	completed	skipped	2026-11-21T15:26:11Z	2026-11-21T15:26:11Z	2026-11-21T15:26:12Z	1		
+44918948055	pull_request	goal-3/m2-02-check	completed	failure	2026-11-21T15:23:42Z	2026-11-21T15:23:42Z	2026-11-21T15:47:54Z	1	267	goal/stage-1
+44918842173	pull_request	goal-3/m2-02-check	completed	cancelled	2026-11-21T15:22:29Z	2026-11-21T15:22:29Z	2026-11-21T15:23:58Z	1	267	goal/stage-1
+44918610189	push	goal/stage-1	completed	failure	2026-11-21T15:20:00Z	2026-11-21T15:20:00Z	2026-11-21T15:40:59Z	1		
+44918538055	pull_request	goal-3/s35-build	completed	success	2026-11-21T15:19:12Z	2026-11-21T15:19:12Z	2026-11-21T15:41:07Z	1		
+44918524578	push	goal/stage-1	completed	success	2026-11-21T15:19:03Z	2026-11-21T15:19:03Z	2026-11-21T15:37:52Z	1		
+44918083629	pull_request	goal-4/m610-build	completed	success	2026-11-21T15:14:02Z	2026-11-21T15:14:02Z	2026-11-21T15:27:35Z	1	331	goal/on-chain
+44917967155	pull_request	goal-4/m610-build	completed	skipped	2026-11-21T15:12:43Z	2026-11-21T15:12:43Z	2026-11-21T15:12:44Z	1	331	goal/on-chain
+44916135940	push	main	completed	success	2026-11-21T14:52:01Z	2026-11-21T14:52:01Z	2026-11-21T15:13:33Z	1		
+44915016864	pull_request	goal-3/m1-49-check	completed	success	2026-11-21T14:38:59Z	2026-11-21T14:38:59Z	2026-11-21T15:19:46Z	1		
+44915008489	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T14:38:53Z	2026-11-21T14:38:53Z	2026-11-21T14:38:55Z	1		
+44914749448	pull_request	goal-3/m1-49-check	completed	cancelled	2026-11-21T14:35:46Z	2026-11-21T14:35:46Z	2026-11-21T14:38:10Z	1		
+44914716320	push	goal/stage-1	completed	success	2026-11-21T14:35:23Z	2026-11-21T14:35:23Z	2026-11-21T15:32:38Z	1		
+44914532971	pull_request	goal-4/m610-build	completed	skipped	2026-11-21T14:33:19Z	2026-11-21T14:33:19Z	2026-11-21T14:33:20Z	1	331	goal/on-chain
+44914180945	pull_request	claude/github-native	completed	skipped	2026-11-21T14:29:25Z	2026-11-21T14:29:25Z	2026-11-21T14:29:26Z	1		
+44913628665	pull_request	goal-3/m7-03-build	completed	success	2026-11-21T14:22:49Z	2026-11-21T14:22:49Z	2026-11-21T15:18:14Z	1		
+44913585514	pull_request	goal-3/m7-03-build	completed	skipped	2026-11-21T14:22:19Z	2026-11-21T14:22:19Z	2026-11-21T14:22:20Z	1		
+44913557080	push	goal/stage-1	completed	success	2026-11-21T14:22:01Z	2026-11-21T14:22:01Z	2026-11-21T15:22:52Z	1		
+44913157706	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-21T14:17:27Z	2026-11-21T14:17:27Z	2026-11-21T14:17:29Z	1	297	goal/stage-1
+44912881095	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T14:14:14Z	2026-11-21T14:14:14Z	2026-11-21T14:14:15Z	1		
+44912866417	pull_request	goal-3/s35-build	completed	skipped	2026-11-21T14:14:03Z	2026-11-21T14:14:03Z	2026-11-21T14:14:04Z	1		
+44912695362	pull_request	conductor/goal-briefs	completed	success	2026-11-21T14:12:09Z	2026-11-21T14:12:09Z	2026-11-21T14:51:32Z	1		
+44912660920	pull_request	conductor/goal-briefs	completed	skipped	2026-11-21T14:11:44Z	2026-11-21T14:11:44Z	2026-11-21T14:11:45Z	1		
+44912611493	pull_request	conductor/goal-briefs	completed	skipped	2026-11-21T14:11:11Z	2026-11-21T14:11:11Z	2026-11-21T14:11:13Z	1		
+44912405186	push	goal/capxul	completed	success	2026-11-21T14:08:49Z	2026-11-21T14:08:49Z	2026-11-21T15:02:59Z	1		
+44912401832	push	goal/release	completed	success	2026-11-21T14:08:46Z	2026-11-21T14:08:46Z	2026-11-21T14:56:02Z	1		
+44912398137	push	goal/club	completed	success	2026-11-21T14:08:43Z	2026-11-21T14:08:43Z	2026-11-21T15:11:20Z	1		
+44912394587	push	goal/vault	completed	success	2026-11-21T14:08:40Z	2026-11-21T14:08:40Z	2026-11-21T14:51:51Z	1		
+44912391051	push	goal/wallets	completed	success	2026-11-21T14:08:38Z	2026-11-21T14:08:38Z	2026-11-21T14:48:12Z	1		
+44912387888	push	goal/events	completed	success	2026-11-21T14:08:35Z	2026-11-21T14:08:35Z	2026-11-21T14:52:32Z	1		
+44912385095	push	goal/agents	completed	success	2026-11-21T14:08:33Z	2026-11-21T14:08:33Z	2026-11-21T15:02:10Z	1		
+44912380953	push	goal/time	completed	success	2026-11-21T14:08:30Z	2026-11-21T14:08:30Z	2026-11-21T14:50:40Z	1		
+44912368198	push	goal/workflows	completed	success	2026-11-21T14:08:21Z	2026-11-21T14:08:21Z	2026-11-21T15:11:46Z	1		
+44912303400	pull_request	conductor/goal-briefs	completed	skipped	2026-11-21T14:07:38Z	2026-11-21T14:07:38Z	2026-11-21T14:07:39Z	1		
+44912217756	pull_request	goal-3/m1-50-check	completed	success	2026-11-21T14:06:38Z	2026-11-21T14:06:38Z	2026-11-21T14:35:14Z	1		
+44912216861	pull_request	goal-3/m1-50-check	completed	skipped	2026-11-21T14:06:38Z	2026-11-21T14:06:38Z	2026-11-21T14:06:39Z	1		
+44911926312	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-21T14:03:18Z	2026-11-21T14:03:18Z	2026-11-21T14:03:28Z	1	297	goal/stage-1
+44911506845	pull_request	goal-3/check21-envs-check	completed	success	2026-11-21T13:58:31Z	2026-11-21T13:58:31Z	2026-11-21T14:21:35Z	1		
+44911438974	push	goal/stage-1	completed	success	2026-11-21T13:57:37Z	2026-11-21T13:57:37Z	2026-11-21T14:12:28Z	1		
+44910357488	pull_request	claude/github-native	completed	skipped	2026-11-21T13:44:25Z	2026-11-21T13:44:25Z	2026-11-21T13:44:27Z	1		
+44910164753	pull_request	goal-3/check21-envs-check	completed	skipped	2026-11-21T13:42:06Z	2026-11-21T13:42:06Z	2026-11-21T13:42:07Z	1		
+44909683310	pull_request	goal-3/m1-49-check	completed	failure	2026-11-21T13:36:11Z	2026-11-21T13:36:11Z	2026-11-21T14:03:17Z	1		
+44909672017	pull_request	goal-3/m1-49-check	completed	skipped	2026-11-21T13:36:03Z	2026-11-21T13:36:03Z	2026-11-21T13:36:04Z	1		
+44909006474	pull_request	goal-3/s35-check	completed	success	2026-11-21T13:28:14Z	2026-11-21T13:28:14Z	2026-11-21T13:56:53Z	1		
+44909004735	push	goal/on-chain	completed	success	2026-11-21T13:28:13Z	2026-11-21T13:28:13Z	2026-11-21T14:03:12Z	1		
+44908997000	pull_request	goal-3/s35-check	completed	skipped	2026-11-21T13:28:07Z	2026-11-21T13:28:07Z	2026-11-21T13:28:08Z	1		
+44908971856	push	goal/on-chain	completed	success	2026-11-21T13:27:47Z	2026-11-21T13:27:47Z	2026-11-21T13:53:22Z	1		
+44908928122	pull_request	goal-4/m610-build	completed	success	2026-11-21T13:27:14Z	2026-11-21T13:27:14Z	2026-11-21T13:52:13Z	1	331	goal/on-chain
+44908897494	push	goal/stage-1	completed	success	2026-11-21T13:26:52Z	2026-11-21T13:26:52Z	2026-11-21T13:47:44Z	1		
+44908000962	pull_request	goal-4/m610-lock-calls	completed	success	2026-11-21T13:16:07Z	2026-11-21T13:16:07Z	2026-11-21T13:21:36Z	1		
+44907875296	pull_request	goal-4/m610-lock-calls	completed	cancelled	2026-11-21T13:14:36Z	2026-11-21T13:14:36Z	2026-11-21T13:16:20Z	1		
+44907391256	pull_request	goal-3/m7-03-build	completed	failure	2026-11-21T13:08:52Z	2026-11-21T13:08:52Z	2026-11-21T13:32:52Z	1		
+44907037367	pull_request	goal-3/m1-12a-check	completed	success	2026-11-21T13:04:41Z	2026-11-21T13:04:41Z	2026-11-21T13:26:00Z	1		
+44906847304	pull_request	goal-4/main-merge	completed	success	2026-11-21T13:02:26Z	2026-11-21T13:02:26Z	2026-11-21T13:25:30Z	1		
+44906778243	pull_request	goal-3/m7-03-build	completed	skipped	2026-11-21T13:01:37Z	2026-11-21T13:01:37Z	2026-11-21T13:01:38Z	1		
+44906465436	push	goal/on-chain	completed	success	2026-11-21T12:57:51Z	2026-11-21T12:57:51Z	2026-11-21T13:19:25Z	1		
+44906416196	pull_request	goal-4/main-merge	completed	cancelled	2026-11-21T12:57:11Z	2026-11-21T12:57:11Z	2026-11-21T13:02:44Z	1		
+44906402164	push	goal/on-chain	completed	success	2026-11-21T12:57:01Z	2026-11-21T12:57:01Z	2026-11-21T13:13:09Z	1		
+44906347355	pull_request	goal-4/main-merge	completed	skipped	2026-11-21T12:56:18Z	2026-11-21T12:56:18Z	2026-11-21T12:56:19Z	1		
+44906275473	pull_request	goal-4/main-merge	completed	skipped	2026-11-21T12:55:22Z	2026-11-21T12:55:22Z	2026-11-21T12:55:33Z	1		
+44905917648	pull_request	goal-4/m610-build	completed	failure	2026-11-21T12:50:52Z	2026-11-21T12:50:52Z	2026-11-21T13:05:46Z	1	331	goal/on-chain
+44905885826	pull_request	goal-4/main-merge	completed	skipped	2026-11-21T12:50:30Z	2026-11-21T12:50:30Z	2026-11-21T12:50:31Z	1		
+44905313062	push	goal/stage-1	completed	success	2026-11-21T12:43:24Z	2026-11-21T12:43:24Z	2026-11-21T12:57:51Z	1		
+44905106546	push	goal/stage-1	completed	success	2026-11-21T12:40:50Z	2026-11-21T12:40:50Z	2026-11-21T12:58:01Z	1		
+44904698368	pull_request	conductor/k26-superseded	completed	success	2026-11-21T12:35:45Z	2026-11-21T12:35:45Z	2026-11-21T12:39:44Z	1		
+44904616620	push	main	completed	success	2026-11-21T12:34:50Z	2026-11-21T12:34:50Z	2026-11-21T12:43:21Z	1		
+44903888160	pull_request	goal-3/main-merge-effect	completed	success	2026-11-21T12:26:09Z	2026-11-21T12:26:09Z	2026-11-21T12:42:28Z	1		
+44903546460	pull_request	conductor/k26-superseded	completed	skipped	2026-11-21T12:22:07Z	2026-11-21T12:22:07Z	2026-11-21T12:22:08Z	1		
+44903499806	push	main	completed	success	2026-11-21T12:21:34Z	2026-11-21T12:21:34Z	2026-11-21T12:29:45Z	1		
+44903426123	pull_request	claude/github-native	completed	skipped	2026-11-21T12:20:41Z	2026-11-21T12:20:41Z	2026-11-21T12:20:50Z	1		
+44903297340	pull_request	claude/app-map-portal	completed	success	2026-11-21T12:19:13Z	2026-11-21T12:19:13Z	2026-11-21T12:22:21Z	1		
+44903285359	pull_request	claude/app-map-portal	completed	skipped	2026-11-21T12:19:04Z	2026-11-21T12:19:04Z	2026-11-21T12:19:05Z	1		
+44903238176	push	main	completed	success	2026-11-21T12:18:26Z	2026-11-21T12:18:26Z	2026-11-21T12:24:30Z	1		
+44903193936	pull_request	conductor/goal-map	completed	success	2026-11-21T12:17:56Z	2026-11-21T12:17:56Z	2026-11-21T12:21:19Z	1		
+44903085734	pull_request	claude/github-native	completed	skipped	2026-11-21T12:16:36Z	2026-11-21T12:16:36Z	2026-11-21T12:16:37Z	1		
+44902674963	pull_request	claude/github-native	completed	skipped	2026-11-21T12:11:42Z	2026-11-21T12:11:42Z	2026-11-21T12:11:44Z	1		
+44902530715	pull_request	goal-3/staging-dispatch	completed	success	2026-11-21T12:09:57Z	2026-11-21T12:25:48Z	2026-11-21T12:33:37Z	3		
+44902464360	pull_request	goal-3/staging-dispatch	completed	skipped	2026-11-21T12:09:07Z	2026-11-21T12:09:07Z	2026-11-21T12:09:15Z	1		
+44902406489	push	goal/stage-1	completed	cancelled	2026-11-21T12:08:22Z	2026-11-21T12:08:22Z	2026-11-21T12:12:40Z	1		
+44901578963	pull_request	goal-3/main-merge-effect	completed	failure	2026-11-21T11:58:10Z	2026-11-21T12:15:29Z	2026-11-21T12:25:08Z	2		
+44901520464	push	goal/stage-1	completed	cancelled	2026-11-21T11:57:22Z	2026-11-21T11:57:22Z	2026-11-21T12:12:37Z	1		
+44901310141	pull_request	claude/github-native	completed	skipped	2026-11-21T11:54:31Z	2026-11-21T11:54:31Z	2026-11-21T11:54:32Z	1		
+44901264575	pull_request	claude/github-native	completed	skipped	2026-11-21T11:53:55Z	2026-11-21T11:53:55Z	2026-11-21T11:53:57Z	1		
+44901233323	pull_request	conductor/goal-map	completed	skipped	2026-11-21T11:53:30Z	2026-11-21T11:53:30Z	2026-11-21T11:53:41Z	1		
+44901233017	pull_request	conductor/goal-map	completed	success	2026-11-21T11:53:29Z	2026-11-21T11:54:11Z	2026-11-21T11:58:35Z	2		
+44901146298	pull_request	conductor/goal-map	completed	skipped	2026-11-21T11:52:22Z	2026-11-21T11:52:22Z	2026-11-21T11:52:23Z	1		
+44900924968	pull_request	conductor/goal-map	completed	skipped	2026-11-21T11:49:31Z	2026-11-21T11:49:31Z	2026-11-21T11:49:32Z	1		
+44900890250	pull_request	goal-3/m2-03-check	completed	skipped	2026-11-21T11:49:04Z	2026-11-21T11:49:04Z	2026-11-21T11:49:15Z	1	297	goal/stage-1
+44900366036	pull_request	goal-4/main-merge	completed	skipped	2026-11-21T11:42:18Z	2026-11-21T11:42:18Z	2026-11-21T11:42:25Z	1		
+44900306615	pull_request	conductor/goal-map	completed	skipped	2026-11-21T11:41:34Z	2026-11-21T11:41:34Z	2026-11-21T11:41:42Z	1		
+44900268569	pull_request	claude/github-native	completed	skipped	2026-11-21T11:41:05Z	2026-11-21T11:41:05Z	2026-11-21T11:41:06Z	1		
+44900261585	pull_request	goal-4/main-merge	completed	skipped	2026-11-21T11:41:00Z	2026-11-21T11:41:00Z	2026-11-21T11:41:09Z	1		
+44900108938	pull_request	goal-3/main-merge-effect	completed	skipped	2026-11-21T11:39:02Z	2026-11-21T11:39:02Z	2026-11-21T11:39:04Z	1		
+44900017132	pull_request	claude/design-ui-layer-942878	completed	success	2026-11-21T11:37:49Z	2026-11-21T11:37:49Z	2026-11-21T12:04:34Z	1		
+44899997706	pull_request	goal-3/brief-k33	completed	success	2026-11-21T11:37:33Z	2026-11-21T11:37:33Z	2026-11-21T11:56:45Z	1		
+44899920241	pull_request	goal-3/brief-k33	completed	skipped	2026-11-21T11:36:31Z	2026-11-21T11:36:31Z	2026-11-21T11:36:32Z	1		
+44899888114	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T11:36:07Z	2026-11-21T11:36:07Z	2026-11-21T11:37:50Z	1		
+44899731513	pull_request	claude/github-native	completed	skipped	2026-11-21T11:34:11Z	2026-11-21T11:34:11Z	2026-11-21T11:34:12Z	1		
+44899606593	pull_request	goal-4/m6-money	completed	success	2026-11-21T11:32:39Z	2026-11-21T12:54:23Z	2026-11-21T12:55:55Z	2		
+44899593361	pull_request	goal-3/brief-k33	completed	skipped	2026-11-21T11:32:28Z	2026-11-21T11:32:28Z	2026-11-21T11:32:29Z	1		
+44899522860	pull_request	goal-4/main-merge	completed	skipped	2026-11-21T11:31:36Z	2026-11-21T11:31:36Z	2026-11-21T11:31:38Z	1		
+44899379048	pull_request	goal-4/main-merge	completed	skipped	2026-11-21T11:30:00Z	2026-11-21T11:30:00Z	2026-11-21T11:30:01Z	1		
+44899307863	push	main	completed	success	2026-11-21T11:29:02Z	2026-11-21T11:29:02Z	2026-11-21T12:10:40Z	1		
+44899286210	pull_request	claude/github-native	completed	skipped	2026-11-21T11:28:45Z	2026-11-21T11:28:45Z	2026-11-21T11:28:46Z	1		
+44899037629	pull_request	goal-4/main-merge	completed	skipped	2026-11-21T11:25:27Z	2026-11-21T11:25:27Z	2026-11-21T11:25:28Z	1		
+44898962996	pull_request	goal-3/main-merge-effect	completed	skipped	2026-11-21T11:24:31Z	2026-11-21T11:24:31Z	2026-11-21T11:24:32Z	1		
+44898823898	push	goal/stage-1	completed	cancelled	2026-11-21T11:22:48Z	2026-11-21T11:22:48Z	2026-11-21T12:13:02Z	1		
+44898727669	pull_request	claude/github-native	completed	skipped	2026-11-21T11:21:37Z	2026-11-21T11:21:37Z	2026-11-21T11:21:38Z	1		
+44898657953	push	main	completed	success	2026-11-21T11:20:43Z	2026-11-21T11:20:43Z	2026-11-21T12:07:51Z	1		
+44898512308	pull_request	claude/github-native	completed	skipped	2026-11-21T11:19:00Z	2026-11-21T11:19:00Z	2026-11-21T11:19:10Z	1		
+44898429434	pull_request	claude/github-native	completed	skipped	2026-11-21T11:17:58Z	2026-11-21T11:17:58Z	2026-11-21T11:17:59Z	1		
+44898226871	pull_request	claude/github-native	completed	skipped	2026-11-21T11:15:24Z	2026-11-21T11:15:24Z	2026-11-21T11:15:25Z	1		
+44898015749	push	goal/stage-1	completed	cancelled	2026-11-21T11:12:44Z	2026-11-21T11:12:44Z	2026-11-21T12:12:46Z	1		
+44897601828	pull_request	conductor/goals-coordinate	completed	success	2026-11-21T11:07:39Z	2026-11-21T11:07:39Z	2026-11-21T11:27:58Z	1		
+44897544758	pull_request	claude/app-map-portal	completed	skipped	2026-11-21T11:06:59Z	2026-11-21T11:06:59Z	2026-11-21T11:07:00Z	1		
+44897518166	pull_request	conductor/goals-coordinate	completed	skipped	2026-11-21T11:06:39Z	2026-11-21T11:06:39Z	2026-11-21T11:06:41Z	1		
+44897455043	pull_request	claude/app-map-portal	completed	skipped	2026-11-21T11:05:52Z	2026-11-21T11:05:52Z	2026-11-21T11:05:53Z	1		
+44897425831	push	goal/portal	completed	success	2026-11-21T11:05:30Z	2026-11-21T11:05:30Z	2026-11-21T11:52:15Z	1		
+44897413191	push	goal/ui-layer	completed	success	2026-11-21T11:05:22Z	2026-11-21T11:05:22Z	2026-11-21T11:44:49Z	1		
+44897383273	push	goal/on-chain	completed	failure	2026-11-21T11:05:02Z	2026-11-21T11:05:02Z	2026-11-21T12:03:07Z	1		
+44897339357	pull_request	goal-4/m610-check	completed	success	2026-11-21T11:04:30Z	2026-11-21T11:04:30Z	2026-11-21T11:59:05Z	1		
+44897313438	pull_request	conductor/goals-coordinate	completed	skipped	2026-11-21T11:04:11Z	2026-11-21T11:04:11Z	2026-11-21T11:04:12Z	1		
+44897238225	pull_request	goal-3/m2-03-check	completed	cancelled	2026-11-21T11:03:15Z	2026-11-21T11:03:15Z	2026-11-21T11:49:05Z	1	297	goal/stage-1
+44897229772	pull_request	claude/app-map-portal	completed	skipped	2026-11-21T11:03:10Z	2026-11-21T11:03:10Z	2026-11-21T11:03:11Z	1		
+44897191320	pull_request	goal-3/prove-staging-check	completed	success	2026-11-21T11:02:44Z	2026-11-21T11:13:28Z	2026-11-21T11:59:53Z	2		
+44896991392	push	main	completed	success	2026-11-21T11:00:28Z	2026-11-21T11:00:28Z	2026-11-21T12:04:30Z	1		
+44896615144	pull_request	chore/effect-4.1.4	completed	success	2026-11-21T10:55:27Z	2026-11-21T10:55:27Z	2026-11-21T11:20:17Z	1		
+44896556517	pull_request	conductor/state-nov21-noon	completed	success	2026-11-21T10:54:44Z	2026-11-21T10:54:44Z	2026-11-21T10:59:25Z	1		
+44896480159	pull_request	chore/effect-4.1.4	completed	skipped	2026-11-21T10:53:44Z	2026-11-21T10:53:44Z	2026-11-21T10:53:45Z	1		
+44896466694	pull_request	conductor/state-nov21-noon	completed	skipped	2026-11-21T10:53:34Z	2026-11-21T10:53:34Z	2026-11-21T10:53:35Z	1		
+44896420883	pull_request	claude/app-map-portal	completed	skipped	2026-11-21T10:52:55Z	2026-11-21T10:52:55Z	2026-11-21T10:52:56Z	1		
+44896395585	pull_request	goal-3/m7-03-build	completed	failure	2026-11-21T10:52:35Z	2026-11-21T10:52:35Z	2026-11-21T11:40:03Z	1		
+44896389215	pull_request	claude/design-ui-layer-942878	completed	success	2026-11-21T10:52:30Z	2026-11-21T10:52:30Z	2026-11-21T11:20:44Z	1		
+44896293249	pull_request	conductor/state-nov21-noon	completed	skipped	2026-11-21T10:51:16Z	2026-11-21T10:51:16Z	2026-11-21T10:51:24Z	1		
+44896189211	pull_request	chore/effect-4.1.4	completed	skipped	2026-11-21T10:49:57Z	2026-11-21T10:49:57Z	2026-11-21T10:49:58Z	1		
+44895502077	pull_request	goal-3/main-merge-nov21	completed	success	2026-11-21T10:41:04Z	2026-11-21T10:41:04Z	2026-11-21T11:22:34Z	1		
+44895425920	pull_request	goal-3/main-merge-nov21	completed	cancelled	2026-11-21T10:40:08Z	2026-11-21T10:40:08Z	2026-11-21T10:41:06Z	1		
+44895378855	push	main	completed	success	2026-11-21T10:39:31Z	2026-11-21T10:39:31Z	2026-11-21T11:53:07Z	1		
+44894927871	push	main	completed	success	2026-11-21T10:33:43Z	2026-11-21T10:33:43Z	2026-11-21T11:48:59Z	1		
+44894823615	pull_request	goal/safe-hats	completed	success	2026-11-21T10:32:24Z	2026-11-21T16:04:48Z	2026-11-21T16:13:00Z	2	294	main
+44894799065	push	goal/safe-hats	completed	cancelled	2026-11-21T10:32:06Z	2026-11-21T10:32:06Z	2026-11-21T10:32:37Z	1	294	main
+44894759818	push	goal/stage-1	completed	cancelled	2026-11-21T10:31:36Z	2026-11-21T10:31:36Z	2026-11-21T12:13:11Z	1		
+44894755275	pull_request	goal-3/m7-03-build	completed	cancelled	2026-11-21T10:31:33Z	2026-11-21T10:31:33Z	2026-11-21T10:31:44Z	1		
+44894565333	pull_request	goal-3/m2-02-check	completed	cancelled	2026-11-21T10:29:15Z	2026-11-21T10:29:15Z	2026-11-21T10:29:47Z	1	267	goal/stage-1
+44894506141	push	main	completed	success	2026-11-21T10:28:26Z	2026-11-21T10:28:26Z	2026-11-21T11:47:35Z	1		
+44894488160	push	goal/stage-1	completed	success	2026-11-21T10:28:13Z	2026-11-21T10:28:13Z	2026-11-21T11:57:17Z	1		
+44894406911	push	main	completed	success	2026-11-21T10:27:08Z	2026-11-21T10:27:08Z	2026-11-21T11:44:23Z	1		
+44894327530	pull_request	claude/orthograph-model-cf3dca	completed	success	2026-11-21T10:26:06Z	2026-11-21T10:26:06Z	2026-11-21T10:38:59Z	1		
+44894261749	pull_request	goal-4/m610-check	completed	cancelled	2026-11-21T10:25:15Z	2026-11-21T10:25:15Z	2026-11-21T10:35:11Z	1		
+44894098890	pull_request	goal-3/m1-49-check	completed	cancelled	2026-11-21T10:23:14Z	2026-11-21T10:23:14Z	2026-11-21T10:23:29Z	1		
+44894097535	push	goal/stage-1	completed	success	2026-11-21T10:23:13Z	2026-11-21T10:23:13Z	2026-11-21T11:49:55Z	1		
+44894005614	push	main	completed	success	2026-11-21T10:22:04Z	2026-11-21T10:22:04Z	2026-11-21T10:59:02Z	1		
+44893875987	pull_request	goal-3/m1-50-check	completed	cancelled	2026-11-21T10:20:30Z	2026-11-21T10:20:30Z	2026-11-21T10:20:55Z	1		
+44893652527	pull_request	conductor/resume	completed	success	2026-11-21T10:17:47Z	2026-11-21T10:17:47Z	2026-11-21T10:26:23Z	1		
+44893542253	pull_request	conductor/ci-drafts	completed	success	2026-11-21T10:16:22Z	2026-11-21T10:16:22Z	2026-11-21T10:33:12Z	1		
+44893487085	pull_request	conductor/ci-drafts	completed	cancelled	2026-11-21T10:15:42Z	2026-11-21T10:15:42Z	2026-11-21T10:16:24Z	1		
+44893418688	pull_request	conductor/ci-drafts	completed	cancelled	2026-11-21T10:14:53Z	2026-11-21T10:14:53Z	2026-11-21T10:15:43Z	1		
+44893415865	pull_request	goal-3/s35-check	completed	cancelled	2026-11-21T10:14:51Z	2026-11-21T10:14:51Z	2026-11-21T10:16:38Z	1		
+44893247759	pull_request	goal-3/m1-49-check	completed	cancelled	2026-11-21T10:12:47Z	2026-11-21T10:12:47Z	2026-11-21T10:13:59Z	1		
+44893223712	push	goal/safe-hats	completed	cancelled	2026-11-21T10:12:29Z	2026-11-21T10:12:29Z	2026-11-21T10:12:55Z	1	294	main
+44893091667	pull_request	conductor/ci-drafts	completed	cancelled	2026-11-21T10:10:54Z	2026-11-21T10:10:54Z	2026-11-21T10:14:54Z	1		
+44892836488	pull_request	goal-3/m1-50-check	completed	cancelled	2026-11-21T10:07:44Z	2026-11-21T10:07:44Z	2026-11-21T10:12:17Z	1		
+44892832546	pull_request	goal-3/prove-staging-check	completed	cancelled	2026-11-21T10:07:41Z	2026-11-21T10:07:41Z	2026-11-21T10:13:12Z	1		
+44892646616	pull_request	goal-3/s33-s34-build	completed	success	2026-11-21T10:05:26Z	2026-11-21T10:32:16Z	2026-11-21T11:11:46Z	2		
+44892619267	push	goal/safe-hats	completed	cancelled	2026-11-21T10:05:08Z	2026-11-21T10:05:08Z	2026-11-21T10:12:57Z	1	294	main
+44892433538	pull_request	goal-3/prove-staging-check	completed	cancelled	2026-11-21T10:02:51Z	2026-11-21T10:02:51Z	2026-11-21T10:07:42Z	1		
+44892266615	pull_request	spike/effect-workflow-workerd	completed	success	2026-11-21T10:00:53Z	2026-11-21T10:00:53Z	2026-11-21T10:27:46Z	1		
+44892241456	pull_request	goal-4/state-skill	completed	success	2026-11-21T10:00:38Z	2026-11-21T10:00:38Z	2026-11-21T10:50:29Z	1		
+44892219193	pull_request	goal-3/s33-s34-build	completed	cancelled	2026-11-21T10:00:24Z	2026-11-21T10:00:24Z	2026-11-21T10:05:27Z	1		
+44892123512	push	goal/safe-hats	completed	cancelled	2026-11-21T09:59:10Z	2026-11-21T09:59:10Z	2026-11-21T10:12:59Z	1	294	main
+44892070644	pull_request	goal-3/s35-check	completed	cancelled	2026-11-21T09:58:24Z	2026-11-21T09:58:24Z	2026-11-21T10:12:31Z	1		
+44892027047	pull_request	goal-3/prove-staging-check	completed	cancelled	2026-11-21T09:57:48Z	2026-11-21T09:57:48Z	2026-11-21T10:02:52Z	1		
+44891992082	pull_request	goal-4/state-skill	completed	cancelled	2026-11-21T09:57:19Z	2026-11-21T09:57:19Z	2026-11-21T10:00:39Z	1		
+44891938613	push	goal/on-chain	completed	success	2026-11-21T09:56:35Z	2026-11-21T09:56:35Z	2026-11-21T11:35:30Z	1		
+44891915089	pull_request	spike/effect-workflow-workerd	completed	cancelled	2026-11-21T09:56:15Z	2026-11-21T09:56:15Z	2026-11-21T10:00:55Z	1		
+44891799802	pull_request	goal-4/m6-money	completed	success	2026-11-21T09:54:44Z	2026-11-21T11:05:20Z	2026-11-21T11:17:09Z	2		
+44891431685	pull_request	claude/app-map-portal	completed	success	2026-11-21T09:50:01Z	2026-11-21T09:50:01Z	2026-11-21T10:08:55Z	1		
+44891426841	pull_request	claude/design-ui-layer-942878	completed	success	2026-11-21T09:49:57Z	2026-11-21T09:49:57Z	2026-11-21T10:23:19Z	1		
+44891395913	pull_request	goal-3/m1-50-check	completed	cancelled	2026-11-21T09:49:33Z	2026-11-21T09:49:33Z	2026-11-21T10:08:00Z	1		
+44891365945	pull_request	goal-4/state-skill	completed	cancelled	2026-11-21T09:49:09Z	2026-11-21T09:49:09Z	2026-11-21T09:57:36Z	1		
+44891360124	pull_request	goal-3/s33-s34-build	completed	cancelled	2026-11-21T09:49:04Z	2026-11-21T09:49:04Z	2026-11-21T10:00:27Z	1		
+44891339541	pull_request	goal-4/state-skill	completed	cancelled	2026-11-21T09:48:47Z	2026-11-21T09:48:47Z	2026-11-21T09:49:10Z	1		
+44891277239	pull_request	conductor/resume	completed	success	2026-11-21T09:48:00Z	2026-11-21T09:48:00Z	2026-11-21T10:04:34Z	1		
+44891269069	pull_request	goal-4/m6-money	completed	cancelled	2026-11-21T09:47:54Z	2026-11-21T09:47:54Z	2026-11-21T09:55:01Z	1		
+44891047849	pull_request	goal-3/main-merge-nov21	completed	success	2026-11-21T09:45:06Z	2026-11-21T09:45:06Z	2026-11-21T10:39:59Z	1		
+44890953333	pull_request	goal-3/main-merge-nov21	completed	cancelled	2026-11-21T09:43:52Z	2026-11-21T09:43:52Z	2026-11-21T09:45:07Z	1		
+44890935488	pull_request	goal-3/m7-03-build	completed	cancelled	2026-11-21T09:43:38Z	2026-11-21T09:43:38Z	2026-11-21T10:15:19Z	1		
+44890924436	push	goal/safe-hats	completed	cancelled	2026-11-21T09:43:30Z	2026-11-21T09:43:30Z	2026-11-21T10:13:16Z	1	294	main
+44890908153	pull_request	goal-4/state-skill	completed	cancelled	2026-11-21T09:43:17Z	2026-11-21T09:43:17Z	2026-11-21T09:49:03Z	1		
+44890881142	push	goal/on-chain	completed	success	2026-11-21T09:42:56Z	2026-11-21T09:42:56Z	2026-11-21T11:16:24Z	1		
+44890842336	pull_request	goal-3/s27-check	completed	success	2026-11-21T09:42:26Z	2026-11-21T09:42:26Z	2026-11-21T10:30:34Z	1		
+44890841433	push	goal/on-chain	completed	success	2026-11-21T09:42:25Z	2026-11-21T09:42:25Z	2026-11-21T11:14:54Z	1		
+44890758002	pull_request	goal-3/main-merge-nov21	completed	cancelled	2026-11-21T09:41:23Z	2026-11-21T09:41:23Z	2026-11-21T09:43:53Z	1		
+44890736973	pull_request	conductor/resume	completed	cancelled	2026-11-21T09:41:08Z	2026-11-21T09:41:08Z	2026-11-21T09:48:01Z	1		
+44890613293	push	goal/stage-1	completed	success	2026-11-21T09:39:32Z	2026-11-21T09:39:32Z	2026-11-21T11:19:13Z	1		
+44890594794	pull_request	goal-4/state-skill	completed	cancelled	2026-11-21T09:39:16Z	2026-11-21T09:39:16Z	2026-11-21T09:43:19Z	1		
+44890559229	pull_request	conductor/resume	completed	cancelled	2026-11-21T09:38:46Z	2026-11-21T09:38:46Z	2026-11-21T09:41:09Z	1		
+44890545589	pull_request	claude/app-map-portal	completed	cancelled	2026-11-21T09:38:35Z	2026-11-21T09:38:35Z	2026-11-21T09:50:02Z	1		
+44890526432	pull_request	goal-3/main-merge-nov21	completed	cancelled	2026-11-21T09:38:19Z	2026-11-21T09:38:19Z	2026-11-21T09:41:24Z	1		
+44890486035	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T09:37:48Z	2026-11-21T09:37:48Z	2026-11-21T09:49:58Z	1		
+44890438075	pull_request	goal-4/state-skill	completed	cancelled	2026-11-21T09:37:09Z	2026-11-21T09:37:09Z	2026-11-21T09:39:17Z	1		
+44890423352	pull_request	goal-4/state-skill	completed	cancelled	2026-11-21T09:36:59Z	2026-11-21T09:36:59Z	2026-11-21T09:37:10Z	1		
+44890375648	pull_request	conductor/k24-ui-sdk	completed	success	2026-11-21T09:36:21Z	2026-11-21T09:36:21Z	2026-11-21T10:21:19Z	1		
+44890273751	pull_request	claude/app-map-portal	completed	cancelled	2026-11-21T09:35:07Z	2026-11-21T09:35:07Z	2026-11-21T09:38:52Z	1		
+44890256499	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T09:34:55Z	2026-11-21T09:34:55Z	2026-11-21T09:37:55Z	1		
+44890220428	push	main	completed	success	2026-11-21T09:34:27Z	2026-11-21T09:34:27Z	2026-11-21T10:17:48Z	1		
+44890205125	pull_request	goal-3/m2-auth-decision	completed	success	2026-11-21T09:34:15Z	2026-11-21T09:34:15Z	2026-11-21T10:28:06Z	1		
+44890150877	pull_request	claude/app-map-portal	completed	cancelled	2026-11-21T09:33:34Z	2026-11-21T09:33:34Z	2026-11-21T09:35:08Z	1		
+44890041702	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T09:32:12Z	2026-11-21T09:32:12Z	2026-11-21T09:34:56Z	1		
+44889930859	pull_request	goal-3/m2-auth-decision	completed	cancelled	2026-11-21T09:30:51Z	2026-11-21T09:30:51Z	2026-11-21T09:34:17Z	1		
+44889837959	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T09:29:47Z	2026-11-21T09:29:47Z	2026-11-21T09:32:14Z	1		
+44889762483	pull_request	goal-4/m610-check	completed	cancelled	2026-11-21T09:28:44Z	2026-11-21T09:28:44Z	2026-11-21T10:11:39Z	1		
+44889647148	pull_request	goal-4/state-skill	completed	cancelled	2026-11-21T09:27:10Z	2026-11-21T09:27:10Z	2026-11-21T09:37:15Z	1		
+44889636397	pull_request	goal-3/m2-auth-decision	completed	cancelled	2026-11-21T09:27:02Z	2026-11-21T09:27:02Z	2026-11-21T09:30:52Z	1		
+44889368742	push	goal/on-chain	completed	success	2026-11-21T09:23:35Z	2026-11-21T09:23:35Z	2026-11-21T10:38:48Z	1		
+44889319375	pull_request	goal-4/m610-check	completed	cancelled	2026-11-21T09:23:00Z	2026-11-21T09:23:00Z	2026-11-21T09:28:45Z	1		
+44889217045	pull_request	goal-4/m610-check	completed	cancelled	2026-11-21T09:21:45Z	2026-11-21T09:21:45Z	2026-11-21T09:23:01Z	1		
+44889177042	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T09:21:13Z	2026-11-21T09:21:13Z	2026-11-21T09:30:04Z	1		
+44889006799	pull_request	goal-3/m1-12a-check	completed	cancelled	2026-11-21T09:19:10Z	2026-11-21T09:19:10Z	2026-11-21T10:13:02Z	1		
+44888891379	pull_request	goal-3/m7-03-build	completed	cancelled	2026-11-21T09:17:46Z	2026-11-21T09:17:46Z	2026-11-21T09:43:56Z	1		
+44888729206	pull_request	goal-3/m2-auth-decision	completed	cancelled	2026-11-21T09:15:37Z	2026-11-21T09:15:37Z	2026-11-21T09:27:03Z	1		
+44888356718	pull_request	spike/ui-sdk-verb-primitive	completed	success	2026-11-21T09:11:03Z	2026-11-21T09:11:03Z	2026-11-21T09:33:38Z	1		
+44888345735	pull_request	conductor/k24-ui-sdk	completed	cancelled	2026-11-21T09:10:55Z	2026-11-21T09:10:55Z	2026-11-21T09:36:37Z	1		
+44888175118	push	main	completed	success	2026-11-21T09:08:51Z	2026-11-21T09:08:51Z	2026-11-21T09:55:48Z	1		
+44888117435	pull_request	goal-4/m602-target-check	completed	success	2026-11-21T09:08:07Z	2026-11-21T09:08:07Z	2026-11-21T09:52:20Z	1		
+44888072038	pull_request	goal-3/m1-12a-check	completed	cancelled	2026-11-21T09:07:34Z	2026-11-21T09:07:34Z	2026-11-21T09:19:12Z	1		
+44887994941	pull_request	goal-3/m1-12a-check	completed	cancelled	2026-11-21T09:06:36Z	2026-11-21T09:06:36Z	2026-11-21T09:07:35Z	1		
+44887797832	push	goal/stage-1	completed	success	2026-11-21T09:04:07Z	2026-11-21T09:04:07Z	2026-11-21T10:32:09Z	1		
+44887477820	pull_request	goal-4/m602-target-check	completed	cancelled	2026-11-21T09:00:16Z	2026-11-21T09:00:16Z	2026-11-21T09:08:08Z	1		
+44887360576	pull_request	goal-3/m1-39-build	completed	success	2026-11-21T08:58:42Z	2026-11-21T08:58:42Z	2026-11-21T10:21:26Z	1		
+44887267808	pull_request	goal-3/s27-check	completed	cancelled	2026-11-21T08:57:23Z	2026-11-21T08:57:23Z	2026-11-21T09:42:43Z	1		
+44887055869	pull_request	spike/ui-sdk-verb-primitive	completed	cancelled	2026-11-21T08:54:31Z	2026-11-21T08:54:31Z	2026-11-21T09:11:21Z	1		
+44887031176	pull_request	goal-3/main-merge-nov21	completed	cancelled	2026-11-21T08:54:11Z	2026-11-21T08:54:11Z	2026-11-21T09:38:36Z	1		
+44887019313	pull_request	conductor/k24-ui-sdk	completed	cancelled	2026-11-21T08:54:01Z	2026-11-21T08:54:01Z	2026-11-21T09:10:57Z	1		
+44886974387	pull_request	claude/m8-supersedes-check	completed	success	2026-11-21T08:53:25Z	2026-11-21T08:53:25Z	2026-11-21T09:08:10Z	1		
+44886920392	pull_request	claude/orthograph-model-cf3dca	completed	success	2026-11-21T08:52:42Z	2026-11-21T08:52:42Z	2026-11-21T09:19:18Z	1		
+44886880267	push	main	completed	success	2026-11-21T08:52:10Z	2026-11-21T08:52:10Z	2026-11-21T09:36:22Z	1		
+44886876375	pull_request	goal-3/m1-50-check	completed	cancelled	2026-11-21T08:52:07Z	2026-11-21T08:52:07Z	2026-11-21T09:49:34Z	1		
+44886804456	pull_request	claude/orthograph-model-cf3dca	completed	cancelled	2026-11-21T08:51:11Z	2026-11-21T08:51:11Z	2026-11-21T08:52:43Z	1		
+44886620335	pull_request	goal-4/m602-target-check	completed	cancelled	2026-11-21T08:48:46Z	2026-11-21T08:48:46Z	2026-11-21T09:00:18Z	1		
+44886497910	pull_request	conductor/k24-ui-sdk	completed	cancelled	2026-11-21T08:47:11Z	2026-11-21T08:47:11Z	2026-11-21T08:54:03Z	1		
+44886487943	pull_request	goal-4/m602-target-check	completed	cancelled	2026-11-21T08:47:04Z	2026-11-21T08:47:04Z	2026-11-21T08:49:02Z	1		
+44886260943	pull_request	claude/m8-supersedes-check	completed	cancelled	2026-11-21T08:44:12Z	2026-11-21T08:44:12Z	2026-11-21T08:53:26Z	1		
+44886242392	pull_request	goal-4/m602-journeys-check	completed	success	2026-11-21T08:43:58Z	2026-11-21T08:43:58Z	2026-11-21T09:37:03Z	1		
+44886240955	pull_request	spike/ui-sdk-verb-primitive	completed	cancelled	2026-11-21T08:43:57Z	2026-11-21T08:43:57Z	2026-11-21T08:54:32Z	1		
+44886188714	pull_request	goal-3/s33-check	completed	success	2026-11-21T08:43:17Z	2026-11-21T08:43:17Z	2026-11-21T09:38:41Z	1		
+44886114770	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T08:42:16Z	2026-11-21T08:42:16Z	2026-11-21T09:21:14Z	1		
+44886074872	push	goal/stage-1	completed	success	2026-11-21T08:41:45Z	2026-11-21T08:41:45Z	2026-11-21T10:08:53Z	1		
+44886037973	pull_request	goal-4/m602-journeys-check	completed	cancelled	2026-11-21T08:41:15Z	2026-11-21T08:41:15Z	2026-11-21T08:44:16Z	1		
+44886028696	pull_request	goal-3/main-merge-nov21	completed	cancelled	2026-11-21T08:41:08Z	2026-11-21T08:41:08Z	2026-11-21T08:54:28Z	1		
+44886015271	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T08:40:57Z	2026-11-21T08:40:57Z	2026-11-21T08:42:27Z	1		
+44885983891	pull_request	claude/foreman-c521e2	completed	success	2026-11-21T08:40:33Z	2026-11-21T08:40:33Z	2026-11-21T08:50:59Z	1		
+44885974170	pull_request	goal-4/m6-chain	completed	success	2026-11-21T08:40:26Z	2026-11-21T08:40:26Z	2026-11-21T09:31:36Z	1		
+44885887874	pull_request	goal-4/m602-journeys-check	completed	cancelled	2026-11-21T08:39:18Z	2026-11-21T08:39:18Z	2026-11-21T08:41:17Z	1		
+44885883203	pull_request	goal-4/m6-chain	completed	cancelled	2026-11-21T08:39:14Z	2026-11-21T08:39:14Z	2026-11-21T08:40:27Z	1		
+44885785928	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T08:37:54Z	2026-11-21T08:37:54Z	2026-11-21T08:41:14Z	1		
+44885774661	pull_request	claude/orthograph-model-cf3dca	completed	failure	2026-11-21T08:37:45Z	2026-11-21T08:37:45Z	2026-11-21T08:50:18Z	1		
+44885712421	pull_request	goal-4/m6-chain	completed	cancelled	2026-11-21T08:36:57Z	2026-11-21T08:36:57Z	2026-11-21T08:39:32Z	1		
+44885556264	pull_request	claude/orthograph-model-cf3dca	completed	cancelled	2026-11-21T08:34:58Z	2026-11-21T08:34:58Z	2026-11-21T08:37:46Z	1		
+44885542782	pull_request	goal-4/m6-chain	completed	cancelled	2026-11-21T08:34:47Z	2026-11-21T08:34:47Z	2026-11-21T08:37:03Z	1		
+44885542224	pull_request	goal-4/start	completed	success	2026-11-21T08:34:47Z	2026-11-21T08:34:47Z	2026-11-21T09:15:58Z	1		
+44885491937	pull_request	conductor/k24-ui-sdk	completed	cancelled	2026-11-21T08:34:09Z	2026-11-21T08:34:09Z	2026-11-21T08:47:13Z	1		
+44885478713	pull_request	goal-4/m6-chain	completed	cancelled	2026-11-21T08:33:59Z	2026-11-21T08:33:59Z	2026-11-21T08:34:48Z	1		
+44885384574	pull_request	claude/orthograph-model-cf3dca	completed	cancelled	2026-11-21T08:32:46Z	2026-11-21T08:32:46Z	2026-11-21T08:34:59Z	1		
+44885375878	push	main	completed	success	2026-11-21T08:32:40Z	2026-11-21T08:32:40Z	2026-11-21T09:35:15Z	1		
+44885293513	pull_request	goal-4/m6-chain	completed	cancelled	2026-11-21T08:31:35Z	2026-11-21T08:31:35Z	2026-11-21T08:34:00Z	1		
+44885258589	pull_request	claude/foreman-c521e2	completed	cancelled	2026-11-21T08:31:09Z	2026-11-21T08:31:09Z	2026-11-21T08:40:39Z	1		
+44885143842	pull_request	goal-3/m2-auth-decision	completed	success	2026-11-21T08:29:48Z	2026-11-21T08:29:48Z	2026-11-21T09:12:36Z	1		
+44885071341	pull_request	spike/ui-sdk-verb-primitive	completed	cancelled	2026-11-21T08:28:48Z	2026-11-21T08:28:48Z	2026-11-21T08:43:58Z	1		
+44885062736	pull_request	claude/foreman-c521e2	completed	cancelled	2026-11-21T08:28:41Z	2026-11-21T08:28:41Z	2026-11-21T08:31:10Z	1		
+44885054397	push	goal/stage-1	completed	success	2026-11-21T08:28:34Z	2026-11-21T08:28:34Z	2026-11-21T09:47:11Z	1		
+44885023411	pull_request	conductor/k24-ui-sdk	completed	cancelled	2026-11-21T08:28:08Z	2026-11-21T08:28:08Z	2026-11-21T08:34:18Z	1		
+44884934105	pull_request	conductor/k24-ui-sdk	completed	cancelled	2026-11-21T08:27:00Z	2026-11-21T08:27:00Z	2026-11-21T08:28:09Z	1		
+44884916668	pull_request	claude/m8-supersedes-check	completed	cancelled	2026-11-21T08:26:46Z	2026-11-21T08:26:46Z	2026-11-21T08:44:29Z	1		
+44884911051	pull_request	conductor/scope	completed	success	2026-11-21T08:26:42Z	2026-11-21T08:26:42Z	2026-11-21T08:32:16Z	1		
+44884881771	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T08:26:18Z	2026-11-21T08:26:18Z	2026-11-21T08:37:56Z	1		
+44884849763	push	main	completed	success	2026-11-21T08:25:52Z	2026-11-21T08:25:52Z	2026-11-21T09:24:02Z	1		
+44884841290	pull_request	goal-4/start	completed	cancelled	2026-11-21T08:25:46Z	2026-11-21T08:25:46Z	2026-11-21T08:34:48Z	1		
+44884802998	pull_request	conductor/scope	completed	cancelled	2026-11-21T08:25:18Z	2026-11-21T08:25:18Z	2026-11-21T08:26:43Z	1		
+44884750387	pull_request	conductor/k24-ui-sdk	completed	cancelled	2026-11-21T08:24:38Z	2026-11-21T08:24:38Z	2026-11-21T08:27:02Z	1		
+44884746644	pull_request	spike/ui-sdk-verb-primitive	completed	cancelled	2026-11-21T08:24:35Z	2026-11-21T08:24:35Z	2026-11-21T08:29:07Z	1		
+44884734220	pull_request	claude/design-ui-layer-942878	completed	cancelled	2026-11-21T08:24:25Z	2026-11-21T08:24:25Z	2026-11-21T08:26:34Z	1		
+44884521309	pull_request	goal-3/staging-check	completed	success	2026-11-21T08:21:44Z	2026-11-21T08:21:44Z	2026-11-21T09:03:37Z	1		
+44884311159	pull_request	goal-3/m1-39-build	completed	cancelled	2026-11-21T08:19:09Z	2026-11-21T08:19:09Z	2026-11-21T08:58:58Z	1		
+44884297019	pull_request	goal-3/m1-39-build	completed	cancelled	2026-11-21T08:18:58Z	2026-11-21T08:18:58Z	2026-11-21T08:19:10Z	1		
+44884233619	pull_request	goal-3/m1-12a-build	completed	failure	2026-11-21T08:18:08Z	2026-11-21T08:18:08Z	2026-11-21T09:01:45Z	1		
+44884039240	push	goal/stage-1	completed	success	2026-11-21T08:15:42Z	2026-11-21T08:15:42Z	2026-11-21T09:18:32Z	1		
+44883874722	pull_request	goal-3/s27-check	completed	failure	2026-11-21T08:13:43Z	2026-11-21T08:47:28Z	2026-11-21T08:52:46Z	2		
+44883840318	pull_request	conductor/scope	completed	success	2026-11-21T08:13:17Z	2026-11-21T08:13:17Z	2026-11-21T08:18:04Z	1		
+44883750245	pull_request	conductor/scope	completed	cancelled	2026-11-21T08:12:05Z	2026-11-21T08:12:05Z	2026-11-21T08:13:18Z	1		
+44883614263	pull_request	conductor/scope	completed	cancelled	2026-11-21T08:10:24Z	2026-11-21T08:10:24Z	2026-11-21T08:12:07Z	1		
+44883576006	pull_request	goal-3/s31-paired-check	completed	success	2026-11-21T08:09:59Z	2026-11-21T08:09:59Z	2026-11-21T08:40:25Z	1		
+44882505305	pull_request	goal-3/s17-han15-check	completed	success	2026-11-21T07:56:06Z	2026-11-21T07:56:06Z	2026-11-21T08:27:25Z	1		
+44882491547	pull_request	goal-3/m2-auth-decision	completed	cancelled	2026-11-21T07:55:55Z	2026-11-21T07:55:55Z	2026-11-21T08:30:00Z	1		
+44882253557	pull_request	goal-3/staging-check	completed	success	2026-11-21T07:52:41Z	2026-11-21T07:52:41Z	2026-11-21T08:20:07Z	1		
+44881988160	pull_request	goal-3/m2-02-check	completed	success	2026-11-21T07:49:07Z	2026-11-21T07:49:07Z	2026-11-21T08:15:38Z	1	267	goal/stage-1
+44881363138	pull_request	goal-3/s29-build	completed	success	2026-11-21T07:40:56Z	2026-11-21T07:40:56Z	2026-11-21T08:14:39Z	1		
+44880844316	pull_request	goal-3/m2-02-check	completed	cancelled	2026-11-21T07:34:05Z	2026-11-21T07:34:05Z	2026-11-21T07:49:25Z	1	267	goal/stage-1
+44880701238	pull_request	goal-3/s29-build	completed	cancelled	2026-11-21T07:32:14Z	2026-11-21T07:32:14Z	2026-11-21T07:41:13Z	1		
+44880466948	pull_request	goal-3/m2-auth-decision	completed	cancelled	2026-11-21T07:29:18Z	2026-11-21T07:29:18Z	2026-11-21T07:55:59Z	1		
+44880460187	pull_request	goal-3/s27-check	completed	success	2026-11-21T07:29:13Z	2026-11-21T07:29:13Z	2026-11-21T08:02:50Z	1		
+44880192730	push	goal/stage-1	completed	success	2026-11-21T07:25:34Z	2026-11-21T07:25:34Z	2026-11-21T08:05:46Z	1		
+44880021578	pull_request	goal-3/s31-build	completed	failure	2026-11-21T07:23:20Z	2026-11-21T07:23:20Z	2026-11-21T08:02:47Z	1		
+44879997660	pull_request	goal-3/s31-build	completed	cancelled	2026-11-21T07:23:03Z	2026-11-21T07:23:03Z	2026-11-21T07:23:21Z	1		
+44879827254	push	goal/stage-1	completed	failure	2026-11-21T07:20:55Z	2026-11-21T07:20:55Z	2026-11-21T07:54:46Z	1		
+44879701884	pull_request	conductor/scope	completed	success	2026-11-21T07:19:24Z	2026-11-21T07:19:24Z	2026-11-21T07:22:45Z	1		
+44879569564	push	goal/stage-1	completed	success	2026-11-21T07:17:42Z	2026-11-21T07:17:42Z	2026-11-21T07:48:00Z	1		
+44879547354	push	goal/stage-1	completed	success	2026-11-21T07:17:23Z	2026-11-21T07:17:23Z	2026-11-21T07:45:54Z	1		
+44879340628	push	goal/stage-1	completed	success	2026-11-21T07:14:52Z	2026-11-21T07:14:52Z	2026-11-21T07:45:00Z	1		
+44878618691	pull_request	goal-3/snag-triage	completed	success	2026-11-21T07:05:45Z	2026-11-21T07:05:45Z	2026-11-21T07:14:29Z	1		
+44878438102	push	goal/stage-1	completed	success	2026-11-21T07:03:30Z	2026-11-21T07:03:30Z	2026-11-21T07:39:15Z	1		
+44878435836	pull_request	goal-3/stage1-journeys-check	completed	success	2026-11-21T07:03:28Z	2026-11-21T07:03:28Z	2026-11-21T07:24:54Z	1		
+44878323796	pull_request	goal-3/snag-triage	completed	cancelled	2026-11-21T07:02:05Z	2026-11-21T07:02:05Z	2026-11-21T07:05:58Z	1		
+44878216855	pull_request	goal-3/merge-main-nov21	completed	success	2026-11-21T07:00:50Z	2026-11-21T07:00:50Z	2026-11-21T07:19:06Z	1		
+44877972194	pull_request	goal-3/milestones-ticks	completed	success	2026-11-21T06:57:39Z	2026-11-21T06:57:39Z	2026-11-21T07:15:31Z	1		
+44877930084	pull_request	goal-3/climb-rerun-nov21	completed	success	2026-11-21T06:57:04Z	2026-11-21T06:57:04Z	2026-11-21T07:00:51Z	1		
+44877496718	push	goal/stage-1	completed	success	2026-11-21T06:51:12Z	2026-11-21T06:51:12Z	2026-11-21T07:08:30Z	1		
+44877303578	push	goal/stage-1	completed	success	2026-11-21T06:48:41Z	2026-11-21T06:48:41Z	2026-11-21T07:12:15Z	1		
+44876953305	pull_request	goal-3/s31-control-check	completed	success	2026-11-21T06:44:09Z	2026-11-21T06:44:09Z	2026-11-21T07:01:58Z	1		
+44876068627	pull_request	goal-3/s31-build	completed	failure	2026-11-21T06:33:00Z	2026-11-21T06:33:00Z	2026-11-21T06:56:01Z	1		
+44875944202	pull_request	goal-3/s29-check	completed	success	2026-11-21T06:31:26Z	2026-11-21T06:31:26Z	2026-11-21T06:50:10Z	1		
+44875817292	pull_request	goal-3/s30-build	completed	success	2026-11-21T06:30:00Z	2026-11-21T06:30:00Z	2026-11-21T06:47:42Z	1		
+44875801456	pull_request	goal-3/s30-build	completed	cancelled	2026-11-21T06:29:48Z	2026-11-21T06:29:48Z	2026-11-21T06:30:04Z	1		
+44875488484	push	goal/stage-1	completed	success	2026-11-21T06:25:40Z	2026-11-21T06:25:40Z	2026-11-21T06:42:47Z	1		
+44874547799	pull_request	goal-3/s29-check	completed	success	2026-11-21T06:13:50Z	2026-11-21T06:13:50Z	2026-11-21T06:31:01Z	1		
+44874170020	pull_request	goal-3/s30-check	completed	success	2026-11-21T06:09:06Z	2026-11-21T06:09:06Z	2026-11-21T06:24:38Z	1		
+44873419089	push	goal/stage-1	completed	success	2026-11-21T05:59:50Z	2026-11-21T05:59:50Z	2026-11-21T06:16:57Z	1		
+44871942917	pull_request	goal-3/s29-check	completed	success	2026-11-21T05:40:09Z	2026-11-21T05:40:09Z	2026-11-21T05:57:36Z	1		
+44871882750	pull_request	goal-3/s31-check	completed	success	2026-11-21T05:39:19Z	2026-11-21T05:39:19Z	2026-11-21T05:55:23Z	1		
+44870757693	pull_request	goal-3/s30-check	completed	success	2026-11-21T05:24:39Z	2026-11-21T05:24:39Z	2026-11-21T05:41:02Z	1		
+44869173829	pull_request	goal-3/s29-check	completed	success	2026-11-21T05:05:05Z	2026-11-21T05:05:05Z	2026-11-21T05:23:34Z	1		
+44869011421	push	goal/stage-1	completed	success	2026-11-21T05:03:04Z	2026-11-21T05:03:04Z	2026-11-21T05:22:10Z	1		
+44868728175	pull_request	claude/m8-time-check	completed	success	2026-11-21T04:59:46Z	2026-11-21T04:59:46Z	2026-11-21T05:13:38Z	1		
+44868679280	push	main	completed	success	2026-11-21T04:59:05Z	2026-11-21T04:59:05Z	2026-11-21T05:12:16Z	1		
+44868549662	pull_request	goal-3/s29-check	completed	cancelled	2026-11-21T04:57:18Z	2026-11-21T04:57:18Z	2026-11-21T05:05:22Z	1		
+44868540153	pull_request	goal-3/s29-check	completed	cancelled	2026-11-21T04:57:10Z	2026-11-21T04:57:10Z	2026-11-21T04:57:19Z	1		
+44868221165	pull_request	goal-3/s31-check	completed	success	2026-11-21T04:52:58Z	2026-11-21T04:52:58Z	2026-11-21T05:11:15Z	1		
+44868207546	pull_request	goal-3/s31-check	completed	cancelled	2026-11-21T04:52:47Z	2026-11-21T04:52:47Z	2026-11-21T04:52:59Z	1		
+44867812034	pull_request	goal-3/s30-check	completed	success	2026-11-21T04:47:39Z	2026-11-21T04:47:39Z	2026-11-21T05:06:00Z	1		
+44867800675	pull_request	goal-3/s30-check	completed	cancelled	2026-11-21T04:47:30Z	2026-11-21T04:47:30Z	2026-11-21T04:47:41Z	1		
+44867611569	pull_request	claude/m8-time-check	completed	success	2026-11-21T04:45:07Z	2026-11-21T04:45:07Z	2026-11-21T04:56:25Z	1		
+44867554753	pull_request	claude/m8-time-check	completed	cancelled	2026-11-21T04:44:21Z	2026-11-21T04:44:21Z	2026-11-21T04:45:08Z	1		
+44867519138	pull_request	spike/ui-sdk-real-world	completed	success	2026-11-21T04:43:54Z	2026-11-21T04:43:54Z	2026-11-21T04:54:36Z	1		
+44867402789	pull_request	goal-3/stores-quote	completed	success	2026-11-21T04:42:21Z	2026-11-21T04:42:21Z	2026-11-21T05:02:34Z	1		
+44867377006	push	goal/stage-1	completed	success	2026-11-21T04:42:02Z	2026-11-21T04:42:02Z	2026-11-21T04:58:28Z	1		
+44866130038	pull_request	goal-3/st122-build	completed	success	2026-11-21T04:26:37Z	2026-11-21T04:26:37Z	2026-11-21T04:40:43Z	1		
+44865052496	push	goal/stage-1	completed	success	2026-11-21T04:13:46Z	2026-11-21T04:13:46Z	2026-11-21T04:30:17Z	1		
+44864823114	push	goal/stage-1	completed	success	2026-11-21T04:11:06Z	2026-11-21T04:11:06Z	2026-11-21T04:26:58Z	1		
+44864660534	pull_request	goal-3/st122-build	completed	success	2026-11-21T04:09:11Z	2026-11-21T04:09:11Z	2026-11-21T04:23:48Z	1		
+44863832065	pull_request	goal-3/st121-canon	completed	success	2026-11-21T03:59:24Z	2026-11-21T03:59:24Z	2026-11-21T04:13:14Z	1		
+44863384608	pull_request	goal-3/st122-design	completed	success	2026-11-21T03:53:35Z	2026-11-21T03:53:35Z	2026-11-21T04:10:14Z	1		
+44863222446	push	goal/stage-1	completed	success	2026-11-21T03:51:30Z	2026-11-21T03:51:30Z	2026-11-21T04:07:39Z	1		
+44862464380	pull_request	goal-3/st121-canon	completed	success	2026-11-21T03:42:07Z	2026-11-21T03:42:07Z	2026-11-21T03:57:21Z	1		
+44861979402	pull_request	goal-3/st120-followups	completed	success	2026-11-21T03:36:15Z	2026-11-21T03:36:15Z	2026-11-21T03:51:12Z	1		
+44861913780	push	goal/stage-1	completed	success	2026-11-21T03:35:28Z	2026-11-21T03:35:28Z	2026-11-21T03:49:45Z	1		
+44860563468	pull_request	goal-3/st120-build	completed	success	2026-11-21T03:19:59Z	2026-11-21T03:19:59Z	2026-11-21T03:33:42Z	1		
+44859999770	push	goal/stage-1	completed	success	2026-11-21T03:13:33Z	2026-11-21T03:13:33Z	2026-11-21T03:29:38Z	1		
+44858515998	pull_request	goal-3/st120-check	completed	success	2026-11-21T02:56:09Z	2026-11-21T02:56:09Z	2026-11-21T03:12:33Z	1		
+44858425581	pull_request	goal-3/st120-check	completed	cancelled	2026-11-21T02:55:05Z	2026-11-21T02:55:05Z	2026-11-21T02:56:27Z	1		
+44857520970	push	goal/stage-1	completed	success	2026-11-21T02:44:34Z	2026-11-21T02:44:34Z	2026-11-21T02:58:19Z	1		
+44856934446	pull_request	goal-3/snags-s29-docs	completed	success	2026-11-21T02:37:44Z	2026-11-21T02:37:44Z	2026-11-21T02:43:32Z	1		
+44856831696	pull_request	goal-3/st120-check	completed	success	2026-11-21T02:36:35Z	2026-11-21T02:36:35Z	2026-11-21T02:53:02Z	1		
+44856386866	push	goal/stage-1	completed	success	2026-11-21T02:31:43Z	2026-11-21T02:31:43Z	2026-11-21T02:46:31Z	1		
+44854336648	pull_request	goal-3/st119-build	completed	success	2026-11-21T02:09:53Z	2026-11-21T02:09:53Z	2026-11-21T02:26:28Z	1		
+44853701075	pull_request	goal-3/snags-s29-docs	completed	success	2026-11-21T02:03:14Z	2026-11-21T02:03:14Z	2026-11-21T02:06:51Z	1		
+44853546163	pull_request	goal-3/snags-s29-docs	completed	cancelled	2026-11-21T02:01:36Z	2026-11-21T02:01:36Z	2026-11-21T02:03:32Z	1		
+44853458170	push	goal/stage-1	completed	success	2026-11-21T02:00:45Z	2026-11-21T02:00:45Z	2026-11-21T02:18:08Z	1		
+44851848527	pull_request	goal-3/st119-check	completed	success	2026-11-21T01:43:28Z	2026-11-21T01:43:28Z	2026-11-21T01:59:34Z	1		
+44850068881	pull_request	goal-3/st119-check	completed	success	2026-11-21T01:25:14Z	2026-11-21T01:25:14Z	2026-11-21T01:41:51Z	1		
+44848359187	pull_request	goal-3/st119-check	completed	success	2026-11-21T01:08:43Z	2026-11-21T01:08:43Z	2026-11-21T01:23:13Z	1		
+44846812170	push	goal/stage-1	completed	success	2026-11-21T00:53:50Z	2026-11-21T00:53:50Z	2026-11-21T01:10:12Z	1		
+44845139267	pull_request	goal-3/st118-prove-check	completed	success	2026-11-21T00:38:14Z	2026-11-21T00:38:14Z	2026-11-21T00:52:40Z	1		
+44844104613	pull_request	goal-3/st118-prove-check	completed	cancelled	2026-11-21T00:28:59Z	2026-11-21T00:28:59Z	2026-11-21T00:38:31Z	1		
+44842277024	push	goal/stage-1	completed	success	2026-11-21T00:12:41Z	2026-11-21T00:12:41Z	2026-11-21T00:24:29Z	1		
+44840199308	pull_request	goal-3/st116-runtime-build	completed	success	2026-11-20T23:54:49Z	2026-11-20T23:54:49Z	2026-11-21T00:11:47Z	1		
+44840091560	push	goal/stage-1	completed	success	2026-11-20T23:53:53Z	2026-11-20T23:53:53Z	2026-11-21T00:08:49Z	1		
+44839827969	pull_request	goal-3/st116-runtime-build	completed	cancelled	2026-11-20T23:51:35Z	2026-11-20T23:51:35Z	2026-11-20T23:55:07Z	1		
+44838052764	pull_request	goal-3/st117-add-thing-build	completed	success	2026-11-20T23:36:34Z	2026-11-20T23:36:34Z	2026-11-20T23:53:06Z	1		
+44837724622	pull_request	goal-3/st116-runtime-build	completed	success	2026-11-20T23:33:58Z	2026-11-20T23:33:58Z	2026-11-20T23:48:41Z	1		
+44837580637	push	goal/stage-1	completed	success	2026-11-20T23:32:49Z	2026-11-20T23:32:49Z	2026-11-20T23:45:56Z	1		
+44835359774	pull_request	goal-3/st116-runtime-build	completed	cancelled	2026-11-20T23:14:53Z	2026-11-20T23:14:53Z	2026-11-20T23:34:14Z	1		
+44835101891	pull_request	goal-3/st117-outputs-build	completed	success	2026-11-20T23:12:48Z	2026-11-20T23:12:48Z	2026-11-20T23:31:42Z	1		
+44834976909	push	goal/stage-1	completed	success	2026-11-20T23:11:50Z	2026-11-20T23:11:50Z	2026-11-20T23:30:14Z	1		
+44834620515	pull_request	goal-3/st116-runtime-build	completed	cancelled	2026-11-20T23:09:03Z	2026-11-20T23:09:03Z	2026-11-20T23:15:12Z	1		
+44834440418	pull_request	goal-3/st117-outputs-build	completed	cancelled	2026-11-20T23:07:38Z	2026-11-20T23:07:38Z	2026-11-20T23:13:06Z	1		
+44832718934	pull_request	goal-3/add-invariants-check	completed	success	2026-11-20T22:54:26Z	2026-11-20T22:54:26Z	2026-11-20T23:11:17Z	1		
+44832262344	pull_request	goal-3/st117-outputs-build	completed	success	2026-11-20T22:50:55Z	2026-11-20T22:50:55Z	2026-11-20T23:04:08Z	1		
+44831571620	pull_request	goal-3/add-invariants-check	completed	cancelled	2026-11-20T22:45:44Z	2026-11-20T22:45:44Z	2026-11-20T22:54:43Z	1		
+44829145317	pull_request	goal-3/st116-runtime-build	completed	failure	2026-11-20T22:27:47Z	2026-11-20T22:27:47Z	2026-11-20T22:43:45Z	1		
+44827655631	push	goal/stage-1	completed	success	2026-11-20T22:17:08Z	2026-11-20T22:17:08Z	2026-11-20T22:33:54Z	1		
+44825834888	push	goal/on-chain	completed	success	2026-11-20T22:04:33Z	2026-11-20T22:04:33Z	2026-11-20T22:21:02Z	1		
+44824400334	pull_request	design/goal-04-m601	completed	success	2026-11-20T21:54:23Z	2026-11-20T21:54:23Z	2026-11-20T22:03:49Z	1		
+44824355347	pull_request	design/goal-04-m601	completed	cancelled	2026-11-20T21:54:05Z	2026-11-20T21:54:05Z	2026-11-20T21:54:25Z	1		
+44824340395	pull_request	design/goal-04-m601	completed	cancelled	2026-11-20T21:53:58Z	2026-11-20T21:53:58Z	2026-11-20T21:54:10Z	1		
+44824278725	pull_request	design/goal-04-m601	completed	cancelled	2026-11-20T21:53:32Z	2026-11-20T21:53:32Z	2026-11-20T21:54:00Z	1		
+44824206541	push	goal/on-chain	completed	success	2026-11-20T21:53:02Z	2026-11-20T21:53:02Z	2026-11-20T22:10:27Z	1		
+44824200723	pull_request	goal-3/st115-compiler-build	completed	success	2026-11-20T21:53:00Z	2026-11-20T21:53:00Z	2026-11-20T22:16:18Z	1		
+44823124925	pull_request	design/goal-04-file	completed	success	2026-11-20T21:45:28Z	2026-11-20T21:45:28Z	2026-11-20T21:52:37Z	1		
+44822874208	pull_request	design/goal-04-file	completed	cancelled	2026-11-20T21:43:45Z	2026-11-20T21:43:45Z	2026-11-20T21:45:41Z	1		
+44822810577	push	goal/on-chain	completed	success	2026-11-20T21:43:19Z	2026-11-20T21:43:19Z	2026-11-20T22:05:40Z	1		
+44822776683	push	goal/stage-1	completed	success	2026-11-20T21:43:05Z	2026-11-20T21:43:05Z	2026-11-20T22:02:27Z	1		
+44822359843	pull_request	goal-3/st115-compiler-build	completed	cancelled	2026-11-20T21:40:12Z	2026-11-20T21:40:12Z	2026-11-20T21:53:17Z	1		
+44821425728	push	goal/stage-1	completed	failure	2026-11-20T21:33:49Z	2026-11-20T21:33:49Z	2026-11-20T21:53:04Z	1		
+44821314722	push	goal/stage-1	completed	success	2026-11-20T21:33:06Z	2026-11-20T21:33:06Z	2026-11-20T21:53:56Z	1		
+44819322851	pull_request	design/k27-three-kinds	completed	success	2026-11-20T21:19:41Z	2026-11-20T21:19:41Z	2026-11-20T21:42:24Z	1		
+44819205304	pull_request	design/k27-three-kinds	completed	cancelled	2026-11-20T21:18:53Z	2026-11-20T21:18:53Z	2026-11-20T21:19:43Z	1		
+44817391995	pull_request	goal-3/invariant-api-build	completed	success	2026-11-20T21:06:49Z	2026-11-20T21:06:49Z	2026-11-20T21:32:37Z	1		
+44817296367	pull_request	goal-3/s19-perf-build	completed	success	2026-11-20T21:06:11Z	2026-11-20T21:06:11Z	2026-11-20T21:32:16Z	1		
+44816520113	pull_request	goal-3/invariant-api-build	completed	cancelled	2026-11-20T21:01:04Z	2026-11-20T21:01:04Z	2026-11-20T21:07:07Z	1		
+44815851932	push	goal/stage-1	completed	success	2026-11-20T20:56:32Z	2026-11-20T20:56:32Z	2026-11-20T21:39:12Z	1		
+44815270376	push	goal/stage-1	completed	success	2026-11-20T20:52:34Z	2026-11-20T20:52:34Z	2026-11-20T21:29:42Z	1		
+44814639353	pull_request	design/k27-three-kinds	completed	success	2026-11-20T20:48:19Z	2026-11-20T20:48:19Z	2026-11-20T21:17:48Z	1		
+44814361110	pull_request	design/k27-three-kinds	completed	cancelled	2026-11-20T20:46:23Z	2026-11-20T20:46:23Z	2026-11-20T20:48:20Z	1		
+44813575756	pull_request	goal-3/s19-perf-build	completed	cancelled	2026-11-20T20:41:08Z	2026-11-20T20:41:08Z	2026-11-20T21:06:17Z	1		
+44813456686	push	goal/stage-1	completed	success	2026-11-20T20:40:19Z	2026-11-20T20:40:19Z	2026-11-20T21:25:55Z	1		
+44812902824	push	goal/stage-1	completed	success	2026-11-20T20:36:32Z	2026-11-20T20:36:32Z	2026-11-20T21:24:38Z	1		
+44812649187	pull_request	goal-3/states-reader-check	completed	success	2026-11-20T20:34:52Z	2026-11-20T20:34:52Z	2026-11-20T20:56:13Z	1		
+44809890602	pull_request	goal-3/flakes-check	completed	success	2026-11-20T20:16:44Z	2026-11-20T20:16:44Z	2026-11-20T20:52:03Z	1		
+44809332175	pull_request	goal-3/flakes-check	completed	cancelled	2026-11-20T20:13:08Z	2026-11-20T20:13:08Z	2026-11-20T20:16:46Z	1		
+44809209692	pull_request	design/k27-three-kinds	completed	success	2026-11-20T20:12:18Z	2026-11-20T20:12:18Z	2026-11-20T20:44:27Z	1		
+44807750129	pull_request	goal-3/states-reader-check	completed	success	2026-11-20T20:02:47Z	2026-11-20T20:02:47Z	2026-11-20T20:32:43Z	1		
+44807592589	pull_request	goal-3/s19-build	completed	success	2026-11-20T20:01:46Z	2026-11-20T20:01:46Z	2026-11-20T20:39:19Z	1		
+44807133984	pull_request	goal-3/prove-invariants	completed	success	2026-11-20T19:58:51Z	2026-11-20T19:58:51Z	2026-11-20T20:36:18Z	1		
+44806840959	pull_request	goal-3/s19-perf-build	completed	failure	2026-11-20T19:56:52Z	2026-11-20T19:56:52Z	2026-11-20T20:24:54Z	1		
+44806800864	pull_request	goal-3/s19-build	completed	cancelled	2026-11-20T19:56:35Z	2026-11-20T19:56:35Z	2026-11-20T20:01:47Z	1		
+44806683440	pull_request	goal-3/invariant-api-build	completed	failure	2026-11-20T19:55:48Z	2026-11-20T19:55:48Z	2026-11-20T20:26:09Z	1		
+44804664869	push	goal/stage-1	completed	success	2026-11-20T19:42:40Z	2026-11-20T19:42:40Z	2026-11-20T21:18:19Z	1		
+44804473927	pull_request	goal-3/s19-perf-build	completed	cancelled	2026-11-20T19:41:26Z	2026-11-20T19:41:26Z	2026-11-20T19:57:09Z	1		
+44804090022	push	goal/stage-1	completed	success	2026-11-20T19:38:54Z	2026-11-20T19:38:54Z	2026-11-20T21:14:17Z	1		
+44804080817	push	main	completed	success	2026-11-20T19:38:50Z	2026-11-20T19:38:50Z	2026-11-20T20:06:02Z	1		
+44803788733	pull_request	spike/ui-sdk-verb-primitive	completed	success	2026-11-20T19:36:57Z	2026-11-20T19:36:57Z	2026-11-20T19:53:36Z	1		
+44802978410	pull_request	design/k27-three-kinds	completed	failure	2026-11-20T19:31:50Z	2026-11-20T19:31:50Z	2026-11-20T20:11:22Z	1		
+44802860256	pull_request	claude/k24-gaps	completed	success	2026-11-20T19:31:07Z	2026-11-20T19:31:07Z	2026-11-20T19:38:32Z	1		
+44802748433	pull_request	design/k27-three-kinds	completed	cancelled	2026-11-20T19:30:26Z	2026-11-20T19:30:26Z	2026-11-20T19:31:52Z	1		
+44802571672	push	goal/stage-1	completed	success	2026-11-20T19:29:17Z	2026-11-20T19:29:17Z	2026-11-20T20:55:46Z	1		
+44802558650	push	goal/stage-1	completed	success	2026-11-20T19:29:12Z	2026-11-20T19:29:12Z	2026-11-20T20:52:13Z	1		
+44802535451	pull_request	claude/k24-gaps	completed	cancelled	2026-11-20T19:29:03Z	2026-11-20T19:29:03Z	2026-11-20T19:31:24Z	1		
+44802155577	push	main	completed	success	2026-11-20T19:26:34Z	2026-11-20T19:26:34Z	2026-11-20T19:40:42Z	1		
+44802136125	pull_request	goal-3/s19-build	completed	success	2026-11-20T19:26:27Z	2026-11-20T19:26:27Z	2026-11-20T19:54:21Z	1		
+44801556543	pull_request	goal-3/prove-invariants	completed	success	2026-11-20T19:22:44Z	2026-11-20T19:22:44Z	2026-11-20T19:54:36Z	1		
+44801359972	pull_request	claude/money-gap	completed	success	2026-11-20T19:21:27Z	2026-11-20T19:21:27Z	2026-11-20T19:26:16Z	1		
+44801334944	push	goal/stage-1	completed	success	2026-11-20T19:21:17Z	2026-11-20T19:21:17Z	2026-11-20T20:51:13Z	1		
+44799945188	push	goal/stage-1	completed	success	2026-11-20T19:12:17Z	2026-11-20T19:12:17Z	2026-11-20T20:36:43Z	1		
+44799831264	pull_request	goal-3/warm-world-build	completed	success	2026-11-20T19:11:34Z	2026-11-20T19:11:34Z	2026-11-20T19:42:16Z	1		
+44799533436	pull_request	goal-3/tsc-pretty	completed	success	2026-11-20T19:09:43Z	2026-11-20T19:09:43Z	2026-11-20T19:38:16Z	1		
+44799520213	pull_request	design/k27-three-kinds	completed	success	2026-11-20T19:09:37Z	2026-11-20T19:09:37Z	2026-11-20T19:16:14Z	1		
+44799366137	pull_request	design/k27-three-kinds	completed	cancelled	2026-11-20T19:08:36Z	2026-11-20T19:08:36Z	2026-11-20T19:09:41Z	1		
+44799200483	pull_request	design/k27-three-kinds	completed	cancelled	2026-11-20T19:07:34Z	2026-11-20T19:07:34Z	2026-11-20T19:08:38Z	1		
+44798472661	pull_request	design/k27-three-kinds	completed	cancelled	2026-11-20T19:02:56Z	2026-11-20T19:02:56Z	2026-11-20T19:07:36Z	1		
+44798182909	pull_request	design/k25-blueprint-on-chain	completed	success	2026-11-20T19:01:04Z	2026-11-20T19:01:04Z	2026-11-20T19:28:34Z	1		
+44797869227	pull_request	design/k26-on-chain-forward	completed	success	2026-11-20T18:59:06Z	2026-11-20T18:59:06Z	2026-11-20T19:09:45Z	1		
+44797831786	pull_request	design/k25-blueprint-on-chain	completed	cancelled	2026-11-20T18:58:50Z	2026-11-20T18:58:50Z	2026-11-20T19:01:06Z	1		
+44797526852	pull_request	design/k26-on-chain-forward	completed	cancelled	2026-11-20T18:56:48Z	2026-11-20T18:56:48Z	2026-11-20T18:59:10Z	1		
+44797500303	push	goal/stage-1	completed	success	2026-11-20T18:56:37Z	2026-11-20T18:56:37Z	2026-11-20T19:59:17Z	1		
+44797467073	pull_request	design/k25-blueprint-on-chain	completed	cancelled	2026-11-20T18:56:24Z	2026-11-20T18:56:24Z	2026-11-20T18:58:58Z	1		
+44797250002	pull_request	conductor/k24-ui-sdk	completed	success	2026-11-20T18:55:02Z	2026-11-20T18:55:02Z	2026-11-20T19:05:48Z	1		
+44797111991	push	goal/stage-1	completed	success	2026-11-20T18:54:08Z	2026-11-20T18:54:08Z	2026-11-20T19:45:40Z	1		
+44796275059	pull_request	goal-3/tsc-pretty	completed	cancelled	2026-11-20T18:48:43Z	2026-11-20T18:48:43Z	2026-11-20T19:10:00Z	1		
+44795628351	push	goal/stage-1	completed	success	2026-11-20T18:44:35Z	2026-11-20T18:44:35Z	2026-11-20T19:26:32Z	1		
+44795204941	pull_request	goal-3/type-checks	completed	success	2026-11-20T18:41:52Z	2026-11-20T18:41:52Z	2026-11-20T19:17:26Z	1		
+44795146575	pull_request	goal-3/prove-invariants	completed	success	2026-11-20T18:41:29Z	2026-11-20T18:41:29Z	2026-11-20T19:14:14Z	1		
+44795099195	pull_request	goal-3/invariants-checks	completed	success	2026-11-20T18:41:10Z	2026-11-20T18:41:10Z	2026-11-20T19:11:06Z	1		
+44794339445	pull_request	goal-3/warm-timing-check	completed	success	2026-11-20T18:36:19Z	2026-11-20T18:36:19Z	2026-11-20T18:56:22Z	1		
+44794169348	push	goal/stage-1	completed	success	2026-11-20T18:35:15Z	2026-11-20T18:35:15Z	2026-11-20T19:04:49Z	1		
+44791123372	pull_request	goal-3/prove-changed-build	completed	success	2026-11-20T18:15:55Z	2026-11-20T18:15:55Z	2026-11-20T18:53:44Z	1		
+44790064282	pull_request	goal-3/type-checks	completed	cancelled	2026-11-20T18:09:18Z	2026-11-20T18:09:18Z	2026-11-20T18:42:08Z	1		
+44789974730	pull_request	goal-3/k14-follow-up	completed	success	2026-11-20T18:08:44Z	2026-11-20T18:08:44Z	2026-11-20T18:43:29Z	1		
+44789910131	pull_request	goal-3/k14-follow-up	completed	cancelled	2026-11-20T18:08:18Z	2026-11-20T18:08:18Z	2026-11-20T18:08:46Z	1		
+44788896850	pull_request	goal-3/missing-handler-check	completed	success	2026-11-20T18:01:54Z	2026-11-20T18:01:54Z	2026-11-20T18:33:29Z	1		
+44788802001	pull_request	conductor/k24-ui-sdk	completed	success	2026-11-20T18:01:19Z	2026-11-20T18:01:19Z	2026-11-20T18:10:57Z	1		
+44788740729	push	main	completed	success	2026-11-20T18:00:58Z	2026-11-20T18:00:58Z	2026-11-20T18:25:01Z	1		
