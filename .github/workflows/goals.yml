@@ -4,10 +4,14 @@ name: goals
 # tools/github/sync.mjs from the briefs on main and on the goal branches (a lead's status, lead and "Where it stands"
 # come from its goal branch). It runs when a brief changes on main, when an issue opens, closes, changes milestone or
 # label, and every three hours, so the progress, the open snags and what waits on other goals stay true.
+# Since K42 it also keeps the board: on every push to main, and every three hours so the roadmap's forecast stays
+# current, `sync.mjs --board --project --apply` writes one issue per row of docs/canon/status.md's capability map (or
+# adopts the issue a row names) and the Project's fields and dates. The organization's issue types need admin:org, which
+# this workflow's token never has: they are made once, locally, by `sync.mjs --board --bootstrap --apply`. Until then
+# the steps below print a ::warning:: and write nothing; they never go red for it.
 on:
   push:
     branches: [main]
-    paths: ["design/goals/**", "tools/github/**"]
   issues:
     types: [opened, closed, reopened, milestoned, demilestoned, labeled, unlabeled]
   # A lead's push to its goal branch and a new blocked-by link raise no event here, so it also runs every three hours.
@@ -18,6 +22,7 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: read
 
 # One run at a time: two at once could both create the same issue. A newer run waits; it never cancels one mid-write.
 concurrency:
@@ -27,19 +32,32 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # A first board run is about a hundred creates and a thousand Project writes, paced to stay under GitHub's secondary
+    # rate limit (tools/github/pace.mjs); a run that stops is mended by the next one, which finds each row by its marker.
+    timeout-minutes: 90
     steps:
+      # Full history: the roadmap reads when each row's lane first appeared on the status page.
       - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7.1.0
         with:
           node-version: 24
       - run: git fetch --no-tags origin '+refs/heads/goal/*:refs/remotes/origin/goal/*'
-      - run: node --test tools/github/sync.test.mjs tools/github/project.test.mjs
+      - run: node --test tools/github/
       # The Project is Aaron's, and this workflow's own token can't reach a user's Project. With a token holding the
       # project scope saved as ORTHOGRAPH_PROJECT_TOKEN (only on Aaron's yes: AGENTS.md), the run keeps the Project
       # too; without one it keeps the issues and the goal pages, and the Project is kept by a local
       # `node tools/github/sync.mjs --goal-branches --project --apply`.
       - run: node tools/github/sync.mjs --goal-branches --apply ${PROJECT_TOKEN:+--project}
+        env:
+          GH_TOKEN: ${{ secrets.ORTHOGRAPH_PROJECT_TOKEN || github.token }}
+          PROJECT_TOKEN: ${{ secrets.ORTHOGRAPH_PROJECT_TOKEN }}
+      # The board (K42, section 5): after the goals' own pages, so a failure here leaves them current. Not on an
+      # issue event: the board changes when the page does (a push) and the forecast moves with the days (the schedule).
+      - name: The board and the roadmap
+        if: github.event_name != 'issues'
+        run: node tools/github/sync.mjs --goal-branches --board --apply ${PROJECT_TOKEN:+--project}
         env:
           GH_TOKEN: ${{ secrets.ORTHOGRAPH_PROJECT_TOKEN || github.token }}
           PROJECT_TOKEN: ${{ secrets.ORTHOGRAPH_PROJECT_TOKEN }}

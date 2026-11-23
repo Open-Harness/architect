@@ -129,8 +129,11 @@ the 🎼 conductor. The lander, Goal 19, runs as its own thread.
 - **Left for slice 1:** each winding-down goal's last pull request merged and its brief parked; the lander lands their
   finished work (its slice 2).
 
-**Slice 2, the board: first half in review.** `docs/canon/status.md`'s section 2 is now one row per item (stage, who
-pulled it, release, app milestone, lane, paths, needs, evidence), and `tools/github/sync.mjs --board` plans one issue
-per row, the labels, the milestones and the Project's Stage, Pulled by, Release, Lane and Kind fields (dry run only so
-far; nothing is written to GitHub). Left for the second half: the first real sync, the roadmap's computed dates, the
-`goals` workflow running `--board`, and the `conductor` and `github` skills rewritten whole.
+**Slice 2, the board: second half, the sync ready to run for real (drafts).** The status page has 116 rows, every Item
+opening with a short name and a colon. A row adopts an existing issue with `` `issue #N` `` in its Evidence and folds
+duplicates into it with `` `folds #N, #M` `` (the page's legend says how); Capxul core's rows from Goal 16's #749 are in, and
+Goal 17's and Goal 16's lanes match what they are building. The sync writes the Project's Status (Ready only when every need
+is built), Start and End from pull request merge dates and a pure forecast (`tools/github/roadmap.mjs`), and a due date on
+each app milestone; its writes are paced and a rate-limit refusal is waited out. The `goals` workflow runs `--board` on every
+push to `main` and every three hours. Nothing has been written to GitHub until the pull request merges and the workflow runs.
+Left: the `conductor` and `github` skills rewritten whole (their own pull request).
