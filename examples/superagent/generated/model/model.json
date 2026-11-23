@@ -3062,6 +3062,12 @@
             "bits": 32
           }
         },
+        "revision": {
+          "value": {
+            "type": "uint",
+            "bits": 32
+          }
+        },
         "saved": {
           "value": {
             "type": "schema"
@@ -3073,6 +3079,15 @@
         "key": "id"
       },
       "lives": "database",
+      "invariants": {
+        "oneVersionPerRevision": {
+          "kind": "unique",
+          "fields": [
+            "revision"
+          ],
+          "framework": true
+        }
+      },
       "machine": {
         "states": [
           "observing",
@@ -3257,7 +3272,7 @@
         "version": "0.0.0",
         "thing": "superagent"
       },
-      "hash": "7239711b73e83825"
+      "hash": "5c5b72e4701c3970"
     },
     "thread": {
       "name": "thread",
@@ -3774,6 +3789,13 @@
             "prefix": "acc"
           },
           "ref": "account.id"
+        },
+        "why": {
+          "value": {
+            "type": "text",
+            "max": 2000
+          },
+          "optional": true
         }
       },
       "answer": {},
@@ -3818,7 +3840,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "993206a1f21b5397"
+      "hash": "aed36e9d4eaee050"
     },
     "account.seen": {
       "kind": "operation",
@@ -6599,6 +6621,13 @@
             "type": "schema"
           },
           "ref": "policy.rules"
+        },
+        "why": {
+          "value": {
+            "type": "text",
+            "max": 2000
+          },
+          "optional": true
         }
       },
       "answer": {
@@ -6639,7 +6668,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "33c292fd382278c6"
+      "hash": "3f1b3422f570ea53"
     },
     "policy.sync": {
       "kind": "operation",
@@ -6669,6 +6698,13 @@
             "type": "text",
             "max": 60
           }
+        },
+        "why": {
+          "value": {
+            "type": "text",
+            "max": 2000
+          },
+          "optional": true
         }
       },
       "answer": {},
@@ -6689,7 +6725,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "de52b4470a2852bb"
+      "hash": "f711c273daec9367"
     },
     "prompt-set.compose": {
       "kind": "operation",
@@ -6914,6 +6950,13 @@
             "type": "schema"
           },
           "ref": "prompt-set.overrides"
+        },
+        "why": {
+          "value": {
+            "type": "text",
+            "max": 2000
+          },
+          "optional": true
         }
       },
       "answer": {
@@ -6945,7 +6988,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "c383858d3e28f40c"
+      "hash": "58bbd92eeb74053a"
     },
     "proposal.approve": {
       "kind": "operation",
@@ -7267,6 +7310,13 @@
             "type": "schema"
           },
           "ref": "settings.blocked"
+        },
+        "why": {
+          "value": {
+            "type": "text",
+            "max": 2000
+          },
+          "optional": true
         }
       },
       "answer": {
@@ -7315,7 +7365,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "218f6a4b4ede1b5c"
+      "hash": "49f2c784d6b95b81"
     },
     "source.disable": {
       "kind": "operation",
@@ -7775,7 +7825,9 @@
       "errors": [
         "SlotsOutOfRange"
       ],
-      "breaks": [],
+      "breaks": [
+        "superagent.oneVersionPerRevision"
+      ],
       "refusals": [
         "SlotsOutOfRange",
         "AgentNotFound",
@@ -7799,7 +7851,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "5efe7d8005653498"
+      "hash": "995c7fe807d5c179"
     },
     "superagent.fill": {
       "kind": "operation",
@@ -7909,7 +7961,9 @@
         "emits": "SuperagentWentLive"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "superagent.oneVersionPerRevision"
+      ],
       "refusals": [
         "SuperagentNotObserving",
         "SuperagentNotFound",
@@ -7932,7 +7986,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "d87a5ee14c98de9c"
+      "hash": "4bc5e99c608e01d1"
     },
     "superagent.health": {
       "kind": "read",
@@ -8103,7 +8157,9 @@
         "emits": "SuperagentPaused"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "superagent.oneVersionPerRevision"
+      ],
       "refusals": [
         "SuperagentNotObserving",
         "SuperagentNotFound",
@@ -8129,7 +8185,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "05c46ba6c650f8aa"
+      "hash": "9526fb8f391a7a78"
     },
     "superagent.reap": {
       "kind": "operation",
@@ -8241,7 +8297,9 @@
         "emits": "SuperagentResumed"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "superagent.oneVersionPerRevision"
+      ],
       "refusals": [
         "SuperagentNotObserving",
         "SuperagentNotFound",
@@ -8267,7 +8325,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "f2fcdba6ac4d9b8b"
+      "hash": "b14f1b966e0f3e66"
     },
     "superagent.retire": {
       "kind": "operation",
@@ -8307,7 +8365,9 @@
         "emits": "SuperagentRetired"
       },
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "superagent.oneVersionPerRevision"
+      ],
       "refusals": [
         "SuperagentNotObserving",
         "SuperagentNotFound",
@@ -8330,7 +8390,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "3cf79b9fd7bdf31e"
+      "hash": "2a47d7fcab8023e1"
     },
     "superagent.update": {
       "kind": "operation",
@@ -8393,6 +8453,13 @@
             "bits": 8
           },
           "ref": "superagent.slots"
+        },
+        "why": {
+          "value": {
+            "type": "text",
+            "max": 2000
+          },
+          "optional": true
         }
       },
       "answer": {
@@ -8437,7 +8504,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "94f49eef64aa1927"
+      "hash": "fbf9f8cbe0cbc9df"
     },
     "thread.bind": {
       "kind": "operation",
@@ -14441,9 +14508,9 @@
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-ZIAhRWmfb75mbi+6xBAAJtf4qRPVlNsywVCvKuqO1Lc=",
+      "integrity": "sha256-cEvrkAMVCbGBF+hpEGN1H9sIssQ+/tTq4EAp1zTJYc4=",
       "chosen": {},
-      "hash": "6cd4dbc0883d6532"
+      "hash": "aa9af180fc1fea29"
     },
     "models": {
       "kind": "adapter",
@@ -14485,9 +14552,9 @@
       "file": "blueprint/features/prompts.ts",
       "package": "@orthograph/prompts",
       "version": "0.0.0",
-      "integrity": "sha256-3yK5qNmq6uddT7Afi8BzQY9jqT/awzjWaEulc1U1kIU=",
+      "integrity": "sha256-SA+SC2V+11XF4q9+beRHJdLluAejItC9fddZx2ENrH4=",
       "chosen": {},
-      "hash": "16b21e58785b27a0"
+      "hash": "53a3a6fd78c63635"
     },
     "sandbox": {
       "kind": "adapter",
@@ -14540,9 +14607,9 @@
       "file": "blueprint/features/superagent.ts",
       "package": "@orthograph/superagent",
       "version": "0.0.0",
-      "integrity": "sha256-KC1OF0wPw5jOYNIuRHQEfE+ZzjsETyckxAquI7AkpSw=",
+      "integrity": "sha256-DlCYMTStgMtKN8WiCoMF5haikEKdah4R39sSDR8ClNM=",
       "chosen": {},
-      "hash": "7f91db8fbcdaf2a4"
+      "hash": "7041b73df017b79d"
     },
     "tickets": {
       "kind": "feature",

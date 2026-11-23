@@ -1,7 +1,7 @@
 // The handler wrapper: what every generated operation runs through. Decode, check who may call, run the handler as
 // counted work inside the operation's span, check the answer, give it back.
 import { Context, Data, type Effect, type Redacted, type Schema } from "effect";
-import type { AnswerOf, ErrorOf, Field, InstanceOf, Operation, PayloadOf, Principal, Read, StepsOf, Thing } from "orthograph";
+import type { AnswerOf, ErrorOf, Field, InstanceOf, Move, Operation, PayloadOf, Principal, Read, StepsOf, Thing } from "orthograph";
 import type { NotAllowed } from "#modules/access/types.js";
 import type { CallRunner, CallWiring, Callable } from "#modules/calls/types.js";
 import type { Instance, Records, Store } from "#modules/records/types.js";
@@ -32,6 +32,11 @@ export interface HandlerContext<O, C = {}> {
    * state is set and the move's event journalled. A handler that never calls it makes no move and emits nothing.
    */
   readonly move: (to?: MoveTo<O>) => Effect.Effect<void>;
+  /**
+   * Another thing's move, made in this same commit (GOAL17-slice9-build, call 8): a creating move makes its instance (its id minted and answered), any other
+   * moves the instance `id` names, from a state it declares. Its event is journalled with the operation's own; the commit carries both or neither.
+   */
+  readonly also: (move: Move, spec: { readonly id?: string; readonly fields: Readonly<Record<string, unknown>>; readonly to?: string }) => Effect.Effect<string>;
   /**
    * The instance this call is about, read before the handler ran (the from-check and the commit's version guard read the
    * same one), so a handler never reads it again. Undefined when the payload names none, and for a creating move.

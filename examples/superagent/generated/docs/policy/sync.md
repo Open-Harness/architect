@@ -11,6 +11,7 @@ List the accounts a connection's roster names.
 |---|---|
 | superagent | policy.superagent |
 | source | text |
+| why (optional) | text |
 
 ## Answer
 
@@ -25,7 +26,7 @@ List the accounts a connection's roster names.
 ## How to call
 
 ```sh
-superagent policy sync --superagent <superagent> --source <source>
+superagent policy sync --superagent <superagent> --source <source> [--why <why>]
 ```
 
 HTTP: `POST /policy/sync` with the payload as JSON. SDK: `Sdk.policy.sync(payload)`.

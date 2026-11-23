@@ -179,10 +179,12 @@ CREATE TABLE "superagent" (
   "pausedAt" TEXT,
   "pausedFor" TEXT NOT NULL,
   "passGen" TEXT NOT NULL,
+  "revision" TEXT NOT NULL,
   "saved" TEXT,
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "superagent_oneVersionPerRevision" ON "superagent" ("revision");
 CREATE TABLE "thread" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,

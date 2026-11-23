@@ -13,7 +13,7 @@ const create: Handler<typeof declaration, Records> = (payload, { id, move }) =>
     if (payload.slots < 1n || payload.slots > 254n) return yield* new SlotsOutOfRange({ slots: payload.slots });
     const superagent = id as NonNullable<typeof id>;
     const records = yield* Records;
-    yield* records.insert(Superagent, { id: superagent, ...payload, pausedFor: 0n, passGen: 0n } as never);
+    yield* records.insert(Superagent, { id: superagent, ...payload, pausedFor: 0n, passGen: 0n, revision: 1n } as never);
     yield* move();
     return { superagent };
   });

@@ -81,6 +81,7 @@ export const Operations: OperationsApi = {
       ...("needsApproval" in spec ? { needsApproval: spec.needsApproval } : {}),
       budget: spec.budget,
       on: Object.freeze([...(spec.on ?? [])]),
+      ...(spec.proposes === undefined ? {} : { proposes: spec.proposes }),
       runs: spec.runs ?? "server",
       test: spec.test ?? "unit",
     }) as unknown as Operation<typeof thing, typeof spec.payload, typeof spec.answer, never, never> as never,

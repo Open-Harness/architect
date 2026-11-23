@@ -12,6 +12,7 @@ Save a new version of the settings. A save made from an older version is refused
 | base | uint |
 | variables | settings.variables |
 | blocked | settings.blocked |
+| why (optional) | text |
 
 ## Answer
 
@@ -34,7 +35,7 @@ Save a new version of the settings. A save made from an older version is refused
 ## How to call
 
 ```sh
-superagent settings save --base <base> --variables <variables> --blocked <blocked>
+superagent settings save --base <base> --variables <variables> --blocked <blocked> [--why <why>]
 ```
 
 HTTP: `POST /settings/save` with the payload as JSON. SDK: `Sdk.settings.save(payload)`.

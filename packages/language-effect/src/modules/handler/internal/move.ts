@@ -1,7 +1,7 @@
 // The operation's move: the machine's check before the handler, the outcome the handler chose, and the state and
 // journal entry the commit carries.
 import { Effect, Schema, type Tracer } from "effect";
-import type { Operation } from "orthograph";
+import type { Move, Operation, Thing } from "orthograph";
 import { EventNames } from "orthograph/server";
 import type { Entry } from "#modules/journal/types.js";
 import type { Instance, Unit } from "#modules/records/types.js";
@@ -75,10 +75,20 @@ export const applyMove = (name: string, op: Operation, payload: object, answer: 
     const missing = Object.keys(move.emits.fields).filter((k) => !(k in source));
     if (missing.length > 0) return yield* Effect.die(new Error(`${name}: ${event} needs ${missing.join(", ")}, found in neither its instance, answer nor payload`));
     const picked = Object.fromEntries(Object.keys(move.emits.fields).map((k) => [k, source[k]]));
+    return yield* settle(name, move, op.thing, subject, picked, outcome, unit);
+  });
+
+/**
+ * The state set and the journal entry written for one move of one instance: the event's fields encoded and cut to those a reader may see.
+ * The operation's own move ends here, and so does each `also` (another thing's move, made in the same commit).
+ */
+export const settle = (name: string, move: Move, thing: Thing, subject: string, picked: Record<string, unknown>, outcome: string, unit: Unit) =>
+  Effect.gen(function* () {
+    const event = EventNames.nameOf(move.emits) ?? "UnnamedEvent";
     const encoded = yield* Schema.encodeEffect(move.emits.schema as unknown as Codec)(picked).pipe(Effect.orDie);
     // The journal is a record anyone who reads it can see: a secret or private field of the event is not written to it.
     const fields = Object.fromEntries(Object.entries(encoded).filter(([k]) => journalled(move.emits.fields, k)));
-    yield* unit.setState(op.thing, subject, outcome);
+    yield* unit.setState(thing, subject, outcome);
     const trace = yield* Effect.currentSpan.pipe(Effect.map((s) => s.traceId), Effect.orElseSucceed(() => ""));
     return { trace, operation: name, move: move.key, subject, event, fields } satisfies Entry;
   });

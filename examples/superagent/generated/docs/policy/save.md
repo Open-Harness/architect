@@ -16,6 +16,7 @@ Save a new version of the policy. A save made from an older version is refused, 
 | bots | policy.bots |
 | admission | policy.admission |
 | rules | policy.rules |
+| why (optional) | text |
 
 ## Answer
 
@@ -37,7 +38,7 @@ Save a new version of the policy. A save made from an older version is refused, 
 ## How to call
 
 ```sh
-superagent policy save --superagent <superagent> --base <base> --mode <mode> --allowed <allowed> --bots <bots> --admission <admission> --rules <rules>
+superagent policy save --superagent <superagent> --base <base> --mode <mode> --allowed <allowed> --bots <bots> --admission <admission> --rules <rules> [--why <why>]
 ```
 
 HTTP: `POST /policy/save` with the payload as JSON. SDK: `Sdk.policy.save(payload)`.

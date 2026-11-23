@@ -13,7 +13,10 @@ import { canonical, sha256 } from "./internal/digest.ts";
 import { answerAttributes, payloadAttributes, principalAttributes, requestAttributes } from "./internal/attributes.ts";
 import { measureCall } from "./internal/call-metrics.ts";
 import { Environment } from "./internal/environment.ts";
+import { makeAlso } from "./internal/also.ts";
+import { actsAsItself, proposeHandler } from "./internal/propose.ts";
 import { applyMove, checkFrom, chooseOutcome } from "./internal/move.ts";
+import type { Entry } from "#modules/journal/types.js";
 import { prehandle, type Prehandled } from "./internal/prehandle.ts";
 import { recordingLogs } from "./internal/decided.ts";
 import { settleViolation } from "./internal/invariants.ts";
@@ -23,7 +26,7 @@ export { Reads } from "./internal/read.ts";
 export { Environment } from "./internal/environment.ts";
 
 type AnyCodec = Schema.Codec<object, unknown>;
-type AnyHandler = (payload: object, context: { principal: Principal; steps: object; move: (to?: string) => Effect.Effect<void> } & Prehandled) => Effect.Effect<object, unknown, unknown>;
+type AnyHandler = (payload: object, context: { principal: Principal; steps: object; move: (to?: string) => Effect.Effect<void>; also: ReturnType<typeof makeAlso> } & Prehandled) => Effect.Effect<object, unknown, unknown>;
 
 /** An update's version had moved on, so this attempt committed nothing. Never leaves the wrapper. */
 class Conflict extends Data.TaggedError("Conflict")<{}> {}
@@ -90,8 +93,10 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
       const store = yield* Store;
       const unit = yield* Unit.make(store);
       const withRecords = Effect.provideService(Records, unit.records);
+      // An operation that proposes admits an agent acting as itself by its own rule (the superagent whose agent it is, found in `proposeHandler`), and records.
+      const proposing = op.proposes !== undefined && actsAsItself(principal);
       // The check's own reads are not traced: a refusal is, in its own span.
-      yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
+      if (!proposing) yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
         withRecords, Effect.withTracerEnabled(false), Effect.tapError(refused(principal, number, callId, request)),
       );
       const logs = yield* recordingLogs(payload, op.payload);
@@ -113,10 +118,12 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         }
         // What the payload names, read once and handed in; a missing one is refused before the handler, then the from-check.
         const handed = yield* prehandle(op, notFound, payload, unit);
-        const from = yield* checkFrom(op, notFrom, handed.subject);
+        const from = proposing ? undefined : yield* checkFrom(op, notFrom, handed.subject);
         const chosen = yield* Ref.make<string | undefined>(undefined);
         const move = (to?: string) => chooseOutcome(name, op, to, operationSpan).pipe(Effect.flatMap((o) => Ref.set(chosen, o)));
-        const answer = yield* busy.counted(handler(payload, { principal, steps, move, ...handed })).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
+        const alsoEntries = yield* Ref.make<ReadonlyArray<Entry>>([]);
+        const also = makeAlso(name, unit, alsoEntries);
+        const answer = yield* busy.counted((proposing ? proposeHandler(name, op) as unknown as AnyHandler : handler)(payload, { principal, steps, move, also, ...handed })).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
         // Recorded before the check, so an answer outside its declaration is evidence `prove` can name.
         yield* Effect.annotateCurrentSpan(answerAttributes(answer, op.answer));
         // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
@@ -125,7 +132,8 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
           Effect.orDie,
         );
         const outcome = yield* Ref.get(chosen);
-        const entries = outcome === undefined ? [] : [yield* applyMove(name, op, payload, answer, outcome, unit, handed.id)];
+        const own = outcome === undefined ? [] : [yield* applyMove(name, op, payload, answer, outcome, unit, handed.id)];
+        const entries = [...own, ...(yield* Ref.get(alsoEntries))];
         // The state the subject was in, written once the move is made: a refused call made no move.
         if (from !== undefined && outcome !== undefined) yield* Effect.annotateCurrentSpan({ "move.from": from });
         const request = key === undefined ? {} : { request: { key, answer: JSON.stringify({ payload: sha256(canonical(payload)), answer: wire }) } };

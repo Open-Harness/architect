@@ -16,6 +16,7 @@ Save a superagent's configuration as a new version; a stale save is refused.
 | connections | superagent.connections |
 | playbook | superagent.playbook |
 | slots | superagent.slots |
+| why (optional) | text |
 
 ## Answer
 
@@ -35,7 +36,7 @@ Save a superagent's configuration as a new version; a stale save is refused.
 ## How to call
 
 ```sh
-superagent superagent update --superagent <superagent> --base <base> --name <name> --purpose <purpose> --connections <connections> --playbook <playbook> --slots <slots>
+superagent superagent update --superagent <superagent> --base <base> --name <name> --purpose <purpose> --connections <connections> --playbook <playbook> --slots <slots> [--why <why>]
 ```
 
 HTTP: `POST /superagent/update` with the payload as JSON. SDK: `Sdk.superagent.update(payload)`.

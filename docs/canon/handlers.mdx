@@ -71,7 +71,7 @@ Three kinds of line carry the declaration: the declared steps (`steps.load`, `st
 
 The frame is one type, made from the operation:
 
-```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=67-68
+```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=72-73
 /** What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out. */
 export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O>, R>;
 ```
@@ -80,7 +80,7 @@ export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: Han
 - **The context**: the caller as a `principal`, one runner per declared step, `move`, and what the runtime read or
   made before the handler ran (K16): the `subject`, each thing the payload names in `refs`, and a creating move's `id`:
 
-  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=27-47
+  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=27-52
   export interface HandlerContext<O, C = {}> {
     readonly principal: Principal;
     readonly steps: StepRunners<StepsOf<O>, C>;
@@ -89,6 +89,11 @@ export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: Han
      * state is set and the move's event journalled. A handler that never calls it makes no move and emits nothing.
      */
     readonly move: (to?: MoveTo<O>) => Effect.Effect<void>;
+    /**
+     * Another thing's move, made in this same commit (GOAL17-slice9-build, call 8): a creating move makes its instance (its id minted and answered), any other
+     * moves the instance `id` names, from a state it declares. Its event is journalled with the operation's own; the commit carries both or neither.
+     */
+    readonly also: (move: Move, spec: { readonly id?: string; readonly fields: Readonly<Record<string, unknown>>; readonly to?: string }) => Effect.Effect<string>;
     /**
      * The instance this call is about, read before the handler ran (the from-check and the commit's version guard read the
      * same one), so a handler never reads it again. Undefined when the payload names none, and for a creating move.
@@ -111,7 +116,7 @@ refuses a handler that fails with an error its operation doesn't list
 (`packages/generators/src/modules/render/handler-type.test.ts:40`). At run time, an answer outside its declaration
 is never sent. It dies as the handler's bug:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=122-126
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=129-133
 // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
 const wire = yield* check(answer).pipe(
   Effect.mapError((e) => new Error(`${name} answered outside its declaration: ${e.message}`)),
@@ -251,7 +256,7 @@ roles a `roles.ts` exports (F5). Signup has no blank left, so this example is wo
 **A blank in a handler** is `Handlers.blank("…")`, what every fresh scaffold holds. It type-checks as anything, and
 reaching it at run time is a defect that names what is missing:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=195-198
+```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=203-206
 export const Handlers: HandlerApi = {
   serve: serve as unknown as HandlerApi["serve"],
   blank: ((what: string, kind?: "failure") => (kind === "failure" ? () => new BlankReached({ what }) : Effect.die(new BlankReached({ what })))) as unknown as HandlerApi["blank"],

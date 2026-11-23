@@ -125,7 +125,9 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         const resolved = Scripting.resolve(call.payload, env);
         const payload = resolved.value as Record<string, unknown>;
         const person = people[call.actor]?.person ?? "";
-        const may = yield* mayCall(facts.facts, facts.tableOf, call.operation, payload, yield* principalOf(call.actor, call.via), project.mounts);
+        const who = yield* principalOf(call.actor, call.via);
+        // An operation that proposes admits an agent acting as itself by its own rule (the superagent whose agent it is), which the world's server decides and records.
+        const may = "proposes" in call.operation && call.operation.proposes !== undefined && who.kind === "agent" && "agent" in who ? true : yield* mayCall(facts.facts, facts.tableOf, call.operation, payload, who, project.mounts);
         const model = project.model.operations[operation];
         // A plugin's operation that runs on the device is run in this process, by its `world` entry, never sent to the server.
         const r = device !== undefined && onDevice(model)

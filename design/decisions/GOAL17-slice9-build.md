@@ -114,3 +114,16 @@ The agent caller exists, and `superagent.update` reaches its blank handler as th
 ### The launcher contract for a guarded stand-in (GOAL17-slice9-sandbox)
 
 `prove` starts a stand-in as the record says: the bridge prints `stand-in secret <64 hex>` then `stand-in listening on <url>`; the secret is read into memory (`StandRunning.secret`), sent as `x-bridge-secret` on every `/_stand/*` request, and never written; the stand-in's output is drained and dropped once it listens, and a failure message shows the secret line as `<hidden>`. The relay address `open` answers (`tcp://127.0.0.1:<port>#<client token>`) is the sandbox adapter's and the agents' runtime's to use, not prove's.
+
+## Third stretch: `also`, `proposes`, and `superagent.update` (snag #705)
+
+### 8. `also`: a handler's second move (GOAL17-slice9-build, call 8)
+
+`HandlerContext.also(move, { id?, fields, to? })` makes another thing's move in the same commit: a creating move inserts its instance (id minted and answered), any other moves the instance `id` names (its `from` is checked, else the call dies); the event is journalled after the operation's own, and the commit carries both entries or neither. An event field that is the thing's own id is the instance's id. Slice 7's unemitted events (`EvalStarted`, `MandateWithdrawn`, `AssignmentEnded` and the rest) are made with it; none of them is built here, because no check that is reachable reads one yet. Evidence: `handler/also.test.ts`.
+
+### 9. `proposes` (snag #705, K39)
+
+An operation declares `proposes: { move, of: { thing, field }, into, answer }` (`Proposes`, `orthograph`). When an agent acting as itself calls it, its handler does not run: the instance of `of.thing` whose `of.field` holds the agent is found (none: `NotAllowed`), and `move` records a Proposal for it with `operation` the call's name, `changes` its payload as it travels, and `why` (or "no reason given"), in the same commit; the caller is answered `answer`, as if nothing changed. Any other caller runs the handler. `Access` is not asked for such a caller: finding the superagent is the rule. `policy.save` is served by `Versions.handler`, which is why the diversion is in the wrapper and not in a handler.
+- The five operations and `prompts.save` declare it with `proposed(answer)` (in `superagent/roles.ts`, beside `itsMain`) and each gains an optional `why`. I did not add `itsMain` to their `allowed`: `settings.save` has no payload field that reaches a superagent, and `Account.superagent` is a bare id, so a role could not be read; the wrapper's own lookup is the rule, and `prove` takes `mayCall` as true for an agent acting as itself on an operation that proposes.
+- **`superagent.update`** (blank until now) is written: a Superagent has a `revision` (1 when made, one more for each update), a stale `base` is refused with the current one, and slots are 1 to 254. A main agent's call to it records a Proposal.
+- **Evidence:** `handler/proposes.test.ts`; slice 8's `a main agent's configuration change only records a proposal` passes whole (9/9 steps, on a real world), so its line is out of `expected-failing/44-…`.

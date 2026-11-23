@@ -10,6 +10,7 @@ Let an account ask: its person's words may then start work.
 | field | value |
 |---|---|
 | account | account.id |
+| why (optional) | text |
 
 ## Answer
 
@@ -31,7 +32,7 @@ Let an account ask: its person's words may then start work.
 ## How to call
 
 ```sh
-superagent account list --account <account>
+superagent account list --account <account> [--why <why>]
 ```
 
 HTTP: `POST /account/list` with the payload as JSON. SDK: `Sdk.account.list(payload)`.

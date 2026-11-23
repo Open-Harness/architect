@@ -6,7 +6,7 @@ import type { On } from "#modules/events/types.js";
 import type { Move } from "#modules/machines/types.js";
 import type { Call } from "#modules/plugins/types.js";
 import type { Allowed, Builtin, Narrowed, Role, RoleOf, ServiceRole, SignedIn, System } from "#modules/roles/types.js";
-import type { FieldsInput, Thing, ValueOf } from "#modules/things/types.js";
+import type { Field, FieldsInput, Thing, ValueOf } from "#modules/things/types.js";
 import type { TypeOf } from "#modules/values/types.js";
 
 /** A named part of a handler's work, recorded as its own span. Named `<thing>.<verb>.<key>` by the compiler. */
@@ -50,6 +50,19 @@ type AllowedFor<P> =
   | RoleOf<any, (keyof P & string) | `${keyof P & string}.${string}`>
   | Narrowed<Role<any> | SignedIn | RoleOf<any, (keyof P & string) | `${keyof P & string}.${string}`>>;
 
+/**
+ * What an agent acting as itself may only propose (GOAL17-slice9-build, call 9; K39): when such a caller makes the call, the handler does not run. The instance of
+ * `of.thing` whose `of.field` holds the calling agent is found (no such instance, and the caller is refused), and `move` (a creating move) records, in the same
+ * commit, an instance whose `into` field is that instance's id, `operation` the name of the call, `changes` its payload as it travels, and `why` its `why` field
+ * (or "no reason given"). The caller is answered `answer`: nothing changed.
+ */
+export interface Proposes {
+  readonly move: Move;
+  readonly of: { readonly thing: Thing; readonly field: Field };
+  readonly into: string;
+  readonly answer: { readonly [field: string]: unknown };
+}
+
 export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E extends ReadonlyArray<AnyErrorClass>, St extends Steps, M extends Move | undefined = Move | undefined> {
   readonly description: string;
   readonly payload: P;
@@ -68,6 +81,8 @@ export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E e
   readonly test?: TestKind;
   /** The events that call it, each as an outbox hop (`Blueprint.on`). The model records them; the outbox is Goal 11's. */
   readonly on?: ReadonlyArray<On>;
+  /** A call by an agent acting as itself records a proposal and changes nothing. */
+  readonly proposes?: Proposes;
 }
 
 export interface Operation<
@@ -97,6 +112,8 @@ export interface Operation<
   readonly runs: Runs;
   readonly test: TestKind;
   readonly on: ReadonlyArray<On>;
+  /** Present only when declared. */
+  readonly proposes?: Proposes;
 }
 
 /** What a read by id answers: the fields it names, decoded, with `state` as text. */

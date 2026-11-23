@@ -14,6 +14,7 @@ Save a new version of the prompts. A save made from an older version is refused,
 | sections | prompt-set.sections |
 | skills | prompt-set.skills |
 | overrides | prompt-set.overrides |
+| why (optional) | text |
 
 ## Answer
 
@@ -31,7 +32,7 @@ Save a new version of the prompts. A save made from an older version is refused,
 ## How to call
 
 ```sh
-superagent prompt-set save --superagent <superagent> --base <base> --sections <sections> --skills <skills> --overrides <overrides>
+superagent prompt-set save --superagent <superagent> --base <base> --sections <sections> --skills <skills> --overrides <overrides> [--why <why>]
 ```
 
 HTTP: `POST /prompt-set/save` with the payload as JSON. SDK: `Sdk.prompt-set.save(payload)`.

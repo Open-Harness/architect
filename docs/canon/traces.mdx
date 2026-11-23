@@ -76,14 +76,14 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    stranger never looks like work (`service.ts:52`).
 3. **The operation's span opens**, named after the operation, with the caller on it and the call's name, `call.id`, which every attempt of one call shares (O3):
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=158
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=166
    spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
    ```
 
 4. **Traceable payload fields are written on it** (`service.ts:56`).
 5. **Each step is its own span**, marked with its kind:
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=67-75
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=70-78
    const steps = Object.fromEntries(
      // Each step is its own span, marked with its kind: a `database` step's work is the store's, a `wait` step's a timer's.
      Object.entries(op.steps).map(([key, step]) => [
@@ -102,7 +102,7 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    `refusal.code` (`AL-001`, or the machine's `AL-900`), and, when the handler logged something just before refusing,
    `refusal.log`:
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=149-157
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=157-165
    Effect.tapCause((cause) => {
      if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
      const refusal = Cause.squash(cause);
@@ -199,7 +199,7 @@ O2 records the three changes and their proof.
 
 `store.commit(…)` runs inside the `<operation>.commit` span.
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=135-144
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=143-152
 const writes = yield* unit.writes;
 const committed = yield* store.commit({ writes, entries, ...request }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({

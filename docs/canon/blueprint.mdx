@@ -115,7 +115,7 @@ The model is the one contract every projection is made from (K5, seam 1). This i
 `mounts` (`agents`, `sources`, `holds`, `problems` and `declared`) come from the superagent's forms (Goal 17) and appear only
 when a blueprint uses them:
 
-```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=284-317
+```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=286-319
 export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;

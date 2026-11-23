@@ -1,3 +1,2 @@
 # Slice 8's check (GOAL17-check-harness), red until slice 9 builds the agents, the sandbox, slots, pause and the harness's instruments; the surface (a builder's first pull request) comes before it.
-superagent/44-what-a-main-agent-may-do.test.ts > the main agent > the journey "a main agent's configuration change only records a proposal" passes whole
 superagent/44-what-a-main-agent-may-do.test.ts > the main agent > the journey "the main agent sees no stranger's text" passes whole
