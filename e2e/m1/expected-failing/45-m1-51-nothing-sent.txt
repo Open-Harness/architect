@@ -1,0 +1,6 @@
+# M1.51 (the npm preview, K28): tools/release/preview.mjs and the root LICENSE are not built yet, so each check that runs the command or reads the licence fails; the controls and the 'nothing but Node ran' tripwire pass. Due when M1.51 lands.
+m1/45-m1-51-nothing-sent.test.ts > 45 (d) nothing is sent > against a registry that records, it sends no write and no token, and prints no token
+m1/45-m1-51-nothing-sent.test.ts > 45 (d) nothing is sent > against npmjs, a passing run, a failing one, a refused tag and the repository's own make no connection at all
+m1/45-m1-51-nothing-sent.test.ts > 45 (d) nothing is sent > without --dry-run it publishes nothing, prints a usage line and exits 2
+m1/45-m1-51-nothing-sent.test.ts > 45 (e) the files are npm's > a fixture with a test, an expected-failing list, a test folder and a .env beside its dist lists none of them, and each package its own files
+m1/45-m1-51-nothing-sent.test.ts > 45 (e) the files are npm's > every package of the repository lists the files npm pack --dry-run would send, and none is a test, an expected-failing list or a .env
