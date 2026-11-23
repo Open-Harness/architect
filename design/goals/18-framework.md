@@ -5,11 +5,11 @@ milestone: "Goal 18: the framework"
 release: "1.0"
 branch: main
 base: main
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-23    # the date it started
 done_check: never done; it runs while Orthograph is being built (K42)
 owns:
   - design/goals/
@@ -101,5 +101,27 @@ Each round:
 
 ## Where it stands
 
-Not started: written 23 November 2026 with K42, decided the same day (#694). Aaron starts it with the line above. The
-lead rewrites this section every round that changes it.
+23 November 2026, about 16:40 UTC. Running since 23 November in Claude Code (claude-opus-5-5), in the session that was
+the 🎼 conductor. The lander, Goal 19, runs as its own thread.
+
+**Slice 1, the goals K42 stops, wound down: under way.**
+
+- **The stop message** went to each goal K42 section 7 winds down: to the leads' threads of Goals 3, 4, 6, 8, 9, 10,
+  11, 12 and 14, and as a comment on the goal issues of Goals 5 (#309) and 15 (#416), whose leads aren't reachable from
+  this harness. Goals 8, 10, 11 and 12 are parked (#472, #469, #726, #499). Goals 3, 4, 6, 9 and 14 are landing what K42
+  names for them first.
+- **The 34 open Ask issues are sorted** (33 at K42's count, and #727 since):
+  - 11 the superagent builds (case 3), moved to Goal 17's milestone: #477, #480, #531 to #536, #538, #595 and #596.
+  - 3 Capxul builds (case 3), moved to Goal 16's milestone: #484, #485 and #486.
+  - 4 Goal 18 keeps as items: #474 (adapters from an ABI), #542 (the npm publish hand-over), #623 (two slow M1 checks)
+    and #493, now the one snag for staging prefixes that collide; #501 and #727 closed as its duplicates.
+  - 3 closed as done: #465, #473 and #481.
+  - 7 closed as no longer applying, an ask between two goals K42 parks: #462, #475, #476, #478, #495, #496 and #674.
+  - 4 stay open until the winding-down pull request that answers them lands: #680 (#697), #662 (#692), and #464 and
+    #467 (#704).
+  None is case 2: no two running goals have overlapping claims yet.
+- **Goal 7's spike (#294)** goes to the lander to land in `main` for the record, because Capxul pulls Safe (K43).
+- **Left for slice 1:** each winding-down goal's last pull request merged and its brief parked; the lander lands their
+  finished work (its slice 2).
+
+**Slice 2, the board:** not started.
