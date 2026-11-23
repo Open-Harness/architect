@@ -113,7 +113,7 @@ export interface Waiting { readonly assignment: string; readonly why: Why }   //
 export interface Slots {
   /** The next in line: every person's message, then every other, each oldest first. */
   readonly line: (waiting: ReadonlyArray<Waiting>) => ReadonlyArray<Waiting>;
-  /** A seat for this one, or none. `held` is the seats of the running Assignments. */
+  /** A seat for this one, or none. `held` is the seats of the running and closing Assignments. */
   readonly seatFor: (size: bigint, held: ReadonlySet<bigint>, why: Why) => bigint | undefined;
 }
 
@@ -211,8 +211,9 @@ const fillSeats = (id: SuperagentId) => Effect.gen(function* () {
   const sa = yield* Records.find(Superagent, id);
   if (sa === undefined || sa.state === "paused" || sa.state === "retired") return 0n;   // the sweep is not a hop, so it checks too
   const running = yield* list(Assignment, { superagent: id, state: "running", order: "oldest", limit: 255 });
+  const closing = yield* list(Assignment, { superagent: id, state: "closing", order: "oldest", limit: 255 });   // still hold their seats
   const waiting = yield* list(Assignment, { superagent: id, state: "pending", order: "oldest", limit: 255 });
-  const held = new Set(running.items.map((a) => a.seat));
+  const held = new Set([...running.items, ...closing.items].map((a) => a.seat));
   let started = 0n;
   for (const w of slots.line(waiting.items.map((a) => ({ assignment: a.id, why: a.why })))) {
     const seat = slots.seatFor(sa.slots, held, w.why);
@@ -512,7 +513,7 @@ lives. This is every such pair across the four records, with its guard. Rows mar
 | `examples/superagent` | owns `fill`, `reap` and the sweep (`features/seats.ts`), so `tickets` and `superagent` stay independent |
 | K40 fix 3, `@orthograph/agents` (Goal 10) | The executor's `agent.tell` runs only from a held hop (`InputRouted`, `AssignmentStarted`); `AgentIdled` names no superagent; `slots:` is a declaration the agent kind carries, nothing the agents package counts |
 | `@orthograph/tickets` | `input.route`, `assignment.*`, `ticket.report` and `ticket.accept` write Assignments; one new module `slots`, a pure value in, no import of superagent |
-| Overview page (brief :418) | "executor load" reads running seats, waiting count and whether the reserve is held |
+| Overview page (brief :418) | "executor load" reads running and closing seats, waiting count and whether the reserve is held |
 | Slice 8 and 9 | the check above; the builder writes the handlers to it |
 | Goal 11 (the outbox, M5.03) | an Ask: a hop may name `onRefused: { error, then: <operation> }`. When the hop fails with that declared error the row is done, `attempts` does not grow, and the operation is called with the event's fields in its place. A held row is never claimed, so it is never refused: the seam composes with `hold` |
 | `@orthograph/agents` (Goal 10) | the Agent keeps its `current` Assignment, refuses a stale steer with `StaleAssignment` inside its own commit, and `AgentIdled` names the Assignment |
@@ -549,6 +550,10 @@ lives. This is every such pair across the four records, with its guard. Rows mar
   seconds of an unused seat, never a double-held one.
 - **Starvation.** Many people writing at once can keep non-person inputs waiting. A person is rate-limited by being a
   person; it is the prototype's rule as well. A later measure is an age bonus, kept in `design/later.md`, not built.
+- **A close that never lands.** If `agent.close` fails for good, a seat stays `closing`. `reap` lists `closing` rows
+  too and sends `agent.close` again; slice 8 checks it.
+- **Reap grace.** `reap` closes an idle `running` Assignment only after it has stayed idle for one whole sweep, so an
+  opening tell a few milliseconds away is not churned.
 - **Lowering `slots` while seats above the new size are held.** Those seats stay held until their turns end (a turn is
   never interrupted). `seatFor` scans seats 1 to the new size and takes any free one, so a new start can take a low
   seat while a high one is still held: more than `size` can run at once until those turns end, and nothing starts
