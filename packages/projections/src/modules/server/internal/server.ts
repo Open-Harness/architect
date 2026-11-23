@@ -9,7 +9,7 @@ import { notFromOf } from "./not-from.ts";
 import { doorsOf } from "./doors.ts";
 import { renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 import { actorOptionOf } from "./actors.ts";
-import { staleOf, versioned } from "./versioned.ts";
+import { rulesByOrigin, staleOf, versioned } from "./versioned.ts";
 import { peopleOf } from "./people.ts";
 
 const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
@@ -23,6 +23,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   // The things with rules (G5): their `invariants.ts` is imported, and the store and the runtime are handed each rule under its full name.
   const ruled = things.filter((t) => Object.keys(t.invariants ?? {}).length > 0);
   const rulesOption = ruled.length > 0 ? ", rules" : "";
+  const { declaredRules, versionedRules } = rulesByOrigin(ruled);
   // Each mount a served operation came from, imported once: its plugin's handlers run under it (Mount.serving).
   const mounted = [...new Set(handled.flatMap((o) => (o.from.kind !== "app" ? [o.from.mount] : [])))].filter((m) => model.mounts?.[m]);
   const mountVar = (mount: string) => `${camel(mount)}Mount`;
@@ -75,7 +76,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `import { SqlClient } from "effect/sql";`,
       `import type { Principal } from "${Names.frontDoor}";`,
       `import { AuthD1, Database, ${doors.any ? "Inbound, " : ""}JournalD1, StoreD1, Telemetry, toWorld } from "${Names.pkg("host-cloudflare")}";`,
-      `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, ${handled.some(framework) ? "Versions, " : ""}Wire, ${ruled.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
+      `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, ${handled.some(framework) || versionedRules.length > 0 ? "Versions, " : ""}Wire, ${declaredRules.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
       `import { Mcp, type McpResult, type ShownOperation } from "${Names.pkg("language-effect")}";`,
       `import { Api, Errors } from "../api/src/index.ts";`,
       `import * as portal from "../portal/main.ts";`,
@@ -88,7 +89,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       serviced.filter((m) => !mounted.includes(m)).map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
       doors.imports,
       things.map((t) => `import * as ${camel(t.name)}Thing from "${thingFileAt("generated/server/main.ts", t, "thing")}";`),
-      ruled.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
+      declaredRules.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
       stores.map((s) => `import ${camel(s.name)}Store from "${storeFileAt("generated/server/main.ts", s)}";`),
       "",
       actors ? `export { Actor, World } from "${Names.pkg("host-cloudflare")}";` : `export { World } from "${Names.pkg("host-cloudflare")}";`,
@@ -102,7 +103,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "",
       "/** Each thing and its table: a D1 table, or the name its actors go by. */",
       `const tables = [${things.map((t) => `[thingIn(${camel(t.name)}Thing), "${t.name}"]`).join(", ")}] as const;`,
-      ruled.length > 0 ? ["", "/** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */", `const rules = [${ruled.map((t) => `...invariantsIn("${t.name}", ${camel(t.name)}Invariants)`).join(", ")}] as const;`] : [],
+      ruled.length > 0 ? ["", "/** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */", `const rules = [${[...declaredRules.map((t) => `...invariantsIn("${t.name}", ${camel(t.name)}Invariants)`), ...versionedRules.map((t) => `...Versions.rulesOf("${t.name}", thingIn(${camel(t.name)}Thing))`)].join(", ")}] as const;`] : [],
       "",
       doors.table,
       "const refusals = Wire.refusals(Errors.wire);",

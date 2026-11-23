@@ -145,7 +145,7 @@ when its move ends in one of the rule's `while` states, or one of its database s
 thing has no machine and the operation has a database step that leaves `writes` unset. A step that says `writes: []`
 reads only and breaks nothing:
 
-```ts file=packages/compiler/src/modules/model/internal/invariants.ts name=breakersOf lines=116-124
+```ts file=packages/compiler/src/modules/model/internal/invariants.ts name=breakersOf lines=120-128
 for (const [name, rule] of Object.entries(t.invariants ?? {})) {
   const own = op.thing === thing;
   const byMove = own && op.move !== null && (rule.while === undefined || op.move.to.some((s) => rule.while!.includes(s)));

@@ -104,6 +104,7 @@ CREATE TABLE "policy" (
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "policy_oneVersionPerRevision" ON "policy" ("superagent", "revision");
 CREATE TABLE "prompt-set" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -114,6 +115,7 @@ CREATE TABLE "prompt-set" (
   "saved" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "prompt-set_oneVersionPerRevision" ON "prompt-set" ("superagent", "revision");
 CREATE TABLE "proposal" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -141,6 +143,7 @@ CREATE TABLE "settings" (
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX "settings_oneVersionPerRevision" ON "settings" ("revision");
 CREATE TABLE "source" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,

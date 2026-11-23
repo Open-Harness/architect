@@ -7,12 +7,22 @@ import { Thread } from "../../blueprint/things/thread/thing.ts";
 
 /** How long the main agent has to judge an eval: ten minutes from the moment it is told. */
 const TIMEOUT_MS = 600_000n;
-/** How many rows of each kind one pass reads: far past what waits at once. */
-const SCAN = 1000;
+/** A page of the store's list: evals and triggers are never deleted, so a pass reads each kind to its end, never a first few. */
+const PAGE = 100;
 const LIVE = ["queued", "delivered"];
 
 const all = (superagent: unknown, thing: typeof Eval | typeof Trigger | typeof Thread, order: "newest" | "oldest") =>
-  Effect.flatMap(Store, (store) => Effect.map(store.list({ thing, where: { superagent }, state: undefined, order, limit: SCAN, after: undefined }), (page) => page.items));
+  Effect.flatMap(Store, (store) =>
+    Effect.gen(function* () {
+      const rows: Array<Instance> = [];
+      let after: string | undefined;
+      do {
+        const page = yield* store.list({ thing, where: { superagent }, state: undefined, order, limit: PAGE, after });
+        rows.push(...page.items);
+        after = page.next ?? undefined;
+      } while (after !== undefined);
+      return rows;
+    }));
 
 /**
  * One pass of the eval clock. An eval that was told to the main agent and ran out of time is given up on (`unavailable`). Then each

@@ -2159,6 +2159,16 @@
         "key": "superagent"
       },
       "lives": "database",
+      "invariants": {
+        "oneVersionPerRevision": {
+          "kind": "unique",
+          "fields": [
+            "superagent",
+            "revision"
+          ],
+          "framework": true
+        }
+      },
       "machine": {
         "states": [
           "current"
@@ -2213,7 +2223,7 @@
         "version": "0.0.0",
         "thing": "policy"
       },
-      "hash": "50086b6544bda7ae"
+      "hash": "cb2866374f37c419"
     },
     "prompt-set": {
       "name": "prompt-set",
@@ -2265,6 +2275,16 @@
         "key": "superagent"
       },
       "lives": "database",
+      "invariants": {
+        "oneVersionPerRevision": {
+          "kind": "unique",
+          "fields": [
+            "superagent",
+            "revision"
+          ],
+          "framework": true
+        }
+      },
       "machine": null,
       "events": {},
       "errors": {},
@@ -2277,7 +2297,7 @@
         "version": "0.0.0",
         "thing": "prompt-set"
       },
-      "hash": "d7b2381ea8e2a70d"
+      "hash": "1a9041cb1424418f"
     },
     "proposal": {
       "name": "proposal",
@@ -2553,6 +2573,15 @@
         "key": "id"
       },
       "lives": "database",
+      "invariants": {
+        "oneVersionPerRevision": {
+          "kind": "unique",
+          "fields": [
+            "revision"
+          ],
+          "framework": true
+        }
+      },
       "machine": {
         "states": [
           "current"
@@ -2596,7 +2625,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "08ba1eecd7aaaa6e"
+      "hash": "21618af26da198bf"
     },
     "source": {
       "name": "source",
@@ -6465,7 +6494,9 @@
       "errors": [
         "StaleRevision"
       ],
-      "breaks": [],
+      "breaks": [
+        "policy.oneVersionPerRevision"
+      ],
       "refusals": [
         "StaleRevision",
         "NotAllowed"
@@ -6481,7 +6512,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "17e481c2831dfca6"
+      "hash": "d4ace5c00b4f0164"
     },
     "policy.save": {
       "kind": "operation",
@@ -6571,7 +6602,9 @@
       "errors": [
         "StaleRevision"
       ],
-      "breaks": [],
+      "breaks": [
+        "policy.oneVersionPerRevision"
+      ],
       "refusals": [
         "StaleRevision",
         "NotAllowed"
@@ -6587,7 +6620,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "d5d935ac80365502"
+      "hash": "33c292fd382278c6"
     },
     "policy.sync": {
       "kind": "operation",
@@ -7244,7 +7277,9 @@
       "errors": [
         "StaleRevision"
       ],
-      "breaks": [],
+      "breaks": [
+        "settings.oneVersionPerRevision"
+      ],
       "refusals": [
         "StaleRevision",
         "NotAllowed"
@@ -7261,7 +7296,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "721d6328c9186a11"
+      "hash": "218f6a4b4ede1b5c"
     },
     "source.disable": {
       "kind": "operation",
@@ -14381,9 +14416,9 @@
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-AxlU2lbZMTRycljdlDPstQ0TZIFRGZwBhAxXddqqRc0=",
+      "integrity": "sha256-3kdcktDZBnyft+52eqF1Smthy0TNrRgiju7K6tPkPMY=",
       "chosen": {},
-      "hash": "f47cbc400b9c2b82"
+      "hash": "aaf7ced22b056818"
     },
     "posthog": {
       "kind": "adapter",

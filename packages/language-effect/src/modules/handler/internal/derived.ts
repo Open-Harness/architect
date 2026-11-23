@@ -1,12 +1,15 @@
 // A derived read (GOAL17-derived-reads): the records it looks at, then the pure function that works its answer out. Nothing is
 // kept: each call reads the records again, so an answer never drifts from them.
 import { Effect } from "effect";
-import type { AnyDerive, Look, Read } from "orthograph";
+import { NotAllowed, type AnyDerive, type Look, type Read } from "orthograph";
 import { Store, type Instance } from "#modules/records/types.js";
 import { ReadNotServed, type ReadAnswer } from "../types.ts";
 
 /** How many roots a page of a derived list reads before it stops, kept or not (GOAL17-derived-reads, section 6). */
 export const SCAN = 200;
+
+/** A cursor is the position of the last instance of the page before; anything else is not one this read handed out. */
+export const CURSOR = /^[0-9]{1,15}$/;
 
 const isLook = (l: unknown): l is Look => typeof l === "object" && l !== null && (l as { kind?: unknown }).kind === "look";
 
@@ -56,6 +59,7 @@ export const derivedPage = (read: Read<any, any, any>, payload: ReadAnswer) =>
     const derive = read.derive as AnyDerive;
     const store = yield* Store;
     const { cursor, state, ...filters } = payload as { readonly cursor?: string; readonly state?: string; readonly [field: string]: unknown };
+    if (cursor !== undefined && !CURSOR.test(cursor)) return yield* new NotAllowed();
     const pinned = (read.only ?? {}) as Readonly<Record<string, unknown>>;
     const wanted = { ...Object.fromEntries(Object.entries(filters).filter(([k, v]) => read.where.includes(k) && v !== undefined)), ...pinned };
     const storedFields = read.thing.fields as Record<string, unknown>;

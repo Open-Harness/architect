@@ -3,7 +3,7 @@ import { NotAllowed, type Principal, type Read } from "orthograph";
 import { Access } from "#modules/access/service.js";
 import { Unit } from "#modules/records/service.js";
 import { Records, Store, type Unit as UnitOf } from "#modules/records/types.js";
-import { derivedOne, derivedPage, notServed, unserved } from "./derived.ts";
+import { CURSOR, derivedOne, derivedPage, notServed, unserved } from "./derived.ts";
 import { answerAttributes, payloadAttributes, principalAttributes } from "./attributes.ts";
 import { CALL_ID, newCallId } from "./call-id.ts";
 import { measureCall } from "./call-metrics.ts";
@@ -32,8 +32,6 @@ const derivedById = (read: Read<any, any, any>, payload: ReadPayload, unit: Unit
     return yield* derivedOne(read, found);
   });
 
-/** A cursor is the position of the last instance of the page before; anything else is not one this read handed out. */
-const CURSOR = /^[0-9]{1,15}$/;
 const refusals = new Set(["NotAllowed", "ReadNotServed"]);
 const callRefusals = new Set([...refusals, "SchemaError"]);
 

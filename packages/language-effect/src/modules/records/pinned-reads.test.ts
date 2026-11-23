@@ -79,6 +79,11 @@ describe("a derived read", () => {
     expect(rest.next).toBeNull();
   });
 
+  it("refuses a cursor it did not hand out, as a plain list does", async () => {
+    const all = Reads.serve({ name: "proposal.moods", read: Blueprint.read(Proposal, { where: ["mood"], derive: Mood, order: "oldest", page: 2, allowed: [Blueprint.signedIn] }) });
+    for (const cursor of ["abc", "1; drop", "-1", "1234567890123456"]) expect(await refused(all, { cursor }), cursor).toMatchObject({ _tag: "NotAllowed" });
+  });
+
   it("a filter on a derived field, and one on a stored field, both narrow it", async () => {
     const all = Reads.serve({ name: "proposal.moods", read: Blueprint.read(Proposal, { where: ["mood", "state"], derive: Mood, order: "oldest", page: 10, allowed: [Blueprint.signedIn] }) });
     expect((await answered(all, { mood: "spoken" })).items.map((i) => i["id"])).toEqual(["prp_1"]);

@@ -23,6 +23,10 @@ States: current. A move from the wrong state is refused SettingsNotCurrent (exit
 |---|---|---|---|
 | save | (creates) | current | SettingsSaved |
 
+## Invariants
+
+- `settings.oneVersionPerRevision`: another settings holds this revision. Unique on revision, in every state; refuses nothing, a break is a defect.
+
 ## Events
 
 - `SettingsSaved`: carries settings (settings.id), revision (settings.revision); emitted by the move save

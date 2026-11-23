@@ -2,7 +2,7 @@
 // thing like that has, `save`, `get`, `history` and `restore`, are served here, from the thing's own declaration.
 import type { Effect } from "effect";
 import type { AnyErrorClass, Principal, Thing } from "orthograph";
-import type { Records, Store } from "#modules/records/types.js";
+import type { NamedRule, Records, Store } from "#modules/records/types.js";
 
 /** The four a thing with versions is served: the verbs of its operations. */
 export type VersionVerb = "save" | "get" | "history" | "restore";
@@ -22,6 +22,8 @@ export interface VersionContext {
 export type VersionHandler = (payload: any, context: any) => Effect.Effect<any, never, Records | Store>;
 
 export interface VersionsApi {
+  /** The rule a thing with versions holds beside its own (one row per revision of a key): the runtime and the store enforce it, so two first saves cannot both land. */
+  readonly rulesOf: (name: string, thing: Thing) => ReadonlyArray<NamedRule>;
   /**
    * The handler of one verb for a thing with `versions`. `stale` is the refusal a save or restore made from an old version
    * answers with (its one field is `current`): the operation's own error class, `StaleRevision` in the superagent.

@@ -52,6 +52,8 @@ export interface InvariantModel {
   readonly refuse?: string;
   /** Written words that replace the sentence generated from the rule. */
   readonly description?: string;
+  /** The framework's own, held by every thing with versions and declared in no `invariants.ts`: one row per revision of a key. */
+  readonly framework?: true;
 }
 
 export interface ThingModel {
