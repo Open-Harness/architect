@@ -1,14 +1,16 @@
 // Turns the layout into the model: every declaration named, every reference resolved, every entry hashed.
 import { Duration } from "effect";
 import type { AnyErrorClass, CallStep, Field, FieldsInput, Operation, Read, Step, Thing, Value, Visibility } from "orthograph";
-import type { BlankOperationModel, FieldModel, FieldsModel, Model, OperationModel, StepModel, ThingModel, VisibilityModel } from "../types.ts";
+import type { AllowedModel, BlankOperationModel, FieldModel, FieldsModel, Model, OperationModel, StepModel, ThingModel, VisibilityModel } from "../types.ts";
 import { admitsAgent } from "orthograph";
 import { Blanks } from "orthograph/server";
+import { approvalOf } from "./approval.ts";
 import { IDEMPOTENCY_CONFLICT, MACHINE_NUMBER, codeOf, inDeclarationOrder, prefixes, refusalsOf } from "./codes.ts";
 import { foundModel, mintsOf, missedBy, notFoundOf } from "./found.ts";
 import { exitClashes, notFoundShapes, operationExitClashes } from "./exits.ts";
 import { unfillable } from "./fillable.ts";
 import { RUNS_NEEDS, deviceProblems } from "./device.ts";
+import { Times } from "#modules/time/service.js";
 import { environmentsOf } from "./environments.ts";
 import { allowedOf } from "./allowed.ts";
 import { storiesOf } from "./journeys.ts";
@@ -101,6 +103,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
           states,
           moves: Object.fromEntries(Object.entries(m.moves).map(([k, mv]) => [k, {
             from: mv.from, to: mv.to, emits: eventNames.get(mv.emits) ?? problem(problems, `${where}/machine.ts move ${k}: emits an event not exported from events.ts`),
+            ...Times.timed({ name, thing: t.thing!, key: k, move: mv, file: `${where}/machine.ts`, problems }),
           }])),
           notFrom: { error: `${pascal(name)}Not${pascal(states[0] ?? "")}`, exit: m.notFrom.exit, code: codeOf(prefix.get(name) ?? "??", MACHINE_NUMBER) },
         }
@@ -120,7 +123,9 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   }
 
   const allowedModel = allowedOf(layout, roleNames, problems);
-
+  const keeperUsed = Times.keeperUsed([...layout.things.values()].flatMap((t) => [...t.verbs.values()].map((v) => v.declaration.allowed)));
+  // With a keeper in the blueprint, even an operation open to anyone refuses it NotAllowed (M8-checks call 4).
+  const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
   for (const [thing, t] of [...layout.things].sort(([a], [b]) => a.localeCompare(b))) {
@@ -162,6 +167,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
       problems.push(`${file}: ${thing}.${verb}'s errors are a union with two classes tagged ${tag}, so the refusal is ambiguous on the wire: rename one`);
     }
     const allowed = op.allowed.map((a) => allowedModel(a, file));
+    problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "operation", move: op.move, allowed }));
     const found = foundModel(op, (x) => thingNames.get(x), (x) => things[x]?.notFound?.error);
     const steps = Object.fromEntries(Object.entries(op.steps).map(([k, s]) => [k,
       Blanks.isBlank(s) ? { name: `${thing}.${verb}.${k}`, type: "blank" } : stepModel(thing, verb, k, s, op.errors, file)]));
@@ -173,7 +179,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
       ...Object.keys(broken.refusals),
       ...(move && move.from.length > 0 && machine ? [machine.notFrom.error] : []),
       ...new Set(Object.values(found.notFound ?? {}).filter((e) => !errors.includes(e))),
-      ...(allowed.every((a) => a.kind === "anyone") ? [] : ["NotAllowed"]),
+      ...(openToAll(allowed) ? [] : ["NotAllowed"]),
       // An operation that keeps its answer by request key refuses a key reused with another payload (HAN-10, G3).
       ...(op.idempotent === "request" ? [IDEMPOTENCY_CONFLICT] : []),
     ];
@@ -187,6 +193,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
       steps,
       ...(blanks[`${thing}.${verb}`] ? { blanks: blanks[`${thing}.${verb}`]! } : {}),
       idempotent: op.idempotent ?? null,
+      ...approvalOf(op, file, problems),
       runs: (onDevice ? "client" : "server") as "server" | "client", test: op.test,
       budget: op.budget ? { p95Ms: Duration.toMillis(op.budget.p95) } : null,
     };
@@ -222,6 +229,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   /** A read: answered from the thing's records with no handler, so no move, no steps, no declared errors. */
   function readModel(thing: string, verb: string, file: string, from: OperationModel["from"], read: Read): OperationModel {
     const allowed = read.allowed.map((a) => allowedModel(a, file));
+    problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "read", move: undefined, allowed }));
     const list = read.by === "list";
     const t = layout.things.get(thing);
     if (list && t?.thing?.lives === "actor") problems.push(`${file}: a list read needs a thing that lives in the database, and ${thing} lives as actors`);
@@ -235,7 +243,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
         ? `List ${thing}s, ${read.order === "newest" ? "newest first" : "oldest first"}, ${read.page} to a page${read.where.length > 0 ? `, filtered by ${read.where.join(", ")}` : ""}.`
         : `Read one ${thing} by its id: ${read.fields.map(String).join(", ")}.`,
       payload, answer: fieldsModel(read.answer, `${file} answer`, "a read answer"),
-      move: null, errors: [], breaks: [], refusals: allowed.every((a) => a.kind === "anyone") ? [] : ["NotAllowed"], allowed, agentTool: admitsAgent(read.allowed),
+      move: null, errors: [], breaks: [], refusals: openToAll(allowed) ? [] : ["NotAllowed"], allowed, agentTool: admitsAgent(read.allowed),
       steps: {}, idempotent: null, runs: "server" as const, test: "unit" as const,
       budget: read.budget ? { p95Ms: Duration.toMillis(read.budget.p95) } : null,
       ...(list ? { list: { where: [...read.where], order: read.order ?? "newest", page: read.page ?? 0 } } : {}),
@@ -248,7 +256,7 @@ export const describe = (layout: Layout): { model: Model; problems: Array<string
   const values = Object.fromEntries([...layout.values].sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => [n, v.meta]));
   const environments = environmentsOf(layout, problems);
   const stores = storesOf(layout, problems);
-  const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel);
+  const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel, problems);
   const allBlanks = { ...blanks, ...journeyBlanks };
   const alertRules = alertRulesOf({ operations, refusals, things, journeys: stories.journeys, environments });
   return {

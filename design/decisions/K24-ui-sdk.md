@@ -89,7 +89,7 @@ layer?", he chose the button "Yes, actions first". The layers, from the bottom o
 
 **Derive, don't declare.** Asked whether components and screens should be declared in the blueprint, and shown the
 case for and against (the conductor's whiteboard "UI on Orthograph"), he agreed with the conductor's verdict: "I think
-we're on the same page." No `Blueprint.component` or `Blueprint.screen`. Everything a declaration would give (types
+we're on the same page." No `Blueprint.component` or `Blueprint.screen`. (_Superseded by K31 for screens and K36 for components, 21 November 2026: a page and a composite component declare what they show and offer; the look stays code._) Everything a declaration would give (types
 down to the page, the agent's limits, journeys through the page) comes from generating pieces out of what the
 blueprint already says; the agent's real limit is the action, which checks the role. What the blueprint gains instead
 is only the meaning every output needs: what kind a value is, approval on an operation, secret and hidden fields.

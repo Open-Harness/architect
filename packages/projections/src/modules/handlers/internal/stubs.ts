@@ -17,6 +17,8 @@ const roleOf = (a: AllowedModel) => (a.kind === "role" || a.kind === "role-of" ?
 /** The cast for one `allowed` entry: the role itself (imported), or someone signed in, or anyone. */
 const castOf = (model: Model, op: OperationModel, a: AllowedModel | undefined) => {
   const role = a ? roleOf(a) : undefined;
+  // A move made by time is the keeper's alone: anyone else is refused, so its journeys cast the keeper (M8-checks call 4).
+  if (a?.kind === "keeper") return { actor: "keeper", cast: "{ keeper: Blueprint.keeper }", imports: [] };
   if (a && role) return { actor: role, cast: `{ ${role} }`, imports: [`import { ${role} } from "${rel(allowedFile(model, op, a))}";`] };
   return { actor: "someone", cast: `{ someone: Blueprint.${a?.kind === "signed-in" ? "signedIn" : "anyone"} }`, imports: [] };
 };
@@ -54,7 +56,8 @@ const render = (op: OperationModel, s: Stub): RenderedFile => ({
     "  steps: (s) => [",
     "    s.step(",
     `      ${JSON.stringify(`the ${s.cast.actor} calls ${op.name}`)},`,
-    `      s.${s.cast.actor}.run(${local(camel(op.verb))}, ${payloadArg(op, s.payload)}),`,
+    // The keeper fires a move for the instant it was due, which the stub leaves for the author like every other blank.
+    `      s.${s.cast.actor}.run(${local(camel(op.verb))}, ${payloadArg(op, s.payload)}${s.cast.actor === "keeper" ? `, { due: ${todo(`the instant ${op.name} was due`)} }` : ""}),`,
     s.checks.map((c) => `      ${c},`),
     "    ),",
     "  ],",
@@ -118,7 +121,9 @@ const roleStubs = (model: Model, op: OperationModel, machined: boolean): Readonl
   if (op.allowed.some((a) => a.kind === "anyone") || op.allowed.length === 0) return allowed;
   const anonymous = op.allowed.some((a) => a.kind === "signed-in");
   const roles = op.allowed.flatMap((a) => roleOf(a) ?? []);
-  const refused = anonymous
+  const refused = op.allowed.some((a) => a.kind === "keeper")
+    ? { name: "refused-not-the-keeper", title: "refused a caller who isn't the keeper", cast: { actor: "someone", cast: "{ someone: Blueprint.anyone }", imports: [] }, who: "someone who isn't the keeper" }
+    : anonymous
     ? { name: "refused-anonymous", title: "refused a caller who isn't signed in", cast: { actor: "visitor", cast: "{ visitor: Blueprint.anyone }", imports: [] }, who: "someone not signed in" }
     : { name: `refused-not-${roles.join("-or-")}`, title: `refused a caller who isn't the ${roles.join(" or ")}`, cast: { actor: "stranger", cast: "{ stranger: Blueprint.signedIn }", imports: [] }, who: `someone signed in who isn't ${op.allowed.map(callerOf).join(" or ")}` };
   return [...allowed, render(op, {

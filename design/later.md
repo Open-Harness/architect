@@ -6,6 +6,11 @@ belongs to, and why it waits.
 - Indexers beyond the generated follower, for views too large for an organisation's index. Later.
 - Safe as a kit, built from its own events and our own small core. Later.
 - Python as a third target. Later.
+- **The rest of the app's map** (K31): the docs' page per screen, `ortho add page <name>`, the agent's `map` tool on
+  an app, and `open(pages.x)` in `ortho prove --through web`; and K36's rest: the web projection's component wiring,
+  `ortho add component <name>`, a component on its screen's docs page, a journey acting on a component, and Plugged
+  In's link list declared. Goal 6 builds the map, the app projection and the shell
+  first, and proves them on the portal; these wait until an app other than the portal has a declared map.
 - **Scaffolds that follow the blueprint** (Aaron, 21 November 2026, with the 📐 designer thread): a file scaffolded
   once and "yours from now on" falls out of line when its declaration changes later, so it must be marked and
   ratcheted, not left alone. Four steps, on what exists:
@@ -205,3 +210,6 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
   and the CLI only those a device session or a key can reach. **Trigger:** a generated client's refusal on a call its credential
   could never make is reported as confusing in a journey or by a user, or the second app ships a CLI with an operation
   only `Via.agent` reaches.
+- **A nonce lane shared across processes** (`decisions/W1-wallet-send-lanes.md`, Open). Today one process keeps one lock
+  per account and chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
+  key from more than one process or Worker, or a journey sends from one account in two processes at once.
