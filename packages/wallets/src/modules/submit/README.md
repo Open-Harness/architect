@@ -4,6 +4,9 @@
 prepare, **simulate** (never skipped: the port refuses to sign or submit what has not simulated, M1.32), sign, submit,
 follow to inclusion.
 
+Both take the signer's shared port (`Chain.shared`) and never make one: sends from one signer share its nonce lane, so
+overlapping sends take distinct nonces.
+
 - A transfer whose simulation fails (a revert, a panic, no funds) is `SimulationReverted`. Nothing was signed or sent, the
   nonce is handed back, so the next send takes the nonce this one would have had.
 - A signer that would not sign (a locked keystore, a request the person turned down) is `KeyLocked`.
@@ -17,3 +20,6 @@ follow to inclusion.
 
 `withProvider` is for a browser's wallet, which signs and sends in one step: the simulation runs here first, so a doomed
 transfer is refused before the person is asked to approve it.
+
+A browser signer also asks its wallet `eth_chainId` right before `eth_sendTransaction` and refuses a mismatch with the
+setting's chain (`KeyLocked`, the two chains named in the log), so a network switch during simulation is caught.

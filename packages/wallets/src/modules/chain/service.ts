@@ -35,4 +35,6 @@ export const Chain: ChainApi = {
         Effect.catch((fault) => Effect.die(new Error(`the chain at ORTHO_WALLET_RPC_URL is unusable: ${fault.message}`))),
       );
     }),
+  // The cache is made here, once, and belongs to the effect handed back: no module-level state.
+  shared: (setting) => Effect.runSync(Effect.cached(Chain.port(setting))),
 };

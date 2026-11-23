@@ -4,6 +4,7 @@ import { Effect, Option, Redacted } from "effect";
 import { Keys, type Address, type Hash } from "@orthograph/chain-evm/device";
 import { NoSuchKey } from "../../../../blueprint/things/wallet/errors.js";
 import { Account } from "../../account/service.ts";
+import { Chain } from "../../chain/service.ts";
 import { Submit } from "../../submit/service.ts";
 import type { ChainSetting } from "../../chain/types.ts";
 import type { Hand } from "../../submit/types.ts";
@@ -18,6 +19,8 @@ const quantity = (n: bigint) => `0x${n.toString(16)}`;
 const declined = (error: unknown) => typeof error === "object" && error !== null && [4001, 4100].includes((error as { code?: number }).code ?? 0);
 
 export const provided = (name: SignerName, chain: ChainSetting, provider: Eip1193, labels: LabelBook): Signer => {
+  // One port for this signer, made on its first send: every send shares its nonce lane.
+  const port = Chain.shared(chain);
   const ask = (method: string, params: ReadonlyArray<unknown> = []) =>
     Effect.tryPromise({ try: () => provider.request({ method, params }), catch: (error) => error }).pipe(
       Effect.catch((error) => (declined(error) ? locked(`the wallet declined ${method}`) : Effect.die(new Error(`the wallet's provider failed ${method}`)))),
@@ -81,13 +84,19 @@ export const provided = (name: SignerName, chain: ChainSetting, provider: Eip119
         const address = yield* addressOf(label);
         const hand: Hand = (target, amount) =>
           Effect.gen(function* () {
+            // Asked here, right before the send, so a network switch while the transfer was simulated is caught.
+            const walletChain = yield* ask("eth_chainId");
+            if (typeof walletChain !== "string" || !/^0x[0-9a-fA-F]+$/.test(walletChain)) return yield* Effect.die(new Error("the wallet's provider answered eth_chainId with no chain id"));
+            if (BigInt(walletChain) !== BigInt(chain.chainId)) {
+              return yield* locked(`the wallet is on chain ${BigInt(walletChain)}, and this wallet sends on ${chain.chainId}: switch the wallet's network`);
+            }
             const before = yield* ask("eth_blockNumber");
             const hash = yield* ask("eth_sendTransaction", [{ from: address, to: target, value: quantity(amount) }]);
             if (typeof hash !== "string" || typeof before !== "string") return yield* Effect.die(new Error("the wallet's provider answered eth_sendTransaction with no hash"));
             const sent = (yield* ask("eth_getTransactionByHash", [hash])) as { readonly nonce?: string } | null;
             return { hash: hash as Hash, nonce: Number(BigInt(sent?.nonce ?? "0x0")), fromBlock: BigInt(before) };
           });
-        return yield* Submit.withProvider(chain, address, to, value, hand);
+        return yield* Submit.withProvider(chain, port, address, to, value, hand);
       }),
   };
 };

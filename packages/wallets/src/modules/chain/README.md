@@ -12,3 +12,7 @@ declares it with `ORTHO_WALLET_DEPTH` (a whole number of at least 1; `0`, `-1`, 
 variable), a world with `chain.depth`. Chain id 31337 is local and is depth 1 without a declaration; any other chain has
 none: `fromHost` still answers (keys work on any chain) with `depth` undefined, and a send on it is a defect naming
 `ORTHO_WALLET_DEPTH`, asked before anything is prepared, signed or sent.
+
+**One lane per signer.** `Chain.port` makes a new port, with a new nonce manager, on every call. A signer calls
+`Chain.shared(setting)` once, where it is built, and every send from it goes through that one port, so two sends in
+flight from one account take distinct nonces. The cache lives in the effect `shared` returns, not in the module.

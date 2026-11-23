@@ -28,4 +28,11 @@ export interface ChainApi {
   readonly depthOf: (chainId: number, declared: number | undefined) => number | undefined;
   /** The chain port for a setting. An unreachable endpoint or another chain id is a defect that says so; no key is in it. */
   readonly port: (setting: ChainSetting) => Effect.Effect<ChainPort, never, Timers>;
+  /**
+   * One port for a setting, made on the first use and the same after: its nonce manager is the one lane every send from a
+   * signer shares, so overlapping sends from one account take distinct nonces. Call it once, where the signer is built,
+   * and hand the result to every send; calling it again makes another lane. A failure (no endpoint, an unusable chain) is
+   * the same defect on every send.
+   */
+  readonly shared: (setting: ChainSetting) => Effect.Effect<ChainPort, never, Timers>;
 }

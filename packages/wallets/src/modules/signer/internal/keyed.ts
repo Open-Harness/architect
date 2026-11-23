@@ -2,6 +2,7 @@
 import { Effect, Redacted } from "effect";
 import { Keys, type Hex } from "@orthograph/chain-evm/device";
 import { KeyLocked } from "../../../../blueprint/things/wallet/errors.js";
+import { Chain } from "../../chain/service.ts";
 import { Submit } from "../../submit/service.ts";
 import type { ChainSetting } from "../../chain/types.ts";
 import type { Keyring, Signer, SignerName } from "../types.ts";
@@ -15,7 +16,10 @@ const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 const keyOf = (secret: Redacted.Redacted<string>) =>
   Keys.fromSecret(secret).pipe(Effect.catch(() => locked("the secret is no key: it must be 0x and 64 hex digits")));
 
-export const keyed = (name: SignerName, chain: ChainSetting, ring: Keyring): Signer => ({
+export const keyed = (name: SignerName, chain: ChainSetting, ring: Keyring): Signer => {
+  // One port for this signer, made on its first send: every send shares its nonce lane.
+  const port = Chain.shared(chain);
+  return {
   name,
   chain,
   create: (label) =>
@@ -41,7 +45,7 @@ export const keyed = (name: SignerName, chain: ChainSetting, ring: Keyring): Sig
   send: (label, to, value) =>
     Effect.gen(function* () {
       const key = yield* keyOf(yield* ring.open(label));
-      return yield* Submit.withKey(chain, key.signer, to, value);
+      return yield* Submit.withKey(chain, port, key.signer, to, value);
     }),
-});
-
+};
+};
