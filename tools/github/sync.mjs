@@ -1,6 +1,9 @@
 #!/usr/bin/env node
-// The goals, mirrored on GitHub (K33). The briefs are the truth; this makes GitHub hold the same: the labels, a
-// milestone per goal, a goal issue per goal and a sub-issue per slice. Dry run by default; `--apply` writes.
+// The goals, mirrored on GitHub (K33), and the board (K42). The briefs are the truth; this makes GitHub hold the same:
+// the labels, a milestone per goal, a goal issue per goal and a sub-issue per slice. With `--board`, the capability map
+// in docs/canon/status.md is the truth of the items: one issue per row, in the milestone of the first app milestone that
+// pulls it, and (with `--project`) the Project's Stage, Pulled by, Release, Lane and Kind. Dry run by default;
+// `--apply` writes.
 //
 //   node tools/github/sync.mjs                         plan, from design/goals/*.md in this checkout
 //   node tools/github/sync.mjs --brief origin/goal/on-chain:design/goals/04-on-chain.md
@@ -9,14 +12,18 @@
 //                                                      (a goal found on one branch only; on two, it is skipped)
 //   node tools/github/sync.mjs --migrate               also move open issues and pull requests from goal-<n>
 //                                                      labels and release milestones to goal milestones and labels
+//   node tools/github/sync.mjs --board --dry-run       also the board: print the plan for the status page's rows,
+//                                                      and the counts by stage and by who pulled them
+//   node tools/github/sync.mjs --board --project       also the Project's fields for those rows
 //   node tools/github/sync.mjs --apply                 do it
 //
 // It needs `gh`, signed in with the `repo` scope (in CI, GH_TOKEN). It never deletes anything. Run one at a time: two
 // runs at once can both create the same issue, so the workflow (.github/workflows/goals.yml) runs it in one queue.
 import { execFileSync, spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
+import { boardCounts, boardPlan, claimOverlaps, parseBoard } from "./board.mjs";
 import { readGoal } from "./frontmatter.mjs";
-import { plan } from "./plan.mjs";
+import { plan, typeOf } from "./plan.mjs";
 import { projectPlan } from "./project.mjs";
 import { applyProject, hasProjectScope, readProject, tokenScopes } from "./projectGh.mjs";
 
@@ -24,6 +31,12 @@ const args = process.argv.slice(2);
 const apply = args.includes("--apply");
 const migrate = args.includes("--migrate");
 const withProject = args.includes("--project");
+const withBoard = args.includes("--board");
+const dryRun = args.includes("--dry-run");
+if (apply && dryRun) {
+  process.stderr.write("--apply and --dry-run say opposite things; pass one.\n");
+  process.exit(1);
+}
 const goalBranches = args.includes("--goal-branches");
 const extra = args.flatMap((a, i) => (a === "--brief" ? [args[i + 1]] : []));
 const git = (...argv) => execFileSync("git", argv, { encoding: "utf8" });
@@ -146,9 +159,32 @@ return {
 };
 const state = readState();
 
-const steps = plan({ goals: live, state, briefUrl, migrate });
+// The board: the status page's rows. A page whose rows don't read stops the run before any step, so a typo can't drop
+// an item from the board.
+let rows = null;
+if (withBoard) {
+  const parsed = parseBoard(readFileSync("docs/canon/status.md", "utf8"));
+  if (parsed.errors.length) {
+    process.stderr.write(`docs/canon/status.md: the capability map does not read:\n${parsed.errors.map((e) => `  ${e}`).join("\n")}\n`);
+    process.exit(2);
+  }
+  rows = parsed.rows;
+}
+const statusUrl = `https://github.com/${repo}/blob/main/docs/canon/status.md`;
+const steps = [
+  ...plan({ goals: live, state, briefUrl, migrate }),
+  ...(rows ? boardPlan({ rows, state, statusUrl, typeOf }) : []),
+];
 for (const s of steps) process.stdout.write(`${apply ? "do" : "would"} ${s.do} ${s.title ?? s.name ?? s.number ?? ""}${s.child ? ` ← ${s.child}` : ""}\n`);
 const say = (line) => process.stdout.write(`${line}\n`);
+if (rows) {
+  const c = boardCounts(rows);
+  const list = (o) => Object.entries(o).map(([k, n]) => `${k} ${n}`).join(", ");
+  say(`Board: ${c.rows} rows. By stage: ${list(c.byStage)}. By who pulled them: ${list(c.byPulledBy)}.`);
+  const n = (kind) => steps.filter((s) => s.board && s.do === kind).length;
+  say(`Board steps: ${n("createIssue")} issue(s) to create, ${n("updateIssue")} to update, ${n("closeIssue")} to close.`);
+  for (const o of claimOverlaps(rows)) say(`claims overlap: ${o.a} (${o.lanes[0]}) and ${o.b} (${o.lanes[1]}) both touch ${o.path}; the framework goal settles it (K42, section 3, case 2)`);
+}
 // An organization's issue types need `admin:org`: stop before writing anything rather than halfway through.
 if (apply && steps.some((s) => s.do === "createIssueType") && !["admin:org", "user"].some((x) => tokenScopes().has(x))) {
   process.stderr.write("Making the issue types needs the admin:org scope, so nothing was written. Run: gh auth refresh -s admin:org\n");
@@ -158,7 +194,7 @@ if (!apply) {
   if (withProject) {
     const project = projectScope ? readProject(owner, repo).project : null;
     if (!projectScope) say("(no project scope: the Project's plan from nothing; run gh auth refresh -s project)");
-    const pSteps = projectPlan({ goals: live, issues: state.issues, project });
+    const pSteps = projectPlan({ goals: live, issues: state.issues, project, rows });
     for (const s of pSteps) say(`would ${s.do} ${s.title ?? s.name ?? ""}`);
     say(`${pSteps.length} Project step(s), not counting the items for issues this run would create.`);
   }
@@ -178,7 +214,11 @@ for (const s of steps) {
     const i = gh(`repos/${repo}/issues`, { method: "POST", body: { title: s.title, body: s.body, labels: s.labels, milestone: milestones.get(s.milestone), type: s.type } });
     created.set(s.key, { number: i.number, id: i.id });
   }
-  if (s.do === "updateIssue") gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { title: s.title, ...(s.body ? { body: s.body } : {}) } });
+  if (s.do === "updateIssue") {
+    const extra = { ...(s.body ? { body: s.body } : {}), ...(s.labels ? { labels: s.labels } : {}), ...(s.state ? { state: s.state } : {}), ...(s.milestone ? { milestone: milestones.get(s.milestone) } : {}) };
+    gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { title: s.title, ...extra } });
+  }
+  if (s.do === "closeIssue") gh(`repos/${repo}/issues/${issueRef(s.issue).number}`, { method: "PATCH", body: { state: "closed" } });
   if (s.do === "createIssueType") {
     const q = "mutation($o:ID!,$n:String!,$c:IssueTypeColor!,$d:String!){createIssueType(input:{ownerId:$o,name:$n,color:$c,description:$d,isEnabled:true}){issueType{id}}}";
     execFileSync("gh", ["api", "graphql", "-f", `query=${q}`, "-f", `o=${state.ownerId}`, "-f", `n=${s.name}`, "-f", `c=${s.color}`, "-f", `d=${s.description}`], { encoding: "utf8" });
@@ -192,4 +232,4 @@ for (const s of steps) {
   }
 }
 say(`${steps.length} step(s) written to ${repo}.`);
-if (withProject) say(`The Project: ${applyProject({ owner, repo, goals: live, issues: readState().issues, log: say })}`);
+if (withProject) say(`The Project: ${applyProject({ owner, repo, goals: live, issues: readState().issues, log: say, rows: rows ?? undefined })}`);

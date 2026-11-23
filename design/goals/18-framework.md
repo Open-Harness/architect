@@ -129,4 +129,8 @@ the 🎼 conductor. The lander, Goal 19, runs as its own thread.
 - **Left for slice 1:** each winding-down goal's last pull request merged and its brief parked; the lander lands their
   finished work (its slice 2).
 
-**Slice 2, the board:** not started.
+**Slice 2, the board: first half in review.** `docs/canon/status.md`'s section 2 is now one row per item (stage, who
+pulled it, release, app milestone, lane, paths, needs, evidence), and `tools/github/sync.mjs --board` plans one issue
+per row, the labels, the milestones and the Project's Stage, Pulled by, Release, Lane and Kind fields (dry run only so
+far; nothing is written to GitHub). Left for the second half: the first real sync, the roadmap's computed dates, the
+`goals` workflow running `--board`, and the `conductor` and `github` skills rewritten whole.
