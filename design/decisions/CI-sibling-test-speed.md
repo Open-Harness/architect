@@ -73,4 +73,12 @@ case stopped for 950 s, and the tokens minted before the sleep had expired after
 
 **On a GitHub runner**, `check-static`, from the vitest summary in the job log:
 
-CIRUNS
+| | Before: `main`, run 45125139194 (green) | After: this pull request, run 45147211863 |
+|---|---|---|
+| `boundaries.test.ts` | 15.9 s, its six cases 1.5 to 5.3 s one after another | 6.0 s; the first case 5.9 s (it waits for all seven runs), the rest under 0.3 s |
+| `lint:test` | 16.8 s | 12.1 s (`code-rules.test.ts`, 11.8 s, is now the longest file) |
+| `local.test.ts`, its first case; its slowest 30 s case | 0.51 s; 1.45 s | 0.63 s; 1.49 s |
+| `logbook:test` | 66.0 s | 64.7 s (the `wrangler dev` starts, unchanged) |
+
+The first boundaries case takes more than 5 s on the runner by itself now, since it waits for the whole set; it keeps the
+30 s it had.
