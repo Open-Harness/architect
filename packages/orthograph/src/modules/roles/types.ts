@@ -58,6 +58,8 @@ export interface Role<T extends Thing = Thing> extends Narrowable {
   readonly actor?: ActorForm;
   /** A role made with `agent:` (K40 fix 3): it admits the agent whose id this field holds, acting as itself, and nobody else. */
   readonly agent?: Field;
+  /** Declared with `who`: the field of the thing that holds whoever the role is for. Every language renders it; a `rule` is TypeScript only (K20 rule 6). */
+  readonly who: Field | undefined;
   /** This role, decided on the thing that a payload field points at: `owner.of("organization")`. */
   readonly of: <const P extends string>(path: P) => RoleOf<T, P>;
 }
@@ -101,12 +103,18 @@ export type Allowed = Role<any> | ServiceRole<any> | RoleOf<any> | Builtin | Sys
 
 export interface RolesApi {
   readonly role: {
+    /** A role written as a rule in TypeScript: it runs where TypeScript does, and on no chain. */
     <T extends Thing>(thing: T, spec: { readonly rule: Role<T>["rule"] }): Role<T>;
     <T extends Thing>(thing: T, spec: { readonly service: Mount }): ServiceRole<T>;
     /** K40 fix 1: the outside account that sent the call, matched by its mount and its stable id. */
     <T extends Thing>(thing: T, spec: { readonly actor: { readonly mount: Field; readonly id: Field }; readonly within?: Field; readonly while?: ReadonlyArray<State> }): Role<T>;
     /** K40 fix 3: the agent whose id one of this thing's fields holds, acting as itself. */
     <T extends Thing>(thing: T, spec: { readonly agent: Field }): Role<T>;
+    /**
+     * A role held by whoever a field of the thing names (K20): `Blueprint.role(Allowance, { who: Allowance.fields.member })`.
+     * On a chain store the field is an `account()` and the role is the account that signed.
+     */
+    <T extends Thing>(thing: T, spec: { readonly who: T["fields"][string] }): Role<T>;
   };
   readonly anyone: Builtin;
   readonly signedIn: SignedIn;

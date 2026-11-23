@@ -111,7 +111,7 @@ allowed: [director.of("company")],
 The check is one indexed lookup: find a `Membership` with `company` = the company the role is decided on, `person` =
 the caller, `seat` = `"director"`, in an active state. `.of(...)` works as today, because a `holds` role is a role. The
 compiler refuses a `holds` field that does not point at the role's thing, a `who` field that does not hold a person's
-id, and a `where` key the row lacks. `rule` stays for what can't be declared.
+id (Superseded in part by M6-chain, 21 November 2026: on a chain store the field holds an `account()`), and a `where` key the row lacks. `rule` stays for what can't be declared.
 
 **B · An effectful rule that may read anything**
 

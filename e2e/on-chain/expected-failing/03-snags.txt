@@ -1,0 +1,2 @@
+# S-01 to S-11 of design/goals/04-snags.md are open. Comes off when every snag is fixed, or parked with an owner and a reason.
+on-chain/03-snags.test.ts > the snag log of Goal 4 > every snag in design/goals/04-snags.md is fixed, or parked with an owner and a reason

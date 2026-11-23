@@ -1,9 +1,11 @@
 // The "Orthograph" Project (K33): one GitHub Project, owned by the repository's owner, over every goal, laid on top of the milestones,
 // sub-issues and labels. Pure: no I/O. `projectGh.mjs` reads and writes it; `sync.mjs --project` runs both.
 
+import { PULLED_BY, STAGES, issueOfRow } from "./board.mjs";
+
 export const PROJECT_TITLE = "Orthograph";
 
-const KINDS = ["goal", "slice", "snag", "ask", "decision", "gap"];
+const KINDS = ["goal", "slice", "snag", "ask", "decision", "gap", "capability", "grill"];
 const STATUSES = [
   ["Ready", "GREEN", "Can start: nothing it waits on is open"],
   ["Running", "BLUE", "Someone has taken it (its harness label is on it), or the goal's lead is running"],
@@ -16,8 +18,15 @@ const STATUS_OF_BRIEF = { ready: "Ready", running: "Running", landing: "Landing"
 
 const select = (name, options) => ({ name, dataType: "SINGLE_SELECT", options: options.map(([n, color, description]) => ({ name: n, color, description })) });
 
-/** The fields the Project holds. Model is text: models change weekly, so it is never a fixed list. */
-export const projectFields = (goals) => [
+/** The lanes a Project's Lane field offers: the live goals' and any a board row names. */
+const lanesOf = (goals, rows) =>
+  [...new Set([...goals.map((g) => `goal-${g.number}`), ...rows.flatMap((r) => (r.lane ? [r.lane] : []))])].sort((a, b) => Number(a.slice(5)) - Number(b.slice(5)));
+
+/**
+ * The fields the Project holds. Model is text: models change weekly, so it is never a fixed list. With the board's rows
+ * (K42) it also holds Stage, Pulled by and Lane.
+ */
+export const projectFields = (goals, rows) => [
   select("Goal", goals.map((g) => [`Goal ${g.number}`, "GRAY", g.milestone])),
   select("Kind", KINDS.map((k) => [k, "GRAY", ""])),
   select("Status", STATUSES),
@@ -27,6 +36,11 @@ export const projectFields = (goals) => [
   select("Lead role", ["lead", "author", "builder", "reviewer", "designer", "spike"].map((r) => [r, "GRAY", ""])),
   { name: "Start", dataType: "DATE", options: [] },
   { name: "End", dataType: "DATE", options: [] },
+  ...(rows ? [
+    select("Stage", STAGES.map((s) => [s, "GRAY", ""])),
+    select("Pulled by", PULLED_BY.map((a) => [a, "GRAY", ""])),
+    select("Lane", lanesOf(goals, rows).map((l) => [l, "GRAY", ""])),
+  ] : []),
 ];
 
 /** The saved views: every goal in one table, a board by Status, a roadmap (Start to End), and one table per goal. */
@@ -45,6 +59,17 @@ const isOpen = (i) => (i.state ?? "open") === "open";
  * agent may set them by hand; the others are kept equal to the briefs and the issue.
  */
 const day = (iso) => (iso ? String(iso).slice(0, 10) : null);
+
+/** A board row's fields (K42, section 5). Goal is set only when a live goal's lane claims it, and never cleared here. */
+export const boardValues = (row, i, goals) => ({
+  Kind: row.kind,
+  Stage: row.stage,
+  "Pulled by": row.pulledBy,
+  Release: row.release,
+  Lane: row.lane,
+  Goal: row.lane && goals.some((g) => `goal-${g.number}` === row.lane) ? `Goal ${row.lane.slice(5)}` : undefined,
+  Status: (i.state ?? "open") === "open" ? "Ready" : "Done",
+});
 
 export const itemValues = (i, goal, issues) => {
   const kind = label(i, "kind:");
@@ -67,14 +92,14 @@ export const itemValues = (i, goal, issues) => {
 /**
  * goals: the live goals. issues: as in plan.mjs, each with `nodeId`. project: null when it doesn't exist yet, else
  * { id, fields: [{ id, name, dataType, options: [{ id, name }] }], items: [{ id, number, values: { field: value } }],
- * views: [{ id, name, layout, filter }] }.
+ * views: [{ id, name, layout, filter }] }. rows: the board's rows (board.mjs), when the board is kept too.
  */
-export const projectPlan = ({ goals, issues, project }) => {
+export const projectPlan = ({ goals, issues, project, rows }) => {
   const steps = [];
   if (!project) steps.push({ do: "createProject", title: PROJECT_TITLE }, { do: "linkRepository" });
   const have = project ?? { fields: [], items: [], views: [] };
 
-  for (const want of projectFields(goals)) {
+  for (const want of projectFields(goals, rows)) {
     const field = have.fields.find((f) => f.name === want.name);
     if (!field) steps.push({ do: "createField", ...want });
     else if (want.dataType === "SINGLE_SELECT") {
@@ -90,10 +115,9 @@ export const projectPlan = ({ goals, issues, project }) => {
 
   const byMilestone = new Map(goals.map((g) => [g.milestone, g]));
   const tracked = issues.filter((i) => !i.pullRequest && i.trusted !== false && label(i, "kind:") && byMilestone.has(i.milestone));
-  for (const i of tracked) {
+  const settle = (i, values) => {
     const item = have.items.find((x) => x.number === i.number);
     if (!item) steps.push({ do: "addItem", number: i.number, title: `#${i.number}` });
-    const values = itemValues(i, byMilestone.get(i.milestone), issues);
     for (const [field, value] of Object.entries(values)) {
       if (value === undefined) continue;
       const now = item?.values?.[field] ?? null;
@@ -102,6 +126,12 @@ export const projectPlan = ({ goals, issues, project }) => {
       if (value === null && now !== null) steps.push({ do: "clearValue", number: i.number, field, title: `#${i.number} ${field}` });
       if (value !== null && now !== value) steps.push({ do: "setValue", number: i.number, field, value, title: `#${i.number} ${field} = ${value}` });
     }
+  };
+  for (const i of tracked) settle(i, itemValues(i, byMilestone.get(i.milestone), issues));
+  // The board's items: an issue only once the sync has made it, so a dry run before the first write counts none.
+  for (const row of rows ?? []) {
+    const i = issueOfRow(row, issues);
+    if (i) settle(i, boardValues(row, i, goals));
   }
 
   // A new Project opens with one table named "View 1": it becomes "All goals" rather than leaving a stray view.

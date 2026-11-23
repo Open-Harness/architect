@@ -1,0 +1,463 @@
+{
+  "verifiedOn": "2026-11-21",
+  "npm": {
+    "@adraffy/ens-normalize": {
+      "version": "1.11.1",
+      "published": "2025-09-18T19:40:31.258Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@adraffy/ens-normalize"
+    },
+    "@esbuild/aix-ppc64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:20.989Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/aix-ppc64"
+    },
+    "@esbuild/android-arm": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:57:26.487Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/android-arm"
+    },
+    "@esbuild/android-arm64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:59:33.520Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/android-arm64"
+    },
+    "@esbuild/android-x64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:59:39.478Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/android-x64"
+    },
+    "@esbuild/darwin-arm64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:43.690Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/darwin-arm64"
+    },
+    "@esbuild/darwin-x64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:57:49.027Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/darwin-x64"
+    },
+    "@esbuild/freebsd-arm64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:54.493Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/freebsd-arm64"
+    },
+    "@esbuild/freebsd-x64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:57:59.211Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/freebsd-x64"
+    },
+    "@esbuild/linux-arm": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:59:05.063Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-arm"
+    },
+    "@esbuild/linux-arm64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:09.809Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-arm64"
+    },
+    "@esbuild/linux-ia32": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:59:16.606Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-ia32"
+    },
+    "@esbuild/linux-loong64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:20.989Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-loong64"
+    },
+    "@esbuild/linux-mips64el": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:59:27.374Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-mips64el"
+    },
+    "@esbuild/linux-ppc64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:31.588Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-ppc64"
+    },
+    "@esbuild/linux-riscv64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:36.707Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-riscv64"
+    },
+    "@esbuild/linux-s390x": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:42.447Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-s390x"
+    },
+    "@esbuild/linux-x64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:48.257Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/linux-x64"
+    },
+    "@esbuild/netbsd-arm64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:52.524Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/netbsd-arm64"
+    },
+    "@esbuild/netbsd-x64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:58:58.511Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/netbsd-x64"
+    },
+    "@esbuild/openbsd-arm64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:59:03.431Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/openbsd-arm64"
+    },
+    "@esbuild/openbsd-x64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T20:00:09.977Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/openbsd-x64"
+    },
+    "@esbuild/openharmony-arm64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T20:03:17.337Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/openharmony-arm64"
+    },
+    "@esbuild/sunos-x64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:59:20.135Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/sunos-x64"
+    },
+    "@esbuild/win32-arm64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T19:59:31.389Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/win32-arm64"
+    },
+    "@esbuild/win32-ia32": {
+      "version": "0.28.2",
+      "published": "2026-08-08T20:01:38.665Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/win32-ia32"
+    },
+    "@esbuild/win32-x64": {
+      "version": "0.28.2",
+      "published": "2026-08-08T20:00:43.500Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@esbuild/win32-x64"
+    },
+    "@noble/ciphers": {
+      "version": "1.3.0",
+      "published": "2025-04-24T17:04:06.305Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@noble/ciphers"
+    },
+    "@noble/curves": {
+      "version": "1.9.1",
+      "published": "2025-05-14T10:00:26.850Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@noble/curves"
+    },
+    "@noble/hashes": {
+      "version": "1.8.0",
+      "published": "2025-04-21T21:24:05.654Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@noble/hashes"
+    },
+    "@openzeppelin/contracts": {
+      "version": "5.7.0",
+      "published": "2026-07-29T16:43:08.516Z",
+      "direct": true,
+      "source": "https://registry.npmjs.org/@openzeppelin/contracts"
+    },
+    "@safe-global/safe-smart-account": {
+      "version": "1.5.0",
+      "published": "2026-02-02T14:25:16.287Z",
+      "source": "https://registry.npmjs.org/@safe-global%2fsafe-smart-account",
+      "commit": "dc437e8fba8b4805d76bcbd1c668c9fd3d1e83be"
+    },
+    "@scure/base": {
+      "version": "1.2.6",
+      "published": "2025-05-29T19:44:58.974Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@scure/base"
+    },
+    "@scure/bip32": {
+      "version": "1.7.0",
+      "published": "2025-04-24T15:33:21.947Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@scure/bip32"
+    },
+    "@scure/bip39": {
+      "version": "1.6.0",
+      "published": "2025-04-24T15:34:55.651Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@scure/bip39"
+    },
+    "@types/node": {
+      "version": "26.6.6",
+      "published": "2026-10-28T18:36:36.455Z",
+      "direct": true,
+      "source": "https://registry.npmjs.org/@types/node"
+    },
+    "@typescript/typescript-aix-ppc64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:49:32.839Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-aix-ppc64"
+    },
+    "@typescript/typescript-darwin-arm64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:49:36.897Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-darwin-arm64"
+    },
+    "@typescript/typescript-darwin-x64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:49:40.886Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-darwin-x64"
+    },
+    "@typescript/typescript-freebsd-arm64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:49:45.020Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-freebsd-arm64"
+    },
+    "@typescript/typescript-freebsd-x64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:49:49.189Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-freebsd-x64"
+    },
+    "@typescript/typescript-linux-arm": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:49:53.075Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-linux-arm"
+    },
+    "@typescript/typescript-linux-arm64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:49:57.270Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-linux-arm64"
+    },
+    "@typescript/typescript-linux-loong64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:01.501Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-linux-loong64"
+    },
+    "@typescript/typescript-linux-mips64el": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:05.178Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-linux-mips64el"
+    },
+    "@typescript/typescript-linux-ppc64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:09.539Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-linux-ppc64"
+    },
+    "@typescript/typescript-linux-riscv64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:13.357Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-linux-riscv64"
+    },
+    "@typescript/typescript-linux-s390x": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:17.275Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-linux-s390x"
+    },
+    "@typescript/typescript-linux-x64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:21.639Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-linux-x64"
+    },
+    "@typescript/typescript-netbsd-arm64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:25.229Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-netbsd-arm64"
+    },
+    "@typescript/typescript-netbsd-x64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:29.798Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-netbsd-x64"
+    },
+    "@typescript/typescript-openbsd-arm64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:33.600Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-openbsd-arm64"
+    },
+    "@typescript/typescript-openbsd-x64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:37.789Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-openbsd-x64"
+    },
+    "@typescript/typescript-sunos-x64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:41.700Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-sunos-x64"
+    },
+    "@typescript/typescript-win32-arm64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:45.825Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-win32-arm64"
+    },
+    "@typescript/typescript-win32-x64": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:50:50.403Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/@typescript/typescript-win32-x64"
+    },
+    "abitype": {
+      "version": "1.2.3",
+      "published": "2025-12-15T21:07:29.275Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/abitype"
+    },
+    "esbuild": {
+      "version": "0.28.2",
+      "published": "2026-08-08T20:00:55.454Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/esbuild"
+    },
+    "eventemitter3": {
+      "version": "5.0.1",
+      "published": "2023-04-30T19:49:14.500Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/eventemitter3"
+    },
+    "fsevents": {
+      "version": "2.3.3",
+      "published": "2023-08-21T16:24:22.854Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/fsevents"
+    },
+    "isows": {
+      "version": "1.0.7",
+      "published": "2025-05-13T19:37:19.715Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/isows"
+    },
+    "ox": {
+      "version": "0.14.67",
+      "published": "2026-11-12T05:30:04.211Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/ox"
+    },
+    "tsx": {
+      "version": "4.23.15",
+      "published": "2026-09-20T07:22:17.792Z",
+      "direct": true,
+      "source": "https://registry.npmjs.org/tsx"
+    },
+    "typescript": {
+      "version": "7.0.2",
+      "published": "2026-07-08T15:55:18.431Z",
+      "direct": true,
+      "source": "https://registry.npmjs.org/typescript"
+    },
+    "undici-types": {
+      "version": "8.9.0",
+      "published": "2026-07-24T12:32:56.109Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/undici-types"
+    },
+    "viem": {
+      "version": "2.57.20",
+      "published": "2026-11-15T08:19:05.542Z",
+      "direct": true,
+      "source": "https://registry.npmjs.org/viem"
+    },
+    "ws": {
+      "version": "8.21.0",
+      "published": "2026-05-22T17:59:59.453Z",
+      "direct": false,
+      "source": "https://registry.npmjs.org/ws"
+    }
+  },
+  "git": {
+    "hats-protocol": {
+      "tag": "v1",
+      "commit": "4cf4170181edbb568753d79ac5438f6cd8773b6b",
+      "published": "2023-07-11T19:19:06Z",
+      "source": "https://github.com/Hats-Protocol/hats-protocol/releases/tag/v1",
+      "archive": "https://codeload.github.com/Hats-Protocol/hats-protocol/tar.gz/",
+      "sha256": "0c300728b7c4c4e309ebc2c9a926f8d7230a964c7501d1c68ce7e9e78f01e2ee"
+    },
+    "solbase": {
+      "commit": "2572d3a1bfb45d4082501ba1a550a2d093a4cca5",
+      "published": "2022-11-16T23:42:27Z",
+      "source": "https://github.com/sol-dao/solbase/commit/2572d3a1bfb45d4082501ba1a550a2d093a4cca5",
+      "archive": "https://codeload.github.com/sol-dao/solbase/tar.gz/",
+      "note": "Exact gitlink shipped in Hats v1, published as part of that release.",
+      "sha256": "864d68a58f3febf789dc7510ce88ca5c8dfb728e2f6aab5a388d376c6c65b55d"
+    },
+    "forge-std": {
+      "tag": "v1.17.0",
+      "commit": "f3dae6e6ee381f25eb6a246f7da9b85c91a68219",
+      "published": "2026-09-30T12:39:58Z",
+      "source": "https://github.com/foundry-rs/forge-std/releases/tag/v1.17.0",
+      "archive": "https://codeload.github.com/foundry-rs/forge-std/tar.gz/",
+      "sha256": "e1eab5f0891018e368a0417bfe266d93f8b9af9484e5a15b15f87f1f4b7c50aa"
+    }
+  },
+  "tools": {
+    "foundry": {
+      "version": "1.8.6",
+      "commit": "6bad0a66de7c83f7b33695044138f0f5fa4c5990",
+      "published": "2026-10-21T19:56:05Z",
+      "source": "https://github.com/foundry-rs/foundry/releases/tag/v1.8.6",
+      "sha256": {
+        "darwin_amd64": "c0b032cdfda5fdce75ab6b782785f3f28aaf431bd55daecfb6437d01369f235e",
+        "darwin_arm64": "d6bc05ee937b4308bded496068728c8ba140abe49dd7527f37e025bc335b91ec",
+        "linux_amd64": "58850106984038f3a7200f38a4182c8cb423d3a4f4c7848eacbc2453e6bc35fc",
+        "linux_arm64": "ca61f3f6e7d635f34e3e174409964d29126fa135794cd84cead8919dd50e0930"
+      }
+    },
+    "solc": {
+      "version": "0.8.30",
+      "commit": "73712a01",
+      "published": "2025-05-07T10:27:27Z",
+      "source": "https://github.com/argotorg/solidity/releases/tag/v0.8.30"
+    },
+    "node": {
+      "version": "26.13.1",
+      "published": "2026-11-11T16:44:25Z",
+      "source": "https://github.com/nodejs/node/releases/tag/v26.13.1"
+    },
+    "npm": {
+      "version": "11.20.0",
+      "published": "2026-09-22T21:29:31.258Z",
+      "source": "https://registry.npmjs.org/npm"
+    }
+  }
+}

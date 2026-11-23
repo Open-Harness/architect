@@ -3928,68 +3928,77 @@
       }
     ],
     "mounts": {
+      "actions": {
+        "kind": "projection",
+        "file": "blueprint/projections/actions.ts",
+        "package": "@orthograph/projections",
+        "version": "0.0.0",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
+        "chosen": {},
+        "hash": "d56c3fb839a74896"
+      },
       "api": {
         "kind": "projection",
         "file": "blueprint/projections/api.ts",
         "package": "@orthograph/projections",
         "version": "0.0.0",
-        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
         "chosen": {},
-        "hash": "a8f9f814f58bfd10"
+        "hash": "d56c3fb839a74896"
       },
       "cli": {
         "kind": "projection",
         "file": "blueprint/projections/cli.ts",
         "package": "@orthograph/projections",
         "version": "0.0.0",
-        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
         "chosen": {},
-        "hash": "a8f9f814f58bfd10"
+        "hash": "d56c3fb839a74896"
       },
       "infra": {
         "kind": "projection",
         "file": "blueprint/projections/infra.ts",
         "package": "@orthograph/projections",
         "version": "0.0.0",
-        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
         "chosen": {},
-        "hash": "a8f9f814f58bfd10"
+        "hash": "d56c3fb839a74896"
       },
       "mcp": {
         "kind": "projection",
         "file": "blueprint/projections/mcp.ts",
         "package": "@orthograph/projections",
         "version": "0.0.0",
-        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
         "chosen": {},
-        "hash": "a8f9f814f58bfd10"
+        "hash": "d56c3fb839a74896"
       },
       "model": {
         "kind": "projection",
         "file": "blueprint/projections/model.ts",
         "package": "@orthograph/projections",
         "version": "0.0.0",
-        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
         "chosen": {},
-        "hash": "a8f9f814f58bfd10"
+        "hash": "d56c3fb839a74896"
       },
       "sdk": {
         "kind": "projection",
         "file": "blueprint/projections/sdk.ts",
         "package": "@orthograph/projections",
         "version": "0.0.0",
-        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
         "chosen": {},
-        "hash": "a8f9f814f58bfd10"
+        "hash": "d56c3fb839a74896"
       },
       "server": {
         "kind": "projection",
         "file": "blueprint/projections/server.ts",
         "package": "@orthograph/projections",
         "version": "0.0.0",
-        "integrity": "sha256-s9V9qnxaerIh38WOJXmLbRVNOv1wt1j60gwcld5NLt4=",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
         "chosen": {},
-        "hash": "a8f9f814f58bfd10"
+        "hash": "d56c3fb839a74896"
       }
     }
   },
@@ -4056,5 +4065,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "2b198da8692a3f8f47598c90bff98f9516a6b66faf6b9437ad8e6475ad1dec11"
+  "digest": "c44e1917fcc55ba6b5079b3d8131b4e439bb277e45c43e82968221dafac494e3"
 }

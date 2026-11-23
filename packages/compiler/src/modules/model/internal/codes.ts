@@ -18,8 +18,17 @@ export const IDEMPOTENCY_CONFLICT = "IdempotencyConflict";
 export const READ_NOT_SERVED = "ReadNotServed";
 export const READ_NOT_SERVED_CODE = "AR-008";
 
-/** Refusals the runtime makes for every thing, numbered in the order it gained them: who may call (before any handler runs), then a request key reused with another payload. */
-export const RUNTIME_CODES = { NotAllowed: "AR-001", [IDEMPOTENCY_CONFLICT]: "AR-002" } as const;
+/**
+ * Refusals the runtime makes, numbered in the order it gained them: who may call (before any handler runs), a request key
+ * reused with another payload, and the four a chain adds (M6-chain item 4): a signature past its deadline, a nonce that is
+ * not the account's next, a signature that does not check, and a create on an id that holds a row. All six names are
+ * reserved project-wide; the last four are in a project's refusals only when it has a chain store.
+ */
+export const RUNTIME_CODES = { NotAllowed: "AR-001", [IDEMPOTENCY_CONFLICT]: "AR-002", SignatureExpired: "AR-003", InvalidNonce: "AR-004", BadSignature: "AR-005", AlreadyExists: "AR-006" } as const;
+
+/** The runtime's refusals a project has: every one when it has a chain store, else the two Effect's server raises. */
+export const runtimeCodes = (chain: boolean): Readonly<Record<string, string>> =>
+  Object.fromEntries(Object.entries(RUNTIME_CODES).filter(([, code]) => chain || code <= "AR-002"));
 
 /** Codes held for refusals the Worker never returns, so no model lists them: the caller's door makes this one when a person says no (#466). Kept apart from RUNTIME_CODES, which feeds every model's `refusals`. */
 export const RESERVED_CODES = { ApprovalDeclined: "AR-007" } as const;
@@ -59,13 +68,14 @@ export const inDeclarationOrder = (errors: ReadonlyMap<string, AnyErrorClass>): 
 export const refusalsOf = (
   things: Readonly<Record<string, { readonly errors: Readonly<Record<string, { readonly code: string }>>; readonly machine: { readonly notFrom: { readonly error: string; readonly code: string } } | null; readonly notFound?: { readonly error: string; readonly code: string }; readonly from: FromModel }>>,
   problems: Array<string>,
+  chain = false,
 ): Readonly<Record<string, string>> => {
-  const out: Record<string, string> = { ...RUNTIME_CODES };
+  const out: Record<string, string> = { ...runtimeCodes(chain) };
   const owner = new Map<string, string>(Object.entries(RUNTIME_CODES).map(([name, code]) => [code, name]));
   const declaredIn = new Map<string, string>();
   const add = (name: string, code: string, where: string) => {
     if (name in RESERVED_CODES) problems.push(`${where}: ${name} is reserved (${RESERVED_CODES[name as keyof typeof RESERVED_CODES]}): the caller makes it when a person declines, so a thing cannot declare it`);
-    else if (name in out) problems.push(`${where}: the refusal ${name} is declared twice${declaredIn.has(name) ? `, also in ${declaredIn.get(name)}` : " (the runtime has it)"}, and refusals are named for the whole project`);
+    else if (name in RUNTIME_CODES || name in out) problems.push(`${where}: the refusal ${name} is declared twice${declaredIn.has(name) ? `, also in ${declaredIn.get(name)}` : " (the runtime has the name)"}, and refusals are named for the whole project`);
     else declaredIn.set(name, where);
     const other = owner.get(code);
     if (other !== undefined) problems.push(`${where}: ${other} and ${name} share ${code}; refusal codes must be unique (a machine reserves number ${MACHINE_NUMBER}); codes are never silently renumbered`);

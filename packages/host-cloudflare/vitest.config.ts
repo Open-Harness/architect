@@ -10,9 +10,9 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         wrangler: { configPath: "./test/wrangler.jsonc" },
-        miniflare: { bindings: { TEST_MIGRATIONS: migrations, TEST_MIGRATIONS_VAULT: vault } },
+        miniflare: { bindings: { TEST_MIGRATIONS: migrations, TEST_MIGRATIONS_VAULT: vault, RELAYER_KEY: `0x${"11".repeat(32)}` } },
       }),
     ],
-    test: { include: ["src/**/*.test.ts"], setupFiles: ["./test/apply-migrations.ts"] },
+    test: { include: ["src/**/*.test.ts"], setupFiles: ["./test/apply-migrations.ts"], globalSetup: ["./test/anvil-setup.ts"] },
   };
 });

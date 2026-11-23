@@ -15,6 +15,6 @@ describe("model", () => {
     const files = await Effect.runPromise(projection.render({ name: "acme", model, mount: "model", mounts: model.mounts ?? {} }));
     expect(files.map((f) => f.path)).toEqual(["model.json", "edges.json"]);
     expect(JSON.parse(files[0]!.content)).toEqual(model);
-    expect(Object.keys((JSON.parse(files[0]!.content) as Model).mounts ?? {}).sort()).toEqual(["api", "cli", "mcp", "model", "sdk", "server"]);
+    expect(Object.keys((JSON.parse(files[0]!.content) as Model).mounts ?? {}).sort()).toEqual(["actions", "api", "cli", "mcp", "model", "sdk", "server"]);
   });
 });

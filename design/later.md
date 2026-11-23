@@ -58,9 +58,8 @@ belongs to, and why it waits.
   naming until then.
 - **An intent key on actors** (K21): `idempotent: { by }` for things that `lives: "actor"` waits with idempotency by
   request on actors, below.
-- **Money as a value** (ledger THI-07; a known gap, Aaron, 20 November 2026): a signed or fixed-point amount that knows
-  its currency or token and its decimals, can go negative in a ledger, and means the same in Effect and in Solidity.
-  Capxul's Payment, Budget, Invoice and Ledger entry each need one. Waits for a design pass; no slice until then.
+- **Money, what is left** (ledger THI-07, `design/decisions/M6-money.md`): an amount that knows its asset is decided in
+  M6-money, 21 November 2026; a currency taken from a field on the row, and the portal's formatting, are later.
 - **Named value kinds** (ledger THI-08, K24): a web address, a pattern, a choice, yes or no, carried into the model so
   every output can tell them apart and a form picks the right input. Waits for a design pass, beside THI-02.
 - **Approval on an operation** (ledger OPS-15, K24): a declared mark that the action asks once and the page's agent
@@ -214,3 +213,27 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
   per account and chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
   key from more than one process or Worker, or a journey sends from one account in two processes at once.
 - **A door added to an already-deployed app needs a 0002 migration.** The inbox columns (`id`, `actor`, the unique index) are written into `0001_things.sql` by `renderMigration` (`packages/projections/src/modules/server/internal/worker-config.ts`), which is only safe while the app was never deployed (the superagent). **Trigger:** an app that has been deployed gains a door, or Goal 17's doors reach another app.
+
+## From the Goal 4 relayer review rounds (23 November 2026)
+
+Five rounds of review on the relayer (M6.07) each found a valid nonce fault. The cause was the same every time: the relayer and `chain-evm`'s port
+each owned a piece of one nonce's state, and the relayer guessed the rest. The first two entries below are cut from that slice by
+`decisions/M6-relayer-rebroadcast.md`.
+
+- **Fee-bump replacement of a dropped or stuck transaction** (its own slice). Today the relayer sends a dropped transaction again, byte for byte,
+  and a transaction sent too cheap during a fee spike stays stuck, with every nonce behind it (`Relayer.health()` names it). The slice has the
+  port own the whole lifecycle of a nonce (begin, broadcast, refuse, replace) behind one call, so the relayer never infers it, and brings back
+  the two replacement cases on `e2e/on-chain/expected-failing/10-m6-07-relayer.txt` (they come off the list when it lands).
+  **Trigger:** `health()` names a stuck nonce in a real environment, or a journey on a live chain meets a fee spike.
+- **The relayer re-checks inclusion until a reorg depth.** Today a submission is final the first time its receipt is seen, so a reorg that drops an
+  included transaction is not noticed. The relayer would keep a mined row open until it is a chosen number of blocks deep, and send the transaction
+  again if the node no longer shows it. **Trigger:** the relayer runs on a chain that reorgs, or the follower reports a `Corrected` event for a
+  transaction the relayer sent.
+- **The follower's outbox, one key per entry.** Today a step stores all its sink entries as one value and rewrites the
+  rest after each delivery, so a backfill with many confirmed events makes one large value and quadratic writes (🔍 on
+  #679). The step would cap its entries or store one key per entry. **Trigger:** a follower backfills from an old
+  `fromBlock` with thousands of events, or a Durable Object value nears its size limit.
+
+## From the actions projection (Goal 5 lead, 23 November 2026)
+
+- **A `retrySafe` predicate per operation** (`decisions/WEB-actions-projection.md`, call 5). A generated action never names `retrySafe`. An operation whose payload carries its own idempotency key could emit it as a predicate on the input (`spikes/agent-native-compat` finding 5). **Trigger:** the model can say an operation carries its own key.

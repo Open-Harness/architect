@@ -6,6 +6,7 @@ import type { CheckApi, Finding } from "./types.ts";
 import { blankLines, blanks } from "./internal/blanks.ts";
 import { textsUnder } from "./internal/files.ts";
 import { rules, types } from "./internal/tools.ts";
+import { changes } from "./internal/changes.ts";
 import { drift } from "./internal/drift.ts";
 import { ratchet, ratchetsOf } from "./internal/ratchets.ts";
 
@@ -29,11 +30,12 @@ const run: CheckApi["run"] = (at) =>
     const typed = yield* Effect.sync(() => types(root));
     const ruled = yield* Effect.sync(() => rules(root, model.value));
     const drifted = yield* drift(root, model.value);
+    const changed = yield* changes(root, model.value);
     const ratchets = ratchet(ruled.errors, ratchetsOf(root));
     const warnings = ruled.warnings.map((f) => `  warning: ${f.file}:${f.line}  ${f.message}`);
     const passed = left.length === 0 && typed.length === 0 && ratchets.over.length === 0 && drifted.length === 0;
     return {
-      lines: [...blankLines(left), ...part("types", typed), ...part("rules", ratchets.over), ...warnings, ...part("drift", drifted), ...ratchets.lines, passed ? "check ✔" : "check ✘"],
+      lines: [...blankLines(left), ...part("types", typed), ...part("rules", ratchets.over), ...warnings, ...part("drift", drifted), ...changed, ...ratchets.lines, passed ? "check ✔" : "check ✘"],
       passed,
     };
   });

@@ -1,12 +1,21 @@
 // The Worker's configuration and its database, both from the model.
-import type { FieldModel, Model, StoreModel, ThingModel } from "@orthograph/compiler";
+import { Names } from "orthograph/server";
+import type { ClockModel, FieldModel, Model, StoreModel, ThingModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
 import { GENERATED, bindingOf, databaseStores, lines } from "#modules/names/service.js";
 
 /** The compatibility date every Worker and test uses: the test pool's workerd accepts dates up to 2026-08-22. */
 export const COMPATIBILITY_DATE = "2026-08-01";
 
-export const renderWrangler = (name: string, actors: boolean, stores: ReadonlyArray<StoreModel> = []): RenderedFile => ({
+/**
+ * Each environment whose clock is stepped or scaled, by name: what the world's Durable Objects and the Worker's entry read
+ * (`ORTHO_CLOCKS`, M8.06). A real clock, and no clock at all, are the default and are left out, so a blueprint with
+ * neither generates what it always did.
+ */
+export const clocksOf = (model: Model): Readonly<Record<string, ClockModel>> =>
+  Object.fromEntries(Object.values(model.environments ?? {}).flatMap((e) => (e.clock !== undefined && e.clock.kind !== "real" ? [[e.name, e.clock] as const] : [])));
+
+export const renderWrangler = (name: string, actors: boolean, stores: ReadonlyArray<StoreModel> = [], clocks: Readonly<Record<string, ClockModel>> = {}): RenderedFile => ({
   path: "generated/server/wrangler.jsonc",
   scaffold: false,
   content: lines(
@@ -30,7 +39,12 @@ export const renderWrangler = (name: string, actors: boolean, stores: ReadonlyAr
       ? `  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["World", "Actor"] }],`
       : `  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["World"] }],`,
     "  // Where telemetry goes. `ortho prove` and `ortho dev --otlp` set it; unset, nothing is exported.",
-    `  "vars": { "OTLP_URL": "" }`,
+    Object.keys(clocks).length === 0
+      ? `  "vars": { "OTLP_URL": "" }`
+      : [
+        "  // Each environment's stepped or scaled clock (K23): the world's Durable Objects and the Worker's entry read it.",
+        `  "vars": { "OTLP_URL": "", "${Names.variable("CLOCKS")}": ${JSON.stringify(JSON.stringify(clocks))} }`,
+      ],
     "}",
   ),
 });

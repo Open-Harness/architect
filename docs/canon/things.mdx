@@ -70,13 +70,12 @@ export const Secret = Blueprint.visibility.secret(Blueprint.text({ max: 512 }));
 A value is a schema with a name and a visibility. Orthograph gives you a maker for each common shape, and `Blueprint.value` names
 anything else, such as an Effect `Schema.Literals`:
 
-```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=33-62
+```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=60-92
 export interface ValuesApi {
   /** Name a type: `export const Amount = Blueprint.value(Blueprint.uint(128))`. */
   readonly value: <S extends Schema.Constraint>(schema: S | Value<S>) => Value<S>;
   /** An identifier with a short prefix, such as `alw_7f3k`. Ids of different things never mix. */
   readonly id: <const P extends string>(prefix: P) => Value<Schema.brand<Schema.String, P>>;
-  /** A whole number from 0 below 2^bits, carried as a bigint. */
   /** A whole number below 2^bits. In code a `bigint`; on the wire a decimal string, since JSON numbers lose precision. */
   readonly uint: (bits: number) => Value<Schema.BigIntFromString>;
   /** Text, never empty, at most `max` characters (default 200). */
@@ -90,6 +89,10 @@ export interface ValuesApi {
    * Gives back the same kind, so it goes wherever the original went; a field made from it keeps the sentence.
    */
   readonly described: <const X extends Value | Field>(x: X, description: string) => X;
+  /** An account on a chain, as CAIP-10 text (`eip155:31337:0x…`); an `address` in Solidity. */
+  readonly account: () => Value<Schema.String>;
+  /** An amount that names its asset (M6-money). */
+  readonly money: MoneyApi;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
   /** True or false. */

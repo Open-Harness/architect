@@ -4,7 +4,7 @@ title: the superagent, an always-on agent for any job, built on Orthograph
 milestone: "Goal 17: the superagent"
 release: beta           # K42: the beta is every framework piece the superagent proves
 branch: goal/superagent
-base: goal/stage-1
+base: main
 status: running        # ready | running | landing | done | parked
 lead:
   harness: claude      # claude | amp | codex | opencode, set by the lead when it starts
@@ -45,7 +45,7 @@ slices:
 > with a public address for webhooks, and a sandbox and a model endpoint off Aaron's Mac. Where this brief and K42
 > disagree, K42 wins.
 
-Branch `goal/superagent`, cut from `goal/stage-1`: an integration branch, where the app and the framework fixes it
+Branch `goal/superagent`, cut from `goal/stage-1` (retired by #707; its base is now `main`): an integration branch, where the app and the framework fixes it
 needs are built together and handed back whole. Written 22 November 2026 by a 📐 designer thread with Aaron, from
 DeepSeek's `dsh-superagent-prototype` (its `README.md` and `docs/000` to `008`), Pi Durable 1.5.0, the calls in
 [`K39-superagent.md`](../decisions/K39-superagent.md) and the framework fixes in
@@ -79,7 +79,7 @@ DeepSeek's `dsh-superagent-prototype` (its `README.md` and `docs/000` to `008`),
   pull request, and the triage agent, proposed by the coding agent's main agent and approved by a person, with no new
   code, from a PostHog error to a pull request and a Slack summary.
 - **Waits on:** nothing. K40, the framework fixes' design, is decided (#529). Where it needs a piece another goal
-  hasn't landed yet, it builds that piece here, to that goal's design, and the conductor merges it back.
+  hasn't landed in `main` yet, it builds that piece here, to that goal's design, and the lander (Goal 19) brings it into `main` with the green slice.
 - **Words used:**
   - a superagent: one always-on agent, stored as data;
   - a connection: one outside service it is plugged into, which brings events in and gives it tools;
@@ -132,7 +132,7 @@ M4.18's workspace opens, GitHub serves M5.14 and the factory. That is how the wo
 ## The folder structure
 
 `new` is created by this goal; `fix` is a framework change made on this branch to K40's or this goal's design and
-merged back by the conductor; nothing else is touched.
+brought into `main` by the lander (Goal 19), as K42 says; nothing else is touched.
 
 ```text
 examples/superagent/                          new · the app
@@ -167,6 +167,7 @@ examples/superagent/                          new · the app
     webhook/                                  becomes @orthograph/webhook
   src/…                                       handlers the plugins leave blank
 packages/sandbox/                             new · @orthograph/sandbox, built here from the start (K40 fix 4)
+  src/adapter.ts  src/index.ts  src/main.ts   its descriptor, its root export and its runtime entry (not a blueprint/adapter.ts: it is a package from the start)
 packages/stand-kit/  packages/stand-in-model/ new · the stand-ins' shared control routes (Goal 17's); the scripted model, built here to Goal 10's design (GOAL17-check-harness)
 e2e/superagent/                               new · the goal check, nx run e2e:superagent
 packages/cli/  packages/generators/           fix · `ortho new adapter --from-openapi` and its conformance harness (M5.07)
@@ -180,7 +181,7 @@ Root files a new plugin needs (`pnpm-workspace.yaml`, `tsconfig` references, Nx 
 
 ## The blueprint, as a developer writes it
 
-Proposed code. What exists on `goal/stage-1` today: `Blueprint.thing`, `machine`, `operation`, `event`, `error`,
+Proposed code. What exists on `main` today: `Blueprint.thing`, `machine`, `operation`, `event`, `error`,
 `use`, `step.database`, `step.call`, `id`, `described`, a role's `{ rule }`, and an adapter with calls out
 (`Blueprint.adapter({ calls, standIn: Stand.process(…) })`, `packages/compiler/src/modules/mounts/mounts.test.ts:93-95`).
 The rest is designed by its owner; where the owner hasn't built it when a slice needs it, the slice builds it here:
@@ -504,7 +505,7 @@ every operation is in the generated SDK, CLI and MCP, so another agent can drive
 ## The slices
 
 Each slice ends green with its done check. Checks come first, by an author who isn't the builder (the `author`
-skill). "After" names this goal's own earlier slices. "Uses" names other goals' work: taken from `goal/stage-1` if it
+skill). "After" names this goal's own earlier slices. "Uses" names other goals' work: taken from `main` if it
 has landed there, and built here to its design if not.
 
 | # | Slice | After | Uses | Done when |
@@ -522,7 +523,7 @@ has landed there, and built here to its design if not.
 | 11 | The connections: the doors with accounts and object keys (K40 fixes 1, 5), catch-up, the GitHub, Slack, PostHog, webhook and timer sources, their stand-ins | 10 | Goal 11's doors and `on:` (M5.03) | slice 10 passes |
 | 12 | The pages and the coding agent end to end; then, with Aaron's yes, one run on a real test repository and Slack workspace | 9, 11 | Goal 6's page map (slice 3) | the goal check's coding half passes |
 | 13 | The triage agent, made by `superagent.create` from data, with no new code | 12 | — | the goal check passes whole |
-| 14 | Extract the plugins into `packages/` as `@orthograph/superagent`, `intake`, `tickets`, `prompts`, `github`, `slack`, `posthog` and `webhook` (`sandbox` is there already), and hand the branch over | 13 | — | the goal check still passes from `packages/`; the conductor has the branch and its list of framework fixes to merge back |
+| 14 | Extract the plugins into `packages/` as `@orthograph/superagent`, `intake`, `tickets`, `prompts`, `github`, `slack`, `posthog` and `webhook` (`sandbox` is there already), and have the lander bring them into `main` | 13 | — | the goal check still passes from `packages/`; the lander has the green slices in `main`, and the framework goal has the list of framework fixes made here |
 | 15 | **The launch** (K42, section 6). Checks first, by an author who isn't the builder, then the build: real sign-in (a person signs in, and the app knows who); teams, meaning who owns a superagent and who shares it, built in this lane and kept apart from Capxul's companies (K42, call 10); a live deploy with a public address, so GitHub and Slack deliver webhooks to it; and a sandbox and a model endpoint that run off Aaron's Mac. The deploy and the cloud resources on the Cloudflare keys already on hand go ahead under Aaron's standing yes (23 November 2026); each new credential, such as a GitHub App or a Slack app, waits for his written yes; all of it stays within the daily cap and is destroyed after. Pieces pulled only here ship in 1.0, not the beta (K42, section 5) | 14 | sign-in and the live deploy, which K42's split gives this goal | a person signs in, makes a team's superagent, connects a test repository and Slack workspace through the public address, and the coding agent answers a mention end to end in the hosted sandbox on the hosted model; nothing of it runs on Aaron's Mac |
 
 **What runs at once.** Slices 2 and 3 start together, then 4. After slices 2 and 4, slice 5; after it, three lanes of
@@ -602,8 +603,8 @@ credential, is still its own yes.
 
 The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins.
 
-- **Branch.** `goal/superagent`, cut from `goal/stage-1`, is the integration branch. Every change reaches it by a pull
-  request. Merge `origin/goal/stage-1` in at the start of every slice, by a merge, never a rebase, so other goals'
+- **Branch.** `goal/superagent`, based on `main` (it was cut from `goal/stage-1`, retired by #707), is the integration branch. Every change reaches it by a pull
+  request. Merge `origin/main` in at the start of every slice, by a merge, never a rebase, so other goals'
   landings arrive here; never push to another goal's branch.
 - **Checks first.** For each slice, an author who is not the builder writes the journeys and checks on a `-check`
   branch, red on empty handlers, and proves them fair. The builder makes them green on a `-build` branch and never

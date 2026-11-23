@@ -5,17 +5,15 @@ import type { Model, OperationModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
 import { callImports, renderHandlerScaffold, wired } from "#modules/handlers/service.js";
 import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, pascal, storeFileAt, thingFileAt, toRoot } from "#modules/names/service.js";
-import { notFromOf } from "./not-from.ts";
+import { emptyPath, groupOf, notFromOf, peopleOf, worldExports } from "./helpers.ts";
+import { clocksOf, renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 import { doorsOf } from "./doors.ts";
-import { renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 import { actorOptionOf } from "./actors.ts";
 import { rulesByOrigin, staleOf, versioned } from "./versioned.ts";
-import { peopleOf } from "./people.ts";
-
-const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
 
 const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const ops = Object.values(model.operations);
+  const timed = Object.keys(clocksOf(model)).length > 0;
   const actors = Object.values(model.things).some((t) => t.lives === "actor");
   const handled = ops.filter((o) => o.kind === "operation");
   const groups = [...new Set(ops.map((o) => o.thing))];
@@ -39,30 +37,17 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   // Each declared database store (K3) has a D1 binding of its own, and its own journal and request keys.
   const stores = databaseStores(model);
   const storeOption = stores.length > 0 ? `, stores: [${stores.map((s) => `[${camel(s.name)}Store, env.${bindingOf(s)}]`).join(", ")}]` : "";
+  // Counted work and timers: one process's own, or (a world with a clock) the world's, reported to its Durable Object (M8.07).
+  const work = timed ? "WorldEntry.work(env, wakes)" : "BusyLive";
+  // A world whose clock steps is reset under its requests: every statement of a request is a write section its token holds (M8.07, I2).
+  const db = timed ? "WorldEntry.fenced(env, env.DB)" : "env.DB";
   const journal = stores.length > 0 ? `JournalD1.across([${stores.map((s) => `env.${bindingOf(s)}`).join(", ")}])` : "JournalD1.layer";
   const apart = new Set(Object.values(model.things).filter((t) => t.store !== undefined && stores.some((s) => s.name === t.store)).map((t) => t.name));
   const actorOption = actorOptionOf(model);
   const world = (stores.length > 0
     ? `tables: [${Object.values(model.things).filter((t) => !apart.has(t.name)).map((t) => `"${t.name}"`).join(", ")}], stores: [${stores.map((s) => `{ db: env.${bindingOf(s)}, tables: [${Object.values(model.things).filter((t) => t.store === s.name).map((t) => `"${t.name}"`).join(", ")}] }`).join(", ")}]`
     : "tables: tables.map(([, table]) => table)") + actorOption;
-  const group = (t: string) => {
-    const handles = ops
-      .filter((o) => o.thing === t)
-      .map((o) => {
-        const serve = empty && o.kind === "operation"
-          ? `request.headers["x-ortho-starting-world"] === "1" ? ${opVar(o)}Served : ${opVar(o)}Scaffolded`
-          : `${opVar(o)}Served`;
-        return `      .handle("${o.verb}", ({ payload, request }) => call(${serve}, payload, request.headers).pipe(Effect.provideContext(services)))`;
-      });
-    return [
-      `const ${pascal(t)}Live = HttpApiBuilder.group(CallApi, "${t}", Effect.fn(function* (handlers) {`,
-      "  // The services are taken once, when the routes are built; each request keeps its own tracer and span.",
-      "  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());",
-      "  return handlers",
-      ...handles.map((h, i) => (i === handles.length - 1 ? `${h};` : h)),
-      "}));",
-    ];
-  };
+  const group = groupOf(ops, empty, timed);
   return {
     path: "generated/server/main.ts",
     scaffold: false,
@@ -75,8 +60,8 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `import { HttpApiBuilder } from "effect/http-api";`,
       `import { SqlClient } from "effect/sql";`,
       `import type { Principal } from "${Names.frontDoor}";`,
-      `import { AuthD1, Database, ${doors.any ? "Inbound, " : ""}JournalD1, StoreD1, Telemetry, toWorld } from "${Names.pkg("host-cloudflare")}";`,
-      `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, ${handled.some(framework) || versionedRules.length > 0 ? "Versions, " : ""}Wire, ${declaredRules.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
+      `import { AuthD1, Database, ${doors.any ? "Inbound, " : ""}JournalD1, StoreD1, Telemetry, ${timed ? "WorldEntry, " : ""}toWorld } from "${Names.pkg("host-cloudflare")}";`,
+      `import { Auth, Busy, ${timed ? "" : "BusyLive, "}CallTelemetry, ${timed ? "DurableTimers, " : ""}Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, ${timed ? "Timers, " : ""}${handled.some(framework) || versionedRules.length > 0 ? "Versions, " : ""}Wire, ${declaredRules.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
       `import { Mcp, type McpResult, type ShownOperation } from "${Names.pkg("language-effect")}";`,
       `import { Api, Errors } from "../api/src/index.ts";`,
       `import * as portal from "../portal/main.ts";`,
@@ -92,7 +77,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       declaredRules.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
       stores.map((s) => `import ${camel(s.name)}Store from "${storeFileAt("generated/server/main.ts", s)}";`),
       "",
-      actors ? `export { Actor, World } from "${Names.pkg("host-cloudflare")}";` : `export { World } from "${Names.pkg("host-cloudflare")}";`,
+      worldExports(timed, actors),
       "",
       serviced.length > 0 ? ["/** Each adapter's mount by the name it is mounted under: what a `service` role in `allowed` is read against. */", `const mounts = new Map<unknown, string>([${serviced.map((m) => `[${mountVar(m)}, "${m}"]`).join(", ")}]);`, ""] : [],
       ops.map((o) =>
@@ -108,7 +93,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       doors.table,
       "const refusals = Wire.refusals(Errors.wire);",
       "const CallApi = Api.middleware(CallTelemetry);",
-      "type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth;",
+      `type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth${timed ? " | Timers | DurableTimers" : ""};`,
       "",
       "/** Who is calling, then the operation or read, its refusals sent as their wire classes. */",
       "type Run = (payload: never, principal: Principal, request?: string) => Effect.Effect<unknown, unknown, unknown>;",
@@ -154,15 +139,15 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "// Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the",
       "// layer's instance, so a session either one issues is a person to both.",
       "let routes: ReturnType<typeof AuthD1.make> | undefined;",
-      `const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, cli: "${name}-cli", worlds: hostsWorlds(env) }));`,
+      `const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: ${db}, secret: env.AUTH_SECRET, cli: "${name}-cli", worlds: hostsWorlds(env) }));`,
       "",
       "const build = (env: Env) =>",
       "  HttpRouter.toWebHandler(",
       "    HttpApiBuilder.layer(CallApi).pipe(",
       `      Layer.provide([${groups.map((t) => `${pascal(t)}Live`).join(", ")}]),`,
       "      Layer.provideMerge(CallTelemetry.layer),",
-      `      Layer.provide([StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),`,
-      "      Layer.provideMerge(Database.d1(env.DB)),",
+      `      Layer.provide([StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, ${work}, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: ${db}, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),`,
+      `      Layer.provideMerge(Database.d1(${db})),`,
       "      Layer.provide(HttpServer.layerServices),",
       "    ),",
       "  );",
@@ -192,7 +177,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "let mcpRuntime: ManagedRuntime.ManagedRuntime<Services, never> | undefined;",
       "const runtimeOf = (env: Env) =>",
       "  (mcpRuntime ??= ManagedRuntime.make(",
-      `    Layer.mergeAll(StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(env.DB))),`,
+      `    Layer.mergeAll(StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, ${work}, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: ${db}, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(${db}))),`,
       "  ));",
       "",
       "const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/;",
@@ -221,7 +206,8 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `    return Mcp.handle({ name: "${name}", version: env.ORTHO_REVISION ?? "0.0.0", tools, principal: who.principal, run }, request);`,
       "  });",
       "",
-      "export default {",
+      // An environment with a stepped or scaled clock (K23): the entry reads its world's instant and runs each request in it (M8.06).
+      timed ? ["/** Each request runs in its world's time: `Date` and Effect's `Clock` read the instant its world keeps (stepped and scaled worlds only). */", "export default WorldEntry.entry<Env>({"] : "export default {",
       "  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {",
       "    // Closed before anything reads it: outside worlds there is no door to cast, to read facts, or to register a world.",
       "    if (new URL(request.url).pathname.startsWith(\"/_world/\") && !hostsWorlds(env)) return Promise.resolve(Response.json({ error: \"not found\" }, { status: 404 }));",
@@ -235,7 +221,9 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "    }",
       doors.route,
       "    if (portal.owns(new URL(request.url).pathname)) return portal.serve(request, env);",
-      "    if (new URL(request.url).pathname.startsWith(\"/api/auth/\")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));",
+      timed
+        ? "    if (new URL(request.url).pathname.startsWith(\"/api/auth/\")) return WorldEntry.section(env, () => Effect.runPromise(AuthD1.handle(routesOf(env), request)));"
+        : "    if (new URL(request.url).pathname.startsWith(\"/api/auth/\")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));",
       "    if (new URL(request.url).pathname.startsWith(\"/.well-known/\")) {",
       "      return Effect.runPromise(AuthD1.oauth.discovery(routesOf(env), request)).then((found) => found ?? Response.json({ error: \"not found\" }, { status: 404 }));",
       "    }",
@@ -246,14 +234,14 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "    Telemetry.configure({ sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT });",
       `    return Telemetry.serve({ url: env.OTLP_URL || undefined, service: "${name}", handler: app.handler, waitUntil: (p) => ctx.waitUntil(p) }, request);`,
       "  },",
-      "};",
+      timed ? "});" : "};",
     ),
   };
 };
 
 export const renderServer = (model: Model, name: string, empty = false): ReadonlyArray<RenderedFile> => [
   main(model, name, empty),
-  renderWrangler(name, Object.values(model.things).some((t) => t.lives === "actor"), databaseStores(model)),
+  renderWrangler(name, Object.values(model.things).some((t) => t.lives === "actor"), databaseStores(model), clocksOf(model)),
   renderMigration(model),
   ...renderStoreMigrations(model),
   ...(empty ? Object.values(model.operations).filter((o) => o.kind === "operation").map((o) => renderHandlerScaffold(o, `generated/server/${emptyPath(o)}`, model)) : []),

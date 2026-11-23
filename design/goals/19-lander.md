@@ -5,11 +5,12 @@ milestone: "Goal 19: the lander"
 release: beta
 branch: main
 base: main
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: amp         # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-23    # the date it started
+  thread: https://ampcode.com/threads/T-01a209a1-9868-7586-bf92-78d1f6c34e13 # the Amp loop, a round every 30 minutes
 done_check: never done; it runs while the apps are being built (K42, section 8)
 owns:
   - main
@@ -84,5 +85,20 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-Not started: written 23 November 2026 with K42 (#694). Aaron starts it with the line above. The lead rewrites this
-section every round that changes it.
+23 November 2026, about 19:40 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
+every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
+agreed on #707.
+
+- **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`. That carried everything stage 1 built, with
+  #690 (secrets by declaration), #697 (the map), #696 (Goal 9's timers), #754 (the parity ratchet's fix) and #737 (Goal 3
+  parked). It also fixed the shell's licence (issue #753). All ten required checks were green, and `e2e-portal-next` too.
+- **`goal/stage-1` is retired.** `main` requires all ten of its checks: `e2e-stage1` was added after #729 ran it green
+  on `main`, as CI-main-stage1 says. Its threads, admins, no-force-push and no-deletion rules already matched. No pull
+  request targets `goal/stage-1`. The branch is locked read-only, with its protections kept. To undo, PUT its protection
+  again with `lock_branch: false`. It is not deleted.
+- **Every goal bases on `main`.** `AGENTS.md`, the `threads` skill and Goal 16's base say so (CI-stage-1-retired). Goal 17 changes its
+  own brief's base at its next slice start. Each goal merges `main` into its branch there, never by rebasing.
+- **Codex's two findings on #707** are Snags for the board: #765 (a thing's prefix change moves its generated refusal
+  codes) and #766 (a route value of `.` or `..`).
+- **Next, slice 2:** the parked goals' finished work. It starts with #294 (Goal 7's spike, for the record, which Goal 18
+  asked for) and `goal/time`. Then the landing loop for the superagent and Capxul.

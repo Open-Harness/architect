@@ -33,16 +33,19 @@ export const admitsAgent = (allowed: ReadonlyArray<Allowed>): boolean =>
     return a.kind !== "narrowed" || a.via.includes("agent");
   });
 
+/** A `who` role as a rule: the field holds the caller's person. On a chain the account that signed is compared in the contract. */
+const whoRule = (key: string): Role["rule"] => (instance, principal) => (instance as unknown as Record<string, unknown>)[key] === principal.person;
+
 export const Roles: RolesApi = {
-  role: ((thing: Role["thing"], spec: { readonly rule?: Role["rule"]; readonly service?: ServiceRole["service"]; readonly actor?: { readonly mount: Field; readonly id: Field }; readonly within?: Field; readonly while?: ReadonlyArray<State>; readonly agent?: Field }) => {
+  role: ((thing: Role["thing"], spec: { readonly rule?: Role["rule"]; readonly service?: ServiceRole["service"]; readonly who?: Role["who"]; readonly actor?: { readonly mount: Field; readonly id: Field }; readonly within?: Field; readonly while?: ReadonlyArray<State>; readonly agent?: Field }) => {
     const role: object = Object.freeze({
       kind: "role" as const,
       thing,
       // An account or an agent is matched by id at the door, never by a person's rule: a rule given a person admits no one.
-      rule: spec.rule ?? (() => false),
+      rule: spec.rule ?? (spec.who === undefined ? () => false : whoRule(spec.who.key)),
       ...(spec.actor === undefined ? {} : { actor: Object.freeze({ mount: spec.actor.mount, id: spec.actor.id, within: spec.within, while: Object.freeze([...(spec.while ?? [])]) }) }),
       ...(spec.agent === undefined ? {} : { agent: spec.agent }),
-      ...(spec.service === undefined ? {} : { service: spec.service }),
+      ...(spec.service === undefined ? { who: spec.who } : { service: spec.service }),
       of: (path: string): RoleOf<any, string> => roleOf(role as Role, path),
       ...(spec.service === undefined ? narrowable(() => role) : {}),
     });

@@ -39,6 +39,50 @@
             "allowedExternalImports": []
           },
           {
+            "sourceTag": "scope:shell",
+            "onlyDependOnLibsWithTags": [
+              "scope:theme"
+            ],
+            "allowedExternalImports": [
+              "react",
+              "react/*",
+              "react-dom",
+              "react-dom/*",
+              "@ui-sdk/core",
+              "@ui-sdk/core/*",
+              "@ui-sdk/react",
+              "@ui-sdk/react/*"
+            ]
+          },
+          {
+            "sourceTag": "scope:portal-next",
+            "onlyDependOnLibsWithTags": [
+              "scope:theme",
+              "scope:shell",
+              "scope:orthograph",
+              "scope:projections",
+              "scope:portal"
+            ],
+            "allowedExternalImports": [
+              "react",
+              "react/*",
+              "react-dom",
+              "react-dom/*",
+              "@ui-sdk/core",
+              "@ui-sdk/core/*",
+              "@ui-sdk/react",
+              "@ui-sdk/react/*",
+              "effect",
+              "effect/*",
+              "orthograph",
+              "@orthograph/portal",
+              "@orthograph/shell",
+              "@orthograph/theme",
+              "@orthograph/projections",
+              "vite"
+            ]
+          },
+          {
             "sourceTag": "env:runtime",
             "onlyDependOnLibsWithTags": [
               "env:runtime"
@@ -160,6 +204,52 @@
                 "sourceTag": "scope:theme",
                 "onlyDependOnLibsWithTags": [],
                 "allowedExternalImports": [
+                  "vitest"
+                ]
+              },
+              {
+                "sourceTag": "scope:shell",
+                "onlyDependOnLibsWithTags": [
+                  "scope:theme"
+                ],
+                "allowedExternalImports": [
+                  "react",
+                  "react/*",
+                  "react-dom",
+                  "react-dom/*",
+                  "@ui-sdk/core",
+                  "@ui-sdk/core/*",
+                  "@ui-sdk/react",
+                  "@ui-sdk/react/*",
+                  "vitest"
+                ]
+              },
+              {
+                "sourceTag": "scope:portal-next",
+                "onlyDependOnLibsWithTags": [
+                  "scope:theme",
+                  "scope:shell",
+                  "scope:orthograph",
+                  "scope:projections",
+                  "scope:portal"
+                ],
+                "allowedExternalImports": [
+                  "react",
+                  "react/*",
+                  "react-dom",
+                  "react-dom/*",
+                  "@ui-sdk/core",
+                  "@ui-sdk/core/*",
+                  "@ui-sdk/react",
+                  "@ui-sdk/react/*",
+                  "effect",
+                  "effect/*",
+                  "orthograph",
+                  "@orthograph/portal",
+                  "@orthograph/shell",
+                  "@orthograph/theme",
+                  "@orthograph/projections",
+                  "vite",
                   "vitest"
                 ]
               },

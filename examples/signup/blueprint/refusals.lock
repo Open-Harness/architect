@@ -1,0 +1,78 @@
+{
+  "generated": "Generated from blueprint/. Append-only. Do not edit.",
+  "lockVersion": 1,
+  "refusals": {
+    "AR-001": {
+      "name": "NotAllowed",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotAllowed"
+        }
+      },
+      "earlier": []
+    },
+    "AR-002": {
+      "name": "IdempotencyConflict",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "IdempotencyConflict"
+        }
+      },
+      "earlier": []
+    },
+    "SH-001": {
+      "name": "SheetFull",
+      "owner": "sheet",
+      "from": "blueprint/things/sheet/errors.ts",
+      "fields": {
+        "left": {
+          "value": "uint",
+          "bits": 32
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SheetFull"
+        }
+      },
+      "earlier": []
+    },
+    "SH-900": {
+      "name": "SheetNotOpen",
+      "owner": "sheet",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SheetNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "SH-901": {
+      "name": "SheetNotFound",
+      "owner": "sheet",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "sht"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SheetNotFound"
+        }
+      },
+      "earlier": []
+    }
+  },
+  "retired": {}
+}

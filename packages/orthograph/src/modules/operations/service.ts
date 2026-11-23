@@ -82,7 +82,10 @@ export const Operations: OperationsApi = {
       budget: spec.budget,
       on: Object.freeze([...(spec.on ?? [])]),
       runs: spec.runs ?? "server",
+      runsDeclared: spec.runs,
       test: spec.test ?? "unit",
+      // A stray `signedBy` (D5's retired key, absent from the type on purpose) rides along so the compiler can refuse it by name (M6-chain item 1).
+      ...("signedBy" in spec ? { signedBy: spec.signedBy } : {}),
     }) as unknown as Operation<typeof thing, typeof spec.payload, typeof spec.answer, never, never> as never,
   read: ((thing: Thing, spec: ReadSpec) => ("where" in spec ? listRead(thing, spec) : idRead(thing, spec))) as OperationsApi["read"],
   step: {

@@ -78,7 +78,7 @@ export default Blueprint.thing({ description: "An entry in the ledger.", fields:
 A handler never writes to a store. It writes to `Records`, which holds every write back until the call ends. Then
 the handler wrapper makes one commit and looks at the one thing it returns:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=135-144
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=136-145
 const writes = yield* unit.writes;
 const committed = yield* store.commit({ writes, entries, ...request }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({
@@ -87,8 +87,8 @@ const committed = yield* store.commit({ writes, entries, ...request }).pipe(
     ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
   })),
   spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
-);
-if (committed === "conflict") return yield* new Conflict();
+  // A write section: the commit happens only while the world still holds this request's token, and a reset waits for it (M8.07).
+  busy.fenced,
 ```
 
 What goes in, and what comes back, is the port every store kind implements:
@@ -152,7 +152,7 @@ return Effect.gen(function* () {
 
 The `actor` kind has one Durable Object per instance, so it checks the version inside one SQLite transaction:
 
-```ts file=packages/host-cloudflare/src/modules/actors/service.ts name=Actor lines=30-37
+```ts file=packages/host-cloudflare/src/modules/actors/service.ts name=Actor lines=44-51
 return this.ctx.storage.transactionSync((): Committed => {
   const now = this.stored();
   for (const w of writes) {
@@ -166,7 +166,7 @@ return this.ctx.storage.transactionSync((): Committed => {
 A `conflict` never reaches the caller. The wrapper runs the whole call again from the top, reading fresh, up to 64
 times:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=169-176
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=173-180
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
   attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
@@ -243,7 +243,7 @@ runs as a workflow: each step commits to one store, and the workflow remembers w
 A kind declares what it can serve, and the compiler refuses a read the kind can't. An actor holds one instance, so it
 has nothing to list, and the compiler already says so:
 
-```ts file=packages/compiler/src/modules/model/internal/reads.ts name=readModelOf lines=27
+```ts file=packages/compiler/src/modules/model/internal/reads.ts name=readModelOf lines=31
 if (list && t?.thing?.lives === "actor") problems.push(`${file}: a list read needs a thing that lives in the database, and ${thing} lives as actors`);
 ```
 
@@ -255,7 +255,7 @@ Migrations are generated from the model, one set per store, and never for a sour
 version column on every table. A field that may have no value (optional, or a union with null) is a column that may be NULL, a
 boolean is an INTEGER, and a list, a struct, a union of structs or an unknown value is kept as its JSON:
 
-```ts file=packages/projections/src/modules/server/internal/worker-config.ts name=tablesOf lines=66-76
+```ts file=packages/projections/src/modules/server/internal/worker-config.ts name=tablesOf lines=80-90
 things.map((t) => {
   const columns = Object.entries(t.fields).map(([f, field]) => (f === "id" ? `  "id" TEXT PRIMARY KEY` : `  "${f}" ${columnOf(field)}`));
   // Empty until the thing's first move sets it.

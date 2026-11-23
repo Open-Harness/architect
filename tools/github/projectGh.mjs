@@ -67,7 +67,7 @@ export const readProject = (owner, repo) => {
  * Applies the plan. It creates the Project when it is missing, links it to the repository on every run until it is
  * linked (so a failed link is mended next time), and reads it by id between phases.
  */
-export const applyProject = ({ owner, repo, goals, issues, log }) => {
+export const applyProject = ({ owner, repo, goals, issues, log, rows }) => {
   let read = readProject(owner, repo);
   if (!read.project) {
     const { createProjectV2 } = graphql(`mutation($o: ID!, $t: String!) { createProjectV2(input: { ownerId: $o, title: $t }) { projectV2 { id url } } }`, { o: read.ownerId, t: PROJECT_TITLE });
@@ -86,7 +86,7 @@ export const applyProject = ({ owner, repo, goals, issues, log }) => {
   const nodeId = new Map(issues.map((i) => [i.number, i.nodeId]));
 
   // Fields first, then read again, so item values can name the options' ids.
-  const plan = projectPlan({ goals, issues, project: read.project });
+  const plan = projectPlan({ goals, issues, project: read.project, rows });
   for (const s of plan.filter((x) => x.do === "createField" || x.do === "updateField")) {
     const options = s.options.map(({ id, name, color, description }) => ({ ...(id ? { id } : {}), name, color, description: description ?? "" }));
     if (s.do === "createField") {
@@ -100,7 +100,7 @@ export const applyProject = ({ owner, repo, goals, issues, log }) => {
     log(`did ${s.do} ${s.name}`);
   }
   read = { ...read, ...readById(pid, read.url, repo) };
-  for (const s of projectPlan({ goals, issues, project: read.project }).filter((x) => x.do !== "createField" && x.do !== "updateField")) {
+  for (const s of projectPlan({ goals, issues, project: read.project, rows }).filter((x) => x.do !== "createField" && x.do !== "updateField")) {
     if (s.do === "addItem") {
       const { addProjectV2ItemById } = graphql(`mutation($p: ID!, $c: ID!) { addProjectV2ItemById(input: { projectId: $p, contentId: $c }) { item { id } } }`, { p: pid, c: nodeId.get(s.number) });
       itemId.set(s.number, addProjectV2ItemById.item.id);

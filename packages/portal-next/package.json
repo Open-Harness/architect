@@ -1,0 +1,24 @@
+{
+  "name": "@orthograph/portal-next",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The new portal client: Orthograph's own app on UI SDK, the Orthograph theme and the shell, its map declared in blueprint/app/.",
+  "type": "module",
+  "dependencies": {
+    "@orthograph/shell": "workspace:*",
+    "@orthograph/theme": "workspace:*",
+    "@ui-sdk/core": "0.1.0-beta.10",
+    "@ui-sdk/react": "0.1.0-beta.10",
+    "effect": "4.1.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@orthograph/portal": "workspace:*",
+    "@orthograph/projections": "workspace:*",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "orthograph": "workspace:*",
+    "vite": "8.3.5"
+  }
+}

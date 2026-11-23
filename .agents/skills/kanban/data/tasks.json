@@ -815,7 +815,7 @@
   "what": "Live steps (K5 seam 10): a step signal as each step starts and ends, sent under waitUntil, not at dispose; committed events read from the journal for the portal"
  },
  "M1-22": {
-  "doneWhen": "an action's run refused by the role check returns the same typed refusal as the SDK; an operation .notVia(Via.agent) has no agent tool; a type test checks each generated options(host) against the field list and the no-write error's fields recorded from agent-native 0.228.2, with no agent-native package installed; every generated action advertises non-empty parameters",
+  "doneWhen": "an action's run refused by the role check returns the same typed refusal as the SDK; an operation .notVia(Via.agent) has no agent tool; a type test checks each generated options(host) against the field list and the no-write error's fields recorded from agent-native 0.228.2, with no agent-native package installed; every action whose payload has fields advertises non-empty parameters",
   "history": [
    {
     "at": "2026-11-19T09:00:00Z",
@@ -3828,7 +3828,7 @@
   "what": "Moved to M1.31 (K7 F4: the wallet is the first plugin)"
  },
  "M6-07": {
-  "doneWhen": "100 concurrent submissions, nonces 0 to 99, a dropped one replaced",
+  "doneWhen": "100 concurrent submissions, nonces 0 to 99, a dropped one rebroadcast (replacing it with a higher fee is later)",
   "history": [],
   "id": "M6-07",
   "kind": "build",
@@ -3892,7 +3892,7 @@
   "what": "The chain follower (L3.08), which also feeds the portal's committed chain events (K5 seam 10); its checkpoint is a block number plus a window of block hashes, and a take-back emits <Event>Corrected { wasConfirmed } (K7 Q6)"
  },
  "M6-10": {
-  "doneWhen": "ortho check reports the change as major; swapping two declared errors keeps both codes; renaming a published code is refused",
+  "doneWhen": "ortho check reports the change as major; swapping two declared errors keeps both codes; renaming a locked error gives it a new code and retires the old one, and ortho check reports it as major (M6-chain item 4)",
   "history": [],
   "id": "M6-10",
   "kind": "build",
@@ -5371,13 +5371,13 @@
   "pr": null,
   "questions": [
    {
-    "answer": null,
+    "answer": "Apache-2.0 for every published package (Aaron, 23 November 2026: \"Make it all Apache 2.0\"; design/decisions/L1-apache-2.md).",
     "id": "q1",
     "owner": "aaron",
     "raisedAt": "2026-11-19T09:47:54Z",
     "source": "m1-lead",
-    "status": "open",
-    "text": "Which licence do the published packages carry? portal-ui's builder chose MIT, but the repo has none, and the npm preview needs one for every package that publishes."
+    "status": "answered",
+    "text": "Which licence do the published packages carry? The npm preview needs one for every package that publishes."
    }
   ],
   "ref": "npm",
