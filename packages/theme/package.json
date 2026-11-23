@@ -1,9 +1,9 @@
 {
   "name": "@orthograph/theme",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "description": "The Orthograph look: one stylesheet on UI SDK's --ui-* tokens, light and dark, with the type scale and spacing.",
   "type": "module",
-  "license": "MIT",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
