@@ -299,7 +299,10 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
       `work` ends, however it ends. The children of a joining parent are counted as always.
     - So plain `Effect.all([Timers.sleep(...), work])` stays counted until every child is done, **sleeper included**: a move made meanwhile fails
       `NeverQuiet` naming the request, for as long as the sleep is parked. A handler that sleeps in parallel with other work says so with
-      `Timers.all`, which frees the world to fire the sleeper once the working branches are done (documented in the `Timers` README).
+      `Timers.all`, which frees the world to fire the sleeper once the working branches are done (documented in the `Timers` README). `Timers.all`
+      marks its caller joining **only when it really forks**: more than one effect, and a concurrency above one (or `"unbounded"`). With the
+      default concurrency the effects run one after another in the calling fiber, which is doing the work, so it stays counted and the call is
+      `Effect.all` unchanged.
     - The token is released only when nothing is working. Before it is released the box yields twice, so the other branches of an `all`, which
       start one after another, have started (a test fails if the second yield goes); a branch that starts after the token was lent takes it back.
     - A fiber a bounded wait (`Timers.within`) races is outside the box on purpose: the port call is what is awaited, and the token is lent. A
@@ -352,6 +355,11 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     | the handler's `SqlClient` (reads and writes) | n/a | ✓ every statement a section, stale refused before it runs | ✓ `WorldEntry.fenced` |
     | the store, the journal, the identity (`StoreD1`, `JournalD1`, `AuthD1`) | n/a | ✓ the same database | ✓ `WorldEntry.fenced` |
     | auth writes (`/api/auth/*`) | n/a | ✓ a section around `AuthD1.handle`; a stale request is refused | ✓ `WorldEntry.section` |
+    | `Timers.all([read, read])` with the default concurrency (sequential, in the caller's fiber) | ✓ not joining, so the caller stays counted while it does I/O, even when a sibling fiber ends mid-way | n/a | n/a |
+    | `Timers.clear`, `DurableTimers.clear` from a stale request | n/a | ✓ interrupted before the RPC, and the call carries its token (`live()` refuses an old one): it cannot delete a row of the new run with the same owner and name | ✓ `work.clear` |
+    | `withSession(...)` of the fenced database, and `dump()` | n/a | ✓ a session is wrapped like the database, `dump` is a section | ✓ `WorldEntry.fenced` |
+    | a statement or an auth write made while the request's token is lent out | n/a | ✓ takes a token of its own for the statement (named for the request), so it is a section the reset waits for; refused if the box is stale | ✓ `WorldEntry.section` |
+    | a second `/_world/reset` while the world is closed | n/a | ✓ 409 `a reset is already in progress`: the first one's `done` cannot reopen the world under the second wipe | ✓ `World.fetch` |
     | `store.commit` | n/a | ✓ section | ✓ `busy.fenced` |
     | `Timers.sleep`, `within`, `at` from a stale request | n/a | ✓ interrupted before the RPC; no row | ✓ `work.add` |
     | `DurableTimers.set` from a stale request | n/a | ✓ interrupted before the RPC; no row | ✓ `work.set` |
@@ -369,7 +377,7 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     write section), `world/fence.test.ts` (through the real count, table and controller: a move made while a branch sleeps and another works fails
     `NeverQuiet` for each combinator, and plain `Effect.all` keeps failing until the sleep is over; a handler parked on I/O across a reset commits
     nothing and a move after it neither waits on nor counts it), `world/stale.test.ts` (a stale request's `Timers.sleep` and `DurableTimers.set`
-    land no row; its statement is refused before it runs; its auth write is refused), `world/reset-sequence.test.ts` (a section open past the bound
+    land no row; its `clear` removes no row of the new run; its statement, a session's statement and a dump are refused before they run; a statement made while its token is lent out takes a token of its own; its auth write is refused), `world/reset-sequence.test.ts` (a second reset while closed is a conflict; a section open past the bound
     fails the reset naming it, wipes nothing, reopens; reads answer and a write is 409 while closed; `/_world/reset/done` needs the nonce; a
     forged reset closes nothing), `world/front-door.test.ts` (the front door), `projections/.../server.test.ts` (the generated Worker fences its
     database and its auth route in a timed world only).

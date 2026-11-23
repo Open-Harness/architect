@@ -78,6 +78,9 @@ export class World extends DurableObject<WorldEnv> {
     const resetting = pathname === "/_world/reset" && request.method === "POST";
     // A reset that does not name this world closes nothing.
     if (resetting && !named) return Promise.resolve(json({ error: "not this world's reset" }, 403));
+    // One reset at a time: while the world is closed for one, another is a conflict, so the first one's `done` cannot reopen the world under
+    // the second one's wipe.
+    if (resetting && this.clock.kind !== "real" && this.timers.closed()) return Promise.resolve(json({ error: "a reset is already in progress" }, 409));
     // While the world is closed for a reset, a read (health, clock, facts) answers as always, and a write is refused as a conflict, not a crash.
     if (this.clock.kind !== "real" && this.timers.closed() && !resetting) {
       if (request.method !== "GET" && request.method !== "HEAD") return Promise.resolve(json({ error: "the world is being reset" }, 409));

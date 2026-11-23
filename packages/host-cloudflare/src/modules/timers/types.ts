@@ -43,7 +43,7 @@ export interface WorldTimersRpc {
   /** The sleeper is back or gave up: take the row back if it has not fired, release the token the world held for it. Idempotent. */
   timerCancel(id: number): void;
   timerSet(at: number, owner: string, name: string, wake: Wake, token?: string): number;
-  timerClear(owner: string, name: string): boolean;
+  timerClear(owner: string, name: string, token?: string): boolean;
   timersSleeping(): ReadonlyArray<TimerRow>;
   timersDurable(): ReadonlyArray<DurableTimer>;
 }

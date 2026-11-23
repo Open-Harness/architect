@@ -11,6 +11,7 @@ import { work } from "./internal/work.ts";
 import { WorldEntry } from "./service.ts";
 
 const T = Date.parse("2027-01-10T09:00:00.000Z");
+const DAY = 86_400_000;
 const CLOCKS = JSON.stringify({ local: { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" } });
 const pause = (ms = 10) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
 
@@ -24,7 +25,7 @@ const worldOf = (name: string, use: (timers: ReturnType<typeof WorldTimers.state
       begin: (owner: string) => Promise.resolve({ source: clock.source(), token: rpc.countEnter(owner) }),
       countEnter: rpc.countEnter, countLeave: rpc.countLeave, countName: rpc.countName, countHas: rpc.countHas,
       countSection: rpc.countSection, countSectionEnd: rpc.countSectionEnd,
-      timerAdd: rpc.timerAdd, timerSet: rpc.timerSet, timerWait: rpc.timerWait, timerCancel: rpc.timerCancel,
+      timerAdd: rpc.timerAdd, timerSet: rpc.timerSet, timerClear: rpc.timerClear, timerWait: rpc.timerWait, timerCancel: rpc.timerCancel,
     };
     return use(timers, clock, { WORLD: { idFromName: (n: string) => n, get: () => stub } as unknown as DurableObjectNamespace, DB: env.DB, ORTHO_CLOCKS: CLOCKS, ORTHO_ENVIRONMENT: "local" });
   });
@@ -64,6 +65,29 @@ describe("a request that went stale across a reset", () => {
     });
   });
 
+  it("cannot clear a durable timer of the new run that has the same owner and name", async () => {
+    await worldOf("stale-clear", async (timers, clock, at) => {
+      const request = requestOf(at, (gate) => Effect.runPromiseExit(Effect.gen(function* () {
+        const busy = yield* Busy;
+        const durable = yield* DurableTimers;
+        yield* busy.as("probe.spin").counted(Effect.gen(function* () {
+          yield* Effect.promise(() => gate());
+          yield* busy.enter;
+          yield* Effect.exit(durable.clear("keeper/x", "due"));
+        }));
+      }).pipe(Effect.provide(work(at, {})))));
+      const response = request.send();
+      await pause(30);
+      clock.reset();
+      timers.reset();
+      // The new run sets the same row; the old run's request, resumed, must not take it away.
+      timers.rpc.timerSet(T + DAY, "keeper/x", "due", { kind: "keeper", payload: "new" });
+      await request.open();
+      await response;
+      expect(timers.rpc.timersDurable()).toHaveLength(1);
+    });
+  });
+
   it("cannot run a statement through the handler's database: it is refused before it runs, and a live request's statement runs inside a write section", async () => {
     await worldOf("stale-sql", async (timers, clock, at) => {
       const ran: Array<string> = [];
@@ -96,6 +120,47 @@ describe("a request that went stale across a reset", () => {
       await response;
       expect(ran).toEqual(["INSERT live"]);
       expect(stale).toMatch(/reset/);
+      expect(timers.held()).toEqual([]);
+    });
+  });
+
+  it("cannot get round the fence by a session or a dump, and a statement made while the request's token is lent out takes a token of its own", async () => {
+    await worldOf("stale-session", async (timers, clock, at) => {
+      const ran: Array<string> = [];
+      const heldDuring: Array<ReadonlyArray<string>> = [];
+      const statement = (sql: string) => {
+        const self = { bind: () => self, run: () => { ran.push(sql); heldDuring.push(timers.held()); return Promise.resolve({ results: [] }); }, all: () => Promise.resolve({ results: [] }), first: () => Promise.resolve(null), raw: () => Promise.resolve([]) };
+        return self;
+      };
+      const base = { prepare: (sql: string) => statement(sql), batch: () => Promise.resolve([]), exec: () => Promise.resolve({ count: 0, duration: 0 }), dump: () => { ran.push("dump"); return Promise.resolve(new ArrayBuffer(0)); } };
+      const db = { ...base, withSession: () => base } as unknown as D1Database;
+      const guarded = WorldEntry.fenced(at, db);
+      const refusals: Array<string> = [];
+      const note = (e: Error) => { refusals.push(e.message); };
+      const request = requestOf(at, async (gate) => {
+        await Effect.runPromise(Effect.gen(function* () {
+          const busy = yield* Busy;
+          yield* busy.as("probe.spin").counted(Effect.gen(function* () {
+            // Every fiber of the request has lent its token out: a statement now still takes a section, under a token of its own.
+            const lease = yield* busy.lend;
+            yield* Effect.promise(() => guarded.withSession().prepare("INSERT lent").run());
+            yield* lease.reclaim;
+            yield* Effect.promise(() => gate());
+            yield* Effect.promise(() => guarded.withSession().prepare("INSERT stale").run().catch(note));
+            yield* Effect.promise(() => (guarded as unknown as { dump: () => Promise<unknown> }).dump().catch(note));
+          }));
+        }).pipe(Effect.provide(work(at))));
+      });
+      const response = request.send();
+      await pause(30);
+      expect(ran).toEqual(["INSERT lent"]);
+      expect(heldDuring).toEqual([["probe.spin"]]);
+      clock.reset();
+      timers.reset();
+      await request.open();
+      await response;
+      expect(ran).toEqual(["INSERT lent"]);
+      expect(refusals).toHaveLength(2);
       expect(timers.held()).toEqual([]);
     });
   });

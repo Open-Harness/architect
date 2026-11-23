@@ -61,7 +61,13 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
       const token = box?.id;
       return call(env, (keeper) => keeper.timerSet(at, owner, name, wake, token));
     }),
-    clear: (owner, name) => call(env, (keeper) => keeper.timerClear(owner, name)),
+    // A stale request must not delete a row of the new run that has the same owner and name.
+    clear: (owner, name) => Effect.suspend(() => {
+      const box = WorldClock.box();
+      if (box?.stale === true) return Effect.interrupt;
+      const token = box?.id;
+      return call(env, (keeper) => keeper.timerClear(owner, name, token));
+    }),
     durable: call(env, (keeper) => keeper.timersDurable()),
   }));
   const busy = BusyReporting.pipe(Layer.provide(count));

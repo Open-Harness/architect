@@ -139,6 +139,31 @@ describe("counted conservatively (the lead's call): a fiber with live children s
     }));
   });
 
+  it("Timers.all with the default concurrency runs the effects one after another in the calling fiber, which is working, so it is not joining: a sibling that ends mid-way does not empty the count", async () => {
+    const entry = makeBox("entry:/probe/spin", { id: "0.0", pinned: true });
+    const world = makeWorld(entry);
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const [first, second, side] = [yield* Deferred.make<void>(), yield* Deferred.make<void>(), yield* Deferred.make<void>()];
+      const request = yield* Effect.forkChild(busy.as("probe.spin").counted(Effect.gen(function* () {
+        yield* Effect.forkChild(Deferred.await(side));
+        yield* Timers.all([Deferred.await(first), Deferred.await(second)]);
+      })));
+      yield* turns;
+      expect(world.held()).toEqual(["probe.spin"]);
+      // The sibling ends while the first read is still in flight: the one fiber left is doing I/O, and the world must not look quiet.
+      yield* Deferred.succeed(side, undefined);
+      yield* turns;
+      expect(world.held()).toEqual(["probe.spin"]);
+      yield* Deferred.succeed(first, undefined);
+      yield* turns;
+      expect(world.held()).toEqual(["probe.spin"]);
+      expect(world.idled()).toBe(0);
+      yield* Deferred.succeed(second, undefined);
+      yield* Fiber.join(request);
+    }));
+  });
+
   it("fork and continue: the parent that keeps working while its child sleeps is counted", async () => {
     const entry = makeBox("entry:/probe/spin", { id: "0.0", pinned: true });
     const world = makeWorld(entry);

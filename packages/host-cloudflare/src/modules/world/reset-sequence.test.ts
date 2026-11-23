@@ -71,6 +71,19 @@ describe("the reset sequence", () => {
     });
   });
 
+  it("refuses a second reset while the first is still wiping, so the first one's done cannot open the world under the second", { timeout: 20_000 }, async () => {
+    await worldOf("seq-overlap", async (world, timers) => {
+      expect((await post(world, "/_world/reset", { [HEADER]: "mine" })).status).toBe(200);
+      const second = await post(world, "/_world/reset", { [HEADER]: "mine" });
+      expect(second.status).toBe(409);
+      expect(await second.json()).toEqual({ error: "a reset is already in progress" });
+      expect(timers.closed()).toBe(true);
+      expect((await post(world, "/_world/reset/done", { [HEADER]: "mine" })).status).toBe(200);
+      expect(timers.closed()).toBe(false);
+      expect((await post(world, "/_world/reset", { [HEADER]: "mine" })).status).toBe(200);
+    });
+  });
+
   it("a reset that does not name this world closes nothing", { timeout: 20_000 }, async () => {
     await worldOf("seq-forged", async (world, timers) => {
       expect((await post(world, "/_world/reset", { [HEADER]: "other" })).status).toBe(403);

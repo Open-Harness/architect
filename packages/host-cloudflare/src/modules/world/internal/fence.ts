@@ -8,24 +8,31 @@ import { keeperOf } from "./entry.ts";
 const refused = () => Promise.reject(new Error("this request belongs to a run the world has reset: nothing it does is written"));
 
 /**
- * Run `f` as a write section of the request in progress. Outside a request (the world's own work), in a real world, and for a request that is
- * lent out, it is run as it is.
+ * Run `f` as a write section of the request in progress. Outside a request (the world's own work) and in a real world it is run as it is. A
+ * request whose token is lent out (a fiber of it outside the box, say a statement made while every other fiber sleeps) takes a token of its own
+ * for the statement, so the section is still the world's to count and to close; a stale one is refused.
  */
 export const section = <A>(env: EntryEnv, f: () => Promise<A>): Promise<A> => {
   if (WorldClock.declared(env).kind === "real") return f();
   const box = WorldClock.box();
   if (box === undefined) return f();
   if (box.stale) return refused();
-  const id = box.id;
-  if (id === undefined) return f();
-  return keeperOf(env).then((keeper) => Promise.resolve(keeper.countSection(id)).then((open) => {
-    if (!open) {
-      box.stale = true;
-      box.id = undefined;
-      return refused();
-    }
-    return f().finally(() => keeper.countSectionEnd(id));
-  }));
+  return keeperOf(env).then((keeper) => {
+    const held = box.id;
+    // The box's own token when it has one; otherwise one for the length of the statement, which the world closes to like any other.
+    const own = held === undefined ? Promise.resolve(keeper.countEnter(`${box.owner}`)) : Promise.resolve(held);
+    return own.then((id) => Promise.resolve(keeper.countSection(id)).then((open) => {
+      const done = () => Promise.resolve(held === undefined ? keeper.countLeave(id) : undefined);
+      if (!open) {
+        if (held !== undefined) {
+          box.stale = true;
+          box.id = undefined;
+        }
+        return done().then(refused);
+      }
+      return f().finally(() => Promise.resolve(keeper.countSectionEnd(id)).then(done));
+    }));
+  });
 };
 
 /** A database whose every statement is a write section: the handler's `SqlClient`, the store, the journal and the identity run on it. */
@@ -46,13 +53,18 @@ export const fenced = (env: EntryEnv, db: D1Database): D1Database => {
     raws.set(proxy, statement);
     return proxy;
   };
-  return new Proxy(db, {
-    get: (target, key) => {
-      if (key === "prepare") return (sql: string) => guard(target.prepare(sql));
-      if (key === "batch") return (statements: Array<D1PreparedStatement>) => section(env, () => target.batch(statements.map((s) => raws.get(s) ?? s)));
-      if (key === "exec") return (sql: string) => section(env, () => target.exec(sql));
-      const value = Reflect.get(target, key, target) as unknown;
-      return typeof value === "function" ? (value as (...args: Array<unknown>) => unknown).bind(target) : value;
-    },
-  });
+  // The database itself and a session of it (`withSession`) are the same door: a session's statements and batches are sections too.
+  const wrap = <T extends D1Database | D1DatabaseSession>(target: T): T =>
+    new Proxy(target, {
+      get: (self, key) => {
+        if (key === "prepare") return (sql: string) => guard(self.prepare(sql));
+        if (key === "batch") return (statements: Array<D1PreparedStatement>) => section(env, () => self.batch(statements.map((s) => raws.get(s) ?? s)));
+        if (key === "exec" && "exec" in self) return (sql: string) => section(env, () => self.exec(sql));
+        if (key === "dump" && "dump" in self) return () => section(env, () => self.dump());
+        if (key === "withSession" && "withSession" in self) return (...args: Array<unknown>) => wrap((self.withSession as (...a: Array<unknown>) => D1DatabaseSession)(...args));
+        const value = Reflect.get(self, key, self) as unknown;
+        return typeof value === "function" ? (value as (...args: Array<unknown>) => unknown).bind(self) : value;
+      },
+    });
+  return wrap(db);
 };

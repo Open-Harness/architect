@@ -79,7 +79,10 @@ export const WorldTimers = {
           live(token, `a durable timer for ${owner} ${name}`);
           return touched(table.set(at, owner, name, wake));
         },
-        timerClear: (owner, name) => touched(table.clear(owner, name)),
+        timerClear: (owner, name, token) => {
+          live(token, `a clear of ${owner} ${name}`);
+          return touched(table.clear(owner, name));
+        },
         timersSleeping: () => table.sleeping(),
         timersDurable: () => table.durable(),
       },
@@ -114,7 +117,10 @@ export const WorldTimers = {
         return sweep;
       },
       held: () => count.held(),
-      closed: () => count.closed(),
+      closed: () => {
+        guard();
+        return count.closed();
+      },
       close: () => Effect.suspend(() => {
         if (real) return Effect.void;
         closedAt = WorldClock.wall();
