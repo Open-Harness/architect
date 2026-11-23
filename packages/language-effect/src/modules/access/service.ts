@@ -74,6 +74,9 @@ const allows = (a: Allowed, payloadFields: Fields, payload: object, principal: P
   // A narrowed entry also needs the way the person or agent came in to be one it keeps (M2-auth, fork 2); a service or the system has no way in to narrow.
   const entry = a.kind === "narrowed" ? a.entry : a;
   const kept = a.kind === "narrowed" ? a.via : undefined;
+  // The keeper calls only what lists it, even an operation open to anyone; and only the keeper may call what lists it (M8-checks call 4).
+  if (entry.kind === "keeper") return Effect.succeed(principal.kind === "keeper");
+  if (principal.kind === "keeper") return Effect.succeed(false);
   if (entry.kind === "anyone") return Effect.succeed(true);
   if (entry.kind === "system") return Effect.succeed(principal.kind === "system");
   if (entry.kind === "role" && entry.service !== undefined) return Effect.succeed(serviceAdmits(entry, principal, mounts));
@@ -84,6 +87,7 @@ const allows = (a: Allowed, payloadFields: Fields, payload: object, principal: P
   if (entry.kind === "role-of") return roleOn(entry.role as Role, entry.path, payloadFields, payload, who, own);
   return roleOn(entry as Role, undefined, payloadFields, payload, who, own);
 };
+
 
 export const Access: AccessApi = {
   holds: ({ allowed, payloadFields, payload, principal, thing, mounts = NO_MOUNTS }) =>

@@ -20,7 +20,7 @@ when you write any of these:
   three agent marks are what the templates must produce.
 - **A hand-written page** in an app's `src/web/`, composed from generated pieces and UI SDK's components. Path 1,
   "Build an interface", applies.
-- **A component of the app's own** that nothing generated fits, like an editor. Path 2, "Build a component", applies:
+- **A component of the app's own** that shows a read or offers an operation (declared in `blueprint/app/components/`, its wiring generated, K36), or that nothing generated fits. Path 2, "Build a component", applies:
   one `definePrimitive`, its agent-readable state listed in `controlled`, its `agent.actions` named. Anything it saves
   goes through a generated action, never a fetch of its own.
 - **`@orthograph/shell`'s and the new portal's components** (`packages/portal-next`, K31 and Goal 6), built on UI SDK

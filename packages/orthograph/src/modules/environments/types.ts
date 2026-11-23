@@ -6,6 +6,7 @@ import type { Identity } from "#modules/identity/types.js";
 import type { Via } from "#modules/plugins/types.js";
 import type { Secret } from "#modules/secrets/types.js";
 import type { Sink } from "#modules/telemetry/types.js";
+import type { Clock } from "#modules/time/types.js";
 
 export interface EnvironmentSpec {
   /** How it runs, in words. */
@@ -16,6 +17,8 @@ export interface EnvironmentSpec {
   readonly identity?: Identity;
   /** The ways in this environment issues credentials for. Absent: every way in, and a world mints each for a journey. */
   readonly issues?: ReadonlyArray<Via>;
+  /** How its worlds tell time: `Blueprint.clock.real()`, `.stepped({ starts })` or `.scaled({ starts })` (K23 section 1). Absent: not declared. */
+  readonly clock?: Clock;
   /** Where its state lives when a cloud holds it. */
   readonly cloud?: CloudProvider;
   /** Where it lives locally. */

@@ -488,12 +488,13 @@
           }
         },
         "idempotent": null,
+        "needsApproval": true,
         "runs": "server",
         "test": "unit",
         "budget": {
           "p95Ms": 150
         },
-        "hash": "a25577a53e08dff2"
+        "hash": "a815562f353c0c01"
       },
       "handle.resolve": {
         "kind": "operation",
@@ -3998,7 +3999,7 @@
       "thing:handle": "d9dcca222783bbef"
     },
     "handle.release": {
-      "operation:handle.release": "a25577a53e08dff2",
+      "operation:handle.release": "a815562f353c0c01",
       "thing:handle": "d9dcca222783bbef"
     },
     "handle.resolve": {
@@ -4055,5 +4056,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "db96b8dfa69f972b3e623fa5fb41370007b0c360a616d488e72a069bd72df6e5"
+  "digest": "2b198da8692a3f8f47598c90bff98f9516a6b66faf6b9437ad8e6475ad1dec11"
 }

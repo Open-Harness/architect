@@ -24,7 +24,26 @@ describe("the feed keeps each source's answer on its own", () => {
       const source = { traces: () => Effect.succeed(new Map()), find: () => Effect.succeed(undefined), window: () => Effect.succeed(new Map([["t", { spans: [], logs: [] }]])) };
       const feed = yield* PortalFeed.serve({ source, metrics: { window: () => Effect.fail(new SourceFailed({ message: "unreadable" })) }, environment: "local", windowMs: 1000, now: Effect.succeed(5) });
       const answer = yield* Effect.promise(() => fetch(feed.url).then((r) => r.json()));
-      expect(answer).toEqual({ environment: "local", now: 5, windowMs: 1000, traces: { state: "available", value: { t: { spans: [], logs: [] } } }, points: { state: "unavailable", reason: "unreadable" } });
+      expect(answer).toEqual({ environment: "local", now: 5, windowMs: 1000, historyMs: 0, traces: { state: "available", value: { t: { spans: [], logs: [] } } }, points: { state: "unavailable", reason: "unreadable" } });
+    }))));
+});
+
+describe("the feed says how much history it really holds", () => {
+  const MIN = 60_000;
+  it("the least of the cap and how long it has held the source; the display window stays its own", () =>
+    Effect.runPromise(Effect.scoped(Effect.gen(function* () {
+      let clock = 1_000_000;
+      const asked: number[] = [];
+      const source = { traces: () => Effect.succeed(new Map()), find: () => Effect.succeed(undefined), window: (since: number) => { asked.push(since); return Effect.succeed(new Map()); } };
+      const feed = yield* PortalFeed.serve({ source, metrics: { window: () => Effect.succeed([]) }, environment: "local", windowMs: 30 * MIN, historyMs: 3 * 60 * MIN, now: Effect.sync(() => clock) });
+      const read = () => Effect.promise(() => fetch(feed.url).then((r) => r.json() as Promise<{ windowMs: number; historyMs: number }>));
+      clock += 10 * MIN;
+      expect(yield* read(), "ten minutes old: ten minutes held").toMatchObject({ windowMs: 30 * MIN, historyMs: 10 * MIN });
+      clock += 110 * MIN;
+      expect(yield* read(), "two hours old: two hours held, and the traces were read that far").toMatchObject({ windowMs: 30 * MIN, historyMs: 120 * MIN });
+      expect(asked.at(-1)).toBe(120 * MIN);
+      clock += 600 * MIN;
+      expect(yield* read(), "older than the cap: the cap").toMatchObject({ historyMs: 180 * MIN });
     }))));
 });
 
