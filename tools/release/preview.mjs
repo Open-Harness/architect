@@ -31,9 +31,10 @@ const parse = (argv) => {
   return out;
 };
 
-/** Whether an address is npmjs, however it is spelled (scheme, case, port, path). */
+/** Whether an address is npmjs, however it is spelled (no scheme, case, port, path, one trailing dot). An address that cannot be parsed counts as npmjs: the guard fails closed. */
 const isNpmjs = (address) => {
-  try { return new URL(address).hostname.toLowerCase() === "registry.npmjs.org"; } catch { return false; }
+  const spelled = /^[a-z][a-z0-9+.-]*:\/\//i.test(address) ? address : `https://${address}`;
+  try { return new URL(spelled).hostname.toLowerCase().replace(/\.$/, "") === "registry.npmjs.org"; } catch { return true; }
 };
 
 const manifests = (root) => {
