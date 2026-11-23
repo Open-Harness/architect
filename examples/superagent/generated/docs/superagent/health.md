@@ -30,6 +30,7 @@ Read one superagent by its id: name, state, pausedAt.
 | refusal | exit | code | when |
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of the superagent; the handler never runs |
+| ReadNotServed | 60 | AR-008 | the superagent is in a state this can't start from; carries `state` |
 
 ## How to call
 

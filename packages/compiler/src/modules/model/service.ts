@@ -16,20 +16,24 @@ export const Compiler: CompilerApi = {
     // Each mount's plugin, folded in: its things beside the project's own, under the names the mount gives them.
     const folded = yield* Mounts.fold(layout);
     // An app folder of verbs with no thing.ts adds operations to a plugin's thing: they join it, and are the app's.
-    for (const [name, t] of folded.things) {
-      const own = layout.things.get(name);
-      if (own && !own.thing) {
-        for (const [verb, v] of own.verbs) {
-          const taken = t.verbs.get(verb);
-          // One operation has one declaration: the app may not add a verb the thing already has, from its plugin or another folder.
-          if (taken) layout.problems.push(`${v.file}: adds ${name}.${verb}, which ${name} already has (${taken.file}): name the operation another verb`);
-          else t.verbs.set(verb, { ...v, from: { kind: "app" } });
-        }
-        const at = layout.problems.indexOf(`${own.base}: has no thing.ts`);
-        if (at >= 0) layout.problems.splice(at, 1);
+    // It finds the thing by the thing its operations are declared on, so a plugin mounted under an alias is found as well.
+    for (const [folder, own] of [...layout.things]) {
+      if (own.thing) continue;
+      const declaredOn = [...own.verbs.values()][0]?.declaration.thing;
+      const found = declaredOn === undefined ? undefined : [...folded.things].find(([, x]) => x.thing === declaredOn);
+      if (!found) continue;
+      const [name, t] = found;
+      for (const [verb, v] of own.verbs) {
+        const taken = t.verbs.get(verb);
+        // One operation has one declaration: the app may not add a verb the thing already has, from its plugin or another folder.
+        if (taken) layout.problems.push(`${v.file}: adds ${name}.${verb}, which ${name} already has (${taken.file}): name the operation another verb`);
+        else t.verbs.set(verb, { ...v, from: { kind: "app" } });
       }
-      layout.things.set(name, t);
+      const at = layout.problems.indexOf(`${own.base}: has no thing.ts`);
+      if (at >= 0) layout.problems.splice(at, 1);
+      layout.things.delete(folder);
     }
+    for (const [name, t] of folded.things) layout.things.set(name, t);
     for (const [n, a] of folded.agents) {
       const mine = layout.agents.get(n);
       if (mine) layout.problems.push(`${mine.file}: the app's agent ${n} has the name of the one ${a.mount} brings (${a.file}): an agent is named by its file`);

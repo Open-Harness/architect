@@ -16,5 +16,11 @@
   "dependencies": {
     "effect": "4.1.4",
     "orthograph": "workspace:*"
+  },
+  "nx": {
+    "tags": [
+      "scope:plugin",
+      "env:runtime"
+    ]
   }
 }

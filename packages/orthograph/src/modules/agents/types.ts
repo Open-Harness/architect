@@ -1,6 +1,7 @@
 // Agents (K40 fix 3): `Blueprint.agent` says what an agent of one kind runs with. An agent itself is a thing
 // (`@orthograph/agents`' `Agent`), made by any operation allowed to create one and told through the outbox.
 import type { Field, Thing } from "#modules/things/types.js";
+import type { Value } from "#modules/values/types.js";
 
 /**
  * A pool of seats an agent kind runs in (GOAL17-executor-slots): `size` is the field that holds how many, `reserve` the
@@ -9,7 +10,11 @@ import type { Field, Thing } from "#modules/things/types.js";
 export interface Slots<T extends Thing = Thing> {
   readonly size: Field;
   readonly reserve: number;
-  readonly held: T;
+  /**
+   * The thing whose rows hold the seats: the thing itself, or its own id's value (`Blueprint.id("asg")`), which the compiler
+   * resolves to the thing that owns that prefix, so a plugin can name a thing it must not import.
+   */
+  readonly held: T | Value;
 }
 
 export interface AgentSpec {

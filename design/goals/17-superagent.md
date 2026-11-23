@@ -243,7 +243,7 @@ superagent.create({
   name: "triage",
   purpose: "Finds errors worth fixing, and fixes them.",
   connections: [
-    posthogSource({ project: "web", kinds: ["errorIssue", "alert"] }),
+    posthogSource({ project: "web", kinds: ["errorIssue"] }),
     githubSource({ repo: "acme/widgets", me: { id: "<bot id>", login: "<bot login>" }, events: ["issues"] }),
     slackSource({ channels: ["#triage"], me: { id: "<bot id>", login: "<bot login>" } }),
     Source.timer({ every: "1 week", says: "sweep the open errors" }),   // a standing goal: its thread never closes
@@ -284,7 +284,7 @@ GitHub, the secrets and the stand-in.
 ```ts
 // packages/github: by hand, on each event the adapter offers
 issueComment: Blueprint.event(IssueComment, {
-  id: (e) => `comment:${e.comment.id}:${e.action}`,                        // the same from the door and the poll
+  id: (e) => `comment:${e.repository.full_name}:${e.comment.id}:${e.comment.updated_at}`,   // the object and its own last change: the same from the door and the poll
   actor: (e) => ({ id: String(e.sender.id), name: e.sender.login, bot: e.sender.type === "Bot" }),
 }),
 
@@ -398,7 +398,7 @@ export default Blueprint.agent({
   model: superagent.playbook.model,
   instructions: prompts.compose("executor"),
   env: sandbox,                                 // K40 fix 4: the ticket's sandbox as Pi's ExecutionEnv
-  slots: { size: superagent.slots, reserve: 1, held: Assignment },   // GOAL17-executor-slots: a pool of seats, plus one kept for a person's message
+  slots: { size: superagent.slots, reserve: 1, held: Blueprint.id("asg") },   // GOAL17-slice5-forms call 15: the id the Assignment owns, so no import of tickets; GOAL17-executor-slots: a pool of seats, plus one kept for a person's message
   tools: [
     read, ticket.ack, ticket.report, thread.unrelated, thread.follow, trigger.handback,   // allowed: [itsAgent]
     ...superagent.connections.tools,            // the mounts' calls, typed from each spec
@@ -612,10 +612,14 @@ Pi Durable running the agents. Slice 2 is the four seam records (#583), passed b
 writers, one guard" table in GOAL17-executor-slots. Slice 3's checks (#597) and slice 4's adapters from a spec (#601,
 GOAL17-adapters-from-spec) are merged: `ortho new adapter --from-openapi` generates the GitHub, Slack and PostHog plugins in
 `examples/superagent/plugins/`, each passing against its stand-in. `goal/stage-1` was merged in at slice 5's start (#625).
-GOAL17-names (#651, #654) gave one name each to six operations and calls the records named two ways. Slice 5's checks
-are merged (#648, 08 to 17: 119 lines on the ratchet), and its build runs on `goal-17/s5-blueprint-build`. Two snags are
-open: the new forms can't be shown passable before the build (#652), and the compiler's acme tests time out on a slow
-CI runner, about one run in two.
+GOAL17-names (#651, #654) gave one name each to six operations and calls the records named two ways. Slice 5 is merged:
+its checks (#648, #658, #673: 08 to 17) and its build (#670) give the blueprint's new forms, the superagent app and its
+plugins, the new `@orthograph/agents` package, and `ReadNotServed` (AR-008) for a pinned or derived read until slice 7
+serves it; GOAL17-slice5-forms (calls 1 to 16) and GOAL17-plugin-scope record what the build decided. GOAL17-check-harness
+(#681) says how a check scripts a model, kills a world, steps the clock and the outbox, and probes an agent. Open now:
+slice 6's checks (#686), slice 10's checks (#687, whose branch carries GOAL17-connections) and slice 8's checks. Two snags are open:
+slice 6's journeys need `versions:` served and an `agent.open` handler before they can pass (the snag #685), and the compiler's
+acme tests time out on a slow CI runner, about one run in two.
 
 What slice 5's and slice 8's authors take from slice 2's last review, beyond the records:
 

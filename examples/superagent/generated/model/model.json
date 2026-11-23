@@ -294,6 +294,7 @@
     "PolicyNotCurrent": "PO-900",
     "ProposalNotFound": "PP-901",
     "ProposalNotWaiting": "PP-900",
+    "ReadNotServed": "AR-008",
     "ReportNotProgress": "RE-900",
     "SeatTaken": "AS-002",
     "SettingsNotCurrent": "SE-900",
@@ -4021,6 +4022,12 @@
         "emits": "AgentClosed"
       },
       "errors": [],
+      "on": [
+        {
+          "event": "AssignmentInterrupted",
+          "thing": "assignment"
+        }
+      ],
       "breaks": [],
       "refusals": [
         "AgentNotIdle",
@@ -4044,7 +4051,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "629f179f257d2087"
+      "hash": "7317cbbfb8608be0"
     },
     "agent.open": {
       "kind": "operation",
@@ -4177,6 +4184,20 @@
       "errors": [
         "StaleAssignment"
       ],
+      "on": [
+        {
+          "event": "EvalDelivered",
+          "thing": "eval"
+        },
+        {
+          "event": "InputRouted",
+          "thing": "input"
+        },
+        {
+          "event": "AssignmentStarted",
+          "thing": "assignment"
+        }
+      ],
       "breaks": [],
       "refusals": [
         "StaleAssignment",
@@ -4201,7 +4222,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "d68712506221b85e"
+      "hash": "a489d661855eb40a"
     },
     "assignment.cancelled": {
       "kind": "operation",
@@ -4720,7 +4741,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -4743,7 +4765,7 @@
       "only": {
         "state": "pending"
       },
-      "hash": "e5dee96c1e703657"
+      "hash": "d580e8fa00869c6f"
     },
     "decision.dismiss": {
       "kind": "operation",
@@ -5140,6 +5162,14 @@
         {
           "event": "DecisionRecorded",
           "thing": "decision"
+        },
+        {
+          "event": "SuperagentCreated",
+          "thing": "superagent"
+        },
+        {
+          "event": "SuperagentResumed",
+          "thing": "superagent"
         }
       ],
       "breaks": [],
@@ -5157,7 +5187,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "ae46dc19a3e3b7c9"
+      "hash": "1bbf1f0796b4d583"
     },
     "eval.read": {
       "kind": "operation",
@@ -7056,7 +7086,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -7084,7 +7115,7 @@
       "only": {
         "state": "waiting"
       },
-      "hash": "921ac4d518271d25"
+      "hash": "71bb29fd20c8b76e"
     },
     "settings.save": {
       "kind": "operation",
@@ -7849,7 +7880,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -7896,7 +7928,7 @@
         },
         "hash": "f76ac2e55763a3de"
       },
-      "hash": "0e876de5e242e384"
+      "hash": "1326987bd4639187"
     },
     "superagent.pause": {
       "kind": "operation",
@@ -9430,7 +9462,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -9527,7 +9560,7 @@
         },
         "hash": "bb99b754f041580a"
       },
-      "hash": "f072d3cb74e256d1"
+      "hash": "aab2805c64688435"
     },
     "ticket.stop": {
       "kind": "operation",
@@ -9651,7 +9684,8 @@
       "errors": [],
       "breaks": [],
       "refusals": [
-        "NotAllowed"
+        "NotAllowed",
+        "ReadNotServed"
       ],
       "allowed": [
         {
@@ -9756,7 +9790,7 @@
         },
         "hash": "bb99b754f041580a"
       },
-      "hash": "d1bcef79f1d69dce"
+      "hash": "7cffbbbab73c5d62"
     },
     "trigger.handback": {
       "kind": "operation",
@@ -10186,6 +10220,16 @@
       "labels": {
         "environment": "*",
         "code": "AR-002",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:AR-008",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "AR-008",
         "severity": "ticket",
         "owner": "orthograph"
       }
@@ -14151,16 +14195,16 @@
       "file": "blueprint/features/agents.ts",
       "package": "@orthograph/agents",
       "version": "0.0.0",
-      "integrity": "sha256-31K00cNqA9iDhD619L8JeJyqfUBboL+FM38AxGR8QAQ=",
+      "integrity": "sha256-DEWsMF1M3ArhEI34NebeQcPrnaJnaZGToj2VBVMnL0A=",
       "chosen": {},
-      "hash": "4548a2ee2e5d3a6c"
+      "hash": "cd00fef3ef7d1a43"
     },
     "github": {
       "kind": "adapter",
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-kEKUw+ABgYNFKj4DJwcU5QgIqCOGq7pUBIo44wj09tE=",
+      "integrity": "sha256-+QfhY3BLjzDhN6TqngzRoEjSzKIeXsoa57cgNm4Kw0E=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -14184,23 +14228,23 @@
         "how": "process",
         "what": "a bare git repository served by git http-backend, with a small server for GitHub's REST API over it"
       },
-      "hash": "8ca1cbf40009cba1"
+      "hash": "8a6f135b591e3864"
     },
     "intake": {
       "kind": "feature",
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-VCIPYVdowBw6zabAqWJgu1iiICVxlgnPhbOKIeLjC/Q=",
+      "integrity": "sha256-Q/KQDqdappksqNgP1iCHhf4kxq367nzQssLBtNy5Nqs=",
       "chosen": {},
-      "hash": "8388d2d61cedaf09"
+      "hash": "83ae1ea620dacd55"
     },
     "posthog": {
       "kind": "adapter",
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-ZrzWSc9p1weK83KVhAa6gibfO0/E2B1bTW3q1ZZ2Xjc=",
+      "integrity": "sha256-2BIrFP+ilUntYsgklqNdvBHkCHuF4MpNj27GMV4JAug=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
@@ -14211,23 +14255,23 @@
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "1a7c076a974ff3cd"
+      "hash": "78f7cfc1e1296a86"
     },
     "prompts": {
       "kind": "feature",
       "file": "blueprint/features/prompts.ts",
       "package": "@orthograph/prompts",
       "version": "0.0.0",
-      "integrity": "sha256-5IIUREd6yfHmMT9E04PMECovkW9EcLERP/pMnOw09r0=",
+      "integrity": "sha256-jrHu0OsSPcdnCGbvUeXhlZNRpLOiH+UpRS3q0DMOCGY=",
       "chosen": {},
-      "hash": "a5fac4f21bb6f57c"
+      "hash": "c6854e473f6011f4"
     },
     "slack": {
       "kind": "adapter",
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-2hrXDO4uF2wwIs8T5pHsCYMLSYwJgKFPcQWnGt5bjxg=",
+      "integrity": "sha256-cgYvochHojf+Y0SfD1jGexHVKhCU9eWvYssJDbYbGYw=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
@@ -14241,25 +14285,25 @@
         "how": "process",
         "what": "a small server over channel C024BE91L that answers Slack's Web API as Slack does"
       },
-      "hash": "fb301d5261864f55"
+      "hash": "5167dd11573985b8"
     },
     "superagent": {
       "kind": "feature",
       "file": "blueprint/features/superagent.ts",
       "package": "@orthograph/superagent",
       "version": "0.0.0",
-      "integrity": "sha256-goOTC3Mfp0dmrs0miShCgTrB8WoPI7Qxbik+1tQJvho=",
+      "integrity": "sha256-FpwTCQHlxdWqbnlyjbkzluaEo/rkjHQcFHpnbabimg4=",
       "chosen": {},
-      "hash": "32153fba39fb682b"
+      "hash": "f3df96b0f94e21f2"
     },
     "tickets": {
       "kind": "feature",
       "file": "blueprint/features/tickets.ts",
       "package": "@orthograph/tickets",
       "version": "0.0.0",
-      "integrity": "sha256-zSScA+ooTtg0QuO4qlzMYprFQ4ylL8aWr+ABAuhnopo=",
+      "integrity": "sha256-KjX/vUQXYPIVy+J0IpKhBNQV5xzLliEAJ5ARK+JmM2U=",
       "chosen": {},
-      "hash": "e3a8bd3b36e34ebb"
+      "hash": "5eb1a2c3b6e384c0"
     }
   }
 }

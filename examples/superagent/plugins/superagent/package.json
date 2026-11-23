@@ -9,6 +9,12 @@
     "blueprint": "blueprint",
     "src": "src"
   },
+  "nx": {
+    "tags": [
+      "scope:plugin",
+      "env:runtime"
+    ]
+  },
   "exports": {
     ".": "./index.ts",
     "./blueprint/*.js": "./blueprint/*.ts",
@@ -20,7 +26,6 @@
     "effect": "4.1.4",
     "orthograph": "workspace:*",
     "@orthograph/language-effect": "workspace:*",
-    "@orthograph/agents": "workspace:*",
-    "@orthograph/tickets": "workspace:*"
+    "@orthograph/agents": "workspace:*"
   }
 }

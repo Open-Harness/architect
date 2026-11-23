@@ -48,7 +48,7 @@ export const journeyBreaches = (read: Read, files: ReadonlyArray<string>, resolv
 };
 
 describe("harness 01: a probe is reachable only where worlds are hosted", () => {
-  const journeyFiles = () => ["journeys", "kit", "starting-worlds"].flatMap((d) => (existsSync(join(here, d)) ? readDir(join(here, d)) : []));
+  const journeyFiles = () => ["agent-journeys", "kit", "starting-worlds"].flatMap((d) => (existsSync(join(here, d)) ? readDir(join(here, d)) : []));
   const readDir = (d: string): ReadonlyArray<string> => readdirSync(d).filter((f) => f.endsWith(".ts")).map((f) => join(d, f));
 
   it("control: the walker finds a testing.ts, a stand-in's main.ts and a server-side package when one is planted in a journey", () => {

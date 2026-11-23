@@ -54,6 +54,20 @@ at `goal-17/s5-blueprint-build`.
     agent of one name from two plugins, or from a plugin and the app; a hold two things export under one name. When a plugin ships
     both `x.ts` and `x.js`, only the `.js` is loaded.
 
+15. **`slots.held` takes the thing, or the id the thing owns** (`held: Blueprint.id("asg")`). `Slots.held` is `Thing | Value`. The id
+    form lets `@orthograph/superagent` declare the executor's seats without importing `@orthograph/tickets`, which would make the two
+    plugins depend on each other (GOAL17-plugin-scope). The compiler resolves the id to the thing that owns that prefix and refuses
+    it when no thing owns it, when more than one does (a plugin mounted twice brings two, each named in the message; name the thing
+    itself then), and when the value is not an id. The model is as before: `slots: { size, reserve, held: "<thing>" }`.
+16. **`ReadNotServed` is a framework refusal, `AR-008`, exit 121, HTTP 501.** It is in a model only when some read pins a field or
+    derives its answer, so every other blueprint generates what it did (check 17). `AR-003` to `AR-006` are Goal 4's and `AR-007`
+    is reserved (`ST1-needs-approval-declaration`), so 008 is the next free number. 121 is the first exit the runtime keeps after
+    `IdempotencyConflict`'s 120, and 501 is "not implemented", which is what it is until slice 7 serves such reads. Every door reads
+    the refusal from the one table the contract writes (`Errors.refusals`, `Errors.codes`, `Errors.wire`), by tag: the CLI's exit and
+    line (`generated/cli/src/output.ts`, `exitOf` and `said`), the MCP tool's row (`Mcp.tools({ refusals: { table: Errors.refusals } })`
+    in `generated/server/main.ts`) and the SDK's error union (`HttpApiClient` over the same `Api`). A device door has no such read.
+    `projections/.../api/read-not-served-doors.test.ts` runs the rendered contract and shows each door reads what it renders.
+
 ## What the checks cannot reach, found while building
 
 - Check 15's derive control (`15-the-framework-refusals.test.ts:39-44`) writes `probe` and `probe-part` with no `code`, and both
@@ -64,4 +78,4 @@ at `goal-17/s5-blueprint-build`.
 
 ## Supersedes
 
-Nothing: each call fills a gap and replaces no phrase.
+- `design/goals/17-superagent.md`: "slots: { size: superagent.slots, reserve: 1, held: Assignment },   // GOAL17-executor-slots" → "slots: { size: superagent.slots, reserve: 1, held: Blueprint.id(\"asg\") },   // GOAL17-slice5-forms call 15: the id the Assignment owns, so no import of tickets; GOAL17-executor-slots"

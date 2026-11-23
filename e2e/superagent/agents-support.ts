@@ -12,8 +12,8 @@ import { JOURNEYS } from "./journeys-table.ts";
 
 export const here = join(repo, "e2e/superagent");
 
-/** Every slice 8 journey's file name (without `.ts`): one file in `journeys/` each. */
-export const allJourneys = (): ReadonlyArray<string> => readdirSync(join(here, "journeys")).filter((f) => f.endsWith(".ts")).map((f) => f.slice(0, -3)).sort();
+/** Every slice 8 journey's file name (without `.ts`): one file in `agent-journeys/` each (slice 10's are in `journeys/`; both are laid in the app's `journeys/`). */
+export const allJourneys = (): ReadonlyArray<string> => readdirSync(join(here, "agent-journeys")).filter((f) => f.endsWith(".ts")).map((f) => f.slice(0, -3)).sort();
 
 /**
  * The folders this run copied the app into, kept in a file named for the run (the test runner's own pid, which every file of one run shares), so a
@@ -30,7 +30,7 @@ export const withJourneys = (names: ReadonlyArray<string>, extra: ReadonlyArray<
   cpSync(join(here, "starting-worlds"), join(root, "blueprint/starting-worlds"), { recursive: true });
   cpSync(join(here, "kit"), join(root, "kit"), { recursive: true });
   mkdirSync(join(root, "journeys"), { recursive: true });
-  for (const name of names) cpSync(join(here, "journeys", `${name}.ts`), join(root, "journeys", `${name}.ts`));
+  for (const name of names) cpSync(join(here, "agent-journeys", `${name}.ts`), join(root, "journeys", `${name}.ts`));
   for (const dir of extra) cpSync(join(here, dir), join(root, dir), { recursive: true });
   return root;
 };

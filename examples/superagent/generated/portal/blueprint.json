@@ -298,6 +298,7 @@
       "PolicyNotCurrent": "PO-900",
       "ProposalNotFound": "PP-901",
       "ProposalNotWaiting": "PP-900",
+      "ReadNotServed": "AR-008",
       "ReportNotProgress": "RE-900",
       "SeatTaken": "AS-002",
       "SettingsNotCurrent": "SE-900",
@@ -4025,6 +4026,12 @@
           "emits": "AgentClosed"
         },
         "errors": [],
+        "on": [
+          {
+            "event": "AssignmentInterrupted",
+            "thing": "assignment"
+          }
+        ],
         "breaks": [],
         "refusals": [
           "AgentNotIdle",
@@ -4048,7 +4055,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "629f179f257d2087"
+        "hash": "7317cbbfb8608be0"
       },
       "agent.open": {
         "kind": "operation",
@@ -4181,6 +4188,20 @@
         "errors": [
           "StaleAssignment"
         ],
+        "on": [
+          {
+            "event": "EvalDelivered",
+            "thing": "eval"
+          },
+          {
+            "event": "InputRouted",
+            "thing": "input"
+          },
+          {
+            "event": "AssignmentStarted",
+            "thing": "assignment"
+          }
+        ],
         "breaks": [],
         "refusals": [
           "StaleAssignment",
@@ -4205,7 +4226,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "d68712506221b85e"
+        "hash": "a489d661855eb40a"
       },
       "assignment.cancelled": {
         "kind": "operation",
@@ -4724,7 +4745,8 @@
         "errors": [],
         "breaks": [],
         "refusals": [
-          "NotAllowed"
+          "NotAllowed",
+          "ReadNotServed"
         ],
         "allowed": [
           {
@@ -4747,7 +4769,7 @@
         "only": {
           "state": "pending"
         },
-        "hash": "e5dee96c1e703657"
+        "hash": "d580e8fa00869c6f"
       },
       "decision.dismiss": {
         "kind": "operation",
@@ -5144,6 +5166,14 @@
           {
             "event": "DecisionRecorded",
             "thing": "decision"
+          },
+          {
+            "event": "SuperagentCreated",
+            "thing": "superagent"
+          },
+          {
+            "event": "SuperagentResumed",
+            "thing": "superagent"
           }
         ],
         "breaks": [],
@@ -5161,7 +5191,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "ae46dc19a3e3b7c9"
+        "hash": "1bbf1f0796b4d583"
       },
       "eval.read": {
         "kind": "operation",
@@ -7060,7 +7090,8 @@
         "errors": [],
         "breaks": [],
         "refusals": [
-          "NotAllowed"
+          "NotAllowed",
+          "ReadNotServed"
         ],
         "allowed": [
           {
@@ -7088,7 +7119,7 @@
         "only": {
           "state": "waiting"
         },
-        "hash": "921ac4d518271d25"
+        "hash": "71bb29fd20c8b76e"
       },
       "settings.save": {
         "kind": "operation",
@@ -7853,7 +7884,8 @@
         "errors": [],
         "breaks": [],
         "refusals": [
-          "NotAllowed"
+          "NotAllowed",
+          "ReadNotServed"
         ],
         "allowed": [
           {
@@ -7900,7 +7932,7 @@
           },
           "hash": "f76ac2e55763a3de"
         },
-        "hash": "0e876de5e242e384"
+        "hash": "1326987bd4639187"
       },
       "superagent.pause": {
         "kind": "operation",
@@ -9434,7 +9466,8 @@
         "errors": [],
         "breaks": [],
         "refusals": [
-          "NotAllowed"
+          "NotAllowed",
+          "ReadNotServed"
         ],
         "allowed": [
           {
@@ -9531,7 +9564,7 @@
           },
           "hash": "bb99b754f041580a"
         },
-        "hash": "f072d3cb74e256d1"
+        "hash": "aab2805c64688435"
       },
       "ticket.stop": {
         "kind": "operation",
@@ -9655,7 +9688,8 @@
         "errors": [],
         "breaks": [],
         "refusals": [
-          "NotAllowed"
+          "NotAllowed",
+          "ReadNotServed"
         ],
         "allowed": [
           {
@@ -9760,7 +9794,7 @@
           },
           "hash": "bb99b754f041580a"
         },
-        "hash": "d1bcef79f1d69dce"
+        "hash": "7cffbbbab73c5d62"
       },
       "trigger.handback": {
         "kind": "operation",
@@ -10190,6 +10224,16 @@
         "labels": {
           "environment": "*",
           "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-008",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-008",
           "severity": "ticket",
           "owner": "orthograph"
         }
@@ -14155,16 +14199,16 @@
         "file": "blueprint/features/agents.ts",
         "package": "@orthograph/agents",
         "version": "0.0.0",
-        "integrity": "sha256-31K00cNqA9iDhD619L8JeJyqfUBboL+FM38AxGR8QAQ=",
+        "integrity": "sha256-DEWsMF1M3ArhEI34NebeQcPrnaJnaZGToj2VBVMnL0A=",
         "chosen": {},
-        "hash": "4548a2ee2e5d3a6c"
+        "hash": "cd00fef3ef7d1a43"
       },
       "github": {
         "kind": "adapter",
         "file": "blueprint/adapters/github.ts",
         "package": "@orthograph/github",
         "version": "0.0.0",
-        "integrity": "sha256-kEKUw+ABgYNFKj4DJwcU5QgIqCOGq7pUBIo44wj09tE=",
+        "integrity": "sha256-+QfhY3BLjzDhN6TqngzRoEjSzKIeXsoa57cgNm4Kw0E=",
         "chosen": {},
         "calls": [
           "issues.createComment",
@@ -14188,23 +14232,23 @@
           "how": "process",
           "what": "a bare git repository served by git http-backend, with a small server for GitHub's REST API over it"
         },
-        "hash": "8ca1cbf40009cba1"
+        "hash": "8a6f135b591e3864"
       },
       "intake": {
         "kind": "feature",
         "file": "blueprint/features/intake.ts",
         "package": "@orthograph/intake",
         "version": "0.0.0",
-        "integrity": "sha256-VCIPYVdowBw6zabAqWJgu1iiICVxlgnPhbOKIeLjC/Q=",
+        "integrity": "sha256-Q/KQDqdappksqNgP1iCHhf4kxq367nzQssLBtNy5Nqs=",
         "chosen": {},
-        "hash": "8388d2d61cedaf09"
+        "hash": "83ae1ea620dacd55"
       },
       "posthog": {
         "kind": "adapter",
         "file": "blueprint/adapters/posthog.ts",
         "package": "@orthograph/posthog",
         "version": "0.0.0",
-        "integrity": "sha256-ZrzWSc9p1weK83KVhAa6gibfO0/E2B1bTW3q1ZZ2Xjc=",
+        "integrity": "sha256-2BIrFP+ilUntYsgklqNdvBHkCHuF4MpNj27GMV4JAug=",
         "chosen": {},
         "calls": [
           "errorTrackingIssuesList",
@@ -14215,23 +14259,23 @@
           "how": "process",
           "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
         },
-        "hash": "1a7c076a974ff3cd"
+        "hash": "78f7cfc1e1296a86"
       },
       "prompts": {
         "kind": "feature",
         "file": "blueprint/features/prompts.ts",
         "package": "@orthograph/prompts",
         "version": "0.0.0",
-        "integrity": "sha256-5IIUREd6yfHmMT9E04PMECovkW9EcLERP/pMnOw09r0=",
+        "integrity": "sha256-jrHu0OsSPcdnCGbvUeXhlZNRpLOiH+UpRS3q0DMOCGY=",
         "chosen": {},
-        "hash": "a5fac4f21bb6f57c"
+        "hash": "c6854e473f6011f4"
       },
       "slack": {
         "kind": "adapter",
         "file": "blueprint/adapters/slack.ts",
         "package": "@orthograph/slack",
         "version": "0.0.0",
-        "integrity": "sha256-2hrXDO4uF2wwIs8T5pHsCYMLSYwJgKFPcQWnGt5bjxg=",
+        "integrity": "sha256-cgYvochHojf+Y0SfD1jGexHVKhCU9eWvYssJDbYbGYw=",
         "chosen": {},
         "calls": [
           "chatPostMessage",
@@ -14245,25 +14289,25 @@
           "how": "process",
           "what": "a small server over channel C024BE91L that answers Slack's Web API as Slack does"
         },
-        "hash": "fb301d5261864f55"
+        "hash": "5167dd11573985b8"
       },
       "superagent": {
         "kind": "feature",
         "file": "blueprint/features/superagent.ts",
         "package": "@orthograph/superagent",
         "version": "0.0.0",
-        "integrity": "sha256-goOTC3Mfp0dmrs0miShCgTrB8WoPI7Qxbik+1tQJvho=",
+        "integrity": "sha256-FpwTCQHlxdWqbnlyjbkzluaEo/rkjHQcFHpnbabimg4=",
         "chosen": {},
-        "hash": "32153fba39fb682b"
+        "hash": "f3df96b0f94e21f2"
       },
       "tickets": {
         "kind": "feature",
         "file": "blueprint/features/tickets.ts",
         "package": "@orthograph/tickets",
         "version": "0.0.0",
-        "integrity": "sha256-zSScA+ooTtg0QuO4qlzMYprFQ4ylL8aWr+ABAuhnopo=",
+        "integrity": "sha256-KjX/vUQXYPIVy+J0IpKhBNQV5xzLliEAJ5ARK+JmM2U=",
         "chosen": {},
-        "hash": "e3a8bd3b36e34ebb"
+        "hash": "5eb1a2c3b6e384c0"
       }
     }
   },
@@ -14285,7 +14329,7 @@
       "thing:account": "c261b466a3c7689c"
     },
     "agent.close": {
-      "operation:agent.close": "629f179f257d2087",
+      "operation:agent.close": "7317cbbfb8608be0",
       "thing:agent": "a369aaa882ce59e7"
     },
     "agent.open": {
@@ -14293,7 +14337,7 @@
       "thing:agent": "a369aaa882ce59e7"
     },
     "agent.tell": {
-      "operation:agent.tell": "d68712506221b85e",
+      "operation:agent.tell": "a489d661855eb40a",
       "thing:agent": "a369aaa882ce59e7"
     },
     "assignment.cancelled": {
@@ -14339,7 +14383,7 @@
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "assignment.waiting": {
-      "operation:assignment.waiting": "e5dee96c1e703657",
+      "operation:assignment.waiting": "d580e8fa00869c6f",
       "thing:agent": "a369aaa882ce59e7",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
@@ -14369,7 +14413,7 @@
       "thing:eval": "cd99cfd16e5d49a7"
     },
     "eval.due": {
-      "operation:eval.due": "ae46dc19a3e3b7c9",
+      "operation:eval.due": "1bbf1f0796b4d583",
       "thing:eval": "cd99cfd16e5d49a7"
     },
     "eval.read": {
@@ -14491,7 +14535,7 @@
       "thing:superagent": "e55ebb477c1aa89e"
     },
     "proposal.waiting": {
-      "operation:proposal.waiting": "921ac4d518271d25",
+      "operation:proposal.waiting": "71bb29fd20c8b76e",
       "thing:proposal": "0487db5954021933",
       "thing:superagent": "e55ebb477c1aa89e"
     },
@@ -14540,7 +14584,7 @@
       "thing:superagent": "e55ebb477c1aa89e"
     },
     "superagent.health": {
-      "operation:superagent.health": "0e876de5e242e384",
+      "operation:superagent.health": "1326987bd4639187",
       "thing:agent": "a369aaa882ce59e7",
       "thing:superagent": "e55ebb477c1aa89e"
     },
@@ -14648,7 +14692,7 @@
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.stage": {
-      "operation:ticket.stage": "f072d3cb74e256d1",
+      "operation:ticket.stage": "aab2805c64688435",
       "thing:agent": "a369aaa882ce59e7",
       "thing:superagent": "e55ebb477c1aa89e",
       "thing:ticket": "41fd9017a6d64eb1"
@@ -14660,7 +14704,7 @@
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.waiting": {
-      "operation:ticket.waiting": "d1bcef79f1d69dce",
+      "operation:ticket.waiting": "7cffbbbab73c5d62",
       "thing:agent": "a369aaa882ce59e7",
       "thing:superagent": "e55ebb477c1aa89e",
       "thing:ticket": "41fd9017a6d64eb1"
@@ -14701,7 +14745,7 @@
     "assignment/queued.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.queued\n\nQueue an Assignment for a ticket's executor: an accept, an Input or a resume. It names the Input that woke it.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | assignment.superagent |\n| ticket | assignment.ticket |\n| agent | assignment.agent |\n| input | assignment.input |\n| why | assignment.why |\n\n## Answer\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n\n## Move\n\n`queued`: from nothing (it creates) to pending, emitting AssignmentQueued.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |\n| InputNotFound | 4 | IN-901 | nothing has the id in input; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment queued --superagent <superagent> --ticket <ticket> --agent <agent> --input <input> --why <why>\n```\n\nHTTP: `POST /assignment/queued` with the payload as JSON. SDK: `Sdk.assignment.queued(payload)`.\n",
     "assignment/started.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.started\n\nGive a waiting Assignment a seat, if one is free for it.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n| seat | assignment.seat |\n\n## Answer\n\n| field | value |\n|---|---|\n| text | text |\n\n## Move\n\n`started`: from pending to running, emitting AssignmentStarted.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NoSeat | 95 | AS-001 | declared in errors.ts |\n| SeatTaken | 96 | AS-002 | another running or closing assignment holds this superagent and seat; by the rule assignment.oneHolderPerSeat, carrying seat |\n| ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |\n| AssignmentNotPending | 94 | AS-900 | the assignment is in a state started can't start from; carries `state` |\n| AssignmentNotFound | 4 | AS-901 | nothing has the id in assignment; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment started --assignment <assignment> --seat <seat>\n```\n\nHTTP: `POST /assignment/started` with the payload as JSON. SDK: `Sdk.assignment.started(payload)`.\n",
     "assignment/turn-ended.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.turn-ended\n\nThe Agent idled on this Assignment or closed it: it ends, and its seat is free.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`turnEnded`: from running or closing to ended, emitting AssignmentEnded.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AssignmentNotPending | 94 | AS-900 | the assignment is in a state turnEnded can't start from; carries `state` |\n| AssignmentNotFound | 4 | AS-901 | nothing has the id in assignment; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment turn-ended --assignment <assignment>\n```\n\nHTTP: `POST /assignment/turn-ended` with the payload as JSON. SDK: `Sdk.assignment.turn-ended(payload)`.\n",
-    "assignment/waiting.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.waiting\n\nList assignments, oldest first, 255 to a page, filtered by superagent.\n\n**Who may call:** the system.\n\n**A read:** answered from the records, with no handler. A page of 255 at a time, oldest first, narrowed by superagent; pass the answer's `next` as `cursor` for the page after it.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent (optional) | assignment.superagent |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment waiting [--superagent <superagent>] [--cursor <cursor>]\n```\n\nHTTP: `POST /assignment/waiting` with the payload as JSON. SDK: `Sdk.assignment.waiting(payload)`.\n",
+    "assignment/waiting.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.waiting\n\nList assignments, oldest first, 255 to a page, filtered by superagent.\n\n**Who may call:** the system.\n\n**A read:** answered from the records, with no handler. A page of 255 at a time, oldest first, narrowed by superagent; pass the answer's `next` as `cursor` for the page after it.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent (optional) | assignment.superagent |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| ReadNotServed | 94 | AR-008 | the assignment is in a state this can't start from; carries `state` |\n\n## How to call\n\n```sh\nsuperagent assignment waiting [--superagent <superagent>] [--cursor <cursor>]\n```\n\nHTTP: `POST /assignment/waiting` with the payload as JSON. SDK: `Sdk.assignment.waiting(payload)`.\n",
     "attention/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attention\n\nA question a person must answer, made by a report; a person's next message answers it.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| ticket | ticket.id |\n| question | text |\n\n## Machine\n\nStates: open. A move from the wrong state is refused AttentionNotOpen (exit 100).\n\n| move | from | to | emits |\n|---|---|---|---|\n| raise | (creates) | open | AttentionRaised |\n\n## Events\n\n- `AttentionRaised`: carries superagent (attention.superagent), attention (attention.id), ticket (attention.ticket); emitted by the move raise\n\n## Operations\n\n(none yet)\n",
     "correlation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# correlation\n\nA trigger seen on another thread: it adds context to a judgement and never routes.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| trigger | id |\n| thread | text |\n\n## Operations\n\n(none yet)\n",
     "decision/dismiss.md": "<!-- Generated from the blueprint. Do not edit. -->\n# decision.dismiss\n\nSet aside a decision a person disagrees with.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| decision | decision.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`dismiss`: from recorded to dismissed, emitting DecisionDismissed.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DecisionNotRecorded | 86 | DE-900 | the decision is in a state dismiss can't start from; carries `state` |\n| DecisionNotFound | 4 | DE-901 | nothing has the id in decision; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent decision dismiss --decision <decision>\n```\n\nHTTP: `POST /decision/dismiss` with the payload as JSON. SDK: `Sdk.decision.dismiss(payload)`.\n",
@@ -14743,7 +14787,7 @@
     "proposal/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# proposal\n\nWhat a main agent would change in a superagent's configuration, and why, waiting for a person.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | superagent.id |\n| operation | text |\n| changes | schema |\n| why | text |\n\n## Machine\n\nStates: waiting, approved, rejected. A move from the wrong state is refused ProposalNotWaiting (exit 70).\n\n| move | from | to | emits |\n|---|---|---|---|\n| propose | (creates) | waiting | ProposalRecorded |\n| approve | waiting | approved | ProposalApproved |\n| reject | waiting | rejected | ProposalRejected |\n\n## Events\n\n- `ProposalApproved`: carries proposal (proposal.id); emitted by the move approve\n- `ProposalRecorded`: carries proposal (proposal.id), superagent (proposal.superagent); emitted by the move propose\n- `ProposalRejected`: carries proposal (proposal.id); emitted by the move reject\n\n## Operations\n\n- [proposal.approve](approve.md): Apply a proposal. Only a signed-in person, through a session: text that reached a model is never an approval.\n- [proposal.propose](propose.md): Record what a main agent would change, and why: nothing changes until a person approves it.\n- [proposal.reject](reject.md): Turn a proposal down.\n- [proposal.waiting](waiting.md): List proposals, oldest first, 25 to a page, filtered by superagent.\n",
     "proposal/propose.md": "<!-- Generated from the blueprint. Do not edit. -->\n# proposal.propose\n\nRecord what a main agent would change, and why: nothing changes until a person approves it.\n\n**Who may call:** the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | proposal.superagent |\n| operation | proposal.operation |\n| changes | proposal.changes |\n| why | proposal.why |\n\n## Answer\n\n| field | value |\n|---|---|\n| proposal | proposal.id |\n\n## Move\n\n`propose`: from nothing (it creates) to waiting, emitting ProposalRecorded.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent proposal propose --superagent <superagent> --operation <operation> --changes <changes> --why <why>\n```\n\nHTTP: `POST /proposal/propose` with the payload as JSON. SDK: `Sdk.proposal.propose(payload)`.\n",
     "proposal/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# proposal.reject\n\nTurn a proposal down.\n\n**Who may call:** anyone signed in by session.\n\n## Payload\n\n| field | value |\n|---|---|\n| proposal | proposal.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`reject`: from waiting to rejected, emitting ProposalRejected.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ProposalNotWaiting | 70 | PP-900 | the proposal is in a state reject can't start from; carries `state` |\n| ProposalNotFound | 4 | PP-901 | nothing has the id in proposal; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in by session; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent proposal reject --proposal <proposal>\n```\n\nHTTP: `POST /proposal/reject` with the payload as JSON. SDK: `Sdk.proposal.reject(payload)`.\n",
-    "proposal/waiting.md": "<!-- Generated from the blueprint. Do not edit. -->\n# proposal.waiting\n\nList proposals, oldest first, 25 to a page, filtered by superagent.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n**A read:** answered from the records, with no handler. A page of 25 at a time, oldest first, narrowed by superagent; pass the answer's `next` as `cursor` for the page after it.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent (optional) | proposal.superagent |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent proposal waiting [--superagent <superagent>] [--cursor <cursor>]\n```\n\nHTTP: `POST /proposal/waiting` with the payload as JSON. SDK: `Sdk.proposal.waiting(payload)`.\n",
+    "proposal/waiting.md": "<!-- Generated from the blueprint. Do not edit. -->\n# proposal.waiting\n\nList proposals, oldest first, 25 to a page, filtered by superagent.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n**A read:** answered from the records, with no handler. A page of 25 at a time, oldest first, narrowed by superagent; pass the answer's `next` as `cursor` for the page after it.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent (optional) | proposal.superagent |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n| ReadNotServed | 70 | AR-008 | the proposal is in a state this can't start from; carries `state` |\n\n## How to call\n\n```sh\nsuperagent proposal waiting [--superagent <superagent>] [--cursor <cursor>]\n```\n\nHTTP: `POST /proposal/waiting` with the payload as JSON. SDK: `Sdk.proposal.waiting(payload)`.\n",
     "report/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# report\n\nHow the executor says a ticket stands. Its state is its kind.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| ticket | ticket.id |\n| text | text |\n| seq | uint |\n\n## Machine\n\nStates: progress, waiting, ready, blocked, failed, dropped. A move from the wrong state is refused ReportNotProgress (exit 99).\n\n| move | from | to | emits |\n|---|---|---|---|\n| made | (creates) | progress, waiting, ready, blocked, failed, dropped | ReportMade |\n\n## Events\n\n- `ReportMade`: carries superagent (report.superagent), report (report.id), ticket (report.ticket); emitted by the move made\n\n## Operations\n\n(none yet)\n",
     "settings/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# settings\n\nThe app's settings: execution variables and blocked commands. One current version, every save kept.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| revision | uint |\n| variables | schema |\n| blocked | schema |\n\n## Machine\n\nStates: current. A move from the wrong state is refused SettingsNotCurrent (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| save | (creates) | current | SettingsSaved |\n\n## Events\n\n- `SettingsSaved`: carries settings (settings.id), revision (settings.revision); emitted by the move save\n\n## Operations\n\n- [settings.save](save.md): Save a new version of the settings. A save made from an older version is refused, with the current one. A main agent may only propose it.\n",
     "settings/save.md": "<!-- Generated from the blueprint. Do not edit. -->\n# settings.save\n\nSave a new version of the settings. A save made from an older version is refused, with the current one. A main agent may only propose it.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| base | uint |\n| variables | settings.variables |\n| blocked | settings.blocked |\n\n## Answer\n\n| field | value |\n|---|---|\n| settings | settings.id |\n| revision | settings.revision |\n\n## Move\n\n`save`: from nothing (it creates) to current, emitting SettingsSaved.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleRevision | 40 | SU-002 | the settings is in a state save can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent settings save --base <base> --variables <variables> --blocked <blocked>\n```\n\nHTTP: `POST /settings/save` with the payload as JSON. SDK: `Sdk.settings.save(payload)`.\n",
@@ -14758,7 +14802,7 @@
     "superagent/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.create\n\nMake a superagent, with its main agent, observing.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| name | superagent.name |\n| purpose | superagent.purpose |\n| connections | superagent.connections |\n| playbook | superagent.playbook |\n| slots | superagent.slots |\n| main | superagent.main |\n\n## Answer\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Move\n\n`create`: from nothing (it creates) to observing, emitting SuperagentCreated.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SlotsOutOfRange | 61 | SU-001 | declared in errors.ts, carrying slots |\n| AgentNotFound | 4 | AG-901 | nothing has the id in main; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent create --name <name> --purpose <purpose> --connections <connections> --playbook <playbook> --slots <slots> --main <main>\n```\n\nHTTP: `POST /superagent/create` with the payload as JSON. SDK: `Sdk.superagent.create(payload)`.\n",
     "superagent/fill.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.fill\n\nStart waiting Assignments, in line, while seats are free. Does nothing while paused.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| started | uint |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent fill --superagent <superagent>\n```\n\nHTTP: `POST /superagent/fill` with the payload as JSON. SDK: `Sdk.superagent.fill(payload)`.\n",
     "superagent/go-live.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.go-live\n\nLet a superagent act: a person, after reading what it would have accepted.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`goLive`: from observing to live, emitting SuperagentWentLive.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotObserving | 60 | SU-900 | the superagent is in a state goLive can't start from; carries `state` |\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent go-live --superagent <superagent>\n```\n\nHTTP: `POST /superagent/go-live` with the payload as JSON. SDK: `Sdk.superagent.go-live(payload)`.\n",
-    "superagent/health.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.health\n\nRead one superagent by its id: name, state, pausedAt.\n\n**Who may call:** anyone signed in, or the itsMain of the superagent.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| name | superagent.name |\n| state | text |\n| pausedAt (optional) | superagent.pausedAt |\n| problems | schema |\n| more | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of the superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent health --id <id>\n```\n\nHTTP: `POST /superagent/health` with the payload as JSON. SDK: `Sdk.superagent.health(payload)`.\n",
+    "superagent/health.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.health\n\nRead one superagent by its id: name, state, pausedAt.\n\n**Who may call:** anyone signed in, or the itsMain of the superagent.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| name | superagent.name |\n| state | text |\n| pausedAt (optional) | superagent.pausedAt |\n| problems | schema |\n| more | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of the superagent; the handler never runs |\n| ReadNotServed | 60 | AR-008 | the superagent is in a state this can't start from; carries `state` |\n\n## How to call\n\n```sh\nsuperagent superagent health --id <id>\n```\n\nHTTP: `POST /superagent/health` with the payload as JSON. SDK: `Sdk.superagent.health(payload)`.\n",
     "superagent/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent\n\nOne always-on agent, stored as data.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| name | text |\n| purpose | text |\n| connections | schema |\n| playbook | schema |\n| slots | uint |\n| main | agent.id |\n| pausedFrom (optional) | schema |\n| pausedAt (optional) | uint |\n| pausedFor | uint |\n| passGen | uint |\n\n## Machine\n\nStates: observing, live, paused, retired. A move from the wrong state is refused SuperagentNotObserving (exit 60).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | observing | SuperagentCreated |\n| goLive | observing | live | SuperagentWentLive |\n| pause | observing, live | paused | SuperagentPaused |\n| resume | paused | observing, live | SuperagentResumed |\n| retire | observing, live, paused | retired | SuperagentRetired |\n\n## Events\n\n- `SuperagentCreated`: carries superagent (superagent.id); emitted by the move create\n- `SuperagentPaused`: carries superagent (superagent.id), from (text), at (uint); emitted by the move pause\n- `SuperagentResumed`: carries superagent (superagent.id), to (text), at (uint), length (uint); emitted by the move resume\n- `SuperagentRetired`: carries superagent (superagent.id); emitted by the move retire\n- `SuperagentWentLive`: carries superagent (superagent.id); emitted by the move goLive\n\n## Roles\n\n- itsMain\n\n## Operations\n\n- [superagent.boot](boot.md): The world's once-a-minute backstop: arm each live superagent's eval pass and sweeps that a restart lost.\n- [superagent.create](create.md): Make a superagent, with its main agent, observing.\n- [superagent.fill](fill.md): Start waiting Assignments, in line, while seats are free. Does nothing while paused.\n- [superagent.go-live](go-live.md): Let a superagent act: a person, after reading what it would have accepted.\n- [superagent.health](health.md): Read one superagent by its id: name, state, pausedAt.\n- [superagent.pause](pause.md): Hold evals, launches, deliveries and replies; sources keep recording. Only a person, through a session.\n- [superagent.reap](reap.md): Close the running Assignments whose executor is idle, so their seats come back once the Agent has said it closed.\n- [superagent.resume](resume.md): Let held work go, and move every eval's deadline later by the pause's length. Only a person, through a session.\n- [superagent.retire](retire.md): Close a superagent's connections and agents.\n- [superagent.update](update.md): Save a superagent's configuration as a new version; a stale save is refused.\n",
     "superagent/pause.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.pause\n\nHold evals, launches, deliveries and replies; sources keep recording. Only a person, through a session.\n\n**Who may call:** anyone signed in by session.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| from | text |\n| at | uint |\n\n## Move\n\n`pause`: from observing or live to paused, emitting SuperagentPaused.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotObserving | 60 | SU-900 | the superagent is in a state pause can't start from; carries `state` |\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in by session; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent pause --superagent <superagent>\n```\n\nHTTP: `POST /superagent/pause` with the payload as JSON. SDK: `Sdk.superagent.pause(payload)`.\n",
     "superagent/reap.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.reap\n\nClose the running Assignments whose executor is idle, so their seats come back once the Agent has said it closed.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| reaped | uint |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent reap --superagent <superagent>\n```\n\nHTTP: `POST /superagent/reap` with the payload as JSON. SDK: `Sdk.superagent.reap(payload)`.\n",
@@ -14782,9 +14826,9 @@
     "ticket/request-status.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.request-status\n\nAsk a ticket's executor where it stands; a person's request may use the seat kept for a person.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | ticket.superagent |\n| ticket | ticket.id |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket request-status --superagent <superagent> --ticket <ticket>\n```\n\nHTTP: `POST /ticket/request-status` with the payload as JSON. SDK: `Sdk.ticket.request-status(payload)`.\n",
     "ticket/resume.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.resume\n\nWake an ended ticket on a person's message, after its mandate is revalidated: the same executor, with its memory.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`resume`: from ended to open, emitting TicketResumed.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TicketNotOpen | 90 | TI-900 | the ticket is in a state resume can't start from; carries `state` |\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket resume --ticket <ticket>\n```\n\nHTTP: `POST /ticket/resume` with the payload as JSON. SDK: `Sdk.ticket.resume(payload)`.\n",
     "ticket/retry.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.retry\n\nSend a failed input again.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | ticket.superagent |\n| ticket | ticket.id |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket retry --superagent <superagent> --ticket <ticket>\n```\n\nHTTP: `POST /ticket/retry` with the payload as JSON. SDK: `Sdk.ticket.retry(payload)`.\n",
-    "ticket/stage.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.stage\n\nRead one ticket by its id: superagent, title, state.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent, or the itsAgent of the ticket.\n\n**A read:** answered from the records, with no handler.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | ticket.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| superagent | ticket.superagent |\n| title | ticket.title |\n| state | text |\n| stage | schema |\n| why | schema |\n| label | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent, or the itsAgent of the ticket; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket stage --id <id>\n```\n\nHTTP: `POST /ticket/stage` with the payload as JSON. SDK: `Sdk.ticket.stage(payload)`.\n",
+    "ticket/stage.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.stage\n\nRead one ticket by its id: superagent, title, state.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent, or the itsAgent of the ticket.\n\n**A read:** answered from the records, with no handler.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | ticket.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| superagent | ticket.superagent |\n| title | ticket.title |\n| state | text |\n| stage | schema |\n| why | schema |\n| label | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent, or the itsAgent of the ticket; the handler never runs |\n| ReadNotServed | 90 | AR-008 | the ticket is in a state this can't start from; carries `state` |\n\n## How to call\n\n```sh\nsuperagent ticket stage --id <id>\n```\n\nHTTP: `POST /ticket/stage` with the payload as JSON. SDK: `Sdk.ticket.stage(payload)`.\n",
     "ticket/stop.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.stop\n\nStop a ticket: its mandate is withdrawn and its executor's turn closed.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | ticket.superagent |\n| ticket | ticket.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`stop`: from open or ended to stopped, emitting TicketStopped.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TicketNotOpen | 90 | TI-900 | the ticket is in a state stop can't start from; carries `state` |\n| TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket stop --superagent <superagent> --ticket <ticket>\n```\n\nHTTP: `POST /ticket/stop` with the payload as JSON. SDK: `Sdk.ticket.stop(payload)`.\n",
-    "ticket/waiting.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.waiting\n\nList tickets, newest first, 50 to a page, filtered by superagent, stage.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, newest first, narrowed by superagent; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent (optional) | ticket.superagent |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent ticket waiting [--superagent <superagent>] [--cursor <cursor>]\n```\n\nHTTP: `POST /ticket/waiting` with the payload as JSON. SDK: `Sdk.ticket.waiting(payload)`.\n",
+    "ticket/waiting.md": "<!-- Generated from the blueprint. Do not edit. -->\n# ticket.waiting\n\nList tickets, newest first, 50 to a page, filtered by superagent, stage.\n\n**Who may call:** anyone signed in, or the itsMain of its superagent.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, newest first, narrowed by superagent; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent (optional) | ticket.superagent |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |\n| ReadNotServed | 90 | AR-008 | the ticket is in a state this can't start from; carries `state` |\n\n## How to call\n\n```sh\nsuperagent ticket waiting [--superagent <superagent>] [--cursor <cursor>]\n```\n\nHTTP: `POST /ticket/waiting` with the payload as JSON. SDK: `Sdk.ticket.waiting(payload)`.\n",
     "trigger/handback.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.handback\n\nThe executor hands a trigger back: it was not its to answer.\n\n**Who may call:** the itsAgent of its ticket.\n\n## Payload\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsAgent of its ticket; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger handback --ticket <ticket> --trigger <trigger>\n```\n\nHTTP: `POST /trigger/handback` with the payload as JSON. SDK: `Sdk.trigger.handback(payload)`.\n",
     "trigger/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger\n\nOne event that came in from a connection. Never changed once stored.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| source | text |\n| event | text |\n| thread | text |\n| kind | text |\n| text | text |\n| url (optional) | text |\n| author (optional) | text |\n| channel | schema |\n\n## Machine\n\nStates: stored. A move from the wrong state is refused TriggerNotStored (exit 83).\n\n| move | from | to | emits |\n|---|---|---|---|\n| receive | (creates) | stored | TriggerReceived |\n| requeue | stored | stored | TriggerRequeued |\n\n## Events\n\n- `TriggerReceived`: carries superagent (trigger.superagent), trigger (trigger.id), thread (trigger.thread), text (trigger.text); emitted by the move receive\n- `TriggerRequeued`: carries superagent (trigger.superagent), trigger (trigger.id); emitted by the move requeue\n\n## Operations\n\n- [trigger.handback](handback.md): The executor hands a trigger back: it was not its to answer.\n- [trigger.receive](receive.md): Store one event a connection brought, once: a second delivery of the same event is a duplicate, and one the policy filters is not kept.\n- [trigger.reevaluate](reevaluate.md): Ask the main agent to judge a trigger again.\n- [trigger.requeue](requeue.md): Put a trigger back for evaluation.\n",
     "trigger/receive.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.receive\n\nStore one event a connection brought, once: a second delivery of the same event is a duplicate, and one the policy filters is not kept.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | trigger.superagent |\n| source | trigger.source |\n| event | trigger.event |\n| thread | trigger.thread |\n| kind | trigger.kind |\n| text | trigger.text |\n| url (optional) | trigger.url |\n| author (optional) | trigger.author |\n| channel | trigger.channel |\n\n## Answer\n\n| field | value |\n|---|---|\n| trigger | trigger.id |\n| outcome | schema |\n\n## Move\n\n`receive`: from nothing (it creates) to stored, emitting TriggerReceived.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger receive --superagent <superagent> --source <source> --event <event> --thread <thread> --kind <kind> --text <text> [--url <url>] [--author <author>] --channel <channel>\n```\n\nHTTP: `POST /trigger/receive` with the payload as JSON. SDK: `Sdk.trigger.receive(payload)`.\n",
@@ -14805,5 +14849,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "dabea5db559a7734867cca051c2824e96f435a04178e8dfc29e6f0d2dc994cbc"
+  "digest": "a783c2fde478c061fe148c42da8c13529dadab5c7220c92eb38ee7f7e58c3dfa"
 }

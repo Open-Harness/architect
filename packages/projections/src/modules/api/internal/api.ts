@@ -2,7 +2,7 @@
 import { Names } from "orthograph/server";
 import type { Model, OperationModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
-import { GENERATED, IDEMPOTENCY_CONFLICT, IDEMPOTENCY_CONFLICT_EXIT, NOT_ALLOWED_EXIT, STATUS, declarationAt, lines, onDevice, opVar, pascal, thingFileAt } from "#modules/names/service.js";
+import { GENERATED, IDEMPOTENCY_CONFLICT, IDEMPOTENCY_CONFLICT_EXIT, NOT_ALLOWED_EXIT, READ_NOT_SERVED, READ_NOT_SERVED_EXIT, STATUS, declarationAt, lines, onDevice, opVar, pascal, thingFileAt } from "#modules/names/service.js";
 
 const file = (path: string, content: string): RenderedFile => ({ path, content, scaffold: false });
 
@@ -47,6 +47,11 @@ const errors = (model: Model): RenderedFile => {
   row("NotAllowed", model.refusals["NotAllowed"] ?? "AR-001", NOT_ALLOWED_EXIT, STATUS.notAllowed);
   body.push(cls(IDEMPOTENCY_CONFLICT, "{}"));
   row(IDEMPOTENCY_CONFLICT, model.refusals[IDEMPOTENCY_CONFLICT] ?? "AR-002", IDEMPOTENCY_CONFLICT_EXIT, STATUS.idempotencyConflict);
+  // A pinned or derived read is served from slice 7 of Goal 17; until then it refuses by name, 501, never as a defect.
+  if (READ_NOT_SERVED in model.refusals) {
+    body.push(cls(READ_NOT_SERVED, "{ read: Schema.String, message: Schema.String }"));
+    row(READ_NOT_SERVED, model.refusals[READ_NOT_SERVED]!, READ_NOT_SERVED_EXIT, STATUS.notServed);
+  }
   const names = rows.map((e) => e.trim().split(":")[0]);
   return file(path, lines(
     GENERATED,

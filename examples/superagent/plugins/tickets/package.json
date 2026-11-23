@@ -9,6 +9,12 @@
     "blueprint": "blueprint",
     "src": "src"
   },
+  "nx": {
+    "tags": [
+      "scope:plugin",
+      "env:runtime"
+    ]
+  },
   "exports": {
     ".": "./index.ts",
     "./blueprint/*.js": "./blueprint/*.ts",

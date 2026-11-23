@@ -364,9 +364,6 @@ importers:
       '@orthograph/language-effect':
         specifier: workspace:*
         version: link:../../../../packages/language-effect
-      '@orthograph/tickets':
-        specifier: workspace:*
-        version: link:../tickets
       effect:
         specifier: 4.1.4
         version: 4.1.4
