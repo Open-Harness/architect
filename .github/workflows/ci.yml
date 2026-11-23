@@ -161,8 +161,8 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
 
   # Is this pull request docs only? Then the layer gates below pass without running their steps, and prove-tests and
-  # e2e-m8 skip (design/decisions/CI-docs-fast-path.md, CI-speed.md): a docs change cannot move them. Docs-only is every changed path under design/, or a *.md file outside packages/, e2e/ and examples/
-  # (tools/ci/docs-only.sh). A push, or a pull request with any other change, runs everything. check-static and `e2e-m0`
+  # e2e-m8 skip (design/decisions/CI-docs-fast-path.md, CI-speed.md): a docs change cannot move them. Docs-only is every changed path under design/ (but not design/grid/), a *.md file outside packages/, e2e/ and examples/,
+  # or a path no gated suite reads: spikes/, .agents/, .claude/, issue templates (tools/ci/docs-only.sh, CI-docs-inert.md). A push, or a pull request with any other change, runs everything. check-static and `e2e-m0`
   # always run, since they lint the docs, total the e2e READMEs, build the design docs and run the supersedes guard.
   # Never workflow-level `paths-ignore`: a workflow that never starts leaves its required checks pending forever.
   changes:
