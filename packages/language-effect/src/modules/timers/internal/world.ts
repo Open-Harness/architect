@@ -14,12 +14,19 @@ export const TimersWorld: Layer.Layer<Timers | DurableTimers, never, Busy | Worl
     const giveUp = (id: number) => Effect.flatMap(table.cancel(id), (removed) => (removed ? busy.enter : busy.adopt));
     const timers = Timers.of({
       // In-process only: the row is the world's, the work stays here and runs, counted, when the row fires.
+      // The row and the fiber that owns it are one uninterruptible step: an interrupt while the world is being told waits for it,
+      // so a row the world holds always has a waiter to adopt the token the world counts when it fires. The waiter itself
+      // gives the row up (or the token the world counted for it) if it is interrupted while it waits.
       at: (at, owner, name, work) =>
-        Effect.flatMap(table.add(owner, name, at, owner), (id) => {
-          const mine = busy.as(owner);
-          const run = Effect.andThen(table.wait(id), Effect.andThen(mine.adopt, Effect.ensuring(Effect.provideService(Effect.ignore(work), BusyOwner, owner), mine.leave)));
-          return Effect.as(Effect.forkDetach(run), id);
-        }),
+        Effect.uninterruptibleMask((restore) =>
+          Effect.flatMap(table.add(owner, name, at, owner), (id) => {
+            const mine = busy.as(owner);
+            const woken = restore(table.wait(id)).pipe(
+              Effect.onInterrupt(() => Effect.flatMap(table.cancel(id), (removed) => (removed ? Effect.void : Effect.andThen(mine.adopt, mine.leave)))),
+            );
+            const run = Effect.andThen(woken, Effect.andThen(mine.adopt, Effect.ensuring(restore(Effect.provideService(Effect.ignore(work), BusyOwner, owner)), mine.leave)));
+            return Effect.as(Effect.forkDetach(run), id);
+          })),
       sleep: (owner, span) =>
         Effect.uninterruptibleMask((restore) => Effect.gen(function* () {
           const now = yield* Clock.currentTimeMillis;

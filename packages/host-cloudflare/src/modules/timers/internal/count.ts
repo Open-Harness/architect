@@ -10,6 +10,8 @@ export interface Count {
   readonly leave: (owner: string) => void;
   /** The owner of each token held, once per token, sorted. */
   readonly held: () => ReadonlyArray<string>;
+  /** Forget every token: the warm reset starts the count again, and a token a running request gives back later is not a debt. */
+  readonly reset: () => void;
   /** Wait until nothing is held; `NeverQuiet` naming who is, when `limit` milliseconds of real time pass first. */
   readonly quiet: (limit: number) => Effect.Effect<void, NeverQuiet>;
 }
@@ -49,6 +51,13 @@ export const makeCount = (): Count => {
       for (const d of ready) Deferred.doneUnsafe(d, Effect.void);
     },
     held,
+    reset: () => {
+      tokens.clear();
+      total = 0;
+      const ready = waiters;
+      waiters = [];
+      for (const d of ready) Deferred.doneUnsafe(d, Effect.void);
+    },
     quiet: (limit) =>
       settled.pipe(
         Effect.timeoutOption(Duration.millis(limit)),

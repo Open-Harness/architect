@@ -51,15 +51,23 @@ export const WorldTimers = {
         const due = real ? table.earliest() : undefined;
         return due === undefined ? undefined : Math.max(due, retryAt ?? 0);
       },
-      fireDue: () =>
-        table.fire(WorldClock.wall(), undefined).pipe(
+      // Until nothing is due: a wake that set a timer already due, or a row that fell due while the wakes ran, is fired on this
+      // alarm and not left for a reschedule that may find the world gone quiet.
+      fireDue: () => {
+        const sweep: Effect.Effect<void> = table.fire(WorldClock.wall(), undefined).pipe(
           Effect.match({
             onSuccess: () => void (retryAt = undefined),
             onFailure: () => void (retryAt = WorldClock.wall() + 1_000),
           }),
-        ),
+          Effect.flatMap(() => (retryAt === undefined && table.earliest(WorldClock.wall()) !== undefined ? sweep : Effect.void)),
+        );
+        return sweep;
+      },
       held: () => count.held(),
-      reset: () => table.reset(),
+      reset: () => {
+        table.reset();
+        count.reset();
+      },
     };
   },
 };

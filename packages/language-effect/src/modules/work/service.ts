@@ -42,8 +42,9 @@ const counting = (world?: Report): BusyShape => {
     return {
       counted: (work) => Effect.flatMap(owner, (o) => Effect.uninterruptibleMask((restore) => Effect.andThen(take(o), holding(restore, work, o)))),
       spawn: (work) => Effect.flatMap(owner, (o) => Effect.uninterruptibleMask((restore) => Effect.andThen(take(o), Effect.forkDetach(holding(restore, work, o))))).pipe(Effect.asVoid),
-      enter: Effect.flatMap(owner, take),
-      leave: Effect.flatMap(owner, give),
+      // Taking or giving back is local work plus the world being told: one step, so the two counts never part.
+      enter: Effect.uninterruptible(Effect.flatMap(owner, take)),
+      leave: Effect.uninterruptible(Effect.flatMap(owner, give)),
       adopt: Effect.flatMap(owner, adopted),
       count: Effect.sync(() => count),
       held: Effect.sync(() => [...owners].flatMap(([o, n]) => Array.from({ length: n }, () => o))),

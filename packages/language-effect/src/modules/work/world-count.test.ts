@@ -117,4 +117,45 @@ describe("a token taken while the world is told", () => {
   it("spawn: interrupted during a pending enter, the detached work still runs and gives its token back", async () => {
     expect(await Effect.runPromise(interrupted((busy) => busy.as("probe.spin").spawn(Effect.void)))).toEqual({ held: [], count: 0 });
   });
+
+  it("a bare enter interrupted while the world is told ends with the process and the world agreeing", async () => {
+    const gate = Deferred.makeUnsafe<void>();
+    const held: Array<string> = [];
+    const slow = Layer.succeed(WorldCount, WorldCount.of({
+      enter: (owner) => Deferred.await(gate).pipe(Effect.andThen(Effect.sync(() => void held.push(owner)))),
+      leave: () => Effect.void,
+    }));
+    const seen = await Effect.runPromise(Effect.gen(function* () {
+      const busy = yield* Busy;
+      const fiber = yield* Effect.forkChild(busy.as("probe.spin").enter);
+      yield* Effect.yieldNow;
+      const interrupting = yield* Effect.forkChild(Fiber.interrupt(fiber));
+      yield* Effect.yieldNow;
+      yield* Deferred.succeed(gate, undefined);
+      yield* Fiber.join(interrupting);
+      return { held: [...held], count: yield* busy.count };
+    }).pipe(Effect.provide(BusyReporting.pipe(Layer.provide(slow)))));
+    expect(seen).toEqual({ held: ["probe.spin"], count: 1 });
+  });
+
+  it("a bare leave interrupted while the world is told ends with the process and the world agreeing", async () => {
+    const gate = Deferred.makeUnsafe<void>();
+    const held = ["probe.spin"];
+    const slow = Layer.succeed(WorldCount, WorldCount.of({
+      enter: () => Effect.void,
+      leave: (owner) => Deferred.await(gate).pipe(Effect.andThen(Effect.sync(() => void held.splice(held.indexOf(owner), 1)))),
+    }));
+    const seen = await Effect.runPromise(Effect.gen(function* () {
+      const busy = yield* Busy;
+      yield* busy.as("probe.spin").adopt;
+      const fiber = yield* Effect.forkChild(busy.as("probe.spin").leave);
+      yield* Effect.yieldNow;
+      const interrupting = yield* Effect.forkChild(Fiber.interrupt(fiber));
+      yield* Effect.yieldNow;
+      yield* Deferred.succeed(gate, undefined);
+      yield* Fiber.join(interrupting);
+      return { held: [...held], count: yield* busy.count };
+    }).pipe(Effect.provide(BusyReporting.pipe(Layer.provide(slow)))));
+    expect(seen).toEqual({ held: [], count: 0 });
+  });
 });

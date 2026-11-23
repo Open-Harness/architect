@@ -12,6 +12,16 @@ import { keeperOf } from "./entry.ts";
 const call = <A>(env: EntryEnv, f: (keeper: Awaited<ReturnType<typeof keeperOf>>) => Promise<A> | A): Effect.Effect<A> =>
   Effect.promise(() => keeperOf(env).then(f));
 
+/**
+ * The entry's token, taken out of the request's cell and given back to the world as one uninterruptible step: an interrupt
+ * between the two would lose a token the world still counts.
+ */
+export const handover = (env: EntryEnv): Effect.Effect<void> =>
+  Effect.uninterruptible(Effect.suspend(() => {
+    const held = WorldClock.release();
+    return held === undefined ? Effect.void : call(env, (keeper) => keeper.countLeave(held));
+  }));
+
 export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Timers | DurableTimers> => {
   // A real world has no controller to tell: nobody waits for it to be quiet.
   const counted = WorldClock.declared(env).kind !== "real";
@@ -19,12 +29,7 @@ export const work = (env: EntryEnv, kinds?: WorldWakes): Layer.Layer<Busy | Time
     enter: (owner) => (counted ? call(env, (keeper) => keeper.countEnter(owner)) : Effect.void),
     leave: (owner) => (counted ? call(env, (keeper) => keeper.countLeave(owner)) : Effect.void),
     // The entry's own token goes once the work has one: this request's, taken out of its cell, given back to the world.
-    handover: counted
-      ? Effect.suspend(() => {
-        const held = WorldClock.release();
-        return held === undefined ? Effect.void : call(env, (keeper) => keeper.countLeave(held));
-      })
-      : Effect.void,
+    handover: counted ? handover(env) : Effect.void,
   }));
   const table = Layer.succeed(WorldTable, WorldTable.of({
     add: (owner, name, at, holder) => call(env, (keeper) => keeper.timerAdd(owner, name, at, holder)),

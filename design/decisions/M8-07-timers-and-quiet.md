@@ -117,6 +117,36 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
     instead of leaving its request hanging. A `NeverQuiet` after the first quiet wait leaves the clock where the walk had
     reached (call 5), and says so in `now`: it is recorded, not undone.
 
+12. **Two classes, fixed whole** (review of #626: each had been fixed one instance at a time). Every place was traced; the list is the proof.
+
+    *Class A: an awaited call that creates world-side state, then local work that owns it.* An interrupt between the two leaves the
+    world holding something nobody owns, and the world is never quiet again. The rule: the call and the step that owns its result
+    are one uninterruptible step, and whatever waits afterwards gives the state up itself if it is interrupted.
+
+    | Place | Verdict | How |
+    |---|---|---|
+    | `Timers.at`: `table.add`, then the fiber that waits for the row | **was open** | add and fork are one uninterruptible step; the waiter cancels its row on interrupt, or adopts and gives back the token the world counted (`timers/world.test.ts`) |
+    | `Busy.enter`, `Busy.leave` (bare): local count, then `world.enter`/`world.leave` | **was open** | each is one uninterruptible step, so the process and the world never disagree (`work/world-count.test.ts`, both) |
+    | `Busy.counted`, `Busy.spawn`: `take` (RPC), then the work's cleanup | fixed in the last round | one `uninterruptibleMask`, the detached fiber forked inside it |
+    | `Timers.sleep`, `Timers.within`: `table.add`, `leave`, the wait | already safe | the whole body is inside `uninterruptibleMask`; only the wait is restored, and it gives the row up on interrupt |
+    | handover (`work.ts`): take the token out of the request's cell, then tell the world | **was open** | one uninterruptible step (`handover(env)`; `world/entry.test.ts`) |
+    | `begin` then `WorldClock.entered` (the entry) | already safe | plain promises, no interruption; a throw is a rejection and the token is given back (last round) |
+    | `fireOne` in the world: take the row out, count the sleeper or the wake, then run it | **was open** | one `uninterruptibleMask`; a sleeper is counted and its gate opened in one synchronous step; a wake that is interrupted or fails puts its row back and gives its count back (`timers.test.ts`) |
+    | `DurableTimers.set`/`clear`, `Timers.pending`, `WorldTable.cancel`/`wait` | no gap | nothing local owns the result |
+
+    *Class B: reporting settled without rechecking.* Settled means quiet and nothing due, together, on one read.
+
+    | Place | Verdict | How |
+    |---|---|---|
+    | the controller's last quiet wait (`advance`, `move-to`) | **was open** | one loop: find what is due at the target, fire it, or move to the target; wait until quiet; and go round until a quiet wait ends with nothing due and the clock at the target (`timers.test.ts`: a zero-length sleep slipped in during the final wait is fired) |
+    | the first quiet wait, and the loop after each firing | already rechecked | the loop reads the table after every wait |
+    | the real world's alarm (`fireDue`) | **was open** | it fires until nothing is due, so a wake that set an already-due timer is not left to a reschedule (`timers.test.ts`) |
+    | the warm reset | **was open** | it also forgets the count, so a token nobody will give back cannot hold up the next move (`timers.test.ts`) |
+    | a move refused at planning | no gap | the plan is inside the lock and fails before anything moves |
+
+    Not bounded: a timer that sets itself again at the current instant for ever keeps the walk going, which is the same fault as work that
+    never ends; the quiet limit does not catch it, because each wait ends. It is not guarded here.
+
 ## Evidence
 
 - `e2e/m8/02` passes in this slice: the year (the server's `Clock`, a time passed to the database and a `Timers` sleep read the

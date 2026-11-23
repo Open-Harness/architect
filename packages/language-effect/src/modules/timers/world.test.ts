@@ -11,7 +11,7 @@ import { TimersWorld } from "./service.ts";
 interface Row { readonly id: number; readonly at: number; readonly owner: string; readonly name: string; readonly holder: string; readonly woken: Deferred.Deferred<void> }
 
 /** The world's side, in memory: a table, the world's count of tokens by owner, and the way it fires a row. */
-const makeWorld = () => {
+const makeWorld = (slowAdd?: Deferred.Deferred<void>) => {
   const rows: Array<Row> = [];
   const durable: Array<DurableTimer> = [];
   const held = new Map<string, number>();
@@ -23,11 +23,11 @@ const makeWorld = () => {
   };
   const count = Layer.succeed(WorldCount, WorldCount.of({ enter: (o) => Effect.sync(() => bump(o, 1)), leave: (o) => Effect.sync(() => bump(o, -1)) }));
   const table = Layer.succeed(WorldTable, WorldTable.of({
-    add: (owner, name, at, holder) => Effect.sync(() => {
+    add: (owner, name, at, holder) => Effect.andThen(slowAdd === undefined ? Effect.void : Deferred.await(slowAdd), Effect.sync(() => {
       const row = { id: next++, at, owner, name, holder, woken: Deferred.makeUnsafe<void>() };
       rows.push(row);
       return row.id;
-    }),
+    })),
     wait: (id) => Deferred.await(rows.find((r) => r.id === id)!.woken),
     cancel: (id) => Effect.sync(() => {
       const at = rows.findIndex((r) => r.id === id && !Deferred.isDoneUnsafe(r.woken));
@@ -122,6 +122,27 @@ describe("Timers on the world's table", () => {
     });
     await expect(run(world, set, false)).rejects.toThrow(/no TimerWakes/);
     expect(world.durable).toEqual([]);
+  });
+
+  it("`at` interrupted while the world is told still has a waiter for its row, so the token the world counts is adopted and given back", async () => {
+    const gate = Deferred.makeUnsafe<void>();
+    const world = makeWorld(gate);
+    const ran: Array<string> = [];
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const timers = yield* Timers;
+      const fiber = yield* Effect.forkChild(timers.at(5000, "keeper/membership.renew/mem_1", "due", Effect.sync(() => void ran.push("renewed"))));
+      yield* Effect.yieldNow;
+      const interrupting = yield* Effect.forkChild(Fiber.interrupt(fiber));
+      yield* Effect.yieldNow;
+      yield* Deferred.succeed(gate, undefined);
+      yield* Fiber.join(interrupting);
+      expect(world.rows).toHaveLength(1);
+      yield* world.fire(1);
+      for (let i = 0; i < 10; i++) yield* Effect.yieldNow;
+      yield* busy.quiet;
+      expect([ran, world.held()]).toEqual([["renewed"], []]);
+    }));
   });
 
   it("DurableTimers go to the world's table", async () => {

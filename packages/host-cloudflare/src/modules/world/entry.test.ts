@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import type { EntryEnv } from "./types.ts";
 import { WorldClock } from "#modules/clock/service.js";
 import { WorldTimers } from "#modules/timers/service.js";
+import { handover } from "./internal/work.ts";
 import { WorldEntry } from "./service.ts";
 
 const RealDate = globalThis.Date;
@@ -137,5 +138,22 @@ describe("an entry whose callback throws", () => {
       expect(timers.held()).toEqual([]);
       expect(await Effect.runPromise(Effect.result(timers.controller.settle(() => ({ ok: true, target: T + 1000 }))))).toMatchObject({ _tag: "Success" });
     });
+  });
+});
+
+describe("the handover", () => {
+  it("takes the entry's token out of its cell and gives it back to the world as one step, even when interrupted at once", async () => {
+    const left: Array<string> = [];
+    const stub = { ...keeper(T), countLeave: (owner: string) => { left.push(owner); } };
+    const at = { ...stepped, WORLD: { idFromName: (name: string) => name, get: () => stub } as unknown as DurableObjectNamespace };
+    await WorldClock.entered({ kind: "stepped", instant: T }, "entry:/probe/spin", async () => {
+      const fiber = Effect.runFork(handover(at));
+      await Effect.runPromise(Effect.sync(() => fiber.interruptUnsafe()));
+      await new Promise<void>((resolve) => { setTimeout(resolve, 20); });
+      expect(left).toEqual(["entry:/probe/spin"]);
+      expect(WorldClock.release()).toBeUndefined();
+    }, (owner) => Promise.resolve(void left.push(owner)));
+    // Given back once: the entry's own cleanup finds nothing left to give.
+    expect(left).toEqual(["entry:/probe/spin"]);
   });
 });

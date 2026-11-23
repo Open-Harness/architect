@@ -68,30 +68,38 @@ export const makeTable = (
     sql.exec<{ id: number }>("INSERT INTO timers (id, at, owner, name, holder, wake) VALUES (?, ?, ?, ?, ?, ?) RETURNING id", r.id ?? null, r.at, r.owner, r.name, r.holder, r.wake).one().id;
   const forget = (id: number) => sql.exec("DELETE FROM timers WHERE id = ?", id).rowsWritten > 0;
 
-  const fireOne = (r: Stored, source: ClockSource | undefined): Effect.Effect<void, WakeFailed> => {
-    if (r.wake === null) {
-      // A sleeper: count it first, then hand the instant back.
-      const gate = waiting.get(r.id);
-      if (gate === undefined) return Effect.void;
-      if (counting) count.enter(r.holder ?? r.owner);
-      return Deferred.succeed(gate, source).pipe(Effect.asVoid);
-    }
-    const timer = durableOf(r);
-    if (wakes === undefined) {
-      insert(r);
-      return Effect.fail(new WakeFailed({ owner: r.owner, name: r.name, message: `no wake handler routes kind ${timer.wake.kind} in this world` }));
-    }
-    if (counting) count.enter(r.owner);
-    // A wake that fails puts its row back, so the timer is not lost and the step that fired it fails, naming it.
-    return wakes(timer).pipe(
-      Effect.catchCause((cause) => Effect.suspend(() => {
-        // Unless the wake already set a replacement under the same (owner, name): then there is still only one, the new one.
-        if (select("WHERE wake IS NOT NULL AND owner = ? AND name = ?", r.owner, r.name).length === 0) insert(r);
-        return Effect.fail(new WakeFailed({ owner: r.owner, name: r.name, message: String(cause) }));
-      })),
-      Effect.ensuring(Effect.sync(() => { if (counting) count.leave(r.owner); })),
-    );
-  };
+  /**
+   * One firing, uninterruptible from taking the row out to the world having counted what it woke: false when an earlier wake in
+   * the walk already took the row. A wake that is interrupted or fails puts its row back (unless it was replaced) and fails the step.
+   */
+  const fireOne = (r: Stored, source: ClockSource | undefined): Effect.Effect<boolean, WakeFailed> =>
+    Effect.uninterruptibleMask((restore) => Effect.suspend(() => {
+      if (!forget(r.id)) return Effect.succeed(false);
+      if (r.wake === null) {
+        // A sleeper: count it and hand the instant back in one synchronous step.
+        const gate = waiting.get(r.id);
+        if (gate !== undefined) {
+          if (counting) count.enter(r.holder ?? r.owner);
+          Deferred.doneUnsafe(gate, Effect.succeed(source));
+        }
+        return Effect.succeed(true);
+      }
+      const timer = durableOf(r);
+      if (wakes === undefined) {
+        insert(r);
+        return Effect.fail(new WakeFailed({ owner: r.owner, name: r.name, message: `no wake handler routes kind ${timer.wake.kind} in this world` }));
+      }
+      if (counting) count.enter(r.owner);
+      return restore(wakes(timer)).pipe(
+        Effect.catchCause((cause) => Effect.suspend(() => {
+          // Unless the wake already set a replacement under the same (owner, name): then there is still only one, the new one.
+          if (select("WHERE wake IS NOT NULL AND owner = ? AND name = ?", r.owner, r.name).length === 0) insert(r);
+          return Effect.fail(new WakeFailed({ owner: r.owner, name: r.name, message: String(cause) }));
+        })),
+        Effect.ensuring(Effect.sync(() => { if (counting) count.leave(r.owner); })),
+        Effect.as(true),
+      );
+    }));
 
   return {
     add: (owner, name, at, holder) => {
@@ -125,9 +133,7 @@ export const makeTable = (
         // Each row leaves the table only as its own firing begins, so a firing that fails leaves the rest pending; and one an
         // earlier wake in this walk cleared or cancelled is gone by then, so it never fires (the rule `TimersMemory.fire` follows).
         for (const r of select("WHERE at <= ?", at)) {
-          if (!forget(r.id)) continue;
-          yield* fireOne(r, source);
-          fired.push({ ...rowOf(r), durable: r.wake !== null });
+          if (yield* fireOne(r, source)) fired.push({ ...rowOf(r), durable: r.wake !== null });
         }
         return fired;
       }),
