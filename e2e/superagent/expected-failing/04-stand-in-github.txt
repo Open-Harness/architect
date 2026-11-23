@@ -1,8 +1,1 @@
 # Written before slice 4. Red until the GitHub stand-in over a bare repository exists (slice 4); due before it merges.
-superagent/04-stand-in-github.test.ts > 04 github: the calls pass against the stand-in > a branch pushed to the stand-in reads back, and a pull request opened on it carries that commit
-superagent/04-stand-in-github.test.ts > 04 github: the calls pass against the stand-in > a pull request's conversation is its issue's: its comments are its own, and issue 1 keeps two
-superagent/04-stand-in-github.test.ts > 04 github: the calls pass against the stand-in > comments on an issue: none at first; each created once, with its id and link; listed in order, and by page
-superagent/04-stand-in-github.test.ts > 04 github: the calls pass against the stand-in > refuses a second pull request for the same branch, a branch that isn't there, and a base that isn't there: 422
-superagent/04-stand-in-github.test.ts > 04 github: the calls pass against the stand-in > refuses what GitHub refuses: an issue that isn't there is 404, a write with no token is 401 and writes nothing
-superagent/04-stand-in-github.test.ts > 04 github: the calls pass against the stand-in > reviews: each submitted once, in order, with its state; a comment on a line of the diff is its own record
-superagent/04-stand-in-github.test.ts > 04 github: the calls pass against the stand-in > stops when told, by its id, leaving nothing running and no folder

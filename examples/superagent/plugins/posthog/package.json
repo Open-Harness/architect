@@ -1,0 +1,20 @@
+{
+  "name": "@orthograph/posthog",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PostHog API 1.0.0, as an Orthograph adapter, generated from its published description.",
+  "type": "module",
+  "orthograph": {
+    "kind": "adapter",
+    "blueprint": "blueprint",
+    "standIn": "src/stand-in/main.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "dependencies": {
+    "effect": "4.1.4",
+    "orthograph": "workspace:*"
+  }
+}

@@ -71,4 +71,4 @@ export type { CloudProvider, Database } from "#modules/cloud/types.js";
 export type { Deployment, Publication } from "#modules/deploy/types.js";
 export type { Config, ConfigSpec, AuthKit } from "#modules/config/types.js";
 export type { Sink, LocalSink, AxiomSink } from "#modules/telemetry/types.js";
-export type { Feature, Adapter, Projection, Plugin, Mount, Verb, Choice, Choices, Option, OptionsIn, Need, NeedWhen, Call as AdapterCall, CallsOf, MissingCall, AnyChoice, Setting, StandIn, FeatureSpec, AdapterSpec, ProjectionSpec, ProjectedOperation, ProjectionInput, Output, ViewOf } from "#modules/plugins/types.js";
+export type { Feature, Adapter, Projection, Plugin, Mount, Verb, Choice, Choices, Option, OptionsIn, Need, NeedWhen, Call as AdapterCall, CallTree, AdapterEvent, CallsOf, MissingCall, MissingEvent, AnyChoice, Setting, StandIn, FeatureSpec, AdapterSpec, ProjectionSpec, ProjectedOperation, ProjectionInput, Output, ViewOf } from "#modules/plugins/types.js";

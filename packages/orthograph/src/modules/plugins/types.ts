@@ -1,6 +1,6 @@
 // Plugins: a feature, an adapter or a projection, each a package whose root export is its descriptor, and the mount, one
 // file in a project that says "use this plugin here, like this" (decisions/M1-plugins.md).
-import type { Effect } from "effect";
+import type { Effect, Schema } from "effect";
 import type { AnyErrorClass } from "#modules/errors/types.js";
 import type { Operation, Read } from "#modules/operations/types.js";
 import type { Value } from "#modules/values/types.js";
@@ -65,9 +65,29 @@ export interface Call<M extends "promise" | "effect" = "promise" | "effect"> {
   readonly errors: ReadonlyArray<AnyErrorClass>;
 }
 
-/** What an adapter's `calls` answers for a name it has no call by: a mount's `include` and a step name it, and the compiler refuses. */
+/**
+ * An adapter's calls: a call, or a group of them, nested as a spec's operation ids are (`issues/create-comment` is
+ * `calls.issues.createComment`; Slack's `chat_postMessage` is the flat `calls.chatPostMessage`). The dotted path is its name.
+ */
+export interface CallTree {
+  readonly [name: string]: Call | CallTree;
+}
+
+/** An event an adapter's door receives from its service: `schema` is the payload, decoded and handed on whole. */
+export interface AdapterEvent<P = unknown> {
+  readonly kind: "event";
+  readonly schema: Schema.Schema<P>;
+}
+
+/** What an adapter's `calls` answers for a name it has no call by (dotted, inside a group): a mount's `include` and a step name it, and the compiler refuses. */
 export interface MissingCall {
   readonly kind: "missing-call";
+  readonly name: string;
+}
+
+/** What an adapter's `events` answers for a name it has no event by. */
+export interface MissingEvent {
+  readonly kind: "missing-event";
   readonly name: string;
 }
 
@@ -89,10 +109,10 @@ export interface FeatureSpec<C extends Choices = Choices> extends Described<C> {
   readonly exports?: Readonly<Record<string, unknown>>;
 }
 
-export interface AdapterSpec<C extends Choices = Choices, Ca extends Readonly<Record<string, Call>> = Readonly<Record<string, Call>>> extends Described<C> {
+export interface AdapterSpec<C extends Choices = Choices, Ca extends CallTree = CallTree, Ev extends Readonly<Record<string, AdapterEvent<any>>> = Readonly<Record<string, AdapterEvent<any>>>> extends Described<C> {
   readonly host?: ReadonlyArray<Host>;
   readonly calls?: Ca;
-  readonly events?: Readonly<Record<string, unknown>>;
+  readonly events?: Ev;
   readonly needs?: ReadonlyArray<Need>;
   readonly settings?: Readonly<Record<string, Setting>>;
   readonly standIn?: StandIn;
@@ -141,18 +161,18 @@ export interface ProjectionSpec<C extends Choices = Choices> extends Described<C
 }
 
 export type Feature<C extends Choices = Choices> = Omit<FeatureSpec<C>, "choices"> & { readonly kind: "feature"; readonly choices: C };
-export type Adapter<C extends Choices = Choices, Ca extends Readonly<Record<string, Call>> = Readonly<Record<string, Call>>> =
-  Omit<AdapterSpec<C, Ca>, "choices" | "calls"> & { readonly kind: "adapter"; readonly choices: C; readonly calls: Ca };
+export type Adapter<C extends Choices = Choices, Ca extends CallTree = CallTree, Ev extends Readonly<Record<string, AdapterEvent<any>>> = Readonly<Record<string, AdapterEvent<any>>>> =
+  Omit<AdapterSpec<C, Ca, Ev>, "choices" | "calls" | "events"> & { readonly kind: "adapter"; readonly choices: C; readonly calls: Ca; readonly events: Ev };
 export type Projection<C extends Choices = Choices> = Omit<ProjectionSpec<C>, "choices"> & { readonly kind: "projection"; readonly choices: C };
-export type Plugin = Feature<any> | Adapter<any, any> | Projection<any>;
+export type Plugin = Feature<any> | Adapter<any, any, any> | Projection<any>;
 
 /** A plugin this one needs mounted beside it, only when the mount picked `when`. */
 export interface NeedWhen {
   readonly kind: "need";
-  readonly plugin: Feature<any> | Adapter<any, any>;
+  readonly plugin: Feature<any> | Adapter<any, any, any>;
   readonly when?: Option<any>;
 }
-export type Need = Feature<any> | Adapter<any, any> | NeedWhen;
+export type Need = Feature<any> | Adapter<any, any, any> | NeedWhen;
 
 /** One verb of a mount. */
 export type Verb =
@@ -169,11 +189,13 @@ export type ViewOf<P> =
     readonly narrow: (operation: Operation | Read, spec: { readonly via: ReadonlyArray<Via> }) => Verb;
     readonly omit: (operation: Operation | Read) => Verb;
   }
-  : P extends Adapter<infer C, infer Ca> ? {
+  : P extends Adapter<infer C, infer Ca, infer Ev> ? {
     readonly choices: C;
     readonly calls: Ca;
+    readonly events: Ev;
     readonly choose: (option: OptionsIn<C>) => Verb;
-    readonly include: (...items: ReadonlyArray<Ca[keyof Ca] | unknown>) => Verb;
+    /** What this app reaches of the adapter: calls it may make, events its door accepts. `ortho check` refuses anything else. */
+    readonly include: (...items: ReadonlyArray<unknown>) => Verb;
   }
   : P extends Projection<infer C> ? {
     readonly choices: C;
@@ -182,7 +204,7 @@ export type ViewOf<P> =
   : never;
 
 /** The calls an adapter offers, which a mounted adapter's file hands to the operations that call them. */
-export type CallsOf<P> = P extends Adapter<any, infer Ca> ? Ca : {};
+export type CallsOf<P> = P extends Adapter<any, infer Ca, any> ? Ca : {};
 
 /**
  * A mount: the plugin and what the app chose of it. It has no name: its file's name is the mount's. `calls` is the
@@ -198,10 +220,12 @@ export interface Mount<P extends Plugin = Plugin> {
 
 export interface PluginsApi {
   readonly feature: <const C extends Choices = {}>(spec: FeatureSpec<C>) => Feature<C>;
-  readonly adapter: <const C extends Choices = {}, const Ca extends Readonly<Record<string, Call>> = {}>(spec: AdapterSpec<C, Ca>) => Adapter<C, Ca>;
+  readonly adapter: <const C extends Choices = {}, const Ca extends CallTree = {}, const Ev extends Readonly<Record<string, AdapterEvent<any>>> = {}>(spec: AdapterSpec<C, Ca, Ev>) => Adapter<C, Ca, Ev>;
   readonly projection: <const C extends Choices = {}>(spec: ProjectionSpec<C>) => Projection<C>;
   readonly choice: <const O extends Readonly<Record<string, string>>>(options: O) => Choice<keyof O & string>;
-  readonly need: (plugin: Feature<any> | Adapter<any, any>, spec?: { readonly when?: Option<any> }) => NeedWhen;
+  readonly need: (plugin: Feature<any> | Adapter<any, any, any>, spec?: { readonly when?: Option<any> }) => NeedWhen;
+  /** An event an adapter's door receives: the Effect schema of its payload. */
+  readonly incoming: <P>(schema: Schema.Schema<P>) => AdapterEvent<P>;
   readonly call: <const M extends "promise" | "effect" = "promise">(spec?: { readonly mode?: M; readonly errors?: ReadonlyArray<AnyErrorClass> }) => Call<M>;
   readonly setting: {
     readonly one: (value: Value) => Setting;
