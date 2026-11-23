@@ -13,14 +13,14 @@ judged by the code and the checks, never by the ticks in [`milestones.md`](../..
 Where a tick and a check disagree, the check wins (K41, clash 7).
 
 Status words: **Built** (in `packages/`, with a check that passes), **Partial** (built, with a named piece missing),
-**Spiked** (only throwaway code in `spikes/` proves it), **None** (nothing yet). Most of what is built is on
-`goal/stage-1` and reaches `main` when that branch lands.
+**Spiked** (only throwaway code in `spikes/` proves it), **None** (nothing yet). Since 23 November 2026, what is built
+is on `main`: `goal/stage-1` landed there (#707) and is retired.
 
 ## 1. The releases (K28)
 
 | Release | A person outside can… | Done when | Left to build |
 |---|---|---|---|
-| **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last piece, the machine graphs (M1.50, check 40 still red); the npm preview itself (publish refuses npmjs today); Goal 3's branch landing on `main` |
+| **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last piece, the machine graphs (M1.50, check 40 still red); the npm publish under `next` itself, which Aaron runs (M1.51's dry run passes, #683) |
 | **Beta** (the framework the superagent proves, K42) | build an always-on agent app on Orthograph from npm: things with versions, events in and the outbox, agents that live for weeks, secrets and lent tokens, signed webhook doors, the pages on UI SDK | every framework piece the superagent pulled, extracted into Orthograph's packages and published, with the superagent running on that published framework | the superagent's slices 6 to 14 and what they pull; its launch is its own milestone, not the beta's |
 | **1.0** (Capxul core, K42) | build a business app on Orthograph from npm: everything Capxul core needed for its books, HR, payroll, identity checks and bank accounts through Bridge | every framework piece Capxul core pulled, extracted into Orthograph's packages and published, with Capxul core running on it in its staging, plus M7.01 to M7.04, M7.06 and M7.13 | what Capxul core pulls (K43), and the real release |
 
