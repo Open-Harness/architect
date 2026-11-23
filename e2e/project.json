@@ -51,6 +51,15 @@
       "options": { "command": "vitest run --root {projectRoot} --config vitest.m1.config.ts m1" },
       "cache": false
     },
+    "portal-next": {
+      "metadata": {
+        "description": "Goal 6's done check, begun: the theme's check (slice 1). Slice 2 adds the rest of the portal checks to it."
+      },
+      "dependsOn": ["browser"],
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot}/portal-next --config vitest.config.ts" },
+      "cache": false
+    },
     "climb": {
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot} --config vitest.climb.config.ts climb" },
