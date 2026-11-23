@@ -583,8 +583,9 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
   edits them.
 - **Merging.** Draft first, test locally, a 🔍 pass from a reviewer that wrote none of it, then ready; merge when CI is
   green and every thread is resolved. At most two ready pull requests in CI at once.
-- **Asks.** A framework fix made here is announced to its owner as an Ask issue in the owner's milestone (K32, K33),
-  before its slice merges.
+- **Claims.** Since K41 this is an app goal like Capxul's. A framework fix made here is claimed on the board first
+  (`lane:goal-17` and a "Touches" line, K41, section 3), built here unless a running goal has it or its paths, and
+  landed in `main` as soon as it is green. An Ask issue is only for overlapping claims.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 17: the superagent` and the label `goal-17`;
   every comment an agent posts starts `[goal-17 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" at every slice

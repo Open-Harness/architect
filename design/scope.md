@@ -25,7 +25,7 @@ before it:
 |---|---|---|---|
 | **Preview** (`next` on npm) | install Orthograph, write a blueprint, get the server, SDK, CLI, MCP, docs and portal, and prove journeys on their own machine | Gate M1 passes on `main`, and the `@orthograph/*` packages, `orthograph` and the preset are on npm under `next` | milestone 1's last pieces: the chains-and-wallets docs page, derived alerts, machine graphs, the request key in traces; the npm preview itself (added by K28; publish refuses npmjs today); Goal 3's branch landing on `main` |
 | **Beta** (stage 1, "workable") | start an app with `npm create orthograph`, sign people in, claim `@name` on a real page, and deploy it to Cloudflare and tear it down | Gate M2 (M2.12) and Goal 3's done check (`e2e:stage1`, staging included) | all of milestone 2 (kinds of caller, auth and organizations as plugins, secrets, `ortho new`), the handles plugin, actions and the web pieces on UI SDK, the three screens, staging deploy and destroy |
-| **1.0** (stages 2 to 4) | wallets and pay by handle; a Safe with budgets, agents and time; a private club on Aztec | the stage 2, 3 and 4 gates on `main`, plus M7.01 to M7.04, M7.06 and M7.13 | most of the on-chain milestone, webhooks, workflows, agents, time, all of stage 4, the real release |
+| **1.0** (Capxul core, K41) | wallets and pay by handle; a Safe with budgets, agents and time; a private club on Aztec | the stage 2, 3 and 4 gates on `main`, plus M7.01 to M7.04, M7.06 and M7.13 | most of the on-chain milestone, webhooks, workflows, agents, time, all of stage 4, the real release |
 
 **Where Goal 4 falls.** Goal 4 (on chain, end to end) serves 1.0, not the preview or the beta: its slices 2 and 9 to
 11 are stage 2 work, and slices 1, 3 to 8 and 12 are stage 3. Only slice 1 (the language and host seam) touches the
@@ -152,6 +152,6 @@ Capxul on Orthograph (M7.07 to M7.11). Most are None; the work board and E2B wor
 1. Noir is under "Later" and in K5 as later, but is v1.0's stage 4.
 2. The release list: K9 says M7.01 to M7.04 and M7.06; `milestones.md` adds M7.13.
 3. The npm preview is promised after Gate M1, but M7 says npm waits on stage 4.
-4. Capxul: "built on it" from M2 in one place, off v1.0's path in another. Answered by K30, section 2: after the beta, beside the stages, never gating 1.0.
+4. Capxul: "built on it" from M2 in one place, off v1.0's path in another. Answered by K41 and K42: Capxul core is 1.0.
 5. Staging: after Gate M2 in the milestones, inside stage 1 in Goal 3.
 6. `milestones.md` still says "Everything runs locally: no cloud"; the ledger's summary counts are stale.

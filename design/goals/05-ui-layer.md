@@ -29,6 +29,11 @@ slices:
 ---
 # Goal 5: the UI layer, on UI SDK
 
+> **Winding down under K41** (23 November 2026, `design/decisions/K41-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K41's collision rule, not by Ask issues; where this brief and K41
+> disagree, K41 wins.
+
 Branch `goal/ui-layer`, cut from `goal/stage-1`. Written 21 November 2026 with K29.
 
 **To start it, in any harness** (Claude Code, Amp, Codex, OpenCode): "You lead Goal 5. Read `AGENTS.md` and

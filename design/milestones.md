@@ -62,7 +62,7 @@ Codex's branch `links/stage-1` (#56) keeps its name. [`decisions/K15-plugged-in.
 
 **Three releases** ([`decisions/K28-releases.md`](decisions/K28-releases.md), Aaron, 21 November 2026). The **preview** is Gate M1 on `main` and
 the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is stage 1: Gate M2 (M2.12) and Goal 3's staging run. **v1.0** is
-the beta plus stages 2 to 4 and the release, as the next paragraph says.
+the beta plus Capxul core (K42) and the release (K41), as the next paragraph says.
 
 **v1.0** is the four stage gates on `main`, plus the release: M7.01 to M7.04, M7.06 and M7.13 (the cloud passes for staging and for the release, the npm
 release, the infra projection, a deploy and destroy that leaves nothing, real releases), each credential with Aaron's

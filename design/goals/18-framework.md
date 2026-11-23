@@ -25,7 +25,7 @@ slices:
 ---
 # Goal 18: the framework, always running
 
-Branch `main`. Written 23 November 2026 from K41 (`design/decisions/K41-goals-are-agents.md`), with Aaron, by voice.
+Branch `main`. Written 23 November 2026 from K41 (`design/decisions/K41-goals-are-agents.md`), with Aaron, by voice (#694).
 Milestone `Goal 18: the framework`, label `release:1.0`.
 
 **To start it, in any harness** (Claude Code, Codex, OpenCode, Amp): "You lead Goal 18. Read `AGENTS.md`,
@@ -99,4 +99,5 @@ Each round:
 
 ## Where it stands
 
-Not started: written 23 November 2026, proposed with K41. The lead rewrites this section every round that changes it.
+Not started: written 23 November 2026 with K41, decided the same day (#694). Aaron starts it with the line above. The
+lead rewrites this section every round that changes it.

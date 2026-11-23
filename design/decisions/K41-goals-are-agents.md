@@ -1,9 +1,8 @@
 # K41: a goal is a long-running agent, apps lead, and the framework goal always runs
 
-**Proposed 23 November 2026** with Aaron, by voice, in a Claude Code session. It takes effect when Aaron has heard it
-back and says go. Until then nothing stops and the board does not change. On his go, this pull request also rewrites the
-live docs listed under "Supersedes", as `AGENTS.md`, "One way to supersede", asks. Capxul's own shape is K42, decided
-in the same conversation.
+**Decided 23 November 2026** with Aaron, by voice, in a Claude Code session: he heard it back as a draft (#694) and
+said go. The live docs listed under "Supersedes" are rewritten in the same pull request, as `AGENTS.md`, "One way to
+supersede", asks. Capxul's own shape is K42, decided in the same conversation.
 
 ## The problem
 
@@ -41,6 +40,7 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
    much parallelizability as possible, right? Even if there's a little bit of merge".
 6. **Lanes are for live agents.** "Each orchestra or Manager kinda has its own lane but I think that those should be
    for active long-running agents."
+7. **1.0 is Capxul core.** Asked "Is 1.0 'Capxul core runs on Orthograph'?", he answered: "And yes".
 
 ## The decision
 
@@ -124,8 +124,7 @@ accounts through Bridge), as K42 sets out. The release slices (M7.01 to M7.04, M
 In's stages 2 to 4 (wallets, the vault, the club on Aztec) leave 1.0's definition. Whatever Capxul pulls from them is
 built when Capxul pulls it.
 
-Aaron had not answered this call when this record was written. It is taken under his standing authority of 21
-November ("anything that's waiting on me, just go with the recommendations"), and his word overrides it.
+This is Aaron's call 7.
 
 ### 7. Winding down today's goals
 
@@ -180,18 +179,25 @@ Applied on Aaron's go, in this pull request:
 - `AGENTS.md`: "coordinates only through the repository and GitHub: its brief's "Where it stands", its goal's milestone
   and `goal-<n>` label, and Snag and Ask issues in that milestone" → "coordinates through the repository and GitHub:
   its brief's "Where it stands", its claims on the board, and Snag issues (K41)"
-- `design/goals/map.md`: "It owns paths, and only its own." → the page becomes the list of running goals and K41's
-  collision rule
-- `design/goals/08` to `15`, "How it runs": "A slice builds once what it needs has landed (K34" and "Anything outside
-  "What it owns" is an Ask issue in the owning goal's milestone" → each brief is parked, with "Parked by K41; its
-  rules give way to K41's"
+- `design/goals/map.md`: "It owns paths, and only its own." → the page is rewritten as the running goals and K41's
+  collision rule; the old map stays in git (`990d4a17`)
+- `design/goals/08` to `15`, "How it runs": "A slice builds once what it needs has landed (K34" → "Under K41: a gap
+  this goal finds goes by K41's collision rule"; "Anything outside "What it owns" is an Ask issue in the owning goal's
+  milestone" → "Under K41, an Ask issue is only for two goals' claims that overlap"
+- `design/goals/03`, `05`, `06` and `08` to `15`: each gains a "Winding down under K41" note under its title. Each
+  lead sets `status: parked` when it stops (section 7)
+- `design/goals/17-superagent.md`: "A framework fix made here is announced to its owner as an Ask issue in the owner's
+  milestone" → "A framework fix made here is claimed on the board first"
+- `AGENTS.md`: "merged into `goal/stage-1` by a merge commit" → "merged into `main` (into `goal/stage-1` until Goal 18
+  retires it) by a merge commit"
 - `.agents/skills/kanban/STATE.md`: "**1.0:** the beta, then stages 2 to 4 and the release slices." → "**1.0:** the
   beta, then Capxul core on Orthograph (K42) and the release slices (K41)."
 - `design/scope.md`: "| **1.0** (stages 2 to 4) |" → "| **1.0** (Capxul core, K41) |"
 - `design/milestones.md`: "**v1.0** is the beta plus stages 2 to 4 and the release" → "**v1.0** is the beta plus
   Capxul core (K42) and the release (K41)"
 - `design/handoff.md`: "1.0 (stages 2 to 4)" → "1.0 (Capxul core, K41)"
-- `design/decisions/K28-releases.md`, `K32-goals-coordinate-themselves.md`, `K34-goals-by-needs.md`: dated records. Each gains
-  "Superseded by K41, 23 November 2026" beside its 1.0 row, its Ask rule and its needs rule.
-- `.agents/skills/conductor/`: becomes Goal 18's loop (section 4).
-- `.agents/skills/github/`: claims, the board's fields and views, and milestones as releases (section 5).
+- `design/decisions/K28-releases.md`, `K32-goals-coordinate-themselves.md`, `K34-goals-by-needs.md`: dated records.
+  Each gains "Superseded by K41, 23 November 2026" beside its 1.0 row, its Ask rule, and its needs and independence
+  rules. `K39-superagent.md` gains "Generalised by K41" beside its call 6.
+- `.agents/skills/conductor/` and `.agents/skills/github/`: each gains a K41 note at its top now (the conductor is
+  Goal 18; claims, the board's stages, milestones as releases). Goal 18's slice 3 rewrites both whole.

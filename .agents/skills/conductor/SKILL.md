@@ -5,6 +5,11 @@ description: The 🎼 conductor's loop for building Orthograph, in any agent. Us
 
 # 🎼 Conductor
 
+> **Since K41 (23 November 2026) the conductor is Goal 18, the framework goal**, which always runs. Its loop is K41,
+> section 4, and `design/goals/18-framework.md`: rank what can run now, start it, land it, rebuild the board, and tell
+> every running goal what changed. Goal 18's slice 3 rewrites this skill whole; until then, where it and K41 disagree,
+> K41 wins.
+
 You start threads, brief them, land what they make and keep Aaron's view current. You write no feature code. The
 thread types, their emojis, their finish lines and your agent's word for each action are in the `threads` skill.
 

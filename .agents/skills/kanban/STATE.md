@@ -22,7 +22,7 @@ move with the account. The repository does, so everything needed is here or link
 - **Preview:** Gate M1 on `main`, and `@orthograph/*`, `orthograph` and the preset on npm under `next` (M1.51; Aaron
   runs `npm publish`). Goal 3's branch lands on `main` mid-goal once Gate M1's slices are green.
 - **Beta** (stage 1, "workable"): Gate M2 and Goal 3's done check, staging included.
-- **1.0:** the beta, then stages 2 to 4 and the release slices.
+- **1.0:** the beta, then Capxul core on Orthograph (K42) and the release slices (K41).
 
 Aaron's aim (21 November): in about 72 hours, be ready to rebuild Capxul from the ground up on Orthograph, in
 composable pieces (plugins) that another app (Plugged In, the link-in-bio app) also uses. So: parallelise wherever the

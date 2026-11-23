@@ -1,6 +1,6 @@
 # K42: Capxul core is free software in ERPNext's shapes; people pay for verification, bank accounts and incorporation
 
-**Proposed 23 November 2026** with Aaron, by voice, in the same conversation as K41, and taking effect with it. It
+**Decided 23 November 2026** with Aaron, by voice, in the same conversation as K41, and with it (#694). It
 says what "Capxul runs on Orthograph" means. K41 makes that the 1.0 release, and this record gives the Capxul goal
 (Goal 16) its shape.
 
@@ -80,7 +80,7 @@ meetups, mixers and workshops, "a really undecided thing".
 
 ## Supersedes
 
-Applied on Aaron's go, with K41:
+Applied with K41:
 
 - `design/goals/16-capxul.md`: rewritten in this pull request (a live brief).
 - `M7-capxul.md` (on #487, not yet on `main`): "Frappe, ERPNext, HRMS, Frappe CRM, and the site service | books, HR,

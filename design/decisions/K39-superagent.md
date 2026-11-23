@@ -37,7 +37,8 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
 5. **The sandbox is its own piece.** Aaron first took a plain `@orthograph/sandbox` feature ("this makes sense"); in
    K40's second grill round he chose an adapter that speaks pi-env over a socket (K40 fix 4). `@orthograph/sandbox` is
    that adapter, and M4.18's workspaces are built on it later.
-6. **An integration branch.** `goal/superagent` builds the app and the framework fixes together, and the conductor
+6. (Generalised by K41, 23 November 2026: every app goal builds what it needs unless a running goal has claimed it.)
+   **An integration branch.** `goal/superagent` builds the app and the framework fixes together, and the conductor
    merges them back. Aaron: "we're going to be on our own integration branch building both the new application and
    fixing the issues in the framework … And then we're going to merge it back in." So nothing in Goal 17 waits on
    another goal's milestone: where it needs a piece that isn't on `goal/stage-1` yet, it builds that piece here, to
