@@ -497,6 +497,8 @@ jobs:
           path: tmp/specs
           key: superagent-specs-${{ hashFiles('e2e/superagent/specs/pins.json') }}
       - run: NX_DAEMON=false pnpm nx run e2e:superagent-ratchet --outputStyle=static
+      # Goal 17 decides its records on this branch, where e2e-m0's supersedes guard is skipped by the fast gate, so it runs here too.
+      - run: tools/ci/supersedes.sh
 
   # Gate M0 (M0.06): no old name outside the records, and the design docs build with every link resolving.
   # The canon's check (docs/canon/README.md) runs beside it: every quote, reference and component in the MDX pages.

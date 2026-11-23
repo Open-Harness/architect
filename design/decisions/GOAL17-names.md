@@ -18,8 +18,10 @@ brief and the slice 2 records name one thing two ways, and picked none (`e2e/sup
      names its moves the same way. A verb is named as its move, as in every acme thing (`invitation/verbs/send.ts`, `move:
      machine.moves.send`).
    - **Replaced:** the record's prose `assignment.start` and `assignment.promote`.
-3. **`assignment.waiting` is the one read `tickets` exports for `fill`.** It lists pending Assignments by `why`
-   (person, then launch, then input), oldest first, and the record's journey reads it. The record's `assignment.list`
+3. **`assignment.waiting` is the one read `tickets` exports for `fill`.** It lists pending Assignments in
+   `slots.line`'s order: every person's first, then every other, each group oldest first (GOAL17-executor-slots, its
+   `line`). A launch and a CI result share the second group, so a new launch never jumps an older ticket's turn. The
+   record's journey reads it. The record's `assignment.list`
    was the same read under another name.
 4. **`interrupted` is `from: ["running"]` only. A pending Assignment is `cancelled`.**
    - **Why:** the machine (GOAL17-executor-slots, its `moves`) and the brief ("`cancelled` (a pending one)") agree.
@@ -50,3 +52,14 @@ one.
 - `design/goals/17-superagent.md`: "| `evals.due` (system, every 2 s;" → "| `eval.due` (system, every 2 s;"
 - `design/goals/17-superagent.md`: "gate passes waits on its thread; `evals.due` batches" → "gate passes waits on its thread; `eval.due` batches"
 - `design/goals/17-superagent.md`: "3. `evals.due` batches it." → "3. `eval.due` batches it."
+- `design/decisions/GOAL17-pause.md`: ""evals.due"" → ""eval.due""
+- `design/decisions/GOAL17-executor-slots.md`: "`evals.due`" → "`eval.due`"
+- `design/decisions/GOAL17-executor-slots.md`: "`assignment.start`" → "`assignment.started`"
+- `design/decisions/GOAL17-executor-slots.md`: "`assignment.promote`" → "`assignment.promoted`"
+- `design/decisions/GOAL17-executor-slots.md`: "`assignment.list`" → "`assignment.waiting`"
+- `design/decisions/GOAL17-executor-slots.md`: "call(assignment.start," → "call(assignment.started,"
+- `design/decisions/GOAL17-executor-slots.md`: "`interrupted` from `pending` or `running`" → "`interrupted` from `running`, and `cancelled` from `pending`"
+- `design/decisions/GOAL17-source-from.md`: "slack.calls.chat.postMessage" → "slack.calls.chatPostMessage"
+- `design/decisions/GOAL17-source-from.md`: "slack.calls.conversations.replies" → "slack.calls.conversationsReplies"
+- `design/decisions/GOAL17-source-from.md`: "slack.calls.usergroups.users.list" → "slack.calls.usergroupsUsersList"
+- `design/decisions/GOAL17-source-from.md`: "posthog.calls.errorTracking.issues.retrieve" → "posthog.calls.errorTrackingIssuesRetrieve"
