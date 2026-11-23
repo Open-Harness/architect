@@ -21,13 +21,13 @@ const roleOf = (role: Role<any> | ServiceRole<any>, path: string): RoleOf<any, s
 
 /**
  * Whether some entry of `allowed` admits an agent (M2-auth, fork 2): `anyone`, or an entry with a person in it whose kept ways in include `agent`.
- * A service role and the system never do. The MCP door lists an operation as a tool by this, and the compiler says it as `agentTool`.
+ * A service role, the system and the keeper never do. The MCP door lists an operation as a tool by this, and the compiler says it as `agentTool`.
  */
 export const admitsAgent = (allowed: ReadonlyArray<Allowed>): boolean =>
   allowed.some((a) => {
     const entry = a.kind === "narrowed" ? a.entry : a;
     if (entry.kind === "anyone") return true;
-    if (entry.kind === "system" || (entry.kind === "role" && entry.service !== undefined) || (entry.kind === "role-of" && entry.role.service !== undefined)) return false;
+    if (entry.kind === "system" || entry.kind === "keeper" || (entry.kind === "role" && entry.service !== undefined) || (entry.kind === "role-of" && entry.role.service !== undefined)) return false;
     return a.kind !== "narrowed" || a.via.includes("agent");
   });
 
@@ -49,4 +49,5 @@ export const Roles: RolesApi = {
     return signedIn;
   })(),
   system: Object.freeze({ kind: "system" }),
+  keeper: Object.freeze({ kind: "keeper" }),
 };

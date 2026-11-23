@@ -4,12 +4,16 @@ import { Blueprint } from "orthograph";
 import { Scripting } from "orthograph/server";
 import type { CallRecord, JourneyRun, JourneysApi, Project, StepResult } from "./types.ts";
 import { callDevice, onDevice } from "./internal/device.ts";
+import { keepersIn } from "./internal/keepers.ts";
 import { loadProject } from "./internal/load.ts";
 import { callOperation, callTools, castPeople, doorFacts, makeKey, mayCall, mintCredential, signUpPeople, stateOf } from "./internal/world.ts";
 import { databaseFacts } from "./internal/database-facts.ts";
 import { d1Facts } from "./internal/d1-facts.ts";
 import { subjectId } from "./internal/subject.ts";
 import { runChecks, show } from "./internal/checks.ts";
+
+/** A call a world can make today: not a step that moves the clock, which is refused first (M8.07). */
+type Doable = Exclude<AnyCall, { readonly kind: "clock-call" }>;
 
 type Codec = Schema.Codec<Record<string, unknown>, Record<string, unknown>>;
 
@@ -34,7 +38,9 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     const names = [...new Set([...Object.keys(journey.cast), ...lineage.flatMap((w) => Object.keys(w.cast))])];
     const cast = Object.assign({}, ...lineage.map((w) => w.cast), journey.cast) as Record<string, { readonly kind?: string; readonly service?: unknown } | undefined>;
     // The system and a service are not people: nobody signs them up, and a world mints each one's token (M2-auth, fork 3).
-    const outsiders = names.filter((n) => cast[n]?.kind === "system" || (cast[n]?.kind === "role" && cast[n]?.service !== undefined));
+    // The keeper is no one to sign up either: it is the system's own principal, and it is not built yet (M8.10).
+    const keepers = keepersIn(names, [...lineage.map((w) => w.cast), journey.cast]);
+    const outsiders = names.filter((n) => keepers.has(n) || cast[n]?.kind === "system" || (cast[n]?.kind === "role" && cast[n]?.service !== undefined));
     // Cast as anyone: not signed up, so the script can sign them up itself; everyone else is, for real.
     const anyone = names.filter((n) => cast[n]?.kind === "anyone" && !lineage.some((w) => n in w.cast));
     const wanted = [names.filter((n) => !anyone.includes(n) && !outsiders.includes(n)).map((n) => `j${index}.${n}`), anyone.map((n) => `j${index}.${n}`)] as const;
@@ -47,6 +53,11 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     // A world with a chain gives the journeys its keys and a payee as `s.world.chain` (K7 Q7); a starting world adds to it.
     const env: Record<string, unknown> = { cast: people, ...(device === undefined ? {} : { world: device.given }) };
     const facts = { facts: given ?? doorFacts(url), tableOf: tableOf(project), nameOf: (op: unknown) => nameOfOperation(project, op as Operation | Read) };
+    // Time is declared in the language (M8.09) and built later: a clock step or the keeper's call refuses, never pretends.
+    const unbuilt = (call: AnyCall, kept: ReadonlySet<string> = keepers): string | undefined =>
+      call.kind === "clock-call" ? "time is not built yet: M8.07 (a step that moves the world's clock)"
+      : kept.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)"
+      : undefined;
     // Each credential the world minted for a cast member's way in, once per journey.
     const minted = new Map<string, string | undefined>();
     const tokenFor = (actor: string, via: Via | undefined) =>
@@ -74,7 +85,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       const named = { person: who.person, email: who.email };
       return via === "agent" ? { kind: "agent", ...named, via: "agent" } : { kind: "person", ...named, via: via ?? "session" };
     };
-    const make = (step: string, call: AnyCall, startingWorld = false) =>
+    const make = (step: string, call: Doable, startingWorld = false) =>
       Effect.gen(function* () {
         if (call.operation === undefined) {
           // The MCP door's tools, listed with the member's own credential: no operation runs, so no trace comes.
@@ -111,10 +122,14 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         return { record, missing: resolved.missing };
       });
 
-    for (const w of lineage) {
+    for (const [at, w] of lineage.entries()) {
+      // A starting world's own cast is what its lineage so far says: a later world or the journey may recast a name.
+      const keptHere = keepersIn(names, lineage.slice(0, at + 1).map((x) => x.cast));
       const script = Scripting.script(Object.fromEntries(names.map((n) => [n, Blueprint.signedIn])));
       for (const call of w.makes(script)) {
-        const { record } = yield* make(`starting world ${w.name}`, call, true);
+        const why = unbuilt(call, keptHere);
+        if (why !== undefined) return done(`starting world ${w.name}: ${why}`);
+        const { record } = yield* make(`starting world ${w.name}`, call as Doable, true);
         if (record.status !== 200) return done(`starting world ${w.name}: ${record.operation} ${record.status === 500 ? "died" : `answered ${record.status}`}: ${show(record.body)}`);
       }
       const gives = Scripting.resolve(w.gives(script), env);
@@ -123,9 +138,12 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     }
 
     for (const step of journey.steps(Scripting.script(journey.cast))) {
-      const gone = project.omitted?.get(step.call.operation);
+      const why = unbuilt(step.call);
+      if (why !== undefined) return done(`"${step.title}": ${why}`);
+      const called = step.call as Doable;
+      const gone = project.omitted?.get(called.operation);
       if (gone) { skipped.push({ step: step.title, ...gone }); continue; }
-      const { record, missing } = yield* make(step.title, step.call);
+      const { record, missing } = yield* make(step.title, called);
       const checked = yield* runChecks(step.checks, record, env, facts);
       steps.push({
         journey: journey.name, title: step.title, trace: record.trace, spans: checked.spans,

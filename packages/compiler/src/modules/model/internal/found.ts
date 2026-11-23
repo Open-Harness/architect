@@ -27,7 +27,7 @@ const keyOf = (payload: FieldsInput, thing: Thing) => Object.keys(payload).find(
 /** The payload field a role check starts its walk from, and so reads: undefined for `anyone` and `signedIn`. */
 const readBy = (entry: Allowed, payload: FieldsInput, own: Thing): string | undefined => {
   const a = entry.kind === "narrowed" ? entry.entry : entry;
-  if (a.kind === "anyone" || a.kind === "signed-in" || a.kind === "system") return undefined;
+  if (a.kind === "anyone" || a.kind === "signed-in" || a.kind === "system" || a.kind === "keeper") return undefined;
   // A service role reads nothing: the mount the call came in by decides.
   if ((a.kind === "role-of" ? a.role : a).service !== undefined) return undefined;
   if (a.kind === "role-of") {

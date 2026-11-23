@@ -333,7 +333,7 @@ declared event. The operations are named here; their payloads follow the prototy
 | Trigger | thing, intake; never changed | `receive` (source; stored, duplicate or filtered, idempotent by source and event); `requeue` (main); `reevaluate` (person) |
 | Thread | thing, intake; `idle → queued → evaluating`, one eval at a time | `bind`, `closed` (source); `unsubscribe` (person, main) |
 | Correlation | thing, intake | made by `receive`: a trigger seen on another thread; adds context, never routes |
-| Eval | thing, intake; `queued → delivered → decided`, `unavailable` | `evals.due` (system, every 2 s; not re-armed while the superagent is paused); `delivered` (system); `context`, `read`, `decide` (main) |
+| Eval | thing, intake; `queued → delivered → decided`, `unavailable` | `eval.due` (system, every 2 s; not re-armed while the superagent is paused); `delivered` (system); `context`, `read`, `decide` (main) |
 | Decision | thing, intake | `route` (main: 1 to 20 items, each accept, attach, stop or ignore); `dismiss` (person) |
 | Policy | thing with versions, intake (K40 fix 2), one per superagent | `save`, `get`, `history`, `restore`, `sync` (person; main proposes); a Mandate pins `Policy.revision` |
 | Mandate | thing, tickets; `held → withdrawn`, `revoked` | `revalidate` (system, before a resume) |
@@ -368,7 +368,7 @@ export interface Gate {
 ```
 
 A trigger on a thread a ticket follows goes straight to that ticket's executor as an Input. Every other trigger the
-gate passes waits on its thread; `evals.due` batches each thread's waiting triggers into an Eval and tells the main
+gate passes waits on its thread; `eval.due` batches each thread's waiting triggers into an Eval and tells the main
 agent. The main agent reads the batch and its context, records one judgement per enabled rule (`eval.decide`) and
 routes it (`decision.route`). An accept makes the Ticket, its Mandate, its Subscriptions, its first Assignment, its
 executor and its acknowledgement, in one commit. In `observe` an accept is recorded as "would accept" and starts
@@ -449,7 +449,7 @@ Ann writes "@agent fix the flaky login test" on issue 12 of the test repository.
 1. GitHub sends the comment. Locally, `gh webhook forward` sends it to the door `ortho dev` prints. The GitHub
    adapter's door checks its signature, keys it by the comment's id, and its caller carries Ann's account.
 2. `trigger.receive` stores it once on thread `issue/12`. No ticket follows that thread, so it waits there.
-3. `evals.due` batches it. The gate: Ann's account is listed and she mentioned the agent, so it is explicit.
+3. `eval.due` batches it. The gate: Ann's account is listed and she mentioned the agent, so it is explicit.
 4. The candidate is told to the main agent, which reads the issue, judges it against the rules and routes it: accept.
 5. The accept makes the ticket, its mandate, its subscription to issue 12, its first assignment and its executor.
 6. The executor's first tool call opens its sandbox, a temporary folder served by the bridge, and runs `pnpm install`.

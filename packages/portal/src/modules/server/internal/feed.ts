@@ -10,6 +10,8 @@ export interface PortalFeed {
   readonly environment: string;
   readonly now: number;
   readonly windowMs: number;
+  /** How far back the feed really holds its source; absent from a feed that predates it (then the window is all it claims). */
+  readonly historyMs?: number;
   readonly traces: Availability<Readonly<Record<string, WindowTrace>>>;
   readonly points: Availability<ReadonlyArray<MetricPoint>>;
 }
@@ -22,6 +24,7 @@ const isAvailability = (value: unknown, valid: (inner: unknown) => boolean): boo
 const isFeed = (value: unknown): value is PortalFeed => {
   const feed = value as Partial<PortalFeed> | null;
   return typeof feed === "object" && feed !== null && typeof feed.environment === "string" && typeof feed.now === "number" && typeof feed.windowMs === "number"
+    && (feed.historyMs === undefined || typeof feed.historyMs === "number")
     && isAvailability(feed.traces, (v) => typeof v === "object" && v !== null) && isAvailability(feed.points, Array.isArray);
 };
 
@@ -46,7 +49,7 @@ export const feedLive = (url: string, environment: string): Effect.Effect<Portal
       const traces = found.traces.state === "available" ? new Map(Object.entries(found.traces.value)) : undefined;
       const down = (reason: string) => Effect.fail<WindowFailure>({ message: reason });
       return {
-        environment: found.environment, now: found.now, windowMs: found.windowMs, historyMs: found.windowMs,
+        environment: found.environment, now: found.now, windowMs: found.windowMs, historyMs: found.historyMs ?? found.windowMs,
         source: {
           window: () => traces === undefined ? down((found.traces as { reason: string }).reason) : Effect.succeed(traces),
           find: (trace) => traces === undefined ? down((found.traces as { reason: string }).reason) : Effect.succeed(traces.get(trace)),
