@@ -6,7 +6,8 @@ decides". It sorts every part of Capxul into one of three bins, in K30's words (
 - **Orthograph has it**: in the core or the standard library, built on `goal/stage-1` or planned by a named goal slice.
 - **Orthograph must build it**: a gap no goal owns yet, or a gap a goal owns and Capxul needs sooner. Each one is an
   Ask issue to the owner, or a line for `design/later.md` when nobody owns it.
-- **Capxul's own**: K30's "ours". It lives in Capxul's repository, mounted from its blueprint, and is extracted into
+- **Capxul's own**: K30's "ours". It lives in Capxul's repository (superseded by K43, 23 November 2026: in
+  `examples/capxul/plugins/` here first), mounted from its blueprint, and is extracted into
   the standard library only when a second app needs it (K30, "extract"; Aaron's rule: build it once, use it, then
   extract it).
 
@@ -130,7 +131,7 @@ Each gap, and who acts. The first feature (section 4) needs none of the unowned 
 | Money as a value: signed or fixed-point, knowing its token and decimals, the same in Effect and Solidity (THI-07) | Invoice, Payment, Ledger entry, Budget | nobody: `main:design/later.md:46-48`, "waits for a design pass" | for the conductor. Capxul's floor until then: its own `Amount`, a raw schema value as Next has it, and a ledger line with a debit and a credit, both never negative |
 | SIWE for a Safe (ERC-1271) | signing in with a Safe account | Goal 3, M2.13 | asked by #486 |
 | A mail adapter with a local sink | sign-in codes, invitations | nobody (M5.09 is Resend, off the 1.0 path) | for the conductor |
-| Views, richer lists (ranges, sort by field, totals) and reports | trial balance, aged invoices, activity | nobody (M5.05 off the 1.0 path; reports not planned) | for the conductor; Frappe's desk carries them meanwhile |
+| Views, richer lists (ranges, sort by field, totals) and reports | trial balance, aged invoices, activity | nobody (M5.05 off the 1.0 path; reports not planned) | for the conductor; Frappe's desk carries them meanwhile (superseded by K43, 23 November 2026: the reports are Capxul's own, its share of K42's split) |
 | A repeat that changes nothing, and idempotency by intent (K21) | founding sent twice is resumed; one send per approval | nobody (M3.24 to M3.26 are off the 1.0 path, `main:design/goals/map.md:60`) | for the conductor; Capxul's handlers refuse a second send meanwhile |
 | A mount limited to one environment | switches, and a stand-in mounted only in development | nobody (test drive, finding 10) | for the conductor |
 | Roles across things (`holds`, K20) and adopting a mounted thing (K22) | Director and member roles; "company" for the organisations plugin | Goal 3, M2.17 to M2.20 | planned; nothing to ask |
@@ -178,7 +179,8 @@ and its Directors' signatures, in a slice that is no longer first; nothing here 
 
 ### What it waits on
 
-Narrowed from "stage 3" in the brief, which said more than the feature needs:
+Narrowed from "stage 3" in the brief, which said more than the feature needs: (Under K42, 23 November 2026, the goals named as owners below are winding down; each piece is now an
+item on the board, and Goal 16 takes what it needs by K42's collision rule.)
 
 | Needs | What | Owner | Status, 22 November |
 |---|---|---|---|
@@ -187,14 +189,15 @@ Narrowed from "stage 3" in the brief, which said more than the feature needs:
 | ST2.02 | the `erc20` adapter: typed `transfer` and `Transfer` | Goal 12 | ready; asked early by #485 |
 | M6.09, and M6.07 before it | the chain follower, after the relayer it needs | Goal 4 | asked early by Goal 12 (#475); Goal 16 added to it |
 | M5.03 | events in: `on:` for an adapter's events, idempotent by event id | Goal 11 | asked early by Goal 12 (#477); Goal 16 added to it |
-| M1.51, M7.03, M7.04 | Orthograph from npm, and an environment brought up and destroyed, so Capxul's own repository can stand up its staging | Goal 3 | on Goal 3's path, landing in `goal/stage-1` |
+| M1.51, M7.03, M7.04 | Orthograph from npm, and an environment brought up and destroyed, so Capxul's own repository can stand up its staging (superseded by K43, 23 November 2026: Capxul is built here first, so it stands up its staging from this repository) | Goal 3 | on Goal 3's path, landing in `goal/stage-1` |
 
 It does not wait on the `safe` or `hats` adapters, budgets, owners' signatures, organisations, roles across things,
 workflows or money as a value. Its second feature, paying a supplier, adds ST3.04 (asked by #484) and M6.15.
 
-It is built in `capxul-next`, Capxul's own repository (K30, section 2; superseded by K43, 23 November 2026: it is built in this repository, on `goal/capxul`, in `examples/capxul/`, and moves out once Capxul's staging run passes), consuming Orthograph from npm as any app
+It is built in `capxul-next`, Capxul's own repository (K30, section 2), consuming Orthograph from npm as any app
 would, once Capxul's own goal there starts. Its record lands here early, per K38 ("a slice built outside this
-repository").
+repository"). (This whole paragraph is superseded by K43, 23 November 2026: Capxul is built in this repository, on
+`goal/capxul`, in `examples/capxul/`, and moves out once Capxul's staging run passes.)
 
 ## 5. Open, for the conductor
 
@@ -215,6 +218,9 @@ repository").
 - design/goals/16-capxul.md: "The feature needs the vault goal and the release goal's signed verdicts." → "The feature needs pieces from five other goals: the release goal's signed verdicts, a token, the chain's events coming in, and a staging to run in."
 - design/goals/16-capxul.md: "stage 3, by the Capxul calls (Goal 13)" → "M7.05 (Goal 15), ST2.02 (Goal 12), M6.09 (Goal 4), M5.03 (Goal 11), M7.04 (Goal 3)"
 - design/milestones.md: "Capxul's first plugin, the wallet, is stage 2." → "Capxul's first feature, one person getting paid, reads stage 2's token adapter and the chain's events (`decisions/M7-capxul.md`)."
+
+K42 and K43 (23 November 2026) rewrote `map.md`, `16-capxul.md` and `milestones.md` again, so none of the new words above
+is still in those files. The lines stay as the record of what this decision changed.
 
 `design/decisions/K9-growing-example.md:400`, a dated record, keeps its words on Capxul's first plugin with a
 "Superseded by M7-capxul" note.
