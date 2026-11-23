@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import { Effect } from "effect";
+import { Clock, Effect } from "effect";
 import { step, FollowerFault, type Stored } from "./internal/poll.ts";
 import type { CheckpointView, FollowerApi, FollowerConfig, FollowerEnv } from "./types.ts";
 
@@ -20,10 +20,36 @@ export class Follower extends DurableObject implements FollowerApi {
 
   /** The same arguments again change nothing; the checkpoint is never touched. */
   configure(config: FollowerConfig): Promise<void> {
-    return this.ctx.storage.put(CONFIG, config);
+    return this.ctx.storage.put(CONFIG, config).then(() => this.arm());
+  }
+
+  /** With a `pollIntervalMs` there is an alarm, one at a time; with none there is not, so a check that calls `poll` by hand is never raced. */
+  private arm(): Promise<void> {
+    const { ctx } = this;
+    return Effect.runPromise(Effect.gen(function* () {
+      const period = (yield* Effect.promise(() => ctx.storage.get<FollowerConfig>(CONFIG)))?.pollIntervalMs;
+      if (period === undefined || (yield* Effect.promise(() => ctx.storage.getAlarm())) !== null) return;
+      const now = yield* Clock.currentTimeMillis;
+      yield* Effect.promise(() => ctx.storage.setAlarm(now + period));
+    }));
   }
 
   poll(): Promise<{ readonly caughtUp: boolean }> {
+    return this.serially(this.job());
+  }
+
+  /** The alarm does what `poll` does, serialised with it. A sink error leaves the checkpoint where it was, and the next alarm is set all the same, so it tries again. */
+  override alarm(): Promise<void> {
+    return this.serially(this.job()).then(() => undefined, () => undefined).then(() => this.arm());
+  }
+
+  private serially<A>(run: () => Promise<A>): Promise<A> {
+    const done = this.turn.then(run, run);
+    this.turn = done.catch(() => undefined);
+    return done;
+  }
+
+  private job(): () => Promise<{ readonly caughtUp: boolean }> {
     const { ctx, env } = this;
     const run = () => Effect.runPromise(Effect.gen(function* () {
       const config = yield* Effect.promise(() => ctx.storage.get<FollowerConfig>(CONFIG));
@@ -34,9 +60,7 @@ export class Follower extends DurableObject implements FollowerApi {
       yield* Effect.promise(() => ctx.storage.put(CHECKPOINT, next.checkpoint));
       return { caughtUp: next.caughtUp };
     }));
-    const done = this.turn.then(run, run);
-    this.turn = done.catch(() => undefined);
-    return done;
+    return run;
   }
 
   checkpoint(): Promise<CheckpointView> {
