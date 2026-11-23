@@ -61,8 +61,8 @@ export const Prove: ProveApi = {
       if (journeys.length === 0 && !(empty && only === undefined) && !(judging !== undefined && judging.size > 0)) return yield* new ProveFailed({ message: `no journey named "${only}"` });
       const bodies = handlerHashes(root, model);
       const world = empty ? yield* emptyWorld(root, model) : root;
-      const stand = yield* standWorld({ root, world, model, port, empty, env });
-      const [took, done] = yield* Effect.timed(exercise(model, { ...project, journeys }, stand.url, stand.collector, undefined, stand.otlp, undefined, empty, bodies, stand.device, judging));
+      const stand = yield* standWorld({ root, world, model, port, empty, env, stands: Journeys.standsUsed(journeys) });
+      const [took, done] = yield* Effect.timed(exercise(model, { ...project, journeys }, stand.url, stand.collector, undefined, stand.otlp, undefined, empty, bodies, stand.device, judging, stand.harness));
       // A run with a failing journey proves nothing: its operations are recorded as judged and not passed (D2 #80).
       if (stamp !== undefined) {
         yield* Impact.record(root, model, done.judged, judging === undefined ? done.results : done.results.filter((r) => judging.has(r.operation)));

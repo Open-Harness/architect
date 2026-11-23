@@ -15,8 +15,30 @@ export interface ChainStand {
   readonly accounts?: ReadonlyArray<{ readonly address: string; readonly privateKey: Redacted.Redacted<string> }>;
 }
 
+/** A stand-in a world stands up beside its Worker (`Stand.process`): where it answers, and the process serving it. */
+export interface StandRunning {
+  readonly url: string;
+  readonly pid: number;
+}
+
+/**
+ * The world's own Worker process group, made restartable (GOAL17-check-harness, call 2). It outlives nothing: the world's scope stops
+ * whatever group the runner holds then. A stand-in belongs to the world's scope, not to this group, so a killed runner leaves each one alive.
+ */
+export interface Runner {
+  readonly url: string;
+  /** Signal the whole process group wrangler started, by the pid prove holds. SIGKILL by default: nothing cleans up, as in an eviction. Answers once the group is gone. */
+  readonly kill: (signal?: "SIGKILL" | "SIGTERM") => Effect.Effect<{ readonly pid: number }, WorldFailed>;
+  /** The same config, state folder, port, secret and vars: tokens, the cast and the clock survive. Answers once `/_world/health` does. */
+  readonly start: Effect.Effect<{ readonly pid: number }, WorldFailed>;
+}
+
 export interface Running {
   readonly url: string;
+  /** The runner of this world's Worker: kill it, start it again on the same state. */
+  readonly runner: Runner;
+  /** Each stand-in the world was asked for, by mount name. Each one's address reached the Worker as `ORTHO_STAND_<MOUNT>`. */
+  readonly stands: Readonly<Record<string, StandRunning>>;
   /** The world's chain, when it was asked for one. It lives exactly as long as the world. */
   readonly chain?: ChainStand;
   /** Where wrangler's own output goes, for when something looks wrong. */
@@ -79,5 +101,7 @@ export interface WorldsApi {
      * Worker stops, so the chain is gone when the world ends.
      */
     readonly chain?: Effect.Effect<ChainStand, WorldFailed, Scope.Scope>;
+    /** The stand-ins, by mount name, each acquired in the world's scope before the Worker and released after it. */
+    readonly stands?: Readonly<Record<string, Effect.Effect<StandRunning, WorldFailed, Scope.Scope>>>;
   }) => Effect.Effect<Running, WorldFailed, Scope.Scope>;
 }

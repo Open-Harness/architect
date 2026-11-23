@@ -4,6 +4,7 @@ import { Data, type Effect } from "effect";
 import type { Journey, Operation, Read, StartingWorld, Thing } from "orthograph";
 import type { Model } from "@orthograph/compiler";
 import type { DeviceWorldOf } from "@orthograph/language-effect/device";
+import type { Runner } from "#modules/world/types.js";
 
 /** One HTTP call to the world, as `prove` saw it. */
 export interface CallRecord {
@@ -91,6 +92,12 @@ export interface Project {
   readonly unfinished?: ReadonlyArray<string>;
 }
 
+/** What a journey's steps reach beyond the world's own routes (GOAL17-check-harness): the world's runner, and each stand-in by mount name. A world prove did not start has neither. */
+export interface Harness {
+  readonly runner?: Runner;
+  readonly stands?: Readonly<Record<string, { readonly url: string }>>;
+}
+
 export class ProjectFailed extends Data.TaggedError("ProjectFailed")<{ readonly message: string }> {}
 
 export interface JourneysApi {
@@ -98,6 +105,8 @@ export interface JourneysApi {
   readonly databaseFacts: (state: string) => Facts;
   /** Facts read from a deployed environment's D1 databases through Cloudflare's API, with the operator's credential. */
   readonly d1Facts: (access: D1Access) => Facts;
+  /** The mounts of the stand-ins these journeys command: the world stands up those and no others. */
+  readonly standsUsed: (journeys: ReadonlyArray<Journey>) => ReadonlySet<string>;
   readonly load: (root: string, model: Model) => Effect.Effect<Project, ProjectFailed>;
   /**
    * Run one journey against the world at `url`. Span checks wait for telemetry, so they are made later by `check`.
@@ -108,5 +117,5 @@ export interface JourneysApi {
    * `device`: where a plugin's operation that runs on the device is run (its `world` entry, in this process). Without
    * one such a call goes to the server like any other, which has no route for it.
    */
-  readonly run: (project: Project, url: string, journey: Journey, index: number, people?: "world" | "sign-up", facts?: Facts, empty?: boolean, device?: DeviceHost) => Effect.Effect<JourneyRun>;
+  readonly run: (project: Project, url: string, journey: Journey, index: number, people?: "world" | "sign-up", facts?: Facts, empty?: boolean, device?: DeviceHost, harness?: Harness) => Effect.Effect<JourneyRun>;
 }

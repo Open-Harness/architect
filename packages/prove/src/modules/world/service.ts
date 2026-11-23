@@ -1,16 +1,17 @@
 import { Names } from "orthograph/server";
 import { randomBytes } from "node:crypto";
+import type { ChildProcess } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { Effect } from "effect";
 import { ServerConfig } from "#modules/server-config/service.js";
-import { WorldFailed, type WorldsApi } from "./types.ts";
+import { WorldFailed, type Runner, type StandRunning, type WorldsApi } from "./types.ts";
 import { anyPort } from "./internal/ports.ts";
-import { applyMigrations, bringUp, stop } from "./internal/wrangler.ts";
+import { applyMigrations, bringUp, stopGroup } from "./internal/wrangler.ts";
 
 export const Worlds: WorldsApi = {
   anyPort,
-  start: ({ root, port: asked, name, otlp, portalFeed, environment, secretEnv, chain, nonce }) =>
+  start: ({ root, port: asked, name, otlp, portalFeed, environment, secretEnv, chain, nonce, stands }) =>
     Effect.gen(function* () {
       const generated = resolve(root, "generated/server/wrangler.jsonc");
       if (!existsSync(generated)) return yield* new WorldFailed({ message: `${generated} is missing: run nx sync first` });
@@ -25,14 +26,32 @@ export const Worlds: WorldsApi = {
       yield* applyMigrations(config, state);
       // The chain is acquired first, so it is released last: the Worker never outlives the chain it talks to.
       const stood = chain === undefined ? undefined : yield* chain;
+      // Each stand-in is the world's, not wrangler's: it is released after the Worker and survives a kill of the runner.
+      const standing: Record<string, StandRunning> = {};
+      for (const [mount, acquire] of Object.entries(stands ?? {})) standing[mount] = yield* acquire;
       const log = join(state, "wrangler.log");
       const secret = randomBytes(32).toString("hex");
       // Port 0 asks for any free port; wrangler is told a named one, and `url` is the one it got.
       const port = asked === 0 ? yield* anyPort : asked;
       const url = `http://127.0.0.1:${port}`;
-      const vars = { AUTH_SECRET: secret, [Names.variable("ENVIRONMENT")]: environment ?? "local", ...(otlp ? { OTLP_URL: otlp } : {}), ...(portalFeed ? { ORTHO_PORTAL_FEED: portalFeed } : {}), ...(nonce ? { ORTHO_WORLD_NONCE: nonce } : {}) };
-      yield* Effect.acquireRelease(bringUp({ config, state, port, log, vars, ...(secretEnv ? { secretEnv } : {}) }, "/_world/health"), stop);
-      return { url, log, ...(stood ? { chain: stood } : {}) };
+      const standVars = Object.fromEntries(Object.entries(standing).map(([mount, s]) => [Names.variable(`STAND_${mount.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`), s.url]));
+      const vars = { ...standVars, AUTH_SECRET: secret, [Names.variable("ENVIRONMENT")]: environment ?? "local", ...(otlp ? { OTLP_URL: otlp } : {}), ...(portalFeed ? { ORTHO_PORTAL_FEED: portalFeed } : {}), ...(nonce ? { ORTHO_WORLD_NONCE: nonce } : {}) };
+      // The Worker leads its own process group, so the runner can signal the whole of it, as an eviction would.
+      const wrangle = { config, state, port, log, vars, detached: true, ...(secretEnv ? { secretEnv } : {}) };
+      const held: { child: ChildProcess } = { child: yield* Effect.acquireRelease(bringUp(wrangle, "/_world/health"), (first) => stopGroup(held?.child ?? first)) };
+      const runner: Runner = {
+        url,
+        kill: (signal = "SIGKILL") => Effect.suspend(() => {
+          const pid = held.child.pid ?? 0;
+          return stopGroup(held.child, signal).pipe(Effect.as({ pid }));
+        }),
+        start: Effect.gen(function* () {
+          if (held.child.exitCode === null && held.child.signalCode === null) return yield* new WorldFailed({ message: "the runner is running: kill it before starting it again" });
+          held.child = yield* bringUp(wrangle, "/_world/health");
+          return { pid: held.child.pid ?? 0 };
+        }),
+      };
+      return { url, log, runner, stands: standing, ...(stood ? { chain: stood } : {}) };
     }),
   launch: ({ config, state, port, log, pidFile, envFile, secretEnv, ready }) =>
     Effect.gen(function* () {

@@ -16,13 +16,15 @@ export type Principal =
   | { readonly kind: "anonymous" }
   | { readonly kind: "person"; readonly person: string; readonly email?: string; readonly via: "session" | "key" | "device" }
   | { readonly kind: "agent"; readonly person: string; readonly email?: string; readonly via: "agent" }
+  /** An agent acting as itself (K40 fix 3): no person. Only a role made with `agent:` admits it, by the agent's id; `acting` gives it no hands. */
+  | { readonly kind: "agent"; readonly agent: string; readonly via: "agent" }
   | { readonly kind: "service"; readonly mount: string }
   | { readonly kind: "system" }
   | { readonly kind: "keeper" };
 
 /** Someone's hands: a person, or an agent acting for one. What a role's rule is given, so `principal.person` still works there. */
 export type Acting = Extract<Principal, { readonly person: string }>;
-export const acting = (principal: Principal): Acting | undefined => (principal.kind === "person" || principal.kind === "agent" ? principal : undefined);
+export const acting = (principal: Principal): Acting | undefined => (principal.kind === "person" || (principal.kind === "agent" && "person" in principal) ? principal : undefined);
 
 /** A thing as its handler and its roles see it: its fields and its machine state. */
 export type InstanceOf<T extends Thing> = { readonly [K in keyof T["fields"]]: TypeOf<T["fields"][K]["value"]> } & {

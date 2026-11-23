@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import type { AnyCall, Operation, Principal, Read, StartingWorld, Thing, Via } from "orthograph";
+import type { AnyCall, Call, Operation, Principal, Read, StartingWorld, Thing, ToolsCall, Via } from "orthograph";
 import { Blueprint } from "orthograph";
 import { Scripting } from "orthograph/server";
 import type { CallRecord, JourneyRun, JourneysApi, Project, StepResult } from "./types.ts";
@@ -11,16 +11,18 @@ import { databaseFacts } from "./internal/database-facts.ts";
 import { d1Facts } from "./internal/d1-facts.ts";
 import { subjectId } from "./internal/subject.ts";
 import { runChecks, show } from "./internal/checks.ts";
+import { standsUsed } from "./internal/uses.ts";
+import { recordOf, runnerDoor, standDoor, worldDoor } from "./internal/doors.ts";
 
-/** A call a world can make today: not a step that moves the clock, which is refused first (M8.07). */
-type Doable = Exclude<AnyCall, { readonly kind: "clock-call" }>;
+/** A call that runs an operation, or lists the tools: what a starting world makes and `make` makes. */
+type Doable = Call | ToolsCall;
 
 type Codec = Schema.Codec<Record<string, unknown>, Record<string, unknown>>;
 
 const nameOfOperation = (project: Project, op: Operation | Read) => [...project.operations].find(([, o]) => o === op)?.[0];
 const tableOf = (project: Project) => (thing: Thing) => [...project.things].find(([, t]) => t === thing)?.[0];
 
-const run: JourneysApi["run"] = (project, url, journey, index, how = "world", given, empty = false, device) =>
+const run: JourneysApi["run"] = (project, url, journey, index, how = "world", given, empty = false, device, harness) =>
   Effect.gen(function* () {
     const world = journey.starts === undefined ? undefined : project.startingWorlds.get(journey.starts);
     // A starting world may begin from another: make the oldest first, so each sees what the one before it gave.
@@ -56,6 +58,10 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     // Time is declared in the language (M8.09) and built later: a clock step or the keeper's call refuses, never pretends.
     const unbuilt = (call: AnyCall, kept: ReadonlySet<string> = keepers): string | undefined =>
       call.kind === "clock-call" ? "time is not built yet: M8.07 (a step that moves the world's clock)"
+      : call.kind === "runner-call" ? (harness?.runner === undefined ? `this world has no runner to ${call.move}: prove did not start it` : undefined)
+      : call.kind === "stand-call" ? (harness?.stands?.[call.mount] === undefined ? `no stand-in is running for the mount "${call.mount}"` : undefined)
+      : call.kind === "world-call" ? undefined
+      : call.kind === "together-call" ? call.calls.map((c) => unbuilt(c, kept)).find((w) => w !== undefined)
       : kept.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)"
       : undefined;
     // Each credential the world minted for a cast member's way in, once per journey.
@@ -137,21 +143,45 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       env["world"] = { ...(env["world"] as object | undefined), ...(gives.value as object) };
     }
 
+    // One call as a record a step's checks read: an operation, or one of the harness's doors; several at once are one record holding each answer.
+    const doorOf = (title: string, call: AnyCall): Effect.Effect<{ readonly record: CallRecord; readonly missing: ReadonlyArray<string> }> =>
+      Effect.gen(function* () {
+        if (call.kind === "runner-call") {
+          const record = yield* runnerDoor(harness, journey.name, title, call);
+          if (record.status === 200) env["last"] = record.body;
+          return { record, missing: [] };
+        }
+        if (call.kind === "stand-call" || call.kind === "world-call") {
+          const args = Scripting.resolve(call.args, env);
+          const record = yield* (call.kind === "stand-call" ? standDoor(harness, journey.name, title, call, args.value) : worldDoor(url, journey.name, title, call, args.value));
+          if (record.status === 200) env["last"] = record.body;
+          return { record, missing: args.missing };
+        }
+        if (call.kind === "together-call") {
+          const made = yield* Effect.all(call.calls.map((c) => make(title, c)), { concurrency: "unbounded" });
+          const answers = made.map(({ record: r }) => (r.status === 200 ? r.body : { status: r.status, body: r.body }));
+          const record: CallRecord = { ...recordOf(journey.name, title, "together", {}, 200, { answers }), journal: made.flatMap(({ record: r }) => r.journal) };
+          env["last"] = record.body;
+          return { record, missing: made.flatMap((m) => m.missing) };
+        }
+        return yield* make(title, call as Doable);
+      });
+
     for (const step of journey.steps(Scripting.script(journey.cast))) {
       const why = unbuilt(step.call);
       if (why !== undefined) return done(`"${step.title}": ${why}`);
-      const called = step.call as Doable;
-      const gone = project.omitted?.get(called.operation);
+      const gone = step.call.kind === "call" ? project.omitted?.get(step.call.operation) : undefined;
       if (gone) { skipped.push({ step: step.title, ...gone }); continue; }
-      const { record, missing } = yield* make(step.title, called);
+      const { record, missing } = yield* doorOf(step.title, step.call);
+      const door = step.call.kind === "runner-call" || step.call.kind === "stand-call" || step.call.kind === "world-call";
       const checked = yield* runChecks(step.checks, record, env, facts);
       steps.push({
         journey: journey.name, title: step.title, trace: record.trace, spans: checked.spans,
-        failures: [...missing.map((m) => `payload: nothing at ${m}`), ...checked.failures],
-        findings: [...missing.map((m) => ({ message: `payload: nothing at ${m}` })), ...checked.findings],
+        failures: [...missing.map((m) => `payload: nothing at ${m}`), ...(door && record.status !== 200 ? [`${record.operation} answered ${record.status}: ${show(record.body)}`] : []), ...checked.failures],
+        findings: [...missing.map((m) => ({ message: `payload: nothing at ${m}` })), ...(door && record.status !== 200 ? [{ message: `${record.operation} answered ${record.status}: ${show(record.body)}` }] : []), ...checked.findings],
       });
     }
     return done(undefined);
   });
 
-export const Journeys: JourneysApi = { load: loadProject, run, databaseFacts, d1Facts };
+export const Journeys: JourneysApi = { load: loadProject, run, databaseFacts, d1Facts, standsUsed };

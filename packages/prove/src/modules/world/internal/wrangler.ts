@@ -84,6 +84,15 @@ export const stop = (child: ChildProcess) =>
     child.kill("SIGTERM");
   });
 
+/** Signal the whole group a detached child leads, and wait until the child is gone. An already gone group is fine. */
+export const stopGroup = (child: ChildProcess, signal: "SIGKILL" | "SIGTERM" = "SIGTERM") =>
+  Effect.callback<void>((resume) => {
+    if (child.exitCode !== null || child.signalCode !== null || child.pid === undefined) return resume(Effect.void);
+    child.once("exit", () => resume(Effect.void));
+    // A group that is already gone answers an error, and then there is nothing to wait for.
+    Effect.runSync(Effect.try({ try: () => process.kill(-child.pid!, signal), catch: () => "gone" as const }).pipe(Effect.catch(() => Effect.sync(() => resume(Effect.void)))));
+  });
+
 /** One look at `url`, given up after a second: while the worker cannot build, wrangler takes the connection and never answers it. */
 const answers = (url: string) =>
   Effect.tryPromise({ try: () => fetch(url, { signal: AbortSignal.timeout(1000) }).then((r) => r.ok), catch: () => false }).pipe(

@@ -3,13 +3,14 @@ import { resolve } from "node:path";
 import { Effect, type Scope } from "effect";
 import { Names } from "orthograph/server";
 import type { Model } from "@orthograph/compiler";
-import type { DeviceHost } from "#modules/journeys/types.js";
+import type { DeviceHost, Harness } from "#modules/journeys/types.js";
 import { PortalFeed } from "#modules/portal-feed/service.js";
 import { Sinks } from "#modules/sinks/service.js";
 import { Collectors, FileMetrics, privateKeys } from "#modules/telemetry/service.js";
 import type { TraceSource } from "#modules/telemetry/types.js";
 import { Warm } from "#modules/warm/service.js";
 import { Worlds } from "#modules/world/service.js";
+import { standsOf } from "#modules/world/internal/stands.js";
 import { ProveFailed } from "../types.ts";
 import { deviceHost, needsDevice, standChain } from "./device-host.ts";
 
@@ -27,6 +28,8 @@ export interface Stand {
   /** Where the run's own spans (the journeys' roots) are exported. */
   readonly otlp: string;
   readonly device: DeviceHost | undefined;
+  /** The runner and stand-ins of a world prove started; a warm world has neither. */
+  readonly harness: Harness | undefined;
   /** What to say before the journeys. */
   readonly notes: ReadonlyArray<string>;
 }
@@ -39,6 +42,8 @@ interface Wanted {
   readonly port: number;
   readonly empty: boolean;
   readonly env: Readonly<Record<string, string | undefined>> | undefined;
+  /** The mounts whose stand-ins the journeys command: only these are started. */
+  readonly stands?: ReadonlySet<string>;
 }
 
 /** The warm world of a live `ortho dev`, emptied; `undefined` when a prove must have one of its own (or there is none to use). */
@@ -51,11 +56,11 @@ const warmWorld = ({ root, model, port, empty }: Wanted): Effect.Effect<Stand | 
     // Another prove is running in it: resetting now would empty the world under that run, so this one starts a world of its own.
     if (!(yield* Warm.lock(root))) return undefined;
     yield* Warm.reset(record).pipe(Effect.mapError(failed));
-    return { url: record.url, collector: Collectors.read(record.telemetry), otlp: record.collector, device: undefined, notes: [`prove: reusing the world of ortho dev at ${record.url}`] };
+    return { url: record.url, collector: Collectors.read(record.telemetry), otlp: record.collector, device: undefined, harness: undefined, notes: [`prove: reusing the world of ortho dev at ${record.url}`] };
   });
 
 /** A fresh world and collector of the run's own. */
-const ownWorld = ({ world, model, port, empty, env }: Wanted): Effect.Effect<Stand, ProveFailed, Scope.Scope> =>
+const ownWorld = ({ world, model, port, empty, env, stands }: Wanted): Effect.Effect<Stand, ProveFailed, Scope.Scope> =>
   Effect.gen(function* () {
     const dir = resolve(world, Names.folder, "prove-telemetry");
     const collector = yield* Collectors.local(dir, privateKeys(model)).pipe(Effect.mapError(failed));
@@ -64,9 +69,10 @@ const ownWorld = ({ world, model, port, empty, env }: Wanted): Effect.Effect<Sta
     const stood = yield* standChain(model);
     // The world's portal reads this run's telemetry through a feed this process answers (the Worker cannot open the collector's files).
     const feed = yield* PortalFeed.serve({ source: collector, metrics: FileMetrics.open(dir), environment: "local", windowMs: PORTAL_WINDOW_MS, historyMs: PORTAL_HISTORY_MS }).pipe(Effect.mapError(failed));
-    const { url, chain } = yield* Worlds.start({ root: world, port, name: "prove", otlp: collector.url, portalFeed: feed.url, environment: "local", secretEnv: sinks.secretEnv, ...(stood.chain ? { chain: Effect.succeed(stood.chain) } : {}) }).pipe(Effect.mapError(failed));
+    const wanted = Object.fromEntries(Object.entries(standsOf(world, model)).filter(([mount]) => stands?.has(mount) === true));
+    const { url, chain, runner, stands: standing } = yield* Worlds.start({ root: world, port, name: "prove", ...(Object.keys(wanted).length > 0 ? { stands: wanted } : {}), otlp: collector.url, portalFeed: feed.url, environment: "local", secretEnv: sinks.secretEnv, ...(stood.chain ? { chain: Effect.succeed(stood.chain) } : {}) }).pipe(Effect.mapError(failed));
     const device = needsDevice(model) ? yield* deviceHost(world, collector.url, chain).pipe(Effect.mapError(failed)) : undefined;
-    return { url, collector, otlp: collector.url, device, notes: [...sinks.notes, ...stood.notes] };
+    return { url, collector, otlp: collector.url, device, harness: { runner, stands: standing }, notes: [...sinks.notes, ...stood.notes] };
   });
 
 /** The world warm if there is one to use, else the run's own. */
