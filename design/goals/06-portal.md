@@ -317,6 +317,7 @@ started, since it crosses goals.
 |---|---|---|
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
 | MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
+| MAP-screens | `design/decisions/MAP-screens.md` | Aaron, 23 November 2026: the Map tab, the page tree, the derived map marked, the "As an agent" drawer |
 
 ## The done check
 
