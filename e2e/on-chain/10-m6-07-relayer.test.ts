@@ -42,7 +42,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import {
-  ECHO_BYTECODE, ECHO_SELECTOR, ECHOED_TOPIC, GUARDED_SELECTOR, deployEcho, digestOf, echoCall, echoed, guardedCall, filesHolding, holdsSecret, makeKey, mine, nonceProblems, rpc, startAnvil, startWorker, until,
+  ECHO_BYTECODE, ECHO_SELECTOR, ECHOED_TOPIC, GUARDED_SELECTOR, deployEcho, digestOf, echoCall, echoed, guardedCall, filesHolding, holdsSecret, holder, makeKey, mine, nonceProblems, rpc, startAnvil, startWorker, until,
   type Anvil, type Hex, type Worker,
 } from "./actor-fixture.ts";
 
@@ -54,18 +54,20 @@ const key = makeKey();
 /** `pollIntervalMs` is the period of the relayer's alarm. configure is idempotent only for the same arguments, so every call here gives the same. */
 const config = (anvil: Anvil) => ({ rpcUrl: anvil.rpcUrl, chainId: anvil.chainId, pollIntervalMs: 250 });
 let earlier: Relayed | undefined;
+const held = holder();
 let started: Promise<{ anvil: Anvil; worker: Worker; echo: Hex; name: string; relayer: Hex }> | undefined;
-// Set up once, and rethrown by every test that needs it, so each fails by name when the seam is missing.
+// Set up once, and rethrown by every test that needs it, so each fails by name when the seam is missing. Each process is held the moment it exists, so a setup
+// that fails halfway (no Relayer to start, a configure refused) still leaves teardown every Anvil and Worker that did start.
 const world = () => started ??= (async () => {
-  const anvil = await startAnvil();
+  const anvil = held.hold(await startAnvil());
   const echo = (await deployEcho(anvil.rpcUrl)).address;
-  const worker = await startWorker({ classes: ["Relayer"], secrets: { RELAYER_KEY: `0x${key.secret}` } });
+  const worker = held.hold(await startWorker({ classes: ["Relayer"], secrets: { RELAYER_KEY: `0x${key.secret}` } }));
   const name = `eip155:${anvil.chainId}`;
   const configured = (await worker.call("RELAYER", name, "configure", config(anvil))) as { address: Hex };
   await rpc(anvil.rpcUrl, "anvil_setBalance", [configured.address, "0x3635c9adc5dea00000"]);
   return { anvil, worker, echo, name, relayer: configured.address.toLowerCase() as Hex };
 })();
-afterAll(async () => { if (started) { const w = await started.catch(() => undefined); await w?.worker.stop(); await w?.anvil.stop(); } });
+afterAll(() => held.stopAll());
 
 const relay = (w: { worker: Worker; name: string }, to: Hex, data: Hex) => w.worker.call("RELAYER", w.name, "relay", { to, data }) as Promise<Relayed>;
 const status = (w: { worker: Worker; name: string }, id: string) => w.worker.call("RELAYER", w.name, "status", id) as Promise<Status>;
@@ -73,6 +75,12 @@ const count = async (url: string, address: Hex, tag: "latest" | "pending") => Nu
 const txOf = (url: string, hash: Hex) => rpc<{ from: Hex; to: Hex; nonce: Hex; input: Hex; maxFeePerGas?: Hex; gasPrice?: Hex } | null>(url, "eth_getTransactionByHash", [hash]);
 /** What the checks read of an answer: the keys the seam names. An answer may carry more (M6-chain item 12). */
 const named = <A extends object>(answer: A, keys: ReadonlyArray<keyof A>) => Object.fromEntries(keys.map((k) => [k, answer[k]]));
+/** What the node's own pool holds from `address` at `nonce`: read from Anvil, with no call to the relayer. */
+const pooled = async (url: string, address: Hex, nonce: number) => {
+  const pool = await rpc<{ pending: Record<string, Record<string, { hash: Hex }>> }>(url, "txpool_content");
+  const mine = Object.entries(pool.pending).find(([from]) => from.toLowerCase() === address)?.[1] ?? {};
+  return mine[String(nonce)]?.hash;
+};
 const fee = (tx: { maxFeePerGas?: Hex; gasPrice?: Hex }) => BigInt(tx.maxFeePerGas ?? tx.gasPrice ?? "0x0");
 
 describe("the relayer actor: a Durable Object that holds one key and sends every call from it, in order", () => {
@@ -123,10 +131,13 @@ describe("the relayer actor: a Durable Object that holds one key and sends every
     expect(sent.nonce, "the next nonce").toBe(first);
     const before = await txOf(url, sent.hash);
     expect(await rpc(url, "anvil_dropTransaction", [sent.hash]), "the node dropped it").not.toBeNull();
-    // No reconcile, no call at all: the relayer's own alarm notices and resends, within a bound.
-    const seen = await until(() => status(w, sent.id), (s) => s.replaces.length > 0, 30_000);
-    expect(seen, "the relayer replaced it by itself within 30 s").toMatchObject({ id: sent.id, nonce: first, state: "submitted", replaces: [sent.hash] });
-    expect(seen.hash, "under a new hash").not.toBe(sent.hash);
+    // No reconcile, and no call to the relayer at all while we wait: the node itself is asked, over JSON-RPC, whether it now holds another transaction from the relayer at
+    // that nonce. Only the relayer's own alarm can have sent it. Only then is the relayer asked, once, whether what it says agrees with the node.
+    const onNode = await until(async () => { const hash = await pooled(url, w.relayer, first); return hash === sent.hash ? undefined : hash; }, (hash) => hash !== undefined, 30_000);
+    expect(onNode, "the node holds a new transaction from the relayer at that nonce within 30 s, with nobody having asked the relayer for anything").toBeDefined();
+    expect(onNode, "under a new hash").not.toBe(sent.hash);
+    const seen = await status(w, sent.id);
+    expect(seen, "the relayer's status agrees with the node: replaced once").toMatchObject({ id: sent.id, nonce: first, hash: onNode, state: "submitted", replaces: [sent.hash] });
     const replacement = await txOf(url, seen.hash);
     expect(replacement, "the node holds the replacement").not.toBeNull();
     expect({ from: replacement!.from.toLowerCase(), to: replacement!.to.toLowerCase(), nonce: Number(BigInt(replacement!.nonce)), input: replacement!.input }, "the same call at the same nonce")

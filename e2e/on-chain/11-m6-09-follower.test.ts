@@ -48,7 +48,7 @@
 // at `through`, an empty window, numbers out of order, a window longer than the chain), and the entry normaliser against a different case of address and a different id.
 import { afterAll, describe, expect, it } from "vitest";
 import {
-  ECHOED_ABI, accounts, blockAt, deployEcho, digestOf, echoCall, head, mine, rpc, send, startAnvil, startWorker, type Anvil, type Hex, type Worker,
+  ECHOED_ABI, accounts, blockAt, deployEcho, digestOf, echoCall, head, mine, holder, rpc, send, startAnvil, startWorker, type Anvil, type Hex, type Worker,
 } from "./actor-fixture.ts";
 
 interface Block { number: string; hash: Hex }
@@ -94,12 +94,14 @@ const acceptedOf = <C extends { result: string }>(calls: ReadonlyArray<C>) => ca
 
 const dev = async (url: string) => (await accounts(url))[0]!;
 let started: Promise<{ anvil: Anvil; worker: Worker; sender: Hex }> | undefined;
+const held = holder();
+// Each process is held the moment it exists, so a setup that fails halfway (no Follower to start) still leaves teardown every Anvil and Worker that did start.
 const world = () => started ??= (async () => {
-  const anvil = await startAnvil();
-  const worker = await startWorker({ classes: ["Follower"] });
+  const anvil = held.hold(await startAnvil());
+  const worker = held.hold(await startWorker({ classes: ["Follower"] }));
   return { anvil, worker, sender: await dev(anvil.rpcUrl) };
 })();
-afterAll(async () => { if (started) { const w = await started.catch(() => undefined); await w?.worker.stop(); await w?.anvil.stop(); } });
+afterAll(() => held.stopAll());
 
 type W = { anvil: Anvil; worker: Worker; sender: Hex };
 const hashes = async (url: string, upto: bigint) => {

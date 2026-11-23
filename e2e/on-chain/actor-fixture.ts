@@ -50,6 +50,19 @@ const kill = (child: ChildProcess, signal: NodeJS.Signals = "SIGTERM") => new Pr
   child.kill(signal);
 });
 
+/**
+ * Every Anvil and Worker a check starts, kept the moment it exists, apart from the setup that started it. Setup can fail halfway (a Worker that will not
+ * start, a configure that is refused) and then never returns its handles; `stopAll` still stops each one that did start, newest first.
+ */
+export interface Held { readonly hold: <R extends { readonly stop: () => Promise<void> }>(resource: R) => R; readonly stopAll: () => Promise<void> }
+export const holder = (): Held => {
+  const stops: Array<() => Promise<void>> = [];
+  return {
+    hold: (resource) => { stops.push(resource.stop); return resource; },
+    stopAll: async () => { for (const stop of stops.splice(0).reverse()) await stop().catch(() => undefined); },
+  };
+};
+
 export const startAnvil = async (): Promise<Anvil> => {
   const { anvil: port } = freePorts("anvil");
   const chainId = 20_000 + Math.floor(Math.random() * 1_000_000);
