@@ -14447,7 +14447,7 @@
         "file": "blueprint/adapters/sandbox.ts",
         "package": "@orthograph/sandbox",
         "version": "0.0.0",
-        "integrity": "sha256-A9b68+LwzSkMcaEszKCdVBorFLZrdJDfS7lfrR2kmkA=",
+        "integrity": "sha256-uywp++AL8NTdiEZ9A1CJmZBuGXwA5h4l8hvF8h/KNnA=",
         "chosen": {},
         "calls": [
           "close",
@@ -14461,7 +14461,7 @@
           "how": "process",
           "what": "packages/sandbox/src/main.ts"
         },
-        "hash": "83e7cb58ac9944b0"
+        "hash": "2200175dc6d2ad09"
       },
       "slack": {
         "kind": "adapter",
@@ -15051,5 +15051,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "deebbcf8b8b644e6a591db4dc789541b7dfe2f6d289af8124bace8bb1c341017"
+  "digest": "8e61c9e93895567f306368b2c297930eb5c3efe1804b4316c789bea910b3a082"
 }

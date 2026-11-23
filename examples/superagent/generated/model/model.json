@@ -14443,7 +14443,7 @@
       "file": "blueprint/adapters/sandbox.ts",
       "package": "@orthograph/sandbox",
       "version": "0.0.0",
-      "integrity": "sha256-A9b68+LwzSkMcaEszKCdVBorFLZrdJDfS7lfrR2kmkA=",
+      "integrity": "sha256-uywp++AL8NTdiEZ9A1CJmZBuGXwA5h4l8hvF8h/KNnA=",
       "chosen": {},
       "calls": [
         "close",
@@ -14457,7 +14457,7 @@
         "how": "process",
         "what": "packages/sandbox/src/main.ts"
       },
-      "hash": "83e7cb58ac9944b0"
+      "hash": "2200175dc6d2ad09"
     },
     "slack": {
       "kind": "adapter",
