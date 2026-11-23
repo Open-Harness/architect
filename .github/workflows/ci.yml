@@ -604,6 +604,25 @@ jobs:
       - run: pnpm --filter @orthograph/e2e exec playwright install --with-deps chromium
       - run: pnpm nx run e2e:portal-next --outputStyle=static
 
+  # Goal 5's done check, begun (`e2e/ui-layer/README.md`): the UI layer's checks through the ratchet, which passes while every failure is
+  # listed in e2e/ui-layer/expected-failing/ and fails on any other. Only for the goal's own branch: pull requests into goal/ui-layer and
+  # pushes to it. Skipped on a docs-only pull request, where a skip counts as passed (CI-docs-fast-path.md). Should `changes` itself fail,
+  # this runs. No Docker, no cloud, no secret: slice 1's check starts one HTTP server on a free port.
+  e2e-ui-layer:
+    needs: changes
+    if: ${{ github.event.pull_request.draft != true && (!cancelled() && ((github.event_name == 'pull_request' && github.base_ref == 'goal/ui-layer') || github.ref == 'refs/heads/goal/ui-layer') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx run e2e:ui-layer --outputStyle=static
+
   # Goal 3's grid runner (`e2e/grid/README.md`): its unit tests, then `ortho prove` and every switched-on cell, with the ratchet of
   # `design/decisions/G7-grid-ratchet.md`: a red pair not on `e2e/grid/expected-red.json` fails, and so does a listed pair that is green.
   e2e-grid:
