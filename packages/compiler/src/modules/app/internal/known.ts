@@ -19,10 +19,21 @@ export const knownOf = (world: AppWorld): Known => ({
   values: new Map([...world.values].map(([name, v]) => [v, name] as const)),
 });
 
-/** Who may open a page, as an operation's `allowed` is written into the model. `?` (with a problem) for a role no `roles.ts` exports. */
+/**
+ * Who may open a page, as an operation's `allowed` is written into the model. A page is opened by a caller of a request, so the
+ * runtime's own principals (`system`, `keeper`) and a role made for an outside service are refused as a problem naming the file;
+ * a narrowed entry (its ways in) is the entry it narrows, since a page has no ways in of its own.
+ */
 export const allowedOf = (a: Allowed, known: Known, file: string, problems: Array<string>): AllowedModel => {
+  if (a.kind === "narrowed") return allowedOf(a.entry, known, file, problems);
   if (a.kind === "anyone" || a.kind === "signed-in") return { kind: a.kind };
+  if (a.kind === "system" || a.kind === "keeper") {
+    problems.push(`${file}: allows ${a.kind}, which has no credential and never opens a page: a page is allowed to anyone, signed-in callers or a role`);
+    return { kind: a.kind };
+  }
   const nameOf = (r: unknown) => known.roles.get(r) ?? (problems.push(`${file}: uses a role not exported from a roles.ts`), "?");
+  const service = a.kind === "role" ? a.service : a.role.service;
+  if (service !== undefined) problems.push(`${file}: allows ${nameOf(a.kind === "role" ? a : a.role)}, a role for an outside service${a.kind === "role-of" ? ` (scoped by ${a.path})` : ""}, which never opens a page`);
   return a.kind === "role" ? { kind: "role", role: nameOf(a) } : { kind: "role-of", role: nameOf(a.role), path: a.path };
 };
 

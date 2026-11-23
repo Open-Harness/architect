@@ -295,11 +295,11 @@ thing.
 | # | Slice | Done when |
 |---|---|---|
 | 6 | **The frame.** `packages/portal-next`: its `blueprint/app/` declaring `portal.md`'s map (home, things, operations and their five tabs, environments, compare, journeys, starting worlds, reference, plugins, monitor, traces), the top bar (environment picker, ⌘K), the rail and its panels, the tree, the live rail, each keeping its `data-portal` hook | check 21's frame clauses leave the parity list |
-| 7 | **Home, things and operations** (the contract, metrics, proof, docs and notes tabs) | their lines leave the list |
+| 7 | **Home, things and operations** (the contract, metrics, proof, docs and notes tabs), and the app's **Map** tab beside Things (MAP-screens Q1 to Q3) | their lines leave the list |
 | 8 | **Environments, compare, journeys, starting worlds** | their lines leave the list |
 | 9 | **Reference, plugins and the rules** (check 28) | their lines leave the list |
 | 10 | **Monitor and traces** (a trace on UI SDK's `Waterfall`, or ours if it is still experimental) | their lines leave the list; the screenshots are byte-identical across two runs |
-| 11 | **The agent's portal.** The agent's map tool on the portal; every control by name | an agent's `snapshot()` lists the search, the tree, the tabs and the environment picker by name |
+| 11 | **The agent's portal.** The agent's map tool on the portal; every control by name; the **As an agent** drawer on every page (MAP-screens Q4) | an agent's `snapshot()` lists the search, the tree, the tabs and the environment picker by name |
 
 ### Part 3: cutover
 
@@ -317,6 +317,7 @@ started, since it crosses goals.
 |---|---|---|
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
 | MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
+| MAP-screens | `design/decisions/MAP-screens.md` | Aaron, 23 November 2026: the Map tab, the page tree, the derived map marked, the "As an agent" drawer |
 
 ## The done check
 
@@ -353,6 +354,6 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 ## Where it stands
 
 22 November 2026. The theme is built, one shared look on UI SDK taken from today's portal, and it is on its way
-into stage 1 on its own, for the UI layer. The map's checks are written and reviewed: a hundred portal checks and
-forty-four grid cells are owed by the new portal, all red so far, and the list can only shrink. The map language is
-built and waiting for review; the app projection and the shell come next.
+into stage 1 on its own, for the UI layer. The map's checks have landed: a hundred portal checks and forty-four grid
+cells are owed by the new portal, all red so far, and the list can only shrink. The shell's checks land with this.
+The map language, the app projection and the shell are built and reviewed, and land next.

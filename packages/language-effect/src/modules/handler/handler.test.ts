@@ -40,7 +40,7 @@ const recording = () => {
   const store = storeMemory();
   return { spans, store, layer: Layer.mergeAll(BusyLive, store.layer, Layer.succeed(Tracer.Tracer, tracer)) };
 };
-const ada = { kind: "person", person: "per_ada" } as const;
+const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 const served = Handlers.serve({ name: "allowance.grant", operation: grant, handler });
 
 describe("handler wrapper", () => {

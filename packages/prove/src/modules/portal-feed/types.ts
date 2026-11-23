@@ -12,12 +12,15 @@ export interface PortalFeedOptions {
   readonly metrics: MetricsSource;
   /** The environment the world stands for: `local` for a world of prove. */
   readonly environment: string;
+  /** The Calls page's display window: what `points` cover and what the page shows. */
   readonly windowMs: number;
+  /** The most history the feed will supply for monitoring (an alert's longest window). What it answers as `historyMs` is the least of this and how long the feed has held the source: a world started 10 minutes ago holds 10 minutes. Default: `windowMs`. */
+  readonly historyMs?: number;
   /** The window's end for each answer. Default: Effect's clock (the composition root's, never a `Date`). A test injects a fixed one. */
   readonly now?: Effect.Effect<number>;
 }
 
 export interface PortalFeedApi {
-  /** A loopback server answering `GET /` with `{ environment, now, windowMs, traces, points }`; its URL goes to the Worker as `ORTHO_PORTAL_FEED`. Closed with the scope. */
+  /** A loopback server answering `GET /` with `{ environment, now, windowMs, historyMs, traces, points }`; its URL goes to the Worker as `ORTHO_PORTAL_FEED`. Closed with the scope. */
   readonly serve: (options: PortalFeedOptions) => Effect.Effect<{ readonly url: string }, PortalFeedFailed, Scope.Scope>;
 }

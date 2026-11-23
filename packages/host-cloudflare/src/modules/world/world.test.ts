@@ -21,7 +21,7 @@ describe("the world Durable Object, in workerd", () => {
     const principal = await Effect.runPromise(
       Effect.flatMap(Principals, (p) => p.of(`Bearer ${again["ada"]!.token}`)).pipe(Effect.provide(AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET })))),
     );
-    expect(principal).toEqual({ kind: "person", person: first["ada"]!.person, email: first["ada"]!.email });
+    expect(principal).toEqual({ kind: "person", person: first["ada"]!.person, email: first["ada"]!.email, via: "session" });
     expect(first["newcomer"]).toEqual({ email: expect.stringMatching(/^newcomer\..+@world\.test$/), password: expect.any(String) });
   });
 

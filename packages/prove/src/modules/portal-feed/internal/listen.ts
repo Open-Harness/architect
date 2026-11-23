@@ -10,19 +10,22 @@ const attempt = <A>(read: Effect.Effect<A, { readonly message: string }>) =>
   );
 
 /** The window as it stands now: the `now` it was read at, and each source's answer on its own. */
-const answer = (options: PortalFeedOptions) =>
+const answer = (options: PortalFeedOptions, startedAt: number) =>
   Effect.gen(function* () {
     const now = yield* options.now ?? Clock.currentTimeMillis;
-    const traces = yield* attempt(options.source.window(options.windowMs, now).pipe(Effect.map((found) => Object.fromEntries(found))));
+    // What the source can really supply is what this feed has held it for, up to the cap: never more, so a longer alert window is unknown, not judged on the part.
+    const historyMs = Math.min(options.historyMs ?? options.windowMs, Math.max(0, now - startedAt));
+    // Traces span the history (the portal's calls page filters them to its window); the points stay the display window's.
+    const traces = yield* attempt(options.source.window(Math.max(options.windowMs, historyMs), now).pipe(Effect.map((found) => Object.fromEntries(found))));
     const points = yield* attempt(options.metrics.window(options.windowMs, now));
-    return { environment: options.environment, now, windowMs: options.windowMs, traces, points };
+    return { environment: options.environment, now, windowMs: options.windowMs, historyMs, traces, points };
   });
 
-export const listen = (options: PortalFeedOptions) =>
+export const listen = (options: PortalFeedOptions, startedAt: number) =>
   Effect.callback<{ readonly server: Server; readonly url: string }, PortalFeedFailed>((resume) => {
     const server = createServer((request, response) => {
       if (request.method !== "GET") { response.writeHead(405).end(); return; }
-      Effect.runPromise(answer(options)).then((done) => {
+      Effect.runPromise(answer(options, startedAt)).then((done) => {
         response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }).end(JSON.stringify(done));
       });
     });

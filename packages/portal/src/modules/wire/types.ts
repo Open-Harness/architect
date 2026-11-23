@@ -58,6 +58,8 @@ const Operation = Schema.Struct({
   idempotent: Schema.NullOr(Schema.Literal("request")),
   budget: Schema.NullOr(Schema.Struct({ p95Ms: Schema.Number })),
   hash: Schema.String,
+  /** The file that declares it, which is its owner (K18); absent on a wire older than M1.49. */
+  file: Schema.optionalKey(Schema.String),
   /** Where it lives and how it is tested and run (M1.42). */
   from: Schema.optionalKey(Schema.Unknown),
   runs: Schema.optionalKey(Schema.String),
@@ -137,6 +139,21 @@ const StartingWorld = Schema.Struct({
 
 const Mount = Schema.Struct({ kind: Schema.String, package: Schema.String, version: Schema.String, file: Schema.String, chosen: Schema.Record(Schema.String, Schema.Unknown), integrity: Schema.optionalKey(Schema.String), hash: Schema.optionalKey(Schema.String) });
 
+/** One burn alert of an objective: it fires when the objective burns at `burn` or more over both windows, long then short. */
+const BurnAlert = Schema.Struct({ name: Schema.String, burn: Schema.Number, windowsMs: Schema.Array(Schema.Number), severity: Schema.String });
+/** One alert condition the compiler derives (K18, M1.49): the labels are `environment` (`*` for every one), the subject, `severity` and `owner`. */
+const AlertRule = Schema.Struct({
+  id: Schema.String,
+  kind: Schema.Literals(["latency", "defect", "anomaly", "verdict"]),
+  labels: Schema.Record(Schema.String, Schema.String),
+  target: Schema.optionalKey(Schema.Number),
+  windowDays: Schema.optionalKey(Schema.Number),
+  thresholdMs: Schema.optionalKey(Schema.Number),
+  minCalls: Schema.optionalKey(Schema.Number),
+  alerts: Schema.optionalKey(Schema.Array(BurnAlert)),
+});
+export type AlertRuleWire = typeof AlertRule.Type;
+
 /** The compiler's model as far as the portal reads it. The digest is over the whole document, so what it does not read is still what it holds. */
 export const ModelSchema = Schema.Struct({
   things: Schema.Record(Schema.String, Thing),
@@ -148,6 +165,8 @@ export const ModelSchema = Schema.Struct({
   journeys: Schema.optionalKey(Schema.Record(Schema.String, Journey)),
   startingWorlds: Schema.optionalKey(Schema.Record(Schema.String, StartingWorld)),
   mounts: Schema.optionalKey(Schema.Record(Schema.String, Mount)),
+  /** The alert rules the model implies (K18): what the monitor evaluates over the window. Absent on a wire older than M1.49. */
+  alertRules: Schema.optionalKey(Schema.Array(AlertRule)),
 });
 export type ModelWire = typeof ModelSchema.Type;
 export type OperationWire = ModelWire["operations"][string];

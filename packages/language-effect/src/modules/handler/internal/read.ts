@@ -8,6 +8,7 @@ import { CALL_ID, newCallId } from "./call-id.ts";
 import { measureCall } from "./call-metrics.ts";
 import { spanned } from "./span.ts";
 import type { ReadAnswer, ReadPayload, ReadsApi } from "../types.ts";
+import { defectAttributes } from "./defect.ts";
 
 type AnyCodec = Schema.Codec<object, unknown>;
 
@@ -47,13 +48,13 @@ const byList = (read: Read<any, any, any>, payload: ReadPayload) =>
 
 /** Reads are served beside operations: the same role check, the same span, no handler. */
 export const Reads: ReadsApi = {
-  serve: ({ name, read }) => {
+  serve: ({ name, read, mounts }) => {
     const decode = Schema.decodeUnknownEffect(read.payloadSchema as unknown as AnyCodec);
     const check = Schema.encodeEffect(read.answerSchema as unknown as AnyCodec);
     const run = (payload: ReadPayload, principal: Principal) =>
       Effect.flatMap(newCallId, (callId) => Effect.gen(function* () {
         const unit = yield* Unit.make(yield* Store);
-        yield* Access.check({ allowed: read.allowed, payloadFields: read.payload, payload, principal, thing: read.thing }).pipe(
+        yield* Access.check({ allowed: read.allowed, payloadFields: read.payload, payload, principal, thing: read.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
           Effect.provideService(Records, unit.records),
           Effect.withTracerEnabled(false),
         );
@@ -65,7 +66,7 @@ export const Reads: ReadsApi = {
           return answer;
         }).pipe(
           // A refusal is written on the span as the handler wrapper does, and ends it ok (O1).
-          Effect.tapCause((cause) => (Cause.hasDies(cause) ? Effect.annotateCurrentSpan({ defect: Cause.pretty(cause).split("\n")[0] ?? "" }) : Effect.annotateCurrentSpan({ refusal: tagOf(Cause.squash(cause)) }))),
+          Effect.tapCause((cause) => (Cause.hasDies(cause) ? Effect.annotateCurrentSpan(defectAttributes(cause)) : Effect.annotateCurrentSpan({ refusal: tagOf(Cause.squash(cause)) }))),
           spanned(name, { operation: name, [CALL_ID]: callId, ...principalAttributes(principal) }),
         );
       }));

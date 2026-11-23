@@ -1,0 +1,158 @@
+{
+  "res": {
+    "ok": true,
+    "steps": [
+      {
+        "step": 0,
+        "ref": "c4",
+        "changes": [
+          {
+            "component": "dialog",
+            "label": "Command palette",
+            "key": "open",
+            "value": true
+          }
+        ]
+      }
+    ],
+    "open": [
+      {
+        "ref": "c4",
+        "component": "dialog",
+        "actions": [
+          "setOpen",
+          "press"
+        ],
+        "label": "Command palette",
+        "open": true,
+        "text": [
+          "Command palette"
+        ]
+      }
+    ],
+    "appeared": [
+      {
+        "ref": "c5",
+        "component": "command",
+        "actions": [
+          "setValue",
+          "setQuery",
+          "setPages",
+          "run"
+        ],
+        "label": "Search",
+        "value": "handle",
+        "query": "",
+        "pages": [],
+        "items": [
+          {
+            "value": "handle",
+            "label": "handle"
+          },
+          {
+            "value": "home",
+            "label": "home"
+          },
+          {
+            "value": "link",
+            "label": "link"
+          },
+          {
+            "value": "profile",
+            "label": "profile"
+          }
+        ]
+      }
+    ],
+    "values": {
+      "c2 Main": null
+    }
+  },
+  "snap": [
+    {
+      "ref": "c1",
+      "component": "collapsible",
+      "actions": [
+        "setOpen",
+        "press"
+      ],
+      "label": "Things",
+      "open": true
+    },
+    {
+      "ref": "c2",
+      "component": "navigation-menu",
+      "actions": [
+        "setValue",
+        "close"
+      ],
+      "label": "Main",
+      "value": null,
+      "items": [
+        {
+          "value": "handle",
+          "label": "handle"
+        },
+        {
+          "value": "link",
+          "label": "link"
+        },
+        {
+          "value": "profile",
+          "label": "profile"
+        }
+      ]
+    },
+    {
+      "ref": "c3",
+      "component": "scroll-area",
+      "actions": [],
+      "label": "Navigation"
+    },
+    {
+      "ref": "c4",
+      "component": "dialog",
+      "actions": [
+        "setOpen",
+        "press"
+      ],
+      "label": "Command palette",
+      "open": true,
+      "text": [
+        "Command palette"
+      ]
+    },
+    {
+      "ref": "c5",
+      "component": "command",
+      "actions": [
+        "setValue",
+        "setQuery",
+        "setPages",
+        "run"
+      ],
+      "label": "Search",
+      "value": "handle",
+      "query": "",
+      "pages": [],
+      "items": [
+        {
+          "value": "handle",
+          "label": "handle"
+        },
+        {
+          "value": "home",
+          "label": "home"
+        },
+        {
+          "value": "link",
+          "label": "link"
+        },
+        {
+          "value": "profile",
+          "label": "profile"
+        }
+      ]
+    }
+  ]
+}

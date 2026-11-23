@@ -1,6 +1,7 @@
 // The portal's server half, as a route of an environment's Worker (K19): the data at `/_portal/v1/*`, and the prebuilt client's static
 // files at `/portal`. Nothing here draws a page; the pages are drawn in the browser by the client, from this data.
 import type { Effect } from "effect";
+import type { MonitorLedger } from "#modules/monitor/types.js";
 import type { LogbookReader } from "#modules/reader/types.js";
 import type { PortalLive } from "#modules/telemetry/types.js";
 import type { BlueprintWire } from "#modules/wire/types.js";
@@ -19,8 +20,16 @@ export interface PortalEnv {
   readonly ORTHO_ENVIRONMENT?: string;
   /** Where the world's starter answers its telemetry window (a loopback URL, local worlds only): the snapshot's `telemetry` and the trace pages read it. */
   readonly ORTHO_PORTAL_FEED?: string;
+  /** Where the monitor keeps its issues past the window (M1.49, `portal.md` hole 7): a key-value binding, the shape of Workers KV. Without one they live as long as the isolate does. */
+  readonly PORTAL_LEDGER?: PortalLedgerBinding;
   /** The client's files, as the Worker's static assets (K19). Without them `/portal` says the client is missing. */
   readonly PORTAL_ASSETS?: PortalAssets;
+}
+
+/** A key-value store as a Worker binds one (Workers KV has this shape): strings by key. */
+export interface PortalLedgerBinding {
+  readonly get: (key: string) => Promise<string | null>;
+  readonly put: (key: string, value: string) => Promise<unknown>;
 }
 
 /** A decoded blueprint, its logbook reader if it has one, and the bundle's revision: all `handle` needs. */
@@ -32,6 +41,8 @@ export interface PortalContext {
   readonly ref?: string;
   /** The environment's live traffic: the window's spans and `ortho.calls`, read at `now`. Without it the snapshot's `telemetry` is null and the portal has no numbers. */
   readonly live?: PortalLive;
+  /** Where the monitor keeps its issues past the window. Without one the monitor keeps nothing: it shows the window's issues and no older ones. */
+  readonly ledger?: MonitorLedger;
 }
 
 export interface ServerApi {
