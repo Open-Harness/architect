@@ -15,8 +15,11 @@ export const Superagent = Blueprint.thing({
     pausedAt: Blueprint.optional(Blueprint.uint(64)),
     pausedFor: Blueprint.uint(64),
     passGen: Blueprint.uint(32),
-    /** The version of its configuration: 1 when it is made, one more for each `update`. */
-    revision: Blueprint.uint(32),
+    /**
+     * The version of its configuration: 1 when it is made, one more for each `update`. Not named `revision`: a thing with `versions:` and a `revision` field gets
+     * one row per revision (`oneVersionPerRevision`), and a superagent has one row for good.
+     */
+    configRevision: Blueprint.uint(32),
   },
   code: "SU",
   versions: { key: "id" },

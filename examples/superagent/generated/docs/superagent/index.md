@@ -20,7 +20,7 @@ Lives in the database.
 | pausedAt (optional) | uint |
 | pausedFor | uint |
 | passGen | uint |
-| revision | uint |
+| configRevision | uint |
 | saved (optional) | schema |
 
 ## Machine
@@ -34,10 +34,6 @@ States: observing, live, paused, retired. A move from the wrong state is refused
 | pause | observing, live | paused | SuperagentPaused |
 | resume | paused | observing, live | SuperagentResumed |
 | retire | observing, live, paused | retired | SuperagentRetired |
-
-## Invariants
-
-- `superagent.oneVersionPerRevision`: another superagent holds this revision. Unique on revision, in every state; refuses nothing, a break is a defect.
 
 ## Events
 

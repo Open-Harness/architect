@@ -10,12 +10,12 @@ import { SlotsOutOfRange, StaleRevision } from "../../blueprint/things/superagen
  */
 const update: Handler<typeof declaration, Records> = (payload, { subject }) =>
   Effect.gen(function* () {
-    const current = subject!["revision"] as bigint;
+    const current = subject!["configRevision"] as bigint;
     if (payload.base !== current) return yield* new StaleRevision({ current });
     if (payload.slots < 1n || payload.slots > 254n) return yield* new SlotsOutOfRange({ slots: payload.slots });
     const records = yield* Records;
     const revision = current + 1n;
-    yield* records.update(Superagent, payload.superagent, { name: payload.name, purpose: payload.purpose, connections: payload.connections, playbook: payload.playbook, slots: payload.slots, revision } as never);
+    yield* records.update(Superagent, payload.superagent, { name: payload.name, purpose: payload.purpose, connections: payload.connections, playbook: payload.playbook, slots: payload.slots, configRevision: revision } as never);
     return { revision };
   });
 

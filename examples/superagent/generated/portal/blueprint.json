@@ -3066,7 +3066,7 @@
               "bits": 32
             }
           },
-          "revision": {
+          "configRevision": {
             "value": {
               "type": "uint",
               "bits": 32
@@ -3083,15 +3083,6 @@
           "key": "id"
         },
         "lives": "database",
-        "invariants": {
-          "oneVersionPerRevision": {
-            "kind": "unique",
-            "fields": [
-              "revision"
-            ],
-            "framework": true
-          }
-        },
         "machine": {
           "states": [
             "observing",
@@ -3276,7 +3267,7 @@
           "version": "0.0.0",
           "thing": "superagent"
         },
-        "hash": "5c5b72e4701c3970"
+        "hash": "ff7dbe0e279c2b4d"
       },
       "thread": {
         "name": "thread",
@@ -7829,9 +7820,7 @@
         "errors": [
           "SlotsOutOfRange"
         ],
-        "breaks": [
-          "superagent.oneVersionPerRevision"
-        ],
+        "breaks": [],
         "refusals": [
           "SlotsOutOfRange",
           "AgentNotFound",
@@ -7855,7 +7844,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "995c7fe807d5c179"
+        "hash": "5efe7d8005653498"
       },
       "superagent.fill": {
         "kind": "operation",
@@ -7965,9 +7954,7 @@
           "emits": "SuperagentWentLive"
         },
         "errors": [],
-        "breaks": [
-          "superagent.oneVersionPerRevision"
-        ],
+        "breaks": [],
         "refusals": [
           "SuperagentNotObserving",
           "SuperagentNotFound",
@@ -7990,7 +7977,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "4bc5e99c608e01d1"
+        "hash": "d87a5ee14c98de9c"
       },
       "superagent.health": {
         "kind": "read",
@@ -8161,9 +8148,7 @@
           "emits": "SuperagentPaused"
         },
         "errors": [],
-        "breaks": [
-          "superagent.oneVersionPerRevision"
-        ],
+        "breaks": [],
         "refusals": [
           "SuperagentNotObserving",
           "SuperagentNotFound",
@@ -8189,7 +8174,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "9526fb8f391a7a78"
+        "hash": "05c46ba6c650f8aa"
       },
       "superagent.reap": {
         "kind": "operation",
@@ -8301,9 +8286,7 @@
           "emits": "SuperagentResumed"
         },
         "errors": [],
-        "breaks": [
-          "superagent.oneVersionPerRevision"
-        ],
+        "breaks": [],
         "refusals": [
           "SuperagentNotObserving",
           "SuperagentNotFound",
@@ -8329,7 +8312,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "b14f1b966e0f3e66"
+        "hash": "f2fcdba6ac4d9b8b"
       },
       "superagent.retire": {
         "kind": "operation",
@@ -8369,9 +8352,7 @@
           "emits": "SuperagentRetired"
         },
         "errors": [],
-        "breaks": [
-          "superagent.oneVersionPerRevision"
-        ],
+        "breaks": [],
         "refusals": [
           "SuperagentNotObserving",
           "SuperagentNotFound",
@@ -8394,7 +8375,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "2a47d7fcab8023e1"
+        "hash": "3cf79b9fd7bdf31e"
       },
       "superagent.update": {
         "kind": "operation",
@@ -14611,9 +14592,9 @@
         "file": "blueprint/features/superagent.ts",
         "package": "@orthograph/superagent",
         "version": "0.0.0",
-        "integrity": "sha256-DlCYMTStgMtKN8WiCoMF5haikEKdah4R39sSDR8ClNM=",
+        "integrity": "sha256-e+tOSRGO6aznR4lMN7H4g5uwRQIhD+XmCFOeGg12ChI=",
         "chosen": {},
-        "hash": "7041b73df017b79d"
+        "hash": "b356b5e8dcad8c8b"
       },
       "tickets": {
         "kind": "feature",
@@ -14711,17 +14692,17 @@
     "decision.route": {
       "operation:decision.route": "b899daffdebae606",
       "thing:decision": "afdbb04d22e31d1c",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "eval.context": {
       "operation:eval.context": "da20312e66d5de7e",
       "thing:eval": "07cccbf8098cb160",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "eval.decide": {
       "operation:eval.decide": "754cd1fc4f73d27d",
       "thing:eval": "07cccbf8098cb160",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "eval.delivered": {
       "operation:eval.delivered": "370d30168f40fc86",
@@ -14738,7 +14719,7 @@
     "eval.read": {
       "operation:eval.read": "54570d3c1a0a268b",
       "thing:eval": "07cccbf8098cb160",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "eval.start": {
       "operation:eval.start": "d8fcfd706b639037",
@@ -14783,7 +14764,7 @@
     "outgoing-message.reply": {
       "operation:outgoing-message.reply": "d148b83dd3b9d402",
       "thing:outgoing-message": "c5d5f8116c02a156",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "outgoing-message.retry": {
@@ -14804,7 +14785,7 @@
     "policy.get": {
       "operation:policy.get": "438c7ae05fdcc2fb",
       "thing:policy": "cb2866374f37c419",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "policy.history": {
       "operation:policy.history": "a32071ae7f0ccc3c",
@@ -14841,22 +14822,22 @@
     "proposal.approve": {
       "operation:proposal.approve": "8417d2a843d49144",
       "thing:proposal": "0487db5954021933",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "proposal.propose": {
       "operation:proposal.propose": "8130c1eb64c87ec6",
       "thing:proposal": "0487db5954021933",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "proposal.reject": {
       "operation:proposal.reject": "8876d38f40f0e982",
       "thing:proposal": "0487db5954021933",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "proposal.waiting": {
       "operation:proposal.waiting": "921ac4d518271d25",
       "thing:proposal": "0487db5954021933",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "settings.save": {
       "operation:settings.save": "49f2c784d6b95b81",
@@ -14885,52 +14866,52 @@
     "superagent.boot": {
       "operation:superagent.boot": "b7c916c005256a27",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.create": {
-      "operation:superagent.create": "995c7fe807d5c179",
+      "operation:superagent.create": "5efe7d8005653498",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.fill": {
       "operation:superagent.fill": "a48cf79e5114ba6f",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.go-live": {
-      "operation:superagent.go-live": "4bc5e99c608e01d1",
+      "operation:superagent.go-live": "d87a5ee14c98de9c",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.health": {
       "operation:superagent.health": "1326987bd4639187",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.pause": {
-      "operation:superagent.pause": "9526fb8f391a7a78",
+      "operation:superagent.pause": "05c46ba6c650f8aa",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.reap": {
       "operation:superagent.reap": "355b22a1909403f0",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.resume": {
-      "operation:superagent.resume": "b14f1b966e0f3e66",
+      "operation:superagent.resume": "f2fcdba6ac4d9b8b",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.retire": {
-      "operation:superagent.retire": "2a47d7fcab8023e1",
+      "operation:superagent.retire": "3cf79b9fd7bdf31e",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.update": {
       "operation:superagent.update": "fbf9f8cbe0cbc9df",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970"
+      "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "thread.bind": {
       "operation:thread.bind": "0235ab53239f5c0e",
@@ -14952,7 +14933,7 @@
     },
     "thread.unsubscribe": {
       "operation:thread.unsubscribe": "7f9e95b4cbd6e9c8",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:thread": "605b68a909d28291"
     },
     "ticket.accept": {
@@ -14969,7 +14950,7 @@
     "ticket.attach": {
       "operation:ticket.attach": "ed5474f48fe13d88",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.end": {
@@ -14980,7 +14961,7 @@
     "ticket.note": {
       "operation:ticket.note": "20a5ad29a22df3fd",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.policy-changed": {
@@ -14996,7 +14977,7 @@
     "ticket.request-status": {
       "operation:ticket.request-status": "d677fb4fd75872a9",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.resume": {
@@ -15007,25 +14988,25 @@
     "ticket.retry": {
       "operation:ticket.retry": "2cad321f4bed953d",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.stage": {
       "operation:ticket.stage": "6d74660c97146385",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.stop": {
       "operation:ticket.stop": "3f773ba3fee96889",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.waiting": {
       "operation:ticket.waiting": "f03d0f0a2cf0c4ff",
       "thing:agent": "a369aaa882ce59e7",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "trigger.handback": {
@@ -15043,7 +15024,7 @@
     },
     "trigger.requeue": {
       "operation:trigger.requeue": "2c3bd7d6a9cea3ff",
-      "thing:superagent": "5c5b72e4701c3970",
+      "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:trigger": "11d0bc1aa3c79f78"
     }
   },
@@ -15123,7 +15104,7 @@
     "superagent/fill.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.fill\n\nStart waiting Assignments, in line, while seats are free. Does nothing while paused.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| started | uint |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent fill --superagent <superagent>\n```\n\nHTTP: `POST /superagent/fill` with the payload as JSON. SDK: `Sdk.superagent.fill(payload)`.\n",
     "superagent/go-live.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.go-live\n\nLet a superagent act: a person, after reading what it would have accepted.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`goLive`: from observing to live, emitting SuperagentWentLive.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotObserving | 60 | SU-900 | the superagent is in a state goLive can't start from; carries `state` |\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent go-live --superagent <superagent>\n```\n\nHTTP: `POST /superagent/go-live` with the payload as JSON. SDK: `Sdk.superagent.go-live(payload)`.\n",
     "superagent/health.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.health\n\nRead one superagent by its id: name, state, pausedAt.\n\n**Who may call:** anyone signed in, or the itsMain of the superagent.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| name | superagent.name |\n| state | text |\n| pausedAt (optional) | superagent.pausedAt |\n| problems | schema |\n| more | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of the superagent; the handler never runs |\n| ReadNotServed | 60 | AR-008 | the superagent is in a state this can't start from; carries `state` |\n\n## How to call\n\n```sh\nsuperagent superagent health --id <id>\n```\n\nHTTP: `POST /superagent/health` with the payload as JSON. SDK: `Sdk.superagent.health(payload)`.\n",
-    "superagent/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent\n\nOne always-on agent, stored as data.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| name | text |\n| purpose | text |\n| connections | schema |\n| playbook | schema |\n| slots | uint |\n| main | agent.id |\n| pausedFrom (optional) | schema |\n| pausedAt (optional) | uint |\n| pausedFor | uint |\n| passGen | uint |\n| revision | uint |\n| saved (optional) | schema |\n\n## Machine\n\nStates: observing, live, paused, retired. A move from the wrong state is refused SuperagentNotObserving (exit 60).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | observing | SuperagentCreated |\n| goLive | observing | live | SuperagentWentLive |\n| pause | observing, live | paused | SuperagentPaused |\n| resume | paused | observing, live | SuperagentResumed |\n| retire | observing, live, paused | retired | SuperagentRetired |\n\n## Invariants\n\n- `superagent.oneVersionPerRevision`: another superagent holds this revision. Unique on revision, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `SuperagentCreated`: carries superagent (superagent.id); emitted by the move create\n- `SuperagentPaused`: carries superagent (superagent.id), from (text), at (uint); emitted by the move pause\n- `SuperagentResumed`: carries superagent (superagent.id), to (text), at (uint), length (uint); emitted by the move resume\n- `SuperagentRetired`: carries superagent (superagent.id); emitted by the move retire\n- `SuperagentWentLive`: carries superagent (superagent.id); emitted by the move goLive\n\n## Roles\n\n- itsMain\n\n## Operations\n\n- [superagent.boot](boot.md): The world's once-a-minute backstop: arm each live superagent's eval pass and sweeps that a restart lost.\n- [superagent.create](create.md): Make a superagent, with its main agent, observing.\n- [superagent.fill](fill.md): Start waiting Assignments, in line, while seats are free. Does nothing while paused.\n- [superagent.go-live](go-live.md): Let a superagent act: a person, after reading what it would have accepted.\n- [superagent.health](health.md): Read one superagent by its id: name, state, pausedAt.\n- [superagent.pause](pause.md): Hold evals, launches, deliveries and replies; sources keep recording. Only a person, through a session.\n- [superagent.reap](reap.md): Close the running Assignments whose executor is idle, so their seats come back once the Agent has said it closed.\n- [superagent.resume](resume.md): Let held work go, and move every eval's deadline later by the pause's length. Only a person, through a session.\n- [superagent.retire](retire.md): Close a superagent's connections and agents.\n- [superagent.update](update.md): Save a superagent's configuration as a new version; a stale save is refused.\n",
+    "superagent/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent\n\nOne always-on agent, stored as data.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| name | text |\n| purpose | text |\n| connections | schema |\n| playbook | schema |\n| slots | uint |\n| main | agent.id |\n| pausedFrom (optional) | schema |\n| pausedAt (optional) | uint |\n| pausedFor | uint |\n| passGen | uint |\n| configRevision | uint |\n| saved (optional) | schema |\n\n## Machine\n\nStates: observing, live, paused, retired. A move from the wrong state is refused SuperagentNotObserving (exit 60).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | observing | SuperagentCreated |\n| goLive | observing | live | SuperagentWentLive |\n| pause | observing, live | paused | SuperagentPaused |\n| resume | paused | observing, live | SuperagentResumed |\n| retire | observing, live, paused | retired | SuperagentRetired |\n\n## Events\n\n- `SuperagentCreated`: carries superagent (superagent.id); emitted by the move create\n- `SuperagentPaused`: carries superagent (superagent.id), from (text), at (uint); emitted by the move pause\n- `SuperagentResumed`: carries superagent (superagent.id), to (text), at (uint), length (uint); emitted by the move resume\n- `SuperagentRetired`: carries superagent (superagent.id); emitted by the move retire\n- `SuperagentWentLive`: carries superagent (superagent.id); emitted by the move goLive\n\n## Roles\n\n- itsMain\n\n## Operations\n\n- [superagent.boot](boot.md): The world's once-a-minute backstop: arm each live superagent's eval pass and sweeps that a restart lost.\n- [superagent.create](create.md): Make a superagent, with its main agent, observing.\n- [superagent.fill](fill.md): Start waiting Assignments, in line, while seats are free. Does nothing while paused.\n- [superagent.go-live](go-live.md): Let a superagent act: a person, after reading what it would have accepted.\n- [superagent.health](health.md): Read one superagent by its id: name, state, pausedAt.\n- [superagent.pause](pause.md): Hold evals, launches, deliveries and replies; sources keep recording. Only a person, through a session.\n- [superagent.reap](reap.md): Close the running Assignments whose executor is idle, so their seats come back once the Agent has said it closed.\n- [superagent.resume](resume.md): Let held work go, and move every eval's deadline later by the pause's length. Only a person, through a session.\n- [superagent.retire](retire.md): Close a superagent's connections and agents.\n- [superagent.update](update.md): Save a superagent's configuration as a new version; a stale save is refused.\n",
     "superagent/pause.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.pause\n\nHold evals, launches, deliveries and replies; sources keep recording. Only a person, through a session.\n\n**Who may call:** anyone signed in by session.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| from | text |\n| at | uint |\n\n## Move\n\n`pause`: from observing or live to paused, emitting SuperagentPaused.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotObserving | 60 | SU-900 | the superagent is in a state pause can't start from; carries `state` |\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in by session; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent pause --superagent <superagent>\n```\n\nHTTP: `POST /superagent/pause` with the payload as JSON. SDK: `Sdk.superagent.pause(payload)`.\n",
     "superagent/reap.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.reap\n\nClose the running Assignments whose executor is idle, so their seats come back once the Agent has said it closed.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| reaped | uint |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent reap --superagent <superagent>\n```\n\nHTTP: `POST /superagent/reap` with the payload as JSON. SDK: `Sdk.superagent.reap(payload)`.\n",
     "superagent/resume.md": "<!-- Generated from the blueprint. Do not edit. -->\n# superagent.resume\n\nLet held work go, and move every eval's deadline later by the pause's length. Only a person, through a session.\n\n**Who may call:** anyone signed in by session.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | superagent.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| to | text |\n| at | uint |\n| length | uint |\n\n## Move\n\n`resume`: from paused to observing or live, emitting SuperagentResumed.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotObserving | 60 | SU-900 | the superagent is in a state resume can't start from; carries `state` |\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in by session; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent superagent resume --superagent <superagent>\n```\n\nHTTP: `POST /superagent/resume` with the payload as JSON. SDK: `Sdk.superagent.resume(payload)`.\n",
@@ -15169,5 +15150,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "bfd3a6b6380649843c5e31c1ad21254ff4d9abed13a96b30ef6a1ea128ba5986"
+  "digest": "5aecb160374e77719b5fb78b71fcfc28e2d5d521320cc2aa827af878717ed2f4"
 }

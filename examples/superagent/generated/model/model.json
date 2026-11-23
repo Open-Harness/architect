@@ -3062,7 +3062,7 @@
             "bits": 32
           }
         },
-        "revision": {
+        "configRevision": {
           "value": {
             "type": "uint",
             "bits": 32
@@ -3079,15 +3079,6 @@
         "key": "id"
       },
       "lives": "database",
-      "invariants": {
-        "oneVersionPerRevision": {
-          "kind": "unique",
-          "fields": [
-            "revision"
-          ],
-          "framework": true
-        }
-      },
       "machine": {
         "states": [
           "observing",
@@ -3272,7 +3263,7 @@
         "version": "0.0.0",
         "thing": "superagent"
       },
-      "hash": "5c5b72e4701c3970"
+      "hash": "ff7dbe0e279c2b4d"
     },
     "thread": {
       "name": "thread",
@@ -7825,9 +7816,7 @@
       "errors": [
         "SlotsOutOfRange"
       ],
-      "breaks": [
-        "superagent.oneVersionPerRevision"
-      ],
+      "breaks": [],
       "refusals": [
         "SlotsOutOfRange",
         "AgentNotFound",
@@ -7851,7 +7840,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "995c7fe807d5c179"
+      "hash": "5efe7d8005653498"
     },
     "superagent.fill": {
       "kind": "operation",
@@ -7961,9 +7950,7 @@
         "emits": "SuperagentWentLive"
       },
       "errors": [],
-      "breaks": [
-        "superagent.oneVersionPerRevision"
-      ],
+      "breaks": [],
       "refusals": [
         "SuperagentNotObserving",
         "SuperagentNotFound",
@@ -7986,7 +7973,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "4bc5e99c608e01d1"
+      "hash": "d87a5ee14c98de9c"
     },
     "superagent.health": {
       "kind": "read",
@@ -8157,9 +8144,7 @@
         "emits": "SuperagentPaused"
       },
       "errors": [],
-      "breaks": [
-        "superagent.oneVersionPerRevision"
-      ],
+      "breaks": [],
       "refusals": [
         "SuperagentNotObserving",
         "SuperagentNotFound",
@@ -8185,7 +8170,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "9526fb8f391a7a78"
+      "hash": "05c46ba6c650f8aa"
     },
     "superagent.reap": {
       "kind": "operation",
@@ -8297,9 +8282,7 @@
         "emits": "SuperagentResumed"
       },
       "errors": [],
-      "breaks": [
-        "superagent.oneVersionPerRevision"
-      ],
+      "breaks": [],
       "refusals": [
         "SuperagentNotObserving",
         "SuperagentNotFound",
@@ -8325,7 +8308,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "b14f1b966e0f3e66"
+      "hash": "f2fcdba6ac4d9b8b"
     },
     "superagent.retire": {
       "kind": "operation",
@@ -8365,9 +8348,7 @@
         "emits": "SuperagentRetired"
       },
       "errors": [],
-      "breaks": [
-        "superagent.oneVersionPerRevision"
-      ],
+      "breaks": [],
       "refusals": [
         "SuperagentNotObserving",
         "SuperagentNotFound",
@@ -8390,7 +8371,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "2a47d7fcab8023e1"
+      "hash": "3cf79b9fd7bdf31e"
     },
     "superagent.update": {
       "kind": "operation",
@@ -14607,9 +14588,9 @@
       "file": "blueprint/features/superagent.ts",
       "package": "@orthograph/superagent",
       "version": "0.0.0",
-      "integrity": "sha256-DlCYMTStgMtKN8WiCoMF5haikEKdah4R39sSDR8ClNM=",
+      "integrity": "sha256-e+tOSRGO6aznR4lMN7H4g5uwRQIhD+XmCFOeGg12ChI=",
       "chosen": {},
-      "hash": "7041b73df017b79d"
+      "hash": "b356b5e8dcad8c8b"
     },
     "tickets": {
       "kind": "feature",
