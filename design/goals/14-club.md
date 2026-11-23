@@ -109,10 +109,11 @@ The rules every goal shares, so this brief stays short. Where they and this file
 ## Where it stands
 
 **Parked on 22 November 2026** by the conductor, on Aaron's "narrow to the path": the Beta path and the two long poles
-run first. It resumes by the conductor's word.
+run first. On 23 November K42 wound the goal down: its open slices become items on the board, and it resumes by the
+conductor's word.
 
 - **Landed:** `goal/stage-1` merged into `goal/club` (#459), and this brief set to running, then parked.
-- **Slice 1, the spike, in review:** `spikes/aztec-club/` on `spike/aztec-club`, pull request #504 into `main`. Its
+- **Slice 1, the spike, landed:** `spikes/aztec-club/`, merged into `main` on 23 November 2026 (#504), for the record. Its
   answer: yes, the budgets declaration and a ballot map one to one onto a Noir contract, and in a world that verifies
   proofs a tampered and an empty proof are refused and the public total doesn't move; no member's address is in any
   transaction once a sponsor pays the fees. Three limits: every holder of the club's key reads every allowance, each
@@ -122,7 +123,7 @@ run first. It resumes by the conductor's word.
 - **Open asks:** #495 to Goal 4 (a `ChainPort` for every chain family, and `Blueprint.store.chain.aztec()`), #496 to
   Goal 13 (the budgets feature with an Aztec choice, its journeys neutral on the store kind, both landed early). Slice 5
   is linked as blocked by both.
-- **Next, on resuming:** merge #504 if it hasn't merged; run the three missing cases, two commands (`club.ts verified ballots`, then
+- **Next, on resuming:** run the three missing cases, two commands (`club.ts verified ballots`, then
   `club.ts control tamper`) and add them to its README; write `design/decisions/ST4-aztec.md` (slice 2): versions,
   `chain.aztec` as a keyed store address, `language-noir`'s mapping from the spike's table, `chain-aztec`'s port steps
   (prove for sign, a sponsor for fees, sync before proving, one re-prove on `Block header not found`, every wait
