@@ -12,9 +12,9 @@ This is the canon's status page. It merges three older pages, retired by
 judged by the code and the checks, never by the ticks in [`milestones.md`](../../design/milestones.md), which lag.
 Where a tick and a check disagree, the check wins (K41, clash 7).
 
-Status words: **Built** (in `packages/`, with a check that passes), **Partial** (built, with a named piece missing),
-**Spiked** (only throwaway code in `spikes/` proves it), **None** (nothing yet). Since 23 November 2026, what is built
-is on `main`: `goal/stage-1` landed there (#707) and is retired.
+Stage words (K42, section 2; K41's Built, Partial, Spiked and None became these, see section 2): **provisional**,
+**spiked**, **scaffoldable**, **building**, **built** and **extracted**. Since 23 November 2026, what is built is on
+`main`: `goal/stage-1` landed there (#707) and is retired.
 
 ## 1. The releases (K28)
 
@@ -24,8 +24,8 @@ is on `main`: `goal/stage-1` landed there (#707) and is retired.
 | **Beta** (the framework the superagent proves, K42) | build an always-on agent app on Orthograph from npm: things with versions, events in and the outbox, agents that live for weeks, secrets and lent tokens, signed webhook doors, the pages on UI SDK | every framework piece the superagent pulled, extracted into Orthograph's packages and published, with the superagent running on that published framework | the superagent's slices 6 to 14 and what they pull; its launch is its own milestone, not the beta's |
 | **1.0** (Capxul core, K42) | build a business app on Orthograph from npm: everything Capxul core needed for its books, HR, payroll, identity checks and bank accounts through Bridge | every framework piece Capxul core pulled, extracted into Orthograph's packages and published, with Capxul core running on it in its staging, plus M7.01 to M7.04, M7.06 and M7.13 | what Capxul core pulls (K43), and the real release |
 
-Since K42 (23 November 2026), the releases are the framework's: the beta is what the superagent proves and 1.0 what Capxul core proves (K43). The stage headings below (stages 2 to 4) are
-Plugged In's, no longer 1.0's; Goal 18's slice 2 rewrites this map as the board's items, each with its stage.
+Since K42 (23 November 2026), the releases are the framework's: the beta is what the superagent proves and 1.0 what Capxul core proves (K43). The group headings in section 2 are
+Plugged In's, no longer 1.0's; section 2 is the board's items, each with its stage.
 
 **Where Goal 4 falls.** Goal 4 (on chain, end to end) served 1.0 until K42, not the preview or the beta: its slices 2 and 9 to
 11 are stage 2 work, and slices 1, 3 to 8 and 12 are stage 3. Only slice 1 (the language and host seam) touches the
@@ -33,122 +33,208 @@ core everything else uses.
 
 ## 2. The capability map
 
+The board's truth (K42, section 5). One row is one item: a piece of work with a stage, an app that pulled it and a
+release. `tools/github/sync.mjs --board` reads the rows and writes one issue per row and the Project's fields, so a goal
+changes a row in the same pull request that changes the item. Each id is stable: never reuse one, and rename an item by
+changing its words, not its id.
+
+| Column | What it holds |
+|---|---|
+| id | a short stable name, lowercase words joined by hyphens; a `gap-` start marks a hole no slice owned (kind: gap), any other id is a capability |
+| Item | `Name: what it is and what is missing`. The name is the issue's title |
+| Stage | K42, section 2: **provisional** (an app listed it, or it is only designed), **spiked** (only throwaway code in `spikes/` proves it), **scaffoldable** (declared through the framework, journeys red), **building** (partly built, or its checks are red), **built** (green on `main` and proved by the journeys of the app that pulled it; a piece built before an app proves it stays building), **extracted** (moved out of an app's `plugins/` into `packages/`) |
+| Pulled by | the app that needs it first: **superagent**, **Capxul**, or **framework** (no app pulled it: the engine's own, or nobody has asked) |
+| Release | **preview**, **beta** or **1.0**, the framework release it ships in (K42, section 6); `—` for a piece no app has pulled that is not in the preview. A piece the superagent pulls for its slices 1 to 14 is beta; the superagent's launch alone, or Capxul alone, is 1.0 |
+| Milestone | the first app milestone that pulls it, or `—` for "Not yet needed". The superagent's: `coding agent`, `triage agent`, `extraction`, `launch`. Capxul's: `getting paid`, `books`, `people and payroll`, `banking` |
+| Lane | `goal-<n>` when a running goal has claimed it (K42, section 3), else `none` |
+| Touches | the paths its work changes, which a claim names |
+| Needs | the ids that must land first |
+| Evidence | pull requests and paths, the checks that prove it, the slices it came from (M, ST, S and K numbers), and what is still open |
+
+The split (K42, section 3, Aaron's call 9): the superagent pulls versions, timers, safe repeats, events in and the
+outbox, secrets, webhook doors, the pages, sign-in and the live deploy; Capxul pulls reports, lists, trees and dates.
+Organisations are not shared: the superagent's teams and Capxul's companies are two rows (call 10). A piece the first
+app builds is mounted by the other once it is extracted.
+
+How the rows were read: K41's status words became K42's stages. **Built** here follows K42, section 2: green on `main`
+and proved by the journeys of the app that pulled it. Plugged In is the example app (K9), and its journeys are app
+journeys: `e2e/stage1` (its seven journeys) and the `e2e/m1` checks that run on it. A row is built when those prove it,
+and its Evidence names the journey or suite. A piece that only its own package tests, `acme` or a fixture prove is
+building, however green, until an app's journeys prove it. K41's **Partial** is building, **Spiked** is spiked, and
+**None** is provisional (building where a check is already red). A decision with no code is provisional. Plugged In's
+journeys do not stand in for the superagent's or Capxul's: a piece one of them pulls moves back to building if its
+journeys find a hole.
+
 ### The core: blueprint, compiler, outputs, proof (preview)
 
-| Capability | Status | Evidence, or what is missing | Slices |
-|---|---|---|---|
-| Things, fields, machines, operations, steps | Built | `packages/orthograph/src/modules/{things,machines,operations}` | M1.03, M1.26 |
-| Values | Partial | a value's pattern never reaches the model (open problem S-28) | M1.42 |
-| Errors with one refusals table | Built | `examples/plugged-in/generated/api/src/errors.ts` | M1.47 |
-| Events the compiler checks are fillable | Built | `packages/compiler/src/modules/model/internal/fillable.ts` | M1.48 |
-| Invariants (unique rules), enforced and explained | Built | checks 31, 32, 34, 35; the portal's Rules section | ST1.09 to ST1.22 |
-| Visibility: public, private, secret, issued | Built | `packages/language-effect/src/modules/visibility` | M1.35 |
-| Stores (database, actor) | Built | `packages/host-cloudflare/src/modules/{store,actors}` | M1.17 |
-| Generated server, SDK, CLI, docs | Built | checks 14 and 20; `generators/.../docs.ts` | M1.11 to M1.13 |
-| Generated MCP | Partial | tool calls carry no request key (open problem S-16) | M1.12, M1.37 |
-| Request key in traces | Built | check 38: `request.key` on every attempt's span of a keyed call, and the calls table filters by it (K41, clash 5) | M1.12a |
-| Self-explaining scaffold and journey stubs | Built | `projections/.../handlers` | M1.44, M1.45 |
-| Plugins, mounts, adapters as steps, projections as plugins | Built | checks 01 to 08 | M1.05 to M1.14 |
-| `ortho prove`: nine evals, `--changed`, warm world | Built | checks 29, 30 | M1.16, ST1.23, ST1.24 |
-| Prove fails fast on a broken source | Built | checks 33 and 36 green | S-29 |
-| Climb check and the grid | Built | CI `e2e-climb`, `e2e-grid` | Goal 3 |
-| Logbook, promote, publish to the local registry, watch | Built | layer 2 checks | L2 |
-| Telemetry carrying the model | Built | checks 13, 17 | M1.18 to M1.21, M1.36 |
-| Portal viewer: things, operations, lifecycle, rules, traces, journeys | Partial | calls and metrics, the role a caller held, step verdicts | M1.13 |
-| Portal monitor, derived from the model | Built | check 39 | M1.49 |
-| Machine graphs | None | check 40 red | M1.50 |
-| A Node host | None | the server runs only as a Cloudflare Worker; no slice | none (Goal 4 slice 1 names `Host.node`) |
-| npm preview of the framework | None | publish goes only to Verdaccio | M1.51 |
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| things-machines-ops | Things, fields, machines, operations, steps | built | framework | preview | — | none | `packages/orthograph/src/modules/things`, `packages/orthograph/src/modules/machines`, `packages/orthograph/src/modules/operations` | — | slices M1.03, M1.26; proved by Plugged In's journeys: `e2e/stage1/01-plugged-in-journeys.test.ts` |
+| values | Values: a value's pattern never reaches the model | building | framework | preview | — | none | `packages/orthograph/src/modules/values` | — | slice M1.42; open problem S-28 |
+| errors-refusals | Errors with one refusals table | built | framework | preview | — | none | `packages/orthograph/src/modules/errors` | — | `examples/plugged-in/generated/api/src/errors.ts`; slice M1.47; proved by Plugged In's journeys: `e2e/stage1/01-plugged-in-journeys.test.ts` (a taken name is refused), and `e2e/m1/20-plugged-in-loop.test.ts` |
+| events-fillable | Events the compiler checks are fillable | building | framework | preview | — | none | `packages/compiler/src/modules/model/internal/fillable.ts` | — | slice M1.48; not yet proved by an app's journeys: the compiler's own check; no app journey exercises it |
+| invariants | Invariants (unique rules), enforced and explained | built | framework | preview | — | none | `packages/orthograph/src/modules/invariants` | — | checks 31, 32, 34, 35; the portal's Rules section; slices ST1.09 to ST1.22; proved by Plugged In's journeys: `e2e/stage1/01-plugged-in-journeys.test.ts`, and `e2e/m1/34-st1-19-plugged-in-declares-its-rules.test.ts` |
+| visibility | Visibility: public, private, secret, issued | built | framework | preview | — | none | `packages/language-effect/src/modules/visibility` | — | slice M1.35; proved on Plugged In by `e2e/m1/20-plugged-in-loop.test.ts` (the portal's data file) |
+| stores | Stores (database, actor) | built | framework | preview | — | none | `packages/host-cloudflare/src/modules/store`, `packages/host-cloudflare/src/modules/actors` | — | slice M1.17; proved by Plugged In's journeys: `e2e/stage1/01-plugged-in-journeys.test.ts` |
+| generated-outputs | Generated server, SDK, CLI, docs | built | framework | preview | — | none | `packages/generators` | things-machines-ops | checks 14 and 20; `packages/generators/src/modules/docs`; slices M1.11 to M1.13; proved on Plugged In by `e2e/m1/20-plugged-in-loop.test.ts` (every output, through the SDK and the CLI) |
+| generated-mcp | Generated MCP: tool calls carry no request key | building | framework | preview | — | none | `packages/projections` | generated-outputs | open problem S-16; slices M1.12, M1.37 |
+| request-key | Request key in traces: `request.key` on every attempt's span of a keyed call, and the calls table filters by it | built | framework | preview | — | none | `packages/host-cloudflare/src/modules/telemetry` | — | check 38; K41 clash 5; slice M1.12a; proved on Plugged In by `e2e/m1/38-m1-12a-request-key.test.ts` |
+| scaffold-stubs | Self-explaining scaffold and journey stubs | building | framework | preview | — | none | `packages/projections` | generated-outputs | the projections' handlers; slices M1.44, M1.45; not yet proved by an app's journeys: proved on `acme` only |
+| plugins-mounts | Plugins, mounts, adapters as steps, projections as plugins | building | framework | preview | — | none | `packages/orthograph/src/modules/plugins`, `packages/compiler/src/modules/mounts` | — | checks 01 to 08; slices M1.05 to M1.14; not yet proved by an app's journeys: proved on `acme` and fixtures only |
+| prove-evals | `ortho prove`: nine evals, `--changed`, warm world | built | framework | preview | — | none | `packages/prove` | — | checks 29, 30; slices M1.16, ST1.23, ST1.24; proved by Plugged In's journeys: `e2e/stage1/01-plugged-in-journeys.test.ts` |
+| prove-fails-fast | Prove fails fast on a broken source | built | framework | preview | — | none | `packages/prove` | prove-evals | checks 33 and 36 green; slice S-29; proved on Plugged In by `e2e/m1/36-s29-prove-names-a-missing-rule.test.ts` |
+| climb-grid | Climb check and the grid | building | framework | preview | — | none | `e2e/` | prove-evals | CI `e2e-climb`, `e2e-grid`; Goal 3; not yet proved by an app's journeys: proved on `acme` only |
+| logbook-publish | Logbook, promote, publish to the local registry, watch | building | framework | preview | — | none | `packages/logbook`, `packages/prove` | — | layer 2 checks; slice L2; not yet proved by an app's journeys: proved on `acme` only (`e2e/layer2`) |
+| telemetry-model | Telemetry carrying the model | building | framework | preview | — | none | `packages/orthograph/src/modules/telemetry` | — | checks 13, 17; slices M1.18 to M1.21, M1.36; not yet proved by an app's journeys: proved on `acme` and a fixture only |
+| portal-viewer | Portal viewer: things, operations, lifecycle, rules, traces, journeys; calls and metrics, the role a caller held and step verdicts are missing | building | framework | preview | — | none | `packages/portal` | telemetry-model | slice M1.13 |
+| portal-monitor | Portal monitor, derived from the model | built | framework | preview | — | none | `packages/portal` | portal-viewer | check 39; slice M1.49; proved on Plugged In by `e2e/m1/39-m1-49-monitor-derived.test.ts` |
+| machine-graphs | Machine graphs | building | framework | preview | — | none | `packages/portal` | portal-monitor | check 40 red; slice M1.50 |
+| gap-node-host | A Node host: the server runs only as a Cloudflare Worker | provisional | framework | — | — | none | `packages/host-cloudflare` | — | no slice; Goal 4 slice 1 names `Host.node` |
+| npm-preview | npm preview of the framework: publish goes only to Verdaccio, and the publish under `next` itself is Aaron's to run | building | framework | preview | — | none | `packages/preset`, `tools/release` | prove-evals | slice M1.51, whose dry run passes (#683); the hand-over is #542 |
+| plugged-in-journeys | Plugged In's seven journeys: 56 of 56 steps green | built | framework | preview | — | none | `examples/plugged-in` | prove-evals | a required CI check on stage 1; slice ST1.02; proved by `e2e/stage1/01-plugged-in-journeys.test.ts` |
 
 ### Stage 1: workable (Plugged In's first stage)
 
-| Capability | Status | Evidence, or what is missing | Slices |
-|---|---|---|---|
-| Plugged In's seven journeys | Built | 56 of 56 steps green; a required CI check on stage 1 | ST1.02 |
-| Principals beyond a person (agent, service, system, `Via`) | None | `roles/types.ts` has `anonymous` and `person` only | M2.01, M2.03 |
-| Roles declared with `who` and `holds` | None | only `rule` | M2.17, M2.18 |
-| Auth as a plugin | Partial | Better Auth runs in `host-cloudflare`; its things are copied into each app | M2.05, M2.06 |
-| Organizations as a plugin | Partial | copied things in `examples/starter` | M2.07, M2.11 |
-| Secrets by declaration | Partial | per environment only; no plugin secrets, no `ortho secrets set` | M2.04 |
-| `ortho new` and `ortho new feature` | None | `packages/preset` is still the Nx preset | M2.09, M2.10 |
-| `ortho add` for events, errors, roles, moves | Partial | thing, operation, read, journey only | M2.14, M2.15 |
-| Adopt a mounted thing | None | | M2.19, M2.20 |
-| Journeys through the CLI, MCP and the page | None | no `--through` | M2.08, ST1.25 |
-| The handles plugin | None | the code runs inside Plugged In; not extracted | ST1.03 |
-| The pieces on UI SDK (K29) | None | no `generated/web/` yet; `@orthograph/web` is the runtime | ST1.25, ST1.06 |
-| Plugged In's three screens | None | no `src/web/` | ST1.04 |
-| The infra projection and `ortho env up` / `destroy` staging | Built | checks 37 and 41, run here with no credential and no network (K41, clash 6) | M7.03, M7.04 |
-| A live staging run: deploy, run the story, destroy | Partial | the staging workflow (`.github/workflows/staging.yml`) runs it; five clean runs in `spikes/staging-pass` before it | M7.01, M7.04 |
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| principals | Principals beyond a person (agent, service, system, `Via`): `roles/types.ts` has `anonymous` and `person` only | provisional | superagent | beta | coding agent | none | `packages/orthograph/src/modules/roles` | — | slices M2.01, M2.03; K40 (`Blueprint.role(T, { service })`, `Blueprint.system`, `Via.*`) |
+| roles-who-holds | Roles declared with `who` and `holds`: only `rule` exists | provisional | superagent | beta | coding agent | none | `packages/orthograph/src/modules/roles` | principals | slices M2.17, M2.18 |
+| sign-in | Sign-in as the auth plugin (`@orthograph/auth`: people, sessions, API keys, the device flow, OAuth for MCP): Better Auth runs in the host and its things are copied into each app | building | superagent | 1.0 | launch | none | `packages/host-cloudflare/src/modules/auth`, `packages/auth` | principals | slices M2.05, M2.06 |
+| teams | Teams, the superagent's organisations (who shares and owns an agent), as a plugin: the things are copied into the starter | building | superagent | 1.0 | launch | none | `examples/starter`, `packages/organizations` | sign-in, roles-who-holds | slices M2.07, M2.11; K42 call 10 |
+| companies | Companies, Capxul's organisations, as a plugin, apart from the superagent's teams | provisional | Capxul | 1.0 | books | none | `packages/organizations` | sign-in, roles-who-holds | slice M2.07; K42 call 10 |
+| secrets | Secrets by declaration: per environment only, no plugin secrets, no `ortho secrets set` | building | superagent | beta | coding agent | none | `packages/orthograph/src/modules/secrets`, `packages/host-cloudflare` | — | slice M2.04; #690 |
+| ortho-new | `ortho new` and `ortho new feature`: `packages/preset` is still the Nx preset | provisional | framework | — | — | none | `packages/preset`, `packages/cli` | — | slices M2.09, M2.10 |
+| ortho-add | `ortho add` for events, errors, roles and moves: thing, operation, read and journey only today | building | superagent | beta | coding agent | none | `packages/cli`, `packages/generators` | — | slices M2.14, M2.15 |
+| adopt-mounted-thing | Adopt a mounted thing, so a running app can switch a plugin on after the fact (Capxul's modules, K43) | provisional | Capxul | 1.0 | — | none | `packages/compiler/src/modules/mounts` | plugins-mounts | slices M2.19, M2.20; the CRM comes after payroll, so no milestone yet |
+| journeys-through-clients | Journeys through the CLI, MCP and the page: no `--through` | provisional | framework | — | — | none | `packages/prove` | generated-outputs | slices M2.08, ST1.25 |
+| handles-plugin | The handles plugin: the code runs inside Plugged In and is not extracted | provisional | framework | — | — | none | `examples/plugged-in` | — | slice ST1.03 |
+| web-runtime | `@orthograph/web`: the browser host and the runtime every generated piece shares | provisional | superagent | beta | coding agent | none | `packages/web` | ui-sdk-base | slices ST1.25, ST1.06; K29 |
+| plugged-in-screens | Plugged In's three screens: no `src/web/` yet | provisional | framework | — | — | none | `examples/plugged-in/src/web` | ui-pieces | slice ST1.04 |
+| infra-staging | The infra projection and `ortho env up` / `destroy` staging, run with no credential and no network | built | framework | 1.0 | — | none | `packages/projections`, `packages/host-cloudflare` | — | checks 37 and 41; K41 clash 6; slices M7.03, M7.04; proved on Plugged In by `e2e/m1/37-m7-03-staging-plan.test.ts` and `e2e/m1/41-m7-04-prove-staging.test.ts` |
+| staging-run | A live staging run: deploy, run the story, destroy; five clean runs in `spikes/staging-pass` came before the workflow | building | framework | 1.0 | — | none | `.github/workflows/staging.yml` | infra-staging | slices M7.01, M7.04 |
+| live-deploy | A live deploy with a public address for webhooks, the superagent's launch | provisional | superagent | 1.0 | launch | none | `.github/workflows/staging.yml`, `packages/host-cloudflare` | staging-run, webhook-doors | K42, section 6 |
 
 ### App UI (built as an app needs it)
 
 The UI is pieces, not hooks (K29, K41 clash 2): one UI SDK piece per operation, in place of the React hooks ST1.01
 once planned.
 
-| Capability | Status | Evidence, or what is missing | Slices |
-|---|---|---|---|
-| UI SDK as the interface base | Decided | K24 | K24 |
-| A generated piece per operation on UI SDK | Spiked | `spikes/ui-sdk-real-world`; no generator yet | ST1.25 (K29) |
-| Agent marks from blueprint meaning | Spiked | three of four map; approval and a hidden payload field can't be declared | none |
-| Actions: one per operation, for the page, MCP and the CLI | Spiked | `spikes/agent-native-compat`, `ui-sdk-real-world/src/action.ts` | M1.22, M1.23 (moved into stage 1 by K29) |
-| Approvals asked once | Spiked | agent-native checks 04 to 06 | M1.23, M1.37 |
-| Portal chat and "Needs you" | Partial | `portal-ui` has the chat parts; nothing uses them | M1.24 |
-| One package behind the portal's components (HeroUI Pro today, phased out by K24) | Built | `packages/portal-ui`, check 15 | M1.34 |
-| The new portal, on UI SDK with a declared map | None | Goal 6 builds `packages/portal-next`; one cutover then retires the old client (K29, K31, K41 clash 8) | Goal 6, then ST1.28 and ST1.27 |
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| ui-sdk-base | UI SDK as the interface base: decided, nothing wired yet | provisional | superagent | beta | coding agent | none | `packages/theme` | — | K24 |
+| ui-pieces | A generated piece per operation on UI SDK: no generator and no `generated/web/` yet | spiked | superagent | beta | coding agent | none | `packages/generators`, `generated/web/` | ui-sdk-base, web-runtime | `spikes/ui-sdk-real-world`; slice ST1.25 (K29) |
+| agent-marks | Agent marks from blueprint meaning: three of four map | spiked | superagent | beta | coding agent | none | `packages/orthograph` | ui-pieces | the spike's marks |
+| gap-approval-declaration | The blueprint can't declare an approval or a hidden payload field, which generated pieces need | spiked | superagent | beta | coding agent | none | `packages/orthograph` | agent-marks | no slice; found by the agent-marks spike |
+| actions | Actions: one per operation, for the page, MCP and the CLI | spiked | superagent | beta | coding agent | none | `packages/projections` | ui-pieces | `spikes/agent-native-compat`, `spikes/ui-sdk-real-world/src/action.ts`; slices M1.22, M1.23 (moved into stage 1 by K29) |
+| approvals-once | Approvals asked once | spiked | superagent | beta | coding agent | none | `packages/projections` | actions, gap-approval-declaration | agent-native checks 04 to 06; slices M1.23, M1.37 |
+| portal-chat | Portal chat and "Needs you": `portal-ui` has the chat parts and nothing uses them | building | framework | — | — | none | `packages/portal-ui`, `packages/portal` | approvals-once | slice M1.24 |
+| portal-ui | One package behind the portal's components (HeroUI Pro today, phased out by K24) | building | framework | preview | — | none | `packages/portal-ui` | — | check 15; slice M1.34; not yet proved by an app's journeys: its own seam check only; no app journey |
+| portal-next | The new portal, on UI SDK with a declared map: one cutover then retires the old client | building | framework | — | — | none | `packages/portal-next`, `packages/shell`, `packages/theme` | ui-sdk-base | Goal 6; #584, #669, #692, #693 (a draft); slices ST1.28, ST1.27; K29, K31, K41 clash 8 |
+| pages | The pages: `Blueprint.page`, `shows`, `offers`, on the shell and the map language | building | superagent | beta | coding agent | none | `packages/shell`, `packages/theme` | ui-pieces | Goal 6 slice 3; #584 landed the shell, the map language and the app projection; K31, K36; #476 |
 
-### On chain and wallets (1.0, stages 2 and 3)
+### On chain and wallets
 
-| Capability | Status | Evidence, or what is missing | Slices |
-|---|---|---|---|
-| Wallet keys, signing, simulated sends, keystore | Built | `packages/wallets` | M1.27 to M1.32 |
-| EVM adapter and Anvil per world | Built | `packages/chain-evm` | M1.30, M1.31 |
-| Confirmation depth per environment | Built | check 18 | M1.38 |
-| Browser wallet signer | Partial | only against a stub; never in Chromium | M1.29, ST2.03 |
-| Relayer, follower | Partial | the follower actor is on `main` (`Follower` in `packages/host-cloudflare`, #679); the relayer actor is on `goal/on-chain` (#677), not yet on `main` | M6.07, M6.09 |
-| Link a wallet with SIWE | Spiked | 26 checks in a spike; in no goal | M2.13 |
-| Pay by handle | None | | ST2.04 to ST2.06 |
-| Webhooks and `on:` events | None | no decision, nothing scheduled | M5.01, M5.03 |
-| Language and host plugin kinds | None | design only | K27, Goal 4 slice 1 |
-| Chain store, Solidity output, Foundry tests and fuzz | Spiked | `language-solidity` is empty; shape proved in `spikes/chain-languages` | M6.10 to M6.13 |
-| Contract client and signing | Spiked | | M6.01, M6.14, M6.15 |
-| Safe, Hats and the budgets module | Spiked | `spikes/safe-hats-module` (#294); the budgets design is the spike's recommendation in `design/decisions/ST3-budgets.md`, decided when an app pulls budgets | ST3.01 to ST3.08, M6.16 |
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| wallets-keys | Wallet keys, signing, simulated sends, keystore (`@orthograph/wallets`) | building | Capxul | 1.0 | getting paid | none | `packages/wallets` | — | slices M1.27 to M1.32; not yet proved by an app's journeys: its own checks only; no app's journeys yet (Capxul pulls it) |
+| chain-evm | EVM adapter and Anvil per world | building | Capxul | 1.0 | getting paid | none | `packages/chain-evm` | — | slices M1.30, M1.31; not yet proved by an app's journeys: its own checks only; no app's journeys yet (Capxul pulls it) |
+| confirmation-depth | Confirmation depth per environment | building | Capxul | 1.0 | getting paid | none | `packages/chain-evm` | chain-evm | check 18; slice M1.38; not yet proved by an app's journeys: its own check only; no app's journeys yet (Capxul pulls it) |
+| browser-wallet-signer | Browser wallet signer: only against a stub, never in Chromium | building | framework | — | — | none | `packages/wallets` | wallets-keys | slices M1.29, ST2.03 |
+| relayer-follower | Relayer and follower: the follower actor is on `main`, the relayer actor is not yet | building | Capxul | 1.0 | getting paid | none | `packages/host-cloudflare/src/modules/follower` | wallets-keys, chain-evm | #679 (`Follower`, on `main`); #677 (the relayer, on `goal/on-chain`); slices M6.07, M6.09 |
+| siwe-linking | Link a wallet with SIWE: 26 checks in a spike, in no goal | spiked | framework | — | — | none | `packages/wallets` | sign-in | slice M2.13 |
+| pay-by-handle | Pay by handle | provisional | framework | — | — | none | `examples/plugged-in` | handles-plugin, wallets-keys | slices ST2.04 to ST2.06 |
+| plugin-kinds-language-host | Language and host plugin kinds: design only | provisional | framework | — | — | none | `packages/orthograph/src/modules/plugins` | plugins-mounts | K27; Goal 4 slice 1 |
+| chain-solidity | Chain store, Solidity output, Foundry tests and fuzz: `language-solidity` is empty | spiked | framework | — | — | none | `packages/language-solidity` | plugin-kinds-language-host | `spikes/chain-languages`; slices M6.10 to M6.13 |
+| contract-client | Contract client and signing | spiked | Capxul | 1.0 | getting paid | none | `packages/chain-evm` | chain-evm | slices M6.01, M6.14, M6.15; #475 |
+| safe-hats-budgets | Safe, Hats and the budgets module; the budgets design is decided when an app pulls budgets | spiked | Capxul | 1.0 | books | none | `packages/wallets` | contract-client | `spikes/safe-hats-module` (#294); `design/decisions/ST3-budgets.md`; slices ST3.01 to ST3.08, M6.16 |
 
-### Workflows, agents, time (1.0, stage 3)
+### Workflows, agents, time
 
-| Capability | Status | Evidence, or what is missing | Slices |
-|---|---|---|---|
-| Declared workflows | None | no decision, no spike | M3.01 to M3.03 |
-| A durable agent run | Spiked | `spikes/durable-run` | M4.01, M4.03, M4.04, M4.09 |
-| Model adapters and a stand-in model | None | | M4.05, M4.06 |
-| Tools from operations; the Run thing | None | | M4.07, M4.10 |
-| An agent writes a handler from a brief | Built | `ortho brief`, layer 1 check 04 | Gate 1 |
-| No wall clock; `Timers`; counted work | Partial | in-memory timers and the lint rule; no world timer table | M8.06, M8.07 |
-| World clock, moves made by time, the keeper | Spiked | `design/spikes/world-clock.md`; the rest is M8's | M8 |
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| workflows | Declared workflows: no decision, no spike | provisional | framework | — | — | none | `packages/orthograph` | — | slices M3.01 to M3.03; #472, #462 (the decision, still to reach `main`) |
+| durable-agent-run | A durable agent run, on Pi Durable | spiked | superagent | beta | coding agent | none | `packages/host-cloudflare/src/modules/actors` | timers | `spikes/durable-run`; slices M4.01, M4.03, M4.04, M4.09; #469; K40 fix 3 |
+| model-adapters | Model adapters and a stand-in model | provisional | superagent | beta | coding agent | none | `packages/agents` | durable-agent-run | slices M4.05, M4.06 |
+| agent-tools | Tools from operations; the Run thing | provisional | superagent | beta | coding agent | none | `packages/agents` | durable-agent-run | slices M4.07, M4.10 |
+| agent-writes-handler | An agent writes a handler from a brief | building | framework | preview | — | none | `packages/cli` | — | `ortho brief`, layer 1 check 04; Gate 1; not yet proved by an app's journeys: proved on `acme` only (layer 1 check 04) |
+| timers | No wall clock; `Timers`; counted work: in-memory timers and the lint rule, with no world timer table | building | superagent | beta | coding agent | none | `packages/host-cloudflare/src/modules/timers`, `packages/lint` | — | slices M8.06, M8.07; #696 (timers across processes) |
+| world-clock-keeper | World clock, moves made by time, the keeper | spiked | framework | — | — | none | `packages/host-cloudflare/src/modules/clock` | timers | `design/spikes/world-clock.md`; the rest is M8's |
+| gap-signature-collection | Stage 3's signature collection and the keeper rest on workflows | provisional | framework | — | — | none | `packages/orthograph` | workflows, safe-hats-budgets | no decision, no spike |
 
-### Stage 4 and the release (1.0)
+### What the superagent pulls beyond the map above (K42, K40)
 
-| Capability | Status | Evidence, or what is missing | Slices |
-|---|---|---|---|
-| Private club on Aztec | Spiked | `spikes/noir-private-core` and `spikes/aztec-club` (#504) | ST4.01 to ST4.08 |
-| Real npm, Homebrew, GitHub releases | Partial | local tap and binary only | M7.02, M7.06, M7.13 |
-| CI-signed verdicts | Spiked | `spikes/ci-oidc` | M7.05 |
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| versions | Things with versions (`versions:`), for Policy, PromptSet and Settings | provisional | superagent | beta | coding agent | none | `packages/orthograph/src/modules/things` | things-machines-ops | K40 fix 2; Goal 17 slices 2 and 5 |
+| safe-repeats | Safe repeats: `idempotent: { by }` on an operation, so a repeated call settles once | provisional | superagent | beta | coding agent | none | `packages/orthograph/src/modules/operations` | events-in | slice M3.26; Goal 17 slice 11 |
+| events-in | Events in: `Blueprint.on`, `on:`, an adapter's `events`; stage 2 also needs them, and until Goal 17's slice 11 they are in no goal | provisional | superagent | beta | coding agent | none | `packages/orthograph/src/modules/events`, `packages/orthograph/src/modules/plugins` | principals | slices M5.01, M5.03; no decision, nothing scheduled |
+| webhook-doors | Webhook doors: signed endpoints with the account and object keys, catch-up polling and `lend` | provisional | superagent | beta | coding agent | none | `packages/host-cloudflare`, `packages/orthograph/src/modules/plugins` | secrets, principals | K40 fixes 1, 5, 6; slices M5.01, M5.03 |
+| outbox | The outbox: sends retried in order, `agent.tell` through it, and views | provisional | superagent | beta | coding agent | none | `packages/host-cloudflare` | events-in, safe-repeats | slices M5.04 to M5.13; K40 fix 3 |
+| adapters-from-spec | Adapters from an OpenAPI spec: `ortho new adapter --from-openapi` and the conformance harness | building | superagent | beta | coding agent | goal-17 | `packages/cli`, `packages/generators`, `examples/superagent/plugins` | secrets | slice M5.07; Goal 17 slices 3 and 4 |
+| adapters-from-abi | Adapters from an ABI | provisional | framework | — | — | none | `packages/cli`, `packages/generators` | adapters-from-spec | #474 |
+| sandbox | The sandbox adapter (`@orthograph/sandbox`): a bridge on the Mac as its stand-in, E2B later | provisional | superagent | beta | coding agent | none | `packages/sandbox` | secrets | K40 fix 4; Goal 17 slice 9 |
+| service-adapters | The GitHub, Slack and PostHog adapters, generated from each service's spec, and `@orthograph/webhook` for a service with none | provisional | superagent | beta | coding agent | none | `examples/superagent/plugins` | adapters-from-spec, webhook-doors | slice M4.25 (Goal 17's); K39 |
+| superagent-features | The superagent's four features: `@orthograph/superagent`, `intake`, `tickets` and `prompts`, written first inside `examples/superagent/plugins/` | provisional | superagent | beta | coding agent | none | `examples/superagent` | principals, versions, ortho-add | K39; Goal 17 slices 5 to 7 |
+| superagent-extraction | Extraction: the superagent's plugins moved from `plugins/` into `packages/` and published | provisional | superagent | beta | extraction | none | `packages/` | superagent-features, service-adapters, sandbox | Goal 17 slice 14; K42, sections 2 and 8 |
 
-### Off v1.0's path
+### What Capxul pulls (K42, K43)
 
-The factory and the work board (M3.04 to M3.21), the bench and the builder's tools (M4.11 to M4.14), workspaces and
-the building agents (M4.17 to M4.25; M4.25 is Goal 17's since K39), Stripe, Resend, adapters from OpenAPI, outbox and
-views (M5.04 to M5.13), and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) proves 1.0 (K42, K43). Most are None; the work board and E2B workspaces are
-Spiked.
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| reports | Reports: the books' statements and tables | provisional | Capxul | 1.0 | books | none | `packages/projections` | lists | K42, section 3; K43 |
+| lists | Richer lists: filters, sorts, paging and grouping on a read | provisional | Capxul | 1.0 | getting paid | none | `packages/projections` | — | K42, section 3 |
+| trees | Trees: a record under a parent, such as a chart of accounts | provisional | Capxul | 1.0 | books | none | `packages/orthograph/src/modules/things` | — | K42, section 3 |
+| dates | Dates: fiscal years, periods and calendar days, apart from the clock | provisional | Capxul | 1.0 | books | none | `packages/orthograph/src/modules/values` | — | K42, section 3 |
+
+### Stage 4 and the release
+
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| aztec-club | Private club on Aztec | spiked | framework | — | — | none | `spikes/noir-private-core`, `spikes/aztec-club` | — | #504; slices ST4.01 to ST4.08 |
+| real-release | Real npm, Homebrew, GitHub releases: a local tap and binary only | building | framework | 1.0 | — | none | `tools/release` | npm-preview | slices M7.02, M7.06, M7.13 |
+| ci-signed-verdicts | CI-signed verdicts | spiked | framework | — | — | none | `.github/workflows` | — | `spikes/ci-oidc`; slice M7.05 |
+
+### Off the releases' path
+
+The factory and the work board, the bench and the builder's tools, workspaces and the building agents, Stripe and Resend,
+and the real vendors. Capxul (M7.10, M7.11) proves 1.0 (K42, K43); it is not a row. The work board and E2B workspaces are
+spiked; the rest is provisional.
+
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| work-factory | The factory and the work board | spiked | framework | — | — | none | `examples/work` | — | slices M3.04 to M3.21 |
+| bench-builder-tools | The bench and the builder's tools | provisional | framework | — | — | none | `packages/prove` | — | slices M4.11 to M4.14 |
+| workspaces-building-agents | Workspaces (E2B) and the building agents; M4.25 is Goal 17's | spiked | framework | — | — | none | `packages/sandbox` | sandbox | slices M4.17 to M4.24 |
+| stripe-resend | Stripe and Resend adapters: payments and email | provisional | framework | — | — | none | `packages/stripe`, `packages/resend` | adapters-from-spec | slices M5.04 to M5.13 |
+| real-vendors | The real vendors: the builder's staging token and contracts on a testnet | provisional | framework | — | — | none | `.github/workflows/staging.yml` | staging-run | slices M7.07 to M7.09 |
+
+### The framework itself
+
+| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| board | The board: this map, one issue per row and the Project's fields | building | framework | — | — | goal-18 | `docs/canon/status.md`, `tools/github/` | — | Goal 18 slice 2; K42, section 5 |
+| docs-portal-projections | The docs and the portal as standard projections (K30): built in today | building | framework | — | — | none | `packages/portal`, `packages/projections` | portal-next | K30, K31 |
+| gap-core-alone | The core alone: no check proves an app with only the core; the generators import the portal, prove imports the EVM chain port for wallet worlds, and the command depends on the whole projections package | provisional | framework | — | — | none | `packages/generators`, `packages/prove`, `packages/cli` | — | K30, section 1 |
+| gap-scheduled-prove | Proving against a deployed address on a schedule has no slice beyond the staging workflow | provisional | framework | — | — | none | `.github/workflows/staging.yml` | staging-run | no slice |
+| gap-journey-language | The journey language's open problems: one world per journey, comparing one answer with the last, and sending malformed payloads | provisional | framework | — | — | none | `packages/prove`, `packages/orthograph/src/modules/journeys` | prove-evals | `design/goals/03-snags.md` |
 
 ## 3. Holes no slice owns
 
-1. No Node host.
-2. Proving against a deployed address on a schedule has no slice beyond the staging workflow.
-3. The blueprint can't declare an approval or a hidden payload field, which generated pieces need.
-4. Stage 2 needs webhooks (M5.01, M5.03) and SIWE linking (M2.13); neither is in any goal.
-5. Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike.
+Each hole is a row in section 2, so it is on the board. The rows that start `gap-` are the holes; the rest were already
+items.
+
+1. No Node host: `gap-node-host`.
+2. Proving against a deployed address on a schedule has no slice beyond the staging workflow: `gap-scheduled-prove`.
+3. The blueprint can't declare an approval or a hidden payload field, which generated pieces need:
+   `gap-approval-declaration`.
+4. Stage 2 needs webhooks (M5.01, M5.03) and SIWE linking (M2.13); neither is in any goal: `webhook-doors` and
+   `events-in` (the superagent pulls them now, Goal 17's slice 11) and `siwe-linking` (still in no goal).
+5. Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike:
+   `gap-signature-collection`, `workflows` and `world-clock-keeper`.
 6. The journey language's open problems: one world per journey, comparing one answer with the last, and sending
-   malformed payloads.
+   malformed payloads: `gap-journey-language`.
+
+Section 4 adds one more, `gap-core-alone`.
 
 ## 4. The framework map
 
@@ -174,17 +260,20 @@ core.
 
 ### The standard library: what Orthograph ships for apps to mount
 
-| Plugin | What it is | Status |
+Each plugin's stage and release are on its row in section 2.
+
+| Plugin | What it is | Row |
 |---|---|---|
-| `@orthograph/auth` | people, sessions, API keys, the device flow, OAuth for MCP | designed (M2.05, M2.06); built today inside the host and the starter |
-| `@orthograph/organizations` | organisations, memberships, invitations, `holds` | designed (M2.07); built today as starter copies |
-| `@orthograph/handles` | a public name one person holds | designed (ST1.03); built today as Plugged In's own thing |
-| `@orthograph/wallets` | keys on a device or a server: make, import, sign, send | built |
-| `@orthograph/web` and the pieces | one UI SDK piece per operation, and the runtime they share (K29) | designed (ST1.25) |
-| docs and the portal | the readers' projections; the new portal is built on UI SDK (K24, K31) | built in, to become standard projections (K30) |
-| the Safe, budgets and hats plugins | a multisig vault with budgets, for stage 3 | designed |
-| `@orthograph/stripe`, `@orthograph/resend` | payments and email adapters | designed (M5) |
-| `@orthograph/agents`, `@orthograph/work` | durable agents; the factory | designed (M3, M4) |
+| `@orthograph/auth` | people, sessions, API keys, the device flow, OAuth for MCP; built today inside the host and the starter | `sign-in` |
+| `@orthograph/organizations` | organisations, memberships, invitations, `holds`; built today as starter copies | `teams`, `companies` |
+| `@orthograph/handles` | a public name one person holds; built today as Plugged In's own thing | `handles-plugin` |
+| `@orthograph/wallets` | keys on a device or a server: make, import, sign, send | `wallets-keys` |
+| `@orthograph/web` and the pieces | one UI SDK piece per operation, and the runtime they share (K29) | `web-runtime`, `ui-pieces` |
+| docs and the portal | the readers' projections; the new portal is built on UI SDK (K24, K31); built in, to become standard projections (K30) | `docs-portal-projections`, `portal-next` |
+| the Safe, budgets and hats plugins | a multisig vault with budgets, for stage 3 | `safe-hats-budgets` |
+| `@orthograph/stripe`, `@orthograph/resend` | payments and email adapters (M5) | `stripe-resend` |
+| `@orthograph/agents`, `@orthograph/work` | durable agents; the factory (M3, M4) | `durable-agent-run`, `work-factory` |
+
 
 Goal 17 (K39) adds four features, `@orthograph/superagent`, `@orthograph/intake`, `@orthograph/tickets` and
 `@orthograph/prompts`, written first inside `examples/superagent/plugins/` and moved into `packages/` once they work; the

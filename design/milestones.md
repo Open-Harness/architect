@@ -460,7 +460,7 @@ forced reorg is corrected; a pending chain call shows its in-between state (S25)
 | M6.04 | Moved to M2.13 (K7 F4: the wallet is the first plugin) | | | | |
 | M6.05 | Moved to M1.30 (K7 F4: the wallet is the first plugin) | | | | |
 | M6.06 | Moved to M1.31 (K7 F4: the wallet is the first plugin) | | | | |
-| M6.07 | The relayer actor (L3.06) | M1.31 | build | 100 concurrent submissions, nonces 0 to 99, a dropped one replaced | M |
+| M6.07 | The relayer actor (L3.06) | M1.31 | build | 100 concurrent submissions, nonces 0 to 99, a dropped one rebroadcast (replacing it with a higher fee is later) | M |
 | M6.08 | Moved to M1.32 (K7 F4: the wallet is the first plugin) | | | | |
 | M6.09 | The chain follower (L3.08), which also feeds the portal's committed chain events (K5 seam 10); its checkpoint is a block number plus a window of block hashes, and a take-back emits `<Event>Corrected { wasConfirmed }` (K7 Q6) | M6.07 | build | an `anvil_reorg` that replays a different digest emits a correction and then the new event; a restart doesn't double count | M |
 | M6.10 | Values with Solidity types, chain stores (`Blueprint.store.chain.evm()`, `chain` as a family of store kinds, K7 Q4, K25) and `Blueprint.account()`; the compiler works out `runs` for an operation on a thing in a chain store, and an author never writes it (K25 item 6; L4.01; `describe.ts:108` refuses it today); `blueprint/refusals.lock` for every language, so codes no longer come from declaration order (`describe.ts:79`; K7 Q5) | M6.01 | build | `ortho check` reports the change as major; swapping two declared errors keeps both codes; renaming a locked error gives it a new code and retires the old one, and `ortho check` reports it as major (M6-chain item 4) | M |

@@ -18,7 +18,11 @@ type Accounts = ReadonlyMap<string, AccountNonces>;
 const keyOf = (address: Address) => address.toLowerCase();
 const empty: AccountNonces = { finalized: 0, pending: new Map() };
 
-export const makeNonceManager = Effect.gen(function* () {
+/**
+ * `keepOnReject`: a definite rejection of a broadcast turns its entry back into a plain held reservation (its owner decides what the
+ * nonce is for) instead of deleting it, so nothing else is handed the nonce.
+ */
+export const makeNonceManagerWith = (keepOnReject: boolean) => Effect.gen(function* () {
   // One instance belongs to one chain. The case-folded sender separates its nonce lanes.
   const state = yield* Ref.make<Accounts>(new Map());
 
@@ -38,6 +42,13 @@ export const makeNonceManager = Effect.gen(function* () {
       pending.set(nonce, { reservation });
       return [reservation, update(all, address, { ...account, pending })];
     });
+
+  /** Whether this very reservation object is the one held at its nonce, and what was last broadcast there. Nothing is looked up by address. */
+  const ownership = (reservation: NonceReservation) =>
+    Ref.get(state).pipe(Effect.map((all) => {
+      const entry = all.get(keyOf(reservation.address))?.pending.get(reservation.nonce);
+      return entry?.reservation === reservation ? { broadcast: entry.broadcast } : undefined;
+    }));
 
   const release = (reservation: NonceReservation) =>
     Ref.update(state, (all) => {
@@ -79,8 +90,10 @@ export const makeNonceManager = Effect.gen(function* () {
       const entry = account.pending.get(nonce);
       if (entry?.reservation !== reservation || entry.broadcast !== attempt.broadcast) return all;
       const pending = new Map(account.pending);
-      if (attempt.previous === undefined) pending.delete(nonce);
-      else pending.set(nonce, { reservation, broadcast: attempt.previous });
+      if (attempt.previous === undefined) {
+        if (keepOnReject) pending.set(nonce, { reservation });
+        else pending.delete(nonce);
+      } else pending.set(nonce, { reservation, broadcast: attempt.previous });
       return update(all, address, { ...account, pending });
     });
 
@@ -95,5 +108,7 @@ export const makeNonceManager = Effect.gen(function* () {
       return update(all, address, { finalized: nextNonce, pending });
     });
 
-  return { reserveNext, release, beginBroadcast, rejectBroadcast, pruneFinalized };
+  return { reserveNext, ownership, release, beginBroadcast, rejectBroadcast, pruneFinalized };
 });
+
+export const makeNonceManager = makeNonceManagerWith(false);
