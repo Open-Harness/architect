@@ -109,8 +109,8 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-23 November 2026, parked under K42 (section 7). The lead stopped without writing this, so Goal 18 wrote it from
+23 November 2026, parked under K42 (section 7). The lead stopped before updating this, so Goal 18 updated it from
 `goal/release`. Nothing was in review. Aaron granted the release credentials on 22 November; that record,
 `design/decisions/M7-release.md`, stays on `goal/release`. Slice 4's checks (test worlds and signed verdicts, #500) and
-slices 2 and 3's checks (the npm release and the install, #527) landed there, red until built. Every slice becomes an
+slices 2 and 3's checks (the npm release and the install, #527) landed there, red until built. Every slice still to build becomes an
 item for Goal 18, which also owns publishing after the first preview (#542).
