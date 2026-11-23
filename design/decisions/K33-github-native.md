@@ -42,6 +42,9 @@ $ grep -c '^| `' design/ledger.md   # 731 rows of open problems, in a file nothi
    issue and pull request of a goal carries it, so the milestone page is the goal's progress. GitHub allows one
    milestone per issue, so **the release becomes a label**: `release:preview`, `release:beta`, `release:1.0` (K28's
    three). The `goal-<n>` labels K32 made stay, mirroring the milestone, so lists of pull requests filter by goal too.
+   Superseded by K42, 23 November 2026: GitHub milestones are the apps' milestones, and an item (one row of
+   `docs/canon/status.md`) sits in the first app milestone that pulls it; a goal's own milestone holds only its goal
+   issue, slices and snags, and closes when the goal stops.
 2. **Six kinds of issue, each a native type, a `kind:` label and a form** (`.github/ISSUE_TEMPLATE/`, blank issues
    off):
 
@@ -53,6 +56,10 @@ $ grep -c '^| `' design/ledger.md   # 731 rows of open problems, in a file nothi
    | `kind:ask` | Task | one goal asking another to act | the goal that must act |
    | `kind:decision` | Task | a call waiting to be made, closed by the pull request that records it | the goal that decides |
    | `kind:gap` | Task | a ledger row picked up as work, titled with its ledger id | the goal that closes it |
+
+   Superseded by K42, 23 November 2026: an item is a `kind:capability` or `kind:gap` issue written from its row on the
+   status page, `kind:ask` is only for two goals' overlapping claims (K42, section 3, case 2), and a grill is a
+   `kind:decision` issue labelled `needs-aaron`.
 
    Custom issue types need a GitHub organization, and Aaron chose them (2A): the repository moves into one, and the
    sync then makes six types, Goal, Slice, Snag, Ask, Decision and Gap, and sets each issue's type from its kind. Until

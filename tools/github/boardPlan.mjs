@@ -73,6 +73,8 @@ export const adoptionProblems = (rows, issues) => {
       else if (i.trusted === false) problems.push(`${r.id} ${verb} #${n}, which an outsider opened`);
       else if (NEVER_ADOPTED.some((k) => i.labels.includes(k))) problems.push(`${r.id} ${verb} #${n}, which is a ${i.labels.find((k) => NEVER_ADOPTED.includes(k)).slice(5)}: only kind:ask issues are adopted or folded, so name it as a plain #${n}`);
       else if (mark && mark !== r.id && i.labels.some((l) => BOARD_KINDS.includes(l))) problems.push(`${r.id} ${verb} #${n}, which is the board's issue for ${mark}`);
+      // Only an ask is taken in; on a later run the issue this row already adopted is a board kind with the row's marker.
+      else if (!i.labels.includes("kind:ask") && !(mark === r.id && i.labels.some((l) => BOARD_KINDS.includes(l)))) problems.push(`${r.id} ${verb} #${n}, which is no kind:ask issue: only kind:ask issues are adopted or folded, so name it as a plain #${n}`);
     }
   }
   return problems;

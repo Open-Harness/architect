@@ -86,3 +86,14 @@ test("only kind:ask issues are adopted or folded: a snag (a claim is one), a dec
   assert.match(adoptionProblems(rowsBad, issues)[0], /name it as a plain #2/);
   assert.deepEqual(adoptionProblems(parseBoard(page(row("a", "A: one", "building", "framework", "—", "—", "none", "—", "—", "`issue #1`"))).rows, [ask(1)]), []);
 });
+
+test("adopting: an issue with no kind:ask (a plain bug) is refused, but the row's own adopted issue passes on a later run", () => {
+  const rows = parseBoard(page(row("a", "A: one", "building", "framework", "—", "—", "none", "—", "—", "`issue #1`, `folds #2`"))).rows;
+  const bug = (n) => ask(n, "x", { labels: ["bug"] });
+  assert.deepEqual(adoptionProblems(rows, [bug(1), bug(2)]).map((p) => p.replace(/: only.*/, "")), [
+    "a adopts #1, which is no kind:ask issue",
+    "a folds #2, which is no kind:ask issue",
+  ]);
+  const adopted = ask(1, `${itemMarker("a")}\n\nbody`, { labels: ["kind:capability", "release:1.0"] });
+  assert.deepEqual(adoptionProblems(rows, [adopted, ask(2)]), [], "a re-run finds its own adopted issue");
+});
