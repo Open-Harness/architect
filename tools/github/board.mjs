@@ -29,10 +29,24 @@ export const BOARD_MILESTONES = [
 ];
 
 export const itemMarker = (id) => `<!-- orthograph:item=${id} -->`;
-const BOARD_KINDS = ["kind:capability", "kind:gap"];
+export const BOARD_KINDS = ["kind:capability", "kind:gap"];
 const kindOf = (id) => (id.startsWith("gap-") ? "gap" : "capability");
-const isDone = (row) => row.stage === "built" || row.stage === "extracted";
-const none = (cell) => cell === "—" || cell === "none" || cell === "";
+export const isDone = (row) => row.stage === "built" || row.stage === "extracted";
+export const none = (cell) => cell === "—" || cell === "none" || cell === "";
+
+/**
+ * Adoption (K42, section 5): many open issues already describe board items, and a first run must not duplicate them.
+ * A row's Evidence cell may hold `issue #531`, in backticks, to adopt that issue (the sync writes the marker, the
+ * labels, the milestone and the Project's fields onto it, and keeps its original text beneath), and `folds #533, #538`,
+ * in backticks, for the other issues that are the same item: the sync closes each with a comment pointing at the row's issue.
+ */
+export const ADOPT_SYNTAX = {
+  adopt: /`issue #(\d+)`/g,
+  folds: /`folds (#\d+(?:, #\d+)*)`/g,
+};
+const adoptsOf = (evidence) => [...evidence.matchAll(ADOPT_SYNTAX.adopt)].map((m) => Number(m[1]));
+const foldsOf = (evidence) => [...evidence.matchAll(ADOPT_SYNTAX.folds)].flatMap((m) => [...m[1].matchAll(/#(\d+)/g)].map((x) => Number(x[1])));
+const NAME_MAX = 50;
 
 // The name is the text before the first ": " that sits outside parentheses and backticks; a row without one is all name.
 const nameOf = (item) => {
@@ -91,6 +105,13 @@ export const parseBoard = (text) => {
       if (!none(touches) && touches.replace(/`[^`]+`/g, "").replace(/[,\s]/g, "") !== "") bad("touches is not a list of `paths`");
       const app = APP_MILESTONES[milestone]?.app;
       if (app && app !== pulledBy) bad(`milestone '${milestone}' is ${app}'s, but the row is pulled by ${pulledBy}`);
+      // K42, section 5: every Item starts with a short name and a colon, and the issue's title is the name.
+      if (nameOf(item) === item || nameOf(item).length > NAME_MAX) bad(`item does not start with a short name and a colon (\`Name: what it is\`, the name at most ${NAME_MAX} characters)`);
+      const adopts = adoptsOf(evidence);
+      const folds = foldsOf(evidence);
+      if (adopts.length > 1) bad(`adopts ${adopts.length} issues; a row adopts one, and folds the rest`);
+      if (folds.length && !adopts.length) bad("folds issues but adopts none: name the one it adopts with `issue #N`");
+      if (adopts.some((n) => folds.includes(n))) bad("adopts and folds the same issue");
       if (pulledBy === "framework" && !none(milestone)) bad("a framework row has no app milestone: an app pulls it, or it is not yet needed");
       // K42, section 5: a piece the superagent pulls for its slices 1 to 14 ships in the beta; its launch alone, or Capxul alone, in 1.0.
       if (pulledBy === "Capxul" && !none(release) && release !== "1.0") bad("a piece only Capxul pulls ships in 1.0");
@@ -111,12 +132,21 @@ export const parseBoard = (text) => {
         touches: none(touches) ? [] : [...touches.matchAll(/`([^`]+)`/g)].map((m) => m[1]),
         needs: none(needs) ? [] : needs.split(",").map((n) => n.trim()),
         evidence: none(evidence) ? "" : evidence,
+        adopts: adopts[0] ?? null,
+        folds,
         line: i + 1,
       });
     }
   }
   if (rows.length === 0 && errors.length === 0) errors.push("the capability map has no table with the board's columns");
   const ids = new Set(rows.map((r) => r.id));
+  const claimedBy = new Map();
+  for (const r of rows) {
+    for (const n of [...(r.adopts ? [r.adopts] : []), ...r.folds]) {
+      if (claimedBy.has(n) && claimedBy.get(n) !== r.id) errors.push(`line ${r.line} (${r.id}): issue #${n} is already adopted or folded by row ${claimedBy.get(n)}`);
+      claimedBy.set(n, r.id);
+    }
+  }
   for (const r of rows) {
     for (const n of r.needs) {
       if (!ids.has(n)) errors.push(`line ${r.line} (${r.id}): needs '${n}', which is no row`);
@@ -153,81 +183,6 @@ export const claimOverlaps = (rows) => {
     }
   }
   return out;
-};
-
-/** The issue's title: the item's name. */
-export const itemTitle = (row) => (row.name.length > 120 ? `${row.name.slice(0, 117)}...` : row.name);
-
-/** The issue's body: one page per row, rewritten whole by the sync. */
-export const itemBody = (row, statusUrl) =>
-  [
-    itemMarker(row.id),
-    `> Written by \`tools/github/sync.mjs --board\` from the row \`${row.id}\` in [the capability map](${statusUrl}). Edit the row, not this page.`,
-    "",
-    row.item,
-    "",
-    `**Stage:** ${row.stage}  `,
-    `**Pulled by:** ${row.pulledBy}  `,
-    `**Release:** ${row.release ?? "none yet"}  `,
-    `**Milestone:** ${milestoneOf(row)}  `,
-    `**Lane:** ${row.lane ?? "unclaimed"}  `,
-    `**Touches:** ${row.touches.length ? row.touches.map((p) => `\`${p}\``).join(", ") : "nothing named"}  `,
-    `**Needs:** ${row.needs.length ? row.needs.map((n) => `\`${n}\``).join(", ") : "nothing"}  `,
-    `**Evidence:** ${row.evidence || "none"}`,
-  ].join("\n");
-
-/** The labels the board owns on an issue: its kind, its release and its lane. */
-export const itemLabels = (row) => [`kind:${row.kind}`, ...(row.release ? [`release:${row.release}`] : []), ...(row.lane ? [`lane:${row.lane}`] : [])];
-const owned = (l) => l.startsWith("release:") || l.startsWith("lane:") || BOARD_KINDS.includes(l);
-
-export const laneLabel = (lane) => ({ name: `lane:${lane}`, color: "c2e0c6", description: `Claimed by Goal ${lane.slice(5)}: it works this item and its paths (K42, section 3)` });
-
-/** The issue that is a row's, if there is one: a trusted issue of a board kind with the row's marker; the oldest wins. */
-export const issueOfRow = (row, issues) =>
-  issues
-    .filter((i) => !i.pullRequest && i.trusted !== false && i.labels.some((l) => BOARD_KINDS.includes(l)) && (i.body ?? "").includes(itemMarker(row.id)))
-    .sort((x, y) => x.number - y.number)[0];
-
-/**
- * rows: parseBoard's. state: as in plan.mjs ({ labels, milestones, issues, ownerType, types }). typeOf: plan.mjs's.
- * Steps: the lane labels, the milestones, then each row's issue made or brought up to date, closed when its stage is
- * built or extracted and open otherwise. Nothing is deleted: a row removed from the page leaves its issue where it is.
- */
-export const boardPlan = ({ rows, state, statusUrl, typeOf }) => {
-  const steps = [];
-  const haveLabel = new Set(state.labels.map((l) => l.name));
-  for (const lane of [...new Set(rows.flatMap((r) => (r.lane ? [r.lane] : [])))].sort()) {
-    const want = laneLabel(lane);
-    if (!haveLabel.has(want.name)) steps.push({ do: "createLabel", ...want });
-  }
-  const haveMilestone = new Map(state.milestones.map((m) => [m.title, m]));
-  for (const want of BOARD_MILESTONES) {
-    const have = haveMilestone.get(want.title);
-    if (!have) steps.push({ do: "createMilestone", ...want });
-    else if (have.description !== want.description) steps.push({ do: "updateMilestone", number: have.number, ...want });
-  }
-  for (const row of rows) {
-    const title = itemTitle(row);
-    const body = itemBody(row, statusUrl);
-    const labels = itemLabels(row);
-    const milestone = milestoneOf(row);
-    const issue = issueOfRow(row, state.issues);
-    if (!issue) {
-      steps.push({ do: "createIssue", board: true, key: `item ${row.id}`, title, body, type: typeOf(row.kind, state), labels, milestone });
-      if (isDone(row)) steps.push({ do: "closeIssue", board: true, issue: `item ${row.id}`, title });
-      continue;
-    }
-    const step = { do: "updateIssue", board: true, number: issue.number, title };
-    let changed = issue.title !== title;
-    if (issue.body !== body) [step.body, changed] = [body, true];
-    const mine = issue.labels.filter(owned).sort().join();
-    if (mine !== [...labels].sort().join()) [step.labels, changed] = [[...issue.labels.filter((l) => !owned(l)), ...labels], true];
-    if (issue.milestone !== milestone) [step.milestone, changed] = [milestone, true];
-    const open = (issue.state ?? "open") === "open";
-    if (open === isDone(row)) [step.state, changed] = [isDone(row) ? "closed" : "open", true];
-    if (changed) steps.push(step);
-  }
-  return steps;
 };
 
 /** The counts a person reads first: rows by stage and by who pulled them. */

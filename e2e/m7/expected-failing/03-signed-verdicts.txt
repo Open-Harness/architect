@@ -1,0 +1,2 @@
+# Written before M7.05 is built. Red until .github/workflows/test-worlds.yml exists (the token's workflow name and file are read from it), and until the logbook refuses a pull request's token for POST /releases.
+m7/03-signed-verdicts.test.ts > [file error]
