@@ -20,7 +20,7 @@ import * as companyInvariants from "../../blueprint/things/company/invariants.ts
 
 export { World } from "@orthograph/host-cloudflare";
 
-const companyCreateServed = Handlers.serve({ name: "company.create", operation: companyCreate.declaration, handler: companyCreateHandler, codes: Errors.codes });
+const companyCreateServed = Handlers.serve({ name: "company.create", operation: companyCreate.declaration, handler: companyCreateHandler, invariants: { CompanyAbbrTaken: "company.oneAbbrPerOwner", CompanyNameTaken: "company.oneNamePerOwner" }, codes: Errors.codes });
 const companyGetServed = Reads.serve({ name: "company.get", read: companyGet.declaration });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */

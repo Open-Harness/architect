@@ -1,5 +1,7 @@
 {
   "refusals": {
+    "CompanyAbbrTaken": "CO-002",
+    "CompanyNameTaken": "CO-001",
     "CompanyNotActive": "CO-900",
     "IdempotencyConflict": "AR-002",
     "NotAllowed": "AR-001"
@@ -71,17 +73,21 @@
       },
       "lives": "database",
       "invariants": {
-        "oneAbbr": {
+        "oneAbbrPerOwner": {
           "kind": "unique",
           "fields": [
+            "owner",
             "abbr"
-          ]
+          ],
+          "refuse": "CompanyAbbrTaken"
         },
-        "oneName": {
+        "oneNamePerOwner": {
           "kind": "unique",
           "fields": [
+            "owner",
             "companyName"
-          ]
+          ],
+          "refuse": "CompanyNameTaken"
         }
       },
       "machine": {
@@ -122,7 +128,34 @@
           }
         }
       },
-      "errors": {},
+      "errors": {
+        "CompanyNameTaken": {
+          "fields": {
+            "companyName": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "Name"
+            }
+          },
+          "exit": 41,
+          "code": "CO-001"
+        },
+        "CompanyAbbrTaken": {
+          "fields": {
+            "abbr": {
+              "value": {
+                "type": "text",
+                "max": 10
+              },
+              "named": "Abbr"
+            }
+          },
+          "exit": 42,
+          "code": "CO-002"
+        }
+      },
       "roles": [
         "owner"
       ],
@@ -132,7 +165,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "5f3d7650eefb9381"
+      "hash": "7e7c8934b44c2510"
     }
   },
   "operations": {
@@ -198,11 +231,17 @@
         "emits": "CompanyCreated"
       },
       "errors": [],
+      "invariants": {
+        "CompanyAbbrTaken": "company.oneAbbrPerOwner",
+        "CompanyNameTaken": "company.oneNamePerOwner"
+      },
       "breaks": [
-        "company.oneAbbr",
-        "company.oneName"
+        "company.oneAbbrPerOwner",
+        "company.oneNamePerOwner"
       ],
       "refusals": [
+        "CompanyAbbrTaken",
+        "CompanyNameTaken",
         "NotAllowed",
         "IdempotencyConflict"
       ],
@@ -225,7 +264,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "ccadf0724b53e954"
+      "hash": "9c2724f9ccd72ac5"
     },
     "company.get": {
       "kind": "read",
@@ -318,6 +357,185 @@
     }
   },
   "journeys": {
+    "journeys/companies-are-kept-apart.ts": {
+      "name": "companies are kept apart",
+      "file": "journeys/companies-are-kept-apart.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a company",
+      "steps": [
+        {
+          "title": "Ada can't give a second company of hers the same name",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Trading",
+              "abbr": "AT2",
+              "country": "Kenya",
+              "defaultCurrency": "USD"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "CompanyNameTaken",
+              "fields": {
+                "companyName": "Acme Trading"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor the same abbreviation",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Holdings",
+              "abbr": "AT",
+              "country": "Kenya",
+              "defaultCurrency": "USD"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "CompanyAbbrTaken",
+              "fields": {
+                "abbr": "AT"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo may use both for his own company, because her names don't bind him",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Trading",
+              "abbr": "AT",
+              "country": "Uganda",
+              "defaultCurrency": "UGX"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "CompanyCreated",
+              "fields": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "owner": {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "company",
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "Bo still can't read Ada's",
+          "call": {
+            "actor": "bo",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada's company is untouched and still hers",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Trading",
+                "AT",
+                "Kenya",
+                "USD",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "68af707f20264a3493f7ca285ee3ebbc8c6f77c447c2a7164857365442e5a3a7"
+    },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
       "file": "journeys/set-up-a-company.ts",
@@ -446,9 +664,121 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Bo sets up a company of his own, which he runs",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Kilimanjaro Coffee Exporters",
+              "abbr": "KCE",
+              "country": "Tanzania",
+              "defaultCurrency": "TZS"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "CompanyCreated",
+              "fields": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "owner": {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "company",
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "Ada can't read Bo's company",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads his back, exactly as he typed it",
+          "call": {
+            "actor": "bo",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Kilimanjaro Coffee Exporters",
+                "KCE",
+                "Tanzania",
+                "TZS",
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "393f7d35ebda9f19854e388206910feb2d39886a4bdb1235b8a78a8d1e23e825"
+      "sourceHash": "91b416bbfb8a2428e62fbf99573e390a5534dbe494bf94efc65d364bd17d3842"
     }
   },
   "startingWorlds": {
@@ -525,6 +855,26 @@
         "code": "AR-002",
         "severity": "ticket",
         "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:CO-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "CO-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/company/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:CO-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "CO-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/company/errors.ts"
       }
     },
     {
@@ -706,6 +1056,16 @@
           "severity": "ticket"
         }
       ]
+    },
+    {
+      "id": "verdict:companies are kept apart:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "companies are kept apart",
+        "severity": "page",
+        "owner": "journeys/companies-are-kept-apart.ts"
+      }
     },
     {
       "id": "verdict:set up a company:local",
