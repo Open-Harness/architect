@@ -55,6 +55,7 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
    | World `alarm` | **not wrapped** | it is the world's lifetime, and a lifetime is real time (K23 section 1) |
    | `/_world/worlds`, `/_world/arm`, `/_world/end` | **not wrapped** | the registry and its leases are the machine's time |
    | Actor Durable Object, `find` and `commit` (RPC) | `WorldEntry.withinNow`: a real world answers at once as before; a stepped or scaled one answers a promise after reading its world's instant | the caller's world does not travel into another object's request (M8.05, check 8) |
+   | (M8.07) the timer table's alarm | **must wrap**: unlike the lifetime alarm above, an alarm that fires the world's timers runs app code and has to read its world's instant | the lifetime alarm stays unwrapped on purpose |
    | A Workflows step | `WorldEntry.within(env, step)` | no workflow engine is on this branch yet (Goal 8); the entry is ready for it |
 
 4. **The `Date` proxy is installed once and only for a world that is not real.** `WorldClock.within` installs it the first
@@ -72,7 +73,9 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
 7. **`advance` and `move-to` only set the instant here.** Settling (firing what is due on the way, waiting for quiet,
    `NeverQuiet`, `fired`) is M8.07's controller; the door answers `fired: []` and `timers: []` because no timer table
    exists yet. A span is `<n> <unit>`, read by `Spans.read`; seconds to weeks are fixed lengths and months and years go by
-   the calendar in UTC (`DateTime.add`). `move-to` never goes back: 400 `BadMove`.
+   the calendar in UTC (`DateTime.add`). `move-to` never goes back: 400 `BadMove`. A target that is not finite, or lies
+   past the furthest instant a `Date` holds (8.64e15 ms), is refused with 400 `BadMove` before anything is stored, so a
+   refused move leaves the world as it was (review of #615).
 8. **`ortho check` refuses a stepped or scaled clock on an environment in a promotion chain,** meaning it promotes from
    another environment or another promotes from it (staging and production). The problem is a compile problem naming the
    file and the environment. A public chain is not modelled yet, so only the promotion half of K23's rule is built.

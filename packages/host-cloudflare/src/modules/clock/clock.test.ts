@@ -44,6 +44,25 @@ describe("the instant a world keeps", () => {
     });
   });
 
+  it("refuses a move past the furthest instant a Date holds, or to nothing, and stays where it was, readable and answering", async () => {
+    await inStorage("clock-range", async (sql) => {
+      const clock = WorldClock.state(sql, STEPPED);
+      const at = clock.now();
+      for (const span of ["300000 years", "99999999999 days", "99999999999999999999999 days", "9999999999999 weeks"]) {
+        expect(clock.advance(span), span).toMatchObject({ ok: false, status: 400, body: { _tag: "BadMove" } });
+      }
+      for (const to of ["+275760-09-13T00:00:01Z", "+275760-09-14T00:00:00Z", "+999999-01-01T00:00:00Z"]) {
+        expect(clock.moveTo(to), to).toMatchObject({ ok: false, status: 400, body: { _tag: "BadMove" } });
+      }
+      expect(clock.now()).toBe(at);
+      const door = await WorldClock.door(clock, new Request("http://world/_world/clock"))!;
+      expect([door.status, (await door.json() as { now: string }).now]).toEqual([200, "2027-01-10T09:00:00.000Z"]);
+      const over = await WorldClock.door(clock, new Request("http://world/_world/clock/advance", { method: "POST", body: JSON.stringify({ span: "300000 years" }) }))!;
+      expect(over.status).toBe(400);
+      expect(WorldClock.within(clock.now(), () => new Date().getTime())).toBe(at);
+    });
+  });
+
   it("flows at its speed when scaled, from where it was last set", async () => {
     await inStorage("clock-scaled", (sql) => {
       const clock = WorldClock.state(sql, { kind: "scaled", starts: "2027-01-10T09:00:00.000Z", speed: 3600 });

@@ -7,7 +7,10 @@ import { wall } from "./date.ts";
 
 const UNIT_MS = { second: 1_000, minute: 60_000, hour: 3_600_000, day: 86_400_000, week: 604_800_000 } as const;
 
-const refused = (status: 400 | 409, _tag: "ClockNotMovable" | "BadMove", message: string): Moved => ({ ok: false, status, body: { _tag, message } });
+/** The furthest instant a `Date` can hold, in milliseconds from the epoch. */
+const MAX_INSTANT = 8.64e15;
+
+const refused =(status: 400 | 409, _tag: "ClockNotMovable" | "BadMove", message: string): Moved => ({ ok: false, status, body: { _tag, message } });
 
 /** `from` plus a span in words: seconds to weeks are fixed lengths; months and years go by the calendar, in UTC. */
 export const plus = (from: number, span: string): number | undefined => {
@@ -43,6 +46,8 @@ export const stateOf = (sql: SqlStorage, declaration: ClockDeclaration): ClockSt
     return r.speed === 0 ? r.instant : Math.floor(r.instant + (wall() - r.anchor) * r.speed);
   };
   const set = (to: number): Moved => {
+    // A `Date` holds at most 8.64e15 ms either side of the epoch; past that (or NaN) the world would be poisoned, so nothing is stored.
+    if (!Number.isFinite(to) || Math.abs(to) > MAX_INSTANT) return refused(400, "BadMove", "that is further than any instant can be: the world's clock stays where it is");
     sql.exec("UPDATE clock SET instant = ?, anchor = ? WHERE one = 1", to, wall());
     return { ok: true, now: to };
   };
