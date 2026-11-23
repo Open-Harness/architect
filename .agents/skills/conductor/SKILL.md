@@ -97,8 +97,8 @@ The board's truth is the capability map. The details, the stage words and the co
 - **The board:** `docs/canon/status.md` section 2, and the "Orthograph" Project it fills.
 - **Goals:** `design/goals/<nn>-<name>.md`, each with its "Where it stands", and `.agents/skills/kanban/STATE.md`, the
   index: each goal, its harness if known, its branch, brief and done check.
-- **Plan and decisions:** `design/milestones.md`, `design/decisions/`, and `design/handoff.md`, which you keep, so a
-  fresh conductor can take over.
+- **Plan and decisions:** `design/milestones.md`, `design/build-plan.md` (mark each step done, with its proof, in the pull
+  request that lands it), `design/decisions/`, and `design/handoff.md`, which you keep, so a fresh conductor can take over.
 - **Threads:** your agent's thread list, by title emoji; Claude Code cloud threads also by tag `ortho`.
 - **Aaron's view:** a short sitrep in the thread, after every change.
 
@@ -106,7 +106,7 @@ The board's truth is the capability map. The details, the stage words and the co
 
 A goal may run in Codex, OpenCode, Amp or another account, started by Aaron with its brief's one-line start. You don't
 relay for it: read its brief's "Where it stands", its rows and lanes on the board, its Snag issues, its pull requests.
-Answer a case-2 collision by deciding, as a decision, when two goals disagree.
+Before it starts, cut and protect its branch. Answer a case-2 collision by deciding, as a decision, when two goals disagree.
 
 ## While workers run
 
@@ -124,12 +124,16 @@ pull request follow the five conditions in [references/landing.md](references/la
 CI, the gate passes, a 🔍 that wrote none of it, every thread resolved. After each landing, each running goal merges
 `main` in at its next slice start.
 
+The 🔍 is not only for slices: every build pull request, a builder's into a goal branch included, gets one before it
+merges. Brief every lead to run the 🔍 on every build pull request, and to have it list every door into the change and run
+one probe through each (the `reviewer` skill).
+
 ## Spikes and decisions
 
 - **Spikes** run as 🧪 threads, briefed with the `spike` skill. Several can run at once; each is one question.
 - **When a spike is in,** read its README, then fold its finding into the row or decision it feeds. A surprise changes a
   known, small part of the plan; say which rows it rewrote.
-- **Decision steps** run with Aaron: recommend one option, say why, record his answer. A grill is a Decision issue with
+- **Decision steps** run with Aaron, in a 📐 thread or with Goal 18: recommend one option, say why, record his answer. A grill is a Decision issue with
   `needs-aaron`.
 
 ## Keeping the view

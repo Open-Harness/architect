@@ -54,8 +54,10 @@ stands in (Feature for a goal, Bug for a snag, Task for the rest). Filter by the
    it). **Built** is green on `main` and proved by the journeys of the app that pulled it.
 3. **Release the claim** by setting the lane back to `none` when you stop. A goal that stops releases every claim.
 
-The details of the columns, **adopting** an existing issue into a row (`` `issue #N` ``), folding duplicates into it
-(`` `folds #N, #M` ``), the Project's Status and the roadmap's dates are in [references/sync.md](references/sync.md).
+The details of the columns, **adopting** an existing `kind:ask` issue into a row (`` `issue #N` ``), folding duplicate asks
+into it (`` `folds #N, #M` ``), the Project's Status and the roadmap's dates (a forecast) are in
+[references/sync.md](references/sync.md). A snag, a claim, a decision, a goal or a slice is never adopted: write it as a
+plain `#N` in Evidence.
 
 ## A goal's brief
 
@@ -100,13 +102,16 @@ its claims.
 ```bash
 node tools/github/sync.mjs --goal-branches --board --project --dry-run   # what it would do, read-only
 node tools/github/sync.mjs --goal-branches --board --project --apply     # do it (the workflow does)
+node tools/github/sync.mjs --board --bootstrap --apply                    # once, locally, with admin:org: the issue types only
 node --test tools/github/                                                 # its tests
 ```
 
 It finds each issue by a marker in its body, never by title, takes only issues the owner, a collaborator or the workflow
 opened, and **never deletes anything**: a row removed from the page leaves its issue where it is. You rarely run it: the
 `goals` workflow runs it, one run at a time, on every push to `main`, every three hours, and when an issue opens, closes or
-changes. Writes are paced and a rate-limit refusal is waited out; a run that stops is mended by the next, since every row is
+changes. The organization's issue types need `admin:org`, which the workflow's token lacks, so they are made once by
+`--board --bootstrap --apply` run locally; until then the workflow warns (`::warning::`) and writes nothing, and never goes
+red. Writes are paced and a rate-limit refusal is waited out; a run that stops is mended by the next, since every row is
 found again by its marker. The Project needs a token with the `project` scope (`ORTHOGRAPH_PROJECT_TOKEN`); without one the
 issues are written and the Project is kept by a local run.
 
