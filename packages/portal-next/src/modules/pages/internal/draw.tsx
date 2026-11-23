@@ -7,9 +7,9 @@ import type { FrameEnv } from "../../frame/types.ts";
 import type { PortalData, Store } from "../../data/types.ts";
 
 /** A page's body: what is drawn from the data, for the route's parameters. It draws its own frame through `Frame.Page`. */
-export type Body = (data: PortalData, params: Params) => ReactNode;
+export type Body = (data: PortalData, params: Params, search: URLSearchParams) => ReactNode;
 
-export const Drawn = ({ store, env, params, body }: { readonly store: Store; readonly env: FrameEnv; readonly params: Params; readonly body: Body }) => {
+export const Drawn = ({ store, env, params, search = new URLSearchParams(), body }: { readonly store: Store; readonly env: FrameEnv; readonly params: Params; readonly search?: URLSearchParams; readonly body: Body }) => {
   const loaded = useSyncExternalStore(store.subscribe, store.get, store.get);
   return (
     <Frame.Provider env={env}>
@@ -19,15 +19,15 @@ export const Drawn = ({ store, env, params, body }: { readonly store: Store; rea
             <h1>The portal could not read its data</h1>
             <p className="banner">{`${loaded.failure.request}: ${loaded.failure.reason}. Nothing here is a proof.`}</p>
           </Frame.Page>
-        ) : body(loaded.data, params)}
+        ) : body(loaded.data, params, search)}
     </Frame.Provider>
   );
 };
 
 /** A route that names something the blueprint does not declare is not a page. */
-export const NotFound = ({ what }: { readonly what: string }) => (
-  <Frame.Page status={404}>
+export const NotFound = ({ what, data }: { readonly what: string; readonly data?: PortalData }) => (
+  <Frame.Page status={404} data={data}>
     <h1>Not found</h1>
-    <p>{`${what} is not declared in this project's blueprint.`}</p>
+    <p>{`${what} is not a page of this portal.`}</p>
   </Frame.Page>
 );

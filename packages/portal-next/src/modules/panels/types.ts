@@ -2,7 +2,8 @@
 // addresses of the pages that are always there come from the app's own map (`generated/app/navigation.json`); only what the model adds
 // (a page per thing, one per environment, a code per refusal) is read from the blueprint, and each of those addresses is a typed link of
 // `generated/app/links.ts`. No path is written in this package.
-import type { NavigationData } from "@orthograph/shell";
+import type { MountProps, NavigationData } from "@orthograph/shell";
+import type { Store } from "../data/types.ts";
 import type { BlueprintWire } from "@orthograph/portal";
 
 /** The addresses of the pages that take a name, from `generated/app/links.ts` (`links` of the app projection satisfies this as it is). */
@@ -33,7 +34,12 @@ export interface SearchEntry {
   readonly code?: string;
 }
 
+/** What `mountShell` takes as `extra`: rows added to its palette at run time. */
+export type ExtraSource = NonNullable<MountProps["extra"]>;
+
 export interface PanelsApi {
+  /** The search index as the shell's palette rows, read from the store: empty until the data is in, the same array until it changes. */
+  readonly extraSource: (store: Store, links: Links) => ExtraSource;
   /** The pages each icon opens, panel by panel in the map's order: a map page is one entry, `thing` and `environment` one per declared name. */
   readonly pages: (navigation: NavigationData, links: Links, blueprint: BlueprintWire) => ReadonlyArray<PanelPage>;
   /** The one index ⌘K searches: things, operations, journeys, refusal codes, environments and the monitor page. */

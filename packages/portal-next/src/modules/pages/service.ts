@@ -2,6 +2,7 @@ import { createElement } from "react";
 import { painter } from "./internal/host.tsx";
 import { EnvironmentPage } from "./internal/environment.tsx";
 import { Home } from "./internal/home.tsx";
+import { NotFound } from "./internal/draw.tsx";
 import { OperationPage } from "./internal/operation.tsx";
 import { Stub } from "./internal/stub.tsx";
 import { ThingPage } from "./internal/thing.tsx";
@@ -30,4 +31,7 @@ const painters: PagesApi["painters"] = (deps) => ({
   ...Object.fromEntries(LATER.map(([page, title, slice]) => [page, painter(deps, (data) => createElement(Stub, { data, title, slice }))])),
 });
 
-export const Pages: PagesApi = { painters };
+/** The 404 for an address no route of the map matches: the page's own hook and the frame, with the shell's element around it. */
+const notFound: PagesApi["notFound"] = (deps) => painter(deps, (data) => createElement(NotFound, { data, what: "This address" }));
+
+export const Pages: PagesApi = { painters, notFound };

@@ -15,4 +15,6 @@ export interface PagesDeps {
 export interface PagesApi {
   /** One painter for each page of the map, to hand to the shell as `pages`. */
   readonly painters: (deps: PagesDeps) => Readonly<Record<string, PageFn>>;
+  /** The body of the 404 for an address no route matches, to hand to the shell as `notFound`. */
+  readonly notFound: (deps: PagesDeps) => PageFn;
 }

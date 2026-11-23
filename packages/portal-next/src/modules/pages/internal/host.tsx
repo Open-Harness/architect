@@ -5,8 +5,8 @@ import type { PageFn } from "@orthograph/shell";
 import { Drawn, type Body } from "./draw.tsx";
 import type { PagesDeps } from "../types.ts";
 
-export const painter = ({ store, env }: PagesDeps, body: Body): PageFn => (el, params) => {
+export const painter = ({ store, env }: PagesDeps, body: Body): PageFn => (el, params, search) => {
   const root = createRoot(el);
-  root.render(<Drawn store={store} env={env} params={params} body={body} />);
+  root.render(<Drawn store={store} env={env} params={params} search={search} body={body} />);
   return () => { queueMicrotask(() => { root.unmount(); }); };
 };

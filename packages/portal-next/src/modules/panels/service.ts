@@ -1,5 +1,6 @@
 import { TITLES, environmentsOf, thingsOf } from "./internal/names.ts";
-import type { PanelPage, PanelsApi, SearchEntry } from "./types.ts";
+import type { Loaded } from "../data/types.ts";
+import type { ExtraSource, PanelPage, PanelsApi, SearchEntry } from "./types.ts";
 
 const pages: PanelsApi["pages"] = (navigation, links, blueprint) =>
   navigation.groups.flatMap((group): ReadonlyArray<PanelPage> =>
@@ -18,4 +19,24 @@ const searchIndex: PanelsApi["searchIndex"] = (links, blueprint): ReadonlyArray<
   { kind: "monitor", name: "Monitor", href: links.monitor() },
 ];
 
-export const Panels: PanelsApi = { pages, searchIndex };
+const GROUPS: Readonly<Record<SearchEntry["kind"], string>> = { thing: "Things", operation: "Operations", journey: "Journeys", refusal: "Refusal codes", environment: "Environments", monitor: "Monitor" };
+
+const extraSource: PanelsApi["extraSource"] = (store, links) => {
+  let seen: Loaded | undefined;
+  let rows: ReturnType<ExtraSource["read"]> = [];
+  return {
+    read: () => {
+      const now = store.get();
+      if (now !== seen) {
+        seen = now;
+        rows = now.state === "ready"
+          ? searchIndex(links, now.data.blueprint).map((e) => ({ name: e.code === undefined ? e.name : `${e.name} ${e.code}`, group: GROUPS[e.kind], description: e.kind, allowed: [{ kind: "anyone" as const }], href: e.href }))
+          : [];
+      }
+      return rows;
+    },
+    subscribe: store.subscribe,
+  };
+};
+
+export const Panels: PanelsApi = { pages, searchIndex, extraSource };
