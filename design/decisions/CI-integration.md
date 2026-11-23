@@ -78,7 +78,8 @@ Three causes, none of them runner capacity:
 
 1. **Never end a turn waiting without a watcher.** After every push to a ready pull request, the lead starts one
    background command that ends when the required checks end, so the session is woken:
-   `gh pr checks <n> -R Open-Harness/orthograph --watch --required`, run in the background (Claude Code's
+   `gh pr checks <n> -R Open-Harness/orthograph --watch --required` (_Superseded by CI-watch-required, 23 November 2026:
+   `tools/ci/watch-required.sh <n>`_), run in the background (Claude Code's
    `run_in_background`; Amp and Codex run it as a background job and read it on wake). `--required` leaves out
    `codex-finished`, which can stay pending for good. The watch can end early while jobs still wait for a runner or
    before they register (Goal 4 saw this on 22 November): on wake, if `gh pr checks <n> --required` still shows a
