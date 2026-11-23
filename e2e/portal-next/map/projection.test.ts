@@ -19,10 +19,13 @@
 //    links.ts         `export const links`: one function per page, named by the page: `links.home()`, `links.profile({ handle })`.
 //                     A parameter is a `string`, in the address percent-encoded (`encodeURIComponent`). A page that is not declared,
 //                     a parameter that is wrong or missing, fails `tsc` (so `ortho check`) in the file that wrote it
-//    palette.ts       `export const visibleTo = (caller: "anonymous" | "person") => <entries of palette.json>`: what the caller may open
-//                     and call. A page entry is visible to an anonymous caller when its `allowed` has `anyone`, to a person when it has
-//                     `anyone`, `signed-in` or a role (a role is decided on an instance, so it is not ruled out for a person). An
-//                     operation entry is visible when its page's entry is and its own `allowed` passes the same rule.
+//    palette.ts       `export const visibleTo = (caller: "anonymous" | "person", roles?: ReadonlyArray<string>) => <entries of palette.json>`:
+//                     what the caller may open and call. `roles` are the names of the roles the caller holds, as the model names them in
+//                     `allowed` (`"link.linkOwner"`); a call with no `roles` is a caller who holds none. An entry's `allowed` passes for
+//                     an anonymous caller when it has `anyone` (an anonymous caller holds no role, whatever `roles` says); for a person when
+//                     it has `anyone` or `signed-in`, or a role the person holds. So a page open only to a role is hidden from a person who
+//                     does not hold it, and listed to one who does. A page entry is visible when its `allowed` passes; an operation entry
+//                     when its page's entry is and its own `allowed` passes. The palette never lists what the caller could not open or call.
 //  The derived default (K31, section 5): with no `blueprint/app/`, a mounted projection derives the map and never writes it into the model:
 //    layout `sidebar`, home `home` (path `/`, nothing shown or offered), a page per thing, named by the thing, at `/things/<thing>`,
 //    that offers every operation of the thing and shows none, all `allowed: [{ kind: "anyone" }]`, and one navigation group, `Things`,
@@ -50,7 +53,8 @@ const signedIn = { kind: "signed-in" };
 
 type Entry = { readonly kind: string; readonly name: string; readonly page?: string; readonly component?: string | null };
 const names = (entries: ReadonlyArray<Entry>) => entries.map((e) => (e.kind === "page" ? e.name : `${e.page ?? ""}/${e.name}`));
-const visible = (p: Project, caller: string) => names(evaluate(p, "generated/app/palette.ts", `m.visibleTo(${JSON.stringify(caller)})`) as Entry[]);
+const visible = (p: Project, caller: string, roles?: ReadonlyArray<string>) =>
+  names(evaluate(p, "generated/app/palette.ts", `m.visibleTo(${JSON.stringify(caller)}${roles === undefined ? "" : `, ${JSON.stringify(roles)}`})`) as Entry[]);
 
 describe("a declared map, mounted", () => {
   const good = once((): Project => generated(made(["good", "mount"])));
@@ -116,8 +120,25 @@ describe("a declared map, mounted", () => {
 
   it("palette.ts lists only what the caller may open and call", () => {
     const p = good();
+    const pages = ["account", "edit", "home", "profile", "thing"];
     expect(visible(p, "anonymous")).toEqual(["home", "profile", "thing"]);
-    expect(visible(p, "person")).toEqual(["account", "edit", "home", "profile", "thing", "edit/link.order", "edit/link.remove", "home/handle.claim", "profile/handle.release", "profile/link.add"]);
+    // A person with no roles passed holds none: the operations only a role may call are not listed.
+    expect(visible(p, "person")).toEqual([...pages, "home/handle.claim", "profile/link.add"]);
+    expect(visible(p, "person", [])).toEqual(visible(p, "person"));
+    expect(visible(p, "person", ["link.linkOwner"])).toEqual([...pages, "edit/link.order", "edit/link.remove", "home/handle.claim", "profile/link.add"]);
+    expect(visible(p, "person", ["handle.handleOwner", "link.linkOwner"])).toEqual([...pages, "edit/link.order", "edit/link.remove", "home/handle.claim", "profile/handle.release", "profile/link.add"]);
+    // An anonymous caller holds no role, whatever is passed.
+    expect(visible(p, "anonymous", ["link.linkOwner", "handle.handleOwner"])).toEqual(["home", "profile", "thing"]);
+  }, 900_000);
+
+  it("a page open only to a role is listed to a person who holds it and to no one else", () => {
+    const scoped = once(() => generated(made(["good", "mount", "scoped-ok"])))();
+    const rest = ["edit", "home", "profile", "thing"];
+    expect(visible(scoped, "person")).not.toContain("account");
+    expect(visible(scoped, "person")).not.toContain("account/link.remove");
+    expect(visible(scoped, "person", ["handle.handleOwner"])).not.toContain("account");
+    expect(visible(scoped, "person", ["link.linkOwner"])).toEqual(["account", ...rest, "account/link.remove", "edit/link.order", "edit/link.remove", "home/handle.claim", "profile/link.add"]);
+    expect(visible(scoped, "anonymous", ["link.linkOwner"])).toEqual(["home", "profile", "thing"]);
   }, 900_000);
 
   it("links.ts: a typed link per page, parameters encoded", () => {
@@ -163,7 +184,8 @@ describe("the derived default, with no blueprint/app/", () => {
 
   it("its palette lists the pages, and an anonymous caller only the operations anyone may call", () => {
     expect(visible(derived(), "anonymous")).toEqual(["handle", "home", "link", "profile", "handle/handle.resolve", "profile/profile.get"]);
-    expect(visible(derived(), "person")).toHaveLength(4 + 7);
+    expect(visible(derived(), "person")).toHaveLength(4 + 4);
+    expect(visible(derived(), "person", ["handle.handleOwner", "link.linkOwner"])).toHaveLength(4 + 7);
   }, 900_000);
 
   it("unmounted, a project with no map writes no generated/app/", () => {
