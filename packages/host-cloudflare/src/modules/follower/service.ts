@@ -1,11 +1,11 @@
 import { DurableObject } from "cloudflare:workers";
 import { Cause, Clock, Effect } from "effect";
 import { failed, sameSource } from "./internal/health.ts";
-import { step, FollowerFault, type Stored } from "./internal/poll.ts";
+import { CHECKPOINT, OUTBOX, runStep } from "./internal/outbox.ts";
+import { FollowerFault, type Stored } from "./internal/poll.ts";
 import type { CheckpointView, FollowerApi, FollowerConfig, FollowerEnv, FollowerHealth } from "./types.ts";
 
 const CONFIG = "config";
-const CHECKPOINT = "checkpoint";
 const HEALTH = "health";
 
 const view = ({ number, hash }: { readonly number: bigint; readonly hash: string }) => ({ number: number.toString(), hash });
@@ -29,7 +29,7 @@ export class Follower extends DurableObject implements FollowerApi {
     const { ctx } = this;
     return this.serially(() => Effect.runPromise(Effect.gen(function* () {
       const before = yield* Effect.promise(() => ctx.storage.get<FollowerConfig>(CONFIG));
-      if (before !== undefined && !sameSource(before, config)) yield* Effect.promise(() => ctx.storage.delete([CHECKPOINT, HEALTH]));
+      if (before !== undefined && !sameSource(before, config)) yield* Effect.promise(() => ctx.storage.delete([CHECKPOINT, OUTBOX, HEALTH]));
       yield* Effect.promise(() => ctx.storage.put(CONFIG, config));
       const period = config.pollIntervalMs;
       if (period === undefined) return yield* Effect.promise(() => ctx.storage.deleteAlarm());
@@ -73,10 +73,8 @@ export class Follower extends DurableObject implements FollowerApi {
     return () => Effect.runPromise(Effect.gen(function* () {
       const config = yield* Effect.promise(() => ctx.storage.get<FollowerConfig>(CONFIG));
       if (config === undefined) return yield* new FollowerFault({ kind: "unconfigured", message: "this follower has not been configured" });
-      const old = yield* Effect.promise(() => ctx.storage.get<Stored>(CHECKPOINT));
       const sink = () => (env as unknown as FollowerEnv).FOLLOWER_SINK.getByName(ctx.id.name ?? `eip155:${config.chainId}:${config.address}`);
-      const next = yield* step(config, old, sink);
-      yield* Effect.promise(() => ctx.storage.put(CHECKPOINT, next.checkpoint));
+      const next = yield* runStep(ctx.storage, config, sink);
       yield* Effect.promise(() => ctx.storage.delete(HEALTH));
       return { caughtUp: next.caughtUp };
     }).pipe(Effect.tapCause((cause) => !record ? Effect.void : Effect.gen(function* () {
