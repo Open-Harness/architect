@@ -16,7 +16,8 @@ export type Principal =
   | { readonly kind: "person"; readonly person: string; readonly email?: string; readonly via: "session" | "key" | "device" }
   | { readonly kind: "agent"; readonly person: string; readonly email?: string; readonly via: "agent" }
   | { readonly kind: "service"; readonly mount: string }
-  | { readonly kind: "system" };
+  | { readonly kind: "system" }
+  | { readonly kind: "keeper" };
 
 /** Someone's hands: a person, or an agent acting for one. What a role's rule is given, so `principal.person` still works there. */
 export type Acting = Extract<Principal, { readonly person: string }>;
@@ -60,8 +61,8 @@ export interface RoleOf<T extends Thing = Thing, P extends string = string> exte
   readonly path: P;
 }
 
-/** Built in: anyone at all (every kind), or anyone signed in (a person or an agent). */
-export type Builtin = { readonly kind: "anyone" } | SignedIn;
+/** Built in: anyone at all (every kind), anyone signed in (a person or an agent), or the keeper: the principal that fires moves made by time (K23 section 3). */
+export type Builtin = { readonly kind: "anyone" } | SignedIn | { readonly kind: "keeper" };
 export interface SignedIn extends Narrowable {
   readonly kind: "signed-in";
 }
@@ -88,4 +89,6 @@ export interface RolesApi {
   readonly anyone: Builtin;
   readonly signedIn: SignedIn;
   readonly system: System;
+  /** The keeper as a principal: allowed only where an operation lists it, and refused by every operation that does not. */
+  readonly keeper: { readonly kind: "keeper" };
 }

@@ -318,7 +318,8 @@ From Goal 3's pace (a medium slice takes three to six hours from opening to merg
 
 ## Where it stands
 
-22 November 2026. Slice 1 has landed: the actions module is in `orthograph`, so a program can now ask a person before it
-acts, and a refusal tells the caller that nothing was written. The goal's own test target is in place and green through
-its list of expected failures. Slice 2, the checks for the web building blocks, is being written. Slices 3 and 4 wait on
-Goal 3 letting an operation say it needs a person's yes, which this goal has asked for.
+23 November 2026. Slices 1 and 2 have landed. A program can ask a person before it acts, and a refusal tells the caller
+that nothing was written. The checks for the web building blocks are written and fail only because the building blocks
+don't exist yet, along with the decision on how a page connects to the app. Goal 3 has let an operation say it needs a
+person's yes, and has set aside the code for a no. Slice 3's checks, for one generated action per operation, are written
+and in review; its build comes next, then slice 4, the web building blocks themselves.

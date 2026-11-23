@@ -3,6 +3,7 @@ export { IDEMPOTENCY_CONFLICT } from "#modules/model/internal/codes.js";
 export { Compiler, canonical, handlerFiles, type HandlerFile } from "#modules/model/service.js";
 export { BlueprintInvalid } from "#modules/model/types.js";
 export type { Model, ThingModel, OperationModel, FieldModel, FieldsModel, VisibilityModel, AllowedModel, ValueMeta, EnvironmentModel, PublicationModel, SinkModel, MountModel, FromModel, StoreModel, StoreFromModel, StepModel } from "#modules/model/types.js";
+export type { ByModel, ClockModel, MoveTimeModel } from "#modules/time/types.js";
 export { nodeSource } from "#modules/source/service.js";
 export { packageDir, pluginFolder, resolveFrom } from "#modules/source/service.js";
 export { BlueprintSource, SourceError, type PluginPackage, type PluginFiles } from "#modules/source/types.js";

@@ -3,12 +3,12 @@
 // runtime's `Mcp`, which leaves out whatever is not public). The server wires each entry to its served operation.
 import { Names } from "orthograph/server";
 import type { Model } from "@orthograph/compiler";
-import { GENERATED, lines, opVar, ruleBehind } from "#modules/names/service.js";
+import { GENERATED, lines, opVar, ruleBehind, timeMoveOf, whenWords } from "#modules/names/service.js";
 import type { RenderedFile } from "#modules/names/types.js";
 
 /** The operation's description, then each refusal the runtime makes for a rule and why, in the rule's one sentence (G5): an agent reads it before it calls. */
 const toolDescription = (model: Model, o: Model["operations"][string]) =>
-  [o.description, ...Object.keys(o.invariants ?? {}).flatMap((r) => { const rule = ruleBehind(model, o, r); return rule ? [`Refuses ${r} when ${rule.sentence}.`] : []; })].join(" ");
+  [o.description, ...(timeMoveOf(model, o) ? [`Made by time: ${whenWords(o.thing, timeMoveOf(model, o)!, "")}.`] : []), ...Object.keys(o.invariants ?? {}).flatMap((r) => { const rule = ruleBehind(model, o, r); return rule ? [`Refuses ${r} when ${rule.sentence}.`] : []; })].join(" ");
 
 export const renderMcp = (model: Model): ReadonlyArray<RenderedFile> => {
   // MCP is the agent's way in: an operation a mount narrowed without Via.agent has no tool (M1-plugins section 3). The catalog is what the
