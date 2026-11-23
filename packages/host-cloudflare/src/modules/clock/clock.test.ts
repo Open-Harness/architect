@@ -63,6 +63,14 @@ describe("the instant a world keeps", () => {
     });
   });
 
+  it("refuses a move-to earlier than now with 400 BadMove and leaves the instant unchanged", async () => {
+    await inStorage("clock-back", (sql) => {
+      const clock = WorldClock.state(sql, STEPPED);
+      expect(clock.moveTo("2027-01-10T08:59:59Z")).toMatchObject({ ok: false, status: 400, body: { _tag: "BadMove" } });
+      expect(iso(clock.now())).toBe("2027-01-10T09:00:00.000Z");
+    });
+  });
+
   it("flows at its speed when scaled, from where it was last set", async () => {
     await inStorage("clock-scaled", (sql) => {
       const clock = WorldClock.state(sql, { kind: "scaled", starts: "2027-01-10T09:00:00.000Z", speed: 3600 });

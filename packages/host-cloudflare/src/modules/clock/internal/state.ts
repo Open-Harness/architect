@@ -10,7 +10,7 @@ const UNIT_MS = { second: 1_000, minute: 60_000, hour: 3_600_000, day: 86_400_00
 /** The furthest instant a `Date` can hold, in milliseconds from the epoch. */
 const MAX_INSTANT = 8.64e15;
 
-const refused =(status: 400 | 409, _tag: "ClockNotMovable" | "BadMove", message: string): Moved => ({ ok: false, status, body: { _tag, message } });
+const refused = (status: 400 | 409, _tag: "ClockNotMovable" | "BadMove", message: string): Moved => ({ ok: false, status, body: { _tag, message } });
 
 /** `from` plus a span in words: seconds to weeks are fixed lengths; months and years go by the calendar, in UTC. */
 export const plus = (from: number, span: string): number | undefined => {
