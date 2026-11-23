@@ -5,6 +5,7 @@ import { isRef, pathOf, refTo, resolve } from "./internal/refs.ts";
 const actorOf = (name: string, via?: Via): Actor =>
   Object.freeze({
     person: refTo(["cast", name, "person"]),
+    account: refTo(["cast", name, "account"]),
     email: refTo(["cast", name, "email"]),
     password: refTo(["cast", name, "password"]),
     run: (operation: Call["operation"], payload: Call["payload"], options?: { readonly request?: string; readonly due?: string }): Call =>

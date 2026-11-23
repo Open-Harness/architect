@@ -105,7 +105,7 @@ written three different ways.
    | `email()`, `visibility.secret(...)`, `visibility.private(...)` | refused: "a public chain shows every field" |
    | `schema(...)` | refused unless it declares its Solidity type |
 
-   Money is not in this table. It gets its own round with Aaron (the open pull request #203, ledger `THI-07`, not yet merged).
+   Money is not in this table. It gets its own round with Aaron (the open pull request #203, ledger `THI-07`, not yet merged). Superseded by M6-money, 21 November 2026: money is decided there.
 
 6. **An operation on a thing that lives on chain runs on chain.** Its `runs` is worked out, and an author never writes
    `runs: "chain"`. This is the building agent's call, offered to Aaron in the round and not objected to.
