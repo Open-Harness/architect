@@ -268,15 +268,17 @@ export const slackSource = Source.from(slack, {
       ...(e.channel_type === "im" ? { addressed: "direct" as const } : {}), channel: { channel: e.channel, ts: e.thread_ts ?? e.ts } },
   },
   reply: {
-    call: slack.calls.chat.postMessage,
+    call: slack.calls.chat.postMessage,   // Superseded by GOAL17-names, 23 November 2026: slack.calls.chatPostMessage
     args: (m) => ({ channel: m.address.channel, thread_ts: m.address.ts, text: m.text, metadata: { event_type: "orthograph", event_payload: { key: m.key } } }),
     landed: (message, key) => message.meta?.["key"] === key,
     gone: [ChannelNotFound, IsArchived],
   },
-  history: { call: slack.calls.conversations.replies, args: (a, cursor) => ({ channel: a.channel, ts: a.ts, ...(cursor ? { cursor } : {}) }),
+  history: { call: slack.calls.conversations.replies,   // Superseded by GOAL17-names, 23 November 2026: slack.calls.conversationsReplies
+              args: (a, cursor) => ({ channel: a.channel, ts: a.ts, ...(cursor ? { cursor } : {}) }),
     page: (r) => ({ messages: r.messages.map(toMessage), next: r.response_metadata?.next_cursor || undefined }) },
   policyPart: { schema: Schema.Struct({ bots: Schema.Array(AccountRef), userGroup: Schema.optional(Schema.String) }), rows: slackRows,
-    sync: { call: slack.calls.usergroups.users.list, accounts: (r) => r.users.map((id) => ({ id, login: id, bot: false })) } },
+    sync: { call: slack.calls.usergroups.users.list,   // Superseded by GOAL17-names, 23 November 2026: slack.calls.usergroupsUsersList
+            accounts: (r) => r.users.map((id) => ({ id, login: id, bot: false })) } },
   environment: { variables: { SLACK_CHANNEL: "the channel the ticket started in", SLACK_THREAD: "its thread's root timestamp" },
     of: (m) => ({ SLACK_CHANNEL: m.channel.channel, SLACK_THREAD: m.channel.ts }) },
 });
@@ -290,11 +292,13 @@ export const posthogSource = Source.from(posthog, {
   config: Schema.Struct({ me: AccountRef, project: Schema.String, kinds: Schema.Array(Schema.Literals("errorIssue", "alert")) }),
   scope: (c, m) => ({ listened: m.channel.project === c.project && c.kinds.includes(m.kind as never), observed: true, row: "posthog" }),
   on: {
-    errorAlert: (e) => ({ kind: "errorIssue", thread: `error/${e.issue.id}`, text: `${e.issue.name}: ${e.issue.description ?? ""}`, url: e.issue.url,
+    errorAlert: (e) =>   // Superseded by GOAL17-names, 23 November 2026: written by hand in the posthog plugin in slice 11, like Slack's events
+      ({ kind: "errorIssue", thread: `error/${e.issue.id}`, text: `${e.issue.name}: ${e.issue.description ?? ""}`, url: e.issue.url,
       channel: { project: e.project.id, issue: e.issue.id } }),       // no actor: the gate uses the "unnamed sender" admission cell
   },
   closed: { errorResolved: (e) => `error/${e.issue.id}` },
-  history: { call: posthog.calls.errorTracking.issues.retrieve, args: (a) => ({ project_id: a.project, id: a.issue }), page: (r) => ({ messages: [toMessage(r)] }) },
+  history: { call: posthog.calls.errorTracking.issues.retrieve,   // Superseded by GOAL17-names, 23 November 2026: posthog.calls.errorTrackingIssuesRetrieve
+              args: (a) => ({ project_id: a.project, id: a.issue }), page: (r) => ({ messages: [toMessage(r)] }) },
   policyPart: { schema: Schema.Struct({}), rows: () => [{ id: "posthog", label: "PostHog", cells: inferredOnly }] },
   environment: { variables: { POSTHOG_PROJECT: "the project", POSTHOG_ISSUE: "the error issue" }, of: (m) => ({ POSTHOG_PROJECT: m.channel.project, POSTHOG_ISSUE: m.channel.issue }) },
 });

@@ -104,7 +104,7 @@ any streams of events. It is also the hardest test of Orthograph from the outsid
   Settings and the pages. Each spec command is an operation on its thing; each spec event is a declared event.
 - **The gate is code, and the main agent judges what it lets through.** The gate reads the sender's account, the
   mention, the bot list and the admission table, and gives explicit, inferred or none. `none` stops there: a stranger's
-  text never reaches a model. Everything else is a candidate: `evals.due` batches a thread's waiting triggers every two
+  text never reaches a model. Everything else is a candidate: `evals.due` (Superseded by GOAL17-names, 23 November 2026: `eval.due`) batches a thread's waiting triggers every two
   seconds, and the main agent reads the batch and its context, records one judgement per enabled rule (`eval.decide`),
   and routes it (`decision.route`: accept, attach, stop or ignore). In `observe` an accept is recorded as "would
   accept" and starts nothing. A trigger on a thread a ticket follows goes straight to that ticket's executor, with no

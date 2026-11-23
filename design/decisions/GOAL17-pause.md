@@ -203,7 +203,7 @@ export const pass = (superagent: SuperagentId, gen: bigint): Effect.Effect<void,
     if (sa.state === "paused" || sa.state === "retired" || sa.passGen !== gen) return;   // not re-armed: resume arms it; a stale chain ends
     yield* (yield* Evals).batch(superagent);                                // waiting triggers become Evals
     yield* (yield* Evals).expire(superagent, (e) => supers.expired(e, sa, now));   // `delivered` and not decided in time
-    yield* timers.at(Number(now) + 2_000, owner(superagent), "evals.due", pass(superagent, gen));
+    yield* timers.at(Number(now) + 2_000, owner(superagent), "evals.due", pass(superagent, gen));   // Superseded by GOAL17-names, 23 November 2026: `eval.due`
   });
 
 // armed by `eval.due`, the unheld delivery of SuperagentCreated and SuperagentResumed. Two arms (or an arm while the old chain's
@@ -212,7 +212,7 @@ export const pass = (superagent: SuperagentId, gen: bigint): Effect.Effect<void,
 // a pass whose generation is no longer the Superagent's ends at its next run.
 export const arm = (superagent: SuperagentId) => Effect.gen(function* () {
   const gen = yield* (yield* Supers).bumpPassGen(superagent);                    // one commit on the Superagent row; answers the new `passGen` (a bigint)
-  yield* (yield* Timers).at(Number(yield* Clock.currentTimeMillis), owner(superagent), "evals.due", pass(superagent, gen));
+  yield* (yield* Timers).at(Number(yield* Clock.currentTimeMillis), owner(superagent), "evals.due", pass(superagent, gen));   // Superseded by GOAL17-names, 23 November 2026: `eval.due`
 });
 ```
 
