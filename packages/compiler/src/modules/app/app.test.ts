@@ -3,7 +3,7 @@
 import { Blueprint } from "orthograph";
 import { describe, expect, it } from "vitest";
 import type { FieldModel, Model } from "#modules/model/types.js";
-import { allowedOf } from "./internal/known.ts";
+import { allowedOf, paramOf } from "./internal/known.ts";
 import { cycles, duplicateRoutes, offerProblems, routeProblems, twiceProblems, type PageFacts } from "./internal/checks.ts";
 import { App } from "./service.ts";
 
@@ -104,12 +104,32 @@ describe("app", () => {
     expect(allowedOf(narrowed, known, "f", [])).toEqual({ kind: "signed-in" });
   });
 
+  it("a route parameter can't be money (an address carries an id or text), and an id parameter is its value as declared", () => {
+    const known = { operations: new Map(), roles: new Map(), things: new Map(), values: new Map() };
+    const problems: Array<string> = [];
+    paramOf({ kind: "value", meta: { type: "money", bits: 128, signed: false, asset: {} } } as never, known, "blueprint/app/pages/p.ts", problems);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("blueprint/app/pages/p.ts");
+    expect(problems[0]).toContain("can't be money");
+    const ok: Array<string> = [];
+    expect(paramOf({ kind: "value", meta: { type: "id", prefix: "lnk" } } as never, known, "f", ok).value).toEqual({ type: "id", prefix: "lnk" });
+    expect(ok).toEqual([]);
+  });
+
   it("a route segment is literal text with at most one :name at its end: /@:handle is, /:year-:month is not", () => {
     expect(routeProblems(page({ path: "/@:handle", params: { handle: field() } }), model)).toEqual([]);
     expect(routeProblems(page({ path: "/a/:id", params: { id: field() } }), model)).toEqual([]);
     for (const path of ["/:year-:month", "/:a:b", "/:id.json"]) {
       const out = routeProblems(page({ path, params: {} }), model);
       expect(out.some((l) => l.includes("[app-route-param]") && l.includes("blueprint/app/pages/p.ts") && l.includes("is not literal text")), path).toBe(true);
+    }
+  });
+
+  it("a route with a trailing slash or an empty segment is refused, and the root `/` is not", () => {
+    expect(routeProblems(page({ path: "/" }), model)).toEqual([]);
+    for (const path of ["/account/", "/a//b", "//"]) {
+      const out = routeProblems(page({ path }), model);
+      expect(out.some((l) => l.includes("[app-route-param]") && l.includes("empty segment")), path).toBe(true);
     }
   });
 

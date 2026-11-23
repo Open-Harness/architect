@@ -1,6 +1,6 @@
 # @orthograph/lint
 
-Oxlint rules for what types can't see. Arrives in layer 1; see `design/packages.md`. Two sets live here:
+Oxlint rules for what types can't see. Arrives in layer 1; see the package map in `docs/canon/status.md`. Two sets live here:
 
 - **The project rules** (`no-name-as-string`, `refusal-has-log`, `declared-errors-only`, `no-wall-clock`,
   `handler-matches-path`), which `ortho check` runs on a user's project with its `ProjectFacts`.
@@ -8,6 +8,8 @@ Oxlint rules for what types can't see. Arrives in layer 1; see `design/packages.
   "The code's own rules"; `design/decisions/P1-code-rules.md`):
   - `ortho/effect-only`: no `async`, `await`, `try`, `throw`, `Date.now`, `new Date()`, `setTimeout`/`setInterval` or
     plain `Effect.sleep`, except in a package's `src/main.ts`, a test file, and the paths listed in the rule's `entries`.
+    It, and `no-wall-clock`, also report SQL that reads the database's clock (`now()`, `CURRENT_TIMESTAMP`,
+    `datetime('now')`) in a string or template: a world has one clock (K23, M8.06), so a time is passed as a parameter.
   - `ortho/max-lines`: at most 250 lines of code in a source file, blank lines and comments aside.
   - `ortho/six-slots`: every `src/modules/<name>/` holds `README.md`, `types.ts`, `service.ts`, `internal/` and
     `<name>.test.ts`.

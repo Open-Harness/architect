@@ -39,6 +39,8 @@ export class BlueprintSource extends Context.Service<BlueprintSource, {
   readonly list: Effect.Effect<ReadonlyArray<string>, SourceError>;
   /** Import one file by its relative path. Blueprint files must have no side effects on import. */
   readonly load: (path: string) => Effect.Effect<LoadedFile, SourceError>;
+  /** The text of `blueprint/refusals.lock` (M6-chain item 4), or undefined when the project has none yet. A source with no lock to give leaves this out. */
+  readonly lock?: Effect.Effect<string | undefined, SourceError>;
   /** The plugins among the project's dependencies, by package name. */
   readonly plugins: Effect.Effect<ReadonlyArray<PluginPackage>, SourceError>;
   /** One plugin's declarations, loaded from where the project resolves them. Fails naming the package when it can't. */

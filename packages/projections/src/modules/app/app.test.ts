@@ -1,8 +1,8 @@
 // The app projection, on its own: acme's derived map through the mount, a declared map built by hand, the typed links and the
 // palette's filter run as a program reads them. The whole path (a blueprint folder, `ortho generate`, `ortho check`) is
 // e2e/portal-next/map/projection.test.ts.
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -101,5 +101,31 @@ describe("app", () => {
     expect(view.pages.find((p) => p.name === "home-page")).toMatchObject({ path: "/" });
     const keys = linksModule(view).split("\n").filter((l) => l.startsWith("  ")).map((l) => l.trim().split(":")[0]);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("palette.ts passes `tsc` and filters right when an offered operation allows every shape the model emits", async () => {
+    const shapes = [
+      { kind: "system" }, { kind: "keeper" }, { kind: "signed-in", via: ["web"] },
+      { kind: "role", role: "a.svc", service: "stripe" }, { kind: "role-of", role: "a.svc", path: "id", service: "stripe", via: ["web"] },
+      { kind: "role", role: "a.owner", via: ["web"] },
+    ];
+    const operations = Object.fromEntries(shapes.map((a, i) => [`allowance.op${i}`, { ...declared.operations["allowance.grant"]!, allowed: [a] }]));
+    const odd = {
+      ...declared, operations: { ...declared.operations, ...operations },
+      app: { ...declared.app!, pages: { ...declared.app!.pages, thing: { ...declared.app!.pages["thing"]!, offers: Object.keys(operations) } } },
+    } as unknown as Model;
+    const source = paletteModule(paletteOf(viewOf(odd, "acme"), odd));
+    const dir = mkdtempSync(join(tmpdir(), "app-palette-tsc-"));
+    writeFileSync(join(dir, "palette.ts"), source);
+    const base = JSON.parse(readFileSync(join(repo, "tsconfig.base.json"), "utf8")) as { compilerOptions: object };
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ type: "module" }));
+    writeFileSync(join(dir, "tsconfig.json"), JSON.stringify({ compilerOptions: { ...base.compilerOptions, types: [] }, files: ["palette.ts"] }));
+    const tsc = spawnSync(join(repo, "node_modules/.bin/tsc"), ["-p", dir], { encoding: "utf8" });
+    const palette = (await import(pathToFileURL(join(dir, "palette.ts")).href)) as { readonly visibleTo: (c: "anonymous" | "person", roles?: ReadonlyArray<string>) => ReadonlyArray<{ readonly name: string }> };
+    rmSync(dir, { recursive: true, force: true });
+    expect(tsc.stdout + tsc.stderr).toBe("");
+    const names = (roles?: ReadonlyArray<string>) => palette.visibleTo("person", roles).map((e) => e.name);
+    expect(names(["a.svc", "a.owner"])).toEqual(["home", "thing", "allowance.op2", "allowance.op5"]);
+    expect(names()).toEqual(["home", "thing", "allowance.op2"]);
   });
 });

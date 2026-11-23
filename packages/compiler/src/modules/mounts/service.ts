@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { BlueprintSource, type PluginPackage } from "#modules/source/types.js";
-import { readLayout, type Layout, type StoreFile, type ThingFiles } from "#modules/model/internal/layout.js";
+import { readLayout, type Layout, type MountSecret, type StoreFile, type ThingFiles } from "#modules/model/internal/layout.js";
 import { hashOf } from "#modules/model/internal/hash.js";
 import type { CallReach, MountModel, MountsApi } from "./types.ts";
 import { chosenOf, choicesIn } from "./internal/choices.ts";
@@ -41,7 +41,7 @@ const standInOf = (descriptor: unknown): MountModel["standIn"] => {
 
 export const Mounts: MountsApi = {
   fold: (layout) => Effect.gen(function* () {
-    if (layout.mounts.size === 0) return { things: new Map(), stores: new Map(), journeys: new Map(), mounts: {}, calls: new Map(), problems: [] };
+    if (layout.mounts.size === 0) return { things: new Map(), stores: new Map(), journeys: new Map(), mounts: {}, calls: new Map(), secrets: [], problems: [] };
     const source = yield* BlueprintSource;
     const problems: Array<string> = [];
     const plugins = yield* source.plugins.pipe(Effect.catch((e) => Effect.sync(() => { problems.push(e.message); return [] as ReadonlyArray<PluginPackage>; })));
@@ -52,6 +52,7 @@ export const Mounts: MountsApi = {
     const stores = new Map<string, StoreFile>();
     const brought = new Map<string, Matched>();
     const mounts: Record<string, MountModel> = {};
+    const secrets: Array<MountSecret> = [];
 
     for (const me of matched) {
       const { name, file, mount, plugin } = me;
@@ -59,6 +60,10 @@ export const Mounts: MountsApi = {
       problems.push(...picks);
       const files = yield* source.pluginFiles(plugin.name).pipe(Effect.result);
       if (files._tag === "Failure") { problems.push(`${file}: ${files.failure.message}`); continue; }
+      // A plugin's `blueprint/secrets.ts`, whatever its kind: its name in an environment comes from this mount and the export.
+      const declared = readLayout(files.success.files.filter((f) => f.path === "secrets.js"), (path) => `${plugin.name}/blueprint/${path}`);
+      problems.push(...declared.problems);
+      for (const s of declared.secrets.values()) secrets.push({ ...s, mount: name, kind: me.kind as MountSecret["kind"], mountFile: file, package: plugin.name, version: plugin.version });
       let verbs: Pick<MountModel, "omitted" | "narrowed" | "calls" | "layer" | "standIn"> = {};
       if (me.kind === "feature" || me.kind === "adapter") {
         // An adapter adds no operations, but its errors are declared in its things, which the model names like a feature's.
@@ -97,7 +102,7 @@ export const Mounts: MountsApi = {
       const entry = { kind: me.kind as MountModel["kind"], file, package: plugin.name, version: plugin.version, integrity: files.success.integrity, chosen, ...verbs, ...(needs.needs.length > 0 ? { needs: needs.needs } : {}) };
       mounts[name] = { ...entry, hash: hashOf({ ...entry, file: undefined }) };
     }
-    return { things, stores, journeys, mounts, calls, problems };
+    return { things, stores, journeys, mounts, calls, secrets, problems };
   }),
   attributed,
 };

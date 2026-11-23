@@ -13,6 +13,6 @@ export default defineConfig(async () => {
         miniflare: { bindings: { TEST_MIGRATIONS: migrations, TEST_MIGRATIONS_VAULT: vault } },
       }),
     ],
-    test: { include: ["src/**/*.test.ts"], setupFiles: ["./test/apply-migrations.ts"] },
+    test: { include: ["src/**/*.test.ts"], setupFiles: ["./test/apply-migrations.ts"], globalSetup: ["./test/anvil-setup.ts"] },
   };
 });

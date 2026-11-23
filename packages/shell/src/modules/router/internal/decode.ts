@@ -2,7 +2,8 @@
 // `decodeURIComponent` throws on these, and errors here are values, so the bytes are read by hand.
 const PART = /%([0-9A-Fa-f]{2})|[^%]+|%/g;
 const encoder = new TextEncoder();
-const decoder = new TextDecoder("utf-8");
+// `ignoreBOM` keeps a leading U+FEFF in the text instead of swallowing it.
+const decoder = new TextDecoder("utf-8", { ignoreBOM: true });
 
 export const decode = (segment: string): string | undefined => {
   const bytes: number[] = [];
@@ -12,6 +13,10 @@ export const decode = (segment: string): string | undefined => {
     else if (text === "%") return undefined;
     else bytes.push(...encoder.encode(text));
   }
-  const decoded = decoder.decode(Uint8Array.from(bytes));
-  return decoded.includes("�") ? undefined : decoded;
+  const raw = Uint8Array.from(bytes);
+  const decoded = decoder.decode(raw);
+  // Malformed bytes decode to U+FFFD, which no longer encodes to the bytes it came from; a U+FFFD that was in the bytes does. So the
+  // check is the round trip, and `fatal: true` (which throws) is not needed.
+  const again = encoder.encode(decoded);
+  return again.length === raw.length && again.every((b, i) => b === raw[i]) ? decoded : undefined;
 };

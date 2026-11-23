@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "The app's shell: a router over the generated route table, the layouts and their slots, the navigation, the breadcrumb and the palette, on UI SDK.",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "exports": {
     ".": "./src/index.ts",
     "./package.json": "./package.json"
