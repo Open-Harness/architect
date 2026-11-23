@@ -1,5 +1,5 @@
 // The smaller framework forms in the model: agents and their slots, declared instances, and what can fail beside a thing.
-import type { Event, Field, Thing } from "orthograph";
+import type { Event, Field, Thing, Value } from "orthograph";
 import type { MountModel, ThingModel } from "../types.ts";
 import { holdsModel } from "./holds.ts";
 import type { Layout } from "./layout.ts";
@@ -13,6 +13,15 @@ export interface FormContext {
 
 const fieldName = (ctx: FormContext, f: Field) => `${ctx.thingNames.get(f.of) ?? "?"}.${f.key}`;
 
+/** The thing whose rows hold the seats: named by the thing, or by the id prefix it owns. */
+const heldName = (ctx: FormContext, file: string, held: Thing | Value): string => {
+  if (held.kind === "thing") return ctx.thingNames.get(held) ?? "?";
+  const prefix = held.meta.type === "id" ? held.meta.prefix : undefined;
+  const owner = [...ctx.thingNames].find(([t]) => (t.fields["id"]?.value.meta as { readonly prefix?: string } | undefined)?.prefix === prefix && prefix !== undefined);
+  if (owner === undefined) ctx.problems.push(`${file}: slots.held names an id prefix no thing owns`);
+  return owner?.[1] ?? "?";
+};
+
 /** `agents.<name>`: its file, and its slots as `{ size, reserve, held }` when it holds a seat. */
 export const agentsModel = (ctx: FormContext) =>
   Object.fromEntries([...ctx.layout.agents].sort(([a], [b]) => a.localeCompare(b)).map(([name, { file, declaration: a }]) => {
@@ -21,7 +30,7 @@ export const agentsModel = (ctx: FormContext) =>
     if (slots !== undefined && (!Number.isInteger(slots.reserve) || slots.reserve < 0)) ctx.problems.push(`${file}: slots.reserve must be a whole number, 0 or more`);
     return [name, {
       file,
-      ...(slots === undefined ? {} : { slots: { size: fieldName(ctx, slots.size), reserve: slots.reserve, held: ctx.thingNames.get(slots.held) ?? "?" } }),
+      ...(slots === undefined ? {} : { slots: { size: fieldName(ctx, slots.size), reserve: slots.reserve, held: heldName(ctx, file, slots.held) } }),
     }];
   }));
 

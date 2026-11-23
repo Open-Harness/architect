@@ -6,6 +6,7 @@ import { admitsAgent, type Allowed, type FieldsInput, type Read, type Thing } fr
 import { Times } from "#modules/time/service.js";
 import { camel, type Layout } from "./layout.ts";
 import { deriveModel } from "./derive.ts";
+import { READ_NOT_SERVED } from "./codes.ts";
 import { hashOf } from "./hash.ts";
 
 export interface ReadContext {
@@ -40,7 +41,9 @@ export const readModelOf = (c: ReadContext, thing: string, verb: string, file: s
       ? `List ${thing}s, ${read.order === "newest" ? "newest first" : "oldest first"}, ${read.page} to a page${read.where.length > 0 ? `, filtered by ${read.where.join(", ")}` : ""}.`
       : `Read one ${thing} by its id: ${read.fields.map(String).join(", ")}.`,
     payload, answer: fieldsModel(read.answer, `${file} answer`, "a read answer"),
-    move: null, errors: [], breaks: [], refusals: c.openToAll(allowed) ? [] : ["NotAllowed"], allowed, agentTool: admitsAgent(read.allowed),
+    move: null, errors: [], breaks: [],
+    // A pinned or derived read is not served before slice 7: it can refuse that, by name.
+    refusals: [...(c.openToAll(allowed) ? [] : ["NotAllowed"]), ...(read.only !== undefined || read.derive !== undefined ? [READ_NOT_SERVED] : [])], allowed, agentTool: admitsAgent(read.allowed),
     steps: {}, idempotent: null, runs: "server" as const, test: "unit" as const,
     budget: read.budget ? { p95Ms: Duration.toMillis(read.budget.p95) } : null,
     ...(list ? { list: { where: read.where.filter((n) => !pinned.includes(n)), order: read.order ?? "newest", page: read.page ?? 0 } } : {}),
