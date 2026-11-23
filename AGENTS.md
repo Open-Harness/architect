@@ -5,10 +5,11 @@
 ## What this repository is
 
 Orthograph, the framework (command `ortho`, packages `@orthograph/*`); what you write with it is the blueprint. The name
-was decided on 18 November 2026 (`design/decisions/K6-orthograph.md`), and `design/naming.md` maps every name. Its design is in `design/`: the frame
-(`frame/`), the milestones (`milestones.md`: M0 to M7, each slice with what it needs and the check that proves it), the
-decisions (`decisions/`), `packages.md`, `spikes.md` and `spikes/`, and the design docs in `design/docs/`. Layers 1 and
-2 are recorded in `build-plan.md`.
+was decided on 18 November 2026 (`design/decisions/K6-orthograph.md`), and `design/naming.md` maps every name. Its documentation is the canon,
+`docs/canon/`, and its status page, `docs/canon/status.md`, says what is built and maps the packages (K41). Its design is
+in `design/`: the milestones (`milestones.md`: M0 to M7, each slice with what it needs and the check that proves it), the
+decisions (`decisions/`), `spikes.md` and `spikes/`. The retired frame and the old docs page are records in
+`design/history/retired-2026-11-23/`. Layers 1 and 2 are recorded in `build-plan.md`.
 
 ## Who decides (Aaron, 16 November 2026)
 

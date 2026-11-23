@@ -130,7 +130,7 @@ What an eval leaves out, because nothing can be read yet (each is a line in the 
   from its description: that is the author's prose, which `operation.mcp` requires to equal the model's. K14's text says "description"; the
   lead's call at #150 moved it to the schema, so a blueprint's wording cannot decide the cell.
 - Reading generated code: `operation.api` parses the endpoint calls as TypeScript (a call in a comment is none) and owns the method, `POST`
-  for an operation and a read alike (design/frame/projections.md); `machine.sdk` parses exported type aliases, so only a string literal in
+  for an operation and a read alike (design/history/retired-2026-11-23/frame/projections.md); `machine.sdk` parses exported type aliases, so only a string literal in
   the alias's own type counts. `thing.cli` reads a flag from its own declaration line and judges its type on the type token alone.
 - `operation.portal` and `machine.portal` ask for the counts the cell names, by their column words (Calls, Refused, Defects, p95; Count),
   because the portal has no markup for them yet; a portal builder who picks other words changes the eval with the page.

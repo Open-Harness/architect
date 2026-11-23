@@ -1,7 +1,8 @@
 # The canon's outline
 
 There are thirty-two concept pages and three reference pages, in the order a newcomer reads them. Each page explains
-one idea, and each word in the glossary (`design/docs/index.html`, the table headed "Word") has exactly one page that
+one idea, and each word in the glossary (the words in each page's `owns`; the old glossary table is a record in
+`design/history/retired-2026-11-23/docs/index.html`) has exactly one page that
 owns it. Other pages link to that page and never explain the word again.
 
 A page's **job** is the one idea it carries. Its **questions** are the ones a reader brings to it: if a question
@@ -167,8 +168,8 @@ links there. It doesn't guess.
   that is `ui`'s alone.
 - **`time`** has its own page, apart from `workflows` (K23). A move made by time needs no workflow, and a world moving
   the clock is a question about proof and every store at once, not about durable work.
-- **`portal`** replaces "the app" (K5 decision 1). It is our own template on pieces ported from agent-native, for the
-  builder, not an agent-native app.
+- **`portal`** replaces "the app" (K5 decision 1). It is the builder's place, not an agent-native app: a new client built
+  on UI SDK with a declared map (K29, K31), which replaces the old one in one cutover (Goal 6).
 - **`agents`** and **`agent-kit`** stay apart. One is durable agents inside your app (a feature, M4); the other is
   agents building your app (parked). K2 says each is usable without the other.
 - **`stand-ins`** has its own page. "Local, never fake" is a standing rule of Aaron's, and the ladder is asked about

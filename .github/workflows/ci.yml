@@ -473,8 +473,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: NX_DAEMON=false pnpm nx run e2e:m8-ratchet --outputStyle=static
 
-  # Gate M0 (M0.06): no old name outside the records, and the design docs build with every link resolving.
-  # The canon's check (docs/canon/README.md) runs beside it: every quote, reference and component in the MDX pages.
+  # Gate M0 (M0.06): no old name outside the records. The canon's check (docs/canon/README.md) runs beside it: every quote,
+  # reference and component in the MDX pages, and every link in its READMEs and status page. It replaced the old docs page's
+  # link check when K41 retired that page (design/decisions/K41-canon-map.md).
   # Gates 1 and 2 above are the rest of `nx run e2e:m0`, run as their own jobs so they run side by side.
   e2e-m0:
     name: ${{ needs.ready.outputs.draft != 'false' && 'e2e-m0 (draft)' || 'e2e-m0' }}
@@ -501,8 +502,6 @@ jobs:
         run: pnpm install --frozen-lockfile
       - if: env.SKIP != 'true'
         run: pnpm nx run e2e:m0-names --outputStyle=static
-      - if: env.SKIP != 'true'
-        run: pnpm nx run docs:check --outputStyle=static
       - if: env.SKIP != 'true'
         run: pnpm nx run canon:check --outputStyle=static
       # A decision's `## Supersedes` phrases are gone from everything but the records (proposal 8; AGENTS.md, "Who decides").

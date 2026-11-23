@@ -1,7 +1,7 @@
 # Package structure
 
-The map and why it is shaped this way: [`decisions/M0-packages.md`](decisions/M0-packages.md). The layer 1 and 2
-version of this page is in [`history/packages-layers-1-2.md`](history/packages-layers-1-2.md).
+The map and why it is shaped this way: [`decisions/M0-packages.md`](../../decisions/M0-packages.md). The layer 1 and 2
+version of this page is in [`history/packages-layers-1-2.md`](../packages-layers-1-2.md).
 
 ## The framework's repository
 

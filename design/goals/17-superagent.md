@@ -95,7 +95,7 @@ label: it is off the 1.0 path.
   `000-philosophy.md` to `008-cookbook.md`. Its domain (`001`), authorization (`002`), execution (`003`), prompts
   (`004`) and panel (`005`) are the behaviour the slices port; its architecture (`007`) is the one to *not* copy, since
   Orthograph and Pi replace its engine, store and effects queue. Its Feishu source becomes Slack (K39 call 12).
-- `design/frame/adapters.md` (an adapter's six parts, and `--from-openapi`), `design/decisions/M4-agents.md` (#469),
+- `design/history/retired-2026-11-23/frame/adapters.md` (an adapter's six parts, and `--from-openapi`), `design/decisions/M4-agents.md` (#469),
   K31 and K36 (pages and components), and the briefs of Goals 3, 10 and 11.
 
 ## The pieces
@@ -176,7 +176,7 @@ The rest is designed by its owner; where the owner hasn't built it when a slice 
 |---|---|
 | an adapter's `events`, `door` and `secrets`; `Blueprint.on`, `on:`, `idempotent: { by }` | Goal 11 (M5.03), Goal 3 (M2.04); `by` is M3.26 |
 | `Blueprint.role(T, { service })`, `Blueprint.system`, `Via.*` | Goal 3 (M2.03, `M2-auth.md`) |
-| `ortho new adapter --from-openapi`, the conformance harness | `design/frame/adapters.md` (M5.07), built here first |
+| `ortho new adapter --from-openapi`, the conformance harness | `design/history/retired-2026-11-23/frame/adapters.md` (M5.07), built here first |
 | the door's account and the `actor:` role form; `versions:`; an `Agent` thing, `agent.tell`, the `agent:` role form; the sandbox adapter; catch-up and object keys; `lend` | K40, fixes 1 to 6 |
 | `Source.from`, executor slots, pause, derived reads | this goal, slice 2 (`GOAL17-<slug>` records) |
 | `Superagent.declare` (a create at the first deploy), proposals a person approves | this goal, slice 5 |

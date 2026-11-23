@@ -74,7 +74,7 @@ Capxul's plugins on it. Everything below is judged by whether it gets us there s
    people claim a username, then gives those users wallets, then a multisig with budgets, then privacy. Each stage is
    a meta-milestone; all four together are v1.0. Each stage is built from reusable pieces (plugins), and the starter
    and every example change to follow it. The 📐 growing-example thread designed it as K9 ([`decisions/K9-growing-example.md`](decisions/K9-growing-example.md), merged in #55), including what the app
-   looks like at each stage, the React hooks slice (designed in `frame/projections.md:261`, owned by no slice), and
+   looks like at each stage, the React hooks slice (designed in `design/history/retired-2026-11-23/frame/projections.md:261`, owned by no slice), and
    whether generated actions really make us compatible with agent-native apps. Plugged In is the canon's one example
    and acme the tests' fixture (K37). The earlier mini DAO example
    (governance, private membership) is folded into stages 3 and 4 or retired by K9.
@@ -190,7 +190,7 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 | W2 | an operation's docs page shows each journey as a worked example (`W2-docs-worked-examples`) | `goal/stage-1`, `goal/on-chain` |
 | K25 | the blueprint on chain (a chain store, `lives:`), superseding K7's inline chain | reserved 20 November 2026 for the 📐 Solidity session |
 | K26 | on chain pulled forward (M6 ahead of the gates for M3 to M5) | reserved 20 November 2026 for the 📐 Solidity session |
-| K27 | the three plugin kinds: language, host, projection; no target (replaces K17's TargetSpec) | reserved 20 November 2026 for the 📐 Solidity session, Goal 4 |
+| K27 | the plugin kinds: language and host beside feature, adapter and projection, five in all; no target (replaces K17's TargetSpec) | reserved 20 November 2026 for the 📐 Solidity session, Goal 4 |
 | K28 | releases (scope map) | open PR #262, reserved 21 November 2026 |
 | K29 | the UI layer: generated pieces on UI SDK | reserved 21 November 2026 for the UI-layer thread |
 | K31 | the app's map in the blueprint, and Goal 6 | taken 21 November 2026 by the 📐 designer thread, #285 |
@@ -203,13 +203,14 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 | K38 | a slice another goal needs lands early | `main`, by the conductor (#440) |
 | K39 | the superagent, built as Orthograph plugins (Goal 17) | `main`, by the 📐 superagent designer thread |
 | K40 | what a superagent needs that Orthograph lacks: outside accounts as things, versions, agents as things, the sandbox over pi-env, catching up, lent tokens | `main`, by the 📐 superagent gaps thread |
+| K41 | the canon map applied: eight clashes settled; the frame, the old docs page, the walkthrough and the sign-up sheet retired; scope, the package map and the model draft merged into the canon | `main`, by the conductor's canon-map session |
 
-**Also taken, off `main`:** K24 (UI SDK is the base, #217), K25 (the blueprint on chain), K26 (on-chain pulled forward), K27 (three plugin kinds), K29
+**Also taken, off `main`:** K24 (UI SDK is the base, #217), K25 (the blueprint on chain), K26 (on-chain pulled forward), K27 (five plugin kinds), K29
 (the UI layer, #272), K30 (where the core ends, the repositories, declaring what you know, #185), G12 (a slice that changes acme's wire lands as a pair, #263),
 G9 to G11 (`goal/stage-1`), `M2-auth` (#263, #267), `M6-chain` (#275, #276, #279), `M7-03-infra-projection` (#282). `ST1-25-flakes` is a
 decision file; K29's ST1.25 is a slice id, and the two are unrelated.
 
-**Next free:** D5, E2, F10, G13, H3, K41, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
+**Next free:** D5, E2, F10, G13, H3, K42, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
 before this list existed. `CI-<slug>`, `M<n>-<slug>`, `ST<n>-<slug>` and `Gate<n>` are named by their slug or
 milestone, not numbered; a goal records its own in its brief, not here (K32), and `GOAL<n>-<slug>` names a call that
 belongs to one goal and no milestone.
