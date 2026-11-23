@@ -76,7 +76,7 @@ Each row is one Capxul plugin: a feature an app mounts. "Next" and "classic" say
 | **Handle and network** | a handle, a profile, and a shared network where members find and message each other | none | none | handles: **has it, planned** (`@orthograph/handles`, ST1.03). The network is **Capxul's own**: a second Orthograph app Capxul runs, reached through an adapter (the board, "Network adapter") | Goal 3 |
 | **Agents** | an agent that spends only what its role allows | `AgentOwner.sol`, deployed on the devnet and used by no operation (`next:packages/contracts/src/agents/AgentOwner.sol:89`; `next:packages/contracts/deployments/devnet.json:131`) | none | **has it, planned**: agents (Goal 10, M4.01 to M4.10) and an agent under its own hat (ST3.07) | Goals 10, 13 |
 | **Withdrawals to a bank** | money out to a bank or mobile money | Bridge, strategy only (`next:docs/roadmap.md:63`) | destinations and withdrawals in the SDK | **Capxul's own**, later, with a Bridge adapter Capxul writes | — |
-| **Reports and history** | trial balance, aged invoices, receipts, exports | `report.run` on ERPNext (`bp:report/verbs/run.ts:12-25`) | transactions and receipts | **must build**: views (M5.05) and reports are off the 1.0 path; until then Frappe's desk keeps them (Aaron, 20 November: "Frappe's screens keep working first") | nobody |
+| **Reports and history** | trial balance, aged invoices, receipts, exports | `report.run` on ERPNext (`bp:report/verbs/run.ts:12-25`) | transactions and receipts | **must build**: views (M5.05) and reports are off the 1.0 path; until then Frappe's desk keeps them (Aaron, 20 November: "Frappe's screens keep working first"; superseded by K43, 23 November 2026: the reports are Capxul's own, on Orthograph's screens) | nobody |
 | **Equity** (cap table, share classes, options, rounds, vesting, escrow) | | contracts deployed on the seeded chain, used by no operation (`next:packages/contracts/deployments/devnet.json`); parked (`next:docs/grounding.md:50`) | none | **Capxul's own**, parked | — |
 | **Feature access** | switches per feature | Frappe's switches (`next:packages/frappe-app/capxul/features.py`) | 37 feature and action flags, all on; three sidebar entries "soon" (`classic:packages/feature-access/src/constants/feature-access.ts`) | **drops out**: in Orthograph a mount is the switch. Limiting a mount to one environment **must be built** (test drive, finding 10) | nobody |
 | **Support** | send a support ticket | none | Convex and Mattermost (`classic:apps/web/modules/dashboard/components/shared/support/services/support-ticket-delivery.ts:3-4,28`) | **Capxul's own**, later | — |
@@ -105,7 +105,7 @@ These are Capxul's business, not the framework's, and stay in Capxul's blueprint
 | A relayer, a bundler and a paymaster | gas, in the hosted version (Aaron, 20 November) | **has it, planned**: the relayer (M6.07). A 4337 bundler and paymaster are **Capxul's own**, if it keeps them | Goal 4 |
 | The chain's events into the app | a payment settles only from the chain | **has it, planned**: the follower (M6.09) and `on:` (M5.03) | Goals 4, 11 |
 | Openfort | a key for people who have none | **Capxul's own**, a hosted filler of the keys socket | — |
-| Frappe, ERPNext, HRMS, Frappe CRM, and the site service | books, HR, CRM; the business site | **Capxul's own**, as K30 said of the bench; Frappe's doctype files read as a source through an adapter (`K3-stores-and-sources.md`) | — |
+| Frappe, ERPNext, HRMS, Frappe CRM, and the site service | books, HR, CRM; the business site | **Capxul's own**, as K30 said of the bench (superseded by K43, 23 November 2026: their shapes and logic are translated into Capxul core; no Frappe runs beside it); Frappe's doctype files read as a source through an adapter (`K3-stores-and-sources.md`) | — |
 | Email (Brevo in classic; none in Next) | sign-in codes, invitations | **must build**: a mail adapter with a local sink. Resend (M5.09) is off the 1.0 path | nobody |
 | Bridge | bank rails | **Capxul's own**, later | — |
 | Price feeds | currency rates | **Capxul's own**, later; Next sets the CRM to the company's own currency so it never fetches a rate (`next:packages/frappe-app/capxul/setup.py:191-195`) | — |
@@ -192,7 +192,7 @@ Narrowed from "stage 3" in the brief, which said more than the feature needs:
 It does not wait on the `safe` or `hats` adapters, budgets, owners' signatures, organisations, roles across things,
 workflows or money as a value. Its second feature, paying a supplier, adds ST3.04 (asked by #484) and M6.15.
 
-It is built in `capxul-next`, Capxul's own repository (K30, section 2), consuming Orthograph from npm as any app
+It is built in `capxul-next`, Capxul's own repository (K30, section 2; superseded by K43, 23 November 2026: it is built in this repository, on `goal/capxul`, in `examples/capxul/`, and moves out once Capxul's staging run passes), consuming Orthograph from npm as any app
 would, once Capxul's own goal there starts. Its record lands here early, per K38 ("a slice built outside this
 repository").
 
