@@ -11,7 +11,8 @@ const toolDescription = (model: Model, o: Model["operations"][string]) =>
   [o.description, ...(timeMoveOf(model, o) ? [`Made by time: ${whenWords(o.thing, timeMoveOf(model, o)!, "")}.`] : []), ...Object.keys(o.invariants ?? {}).flatMap((r) => { const rule = ruleBehind(model, o, r); return rule ? [`Refuses ${r} when ${rule.sentence}.`] : []; })].join(" ");
 
 export const renderMcp = (model: Model): ReadonlyArray<RenderedFile> => {
-  // MCP is the agent's way in: an operation a mount narrowed without Via.agent has no tool (M1-plugins section 3).
+  // MCP is the agent's way in: an operation a mount narrowed without Via.agent has no tool (M1-plugins section 3). The catalog is what the
+  // server can serve; which of it an agent is shown follows `allowed` at run time (`Mcp.tools`, and the model's `agentTool`).
   const ops = Object.values(model.operations).filter((o) => o.via === undefined || o.via.includes("agent"));
   return [{
     path: "generated/mcp/src/index.ts",

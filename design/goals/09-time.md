@@ -120,6 +120,11 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Running since 22 November 2026 (claude, claude-opus-5-5). Slices 1 to 3 (M8.02 to M8.04, the checks) are written and
-listed in `e2e/m8/expected-failing/`. Next: `Timers`' cross-process shape agreed with Goals 8 and 10
-(`design/decisions/M8-timers-shape.md`), M8.09 built and landed early for Goal 4 (#443), and M8.06 begun.
+Running since 22 November 2026 (claude, claude-opus-5-5). The checks (M8.02 to M8.04) are written and listed in
+`e2e/m8/expected-failing/`. M8.14, the grid's `time` block, is done (#470). `Timers`' shape across processes is
+settled as a second service, `DurableTimers` (#483, `design/decisions/M8-timers-shape.md`), for Goals 8 and 10 to
+pick up when they resume (#464, #467). M8.09, moves made by time in the language, is done (#517), and it also brought
+`Blueprint.clock` on environments forward from M8.06 (`design/decisions/M8-09-time-in-the-language.md`). It landed
+early in `goal/stage-1` for Goal 4's M6.21 (#600, #443 closed), and `goal/stage-1` is merged back into `goal/time`.
+Next: M8.06, the world holds the clock; then M8.07, timers on the world's table, which lands early for Goals 8 and 10.
+M8.17 waits on Goal 4's M6.09 (#442), and M8.18 on Gate M2.

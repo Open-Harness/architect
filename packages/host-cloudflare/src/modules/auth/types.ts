@@ -10,6 +10,11 @@ export interface AuthOptions {
   readonly secret: string;
   /** The device flow's one client id, the project's CLI (`acme-cli`); any other is refused. Defaults to `cli`. */
   readonly cli?: string;
+  /**
+   * This server hosts worlds (`/_world/*` is answered): it accepts a world's token for the system or a service. Anywhere else, in staging
+   * and in production, such a token is anonymous.
+   */
+  readonly worlds?: boolean;
 }
 
 /** One Better Auth instance and the promise that its tables exist. Opaque outside this module. */
@@ -28,6 +33,16 @@ export interface CastMember {
 /** Who an OAuth access token is for: the person, nobody (no token), or a token that is not good. */
 export type Bearer = { readonly kind: "person"; readonly principal: Principal } | { readonly kind: "none" } | { readonly kind: "invalid" };
 
+/**
+ * A credential a world mints for a journey (`POST /_world/credential`): a key made for a person, a key made for an agent acting for
+ * a person, or a token for the system or a service, which no sign-in makes.
+ */
+export type CredentialSpec =
+  | { readonly kind: "key"; readonly person: string }
+  | { readonly kind: "agent"; readonly person: string }
+  | { readonly kind: "system" }
+  | { readonly kind: "service"; readonly mount: string };
+
 export interface AuthD1Api {
   readonly make: (options: AuthOptions) => AuthInstance;
   /** `Principals` from a bearer session token or an `ak_` API key, and `Auth` for handlers. */
@@ -45,6 +60,8 @@ export interface AuthD1Api {
     readonly bearer: (auth: AuthInstance, request: Request) => Effect.Effect<Bearer>;
     readonly challenge: (request: Request, error?: "invalid_token") => string;
   };
+  /** A credential for a journey's cast member, minted by a world. A key or an agent's key is the person's own; the others are signed by the world. */
+  readonly credential: (auth: AuthInstance, spec: CredentialSpec) => Effect.Effect<{ readonly token: string }>;
   /** Sign `name` up (once; `stored` remembers) and in, or for an anonymous member only make up their credentials. */
   readonly castMember: (auth: AuthInstance, name: string, anonymous: boolean, stored: CastMember | undefined) => Effect.Effect<CastMember>;
 }

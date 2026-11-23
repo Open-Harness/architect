@@ -3,218 +3,173 @@ title: Orthograph
 concept: the loop
 owns: [the loop, projection (as an idea), behaviour as the only freehand, Orthograph]
 questions:
-  - What is Orthograph?
-  - What is made for me, and what is the only code I write by hand?
+  - What is Orthograph, and who is it for?
+  - What do I write, and what is made for me?
+  - What is the only code I write by hand?
   - How does the loop close?
 status: specified
 milestone: M3
-slices: [M1.06, M1.12, M1.13, M1.14, M1.22, M3.09]
-decisions: [K5, K2, D2]
-links: [blueprint, languages-and-hosts, plugins, data, doors, things, machines, operations, handlers, journeys, proof, projections, portal, environments, factory, agent-kit]
+slices: [M1.22, ST1.25, ST3.07, M3.09, M6.11, M7.04, M7.13, M8.09]
+decisions: [K5, K2, K7, K9, K23, K29, K37]
+links: [blueprint, languages-and-hosts, plugins, data, doors, things, machines, invariants, operations, handlers, journeys, proof, traces, projections, ui, portal, environments, time, agents, chains-and-wallets, factory]
 ---
 
 ## The idea
 
-Orthograph is a framework where you describe a system once and everything else is made from that description. You
-write the description as TypeScript declarations in a [`blueprint`](blueprint.mdx) folder, and `ortho check` compiles
-it to a model. **Each operation is enforced in exactly one place**: the wrapper on the Worker for an operation written
-in Effect, or the contract for one that runs on a chain. Everything else falls out of the model and reaches that one
-place: the SDK, the CLI, MCP tools and actions for the apps people build, and the [portal](portal.mdx) for the builder
-who needs to understand the running system. Each of those is a **projection**: one view of the same model, made by
-code, never written by hand. The one thing a description can't say is what an operation actually does. So the rule
-is: **behaviour is the only freehand**. Each operation's body is a [handler](handlers.mdx) you write; everything
-around it is generated, and stays generated. **The loop** is how the pieces meet: you describe, the model compiles,
-journeys prove it, environments ship it, and what is missing or red comes back as new work.
+Orthograph is a framework for building a whole system with an agent. You and your agent describe the system once, as
+typed declarations: the things it holds, the operations on them, who may call each one, how each can fail, and what
+must always be true. Orthograph makes everything else from that description, and makes it again whenever the
+description changes.
+
+It is built for the agent doing the work. An agent loses its way when a system is scattered across files it can't see
+at once, and when nothing checks what it says it did. A [blueprint](blueprint.mdx) is one small typed declaration per
+file, so the whole system fits in view. `ortho check` refuses a description that doesn't hold together. `ortho prove`
+runs stories through the real system, so done is a verdict, not a claim. A person reads the same files, and watches
+the running system in the [portal](portal.mdx).
+
+Two rules decide the rest. **Each operation is enforced in exactly one place**, and every way in reaches that place,
+so a refusal is the same from a screen, the command line, an agent's tool or another service. **Behaviour is the only
+freehand**: what an operation does is a [handler](handlers.mdx) you write, and everything around it is generated and
+stays generated. Each thing Orthograph makes is a **projection**: one view of the same model, made by code, never by
+hand. **The loop** is how a change moves: describe, compile, generate, write the behaviour, prove, ship, watch, and
+whatever is missing or red comes back as the next piece of work.
 
 ## The smallest example
 
-This is the sign-up sheet's `join`, declared in the blueprint. It says what joining is, and nothing about how it is
-done:
+Plugged In is the app 1.0 is built as (K9). In its first stage a person claims a name and gets a public page of links.
+This is the whole of claiming a name:
 
-```ts file=examples/signup/blueprint/things/sheet/verbs/join.ts name=default lines=7-17
-export default Blueprint.operation(Sheet, {
-  description: "Take places on a sheet, for yourself and anyone with you.",
-  payload: { sheet: Sheet.fields.id, people: Count },
-  answer: { left: Count },
-  move: machine.moves.join,
-  errors: [SheetFull],
-  allowed: [Blueprint.anyone],
-  steps: { load: Blueprint.step.database(), record: Blueprint.step.database() },
-  idempotent: "request", // sent twice with one request, it takes its places once
+```ts file=examples/plugged-in/blueprint/things/handle/verbs/claim.ts name=default lines=7-16
+export default Blueprint.operation(Handle, {
+  description: "Claim a free name and make it the address of your public page, with its profile.",
+  payload: { name: Handle.fields.name },
+  answer: { handle: Handle.fields.id },
+  move: machine.moves.claim,
+  allowed: [Blueprint.signedIn],
+  steps: { record: Blueprint.step.database({ writes: [Profile] }) },
+  idempotent: "request", // the same request twice claims once
   budget: { p95: "150 millis" },
 });
 ```
 
-From those eleven lines Orthograph makes every way in. Each file opens with a line saying it was generated and must
-not be edited. The HTTP endpoint takes its route, payload, answer and refusals from the declaration:
+Its two refusals, a name someone else holds and a person who already has one, aren't written here. They come from
+the handle's rules ([invariants](invariants.mdx)), and the runtime refuses them before anything is committed.
 
-```ts file=examples/signup/generated/api/src/sheet/join.ts name=imports,endpoint lines=1-14
-// Generated from blueprint/things/sheet/verbs/join.ts. Do not edit.
-import { HttpApiEndpoint } from "effect/http-api";
-import { wireStruct } from "orthograph/server";
-import declaration from "../../../../blueprint/things/sheet/verbs/join.ts";
-import { SheetFull, SheetNotOpen, SheetNotFound, IdempotencyConflict } from "../errors.ts";
+Everything below is made from those ten lines. "Runs" means it is generated and running today; the rest is decided
+for 1.0, and names the slice that builds it.
 
-export { declaration };
-export const endpoint = HttpApiEndpoint.post("join", "/sheet/join", {
-  payload: declaration.payloadSchema,
-  // What the wire carries: the declared answer, the fields not every caller is shown optional. The server cuts each answer by who is asking.
-  // Typed as the declaration types it: the schema is built from fields known only at run time, which TypeScript cannot follow.
-  success: wireStruct(declaration.answer, { issuing: true }) as unknown as typeof declaration.answerSchema,
-  error: [SheetFull, SheetNotOpen, SheetNotFound, IdempotencyConflict],
-});
-```
-
-One of those refusals was never written: `SheetNotOpen` comes from the machine. The rest of what `join` becomes:
-
-| Projection | What it makes for `join` | Where |
+| Falls out | For `handle.claim` | |
 |---|---|---|
-| server | the served operation: the one wrapper that enforces `sheet.join` | `examples/signup/generated/server/main.ts:28` |
-| SDK | `join(payload)` | `examples/signup/generated/sdk/src/sheet/join.ts:8` |
-| CLI | the command `sheet join --sheet … --people …`, built on the SDK | `examples/signup/generated/cli/src/sheet/join.ts:9` |
-| MCP | the tool `sheet.join`, described by the declaration | `examples/signup/generated/mcp/src/index.ts:12` |
-| docs | its page: who may call, budget, payload, refusals with their codes | `examples/signup/generated/docs/sheet/join.md:38` |
-| handler type | what the handler is given and may return | `examples/signup/generated/api/src/sheet/join.handler.ts:7` |
-| action | a `defineAction` in agent-native's field names, built on the SDK | planned, M1.22 ([doors](doors.mdx)) |
+| **API** | `POST /handle/claim`, its payload, answer and refusals typed from the declaration | runs |
+| **server** | the served operation: the one place `handle.claim` is enforced | runs |
+| **SDK** | `claim(payload)`, with the caller, typed refusals and one request key across retries | runs |
+| **CLI** | `plugged-in handle claim --name …`, built on the SDK | runs |
+| **MCP** | the tool `handle.claim`, described by the declaration, for any agent | runs |
+| **action** | one typed call for a screen or an agent in the browser, holding no authority of its own ([doors](doors.mdx)) | M1.22 |
+| **screen** | the claim form: its fields, help text and refusals in place, in React parts your page arranges ([ui](ui.mdx)) | ST1.25 |
+| **components** | one of your own, such as the link list: its wiring generated, its markup yours ([ui](ui.mdx)) | K29 |
+| **agents** | the operation as a tool an agent in your app calls, under the roles of the person it acts for, in stage 3 ([agents](agents.mdx)) | ST3.07 |
+| **docs** | its page: who may call, payload, answer, each refusal with its code, worked examples | runs |
+| **traces** | a span for the call, its step and its commit, under the model's names ([traces](traces.mdx)) | runs |
+| **evals** | every story through it run in a real world and judged by the nine evals, a verdict per operation ([proof](proof.mdx)) | runs |
+| **portal** | the operation beside its thing and machine, its live calls with their traces ([portal](portal.mdx)) | runs; trying a call is M1.22, new screens Goal 6 |
+| **infra** | the Worker, its database and Durable Objects on Cloudflare: `ortho env up` makes them, `ortho env destroy` leaves nothing | planned and checked; the live run is M7.04 |
+| **chain** | the same operation as one entry on a contract, once the thing lives on a chain, in stage 2 ([chains-and-wallets](chains-and-wallets.mdx)) | M6.11 |
+| **time** | a move made by time, such as a budget renewing each month, on one clock a world can move, in stage 3 ([time](time.mdx)) | M8.09 |
 
-Every one of them reaches the same served operation; none of them checks anything on its own. What each door is, and
-why it holds no authority, is [doors](doors.mdx).
+What runs is in `examples/plugged-in/generated/`, one folder per projection: `api`, `server`, `sdk`, `cli`, `mcp`,
+`docs`, `portal`, `infra` and `model`. The served operation is `examples/plugged-in/generated/server/main.ts:37`.
 
-And this is the only part of `join` someone wrote. Orthograph scaffolded it once, from the declaration; from then on it
-is yours:
+None of those ways in checks anything on its own. Each one reaches the served operation, which decides.
 
-```ts file=examples/signup/src/sheet/join.ts name=imports,default lines=1-27
-// Scaffolded from blueprint/things/sheet/verbs/join.ts. Yours from now on.
-import { Effect } from "effect";
-import { Records } from "@orthograph/language-effect";
-import type { Handler } from "../../generated/api/src/sheet/join.handler.ts";
-import { Sheet } from "../../blueprint/things/sheet/thing.ts";
-import { SheetFull } from "../../blueprint/things/sheet/errors.ts";
+This is the only part of claiming a name that someone wrote. Orthograph scaffolded it once, with a header saying
+everything the runtime already does, so the handler doesn't; from then on it is yours:
 
-/** Take places on a sheet, for yourself and anyone with you. */
-const join: Handler = ({ sheet, people }, { steps, move }) =>
+```ts file=examples/plugged-in/src/handle/claim.ts name=claim lines=42-63
+const claim: Handler = ({ name }, { principal, steps, move, id }) =>
   Effect.gen(function* () {
+    // `signedIn` admits a person and an agent acting for one (M2-auth, fork 2): the page is the person's either way.
+    const who = acting(principal);
+    if (!who) return yield* Effect.die(new Error("reached without a signed-in person"));
     const records = yield* Records;
-    // The machine's check already found the sheet open, so it exists.
-    const found = yield* steps.load(records.find(Sheet, sheet));
-    if (!found) return yield* Effect.die(new Error(`sheet ${sheet} was checked and then not found`));
-    const places = found["places"] as bigint;
-    const taken = found["taken"] as bigint;
-    const left = places - taken;
-    if (people > left) {
-      yield* Effect.logInfo("more people than places left").pipe(Effect.annotateLogs({ people: String(people), left: String(left) }));
-      return yield* new SheetFull({ left });
-    }
-    yield* steps.record(records.update(Sheet, sheet, { taken: taken + people }));
-    yield* move(people === left ? "full" : "open");
-    return { left: left - people };
-  });
 
-export default join;
+    // HandleTaken and HandleAlreadyOwned are the rules' (invariants.ts): the runtime refuses them after the move, before the commit.
+    // Step record: database, span handle.claim.record. The handle and its public page are made together.
+    const profile = yield* Ids.of(Profile.fields.id);
+    yield* steps.record(
+      Effect.gen(function* () {
+        yield* records.insert(Handle, { id, name, owner: who.person as never });
+        yield* records.insert(Profile, { id: profile, handle: id, links: [] });
+      }),
+    );
+
+    // The move claim, to claimed.
+    yield* move();
+
+    return { handle: id };
+  });
 ```
 
-The handler counts the places, records the join and picks the next state. It never checks who is calling or whether
-the sheet is open, never parses a request and never names a route. The declaration already said all of that.
+It saves the handle and its page. It never decides who may call, never parses a request, never names a route and
+never refuses a taken name. The declaration already said all of that.
+
+And this is how anyone knows it works: a story, written by a different agent before the handler existed, run
+against the real system in a world of its own.
+
+<Scenario journey="examples/plugged-in/journeys/claim-a-handle.ts" step="aaron claims the free name" />
 
 ## How it works
 
-This is the whole shape on one picture, from K5:
+A change moves through seven steps. Each has its own page.
 
-```text file=design/decisions/K5-the-whole-shape.md lines=71-99
-                ┌──────────────────── the blueprint (what the developer writes) ────────────────────┐
-  plugins ─────▶│ things · machines · operations · reads · roles · events · errors · steps         │
-  feature,      │ stores · workflows · journeys · starting worlds · environments · secrets          │
-  adapter,      └───────────────────────────────────┬───────────────────────────────────────────────┘
-  projection                                        │ ortho check (the compiler)
-                                                    ▼
-                          the model: one JSON, every declaration hashed, the uses graph
-                                                    │
-               ┌─────────────── languages: frames, blanks, the enforcer for each place ──────────┐
-               │ language-effect: the wrapper on the Worker (decode · role · span · replay ·     │
-               │   machine · handler and steps · answer · commit), the TypeScript SDK            │
-               │ language-solidity: the contract (machine, roles, refusals compiled in), its ABI │
-               │ language-noir (later): private state, proofs made on the member's device         │
-               └───────────────┬─────────────────────────────────────────┬────────────────────────┘
-                               ▼                                         ▼
-          host-cloudflare: Worker, D1, Durable Objects         Host.chain: EVM (Aztec later)
-          the served operation                                  the contract function
-                               ▲                                         ▲
-                               └──────────── the generated SDK ──────────┘
-                     (caller, request key, typed refusals, wallet submission and confirmation)
-                         ▲            ▲             ▲               ▲
-                       CLI       MCP tools       actions        the portal's "Try it"
-                                              (screens, agent tools,
-                                               in the apps people build)
-                                                    │
-     evidence: spans, step signals, journal events, chain receipts and events, under model names
-                                                    ▼
-          the portal: things and lifecycles first, then operations, machines, events, errors, notes;
-          live evidence lights up the declared structure ─── proof: evals, verdicts, the logbook
-```
+1. **Describe.** You and your agent write declarations under `blueprint/`, and mount plugins into it
+   ([blueprint](blueprint.mdx), [plugins](plugins.mdx)). Built.
+2. **Compile.** `ortho check` compiles the blueprint to the model: one JSON file, every declaration hashed. Every
+   projection is made from the model, never from the blueprint directly. Built.
+3. **Generate.** The projections write `generated/`. A generated file that differs from what the model renders fails
+   `ortho check`, so nobody can edit one and keep it ([projections](projections.mdx)). Built.
+4. **Write the behaviour.** Each operation's handler is scaffolded once and never overwritten
+   ([handlers](handlers.mdx)). Built.
+5. **Prove.** `ortho prove` runs the stories in a world with real stores, the evals judge what they left behind, and
+   a verdict is recorded ([journeys](journeys.mdx), [proof](proof.mdx)). Built.
+6. **Ship.** `ortho promote` moves one exact build from environment to environment, and `ortho env destroy` leaves
+   nothing behind ([environments](environments.mdx)). Built on this machine; the first live staging run is M7.04, and the release M7.13.
+7. **Watch, and close the loop.** The portal shows the running system under the model's names, and the
+   [factory](factory.mdx) turns missing parts, red verdicts and drift into tasks that only a fact can close. The
+   factory comes after 1.0 (M3.09); until then you read what `ortho check` and `ortho prove` say, and act on it.
 
-Read it top to bottom; each band has its own page in this layer:
-
-1. **The blueprint** is what you write ([blueprint](blueprint.mdx)). Plugins are mounted into it: features, adapters
-   and projections ([plugins](plugins.mdx)).
-2. **The model** is what `ortho check` compiles it to: one JSON, every declaration hashed. Every projection is made
-   from it, never from the blueprint directly.
-3. **Languages** turn the model into frames, blanks and the enforcer for each place an operation can run. **Hosts**
-   are where that runs ([languages-and-hosts](languages-and-hosts.mdx)). The right-hand column, the chain, is what K7
-   decided: an operation is one generated entry on a contract ([chains-and-wallets](chains-and-wallets.mdx)). Built in M6.
-4. **Data** lives in stores the framework owns, in sources it reaches through adapters, and in views kept from events
-   ([data](data.mdx)).
-5. **The doors** all go through the generated SDK or straight to the served operation, so the one enforcer decides
-   every time ([doors](doors.mdx)).
-6. **Evidence** comes back under the model's names, and proof and the portal read the same structure the declaration
-   drew.
-
-The loop runs through those bands in the order a change moves:
-
-1. **You describe.** You and your agent write declarations under `blueprint/`. Built. Plugins mounted into the
-   blueprint come in M1.06.
-2. **It compiles.** `ortho check` compiles the blueprint to the model and checks types, rules and drift. Built.
-   Blanks and journeys join the model in M1.03.
-3. **Projections make the outputs.** The generators render `generated/` from the model. Built. If a generated file
-   differs from what the model renders, `ortho check` fails, so nobody can edit one and keep it.
-4. **Handlers fill in behaviour.** `ortho generate` scaffolds a handler for each operation, once, and never
-   overwrites it ([handlers](handlers.mdx)). Built; the wired scaffold is M1.26.
-5. **Journeys prove it.** A different agent writes [journeys](journeys.mdx) through the real operations. `ortho prove`
-   runs them in a world, the nine evals judge the evidence, and a verdict is recorded ([proof](proof.mdx)). Built.
-6. **Environments ship it.** `ortho promote` moves one exact build from environment to environment
-   ([environments](environments.mdx)). Built locally; the cloud is M7.
-7. **The loop closes.** The [factory](factory.mdx) turns blanks, red verdicts and drift into tasks, and only a fact
-   closes one (M3.09). Until then, you close the loop yourself: you read what `ortho check` and `ortho prove` say, and
-   act on it.
+Where each operation runs is the language's and host's business ([languages-and-hosts](languages-and-hosts.mdx)): an
+operation written in Effect is enforced by a wrapper on a Cloudflare Worker, and one on a chain by its contract (K7).
+Where its data lives is [data](data.mdx). Every way in, and why none holds authority, is [doors](doors.mdx).
 
 ## Choices
 
-**Declaration or handler?** Put it in the declaration whenever the declaration can say it. Each thing a declaration
-says is generated into every door, enforced in one place, checked and traced. Each thing a handler does is only in
+**Declaration or handler?** Put it in the declaration whenever the declaration can say it. What a declaration says is
+generated into every way in, enforced in one place, checked, traced and documented. What a handler does is only in
 that handler.
 
 | You want to say | Say it in | Because |
 |---|---|---|
-| who may call | the operation's `allowed` | the enforcer refuses before the handler runs, whichever door the call came through |
+| who may call | the operation's `allowed` | the enforcer refuses before the handler runs, whichever way the call came in |
 | a state it must be in | the machine's move | the refusal is generated |
-| a way it can fail | the operation's `errors` | it gets a code, an exit code, a typed error in the SDK and a docs row |
+| something true across many records | a rule ([invariants](invariants.mdx)) | the runtime refuses a break before anything is committed |
+| a way it can fail | the operation's `errors` | it gets a code, an exit code, a typed error in the SDK and a line in the docs |
 | how it decides and what it writes | the handler | only behaviour is freehand |
 
-**Generated client or your own?** Use the generated SDK, CLI, MCP tools and actions. Each is remade when the blueprint
-changes, and each reaches the same enforcer. A hand-written client drifts the day an operation changes.
+**Generated client or your own?** Use the generated SDK, CLI, MCP tools and actions. Each is remade when the
+blueprint changes, and each reaches the same enforcer. A client written by hand drifts the day an operation changes.
 
 ## What it is not
 
 - **Not a one-off code generator.** Generated files are never yours. They are remade from the model, and editing one
   fails `ortho check`. Only scaffolds become yours ([handlers](handlers.mdx)).
 - **Not low-code.** A handler is ordinary Effect code. Orthograph takes away the code around behaviour, not behaviour.
-- **Not the blueprint.** Orthograph is the framework and its command. The [blueprint](blueprint.mdx) is what you write
-  with it.
-- **Not a host.** Orthograph makes what runs; a host such as Cloudflare runs it
+- **Not the blueprint.** Orthograph is the framework and its command. The [blueprint](blueprint.mdx) is what you
+  write with it.
+- **Not a host.** Orthograph makes what runs; a host such as Cloudflare or a chain runs it
   ([languages-and-hosts](languages-and-hosts.mdx)).
-- **Not an agent-native app.** Orthograph ports what it needs from agent-native into its own Effect code and keeps
-  agent-native's action field names, so its templates read naturally. Nothing of agent-native runs, and there is no
-  dependency on it (K5, "Porting from agent-native"). The details are on [doors](doors.mdx) and [portal](portal.mdx).
-- **Not a list of data places.** Where data lives, and who may write it, is [data](data.mdx).
+- **Not an agent-native app.** Orthograph ports what it needs from agent-native into its own code and keeps its
+  action field names; nothing of agent-native runs (K5). The details are on [doors](doors.mdx) and [ui](ui.mdx).
 
 ## Where it lives
 
@@ -227,10 +182,9 @@ changes, and each reaches the same enforcer. A hand-written client drifts the da
 | the drift check | `packages/cli/src/modules/check/service.ts:26` | built |
 | scaffolds, once | `packages/cli/src/modules/generate/README.md` | built |
 | prove: worlds, journeys, evals, verdicts | `packages/prove/src/modules/prove/service.ts:17` | built |
-| plugins mounted into the blueprint | `blueprint/features/`, `blueprint/adapters/`, `blueprint/projections/` | planned, M1.06 |
-| actions | `orthograph`'s `actions` module | planned, M1.22 and M1.23 |
-| the portal | a projection plus a small feature | planned, M1.13 (designed in M1.25) |
-| the factory | `@orthograph/work` | planned, M3.05 |
+| the app 1.0 is built as | `examples/plugged-in/README.md` | stage 1 built |
+| actions and the screen | `orthograph`'s actions, `@orthograph/web` | planned, M1.22 and ST1.25 |
+| the factory | `@orthograph/work` | after 1.0, M3.09 |
 
 ## Status
 
@@ -239,40 +193,33 @@ changes, and each reaches the same enforcer. A hand-written client drifts the da
 | Part | Status | Slice | Proved by |
 |---|---|---|---|
 | the blueprint compiles to a model | proved | | `packages/compiler/src/modules/model/model.test.ts:27`, "describes acme" |
-| `generated/` is exactly what the model renders | proved | | `packages/cli/src/modules/check/check.test.ts:57`, "passes clean acme": `drift ✔` |
-| a handler is scaffolded once and never overwritten | proved | | `packages/cli/src/modules/generate/generate.test.ts:20` |
-| the sign-up sheet proves: every journey, every eval, nothing left running | proved | | `e2e/layer1/08-signup-proves.test.ts:10` |
-| one enforcer per operation, every door through it | specified | M1.12 | K5 decision 1; the SDK contract in M1.12 |
-| plugins mounted into the blueprint | specified | M1.06 | check `01` |
-| actions, built on the SDK | specified | M1.22 | one `defineAction` per operation |
-| the portal | specified | M1.13 | designed with Aaron in M1.25 first |
-| the factory closes the loop | specified | M3.09 | gate M3.15 |
+| `generated/` is exactly what the model renders | proved | | `packages/cli/src/modules/check/check.test.ts:57`, "passes clean acme" |
+| a handler is scaffolded once, from the declaration | proved | | `packages/cli/src/modules/generate/generate.test.ts:20` |
+| every operation of Plugged In reaches the SDK, the CLI, MCP and the portal | proved | | `e2e/m1/20-plugged-in-loop.test.ts:86` |
+| Plugged In proves: every story green in a real world | proved | | `e2e/stage1/01-plugged-in-journeys.test.ts:69`, "7 journeys, 56 steps" |
+| the infra plan is what the model asks for | proved | | `e2e/m1/37-m7-03-staging-plan.test.ts:87` |
+| actions and the screen | specified | M1.22 | K29; the claim form in ST1.25 |
+| agents in the app | specified | ST3.07 | an agent spends under its own hat |
+| the chain, time, staging and the release | specified | M6.11 | K7; K23 (M8.09); M7.04; M7.13 |
+| the factory closes the loop | specified | M3.09 | after 1.0 |
 
-The page is specified because the loop doesn't close until M3. Every part a change passes through today is built;
-the model, the drift check and prove are proved on acme, and prove on the sign-up sheet too.
+The page is specified because 1.0 isn't finished. Every step a change passes through today is built, and Plugged
+In's first stage proves end to end.
 
 ## Notes
 
+<Note kind="decision" decision="K37">The canon describes all of 1.0, built or not, for anyone building on Orthograph
+or building it. Plugged In is the one example; each part says whether it runs or what builds it.</Note>
+
 <Note kind="decision" decision="K5">Each operation has one enforcer: the wrapper on the Worker, or the contract.
-Every door, action and screen reaches it through the SDK or the Worker. Nothing of agent-native runs; its action shape
-and parts of its app are ported into our packages, compatible by field names only.</Note>
+Every way in reaches it through the SDK or the Worker.</Note>
 
 <Note kind="decision" decision="K2">Orthograph is the framework and `ortho` its command; the blueprint is what you
 write with it. Plugins come in five kinds since K27: features, adapters, projections, languages and hosts.</Note>
-
-<Note kind="status">The rename is done: since the sweep, the code says `ortho` and `@orthograph` too (`FOR-17`).</Note>
 
 <Note kind="question" id="mapping-blank" slice="M1.14">Is behaviour really the only freehand? An adapter's mapping
 blank (M1.14) is hand-written code too, and it isn't a handler. Either it counts as behaviour and the
 [handlers](handlers.mdx) page owns it, or the rule needs a second freehand place. M1.14 must say which (`FOR-01`).</Note>
 
-<Note kind="status" slice="M3.12">Two parts of the old loop are parked (K5): the agent kit, with the skills design
-(M3.12), and the factory's own portal surfaces (M3.14). The [agent-kit](agent-kit.mdx) and [factory](factory.mdx)
-pages say so when they are written.</Note>
-
-<Note kind="status" slice="M3.09">Today nothing turns a blank or a red verdict into a task. `ortho check` names every
-blank and `ortho prove` every red step; a person or an agent reads them and acts.</Note>
-
-<Note kind="status" slice="M6.11">The chain column of the picture is K7's design: an operation is one generated entry on a
-contract, clients may reach every external function, and Solidity is built first while Noir and Solana are designed on the same
-port. The chain port and the wallet are built ([chains-and-wallets](chains-and-wallets.mdx)); the contract itself is M6.11.</Note>
+<Note kind="status" slice="M3.09">Today nothing turns a missing part or a red verdict into a task. `ortho check` names
+every blank and `ortho prove` every red step; a person or an agent reads them and acts.</Note>

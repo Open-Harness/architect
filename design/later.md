@@ -6,6 +6,11 @@ belongs to, and why it waits.
 - Indexers beyond the generated follower, for views too large for an organisation's index. Later.
 - Safe as a kit, built from its own events and our own small core. Later.
 - Python as a third target. Later.
+- **The rest of the app's map** (K31): the docs' page per screen, `ortho add page <name>`, the agent's `map` tool on
+  an app, and `open(pages.x)` in `ortho prove --through web`; and K36's rest: the web projection's component wiring,
+  `ortho add component <name>`, a component on its screen's docs page, a journey acting on a component, and Plugged
+  In's link list declared. Goal 6 builds the map, the app projection and the shell
+  first, and proves them on the portal; these wait until an app other than the portal has a declared map.
 - **Scaffolds that follow the blueprint** (Aaron, 21 November 2026, with the 📐 designer thread): a file scaffolded
   once and "yours from now on" falls out of line when its declaration changes later, so it must be marked and
   ratcheted, not left alone. Four steps, on what exists:
@@ -124,7 +129,7 @@ belongs to, and why it waits.
 
 ## From the factory (K10)
 
-- **A `cloudflare` sandbox choice** for `@orthograph/workspaces`, beside `localCopy` and `e2b`, if E2B falls short. Not spiked.
+- **A `cloudflare` sandbox choice** for `@orthograph/sandbox`, beside `local` and `e2b` (K39, K40), if E2B falls short. Not spiked.
 - **A person's feedback on a run** (HeroUI Pro's Rating and Emoji Reaction Button on a run's answer) as input to the bench (H2). Waits until the bench reports exist (M4.14).
 - **Experiments shared between projects**: a kept experiment's plugin published for another app to mount. Waits on plugins published from their own CI (M2.10).
 
@@ -194,7 +199,7 @@ Each is a parked snag in `design/goals/03-snags.md`, with its trigger.
 Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three; the fixed shapes are in the addendum of `design/decisions/K18-monitoring-falls-out.md`.
 
 - **An anomaly and a verdict actually firing**: the rules are derived and listed, but check 39 judges only the burn alerts' firing. A check that makes a refusal-code spike fire its anomaly, and a failed journey fire its verdict.
-- **Nested step spans, the deepest wins**: an issue's step is the deepest failing step span; check 39 plants one level (`link.add.record`). A defect two steps down, and a call with no step span at all, are not judged.
+- **Nested declared steps, the deepest wins**: an issue's step is the deepest declared step span that errored with the failed attempt's own `error.tag` (an adapter's span is never chosen; a step that errored and was recovered is passed over when it carries a different tag; no such step is `-`, the operation itself; a call that ran out of tries is `commit`); check 39 plants one level (`link.add.record`). A defect two declared steps down, and the `-` and out-of-tries cases, are not judged.
 - **The constructor-name fallback for `error.tag`**: a thrown error with no `_tag` takes its constructor's name; check 39 plants only a tagged error whose class name differs from its tag.
 
 ## From M2-auth (Goal 3 lead, 21 November 2026)

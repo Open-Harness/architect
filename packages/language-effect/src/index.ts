@@ -14,7 +14,7 @@ export { journalOf } from "#modules/journal/service.js";
 export { Journal, type Entry } from "#modules/journal/types.js";
 export { Ids } from "#modules/ids/service.js";
 export { PrincipalsAnonymous } from "#modules/principals/service.js";
-export { Principals } from "#modules/principals/types.js";
+export { Principals, type PrincipalDoor } from "#modules/principals/types.js";
 export { invariantsIn, storeMemory, thingIn, Unit } from "#modules/records/service.js";
 export { Records, Store, type Commit, type Committed, type Instance, type ListQuery, type Listed, type NamedRule, type Stored, type Violation, type Write } from "#modules/records/types.js";
 export { TimersLive, TimersMemory, wakesByKind } from "#modules/timers/service.js";

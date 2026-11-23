@@ -1,0 +1,20 @@
+name: Slice
+description: One slice of a goal, a sub-issue of its goal issue. Usually made by tools/github/sync.mjs from the brief.
+title: "Goal <n> · <slice> · <what it is>"
+type: Slice
+labels: ["kind:slice"]
+body:
+  - type: markdown
+    attributes:
+      value: Set the goal's milestone, add it as a sub-issue of the goal issue, and add its release label. The brief holds the detail; this issue is where its pull requests close it.
+  - type: input
+    id: goal
+    attributes: { label: Goal, description: "The goal's number and brief", placeholder: "Goal 6, design/goals/06-portal.md" }
+    validations: { required: true }
+  - type: textarea
+    id: done
+    attributes: { label: Done when, description: "The check that proves it, word for word from the brief" }
+    validations: { required: true }
+  - type: input
+    id: needs
+    attributes: { label: Needs, description: "Slices or issues it waits on", placeholder: "#301, or none" }

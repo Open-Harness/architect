@@ -47,6 +47,9 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   // Each mount a served operation came from, imported once: its plugin's handlers run under it (Mount.serving).
   const mounted = [...new Set(handled.flatMap((o) => (o.from.kind !== "app" ? [o.from.mount] : [])))].filter((m) => model.mounts?.[m]);
   const mountVar = (mount: string) => `${camel(mount)}Mount`;
+  // Each adapter a `service` role names (M2-auth, fork 3): the runtime reads the role against the mount's name, so the server hands it each mount by name.
+  const serviced = [...new Set(ops.flatMap((o) => o.allowed.flatMap((a) => ("service" in a && a.service !== undefined ? [a.service] : []))))].filter((m) => model.mounts?.[m]).sort();
+  const mountsOption = serviced.length > 0 ? ", mounts" : "";
   const served = (o: OperationModel) => (o.from.kind !== "app" && mounted.includes(o.from.mount) ? `Mount.serving(${mountVar(o.from.mount)}, ${opVar(o)}Handler)` : `${opVar(o)}Handler`);
   // Each declared database store (K3) has a D1 binding of its own, and its own journal and request keys.
   const stores = databaseStores(model);
@@ -97,17 +100,19 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       empty ? handled.map((o) => `import ${opVar(o)}Blank from "./${emptyPath(o)}";`) : [],
       callImports(model),
       mounted.map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
+      serviced.filter((m) => !mounted.includes(m)).map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
       things.map((t) => `import * as ${camel(t.name)}Thing from "${thingFileAt("generated/server/main.ts", t, "thing")}";`),
       ruled.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
       stores.map((s) => `import ${camel(s.name)}Store from "${storeFileAt("generated/server/main.ts", s)}";`),
       "",
       actors ? `export { Actor, World } from "${Names.pkg("host-cloudflare")}";` : `export { World } from "${Names.pkg("host-cloudflare")}";`,
       "",
+      serviced.length > 0 ? ["/** Each adapter's mount by the name it is mounted under: what a `service` role in `allowed` is read against. */", `const mounts = new Map<unknown, string>([${serviced.map((m) => `[${mountVar(m)}, "${m}"]`).join(", ")}]);`, ""] : [],
       ops.map((o) =>
         o.kind === "read"
-          ? `const ${opVar(o)}Served = Reads.serve({ name: "${o.name}", read: ${opVar(o)}.declaration });`
-          : `const ${opVar(o)}Served = Handlers.serve({ name: "${o.name}", operation: ${opVar(o)}.declaration, handler: ${served(o)}${notFromOf(model, o)}, codes: Errors.codes${wired(model, o)} });`),
-      empty ? handled.map((o) => `const ${opVar(o)}Scaffolded = Handlers.serve({ name: "${o.name}", operation: ${opVar(o)}.declaration, handler: ${opVar(o)}Blank${notFromOf(model, o)}, codes: Errors.codes${wired(model, o)} });`) : [],
+          ? `const ${opVar(o)}Served = Reads.serve({ name: "${o.name}", read: ${opVar(o)}.declaration${mountsOption} });`
+          : `const ${opVar(o)}Served = Handlers.serve({ name: "${o.name}", operation: ${opVar(o)}.declaration, handler: ${served(o)}${notFromOf(model, o)}, codes: Errors.codes${wired(model, o)}${mountsOption} });`),
+      empty ? handled.map((o) => `const ${opVar(o)}Scaffolded = Handlers.serve({ name: "${o.name}", operation: ${opVar(o)}.declaration, handler: ${opVar(o)}Blank${notFromOf(model, o)}, codes: Errors.codes${wired(model, o)}${mountsOption} });`) : [],
       "",
       "/** Each thing and its table: a D1 table, or the name its actors go by. */",
       `const tables = [${things.map((t) => `[thingIn(${camel(t.name)}Thing), "${t.name}"]`).join(", ")}] as const;`,
@@ -160,14 +165,14 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "// Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the",
       "// layer's instance, so a session either one issues is a person to both.",
       "let routes: ReturnType<typeof AuthD1.make> | undefined;",
-      `const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, cli: "${name}-cli" }));`,
+      `const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, cli: "${name}-cli", worlds: hostsWorlds(env) }));`,
       "",
       "const build = (env: Env) =>",
       "  HttpRouter.toWebHandler(",
       "    HttpApiBuilder.layer(CallApi).pipe(",
       `      Layer.provide([${groups.map((t) => `${pascal(t)}Live`).join(", ")}]),`,
       "      Layer.provideMerge(CallTelemetry.layer),",
-      `      Layer.provide([StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET }))]),`,
+      `      Layer.provide([StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),`,
       "      Layer.provideMerge(Database.d1(env.DB)),",
       "      Layer.provide(HttpServer.layerServices),",
       "    ),",
@@ -198,15 +203,22 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "let mcpRuntime: ManagedRuntime.ManagedRuntime<Services, never> | undefined;",
       "const runtimeOf = (env: Env) =>",
       "  (mcpRuntime ??= ManagedRuntime.make(",
-      `    Layer.mergeAll(StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET }))).pipe(Layer.provideMerge(Database.d1(env.DB))),`,
+      `    Layer.mergeAll(StoreD1.layer({ tables${actors ? ", actors: env.ACTORS" : ""}${storeOption}${peopleOf(model)}${rulesOption} }), ${journal}, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(env.DB))),`,
       "  ));",
       "",
       "const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/;",
       "",
-      "/** `/mcp`: a person's access token (OAuth, by Better Auth's provider) or a 401 that says where to get one; then the tool call. */",
+      "/** Who is asking at `/mcp`: any credential the identity knows, or an OAuth access token. This door is the agent's, so each is an agent for its person (M2-auth, fork 2). */",
+      "const asker = (env: Env, request: Request) =>",
+      "  runtimeOf(env).runPromise(Effect.flatMap(Principals, (principals) => principals.of(request.headers.get(\"authorization\") ?? undefined, \"mcp\"))).then((principal) =>",
+      "    principal.kind !== \"anonymous\"",
+      "      ? { kind: \"asked\" as const, principal }",
+      "      : Effect.runPromise(AuthD1.oauth.bearer(routesOf(env), request)).then((who) => (who.kind === \"person\" ? { kind: \"asked\" as const, principal: who.principal } : who)));",
+      "",
+      "/** `/mcp`: an agent's credential, or a 401 that says where to get one; then the tool call. */",
       "const mcp = (env: Env, request: Request, context: Context.Context<never> | undefined): Promise<Response> =>",
-      "  Effect.runPromise(AuthD1.oauth.bearer(routesOf(env), request)).then((who) => {",
-      "    if (who.kind !== \"person\") {",
+      "  asker(env, request).then((who) => {",
+      "    if (who.kind !== \"asked\") {",
       "      const invalid = who.kind === \"invalid\";",
       "      return Response.json({ error: invalid ? \"invalid_token\" : \"unauthorized\" }, { status: 401, headers: { \"www-authenticate\": AuthD1.oauth.challenge(request, invalid ? \"invalid_token\" : undefined) } });",
       "    }",

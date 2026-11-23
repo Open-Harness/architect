@@ -212,6 +212,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "refs": {
           "sheet": "sheet"
         },
@@ -230,7 +231,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "5ff2de75e7294f8e"
+        "hash": "cfb0e68868397eb4"
       },
       "sheet.get": {
         "kind": "read",
@@ -293,6 +294,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "steps": {},
         "idempotent": null,
         "runs": "server",
@@ -300,7 +302,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "647f208a50cda6f5"
+        "hash": "09767e4f4ef5a8c9"
       },
       "sheet.join": {
         "kind": "operation",
@@ -364,6 +366,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "refs": {
           "sheet": "sheet"
         },
@@ -386,7 +389,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "0654da6d079c113d"
+        "hash": "aab95ecb61d4f88d"
       },
       "sheet.open": {
         "kind": "operation",
@@ -444,6 +447,7 @@
             "kind": "anyone"
           }
         ],
+        "agentTool": true,
         "mints": "sheet",
         "steps": {
           "insert": {
@@ -457,7 +461,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "8c2cdb4e47331efb"
+        "hash": "389a59321bbe525d"
       }
     },
     "journeys": {
@@ -1095,23 +1099,455 @@
         "publish": {},
         "hash": "0f14705e03d3bc97"
       }
-    }
+    },
+    "alertRules": [
+      {
+        "id": "anomaly:AR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-001",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:SH-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/sheet/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:SH-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:SH-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SH-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "defect:sheet.close",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.close",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/close.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.get",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.join",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.join",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/join.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:sheet.open",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.open",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/open.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.close",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.close",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/close.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.get",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.join",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.join",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/join.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:sheet.open",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "sheet.open",
+          "severity": "page",
+          "owner": "blueprint/things/sheet/verbs/open.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "verdict:a closed sheet takes no one:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "a closed sheet takes no one",
+          "severity": "page",
+          "owner": "journeys/a-closed-sheet-takes-no-one.ts"
+        }
+      },
+      {
+        "id": "verdict:fill a sheet:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "fill a sheet",
+          "severity": "page",
+          "owner": "journeys/fill-a-sheet.ts"
+        }
+      },
+      {
+        "id": "verdict:join twice with one request:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "join twice with one request",
+          "severity": "page",
+          "owner": "journeys/join-twice-with-one-request.ts"
+        }
+      },
+      {
+        "id": "verdict:put up a sheet:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "put up a sheet",
+          "severity": "page",
+          "owner": "journeys/put-up-a-sheet.ts"
+        }
+      }
+    ]
   },
   "dependsOnByOperation": {
     "sheet.close": {
-      "operation:sheet.close": "5ff2de75e7294f8e",
+      "operation:sheet.close": "cfb0e68868397eb4",
       "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.get": {
-      "operation:sheet.get": "647f208a50cda6f5",
+      "operation:sheet.get": "09767e4f4ef5a8c9",
       "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.join": {
-      "operation:sheet.join": "0654da6d079c113d",
+      "operation:sheet.join": "aab95ecb61d4f88d",
       "thing:sheet": "320a7ee2e246a009"
     },
     "sheet.open": {
-      "operation:sheet.open": "8c2cdb4e47331efb",
+      "operation:sheet.open": "389a59321bbe525d",
       "thing:sheet": "320a7ee2e246a009"
     }
   },
@@ -1136,5 +1572,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "deb56fc49d9267c5cd73df66e782cc88866cd04375553c866d8afc6a3cd603dc"
+  "digest": "b67b4bac51395fd2414ff0939bc9a0f30a68b2fd3db2ab4c89a0c26edee96aad"
 }

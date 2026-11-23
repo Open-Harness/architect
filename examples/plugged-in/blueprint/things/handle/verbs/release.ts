@@ -11,5 +11,6 @@ export default Blueprint.operation(Handle, {
   errors: [],
   allowed: [handleOwner],
   steps: { record: Blueprint.step.database() },
+  needsApproval: true,
   budget: { p95: "150 millis" },
 });
