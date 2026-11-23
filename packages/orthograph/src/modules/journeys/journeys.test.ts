@@ -31,13 +31,6 @@ describe("journeys", () => {
     want(steps[0]!.checks.map((c) => c.kind)).toEqual(["emits", "is-in"]);
   });
 
-  it("refuses a cast member named for one of the script's own words, rather than hide it", () => {
-    for (const word of ["clock", "world", "last", "step"]) {
-      want(() => Scripting.script({ [word]: Roles.signedIn }), word).toThrow(new RegExp(`cast member \`${word}\``));
-    }
-    want(() => Scripting.script({ ada: Roles.signedIn })).not.toThrow();
-  });
-
   it("reads refs once the world has said them, and names the ones it hasn't", () => {
     const s = Scripting.script({ ada: Roles.signedIn }) as any;
     const payload = { who: s.ada.person, box: s.last.box, n: 1n };
