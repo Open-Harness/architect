@@ -829,8 +829,8 @@ jobs:
   # pushes to either (CI-main-ui-layer.md). Skipped on a docs-only pull request, where a skip counts as passed (CI-docs-fast-path.md). Should `changes` itself fail,
   # this runs. No Docker, no cloud, no secret: slice 1's check starts one HTTP server on a free port.
   e2e-ui-layer:
-    needs: changes
-    if: ${{ github.event.pull_request.draft != true && (!cancelled() && ((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/ui-layer')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/ui-layer') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')) }}
+    needs: [ready, changes]
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && ((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/ui-layer')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/ui-layer') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

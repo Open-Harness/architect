@@ -12,7 +12,8 @@ Once the work is on `main`, nothing would run the UI layer's checks, and a chang
 ## The call
 
 `e2e-ui-layer` runs its steps for pull requests into `main` and pushes to `main`, as it does for `goal/ui-layer`. The
-docs-only skip stays. It stays a check that is not required, as it was on `goal/ui-layer`. Making it required is a
+docs-only skip stays. Its guard now reads the live draft state through `ready`, as `e2e-portal-next`'s does, rather than the
+event's payload, so a push just before the pull request is marked ready still runs it (CI-drafts-race). It stays a check that is not required, as it was on `goal/ui-layer`. Making it required is a
 branch-protection change, which needs Aaron.
 
 ## Evidence
