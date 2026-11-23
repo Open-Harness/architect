@@ -38,10 +38,10 @@ its agent can, but anything a message settles is written into a file or an issue
 ## Rules every type keeps
 
 - **Land without a catch-up run.** Merge a pull request when it has no conflicts and CI is green on the head that will
-  merge. On `main` and `goal/stage-1` the push run checks every merge into them, and a red one is fixed first
+  merge. On `main` the push run checks every merge into them, and a red one is fixed first
   (`design/decisions/CI-drafts.md`); a goal branch has no push run, so its merges are checked when the goal lands in
-  `goal/stage-1` (`design/decisions/CI-integration.md`, B2). A pull request into a goal branch runs the fast gate only (B1);
-  if you change its base to `goal/stage-1` or `main`, push a new commit first (an empty one will do), since a base change starts no run.
+  `main` (`design/decisions/CI-integration.md`, B2). A pull request into a goal branch runs the fast gate only (B1);
+  if you change its base to `main`, push a new commit first (an empty one will do), since a base change starts no run.
   Bring a branch up to date only for a real conflict or a change it needs.
 - **Never end a turn waiting without a watcher** (`design/decisions/CI-integration.md`, part A). Nothing wakes a
   thread when CI finishes. After every push to a ready pull request, start one background command that ends with the
