@@ -17,7 +17,7 @@ const keyOf = (secret: Redacted.Redacted<string>) =>
   Keys.fromSecret(secret).pipe(Effect.catch(() => locked("the secret is no key: it must be 0x and 64 hex digits")));
 
 export const keyed = (name: SignerName, chain: ChainSetting, ring: Keyring): Signer => {
-  // One port for this signer, made on its first send: every send shares its nonce lane.
+  // The process's shared port for this chain, read when a send runs (`Chain.shared`).
   const port = Chain.shared(chain);
   return {
   name,

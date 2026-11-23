@@ -4,8 +4,8 @@
 prepare, **simulate** (never skipped: the port refuses to sign or submit what has not simulated, M1.32), sign, submit,
 follow to inclusion.
 
-Both take the signer's shared port (`Chain.shared`) and never make one: sends from one signer share its nonce lane, so
-overlapping sends take distinct nonces.
+Both take the process's shared port for the chain (`Chain.shared`) and never make one: sends on one chain share its nonce
+lane, whichever signer they came from, so overlapping sends take distinct nonces.
 
 - A transfer whose simulation fails (a revert, a panic, no funds) is `SimulationReverted`. Nothing was signed or sent, the
   nonce is handed back, so the next send takes the nonce this one would have had.

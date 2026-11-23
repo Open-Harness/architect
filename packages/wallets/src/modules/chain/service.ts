@@ -1,6 +1,7 @@
 import { Config, Effect } from "effect";
 import { makeChainPort } from "@orthograph/chain-evm/device";
 import type { ChainApi } from "./types.ts";
+import { lane } from "./internal/lanes.ts";
 import { CAIP2 } from "./internal/caip2.ts";
 
 /** How often a send looks for its receipt. A local chain mines at once; a real one answers within a few polls. */
@@ -35,6 +36,5 @@ export const Chain: ChainApi = {
         Effect.catch((fault) => Effect.die(new Error(`the chain at ORTHO_WALLET_RPC_URL is unusable: ${fault.message}`))),
       );
     }),
-  // The cache is made here, once, and belongs to the effect handed back: no module-level state.
-  shared: (setting) => Effect.runSync(Effect.cached(Chain.port(setting))),
+  shared: (setting) => lane(setting, Chain.port(setting)),
 };

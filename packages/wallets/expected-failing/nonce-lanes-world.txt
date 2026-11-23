@@ -1,2 +1,0 @@
-# Wallet send safety (the review on #616, gap 1): each operation call gets its own signer from the host, so a nonce lane kept per signer object is not shared by two overlapping sends. Waits on the build.
-src/modules/world/nonce-lanes-world.test.ts > two operation calls, each with the signer its host made for it > take distinct nonces from one account, and both transfers land

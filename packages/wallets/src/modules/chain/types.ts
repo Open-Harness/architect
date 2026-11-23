@@ -29,10 +29,11 @@ export interface ChainApi {
   /** The chain port for a setting. An unreachable endpoint or another chain id is a defect that says so; no key is in it. */
   readonly port: (setting: ChainSetting) => Effect.Effect<ChainPort, never, Timers>;
   /**
-   * One port for a setting, made on the first use and the same after: its nonce manager is the one lane every send from a
-   * signer shares, so overlapping sends from one account take distinct nonces. Call it once, where the signer is built,
-   * and hand the result to every send; calling it again makes another lane. A failure (no endpoint, an unusable chain) is
-   * the same defect on every send.
+   * The port every send on this chain and endpoint shares, kept for the life of the process and keyed by chain id and
+   * RPC URL: its nonce manager is the one lane, so overlapping sends from one account take distinct nonces, whichever
+   * signer object each came from. Read and filled when the effect runs; nothing runs at construction. Only a port that
+   * was made is kept: a failure (no endpoint, an unusable chain) is that send's defect and the next send tries again.
+   * Sends that arrive before any port exists wait on one build.
    */
   readonly shared: (setting: ChainSetting) => Effect.Effect<ChainPort, never, Timers>;
 }

@@ -19,7 +19,7 @@ const quantity = (n: bigint) => `0x${n.toString(16)}`;
 const declined = (error: unknown) => typeof error === "object" && error !== null && [4001, 4100].includes((error as { code?: number }).code ?? 0);
 
 export const provided = (name: SignerName, chain: ChainSetting, provider: Eip1193, labels: LabelBook): Signer => {
-  // One port for this signer, made on its first send: every send shares its nonce lane.
+  // The process's shared port for this chain, read when a send runs (`Chain.shared`).
   const port = Chain.shared(chain);
   const ask = (method: string, params: ReadonlyArray<unknown> = []) =>
     Effect.tryPromise({ try: () => provider.request({ method, params }), catch: (error) => error }).pipe(

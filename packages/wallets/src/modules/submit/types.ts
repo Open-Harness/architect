@@ -30,7 +30,7 @@ export interface Handed {
  */
 export type Hand = (to: Address, value: bigint) => Effect.Effect<Handed, KeyLocked>;
 
-/** The signer's one chain port (`Chain.shared`): every send from that signer goes through it, so they share its nonce lane. */
+/** The process's shared chain port for the setting (`Chain.shared`): every send on that chain goes through it, so they share its nonce lane. */
 export type SharedPort = Effect.Effect<ChainPort, never, Timers>;
 
 export interface SubmitApi {
