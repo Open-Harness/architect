@@ -35,13 +35,13 @@ const refused = (root: string, ...mentions: ReadonlyArray<string | RegExp>) => {
   for (const m of mentions) expect(v.out, `the refusal should mention ${String(m)}`).toMatch(typeof m === "string" ? new RegExp(m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : m);
 };
 
-// ---- derive: a probe with only `orthograph` in it ------------------------------------------------------------------
+// ---- derive: a probe with only `orthograph` in it (`probe` and `probe-part` would both take the `PR-` refusal-code prefix, which any app refuses, so Part has a `code` of its own) ------------------------------------------------------------------
 const THING = (n: string, prefix: string, more: string, lives = "", imports = "") =>
   `import { Blueprint } from "orthograph";\n${imports}export const ${n} = Blueprint.thing({ description: "A thing the check plants.", ${lives}fields: { id: Blueprint.id("${prefix}"), ${more} } });\n`;
 interface Probe { readonly look?: string; readonly adds?: string; readonly is?: string; readonly list?: string; readonly part?: string; readonly lives?: string }
 const probe = (root: string, p: Probe = {}) => {
   write(root, "blueprint/things/probe/thing.ts", THING("Probe", "prb", `title: Blueprint.text()`));
-  write(root, "blueprint/things/probe-part/thing.ts", THING("Part", "prt", `probe: Probe.fields.id, note: Blueprint.text()`, p.lives ?? "", `import { Probe } from "../probe/thing.ts";\n`));
+  write(root, "blueprint/things/probe-part/thing.ts", THING("Part", "prt", `probe: Probe.fields.id, note: Blueprint.text()`, `code: "PX", ${p.lives ?? ""}`, `import { Probe } from "../probe/thing.ts";\n`));
   write(root, "blueprint/things/probe/derive.ts", `import { Blueprint } from "orthograph";
 import { Probe } from "./thing.ts";
 import { Part } from "../probe-part/thing.ts";
