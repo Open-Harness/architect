@@ -1,6 +1,6 @@
 # Orthograph: the milestones
 
-Written 17 November 2026, from [`frame/delta.md`](frame/delta.md) and the decisions in
+Written 17 November 2026, from [the frame's `delta.md`](history/retired-2026-11-23/frame/delta.md) and the decisions in
 [`decisions/K2-forman-frame.md`](decisions/K2-forman-frame.md). This replaces layers 3 to 5 of
 [`build-plan.md`](build-plan.md), its decision steps D4 to D6, the work steps W1 to W3 and the agent track A0 to A9.
 Layers 1 and 2 stay in the build plan as the record of what was built.
@@ -25,9 +25,8 @@ faster but don't gate it.
   work app is on `spike/work-real`.
 - **Codex's unmerged work** on `layer/4`: `D4.md` (kits and dependencies) and author checks `e2e/layer3/00` to `06`
   plus `99`, red for readiness, never green.
-- **Not built anywhere:** plugins and mounts, adapters, the `agent`, `service` and `system` principals, secrets read by
-  handlers, the agents feature (no `packages/agent`), the factory loop, a Solidity language beyond a placeholder, and
-  any cloud destination.
+- **What is built today** is not said here, where it went stale: the ticks below and the checks they name say it, and
+  the canon's status page ([`../docs/canon/status.md`](../docs/canon/status.md)) reads them (K41).
 
 ## How a milestone works
 
@@ -174,7 +173,7 @@ its forks F1 to F5 are working assumptions until Aaron answers them).
 
 **Goal.** One name and one vocabulary, with nothing broken.
 **Ships.** The frame on `main`; `@orthograph/*` packages; the `ortho` command; the design docs rewritten around plugins
-and [`frame/story.md`](frame/story.md).
+and [the frame's `story.md`](history/retired-2026-11-23/frame/story.md).
 **Gate.** `nx run e2e:m0` runs the Gate 1 and Gate 2 suites under the new names, plus a name check: none of the old names (the
 package scope, the command, the variable prefix and the folder, listed in
 [`decisions/M0-packages.md`](decisions/M0-packages.md) section 4) outside the records. "History" in this section means
@@ -188,7 +187,7 @@ evidence, brief, wayfinding, spike, Noir and state records, the layer 1 and 2 bu
 | M0.02 ✅ | Rename packages and imports; `target-*` becomes `language-*`; Nx tags follow | M0.01 | build | `nx run-many -t check test` green; `rg` finds the old package scope nowhere outside history. **Proof:** [`evidence/M0.02/`](evidence/M0.02/): 16 projects' lint, typecheck and test, `sync:check`, the scope search empty | M |
 | M0.03 ✅ | The command, folders and variables: `ortho`, `.ortho/`, `ORTHO_*`; the config file renamed `ortho.config.ts` and its unread `outputs` removed (D3 #112) | M0.02 | build | `nx run e2e:layer1` and `e2e:layer2` pass, renamed. **Proof:** [`evidence/M0.03/`](evidence/M0.03/): Gate 1, 7 files, 19 passed and check 4's agent skipped for want of a key, as on any keyless run (D2 #41); Gate 2, 8 files, 10 passed | M |
 | M0.04 ✅ | A lint rule against the old names | M0.03 | build | the rule fails on a planted import from the old package scope. **Proof:** [`evidence/M0.04/`](evidence/M0.04/): `ortho(no-old-names)` names the planted import and exits 1; the rule runs in this repository's own lint and in `ortho check` | S |
-| M0.05 ∥ ✅ | Design docs rewritten: plugins instead of kits, the story as the spine; `build-plan.md` marked superseded from layer 3 | M0.01 | build | the docs build and their link check passes; "kit" (the word for a plugin) appears only in history. **Proof:** the docs are one page, [`docs/index.html`](docs/index.html), ported from Orthograph Docs ([`decisions/M0-build.md`](decisions/M0-build.md) #7 to #10); `nx run docs:check` ([`evidence/M0.05/`](evidence/M0.05/)); `build-plan.md` line 4 already points layers 3 to 5 here | M |
+| M0.05 ∥ ✅ | Design docs rewritten: plugins instead of kits, the story as the spine; `build-plan.md` marked superseded from layer 3 | M0.01 | build | the docs build and their link check passes; "kit" (the word for a plugin) appears only in history. **Proof:** the docs are one page, [`docs/index.html`](history/retired-2026-11-23/docs/index.html), ported from Orthograph Docs ([`decisions/M0-build.md`](decisions/M0-build.md) #7 to #10); `nx run docs:check` ([`evidence/M0.05/`](evidence/M0.05/)); `build-plan.md` line 4 already points layers 3 to 5 here | M |
 | M0.06 ✅ | **Gate M0** | M0.04, M0.05 | e2e | `nx run e2e:m0` passes on `main` | S |
 
 **Gate M0 proof:** a clean clone of `m0` at `091cc86` passes the workspace check, `sync:check`, `docs:check` and `nx run e2e:m0` ([`evidence/M0.06/`](evidence/M0.06/)); CI runs the same on [#32](https://github.com/Open-Harness/orthograph/pull/32) and on `main` (jobs `check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`).
@@ -204,7 +203,7 @@ exactly what it judged.
 settings, `ortho add`, adapter calls out as steps, stores (K3), the three trace fixes (O2), model, api and server re-homed as plugins,
 the first real plugin, `@orthograph/wallets`, on `@orthograph/chain-evm` with Anvil in worlds (K7 F4), and the Plugged In app
 dogfooded end to end, every output checked for the basics, seen in the portal (K13)
-([`frame/mounting.md`](frame/mounting.md), [`frame/projections.md`](frame/projections.md)).
+([the frame's `mounting.md`](history/retired-2026-11-23/frame/mounting.md), [the frame's `projections.md`](history/retired-2026-11-23/frame/projections.md)).
 **Gate.** `nx run e2e:m1`: (1) Codex's checks `00` to `06`, renamed, pass: a fixture plugin mounted with one command,
 its typed SDK and MCP answer, collisions are refused, the graph is whole; (2) acme with its projections mounted
 generates the same `generated/` as before, byte for byte except header paths and `generated/model/model.json`, which
@@ -270,7 +269,7 @@ real `ortho` binary, and the portal opens on Plugged In's things (K13).
 **Goal.** Auth stops being copied: identity and tenancy are two mounted plugins, every kind of caller exists, secrets
 come from the plugins that need them, and journeys prove the clients people actually use.
 **Ships.** `@orthograph/auth` and `@orthograph/organizations` (K2); principals `agent`, `service`, `system` and `Via`;
-roles as rules, or declared with `who` and `holds` (K20); secrets by declaration ([`frame/secrets.md`](frame/secrets.md)); `ortho new`;
+roles as rules, or declared with `who` and `holds` (K20); secrets by declaration ([the frame's `secrets.md`](history/retired-2026-11-23/frame/secrets.md)); `ortho new`;
 `ortho new feature` with its own CI.
 **Gate: workable.** `nx run e2e:m2`: (1) `npm create orthograph demo` scaffolds Plugged In at stage 1 with auth and handles
 mounted and nothing copied, and `ortho prove --env local` is green; (2) a new `notes` feature is made with
@@ -319,8 +318,8 @@ runs ready items in parallel without two touching the same files; people and out
 work CLI or MCP) work them. Only a fact closes an item.
 **Spikes before it** (K11, any time, off every gate): `spikes/dispatch-sim` (the dispatch rules on a synthetic plan) and
 `spikes/work-board` (the board over `examples/work`'s generated API, one real goal: Plugged In stage 1).
-**Ships.** The factory plugin ([`frame/examples/factory.md`](frame/examples/factory.md)); declared workflows on Effect's
-Cloudflare engine; the logbook adapter; the generated agent kit ([`frame/generators.md`](frame/generators.md));
+**Ships.** The factory plugin ([the frame's `examples/factory.md`](history/retired-2026-11-23/frame/examples/factory.md)); declared workflows on Effect's
+Cloudflare engine; the logbook adapter; the generated agent kit ([the frame's `generators.md`](history/retired-2026-11-23/frame/generators.md));
 `ortho ci`. And, moved here by K13 with their ids: the shell's chat and screen
 context (M1.24), MCP from the whole model (M1.37), the portal's faces and notes (M3.21), and the SDK, CLI and MCP as
 mounted plugins (M3.22). Actions and approvals (M1.22, M1.23) moved on into stage 1 (K29).
@@ -367,8 +366,8 @@ twice; `generated/agents/` passes its drift check.
 ## M4: Agents, proved with the factory
 
 **Goal.** `@orthograph/agents` runs agents durably, usable alone or as the factory's workers, joined by one optional need.
-**Ships.** The agents feature ([`frame/examples/agents.md`](frame/examples/agents.md)); model adapters with a local
-stand-in model; `Blueprint.agent`; the builder's code-mode tools and telemetry tools ([`frame/builder.md`](frame/builder.md));
+**Ships.** The agents feature ([the frame's `examples/agents.md`](history/retired-2026-11-23/frame/examples/agents.md)); model adapters with a local
+stand-in model; `Blueprint.agent`; the builder's code-mode tools and telemetry tools ([the frame's `builder.md`](history/retired-2026-11-23/frame/builder.md));
 the join, `workers: agents`.
 **Gate.** `nx run e2e:m4`: (1) acme's support agent spends from Bob's allowance as an agent for Bob, and is refused on
 an operation marked `.notVia(Via.agent)`; (2) evicting a run's Durable Object mid-turn resumes it with no second model
@@ -414,8 +413,8 @@ agent: how long a start takes, and whether anything is left).
 ## M5: Reach out
 
 **Goal.** Adapters both ways with real vendors' software, our own events driving work, and lists across homes.
-**Ships.** [`frame/examples/payments.md`](frame/examples/payments.md) and
-[`frame/examples/notifications.md`](frame/examples/notifications.md); `@orthograph/stripe`, `@orthograph/resend`; views
+**Ships.** [the frame's `examples/payments.md`](history/retired-2026-11-23/frame/examples/payments.md) and
+[the frame's `examples/notifications.md`](history/retired-2026-11-23/frame/examples/notifications.md); `@orthograph/stripe`, `@orthograph/resend`; views
 (K2 Q1); the general outbox; declared workflows in apps.
 **Gate.** `nx run e2e:m5`: checkout runs against stripe-mock, labelled vendor; a world-sent signed event settles a
 payment as `service(stripe)` (S19); a refund is refused through an agent (S20); an invitation's email arrives once in
@@ -445,7 +444,7 @@ actors; `ortho prove` names each adapter's stand-in.
 **Goal.** The allowance can live on chain, written once and generated in two languages. Where each key lives is declared, on a device
 or on a server (Aaron, 18 November 2026, K7).
 **Ships.** `@orthograph/language-solidity`, the relayer and follower, one budgets module per network, enabled by each organisation's Safe (S27, K25);
-[`frame/examples/allowance-on-chain.md`](frame/examples/allowance-on-chain.md).
+[the frame's `examples/allowance-on-chain.md`](history/retired-2026-11-23/frame/examples/allowance-on-chain.md).
 **Gate.** `nx run e2e:m6` (old Gates 3 and 4 together; the wallet, the chain adapter and Anvil in worlds landed in M1 and M2):
 `forge test` passes on the filled vault; the fixed-seed fuzz of the TypeScript machine against the Solidity one finds
 no divergence (S26); journeys pass on Anvil with each person signing; 100 relayed submissions take nonces 0 to 99; a
@@ -547,9 +546,9 @@ Solidity, was L5.02).
 
 ## Later
 
-- **Noir** ([`frame/examples/private-membership.md`](frame/examples/private-membership.md), N1, S28, S30), with the workshop's private membership as its example (K5 seam 7). `language-noir` and the `aztec` store kind, designed in K7. Any claim about proofs runs in a `proofs: "verified"` world (the in-process network with `realProofs: true`, K7 Q7); the CLI local network accepts forged proofs. A production promote still needs a network that verifies rollup proofs.
+- **Noir** ([the frame's `examples/private-membership.md`](history/retired-2026-11-23/frame/examples/private-membership.md), N1, S28, S30), with the workshop's private membership as its example (K5 seam 7). `language-noir` and the `aztec` store kind, designed in K7. Any claim about proofs runs in a `proofs: "verified"` world (the in-process network with `realProofs: true`, K7 Q7); the CLI local network accepts forged proofs. A production promote still needs a network that verifies rollup proofs.
 - **Solana**: `language-solana` (Anchor 1.2.2), the `solana` store kind and `chain-solana` on the same `ChainPort`, designed in K7 and spiked in `spikes/chain-languages/solana/`.
-- **The Python client** ([`frame/examples/python-sdk.md`](frame/examples/python-sdk.md), S31 to S33).
+- **The Python client** ([the frame's `examples/python-sdk.md`](history/retired-2026-11-23/frame/examples/python-sdk.md), S31 to S33).
 - **EIP-7702** delegation (L3.09), off the path as the old plan allowed.
 - **Baselines** (A9). The Docker sandbox for agents (A7) is dropped: no Docker (K10 section 8); E2B, then Cloudflare Containers, take its place.
 - Sequence diagrams as journeys (S5) and project-wide ratchets (S6).

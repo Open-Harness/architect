@@ -54,7 +54,7 @@ Branch `goal/agents`, cut from `goal/stage-1`. Written 21 November 2026 by the ð
 ## Read first
 
 - H1 and H2 in the frame, K5 (the chat), K23 (time), and the M4 section of `design/milestones.md`.
-- `design/frame/` on principals: an agent is a caller, `agent for` a person, checked by the server's roles.
+- `design/history/retired-2026-11-23/frame/` on principals (retired by K41; the canon's `agents` page replaces it): an agent is a caller, `agent for` a person, checked by the server's roles.
 
 ## The slices
 

@@ -8,7 +8,7 @@ move with the account. The repository does, so everything needed is here or link
 ## Pick up from here
 
 1. Open a session in a fresh worktree of `Open-Harness/orthograph` from `main`. Read `AGENTS.md`, this file,
-   `design/scope.md` (what is built and what is left), `design/decisions/K28-releases.md` (the three releases), and
+   `docs/canon/status.md` (what is built and what is left), `design/decisions/K28-releases.md` (the three releases), and
    `design/handoff.md`.
 2. You are the 🎛 conductor (`.agents/skills/conductor/`, `.agents/skills/threads/`). List the open pull requests
    (`gh pr list`) and compare them with "The lanes" below. A lane whose lead is gone is restarted from its brief, as
@@ -59,7 +59,7 @@ its retire, merge or keep list.
   world's timers. It answers stage 3's signature collection and the keeper.
 
 - 🗺 The walkthrough board (Aaron's "1 board, 6 zones"): the pitch, the concept map, the tour, swap the example, UI,
-  hard questions; each card tinted by `design/scope.md`. Built; zone 5 (UI) is being filled by the UI thread. Snapshot in
+  hard questions; each card tinted by the scope map (now `docs/canon/status.md`). Built; zone 5 (UI) is being filled by the UI thread. Snapshot in
   `design/history/artifacts-2026-11-21/walkthrough-board.data.json` (open with `design/history/artifacts-2026-11-21/_whiteboard-shell.html`).
 - 📐 The UI thread: K29 (#272), K31 and Goal 6's brief (#285). Both goals started on 22 November.
 - 🧭 "What Orthograph is": done, on `main` (#185, K30, and the goal in `README.md`).

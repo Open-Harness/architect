@@ -520,7 +520,7 @@ export default Blueprint.use(work, (w) => []);
 
 ## Environments (Q12 A)
 
-Each environment has its own portal, a route on its own Worker (`design/frame/projections.md:171`). It reads only its
+Each environment has its own portal, a route on its own Worker (`design/history/retired-2026-11-23/frame/projections.md:171`). It reads only its
 own sink, with one read token, a declared secret (M2.04). The top bar switches between them, built from
 `model.environments` and each one's deploy domain. Proof comes from the logbook for every environment, which needs no
 telemetry token.

@@ -1,3 +1,3 @@
 # @orthograph/prove
 
-Worlds, journeys, evidence from telemetry, the evals. Arrives in layer 1; see `design/packages.md`.
+Worlds, journeys, evidence from telemetry, the evals. Arrives in layer 1; see the package map in `docs/canon/status.md`.
