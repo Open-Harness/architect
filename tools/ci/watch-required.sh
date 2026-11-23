@@ -8,7 +8,7 @@
 # newest row, since an older cancelled run can list the same name).
 # A base branch with no protection (most goal branches) has no required list: then the run's own conclusion decides.
 # Exits 0 when every required check passed (or was skipped, which GitHub counts as passed), 1 when any did not
-# (failed or cancelled, or still missing at the deadline), 2 when it cannot watch (a usage error, a draft, a closed pull request, gh failing),
+# (failed or cancelled, or still missing at the deadline, or the newest run skipped or cancelled with no newer one), 2 when it cannot watch (a usage error, a draft, a closed pull request, gh failing),
 # and 3 when WATCH_MAX_SECONDS (default 10800, three hours) runs out.
 set -euo pipefail
 
@@ -16,6 +16,7 @@ pr="${1:-}"; poll="${2:-60}"
 [[ "$pr" =~ ^[0-9]+$ ]] || { echo "usage: watch-required.sh <pull request number> [poll seconds]" >&2; exit 2; }
 repo="Open-Harness/orthograph"
 max="${WATCH_MAX_SECONDS:-10800}"
+stale_polls="${WATCH_STALE_POLLS:-3}"; stale=0
 
 info() { gh pr view "$pr" -R "$repo" --json state,isDraft,headRefOid,baseRefName 2>/dev/null; }
 pr_json=$(info) || { echo "cannot read pull request $pr" >&2; exit 2; }
@@ -37,11 +38,28 @@ while :; do
   state=$(jq -r .state <<<"$pr_json")
   [ "$state" = "OPEN" ] || [ "$state" = "MERGED" ] || { echo "#$pr is closed" >&2; exit 2; }
   head=$(jq -r .headRefOid <<<"$pr_json")
-  run=$(gh run list -R "$repo" --commit "$head" --workflow ci --event pull_request --limit 1 --json databaseId,status,conclusion 2>/dev/null) || run='[]'
+  run=$(gh run list -R "$repo" --commit "$head" --workflow ci --event pull_request --limit 10 --json databaseId,status,conclusion 2>/dev/null |
+    jq 'sort_by(.databaseId) | reverse' 2>/dev/null) || run='[]'
+  # Newest first by id: two runs can share a creation second (a draft-race run and the ready run, #658), and then the
+  # list's own order is not the order they started in.
   if [ "$(jq -r '.[0].status // "none"' <<<"$run")" = "none" ] && [ "$state" = "MERGED" ]; then
     echo "#$pr is merged and has no ci run on its head" >&2; exit 2
   fi
-  if [ "$(jq -r '.[0].status // "none"' <<<"$run")" = "completed" ]; then
+  newest=$(jq -r '"\(.[0].status // "none") \(.[0].conclusion // "")"' <<<"$run")
+  # A run that completed skipped or cancelled ran no CI: every job skipped on a stale draft payload, or a newer run
+  # replaced it (#513: the ready run cancelled by a same-second push run that skipped everything, whose required
+  # checks then read SKIPPED, which GitHub counts as passed). Give a newer run a few polls to appear, then say so.
+  if [ "$newest" = "completed skipped" ] || [ "$newest" = "completed cancelled" ]; then
+    stale=$((stale + 1))
+    if [ "$stale" -gt "$stale_polls" ]; then
+      echo "#$pr: the newest ci run on $head was ${newest#completed } and ran no CI; push a new commit (an empty one will do)" >&2
+      exit 1
+    fi
+  else
+    stale=0
+  fi
+  if [ "$newest" != "completed skipped" ] && [ "$newest" != "completed cancelled" ] &&
+    [ "$(jq -r '.[0].status // "none"' <<<"$run")" = "completed" ]; then
     # A draft's run completes with its jobs named "<id> (draft)" and their steps skipped (CI-drafts-race), so only a
     # run with no such job tells an unprotected base anything; a draft run here is the one before the ready run starts.
     drafted=$(gh run view "$(jq -r '.[0].databaseId' <<<"$run")" -R "$repo" --json jobs 2>/dev/null |
