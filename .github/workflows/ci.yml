@@ -22,8 +22,8 @@ concurrency:
 # Branch protection reads the required checks from the latest `ci` run on the head, and the event's payload can be stale:
 # a push made just before `gh pr ready` can deliver `draft: true` after the ready event. So no job trusts the payload.
 # The `ready` job reads the pull request's live draft state, and every other job needs it (CI-drafts-race.md). The
-# required checks (`check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `builder-paths`, and on goal/stage-1 also `portal-ui`,
-# `e2e-m1`, `e2e-climb`, `e2e-grid`, `e2e-stage1`) follow two more rules, which
+# required checks (`check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `builder-paths`, `portal-ui`, `e2e-m1`, `e2e-climb`,
+# `e2e-grid`, `e2e-stage1`, and on goal/on-chain `e2e-on-chain`) follow two more rules, which
 # tools/ci/required-jobs.sh holds in check-static:
 #   1. On a ready run a required job never skips. It runs, and decides in its steps; GitHub counts a skipped required
 #      check as passed.
@@ -111,7 +111,7 @@ jobs:
       # throwaway repository.
       - run: bash tools/ci/ci.test.sh
       # No draft run can pass a required check. When a branch's protection requires a new check, add its job here.
-      - run: tools/ci/required-jobs.sh .github/workflows/ci.yml check portal-ui e2e-layer1 e2e-layer2 e2e-m0 e2e-m1 e2e-climb e2e-grid e2e-stage1 builder-paths
+      - run: tools/ci/required-jobs.sh .github/workflows/ci.yml check portal-ui e2e-layer1 e2e-layer2 e2e-m0 e2e-m1 e2e-climb e2e-grid e2e-stage1 e2e-on-chain builder-paths
 
   # prove's tests, split by file into three shards (vitest's --shard), each on its own runner with the same steps as
   # check-static. Every shard runs to the end (no fail-fast), so one run shows every failure. Skipped on a docs-only pull
@@ -206,7 +206,7 @@ jobs:
   # hash, because HeroUI caps CI downloads per token per day. The secret is read in one step's `env`, never at workflow level and
   # never inside a script; the job never runs for a pull request from a fork, so the secret never reaches code we did not write.
   # Every other job installs the registry's empty shell of Pro and runs without it (portal-ui's typecheck says it was skipped).
-  # It is a required check on goal/stage-1, so it never skips on a ready run (CI-drafts-race.md): a pull request from a fork,
+  # It is a required check on main and goal/stage-1, so it never skips on a ready run (CI-drafts-race.md): a pull request from a fork,
   # and a pull request into another goal branch (the fast gate only, CI-integration.md, B1), pass without its steps.
   # It reads the scope flag itself rather than needing `changes`, so it also runs when `changes` fails.
   portal-ui:
@@ -290,8 +290,8 @@ jobs:
   # e2e-m1, e2e-stage1) pass without running their steps, since a required job never skips (CI-drafts-race.md), and
   # prove-tests, the M1 shards, e2e-m2 and e2e-m8 skip (design/decisions/CI-docs-fast-path.md, CI-speed.md): main is
   # strict, so every pull request reruns all of CI each time another lands, and a docs change cannot move them.
-  # Docs-only is every changed path under design/, or a *.md file outside packages/, e2e/ and examples/
-  # (tools/ci/docs-only.sh). A push, or a pull request with any other change, runs everything. check-static, `e2e-m0` and
+  # Docs-only is every changed path under design/ (but not design/grid/), a *.md file outside packages/, e2e/ and examples/,
+  # or a path no gated suite reads: spikes/, .agents/, .claude/, issue templates (tools/ci/docs-only.sh, CI-docs-inert.md). A push, or a pull request with any other change, runs everything. check-static, `e2e-m0` and
   # portal-ui always run, since they lint the docs, build the design docs and run the supersedes guard.
   # Never workflow-level `paths-ignore`: a workflow that never starts leaves its required checks pending forever.
   changes:
@@ -353,7 +353,7 @@ jobs:
       SKIP: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false') }}
     steps:
       - if: env.SKIP == 'true'
-        run: echo "A docs-only pull request or a pull request into a goal branch, where this gate waits for the landing (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
+        run: echo "A docs-only pull request, one into a goal branch (this gate waits for the landing) or one no e2e project is affected by (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
       - if: env.SKIP != 'true'
         uses: actions/checkout@v7.0.1
       - if: env.SKIP != 'true'
@@ -401,7 +401,7 @@ jobs:
       SKIP: ${{ needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false') }}
     steps:
       - if: env.SKIP == 'true'
-        run: echo "A docs-only pull request or a pull request into a goal branch, where this gate waits for the landing (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
+        run: echo "A docs-only pull request, one into a goal branch (this gate waits for the landing) or one no e2e project is affected by (design/decisions/CI-docs-fast-path.md, CI-integration.md)."
       - if: env.SKIP != 'true'
         uses: actions/checkout@v7.0.1
         with:
@@ -473,8 +473,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: NX_DAEMON=false pnpm nx run e2e:m8-ratchet --outputStyle=static
 
-  # Gate M0 (M0.06): no old name outside the records, and the design docs build with every link resolving.
-  # The canon's check (docs/canon/README.md) runs beside it: every quote, reference and component in the MDX pages.
+  # Gate M0 (M0.06): no old name outside the records. The canon's check (docs/canon/README.md) runs beside it: every quote,
+  # reference and component in the MDX pages, and every link in its READMEs and status page. It replaced the old docs page's
+  # link check when K41 retired that page (design/decisions/K41-canon-map.md).
   # Gates 1 and 2 above are the rest of `nx run e2e:m0`, run as their own jobs so they run side by side.
   e2e-m0:
     name: ${{ needs.ready.outputs.draft != 'false' && 'e2e-m0 (draft)' || 'e2e-m0' }}
@@ -501,8 +502,6 @@ jobs:
         run: pnpm install --frozen-lockfile
       - if: env.SKIP != 'true'
         run: pnpm nx run e2e:m0-names --outputStyle=static
-      - if: env.SKIP != 'true'
-        run: pnpm nx run docs:check --outputStyle=static
       - if: env.SKIP != 'true'
         run: pnpm nx run canon:check --outputStyle=static
       # A decision's `## Supersedes` phrases are gone from everything but the records (proposal 8; AGENTS.md, "Who decides").
@@ -703,7 +702,8 @@ jobs:
         run: pnpm nx run e2e:climb --outputStyle=static
 
   # Goal 3's done check, begun (`e2e/stage1/README.md`): Plugged In's seven journeys green in `--env local` and `--env test`, through the
-  # ratchet. Only for the goal's own branch: pull requests into goal/stage-1 and pushes to it. On any other pull request or push, and on a docs-only
+  # ratchet. For main and goal/stage-1: pull requests into either and pushes to either (main since the lander's slice 1, K42 open risks,
+  # CI-main-stage1.md). On any other pull request or push, and on a docs-only
   # pull request, the job runs and passes without its steps: a required job never skips (CI-drafts-race.md, CI-docs-fast-path.md).
   # Should `changes` itself fail, the steps run. No secret and no `id-token` permission: the test half
   # signs its verdicts with the local OIDC issuer of e2e/layer2/services.ts. About 1 minute on a Mac, so one runner and one job (CI-speed.md).
@@ -714,7 +714,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SKIP: ${{ !((github.event_name == 'pull_request' && github.base_ref == 'goal/stage-1') || github.ref == 'refs/heads/goal/stage-1') || (needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
+      SKIP: ${{ !((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/stage-1')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/stage-1') || (needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
     steps:
       - if: env.SKIP == 'true'
         run: echo "A docs-only pull request, or one that is not for this gate, where this job passes without its steps (design/decisions/CI-drafts-race.md, CI-docs-fast-path.md, CI-integration.md)."
@@ -745,6 +745,64 @@ jobs:
           key: otelcol-contrib-0.164.0-${{ runner.os }}-${{ runner.arch }}
       - if: env.SKIP != 'true'
         run: pnpm nx run e2e:stage1 --outputStyle=static
+
+  # Goal 4's done check, begun (`e2e/on-chain/README.md`): the budgets journeys, the seam, the snag log and each slice's check, through the
+  # ratchet, so it is green while every failure is listed. `nx run e2e:on-chain` itself (red while anything is listed) is the done check and
+  # is run by hand and at landing. Only for the goal's own branch: pull requests into goal/on-chain. On any other pull request
+  # or push, and on a docs-only pull request, the job runs and passes without its steps: a required job never skips (CI-drafts-race.md,
+  # CI-docs-fast-path.md). It is goal/on-chain's own e2e suite, so the fast gate runs it (CI-integration.md, B1). No secret and no `id-token`.
+  e2e-on-chain:
+    name: ${{ needs.ready.outputs.draft != 'false' && 'e2e-on-chain (draft)' || 'e2e-on-chain' }}
+    needs: [ready, changes]
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SKIP: ${{ !((github.event_name == 'pull_request' && github.base_ref == 'goal/on-chain') || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    steps:
+      - if: env.SKIP == 'true'
+        run: echo "A docs-only pull request, or one that is not for this gate, where this job passes without its steps (design/decisions/CI-drafts-race.md, CI-docs-fast-path.md)."
+      # The whole history, every branch: check 03 reads `git log HEAD` for the pull requests and commits a snag cites, and check 02 compares
+      # with Goal 3's output at `git merge-base HEAD origin/goal/stage-1`.
+      - if: env.SKIP != 'true'
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - if: env.SKIP != 'true'
+        uses: pnpm/action-setup@v6.1.0
+      - if: env.SKIP != 'true'
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: env.SKIP != 'true'
+        run: pnpm install --frozen-lockfile
+      # No Docker (K10 section 8): every service is a process. The runner image carries Docker, so take it off the PATH and
+      # let a test that still reaches for it fail here.
+      - if: env.SKIP != 'true'
+        name: No Docker on the PATH
+        run: |
+          sudo rm -f "$(command -v docker)"
+          ! command -v docker
+      # The Collector is its pinned binary (prove's telemetry module checks its digest before it runs): cached by version, and
+      # fetched from the official release when the cache is empty.
+      - if: env.SKIP != 'true'
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/orthograph/otelcol-contrib
+          key: otelcol-contrib-0.164.0-${{ runner.os }}-${{ runner.arch }}
+      # A world's chain is Anvil as a plain process (K10 section 8: no container, no Docker step). Foundry is pinned
+      # to an exact version, the same as the check jobs: the budgets journeys and each slice's check run on Anvil.
+      - if: env.SKIP != 'true'
+        uses: foundry-rs/foundry-toolchain@v1.9.2
+        with:
+          version: v1.8.6
+      - if: env.SKIP != 'true'
+        run: anvil --version
+      - if: env.SKIP != 'true'
+        run: pnpm nx run e2e:on-chain-ratchet --outputStyle=static
+        env:
+          ORTHO_CHAIN_EVM_ANVIL: "1"
 
   # Goal 6's done check, begun (`design/goals/06-portal.md`): the new portal's checks, starting with the theme's. Not a required
   # check yet, so a red run does not block; slice 2 puts the rest of the portal checks behind it. Skipped on a docs-only pull

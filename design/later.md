@@ -58,9 +58,8 @@ belongs to, and why it waits.
   naming until then.
 - **An intent key on actors** (K21): `idempotent: { by }` for things that `lives: "actor"` waits with idempotency by
   request on actors, below.
-- **Money as a value** (ledger THI-07; a known gap, Aaron, 20 November 2026): a signed or fixed-point amount that knows
-  its currency or token and its decimals, can go negative in a ledger, and means the same in Effect and in Solidity.
-  Capxul's Payment, Budget, Invoice and Ledger entry each need one. Waits for a design pass; no slice until then.
+- **Money, what is left** (ledger THI-07, `design/decisions/M6-money.md`): an amount that knows its asset is decided in
+  M6-money, 21 November 2026; a currency taken from a field on the row, and the portal's formatting, are later.
 - **Named value kinds** (ledger THI-08, K24): a web address, a pattern, a choice, yes or no, carried into the model so
   every output can tell them apart and a form picks the right input. Waits for a design pass, beside THI-02.
 - **Approval on an operation** (ledger OPS-15, K24): a declared mark that the action asks once and the page's agent
@@ -210,6 +209,9 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
   and the CLI only those a device session or a key can reach. **Trigger:** a generated client's refusal on a call its credential
   could never make is reported as confusing in a journey or by a user, or the second app ships a CLI with an operation
   only `Via.agent` reaches.
+- **A nonce lane shared across processes** (`decisions/W1-wallet-send-lanes.md`, Open). Today one process keeps one lock
+  per account and chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
+  key from more than one process or Worker, or a journey sends from one account in two processes at once.
 
 ## From the actions projection (Goal 5 lead, 23 November 2026)
 

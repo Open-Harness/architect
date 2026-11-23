@@ -5,7 +5,7 @@ milestone: "Goal 5: the UI layer"
 release: beta
 branch: goal/ui-layer
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude       # claude | amp | codex | opencode, set by the lead when it starts
   model: claude-opus-5-5 # the model id it runs on
@@ -28,6 +28,11 @@ slices:
   - "5 · The example app's three screens (after 4)"
 ---
 # Goal 5: the UI layer, on UI SDK
+
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
 
 Branch `goal/ui-layer`, cut from `goal/stage-1`. Written 21 November 2026 with K29.
 
@@ -101,7 +106,7 @@ A blueprint gives a web app its interface the way it gives the CLI and MCP their
 > - `AGENTS.md`, and this file word for word;
 > - `design/decisions/K29-ui-layer.md` (the whole shape, with sketches), K31 (the app's map), K32 and K33 (how goals
 >   coordinate, and how the work lives on GitHub: the `github` skill), K24, K13 and K28;
-> - `design/frame/projections.md` 3.4 (the web projection) and the M1.22, M1.23, ST1.25, ST1.26 and ST1.04 rows of
+> - `design/history/retired-2026-11-23/frame/projections.md` 3.4 (retired by K41; the canon's `ui` page replaces it) (the web projection) and the M1.22, M1.23, ST1.25, ST1.26 and ST1.04 rows of
 >   `design/milestones.md`;
 > - `spikes/ui-sdk-real-world/` (#222) and `spikes/ui-sdk-verb-primitive/` (#215), their READMEs first;
 > - the `ui-sdk`, `reviewer`, `author`, `threads` and `kanban` skills.
@@ -318,8 +323,8 @@ From Goal 3's pace (a medium slice takes three to six hours from opening to merg
 
 ## Where it stands
 
-23 November 2026. Slices 1 and 2 have landed. A program can ask a person before it acts, and a refusal tells the caller
-that nothing was written. The checks for the web building blocks are written and fail only because the building blocks
-don't exist yet, along with the decision on how a page connects to the app. Goal 3 has let an operation say it needs a
-person's yes, and has set aside the code for a no. Slice 3's checks, for one generated action per operation, are written
-and in review; its build comes next, then slice 4, the web building blocks themselves.
+23 November 2026, parked under K42 (section 7). The lead stopped before updating this, so Goal 18 updated it from
+`goal/ui-layer`. Slices 1 and 2 landed: a program can ask a person before it acts, and a refusal tells the caller that
+nothing was written. Slice 3, one generated action per operation, landed on `goal/ui-layer` as a pair (#621, #655).
+Nothing was in review. Slice 4, the web building blocks, and the rest become items on the board at their stage; the
+lander brings `goal/ui-layer`'s finished slices into `main`.

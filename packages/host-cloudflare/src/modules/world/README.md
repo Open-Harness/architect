@@ -2,8 +2,25 @@
 
 `World`, the Durable Object that is one running world, and `toWorld`, which routes `/_world/*` to it. Stage one's
 world keeps the cast (`POST /_world/cast` with `{ names }` gives each a person id, made once and kept in the world's
-own SQLite storage, and a token signed with the run's secret) and answers `/_world/health`. The clock, the timers
-table and the registry of things join it in stage five.
+own SQLite storage, and a token signed with the run's secret) and answers `/_world/health`. It holds the world's clock
+(M8.06; the `clock` module): `GET /_world/clock`, `POST /_world/clock/advance` and `/move-to`, and `now()` over RPC. It
+also holds the world's timer table and its count of work in flight (M8.07; the `timers` module), which every other process
+reaches over the object's RPC (`countEnter`, `countLeave`, `timerAdd`, `timerWait`, `timerCancel`, `timerSet`, `timerClear`,
+`timersSleeping`, `timersDurable`); its `alarm` is the world's lifetime or, in a real world, the earliest timer. The registry
+of things joins it later.
+
+## Every entry wraps itself (M8.06)
+
+`WorldEntry.entry(handler)` wraps a Worker's `fetch`, `scheduled` and `queue`; `WorldEntry.within(env, f)` any other entry
+that returns a promise (a Workflows step); `WorldEntry.withinNow(env, f)` an RPC that answers at once (the actors'). Each
+reads its world's instant from the world's Durable Object and runs inside `WorldClock.within`, so `Date` and Effect's
+`Clock` read it. A real world skips all of it. The world's `alarm`, `/_world/worlds` and `/_world/arm` and `/_world/end` keep
+real time: they are the world's lifetime. Decision: `design/decisions/M8-06-world-holds-the-clock.md`.
+
+Each entry also takes a token in the world's count, `entry:<path>`, from the moment it begins; the work hands it over to its own
+(M8.07). `WorldEntry.work(env, wakes)` is the Worker's counted work and timers (M8.07): a layer of `Busy`, `Timers` and `DurableTimers` whose
+tokens and rows are the world's, kept in its Durable Object. The generated Worker uses it, only for a blueprint with a stepped
+or scaled clock. Decision: `design/decisions/M8-07-timers-and-quiet.md`.
 
 ## Worlds in a long-lived environment (D3 #50)
 
@@ -36,3 +53,7 @@ rows survive a world's end (open, K3 "What M1.17 built").
 ## Reset (ST1.24)
 
 `POST /_world/reset` (a world without leases only) empties every table of the default database and of each declared store, and keeps the cast: the Durable Object answers who is in it, and the Worker deletes everything but those people's `auth_user` and `auth_account` rows (`internal/reset.ts`). It is how a warm world (`ortho dev`) starts a prove run with none of the last run's records. Not reset: actor storage.
+
+## Reset sequence and the fence (M8.07 call 13)
+
+`/_world/reset` needs the nonce header, closes the world, drains open write sections for at most `ORTHO_QUIET_MS` and, if one is still open, fails 409 `NeverQuiet` naming it (nothing wiped, world reopened). `/_world/reset/done` needs the same header. While closed, reads answer and writes are 409. A request of a reset-over run writes nothing: `WorldEntry.fenced(env, env.DB)` makes every statement a write section and `WorldEntry.section` wraps `/api/auth/*`; `timerAdd` and `timerSet` interrupt a stale request before the RPC.

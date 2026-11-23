@@ -51,16 +51,26 @@ const frameworkHasDescriptors = (() => {
 // complaint about such a file is expected; a file that does not use it is checked strictly, always. After M1.05 every
 // complaint counts.
 const NEW_SURFACE = /\bMount\b|Blueprint\.(?:feature|adapter|projection|choice|need|call|use)\b/;
+// M2.04's surface, expected missing until `Blueprint.layer` exists (the slice's own export): a declaration of a secret, with options and kinds.
+const SECRETS_SURFACE = /Blueprint\.secret\b|\bSecret\.(?:release|builder)\b|Blueprint\.layer\b/;
+
+/** Has the framework got M2.04's `Blueprint.layer` yet? Until it has, a fixture's complaints about the secrets surface are expected. */
+const frameworkHasSecrets = (() => {
+  let known: boolean | undefined;
+  return () => known ??= spawnSync(process.execPath, ["--input-type=module", "-e",
+    "import('orthograph').then((m) => process.exit(typeof m.Blueprint.layer === 'function' ? 0 : 1)).catch(() => process.exit(2))"],
+  { cwd: acme, encoding: "utf8", timeout: 60_000 }).status === 0;
+})();
 const typecheck = (work: string) => {
   const result = spawnSync(join(repo, "node_modules/.bin/tsc"), ["--pretty", "false", "-p", join(work, "tsconfig.json")], { cwd: work, encoding: "utf8", timeout: 180_000, maxBuffer: 16 * 1024 * 1024 });
   // `--pretty false`: with FORCE_COLOR (CI) tsc colours "error" and "TS" apart and no line matches. And tsc that dies without an error line is not a clean compile.
   const errors = `${result.stdout}${result.stderr}`.split("\n").filter((line) => /error TS\d+:/.test(line));
   if (result.status !== 0 && errors.length === 0) errors.push(`tsc exited ${String(result.status)} with no error line: ${result.stdout}${result.stderr}`);
-  const usesSurface = (line: string) => {
+  const usesSurface = (line: string, surface: RegExp) => {
     const file = /source\/([^(]+)\(/.exec(line)?.[1];
-    return file !== undefined && existsSync(join(work, "source", file)) && NEW_SURFACE.test(readFileSync(join(work, "source", file), "utf8"));
+    return file !== undefined && existsSync(join(work, "source", file)) && surface.test(readFileSync(join(work, "source", file), "utf8"));
   };
-  const unexpected = frameworkHasDescriptors() ? errors : errors.filter((line) => !usesSurface(line));
+  const unexpected = errors.filter((line) => !(!frameworkHasDescriptors() && usesSurface(line, NEW_SURFACE)) && !(!frameworkHasSecrets() && usesSurface(line, SECRETS_SURFACE)));
   expect(unexpected, `tsc on ${work}:\n${result.stdout}${result.stderr}`).toEqual([]);
   expect(existsSync(join(work, "dist")), "tsc emitted no declarations").toBe(true);
 };

@@ -9,3 +9,4 @@ export { cli } from "#modules/cli/service.js";
 export { mcp } from "#modules/mcp/service.js";
 export { actions } from "#modules/actions/service.js";
 export { infra } from "#modules/infra/service.js";
+export { app } from "#modules/app/service.js";

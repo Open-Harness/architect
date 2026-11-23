@@ -104,3 +104,4 @@ names the real difference: a `Timers` wait dies with its fiber, a `DurableTimers
 `tools/ci/builder-paths.sh` lets a builder shrink every milestone's ratchet folder, `e2e/m<n>/expected-failing/`, as
 it already lets M1's. `e2e/m8/README.md` named this as waiting for stage one's version of the script; it is here now,
 and M8's builders need it from M8.09 on. `tools/ci/ci.test.sh` gains four cases for it.
+Superseded by CI-ratchet-suites, 23 November 2026: every e2e suite's list, `e2e/<suite>/expected-failing/`, may shrink.

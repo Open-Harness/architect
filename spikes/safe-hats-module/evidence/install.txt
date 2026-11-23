@@ -1,0 +1,7 @@
+
+added 23 packages in 8s
+/var/folders/4r/x7bvvh3x6053m_zvmnrwq2680000gn/T/tmp.xg2JVOPnsZ/hats-protocol.tar.gz: OK
+/var/folders/4r/x7bvvh3x6053m_zvmnrwq2680000gn/T/tmp.xg2JVOPnsZ/solbase.tar.gz: OK
+/var/folders/4r/x7bvvh3x6053m_zvmnrwq2680000gn/T/tmp.xg2JVOPnsZ/forge-std.tar.gz: OK
+Version: 0.8.30+commit.73712a01.Darwin.appleclang
+Wall time: 121.236 s

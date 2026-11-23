@@ -10,7 +10,7 @@ import { ModelFailed } from "./types.ts";
 export const Sync: SyncApi = {
   project: (tree, root) =>
     Effect.gen(function* () {
-      const model = yield* modelOf(join(tree.root, root), root);
+      const { model, lock } = yield* modelOf(join(tree.root, root), root);
       const missing = missingHandlers(join(tree.root, root), model);
       if (missing.length > 0) return yield* new ModelFailed({ root, problems: missing.join("\n") });
       const name = root.split("/").at(-1) ?? root;
@@ -23,6 +23,8 @@ export const Sync: SyncApi = {
         if (f.scaffold && tree.exists(path)) continue;
         tree.write(path, f.content);
       }
+      // The lock keeps every refusal's code for good (M6-chain item 4): it is written beside the blueprint, never into generated/, and only ever added to.
+      tree.write(`${root}/blueprint/refusals.lock`, lock);
       const wanted = new Set(files.filter((f) => !f.scaffold).map((f) => `${root}/${f.path}`));
       // `generated/model/changes.json` is the model against the last release in the logbook: the CLI writes it, never the generators.
       const kept = `${root}/generated/model/changes.json`;

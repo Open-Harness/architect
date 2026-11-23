@@ -6,7 +6,7 @@ import type { ActorApi, ActorWrite } from "#modules/actors/types.js";
 import { decodeRow, encodeFields } from "./rows.ts";
 
 const stubOf = (actors: DurableObjectNamespace, table: string, id: string) =>
-  actors.get(actors.idFromName(`${table}:${id}`)) as unknown as { [K in keyof ActorApi]: (...a: Parameters<ActorApi[K]>) => Promise<ReturnType<ActorApi[K]>> };
+  actors.get(actors.idFromName(`${table}:${id}`)) as unknown as { [K in keyof ActorApi]: (...a: Parameters<ActorApi[K]>) => Promise<Awaited<ReturnType<ActorApi[K]>>> };
 
 export const actorFind = (actors: DurableObjectNamespace, thing: Thing, table: string, id: string): Effect.Effect<Stored | undefined> =>
   Effect.gen(function* () {

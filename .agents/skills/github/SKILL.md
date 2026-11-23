@@ -5,6 +5,15 @@ description: How Orthograph's work lives on GitHub (K33), for every agent in any
 
 # Orthograph on GitHub
 
+> **K42 (23 November 2026) changes three things here**, and Goal 18's slice 2 rewrites this skill to match. A gap is
+> **claimed**, not asked for: the `lane:goal-<n>` label on its issue and a "Touches" line naming its paths; an Ask is
+> only for two goals' overlapping claims. The board's truth becomes the capability map in `docs/canon/status.md`, one row per item with its stage
+> (provisional, spiked, scaffoldable, building, built, extracted). Milestones become the apps' milestones (the
+> superagent's coding agent, triage agent, extraction and launch; Capxul's getting paid, books, people and payroll,
+> banking), a framework piece taking the milestone of the first app milestone that pulls it. The release labels name
+> framework releases: the beta is what the superagent proves, 1.0 what Capxul core proves. The roadmap's dates are
+> computed, and the lander (Goal 19) brings app work into `main` (K42, sections 5, 6 and 8). Until that slice lands, the sync below runs as it is.
+
 The files are the truth and GitHub is where the work is seen ([K33](../../../design/decisions/K33-github-native.md),
 on top of [K32](../../../design/decisions/K32-goals-coordinate-themselves.md)). Every agent here, whatever its harness,
 works under one GitHub account, so who did what is said by labels and the template, never by an assignee.
@@ -43,7 +52,7 @@ title: the new portal, on our own components and the app's map
 milestone: "Goal 6: the new portal"
 release: beta                 # preview | beta | 1.0
 branch: goal/portal
-base: goal/stage-1
+base: main
 status: running               # ready | running | landing | done | parked
 lead:
   harness: amp                # claude | amp | codex | opencode

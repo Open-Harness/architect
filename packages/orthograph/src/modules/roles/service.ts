@@ -31,13 +31,16 @@ export const admitsAgent = (allowed: ReadonlyArray<Allowed>): boolean =>
     return a.kind !== "narrowed" || a.via.includes("agent");
   });
 
+/** A `who` role as a rule: the field holds the caller's person. On a chain the account that signed is compared in the contract. */
+const whoRule = (key: string): Role["rule"] => (instance, principal) => (instance as unknown as Record<string, unknown>)[key] === principal.person;
+
 export const Roles: RolesApi = {
-  role: ((thing: Role["thing"], spec: { readonly rule?: Role["rule"]; readonly service?: ServiceRole["service"] }) => {
+  role: ((thing: Role["thing"], spec: { readonly rule?: Role["rule"]; readonly service?: ServiceRole["service"]; readonly who?: Role["who"] }) => {
     const role: object = Object.freeze({
       kind: "role" as const,
       thing,
-      rule: spec.rule ?? (() => false),
-      ...(spec.service === undefined ? {} : { service: spec.service }),
+      rule: spec.rule ?? (spec.who === undefined ? () => false : whoRule(spec.who.key)),
+      ...(spec.service === undefined ? { who: spec.who } : { service: spec.service }),
       of: (path: string): RoleOf<any, string> => roleOf(role as Role, path),
       ...(spec.service === undefined ? narrowable(() => role) : {}),
     });

@@ -5,11 +5,11 @@ milestone: "Goal 14: the club"
 release: "1.0"
 branch: goal/club
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5  # the model id it runs on
+  since: 2026-11-22    # the date it started
 done_check: nx run e2e:stage4
 owns:
   - packages/language-noir/
@@ -31,6 +31,11 @@ slices:
   - "8 · The stage 4 gate (after 1, 2, 3, 4, 5, 6, 7)"
 ---
 # Goal 14: the club, stage 4 of Plugged In, private on Aztec
+
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
 
 Branch `goal/club`, cut from `goal/stage-1`. Written 21 November 2026 by the 🎼 conductor, from the goal map
 (`design/goals/map.md`, K34) and K35. Milestone `Goal 14: the club`, label `release:1.0` (K33).
@@ -93,13 +98,10 @@ The rules every goal shares, so this brief stays short. Where they and this file
 - **Merging.** Open pull requests as drafts, test locally, get a 🔍 pass from a reviewer that wrote none of it (the
   `reviewer` skill), then mark ready; merge when CI is green and every thread is resolved. At most two ready pull
   requests in CI at once.
-- **Its needs.** A slice builds once what it needs has landed (K34, `design/goals/map.md`). A slice that needs another
-  goal's work writes its checks first and waits for the build; it never builds a stand-in for the other goal.
-  A slice another goal needs lands early, once its check is green: a branch `goal/<name>-early-<slice>` cut at the
-  commit that ends it, merged into `goal/stage-1` by a merge commit, never squashed (K38). Ask for one by an Ask
-  issue in the owning goal's milestone.
-- **Asks.** Anything outside "What it owns" is an Ask issue in the owning goal's milestone, naming this goal and what
-  done looks like (K32, K33). Read this goal's own open issues at every slice start.
+- **Its needs.** Under K42: a gap this goal finds goes by K42's collision rule (section 3), and a
+  slice another goal needs lands early into `main` (K38, K42).
+- **Asks.** Under K42, an Ask issue is only for two goals' claims that overlap (K42, section 3, case 2). Read this
+  goal's own open issues at every slice start.
 - **On GitHub.** Every issue and pull request carries the milestone `Goal 14: the club` and the label `release:1.0`;
   every comment an agent posts starts `[goal-14 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" in the pull
@@ -108,4 +110,24 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+**Parked on 22 November 2026** by the conductor, on Aaron's "narrow to the path": the Beta path and the two long poles
+run first. On 23 November K42 wound the goal down: its open slices become items on the board, which Goal 18 sorts, and it resumes by the
+conductor's word.
+
+- **Landed:** `goal/stage-1` merged into `goal/club` (#459), and this brief set to running, then parked.
+- **Slice 1, the spike, landed:** `spikes/aztec-club/`, merged into `main` on 23 November 2026 (#504), for the record. Its
+  answer: yes, the budgets declaration and a ballot map one to one onto a Noir contract, and in a world that verifies
+  proofs a tampered and an empty proof are refused and the public total doesn't move; no member's address is in any
+  transaction once a sponsor pays the fees. Three limits: every holder of the club's key reads every allowance, each
+  spend's amount is public, and a proof against a re-built block must be proved again. Three cases are not tested
+  (verification off, the ballot passing with all three members, a second ballot refused); the README names the command
+  for each.
+- **Asks closed on 23 November 2026 under K42:** #495 to Goal 4 (a `ChainPort` for every chain family, and
+  `Blueprint.store.chain.aztec()`) and #496 to Goal 13 (the budgets feature with an Aztec choice, its journeys neutral on
+  the store kind). Goal 18 closed both as no longer applying: K42 parks the goals they asked, and each piece stays an
+  item on the board (Goal 18, slice 2), built by the first app goal that needs it. Slice 5 still needs both pieces.
+- **Next, on resuming:** run the three missing cases, two commands (`club.ts verified ballots`, then
+  `club.ts control tamper`) and add them to its README; write `design/decisions/ST4-aztec.md` (slice 2): versions,
+  `chain.aztec` as a keyed store address, `language-noir`'s mapping from the spike's table, `chain-aztec`'s port steps
+  (prove for sign, a sponsor for fees, sync before proving, one re-prove on `Block header not found`, every wait
+  through `Timers`), and `proofs: "verified"` worlds on `setupLocalNetwork`. Then slices 3 and 4.

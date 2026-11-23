@@ -2,7 +2,7 @@
 // imports, its choices checked, and a feature's things folded in under the mount's name (M1-plugins sections 4 to 7).
 import type { Effect } from "effect";
 import type { BlueprintSource } from "#modules/source/types.js";
-import type { Layout, StoreFile, ThingFiles } from "#modules/model/internal/layout.js";
+import type { Layout, MountSecret, StoreFile, ThingFiles } from "#modules/model/internal/layout.js";
 
 /** What a mount adds to the model, by the mount's name. */
 export interface MountModel {
@@ -44,6 +44,8 @@ export interface Folded {
   readonly mounts: Readonly<Record<string, MountModel>>;
   /** Every call of every mounted adapter, by the call object an operation's step holds. */
   readonly calls: ReadonlyMap<unknown, CallReach>;
+  /** Every mounted plugin's secrets, from its `secrets.ts`, each with the mount that brought it. */
+  readonly secrets: ReadonlyArray<MountSecret>;
   readonly problems: ReadonlyArray<string>;
 }
 

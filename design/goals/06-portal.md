@@ -36,6 +36,11 @@ slices:
 ---
 # Goal 6: the new portal, on our own components and the app's map
 
+> **Winding down under K42** (23 November 2026, `design/decisions/K42-goals-are-agents.md`, section 7). This goal
+> lands the pull request it has in review, rewrites "Where it stands", sets `status: parked` and stops. Its open
+> slices become items on the board. Gaps go by K42's collision rule, not by Ask issues; where this brief and K42
+> disagree, K42 wins.
+
 Branch `goal/portal`, cut from `goal/stage-1`. Written 21 November 2026 with K31, on terms agreed with the conductor the same day.
 
 **To start it, in any harness** (Claude Code, Amp, Codex, OpenCode): "You lead Goal 6. Read `AGENTS.md` and
@@ -295,17 +300,17 @@ thing.
 | # | Slice | Done when |
 |---|---|---|
 | 6 | **The frame.** `packages/portal-next`: its `blueprint/app/` declaring `portal.md`'s map (home, things, operations and their five tabs, environments, compare, journeys, starting worlds, reference, plugins, monitor, traces), the top bar (environment picker, ⌘K), the rail and its panels, the tree, the live rail, each keeping its `data-portal` hook | check 21's frame clauses leave the parity list |
-| 7 | **Home, things and operations** (the contract, metrics, proof, docs and notes tabs) | their lines leave the list |
+| 7 | **Home, things and operations** (the contract, metrics, proof, docs and notes tabs), and the app's **Map** tab beside Things (MAP-screens Q1 to Q3) | their lines leave the list |
 | 8 | **Environments, compare, journeys, starting worlds** | their lines leave the list |
 | 9 | **Reference, plugins and the rules** (check 28) | their lines leave the list |
 | 10 | **Monitor and traces** (a trace on UI SDK's `Waterfall`, or ours if it is still experimental) | their lines leave the list; the screenshots are byte-identical across two runs |
-| 11 | **The agent's portal.** The agent's map tool on the portal; every control by name | an agent's `snapshot()` lists the search, the tree, the tabs and the environment picker by name |
+| 11 | **The agent's portal.** The agent's map tool on the portal; every control by name; the **As an agent** drawer on every page (MAP-screens Q4) | an agent's `snapshot()` lists the search, the tree, the tabs and the environment picker by name |
 
 ### Part 3: cutover
 
 | # | Slice | Done when |
 |---|---|---|
-| 12 | **Cutover (ST1.27)**, after the cut-off (the protocol, point 5). Check 15 rewritten first by a checks author (ST1.28); then one pull request into `goal/stage-1` that serves `portal-next` at `/portal`, deletes the old client, `@orthograph/portal-ui`, HeroUI and the licence machinery (`pro.mjs`, `sheets.mjs`, the CI step and cache, `ortho/no-pro-outside-portal-ui`), folds `e2e:portal-next` into the normal portal checks, and rewrites every live doc line that still names `portal-ui` or HeroUI as current (`git grep -n "portal-ui\|HeroUI"` outside `design/decisions/`, `design/history/` and `design/process/`: the `portal-design` skill, `design/walkthrough/journey.md`, `design/ui/heroui-inventory.md` section 8, `portal.md`, `packages.md`), with a Supersedes list. It merges after the freeze, with Goal 3's lead's yes and a 🔍 pass | every portal check passes on the one client; check 15 passes; the portal builds with `HEROUI_AUTH_TOKEN` unset |
+| 12 | **Cutover (ST1.27)**, after the cut-off (the protocol, point 5). Check 15 rewritten first by a checks author (ST1.28); then one pull request into `goal/stage-1` that serves `portal-next` at `/portal`, deletes the old client, `@orthograph/portal-ui`, HeroUI and the licence machinery (`pro.mjs`, `sheets.mjs`, the CI step and cache, `ortho/no-pro-outside-portal-ui`), folds `e2e:portal-next` into the normal portal checks, and rewrites every live doc line that still names `portal-ui` or HeroUI as current (`git grep -n "portal-ui\|HeroUI"` outside `design/decisions/`, `design/history/` and `design/process/`: the `portal-design` skill, `design/history/retired-2026-11-23/walkthrough/journey.md`, `design/ui/heroui-inventory.md` section 8, `portal.md`, `packages.md`), with a Supersedes list. It merges after the freeze, with Goal 3's lead's yes and a 🔍 pass | every portal check passes on the one client; check 15 passes; the portal builds with `HEROUI_AUTH_TOKEN` unset |
 
 ## Decision IDs
 
@@ -317,6 +322,7 @@ started, since it crosses goals.
 |---|---|---|
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
 | MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
+| MAP-screens | `design/decisions/MAP-screens.md` | Aaron, 23 November 2026: the Map tab, the page tree, the derived map marked, the "As an agent" drawer |
 
 ## The done check
 
@@ -352,6 +358,7 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 
 ## Where it stands
 
-22 November 2026. The theme is built: one shared look on UI SDK, light and dark, taken from today's portal so nothing
-changes in feel, and its check passes in a real browser with no HeroUI key. Next it lands in stage 1 on its own, so
-the UI layer's screens can use it. The map's checks are being written now; the map itself comes after them.
+22 November 2026. The theme is built, one shared look on UI SDK taken from today's portal, and it is on its way
+into stage 1 on its own, for the UI layer. The map's checks have landed: a hundred portal checks and forty-four grid
+cells are owed by the new portal, all red so far, and the list can only shrink. The shell's checks land with this.
+The map language, the app projection and the shell are built and reviewed, and land next.

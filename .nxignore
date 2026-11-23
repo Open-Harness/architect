@@ -1,3 +1,7 @@
 # Planted fixtures break the rules on purpose; they must not shape the project graph.
 **/test/fixtures/**
 **/test/tmp/**
+# examples/budgets (Goal 4, M6.02) is a spec until the chain framework lands (slices 3 to 8): its blueprint cannot compile and its
+# journeys cannot typecheck, so it stays out of the Nx graph: out of every run-many, `nx sync:check`, lint, typecheck and test.
+# Slice 12 (M6.16) takes this line out, once `ortho prove --env local` runs its journeys.
+examples/budgets
