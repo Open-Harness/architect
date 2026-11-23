@@ -327,7 +327,8 @@ K28 decides the preview merge and the three releases: [`K28-releases.md`](../dec
 - [#643](https://github.com/Open-Harness/orthograph/issues/643) M2.05b; [#644](https://github.com/Open-Harness/orthograph/issues/644) stage 1's own slices; [#645](https://github.com/Open-Harness/orthograph/issues/645) M2.13 to M2.22.
 - [#646](https://github.com/Open-Harness/orthograph/issues/646) Gate M2; [#647](https://github.com/Open-Harness/orthograph/issues/647) the staging run and the second landing.
 - Pair map: `design/decisions/M2-auth.md`. A slice that moves acme's wire, model or `generated/` lands as a G12 pair.
-- Parked asks from other goals: #480, #474, #478, #486, #501, #531 to #534.
+- Parked asks from other goals: #480, #474, #486, #531 to #534.
+- The earlier slice issues, #627 to #635, are done (M1.12a, M1.49, M7.03 and M7.04, S-35, Gate M1 and the preview, M2.02, M2.03, M2.04) and can be closed, except [#629](https://github.com/Open-Harness/orthograph/issues/629), M1.50, which is Goal 6's after its cutover.
 
 **Open snags that matter.**
 - [#446](https://github.com/Open-Harness/orthograph/issues/446): an agent's key can mint a person's key through `/api/auth`. This is security work, and it belongs with M2.05.
