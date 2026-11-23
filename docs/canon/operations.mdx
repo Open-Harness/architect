@@ -182,7 +182,9 @@ export const RUNTIME_CODES = { NotAllowed: "AR-001", [IDEMPOTENCY_CONFLICT]: "AR
 A code is the thing's prefix and a number. Declared errors, a rule's among them, are 1, 2, 3 in the order `errors.ts` declares them, the
 machine's is always 900, a missing instance's (`<Thing>NotFound`, which the runtime refuses before the handler) is 901,
 and the runtime's own take `AR`. So signup's refusals are `SH-001` for `SheetFull`, `SH-900` for `SheetNotOpen`, `SH-901`
-for `SheetNotFound`, `AR-001` for `NotAllowed` and `AR-002` for `IdempotencyConflict` (a request key reused with another payload, on operations that keep an answer by key). The generated code keeps each one's code, its exit code and its HTTP
+for `SheetNotFound`, `AR-001` for `NotAllowed` and `AR-002` for `IdempotencyConflict` (a request key reused with another payload, on operations that keep an answer by key).
+A read the runtime does not serve yet, one that pins a field or works its answer out, is refused as `ReadNotServed`,
+`AR-008`, and only a model with such a read lists it. The generated code keeps each one's code, its exit code and its HTTP
 status in one table, which the CLI, HTTP and MCP all read:
 
 ```ts file=examples/signup/generated/api/src/errors.ts name=refusals lines=7-13

@@ -73,9 +73,9 @@ DeepSeek's `dsh-superagent-prototype` (its `README.md` and `docs/000` to `008`),
 - **How it is built:** first the framework pieces it needs, then its blueprint (the things, events and operations, as
   any app's first stage is), then the agents, then the connections, then the pages. Each piece is written in the app
   as a plugin, and moved into Orthograph's packages once it works.
-- **It isn't:** a hosted service, or anything in the cloud yet: it runs on your own machine first. And it isn't a
-  first cut of the prototype: the whole spec is translated.
-- **Done when:** its tests pass on stand-ins, with no keys: the coding agent from a GitHub or Slack mention to a merged
+- **It isn't:** a first cut of the prototype: the whole spec is translated. Through slice 14 it runs on your own
+  machine, on stand-ins; slice 15, the launch (K42, section 6), takes it live as a hosted service.
+- **Done when** (slices 1 to 14; slice 15 has its own, in its row of the slice table): its tests pass on stand-ins, with no keys: the coding agent from a GitHub or Slack mention to a merged
   pull request, and the triage agent, proposed by the coding agent's main agent and approved by a person, with no new
   code, from a PostHog error to a pull request and a Slack summary.
 - **Waits on:** nothing. K40, the framework fixes' design, is decided (#529). Where it needs a piece another goal
@@ -567,8 +567,8 @@ Where each part of the prototype's docs lives in this plan, so nothing is droppe
 ## The framework fixes it builds
 
 The superagent finds these; their fixes are designed in K40 and in this goal's slice 2, and built here in the slice
-named, on this branch. Each owner hears through an Ask issue in its milestone (K40 filed #531 to #536 and #538), and
-the conductor merges each fix back.
+named, on this branch. Each fix is claimed on the board first and landed in `main` by the lander once green (K42, sections 3 and 8; K40
+filed #531 to #536 and #538 as Ask issues before K42).
 
 | Gap | The fix | Owner of the seam | Built in |
 |---|---|---|---|
@@ -588,7 +588,7 @@ the conductor merges each fix back.
 
 It owns the paths in the front matter. On its integration branch it also changes the framework where the gaps above
 need it, to K40's design or slice 2's (K39 call 6, now every app goal's rule (K42)): every such change is listed in
-the slice's pull request, the owner hears through an Ask issue, and the conductor merges it back. It reads Goal 9's
+the slice's pull request and claimed on the board first, and the lander lands it in `main` (see Claims below). It reads Goal 9's
 `Timers` for every wait and never changes it.
 
 **Credentials, each only with Aaron's written yes, in the slice that first needs it:** a GitHub App installed on one

@@ -67,7 +67,7 @@ export const Secret = Blueprint.visibility.secret(Blueprint.text({ max: 512 }));
 
 ### A value is a named type
 
-A value is a schema with a name and a visibility. Orthograph gives you five makers, and `Blueprint.value` names
+A value is a schema with a name and a visibility. Orthograph gives you a maker for each common shape, and `Blueprint.value` names
 anything else, such as an Effect `Schema.Literals`:
 
 ```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=33-62

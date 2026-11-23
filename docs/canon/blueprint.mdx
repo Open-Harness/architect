@@ -111,7 +111,9 @@ declaration instead.
 
 ### The model
 
-The model is the one contract every projection is made from (K5, seam 1). Today it has eleven parts. This is its type:
+The model is the one contract every projection is made from (K5, seam 1). This is its type. The optional parts after
+`mounts` (`agents`, `sources`, `holds`, `problems` and `declared`) come from the superagent's forms (Goal 17) and appear only
+when a blueprint uses them:
 
 ```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=280-313
 export interface Model {
