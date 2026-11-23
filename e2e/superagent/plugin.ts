@@ -22,7 +22,7 @@ export const project = (): Project => {
 export const removeProjects = () => { for (const p of projects.splice(0)) p.remove(); };
 
 export const run = (root: string, args: ReadonlyArray<string>) => {
-  const r = spawnSync(process.execPath, [cli, ...args, "--root", root], { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024, timeout: 900_000 });
+  const r = spawnSync(process.execPath, [process.env["ORTHO_CLI"] ?? cli, ...args, "--root", root], { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024, timeout: 900_000 });
   return { status: r.status, stdout: r.stdout, stderr: r.stderr, out: `${r.stdout}${r.stderr}` };
 };
 

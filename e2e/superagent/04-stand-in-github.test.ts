@@ -143,6 +143,17 @@ describe("04 github: the calls pass against the stand-in", () => {
     expect(off).toMatchObject({ status: 422 });
   });
 
+  it("lists the repository's collaborators (the policy's sync): ann, who opened issue 1, among them, each with a stable numeric id, a login and a type; another repository is a 404", async () => {
+    const { calls } = await world();
+    const listed = await at(calls, "repos.listCollaborators")(REPO);
+    fits("repos.listCollaborators", listed);
+    expect(listed.map((u: Node) => u.login)).toContain("ann");
+    for (const u of listed) expect([typeof u.id, typeof u.login, typeof u.type]).toEqual(["number", "string", "string"]);
+    expect(new Set(listed.map((u: Node) => u.id)).size, "one id each").toBe(listed.length);
+    const error = await at(calls, "repos.listCollaborators")({ owner: "acme", repo: "nowhere" }).then(() => undefined, (e: unknown) => e);
+    expect(error).toMatchObject({ status: 404 });
+  });
+
   it("stops when told, by its id, leaving nothing running and no folder", async () => {
     const { stand } = await world();
     await stand.stop();

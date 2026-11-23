@@ -77,6 +77,17 @@ describe("05 slack: the calls pass against the stand-in", () => {
     expect(await unauthed.json()).toMatchObject({ ok: false, error: "not_authed" });
   });
 
+  it("lists a user group's members (the policy's sync): user ids Slack gives, one each; a group that isn't there fails as Slack does", async () => {
+    const { calls } = await world();
+    const listed = await at(calls, "usergroupsUsersList")({ usergroup: "S0614TZR7" });
+    fits("usergroupsUsersList", listed);
+    expect(listed.ok).toBe(true);
+    expect(listed.users.length).toBeGreaterThan(0);
+    for (const id of listed.users) expect(id).toMatch(/^[UW][A-Z0-9]{8,}$/);
+    expect(new Set(listed.users).size).toBe(listed.users.length);
+    expect(await fails(at(calls, "usergroupsUsersList")({ usergroup: "S0NOPE0000" }))).toMatchObject({ code: "no_such_subteam" });
+  });
+
   it("stops when told, by its id, leaving nothing running and no folder", async () => { await gone((await world()).stand); });
 });
 

@@ -1,1 +1,3 @@
 # Written before slice 4. Red until the GitHub stand-in over a bare repository exists (slice 4); due before it merges.
+# Slice 10: the GitHub stand-in serves no collaborators and the held plugin has no `repos.listCollaborators` until slice 11.
+superagent/04-stand-in-github.test.ts > 04 github: the calls pass against the stand-in > lists the repository's collaborators (the policy's sync): ann, who opened issue 1, among them, each with a stable numeric id, a login and a type; another repository is a 404

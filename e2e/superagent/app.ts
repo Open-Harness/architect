@@ -103,3 +103,47 @@ export const lazy = <A>(make: () => A): (() => A) => {
 /** An `allowed` list as a sorted set of its entries: the design lists each one exactly, so a wider list (an `anyone` among them) is not the same list. */
 export const allowedSet = (allowed: unknown): ReadonlyArray<string> => ((allowed ?? []) as ReadonlyArray<unknown>).map((a) => JSON.stringify(a, Object.keys(a as object).sort())).sort();
 export const entries = (...a: ReadonlyArray<object>): ReadonlyArray<string> => allowedSet(a);
+
+/**
+ * Every plugin the app holds, copied beside the project so one can be edited, and every `@orthograph/<plugin>` in the copy, in
+ * the project's and in each plugin's own `node_modules`, pointing at the copies. `swapPlugin` swaps one, which leaves the others
+ * importing the original (two identities of one file), and `ortho check` then refuses for that, whatever the edit: this keeps
+ * the copy as consistent as the original, so a control that passes is possible.
+ */
+export const swapPlugins = (root: string, change: (dirs: Readonly<Record<string, string>>) => void) => {
+  const held = join(superagent, "plugins");
+  const names = readdirSync(held, { withFileTypes: true }).filter((e) => e.isDirectory() || e.isSymbolicLink()).map((e) => e.name);
+  const copies: Record<string, string> = Object.fromEntries(names.map((n) => [n, join(root, "..", "plugins-copy", n)]));
+  const originals = new Map(names.map((n) => [realpathSync(join(held, n)), n] as const));
+  for (const n of names) cpSync(join(held, n), copies[n]!, { recursive: true, filter: (from) => !from.split("/").includes("node_modules") });
+  for (const n of names) {
+    const from = join(held, n);
+    const to = copies[n]!;
+    if (!existsSync(join(from, "node_modules"))) continue;
+    mkdirSync(join(to, "node_modules/@orthograph"), { recursive: true });
+    for (const entry of readdirSync(join(from, "node_modules"))) {
+      if (entry === "@orthograph" || entry === ".bin") continue;
+      symlinkSync(realpathSync(join(from, "node_modules", entry)), join(to, "node_modules", entry));
+    }
+    if (existsSync(join(from, "node_modules/@orthograph"))) {
+      for (const entry of readdirSync(join(from, "node_modules/@orthograph"))) {
+        const real = realpathSync(join(from, "node_modules/@orthograph", entry));
+        const plugin = originals.get(real);
+        symlinkSync(plugin === undefined ? real : copies[plugin]!, join(to, "node_modules/@orthograph", entry));
+      }
+    }
+  }
+  const scope = join(root, "node_modules/@orthograph");
+  if (lstatSync(scope).isSymbolicLink()) {
+    const shared = readdirSync(scope);
+    unlinkSync(scope);
+    mkdirSync(scope);
+    for (const entry of shared) symlinkSync(join(superagent, "node_modules/@orthograph", entry), join(scope, entry));
+  }
+  for (const n of names) {
+    if (existsSync(join(scope, n))) unlinkSync(join(scope, n));
+    symlinkSync(copies[n]!, join(scope, n));
+  }
+  change(copies);
+  return copies;
+};

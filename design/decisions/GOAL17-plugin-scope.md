@@ -30,3 +30,5 @@ events, `tickets` on `intake`'s account role and on `agents`).
 ## Supersedes
 
 - `design/packages.md`: "A project (`scope:project`) depends only on `scope:orthograph`, `scope:language`, `scope:host` and `scope:projections`:" → "A project (`scope:project`) depends only on `scope:orthograph`, `scope:language`, `scope:host`, `scope:projections` and `scope:plugin`:"
+
+**Added 23 November 2026, with #687.** Each plugin is also tagged `env:runtime`, as `orthograph` and the language are: a plugin runs in production and depends only on runtime libraries. That lets the checks (`e2e`, tagged `env:gate`) import a plugin's stand descriptor, as GOAL17-check-harness's journeys do.

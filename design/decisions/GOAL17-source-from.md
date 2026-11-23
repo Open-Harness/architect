@@ -264,7 +264,7 @@ export const slackSource = Source.from(slack, {
   scope: (c, m) => ({ listened: c.channels.includes(m.channel.channel) || (c.directMessages && m.kind === "direct"), observed: m.kind !== "mention", row: m.channel.channel }),
   on: {
     appMention: (e) => ({ kind: "mention", thread: `${e.channel}:${e.thread_ts ?? e.ts}`, text: e.text, addressed: "mention", channel: { channel: e.channel, ts: e.thread_ts ?? e.ts } }),
-    message: (e) => e.subtype !== undefined || e.bot_id !== undefined ? undefined : {
+    message: (e) => e.subtype !== undefined || e.bot_id !== undefined ? undefined : {   // Superseded by GOAL17-connections, 23 November 2026: a `file_share` and a `thread_broadcast` are a person's messages and map; every other subtype is dropped
       kind: e.channel_type === "im" ? "direct" : "message", thread: `${e.channel}:${e.thread_ts ?? e.ts}`, text: e.text,
       ...(e.channel_type === "im" ? { addressed: "direct" as const } : {}), channel: { channel: e.channel, ts: e.thread_ts ?? e.ts } },
   },
@@ -290,7 +290,7 @@ export const slackSource = Source.from(slack, {
 import posthog from "@orthograph/posthog";
 type Addr = { project: string; issue: string };
 export const posthogSource = Source.from(posthog, {
-  config: Schema.Struct({ me: AccountRef, project: Schema.String, kinds: Schema.Array(Schema.Literals("errorIssue", "alert")) }),
+  config: Schema.Struct({ me: AccountRef, project: Schema.String, kinds: Schema.Array(Schema.Literals("errorIssue", "alert")) }),   // Superseded by GOAL17-connections, 23 November 2026: `Schema.Literals("errorIssue")` only
   scope: (c, m) => ({ listened: m.channel.project === c.project && c.kinds.includes(m.kind as never), observed: true, row: "posthog" }),
   on: {
     errorAlert: (e) =>   // Superseded by GOAL17-names, 23 November 2026: written by hand in the posthog plugin in slice 11, like Slack's events
