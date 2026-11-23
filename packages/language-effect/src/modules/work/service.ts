@@ -80,6 +80,12 @@ const counting = (world?: Report): BusyShape => {
         box.id = undefined;
         yield* world.leave(id);
       }
+      // A box that is not a request's and has gone idle starts afresh: the owner's shared box lives as long as the isolate, and its next work
+      // may be of a later run (a wake in the world after a reset), which is not stale for what the last one was.
+      if (!box.pinned && box.holders <= 0 && box.lent === 0 && box.id === undefined) {
+        box.gen = undefined;
+        box.stale = false;
+      }
     }));
   const acquire = (box: BusyBox) => Effect.andThen(Effect.sync(() => { box.holders++; active.add(box); }), sync(box));
   const release = (box: BusyBox) =>

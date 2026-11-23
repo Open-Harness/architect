@@ -87,6 +87,23 @@ describe("a request whose world was reset under it", () => {
     }));
   });
 
+  it("counted work in the owner's shared box (a wake in the world, with no request) is counted each time across resets, and is never interrupted by the one before", async () => {
+    const world = makeWorld(undefined);
+    await run(world, Effect.gen(function* () {
+      const busy = yield* Busy;
+      const rounds: Array<ReadonlyArray<string>> = [];
+      const wake = busy.as("keeper/x").counted(busy.fenced(Effect.sync(() => void rounds.push(world.held()))));
+      yield* wake;
+      world.reset();
+      yield* wake;
+      world.reset();
+      yield* wake;
+      yield* turns;
+      expect(rounds).toEqual([["keeper/x"], ["keeper/x"], ["keeper/x"]]);
+      expect([world.held(), world.open()]).toEqual([[], 0]);
+    }));
+  });
+
   it("a request that is still live writes inside its section, which the world counts while it runs", async () => {
     const entry = makeBox("entry:/probe/spin", { id: "0.0", pinned: true });
     const world = makeWorld(entry);

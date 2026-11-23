@@ -3,8 +3,8 @@ import { Deferred, Effect, Layer } from "effect";
 import { Busy, WorldCount, type BusyBox, type BusyShape } from "../types.ts";
 import { BusyReporting } from "../service.ts";
 
-export const makeWorld = (request: BusyBox) => {
-  const tokens = new Map<string, string>([[request.id!, request.owner]]);
+export const makeWorld = (request: BusyBox | undefined) => {
+  const tokens = new Map<string, string>(request === undefined ? [] : [[request.id!, request.owner]]);
   const sections = new Map<string, number>();
   let generation = 0;
   let next = 0;
