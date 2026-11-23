@@ -12,6 +12,9 @@ import { WorldFailed, type StandRunning } from "../types.ts";
 import { stopGroup } from "./wrangler.ts";
 
 const LISTENING = /^stand-in listening on (http:\/\/127\.0\.0\.1:\d+)$/m;
+/** A stand-in that guards its control routes says its secret first (the launcher contract of GOAL17-slice9-sandbox): kept in memory, sent as `x-bridge-secret`, never written. */
+const SECRET = /^stand-in secret ([0-9a-f]{64})$/m;
+const hidden = (text: string) => text.replace(SECRET, "stand-in secret <hidden>");
 
 /** One stand-in process, ready once it has said where it listens, stopped (its group, and its folder removed) when the scope closes. */
 export const standProcess = (mount: string, entry: string, cwd: string): Effect.Effect<StandRunning, WorldFailed, Scope.Scope> =>
@@ -30,9 +33,13 @@ export const standProcess = (mount: string, entry: string, cwd: string): Effect.
       };
       child.stdout?.on("data", read);
       child.stderr?.on("data", read);
-      child.once("exit", (code) => resume(Effect.fail(new WorldFailed({ message: `the ${mount} stand-in exited ${String(code)} before it listened:\n${heard.out}` }))));
-    }).pipe(Effect.timeoutOrElse({ duration: "60 seconds", orElse: () => Effect.fail(new WorldFailed({ message: `the ${mount} stand-in said nothing in 60 s:\n${heard.out}` })) }));
-    return { url, pid: child.pid ?? 0 };
+      child.once("exit", (code) => resume(Effect.fail(new WorldFailed({ message: `the ${mount} stand-in exited ${String(code)} before it listened:\n${hidden(heard.out)}` }))));
+    }).pipe(Effect.timeoutOrElse({ duration: "60 seconds", orElse: () => Effect.fail(new WorldFailed({ message: `the ${mount} stand-in said nothing in 60 s:\n${hidden(heard.out)}` })) }));
+    const secret = SECRET.exec(heard.out)?.[1];
+    heard.out = "";
+    // What the stand-in prints from now on is drained and dropped: its output is never kept, and never reaches a file or a log.
+    for (const stream of [child.stdout, child.stderr]) { stream?.removeAllListeners("data"); stream?.resume(); }
+    return { url, pid: child.pid ?? 0, ...(secret === undefined ? {} : { secret }) };
   });
 
 /** The folder of a package, found from where its entry resolves: the nearest package.json above it that names it (a package need not export its own manifest). */

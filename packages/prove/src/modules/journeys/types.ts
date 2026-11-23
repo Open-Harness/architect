@@ -95,7 +95,7 @@ export interface Project {
 /** What a journey's steps reach beyond the world's own routes (GOAL17-check-harness): the world's runner, and each stand-in by mount name. A world prove did not start has neither. */
 export interface Harness {
   readonly runner?: Runner;
-  readonly stands?: Readonly<Record<string, { readonly url: string }>>;
+  readonly stands?: Readonly<Record<string, { readonly url: string; readonly secret?: string }>>;
 }
 
 export class ProjectFailed extends Data.TaggedError("ProjectFailed")<{ readonly message: string }> {}

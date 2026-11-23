@@ -19,6 +19,8 @@ export interface ChainStand {
 export interface StandRunning {
   readonly url: string;
   readonly pid: number;
+  /** The secret a guarded stand-in said on its first line: held in memory, sent as `x-bridge-secret` on every request, never written anywhere. */
+  readonly secret?: string;
 }
 
 /**

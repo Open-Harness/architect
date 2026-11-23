@@ -29,7 +29,7 @@ export const standDoor = (harness: Harness | undefined, journey: string, step: s
     const stand = harness?.stands?.[call.mount];
     const operation = `${call.mount}.${call.command}`;
     if (stand === undefined) return recordOf(journey, step, operation, {}, 0, `no stand-in is running for the mount "${call.mount}"`);
-    const r = yield* ask(`${stand.url}/_stand/${call.command}`, { method: "POST", headers: { "content-type": "application/json" }, body: json(args ?? {}) });
+    const r = yield* ask(`${stand.url}/_stand/${call.command}`, { method: "POST", headers: { "content-type": "application/json", ...(stand.secret === undefined ? {} : { "x-bridge-secret": stand.secret }) }, body: json(args ?? {}) });
     return recordOf(journey, step, operation, (args ?? {}) as Record<string, unknown>, r.status, r.body);
   });
 
