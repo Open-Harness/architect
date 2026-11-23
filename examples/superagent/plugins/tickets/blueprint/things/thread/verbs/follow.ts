@@ -6,8 +6,11 @@ import { Subscription } from "../../subscription/thing.ts";
 
 export default Blueprint.operation(Thread, {
   description: "The executor follows a thread: its next messages go straight to it, with no eval.",
-  payload: { ticket: Ticket.fields.id, thread: Blueprint.text({ max: 200 }) },
-  answer: {  },
+  payload: {
+    ticket: Ticket.fields.id,
+    thread: Blueprint.text({ max: 200 }),
+  },
+  answer: {},
   allowed: [itsAgent.of("ticket")],
   steps: { write: Blueprint.step.database({ writes: [Subscription] }) },
 });

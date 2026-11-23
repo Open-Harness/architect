@@ -4,8 +4,10 @@ import { machine } from "../machine.ts";
 
 export default Blueprint.operation(Input, {
   description: "The outbox gave up telling the executor.",
-  payload: { input: Input.fields.id },
-  answer: {  },
+  payload: {
+    input: Input.fields.id,
+  },
+  answer: {},
   move: machine.moves.failed,
   allowed: [Blueprint.system],
 });

@@ -1,7 +1,9 @@
 // The smaller framework forms in the model: agents and their slots, declared instances, and what can fail beside a thing.
-import type { Field, Thing } from "orthograph";
+import type { Event, Field, Thing } from "orthograph";
+import type { MountModel, ThingModel } from "../types.ts";
+import { holdsModel } from "./holds.ts";
 import type { Layout } from "./layout.ts";
-import { sourceNameOf } from "./sources.ts";
+import { sourceNameOf, sourcesModel } from "./sources.ts";
 
 export interface FormContext {
   readonly layout: Layout;
@@ -54,3 +56,20 @@ export const problemsModel = (ctx: FormContext) =>
     const p = t.problem.declaration;
     return { kind: p.of, thing, of: p.points.key, name: p.name.key, failures: p.failures.key, after: typeof p.after === "number" ? p.after : p.after.key };
   })()])).sort((a, b) => a.kind.localeCompare(b.kind));
+
+export interface FormsContext extends FormContext {
+  readonly mounts: Readonly<Record<string, MountModel>>;
+  readonly things: Readonly<Record<string, ThingModel>>;
+  readonly eventNames: ReadonlyMap<Event, string>;
+  readonly opName: (declaration: unknown) => string | undefined;
+}
+
+/** What the new forms add to the model, each key only when the blueprint uses it: agents, sources, holds, problems and declared. */
+export const formsOf = (c: FormsContext) => {
+  const some = <V extends object>(key: string, value: V) => (Object.keys(value).length > 0 ? { [key]: value } : {});
+  const problems = problemsModel(c);
+  return {
+    ...some("agents", agentsModel(c)), ...some("sources", sourcesModel(c)), ...some("holds", holdsModel(c)),
+    ...(problems.length > 0 ? { problems } : {}), ...some("declared", declaredModel(c)),
+  };
+};

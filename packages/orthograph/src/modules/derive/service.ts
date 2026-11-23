@@ -1,7 +1,5 @@
-import type { DeriveApi, Look } from "./types.ts";
-
-const look = (take: "newest" | "all", max: number, thing: Look["thing"], spec: { readonly by: Look["by"]; readonly state?: string; readonly where?: { readonly [field: string]: unknown } }): Look =>
-  Object.freeze({ kind: "look", thing, by: spec.by, state: spec.state, where: spec.where === undefined ? undefined : Object.freeze({ ...spec.where }), take, max });
+import type { DeriveApi } from "./types.ts";
+import { look } from "./internal/look.ts";
 
 export const Derives: DeriveApi = {
   derive: (root, spec) => Object.freeze({ kind: "derive", root, looks: Object.freeze({ ...spec.looks }), adds: spec.adds, is: spec.is }) as never,

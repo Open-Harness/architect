@@ -4,7 +4,10 @@ import { itsMain } from "@orthograph/superagent/blueprint/things/superagent/role
 
 export default Blueprint.operation(Ticket, {
   description: "Send a failed input again.",
-  payload: { superagent: Ticket.fields.superagent, ticket: Ticket.fields.id },
-  answer: {  },
+  payload: {
+    superagent: Ticket.fields.superagent,
+    ticket: Ticket.fields.id,
+  },
+  answer: {},
   allowed: [Blueprint.signedIn, itsMain.of("superagent")],
 });

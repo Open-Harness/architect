@@ -1,4 +1,5 @@
 import type { Hold, HoldsApi } from "./types.ts";
+import { listed } from "./internal/lists.ts";
 
 export const Holds: HoldsApi = {
   hold: (thing, spec) => {
@@ -7,7 +8,7 @@ export const Holds: HoldsApi = {
       thing,
       key: spec.key,
       while: Object.freeze([...spec.while]),
-      holds: (lists: Parameters<Hold["holds"]>[0]) => Object.freeze({ kind: "holds", hold, held: Object.freeze([...lists.held]), unheld: Object.freeze([...lists.unheld]) }),
+      holds: (lists: Parameters<Hold["holds"]>[0]) => listed(hold, lists.held, lists.unheld),
     });
     return hold;
   },

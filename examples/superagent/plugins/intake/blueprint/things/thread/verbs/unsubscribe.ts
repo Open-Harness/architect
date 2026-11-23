@@ -5,8 +5,11 @@ import { itsMain } from "@orthograph/superagent/blueprint/things/superagent/role
 
 export default Blueprint.operation(Thread, {
   description: "Stop a ticket following a thread: a person's call, or the main agent's.",
-  payload: { superagent: Thread.fields.superagent, thread: Thread.fields.id },
-  answer: {  },
+  payload: {
+    superagent: Thread.fields.superagent,
+    thread: Thread.fields.id,
+  },
+  answer: {},
   move: machine.moves.unsubscribe,
   allowed: [Blueprint.signedIn, itsMain.of("superagent")],
 });

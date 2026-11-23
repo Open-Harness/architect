@@ -5130,14 +5130,6 @@
         "errors": [],
         "on": [
           {
-            "event": "SuperagentCreated",
-            "thing": "superagent"
-          },
-          {
-            "event": "SuperagentResumed",
-            "thing": "superagent"
-          },
-          {
             "event": "TriggerRequeued",
             "thing": "trigger"
           },
@@ -5169,7 +5161,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "4c91b251e5b7d902"
+        "hash": "ae46dc19a3e3b7c9"
       },
       "eval.read": {
         "kind": "operation",
@@ -14175,9 +14167,9 @@
         "file": "blueprint/features/agents.ts",
         "package": "@orthograph/agents",
         "version": "0.0.0",
-        "integrity": "sha256-o4eNl4mZGC7TYQHGU2ZrhmHG8B3GrhKjf9+TzoUOP7g=",
+        "integrity": "sha256-31K00cNqA9iDhD619L8JeJyqfUBboL+FM38AxGR8QAQ=",
         "chosen": {},
-        "hash": "51de4bf1863bb766"
+        "hash": "4548a2ee2e5d3a6c"
       },
       "github": {
         "kind": "adapter",
@@ -14215,9 +14207,9 @@
         "file": "blueprint/features/intake.ts",
         "package": "@orthograph/intake",
         "version": "0.0.0",
-        "integrity": "sha256-DvZdI++IoZv820EQ8+1BQ5tae09MPVVgss376aHHiig=",
+        "integrity": "sha256-/BvGnTSQi6cyNkNORp+YpuhzOGh2u69hOKkMQuAe8V8=",
         "chosen": {},
-        "hash": "965facd0717766ee"
+        "hash": "6cf64b4a86b8e1f0"
       },
       "posthog": {
         "kind": "adapter",
@@ -14242,9 +14234,9 @@
         "file": "blueprint/features/prompts.ts",
         "package": "@orthograph/prompts",
         "version": "0.0.0",
-        "integrity": "sha256-C9Cxcb9UTmU/w1RM5mVa+IjcNmhLuTkgJ0wDel9RxaQ=",
+        "integrity": "sha256-kwjZG67sU6Lih5BoxeUsaDh+Y0R9PdD2JHnMV4GJG38=",
         "chosen": {},
-        "hash": "1beee64c4510ea40"
+        "hash": "3c152adc0fad05ef"
       },
       "slack": {
         "kind": "adapter",
@@ -14272,18 +14264,18 @@
         "file": "blueprint/features/superagent.ts",
         "package": "@orthograph/superagent",
         "version": "0.0.0",
-        "integrity": "sha256-g5we+K35F3IDoxqGWdbrJO9MySCLzok1B8mzry/+cNg=",
+        "integrity": "sha256-goOTC3Mfp0dmrs0miShCgTrB8WoPI7Qxbik+1tQJvho=",
         "chosen": {},
-        "hash": "36f65e81c54092a2"
+        "hash": "32153fba39fb682b"
       },
       "tickets": {
         "kind": "feature",
         "file": "blueprint/features/tickets.ts",
         "package": "@orthograph/tickets",
         "version": "0.0.0",
-        "integrity": "sha256-BJ4RVpgMwABvwR1r9p/K1+Pz5lNb4SPUt3qhOSz5z40=",
+        "integrity": "sha256-zSScA+ooTtg0QuO4qlzMYprFQ4ylL8aWr+ABAuhnopo=",
         "chosen": {},
-        "hash": "1092e65c7d06df57"
+        "hash": "e3a8bd3b36e34ebb"
       }
     }
   },
@@ -14389,7 +14381,7 @@
       "thing:eval": "cd99cfd16e5d49a7"
     },
     "eval.due": {
-      "operation:eval.due": "4c91b251e5b7d902",
+      "operation:eval.due": "ae46dc19a3e3b7c9",
       "thing:eval": "cd99cfd16e5d49a7"
     },
     "eval.read": {
@@ -14825,5 +14817,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "9507e5adcacfbd744273cf08156ab14c83c295cd18129e04015fa456dde76fe0"
+  "digest": "63c3e99d984262da6693c36b36c29cf05d1066d198dd7bf5cdc87fc9a96ed521"
 }

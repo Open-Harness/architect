@@ -5,8 +5,11 @@ import { itsMain } from "@orthograph/superagent/blueprint/things/superagent/role
 
 export default Blueprint.operation(Trigger, {
   description: "Put a trigger back for evaluation.",
-  payload: { superagent: Trigger.fields.superagent, trigger: Trigger.fields.id },
-  answer: {  },
+  payload: {
+    superagent: Trigger.fields.superagent,
+    trigger: Trigger.fields.id,
+  },
+  answer: {},
   move: machine.moves.requeue,
   allowed: [itsMain.of("superagent")],
 });

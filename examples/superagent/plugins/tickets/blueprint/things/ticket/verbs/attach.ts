@@ -4,7 +4,11 @@ import { itsMain } from "@orthograph/superagent/blueprint/things/superagent/role
 
 export default Blueprint.operation(Ticket, {
   description: "Attach another thread to a ticket.",
-  payload: { superagent: Ticket.fields.superagent, ticket: Ticket.fields.id, thread: Blueprint.text({ max: 200 }) },
-  answer: {  },
+  payload: {
+    superagent: Ticket.fields.superagent,
+    ticket: Ticket.fields.id,
+    thread: Blueprint.text({ max: 200 }),
+  },
+  answer: {},
   allowed: [itsMain.of("superagent")],
 });

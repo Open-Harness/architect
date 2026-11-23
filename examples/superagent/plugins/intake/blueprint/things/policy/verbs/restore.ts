@@ -5,8 +5,14 @@ import { StaleRevision } from "@orthograph/superagent/blueprint/things/superagen
 
 export default Blueprint.operation(Policy, {
   description: "Save an earlier version again, as a new one.",
-  payload: { superagent: Policy.fields.superagent, revision: Policy.fields.revision, base: Blueprint.uint(32) },
-  answer: { revision: Policy.fields.revision },
+  payload: {
+    superagent: Policy.fields.superagent,
+    revision: Policy.fields.revision,
+    base: Blueprint.uint(32),
+  },
+  answer: {
+    revision: Policy.fields.revision,
+  },
   move: machine.moves.restore,
   errors: [StaleRevision],
   allowed: [Blueprint.signedIn],

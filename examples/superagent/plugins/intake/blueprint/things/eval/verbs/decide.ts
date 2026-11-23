@@ -5,8 +5,12 @@ import { itsMain } from "@orthograph/superagent/blueprint/things/superagent/role
 
 export default Blueprint.operation(Eval, {
   description: "Record one judgement per enabled rule.",
-  payload: { superagent: Eval.fields.superagent, eval: Eval.fields.id, judgements: Blueprint.value(Schema.Unknown) },
-  answer: {  },
+  payload: {
+    superagent: Eval.fields.superagent,
+    eval: Eval.fields.id,
+    judgements: Blueprint.value(Schema.Unknown),
+  },
+  answer: {},
   move: machine.moves.decided,
   allowed: [itsMain.of("superagent")],
 });

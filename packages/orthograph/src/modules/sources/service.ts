@@ -1,10 +1,6 @@
 import { Schema } from "effect";
-import type { Connection, SourceKind, SourcesApi, TimerConfig } from "./types.ts";
-
-const kindOf = <Cfg>(adapter: SourceKind["adapter"], spec: SourceKind["spec"], config: SourceKind["config"]): SourceKind<Cfg> => {
-  const make = (configuration: Cfg): Connection<Cfg> => Object.freeze({ kind: "connection", source: make as unknown as SourceKind<Cfg>, config: configuration });
-  return Object.freeze(Object.assign(make, { kind: "source-kind" as const, adapter, spec, config }));
-};
+import type { SourcesApi, TimerConfig } from "./types.ts";
+import { kindOf } from "./internal/kind.ts";
 
 export const Sources: SourcesApi = {
   from: (adapter, spec) => kindOf(adapter, spec as never, spec.config as never),
