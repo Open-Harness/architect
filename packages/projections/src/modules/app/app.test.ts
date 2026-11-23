@@ -75,7 +75,7 @@ describe("app", () => {
     const palette = (await import(pathToFileURL(file).href)) as { readonly visibleTo: (caller: "anonymous" | "person") => ReadonlyArray<{ readonly name: string }> };
     rmSync(dir, { recursive: true, force: true });
     expect(palette.visibleTo("anonymous").map((e) => e.name)).toEqual(["home"]);
-    expect(palette.visibleTo("person").map((e) => e.name)).toEqual(["home", "thing", "allowance.grant"]);
+    expect(palette.visibleTo("person").map((e) => e.name)).toEqual(["home", "thing"]);
   });
 
   it("given the roles a caller holds, palette.ts lists a role-only entry only when they hold that role", async () => {
@@ -86,7 +86,7 @@ describe("app", () => {
     const palette = (await import(pathToFileURL(file).href)) as { readonly visibleTo: (caller: "anonymous" | "person", roles?: ReadonlyArray<string>) => ReadonlyArray<{ readonly name: string }> };
     rmSync(dir, { recursive: true, force: true });
     const names = (roles?: ReadonlyArray<string>) => palette.visibleTo("person", roles).map((e) => e.name);
-    expect(names()).toContain("allowance.grant");
+    expect(names()).not.toContain("allowance.grant");
     expect(names([])).not.toContain("allowance.grant");
     expect(names(["allowance.owner"])).toContain("allowance.grant");
   });
