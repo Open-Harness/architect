@@ -30,6 +30,8 @@ export interface ShellProps {
   readonly palette: ReadonlyArray<PaletteEntry>;
   /** What the palette lists: an anonymous caller, or a person. */
   readonly caller: Caller;
+  /** The names of the roles the caller holds (such as `link.linkOwner`); a role-only page or operation is listed only when its role is here. None given means none held. */
+  readonly roles?: ReadonlyArray<string>;
   /** A body for each page, by the page's name. */
   readonly pages: Readonly<Record<string, PageFn>>;
   readonly slots?: Slots;

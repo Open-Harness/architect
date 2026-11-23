@@ -20,7 +20,7 @@ export const Shell = ({ props, history }: FrameProps) => {
   const groups = Navigation.derive(props.navigation, (page) => router.href(page, params), match);
   const crumbs: ReadonlyArray<Crumb> =
     match === undefined ? [] : router.chain(match.page).map((page) => ({ page, href: router.href(page, params), current: page === match.page }));
-  const entries = PaletteIndex.visible(props.palette, props.caller, match?.page);
+  const entries = PaletteIndex.visible(props.palette, props.caller, match?.page, props.roles);
   const palette = <Palette entries={entries} hrefOf={(page) => router.href(page, params)} onOperation={props.onOperation} trigger={layout !== "none"} />;
   return (
     <NavigateContext value={history.push}>

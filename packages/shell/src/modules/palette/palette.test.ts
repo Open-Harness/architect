@@ -20,7 +20,9 @@ const names = (caller: "anonymous" | "person", on: string | undefined) => Palett
 
 describe("visible", () => {
   it("lists a person every page, then the operations of the page they are on, in the index's order", () => {
-    expect(names("person", "profile")).toEqual(["account", "edit", "home", "profile", "link.add", "profile.get"]);
+    expect(names("person", "profile")).toEqual(["account", "edit", "home", "profile", "profile.get"]);
+    expect(Palette.visible(entries, "person", "profile", ["link.linkOwner"]).map((e) => e.name)).toEqual(["account", "edit", "home", "profile", "link.add", "profile.get"]);
+    expect(Palette.visible(entries, "anonymous", "profile", ["link.linkOwner"]).map((e) => e.name)).toEqual(["home", "profile", "profile.get"]);
     expect(names("person", "home")).toEqual(["account", "edit", "home", "profile", "handle.claim"]);
   });
 

@@ -33,8 +33,8 @@ export type Caller = "anonymous" | "person";
 export interface PaletteApi {
   /**
    * What the caller may open and call from the page they are on, in the index's order: every page whose `allowed` they pass, then the operations
-   * of `page` (none on the 404) whose own `allowed` they pass. An anonymous caller passes only `anyone`; a person passes anything, since a role
-   * is decided on an instance and so is not ruled out here.
+   * of `page` (none on the 404) whose own `allowed` they pass. An anonymous caller passes only `anyone`; a person passes `anyone` and `signed-in`, and a
+   * role only when `roles` (the names they hold) has it: no `roles` means none held, so role-only entries are hidden.
    */
-  readonly visible: (entries: ReadonlyArray<PaletteEntry>, caller: Caller, page: string | undefined) => ReadonlyArray<PaletteEntry>;
+  readonly visible: (entries: ReadonlyArray<PaletteEntry>, caller: Caller, page: string | undefined, roles?: ReadonlyArray<string>) => ReadonlyArray<PaletteEntry>;
 }
