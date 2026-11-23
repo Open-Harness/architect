@@ -7,7 +7,7 @@ import { Lifecycle } from "./lifecycle.tsx";
 
 export const ThingPage = ({ data, name }: { readonly data: PortalData; readonly name: string }) => {
   const thing = data.blueprint.model.things[name];
-  if (thing === undefined) return <NotFound what={`The thing ${name}`} />;
+  if (thing === undefined) return <NotFound what={`The thing ${name}`} data={data} />;
   const operations = Object.values(data.blueprint.model.operations).filter((o) => o.thing === thing.name).map((o) => o.name);
   return (
     <Frame.Page status={200} data={data} scope={`thing:${thing.name}`} operations={operations}>

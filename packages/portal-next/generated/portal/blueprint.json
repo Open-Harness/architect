@@ -12,6 +12,28 @@
     "operations": {},
     "journeys": {},
     "startingWorlds": {},
+    "alertRules": [
+      {
+        "id": "anomaly:AR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-001",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:AR-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "AR-002",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      }
+    ],
     "app": {
       "description": "Look inside a project: its things, operations, environments and what they did in the window.",
       "layout": "none",
@@ -452,5 +474,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "1db63bee45efaa5669f23af9ba7fee63a8197c9f49e7bef88defc96060a2d6d4"
+  "digest": "c8706cf78cc1d0d0df35d8bf6c7782d96f9701e903ca9f5856acd315b807bb60"
 }

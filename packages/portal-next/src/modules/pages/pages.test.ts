@@ -54,6 +54,7 @@ describe("a page that names something the blueprint does not declare", () => {
   it("is a 404 for a thing, and for an environment", () => {
     expect(render(createElement(ThingPage, { data, name: "nowhere" }))).toContain('data-status="404"');
     expect(render(createElement(EnvironmentPage, { data, name: "nowhere" }))).toContain('data-status="404"');
+    expect(render(createElement(ThingPage, { data, name: "nowhere" })), "the frame stays around a 404").toContain('data-portal="top-bar"');
   });
 
   it("is a 200 for one that it declares, and says whose portal reads another environment", () => {

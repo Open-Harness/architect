@@ -180,12 +180,20 @@ export const entries: ReadonlyArray<PaletteEntry> = [
   }
 ];
 
-/** An anonymous caller passes only `anyone`. A person passes `anyone`, `signed-in` or a role: a role is decided on an instance, so it is not ruled out here. */
-const passes = (allowed: ReadonlyArray<Allowed>, caller: Caller): boolean =>
-  caller === "person" ? allowed.length > 0 : allowed.some((a) => a.kind === "anyone");
+/**
+ * The rule. An anonymous caller passes only `anyone`. A person passes `anyone` and `signed-in`. A role (`role`, or `role-of` by its
+ * role's name) is decided on an instance: it passes only when `roles` (the names the caller
+ * holds, such as `link.linkOwner`) has it, and no `roles` means none held. Nobody passes an empty `allowed`.
+ */
+const passes = (allowed: ReadonlyArray<Allowed>, caller: Caller, roles?: ReadonlyArray<string>): boolean =>
+  allowed.some((a) => {
+    if (a.kind === "anyone") return true;
+    if (caller !== "person") return false;
+    return a.kind === "signed-in" || (roles ?? []).includes(a.role);
+  });
 
 /** What the caller may open and call: a page whose `allowed` they pass, and an operation of such a page whose own `allowed` they pass. */
-export const visibleTo = (caller: Caller): ReadonlyArray<PaletteEntry> => {
-  const pages = new Set(entries.flatMap((e) => (e.kind === "page" && passes(e.allowed, caller) ? [e.name] : [])));
-  return entries.filter((e) => (e.kind === "page" ? pages.has(e.name) : pages.has(e.page) && passes(e.allowed, caller)));
+export const visibleTo = (caller: Caller, roles?: ReadonlyArray<string>): ReadonlyArray<PaletteEntry> => {
+  const pages = new Set(entries.flatMap((e) => (e.kind === "page" && passes(e.allowed, caller, roles) ? [e.name] : [])));
+  return entries.filter((e) => (e.kind === "page" ? pages.has(e.name) : pages.has(e.page) && passes(e.allowed, caller, roles)));
 };

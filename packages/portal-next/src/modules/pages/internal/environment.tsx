@@ -7,7 +7,7 @@ import { NotFound } from "./draw.tsx";
 
 export const EnvironmentPage = ({ data, name }: { readonly data: PortalData; readonly name: string }) => {
   const env = Object.values(data.blueprint.model.environments ?? {}).find((e) => e.name === name);
-  if (env === undefined) return <NotFound what={`The environment ${name}`} />;
+  if (env === undefined) return <NotFound what={`The environment ${name}`} data={data} />;
   const here = Live.environmentOf(data).name;
   const live = env.name === here;
   return (
