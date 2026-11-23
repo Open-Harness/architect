@@ -26,6 +26,21 @@ export const frontDoor = (sql: SqlStorage, auth: AuthInstance, request: Request,
       }
       return json(cast satisfies Cast);
     }
+    if (path === "/_world/credential" && request.method === "POST") {
+      // A credential for one cast member's way in, or for the system or a service: `{ name, via }`, `{ system: true }` or `{ service }`.
+      const body = (yield* Effect.promise(() => request.json().catch(() => ({})))) as { readonly name?: unknown; readonly via?: unknown; readonly system?: unknown; readonly service?: unknown };
+      if (body.system === true) return json(yield* AuthD1.credential(auth, { kind: "system" }));
+      if (typeof body.service === "string") return json(yield* AuthD1.credential(auth, { kind: "service", mount: body.service }));
+      const name = typeof body.name === "string" ? body.name : "";
+      const row = sql.exec<{ person: string | null; email: string; password: string }>("SELECT person, email, password FROM cast WHERE name = ?", name).toArray()[0];
+      if (!row?.person) return json({ error: `${name || "no one"} is not a signed-up member of this world's cast` }, 404);
+      if (body.via === "session") {
+        const member = yield* AuthD1.castMember(auth, name, false, { email: row.email, password: row.password, person: row.person });
+        return json({ token: member.token });
+      }
+      if (body.via === "key" || body.via === "agent") return json(yield* AuthD1.credential(auth, { kind: body.via, person: row.person }));
+      return json({ error: `a world mints no credential for the way in ${JSON.stringify(body.via ?? null)}` }, 400);
+    }
     if (path === "/_world/reset" && request.method === "POST") {
       if (nonce && request.headers.get(RESET_HEADER) !== nonce) return json({ error: "not this world's reset" }, 403);
       // The cast stays (a warm world's population); the Worker empties the databases around the people it names.

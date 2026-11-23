@@ -26,7 +26,7 @@ const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".j
 export interface Fixture {
   readonly url: string;
   readonly data: Record<string, any>;
-  readonly open: (path: string, options?: { readonly layout?: Layout; readonly caller?: Caller; readonly slots?: boolean }) => Promise<Page>;
+  readonly open: (path: string, options?: { readonly layout?: Layout; readonly caller?: Caller; readonly roles?: ReadonlyArray<string>; readonly slots?: boolean; readonly extras?: ReadonlyArray<object>; readonly notFound?: boolean }) => Promise<Page>;
   readonly close: () => Promise<void>;
 }
 
@@ -34,10 +34,15 @@ export interface Fixture {
 export const serveFixture = async (stylesOf: () => ReadonlyArray<string>): Promise<Fixture> => {
   const entry = shellEntry();
   const styles = stylesOf();
+  // Whatever is made is undone, last first, if anything after it fails: the caller has no fixture to close then.
+  const undo: Array<() => Promise<void> | void> = [];
+  try {
   const out = mkdtempSync(join(tmpdir(), "shell-fixture-"));
+  undo.push(() => { rmSync(out, { recursive: true, force: true }); });
   const { build } = await import("vite");
   await build({ root: fixture, configFile: false, logLevel: "silent", resolve: { alias: { "@orthograph/shell": entry } }, build: { outDir: out, emptyOutDir: true, minify: false, rollupOptions: { input: join(fixture, "index.html") } } });
   const p: Project = project(["good", "mount"]);
+  undo.push(() => { p.remove(); });
   generated(p);
   const data = { routes: p.json("generated/app/routes.json"), navigation: p.json("generated/app/navigation.json"), palette: p.json<{ entries: unknown }>("generated/app/palette.json").entries, map: p.json("generated/app/map.json") };
   const html = readFileSync(join(out, "index.html"), "utf8").replace("<!--styles-->", styles.map((_, i) => `<link rel="stylesheet" href="/style-${String(i)}.css">`).join(""));
@@ -53,18 +58,24 @@ export const serveFixture = async (stylesOf: () => ReadonlyArray<string>): Promi
     return extname(pathname) in TYPES ? send(404, "text/plain", "not found") : send(200, TYPES[".html"]!, html);
   });
   await new Promise<void>((resolve) => { server.listen(0, "127.0.0.1", resolve); });
+  undo.push(() => new Promise<void>((resolve) => { server.close(() => { resolve(); }); server.closeAllConnections(); }));
   const url = `http://127.0.0.1:${String((server.address() as AddressInfo).port)}`;
   const browser: Browser = await chromium.launch({ headless: true });
+  undo.push(() => browser.close());
   return {
     url, data,
     open: async (path, options = {}) => {
       const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 }, colorScheme: "light" })).newPage();
       const layout = options.layout ?? data.navigation.layout;
-      await page.addInitScript(`globalThis.__DATA__ = ${JSON.stringify({ ...data, navigation: { ...data.navigation, layout }, map: { ...data.map, layout }, caller: options.caller ?? "person", slots: options.slots ?? true })};`);
+      await page.addInitScript(`globalThis.__DATA__ = ${JSON.stringify({ ...data, navigation: { ...data.navigation, layout }, map: { ...data.map, layout }, caller: options.caller ?? "person", roles: options.roles ?? [], slots: options.slots ?? true, ...(options.extras === undefined ? {} : { extras: options.extras }), ...(options.notFound === true ? { notFound: true } : {}) })};`);
       await page.goto(`${url}${path}`);
       await page.waitForSelector('[data-shell="root"]', { timeout: 15_000 });
       return page;
     },
-    close: async () => { await browser.close(); await new Promise<void>((resolve) => { server.close(() => { resolve(); }); server.closeAllConnections(); }); rmSync(out, { recursive: true, force: true }); p.remove(); },
+    close: async () => { for (const step of undo.reverse()) await step(); },
   };
+  } catch (error) {
+    for (const step of undo.reverse()) await Promise.resolve(step()).catch(() => undefined);
+    throw error;
+  }
 };

@@ -17,11 +17,16 @@ export const roleName = (role: string) => role.split(".").pop() ?? role;
 const roleThing = (role: string) => role.split(".")[0] ?? role;
 
 /** One `allowed` entry in words: the docs page's own phrase. */
-export const callerOf = (a: AllowedModel) =>
-  a.kind === "anyone" ? "anyone"
-    : a.kind === "signed-in" ? "anyone signed in"
-      : a.kind === "role" ? `the ${roleName(a.role)} of the ${roleThing(a.role)}`
-        : `the ${roleName(a.role)} of its ${a.path}`;
+export const callerOf = (a: AllowedModel) => {
+  if (a.kind === "anyone") return "anyone";
+  if (a.kind === "system") return "the system";
+  if (a.kind === "keeper") return "the keeper";
+  // A narrowed entry says which ways in it keeps (M2-auth, fork 2): `.via(Via.session)` is "by session".
+  const by = "via" in a && a.via !== undefined ? ` by ${a.via.join(" or ")}` : "";
+  if (a.kind === "signed-in") return `anyone signed in${by}`;
+  if (a.service !== undefined) return `the ${a.service} service`;
+  return `${a.kind === "role" ? `the ${roleName(a.role)} of the ${roleThing(a.role)}` : `the ${roleName(a.role)} of its ${a.path}`}${by}`;
+};
 
 /** Who may call an operation: "the grantee of the allowance", "the owner of its organization", "anyone signed in". */
 export const who = (op: OperationModel) => op.allowed.map(callerOf).join(", or ");
@@ -32,7 +37,7 @@ export const allowedFile = (model: Model, op: OperationModel, a: AllowedModel) =
 
 /** The rule a role holds, as the model keeps it, when it has one. */
 export const ruleOf = (model: Model, a: AllowedModel) =>
-  a.kind === "role" || a.kind === "role-of" ? model.things[roleThing(a.role)]?.roleRules[roleName(a.role)] ?? null : null;
+  (a.kind === "role" || a.kind === "role-of") && a.service === undefined ? model.things[roleThing(a.role)]?.roleRules[roleName(a.role)] ?? null : null;
 
 /** What a field is: what it references, else the value it is named for, else its type. */
 export const label = (f: FieldModel) =>
@@ -104,7 +109,7 @@ export const refusalsOf = (model: Model, op: OperationModel): ReadonlyArray<Refu
     }
     if (r === "NotAllowed") {
       const first = op.allowed[0];
-      return { name: r, exit: NOT_ALLOWED_EXIT, code: code(r), giver: "runtime", fields: [], fieldModels: {}, file: first ? allowedFile(model, op, first) : op.file, said: `the runtime's, when the caller isn't ${who(op)}` };
+      return { name: r, exit: NOT_ALLOWED_EXIT, code: code(r), giver: "runtime", fields: [], fieldModels: {}, file: first ? allowedFile(model, op, first) : op.file, said: op.allowed.every((a) => a.kind === "anyone") ? "the runtime's, when the caller is the keeper, which calls only the moves time makes" : `the runtime's, when the caller isn't ${who(op)}` };
     }
     const missing = notFoundOf(model, r);
     if (missing) {
