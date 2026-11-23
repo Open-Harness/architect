@@ -210,3 +210,6 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
   and the CLI only those a device session or a key can reach. **Trigger:** a generated client's refusal on a call its credential
   could never make is reported as confusing in a journey or by a user, or the second app ships a CLI with an operation
   only `Via.agent` reaches.
+- **A nonce lane shared across processes** (`decisions/W1-wallet-send-lanes.md`, Open). Today one process keeps one lane
+  per chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
+  key from more than one process or Worker, or a journey sends from one account in two processes at once.
