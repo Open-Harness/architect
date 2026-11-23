@@ -1,0 +1,2 @@
+# Written before the actions projection (M1.22): tsc cannot resolve the generated actions, and names each line (claim) it could not judge.
+ui-layer/11-actions-projection-types.test.ts > 11 M1.22: every generated options(host) against agent-native 0.228.2's recorded fields > tsc holds each action's fields, flags, schema, run and context, and the refusal's members, to the record; no line is red
