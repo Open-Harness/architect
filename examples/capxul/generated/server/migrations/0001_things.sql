@@ -10,8 +10,8 @@ CREATE TABLE "company" (
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
-CREATE UNIQUE INDEX "company_oneAbbr" ON "company" ("abbr");
-CREATE UNIQUE INDEX "company_oneName" ON "company" ("companyName");
+CREATE UNIQUE INDEX "company_oneAbbrPerOwner" ON "company" ("owner", "abbr");
+CREATE UNIQUE INDEX "company_oneNamePerOwner" ON "company" ("owner", "companyName");
 CREATE TABLE "department" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,

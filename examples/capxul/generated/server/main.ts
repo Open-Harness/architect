@@ -37,7 +37,7 @@ import * as employeeInvariants from "../../blueprint/things/employee/invariants.
 
 export { World } from "@orthograph/host-cloudflare";
 
-const companyCreateServed = Handlers.serve({ name: "company.create", operation: companyCreate.declaration, handler: companyCreateHandler, codes: Errors.codes });
+const companyCreateServed = Handlers.serve({ name: "company.create", operation: companyCreate.declaration, handler: companyCreateHandler, invariants: { CompanyAbbrTaken: "company.oneAbbrPerOwner", CompanyNameTaken: "company.oneNamePerOwner" }, codes: Errors.codes });
 const companyGetServed = Reads.serve({ name: "company.get", read: companyGet.declaration });
 const departmentCreateServed = Handlers.serve({ name: "department.create", operation: departmentCreate.declaration, handler: departmentCreateHandler, invariants: { DepartmentNameTaken: "department.oneNamePerCompany" }, codes: Errors.codes });
 const departmentGetServed = Reads.serve({ name: "department.get", read: departmentGet.declaration });

@@ -44,14 +44,14 @@ Add a job title to a company.
 
 Starts from the world `a team`.
 
-- **Bo adds the job title Clerk to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.
+- **Bo adds a job title to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.
 
 ### set up departments and job titles
 
 Starts from the world `a company`.
 
-- **Ada adds the job title Engineer.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.
-- **Ada can't add Engineer twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.
+- **Ada adds a job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.
+- **Ada can't add the same job title twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.
 
 ## How to call
 

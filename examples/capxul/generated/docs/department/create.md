@@ -44,16 +44,16 @@ Add a department to a company.
 
 Starts from the world `a team`.
 
-- **Bo adds Sales to it.** `bo` (signed in) calls and sends company the last call's company, departmentName `Sales`, and gets back an answer matching `^dep_[0-9a-z]+$`.
+- **Bo adds a department to it.** `bo` (signed in) calls and sends company the last call's company, departmentName `Sales`, and gets back an answer matching `^dep_[0-9a-z]+$`.
 
 ### set up departments and job titles
 
 Starts from the world `a company`.
 
-- **Ada adds Engineering.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.
-- **Ada can't add a second Engineering.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and is refused with DepartmentNameTaken, DE-001, carrying departmentName `Engineering`.
+- **Ada adds a department.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.
+- **Ada can't add a second department of the same name.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and is refused with DepartmentNameTaken, DE-001, carrying departmentName `Engineering`.
 - **Bo can't add a department to Ada's company.** `bo` (signed in) calls and sends company the world's company, departmentName `Sales`, and is refused with NotAllowed, AR-001.
-- **Bo's company may have its own Engineering, because names are unique within a company.** `bo` (signed in) calls and sends company the last call's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.
+- **Bo's company may have a department of that name too, because names are unique within a company.** `bo` (signed in) calls and sends company the last call's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.
 
 ## How to call
 

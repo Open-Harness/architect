@@ -56,28 +56,28 @@ Hire a person into a company, placed in one of its departments under one of its 
 
 Starts from the world `an employee`.
 
-- **Ada may hire her again, as a new employee.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2027-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada may hire her again, as a new employee.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2027-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
 
 ### another company's department is refused
 
 Starts from the world `a team`.
 
-- **Ada can't place Olga in Bo's department.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the last call's department, designation the world's designation, and is refused with DepartmentNotInCompany, EM-002.
+- **Ada can't place Olga in Bo's department.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the last call's department, designation the world's designation, and is refused with DepartmentNotInCompany, EM-002.
 
 ### another company's job title is refused
 
 Starts from the world `a team`.
 
-- **Ada can't make Olga a clerk under Bo's title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.
+- **Ada can't give Olga Bo's job title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.
 
 ### hire an employee
 
 Starts from the world `a team`.
 
-- **Ada hires Olga as an engineer in Engineering.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
-- **Ada can't hire Olga again while she works there.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and is refused with EmployeeAlreadyHired, EM-001, carrying person the cast's olga person.
-- **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.
-- **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.
+- **Ada hires Olga into her team.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada can't hire Olga again while she works there.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and is refused with EmployeeAlreadyHired, EM-001, carrying person the cast's olga person.
+- **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.
+- **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.
 
 ## How to call
 

@@ -14,11 +14,11 @@ export default Blueprint.journey("hire an employee", {
   starts: "a team",
   steps: (s) => [
     s.step(
-      "Ada hires Olga as an engineer in Engineering",
+      "Ada hires Olga into her team",
       s.ada.run(hire, {
         company: s.world.company,
         person: s.olga.person,
-        firstName: "Olga",
+        firstName: "Olga Petrova",
         gender: "Female",
         dateOfBirth: "1994-03-17",
         dateOfJoining: "2026-01-05",
@@ -41,7 +41,7 @@ export default Blueprint.journey("hire an employee", {
       s.ada.run(hire, {
         company: s.world.company,
         person: s.olga.person,
-        firstName: "Olga",
+        firstName: "Olga Petrova",
         gender: "Female",
         dateOfBirth: "1994-03-17",
         dateOfJoining: "2026-02-01",
@@ -56,7 +56,7 @@ export default Blueprint.journey("hire an employee", {
       s.bo.run(hire, {
         company: s.world.company,
         person: s.bo.person,
-        firstName: "Bo",
+        firstName: "Bo Mensah",
         gender: "Male",
         dateOfBirth: "1990-06-01",
         dateOfJoining: "2026-01-05",
@@ -72,7 +72,7 @@ export default Blueprint.journey("hire an employee", {
       s.ada.run(hire, {
         company: s.world.company,
         person: s.bo.person,
-        firstName: "Bo",
+        firstName: "Bo Mensah",
         gender: "Male",
         dateOfBirth: "1990-06-01",
         dateOfJoining: "1990-05-31",
@@ -99,7 +99,7 @@ export default Blueprint.journey("hire an employee", {
       ]).toEqual([
         s.world.company,
         s.olga.person,
-        "Olga",
+        "Olga Petrova",
         "Female",
         "1994-03-17",
         "2026-01-05",

@@ -17,7 +17,7 @@ export default Blueprint.journey("another company's department is refused", {
       expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
     ),
     s.step(
-      "Bo adds Sales to it",
+      "Bo adds a department to it",
       s.bo.run(createDepartment, { company: s.last.company, departmentName: "Sales" }),
       expect((a) => a.department).toMatch(/^dep_[0-9a-z]+$/),
     ),
@@ -26,7 +26,7 @@ export default Blueprint.journey("another company's department is refused", {
       s.ada.run(hire, {
         company: s.world.company,
         person: s.olga.person,
-        firstName: "Olga",
+        firstName: "Olga Petrova",
         gender: "Female",
         dateOfBirth: "1994-03-17",
         dateOfJoining: "2026-01-05",

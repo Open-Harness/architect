@@ -26,8 +26,8 @@ States: active. A move from the wrong state is refused CompanyNotActive (exit 40
 
 ## Invariants
 
-- `company.oneAbbr`: another company holds this abbr. Unique on abbr, in every state; refuses nothing, a break is a defect.
-- `company.oneName`: another company holds this company name. Unique on companyName, in every state; refuses nothing, a break is a defect.
+- `company.oneAbbrPerOwner`: another company holds this owner and abbr. Unique on owner, abbr, in every state; refused CompanyAbbrTaken.
+- `company.oneNamePerOwner`: another company holds this owner and company name. Unique on owner, companyName, in every state; refused CompanyNameTaken.
 
 ## Events
 

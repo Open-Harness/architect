@@ -48,7 +48,7 @@ Starts from the world `an employee`.
 Starts from the world `a team`.
 
 - **Bo can't read Olga's record.** `bo` (signed in) calls and sends id the last call's employee, and is refused with NotAllowed, AR-001.
-- **Olga reads her own record, with every field Ada typed.** `olga` (signed in) calls and sends id the last call's employee, and gets back [the world's company, the cast's olga person, `Olga`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `active`].
+- **Olga reads her own record, with every field Ada typed.** `olga` (signed in) calls and sends id the last call's employee, and gets back [the world's company, the cast's olga person, `Olga Petrova`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `active`].
 
 ## How to call
 

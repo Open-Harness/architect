@@ -36,7 +36,7 @@ Read one department by its id: company, departmentName, state.
 Starts from the world `a company`.
 
 - **Bo can't read Ada's department.** `bo` (signed in) calls and sends id the last call's department, and is refused with NotAllowed, AR-001.
-- **Ada reads Engineering back.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Engineering`, `active`].
+- **Ada reads the department back.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Engineering`, `active`].
 
 ## How to call
 

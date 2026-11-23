@@ -56,7 +56,7 @@ export default Blueprint.journey("an employee leaves", {
       s.ada.run(hire, {
         company: s.world.company,
         person: s.olga.person,
-        firstName: "Olga",
+        firstName: "Olga Petrova",
         gender: "Female",
         dateOfBirth: "1994-03-17",
         dateOfJoining: "2027-02-01",

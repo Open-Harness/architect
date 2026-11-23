@@ -36,7 +36,7 @@ Read one designation by its id: company, designationName, state.
 Starts from the world `a company`.
 
 - **Bo can't read Ada's job title.** `bo` (signed in) calls and sends id the last call's designation, and is refused with NotAllowed, AR-001.
-- **Ada reads Engineer back.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Engineer`, `active`].
+- **Ada reads the job title back.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Engineer`, `active`].
 
 ## How to call
 

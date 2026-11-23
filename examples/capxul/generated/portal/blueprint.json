@@ -4,6 +4,8 @@
   "revision": null,
   "model": {
     "refusals": {
+      "CompanyAbbrTaken": "CO-002",
+      "CompanyNameTaken": "CO-001",
       "CompanyNotActive": "CO-900",
       "DepartmentNameTaken": "DE-001",
       "DepartmentNotActive": "DE-900",
@@ -94,17 +96,21 @@
         },
         "lives": "database",
         "invariants": {
-          "oneAbbr": {
+          "oneAbbrPerOwner": {
             "kind": "unique",
             "fields": [
+              "owner",
               "abbr"
-            ]
+            ],
+            "refuse": "CompanyAbbrTaken"
           },
-          "oneName": {
+          "oneNamePerOwner": {
             "kind": "unique",
             "fields": [
+              "owner",
               "companyName"
-            ]
+            ],
+            "refuse": "CompanyNameTaken"
           }
         },
         "machine": {
@@ -145,7 +151,34 @@
             }
           }
         },
-        "errors": {},
+        "errors": {
+          "CompanyNameTaken": {
+            "fields": {
+              "companyName": {
+                "value": {
+                  "type": "text",
+                  "max": 140
+                },
+                "named": "Name"
+              }
+            },
+            "exit": 41,
+            "code": "CO-001"
+          },
+          "CompanyAbbrTaken": {
+            "fields": {
+              "abbr": {
+                "value": {
+                  "type": "text",
+                  "max": 10
+                },
+                "named": "Abbr"
+              }
+            },
+            "exit": 42,
+            "code": "CO-002"
+          }
+        },
         "roles": [
           "owner"
         ],
@@ -155,7 +188,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "5f3d7650eefb9381"
+        "hash": "7e7c8934b44c2510"
       },
       "department": {
         "name": "department",
@@ -637,11 +670,17 @@
           "emits": "CompanyCreated"
         },
         "errors": [],
+        "invariants": {
+          "CompanyAbbrTaken": "company.oneAbbrPerOwner",
+          "CompanyNameTaken": "company.oneNamePerOwner"
+        },
         "breaks": [
-          "company.oneAbbr",
-          "company.oneName"
+          "company.oneAbbrPerOwner",
+          "company.oneNamePerOwner"
         ],
         "refusals": [
+          "CompanyAbbrTaken",
+          "CompanyNameTaken",
           "NotAllowed",
           "IdempotencyConflict"
         ],
@@ -664,7 +703,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "ccadf0724b53e954"
+        "hash": "9c2724f9ccd72ac5"
       },
       "company.get": {
         "kind": "read",
@@ -1654,7 +1693,7 @@
                     "person"
                   ]
                 },
-                "firstName": "Olga",
+                "firstName": "Olga Petrova",
                 "gender": "Female",
                 "dateOfBirth": "1994-03-17",
                 "dateOfJoining": "2027-02-01",
@@ -1722,7 +1761,7 @@
             ]
           }
         ],
-        "sourceHash": "640cbce7a74c401a486b35abcbab5dc54ca750d1ffd7f66dc27f51954b4c7d42"
+        "sourceHash": "960c9add8ce66f8eda8da54f42d957e1bc4d38bffdc1da5383ecae52b186ea8e"
       },
       "journeys/another-companys-department-is-refused.ts": {
         "name": "another company's department is refused",
@@ -1762,7 +1801,7 @@
             ]
           },
           {
-            "title": "Bo adds Sales to it",
+            "title": "Bo adds a department to it",
             "call": {
               "actor": "bo",
               "operation": "department.create",
@@ -1803,7 +1842,7 @@
                     "person"
                   ]
                 },
-                "firstName": "Olga",
+                "firstName": "Olga Petrova",
                 "gender": "Female",
                 "dateOfBirth": "1994-03-17",
                 "dateOfJoining": "2026-01-05",
@@ -1843,7 +1882,7 @@
             ]
           }
         ],
-        "sourceHash": "7b9580bfe0249ef52bbcd45267a7b8c29b795d730f17b608c7ddb4cdec8abe8a"
+        "sourceHash": "98b53cb2bc907d683e10b71cb239b2a3f1ddfab01b39f5b8516f242ffd8203be"
       },
       "journeys/another-companys-job-title-is-refused.ts": {
         "name": "another company's job title is refused",
@@ -1883,7 +1922,7 @@
             ]
           },
           {
-            "title": "Bo adds the job title Clerk to it",
+            "title": "Bo adds a job title to it",
             "call": {
               "actor": "bo",
               "operation": "designation.create",
@@ -1906,7 +1945,7 @@
             ]
           },
           {
-            "title": "Ada can't make Olga a clerk under Bo's title",
+            "title": "Ada can't give Olga Bo's job title",
             "call": {
               "actor": "ada",
               "operation": "employee.hire",
@@ -1924,7 +1963,7 @@
                     "person"
                   ]
                 },
-                "firstName": "Olga",
+                "firstName": "Olga Petrova",
                 "gender": "Female",
                 "dateOfBirth": "1994-03-17",
                 "dateOfJoining": "2026-01-05",
@@ -1964,7 +2003,186 @@
             ]
           }
         ],
-        "sourceHash": "446ba8d99f487a774c780d2365659c52047bfe604d3d6f7b9174a0ee11ec9a3b"
+        "sourceHash": "4a4ab32fd007147f42b7c3140faeaedb8e860d70577b3001cc4af249f3933e53"
+      },
+      "journeys/companies-are-kept-apart.ts": {
+        "name": "companies are kept apart",
+        "file": "journeys/companies-are-kept-apart.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "a company",
+        "steps": [
+          {
+            "title": "Ada can't give a second company of hers the same name",
+            "call": {
+              "actor": "ada",
+              "operation": "company.create",
+              "payload": {
+                "companyName": "Acme Trading",
+                "abbr": "AT2",
+                "country": "Kenya",
+                "defaultCurrency": "USD"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "CompanyNameTaken",
+                "fields": {
+                  "companyName": "Acme Trading"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor the same abbreviation",
+            "call": {
+              "actor": "ada",
+              "operation": "company.create",
+              "payload": {
+                "companyName": "Acme Holdings",
+                "abbr": "AT",
+                "country": "Kenya",
+                "defaultCurrency": "USD"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "CompanyAbbrTaken",
+                "fields": {
+                  "abbr": "AT"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo may use both for his own company, because her names don't bind him",
+            "call": {
+              "actor": "bo",
+              "operation": "company.create",
+              "payload": {
+                "companyName": "Acme Trading",
+                "abbr": "AT",
+                "country": "Uganda",
+                "defaultCurrency": "UGX"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^com_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "CompanyCreated",
+                "fields": {
+                  "company": {
+                    "ref": [
+                      "last",
+                      "company"
+                    ]
+                  },
+                  "owner": {
+                    "ref": [
+                      "cast",
+                      "bo",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "company",
+                "id": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "state": "active"
+              }
+            ]
+          },
+          {
+            "title": "Bo still can't read Ada's",
+            "call": {
+              "actor": "bo",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada's company is untouched and still hers",
+            "call": {
+              "actor": "ada",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Acme Trading",
+                  "AT",
+                  "Kenya",
+                  "USD",
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "68af707f20264a3493f7ca285ee3ebbc8c6f77c447c2a7164857365442e5a3a7"
       },
       "journeys/hire-an-employee.ts": {
         "name": "hire an employee",
@@ -1984,7 +2202,7 @@
         "starts": "a team",
         "steps": [
           {
-            "title": "Ada hires Olga as an engineer in Engineering",
+            "title": "Ada hires Olga into her team",
             "call": {
               "actor": "ada",
               "operation": "employee.hire",
@@ -2002,7 +2220,7 @@
                     "person"
                   ]
                 },
-                "firstName": "Olga",
+                "firstName": "Olga Petrova",
                 "gender": "Female",
                 "dateOfBirth": "1994-03-17",
                 "dateOfJoining": "2026-01-05",
@@ -2117,7 +2335,7 @@
                     "person"
                   ]
                 },
-                "firstName": "Olga",
+                "firstName": "Olga Petrova",
                 "gender": "Female",
                 "dateOfBirth": "1994-03-17",
                 "dateOfJoining": "2026-02-01",
@@ -2173,7 +2391,7 @@
                     "person"
                   ]
                 },
-                "firstName": "Bo",
+                "firstName": "Bo Mensah",
                 "gender": "Male",
                 "dateOfBirth": "1990-06-01",
                 "dateOfJoining": "2026-01-05",
@@ -2229,7 +2447,7 @@
                     "person"
                   ]
                 },
-                "firstName": "Bo",
+                "firstName": "Bo Mensah",
                 "gender": "Male",
                 "dateOfBirth": "1990-06-01",
                 "dateOfJoining": "1990-05-31",
@@ -2298,7 +2516,7 @@
                       "person"
                     ]
                   },
-                  "Olga",
+                  "Olga Petrova",
                   "Female",
                   "1994-03-17",
                   "2026-01-05",
@@ -2323,7 +2541,7 @@
             ]
           }
         ],
-        "sourceHash": "3281a484ac9f8c0337f5c0a1fad2220e4a882e624b3ef302c58e8791bd3fbd44"
+        "sourceHash": "23d5ed5bab091dd5f013109d43897d28704ba73f82f1f0be1640917718d10f98"
       },
       "journeys/set-up-a-company.ts": {
         "name": "set up a company",
@@ -2453,9 +2671,121 @@
                 "kind": "no-events"
               }
             ]
+          },
+          {
+            "title": "Bo sets up a company of his own, which he runs",
+            "call": {
+              "actor": "bo",
+              "operation": "company.create",
+              "payload": {
+                "companyName": "Kilimanjaro Coffee Exporters",
+                "abbr": "KCE",
+                "country": "Tanzania",
+                "defaultCurrency": "TZS"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^com_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "CompanyCreated",
+                "fields": {
+                  "company": {
+                    "ref": [
+                      "last",
+                      "company"
+                    ]
+                  },
+                  "owner": {
+                    "ref": [
+                      "cast",
+                      "bo",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "company",
+                "id": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "state": "active"
+              }
+            ]
+          },
+          {
+            "title": "Ada can't read Bo's company",
+            "call": {
+              "actor": "ada",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo reads his back, exactly as he typed it",
+            "call": {
+              "actor": "bo",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Kilimanjaro Coffee Exporters",
+                  "KCE",
+                  "Tanzania",
+                  "TZS",
+                  {
+                    "ref": [
+                      "cast",
+                      "bo",
+                      "person"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
           }
         ],
-        "sourceHash": "393f7d35ebda9f19854e388206910feb2d39886a4bdb1235b8a78a8d1e23e825"
+        "sourceHash": "91b416bbfb8a2428e62fbf99573e390a5534dbe494bf94efc65d364bd17d3842"
       },
       "journeys/set-up-departments-and-job-titles.ts": {
         "name": "set up departments and job titles",
@@ -2472,7 +2802,7 @@
         "starts": "a company",
         "steps": [
           {
-            "title": "Ada adds Engineering",
+            "title": "Ada adds a department",
             "call": {
               "actor": "ada",
               "operation": "department.create",
@@ -2557,7 +2887,7 @@
             ]
           },
           {
-            "title": "Ada can't add a second Engineering",
+            "title": "Ada can't add a second department of the same name",
             "call": {
               "actor": "ada",
               "operation": "department.create",
@@ -2619,7 +2949,7 @@
             ]
           },
           {
-            "title": "Ada reads Engineering back",
+            "title": "Ada reads the department back",
             "call": {
               "actor": "ada",
               "operation": "department.get",
@@ -2652,7 +2982,7 @@
             ]
           },
           {
-            "title": "Ada adds the job title Engineer",
+            "title": "Ada adds a job title",
             "call": {
               "actor": "ada",
               "operation": "designation.create",
@@ -2712,7 +3042,7 @@
             ]
           },
           {
-            "title": "Ada can't add Engineer twice",
+            "title": "Ada can't add the same job title twice",
             "call": {
               "actor": "ada",
               "operation": "designation.create",
@@ -2765,7 +3095,7 @@
             ]
           },
           {
-            "title": "Ada reads Engineer back",
+            "title": "Ada reads the job title back",
             "call": {
               "actor": "ada",
               "operation": "designation.get",
@@ -2818,7 +3148,7 @@
             ]
           },
           {
-            "title": "Bo's company may have its own Engineering, because names are unique within a company",
+            "title": "Bo's company may have a department of that name too, because names are unique within a company",
             "call": {
               "actor": "bo",
               "operation": "department.create",
@@ -2853,7 +3183,7 @@
             ]
           }
         ],
-        "sourceHash": "67e699469cdd773674fc06e4b96081c078c988a24ca17c32ef7fe73fcc195dca"
+        "sourceHash": "9e8a362867f55a5948c773e3eb18f9ac2e35110bcbb6b47d343d7fe0e997db78"
       }
     },
     "startingWorlds": {
@@ -2990,7 +3320,7 @@
             "kind": "signed-in"
           }
         },
-        "sourceHash": "8e4529bba4cd93830280f6293a4f33690ae689d47d9b4bf33687af5aab0aef60",
+        "sourceHash": "26355d32920d0b48cdf6b67e49411f2668a126b04b3e49124c3945e2e78dea0b",
         "makes": [
           {
             "actor": "ada",
@@ -3009,7 +3339,7 @@
                   "person"
                 ]
               },
-              "firstName": "Olga",
+              "firstName": "Olga Petrova",
               "gender": "Female",
               "dateOfBirth": "1994-03-17",
               "dateOfJoining": "2026-01-05",
@@ -3096,6 +3426,26 @@
           "code": "AR-002",
           "severity": "ticket",
           "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:CO-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "CO-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/company/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:CO-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "CO-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/company/errors.ts"
         }
       },
       {
@@ -4024,6 +4374,16 @@
         }
       },
       {
+        "id": "verdict:companies are kept apart:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "companies are kept apart",
+          "severity": "page",
+          "owner": "journeys/companies-are-kept-apart.ts"
+        }
+      },
+      {
         "id": "verdict:hire an employee:local",
         "kind": "verdict",
         "labels": {
@@ -4057,67 +4417,67 @@
   },
   "dependsOnByOperation": {
     "company.create": {
-      "operation:company.create": "ccadf0724b53e954",
-      "thing:company": "5f3d7650eefb9381"
+      "operation:company.create": "9c2724f9ccd72ac5",
+      "thing:company": "7e7c8934b44c2510"
     },
     "company.get": {
       "operation:company.get": "b640ec48ed59bbd8",
-      "thing:company": "5f3d7650eefb9381"
+      "thing:company": "7e7c8934b44c2510"
     },
     "department.create": {
       "operation:department.create": "2ab7b702f6cd5ae7",
-      "thing:company": "5f3d7650eefb9381",
+      "thing:company": "7e7c8934b44c2510",
       "thing:department": "70a62d157ea92c81"
     },
     "department.get": {
       "operation:department.get": "e080f6db61d65ed0",
-      "thing:company": "5f3d7650eefb9381",
+      "thing:company": "7e7c8934b44c2510",
       "thing:department": "70a62d157ea92c81"
     },
     "designation.create": {
       "operation:designation.create": "19ee2766a84f1c65",
-      "thing:company": "5f3d7650eefb9381",
+      "thing:company": "7e7c8934b44c2510",
       "thing:designation": "e8e38d92bb6471e1"
     },
     "designation.get": {
       "operation:designation.get": "98f6ee02514a7d04",
-      "thing:company": "5f3d7650eefb9381",
+      "thing:company": "7e7c8934b44c2510",
       "thing:designation": "e8e38d92bb6471e1"
     },
     "employee.get": {
       "operation:employee.get": "6008b1f38605aefa",
-      "thing:company": "5f3d7650eefb9381",
+      "thing:company": "7e7c8934b44c2510",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
       "thing:employee": "a2627df8b7120d80"
     },
     "employee.hire": {
       "operation:employee.hire": "770ffef979712da8",
-      "thing:company": "5f3d7650eefb9381",
+      "thing:company": "7e7c8934b44c2510",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
       "thing:employee": "a2627df8b7120d80"
     },
     "employee.relieve": {
       "operation:employee.relieve": "7c1133cc15b01f7d",
-      "thing:company": "5f3d7650eefb9381",
+      "thing:company": "7e7c8934b44c2510",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
       "thing:employee": "a2627df8b7120d80"
     }
   },
   "docs": {
-    "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
-    "company/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.get\n\nRead one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n\n**Who may call:** the owner of the company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | company.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| companyName | company.companyName |  |\n| abbr | company.abbr |  |\n| country | company.country |  |\n| defaultCurrency | company.defaultCurrency |  |\n| owner | company.owner | The person who set the company up, and runs it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the company; the handler never runs |\n\n## Worked examples\n\n### set up a company\n\nStarts from an empty world.\n\n- **Bo can't read a company he doesn't run.** `bo` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, with her as its owner.** `ada` (signed in) calls and sends id the last call's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n\n## How to call\n\n```sh\ncapxul company get --id <id>\n```\n\nHTTP: `POST /company/get` with the payload as JSON. SDK: `Sdk.company.get(payload)`.\n",
-    "company/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company\n\nA business that keeps its books, people and payroll in Capxul.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| companyName | Name |  |\n| abbr | Abbr |  |\n| country | Country |  |\n| defaultCurrency | CurrencyCode |  |\n| owner | id | The person who set the company up, and runs it. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused CompanyNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | CompanyCreated |\n\n## Invariants\n\n- `company.oneAbbr`: another company holds this abbr. Unique on abbr, in every state; refuses nothing, a break is a defect.\n- `company.oneName`: another company holds this company name. Unique on companyName, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `CompanyCreated`: carries company (company.id), owner (company.owner: The person who set the company up, and runs it.); emitted by the move create\n\n## Roles\n\n- owner\n\n## Operations\n\n- [company.create](create.md): Set up a company; the person who sets it up runs it.\n- [company.get](get.md): Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n",
-    "department/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.create\n\nAdd a department to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n\n## Answer\n\n| field | value |\n|---|---|\n| department | department.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DepartmentCreated.\n\n## Steps\n\n- `department.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNameTaken | 41 | DE-001 | another department holds this company and department name; by the rule department.oneNamePerCompany, carrying departmentName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo adds Sales to it.** `bo` (signed in) calls and sends company the last call's company, departmentName `Sales`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds Engineering.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Ada can't add a second Engineering.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and is refused with DepartmentNameTaken, DE-001, carrying departmentName `Engineering`.\n- **Bo can't add a department to Ada's company.** `bo` (signed in) calls and sends company the world's company, departmentName `Sales`, and is refused with NotAllowed, AR-001.\n- **Bo's company may have its own Engineering, because names are unique within a company.** `bo` (signed in) calls and sends company the last call's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul department create --company <company> --departmentName <departmentName>\n```\n\nHTTP: `POST /department/create` with the payload as JSON. SDK: `Sdk.department.create(payload)`.\n",
-    "department/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.get\n\nRead one department by its id: company, departmentName, state.\n\n**Who may call:** the owner of its department.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | department.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its department.company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's department.** `bo` (signed in) calls and sends id the last call's department, and is refused with NotAllowed, AR-001.\n- **Ada reads Engineering back.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Engineering`, `active`].\n\n## How to call\n\n```sh\ncapxul department get --id <id>\n```\n\nHTTP: `POST /department/get` with the payload as JSON. SDK: `Sdk.department.get(payload)`.\n",
+    "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| CompanyAbbrTaken | 42 | CO-002 | another company holds this owner and abbr; by the rule company.oneAbbrPerOwner, carrying abbr |\n| CompanyNameTaken | 41 | CO-001 | another company holds this owner and company name; by the rule company.oneNamePerOwner, carrying companyName |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### companies are kept apart\n\nStarts from the world `a company`.\n\n- **Ada can't give a second company of hers the same name.** `ada` (role company.owner) calls and sends companyName `Acme Trading`, abbr `AT2`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyNameTaken, CO-001, carrying companyName `Acme Trading`.\n- **nor the same abbreviation.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyAbbrTaken, CO-002, carrying abbr `AT`.\n- **Bo may use both for his own company, because her names don't bind him.** `bo` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n- **Bo sets up a company of his own, which he runs.** `bo` (signed in) calls and sends companyName `Kilimanjaro Coffee Exporters`, abbr `KCE`, country `Tanzania`, defaultCurrency `TZS`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
+    "company/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.get\n\nRead one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n\n**Who may call:** the owner of the company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | company.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| companyName | company.companyName |  |\n| abbr | company.abbr |  |\n| country | company.country |  |\n| defaultCurrency | company.defaultCurrency |  |\n| owner | company.owner | The person who set the company up, and runs it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the company; the handler never runs |\n\n## Worked examples\n\n### companies are kept apart\n\nStarts from the world `a company`.\n\n- **Bo still can't read Ada's.** `bo` (signed in) calls and sends id the world's company, and is refused with NotAllowed, AR-001.\n- **Ada's company is untouched and still hers.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n\n### set up a company\n\nStarts from an empty world.\n\n- **Bo can't read a company he doesn't run.** `bo` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, with her as its owner.** `ada` (signed in) calls and sends id the last call's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n- **Ada can't read Bo's company.** `ada` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **Bo reads his back, exactly as he typed it.** `bo` (signed in) calls and sends id the last call's company, and gets back [`Kilimanjaro Coffee Exporters`, `KCE`, `Tanzania`, `TZS`, the cast's bo person, `active`].\n\n## How to call\n\n```sh\ncapxul company get --id <id>\n```\n\nHTTP: `POST /company/get` with the payload as JSON. SDK: `Sdk.company.get(payload)`.\n",
+    "company/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company\n\nA business that keeps its books, people and payroll in Capxul.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| companyName | Name |  |\n| abbr | Abbr |  |\n| country | Country |  |\n| defaultCurrency | CurrencyCode |  |\n| owner | id | The person who set the company up, and runs it. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused CompanyNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | CompanyCreated |\n\n## Invariants\n\n- `company.oneAbbrPerOwner`: another company holds this owner and abbr. Unique on owner, abbr, in every state; refused CompanyAbbrTaken.\n- `company.oneNamePerOwner`: another company holds this owner and company name. Unique on owner, companyName, in every state; refused CompanyNameTaken.\n\n## Events\n\n- `CompanyCreated`: carries company (company.id), owner (company.owner: The person who set the company up, and runs it.); emitted by the move create\n\n## Roles\n\n- owner\n\n## Operations\n\n- [company.create](create.md): Set up a company; the person who sets it up runs it.\n- [company.get](get.md): Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n",
+    "department/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.create\n\nAdd a department to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n\n## Answer\n\n| field | value |\n|---|---|\n| department | department.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DepartmentCreated.\n\n## Steps\n\n- `department.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNameTaken | 41 | DE-001 | another department holds this company and department name; by the rule department.oneNamePerCompany, carrying departmentName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo adds a department to it.** `bo` (signed in) calls and sends company the last call's company, departmentName `Sales`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds a department.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Ada can't add a second department of the same name.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and is refused with DepartmentNameTaken, DE-001, carrying departmentName `Engineering`.\n- **Bo can't add a department to Ada's company.** `bo` (signed in) calls and sends company the world's company, departmentName `Sales`, and is refused with NotAllowed, AR-001.\n- **Bo's company may have a department of that name too, because names are unique within a company.** `bo` (signed in) calls and sends company the last call's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul department create --company <company> --departmentName <departmentName>\n```\n\nHTTP: `POST /department/create` with the payload as JSON. SDK: `Sdk.department.create(payload)`.\n",
+    "department/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.get\n\nRead one department by its id: company, departmentName, state.\n\n**Who may call:** the owner of its department.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | department.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its department.company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's department.** `bo` (signed in) calls and sends id the last call's department, and is refused with NotAllowed, AR-001.\n- **Ada reads the department back.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Engineering`, `active`].\n\n## How to call\n\n```sh\ncapxul department get --id <id>\n```\n\nHTTP: `POST /department/get` with the payload as JSON. SDK: `Sdk.department.get(payload)`.\n",
     "department/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department\n\nA part of a company that its employees work in.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| departmentName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused DepartmentNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | DepartmentCreated |\n\n## Invariants\n\n- `department.oneNamePerCompany`: another department holds this company and department name. Unique on company, departmentName, in every state; refused DepartmentNameTaken.\n\n## Events\n\n- `DepartmentCreated`: carries department (department.id), company (department.company); emitted by the move create\n\n## Operations\n\n- [department.create](create.md): Add a department to a company.\n- [department.get](get.md): Read one department by its id: company, departmentName, state.\n",
-    "designation/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.create\n\nAdd a job title to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n\n## Answer\n\n| field | value |\n|---|---|\n| designation | designation.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DesignationCreated.\n\n## Steps\n\n- `designation.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DesignationNameTaken | 41 | DS-001 | another designation holds this company and designation name; by the rule designation.oneNamePerCompany, carrying designationName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo adds the job title Clerk to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds the job title Engineer.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n- **Ada can't add Engineer twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.\n\n## How to call\n\n```sh\ncapxul designation create --company <company> --designationName <designationName>\n```\n\nHTTP: `POST /designation/create` with the payload as JSON. SDK: `Sdk.designation.create(payload)`.\n",
-    "designation/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.get\n\nRead one designation by its id: company, designationName, state.\n\n**Who may call:** the owner of its designation.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | designation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its designation.company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's job title.** `bo` (signed in) calls and sends id the last call's designation, and is refused with NotAllowed, AR-001.\n- **Ada reads Engineer back.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Engineer`, `active`].\n\n## How to call\n\n```sh\ncapxul designation get --id <id>\n```\n\nHTTP: `POST /designation/get` with the payload as JSON. SDK: `Sdk.designation.get(payload)`.\n",
+    "designation/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.create\n\nAdd a job title to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n\n## Answer\n\n| field | value |\n|---|---|\n| designation | designation.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DesignationCreated.\n\n## Steps\n\n- `designation.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DesignationNameTaken | 41 | DS-001 | another designation holds this company and designation name; by the rule designation.oneNamePerCompany, carrying designationName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo adds a job title to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds a job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n- **Ada can't add the same job title twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.\n\n## How to call\n\n```sh\ncapxul designation create --company <company> --designationName <designationName>\n```\n\nHTTP: `POST /designation/create` with the payload as JSON. SDK: `Sdk.designation.create(payload)`.\n",
+    "designation/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.get\n\nRead one designation by its id: company, designationName, state.\n\n**Who may call:** the owner of its designation.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | designation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its designation.company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's job title.** `bo` (signed in) calls and sends id the last call's designation, and is refused with NotAllowed, AR-001.\n- **Ada reads the job title back.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Engineer`, `active`].\n\n## How to call\n\n```sh\ncapxul designation get --id <id>\n```\n\nHTTP: `POST /designation/get` with the payload as JSON. SDK: `Sdk.designation.get(payload)`.\n",
     "designation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation\n\nA job title a company gives its employees.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| designationName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused DesignationNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | DesignationCreated |\n\n## Invariants\n\n- `designation.oneNamePerCompany`: another designation holds this company and designation name. Unique on company, designationName, in every state; refused DesignationNameTaken.\n\n## Events\n\n- `DesignationCreated`: carries designation (designation.id), company (designation.company); emitted by the move create\n\n## Operations\n\n- [designation.create](create.md): Add a job title to a company.\n- [designation.get](get.md): Read one designation by its id: company, designationName, state.\n",
-    "employee/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.get\n\nRead one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n\n**Who may call:** the self of the employee, or the owner of its employee.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | employee.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of the employee, or the owner of its employee.company; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga still reads her old record, which shows she has left.** `olga` (signed in) calls and sends id the world's employee, and gets back [`2026-01-05`, `left`].\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Bo can't read Olga's record.** `bo` (signed in) calls and sends id the last call's employee, and is refused with NotAllowed, AR-001.\n- **Olga reads her own record, with every field Ada typed.** `olga` (signed in) calls and sends id the last call's employee, and gets back [the world's company, the cast's olga person, `Olga`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `active`].\n\n## How to call\n\n```sh\ncapxul employee get --id <id>\n```\n\nHTTP: `POST /employee/get` with the payload as JSON. SDK: `Sdk.employee.get(payload)`.\n",
-    "employee/hire.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.hire\n\nHire a person into a company, placed in one of its departments under one of its job titles.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n\n## Move\n\n`hire`: from nothing (it creates) to active, emitting EmployeeHired.\n\n## Steps\n\n- `employee.hire.load` (database)\n- `employee.hire.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNotInCompany | 42 | EM-002 | declared in errors.ts |\n| DesignationNotInCompany | 43 | EM-003 | declared in errors.ts |\n| JoinedBeforeBorn | 44 | EM-004 | declared in errors.ts, carrying dateOfBirth |\n| EmployeeAlreadyHired | 41 | EM-001 | another active employee holds this company and person; by the rule employee.onePlacePerPerson, carrying person |\n| DepartmentNotFound | 4 | DE-901 | nothing has the id in department; the handler never runs; carries `id` |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in designation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Ada may hire her again, as a new employee.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2027-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Ada can't place Olga in Bo's department.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the last call's department, designation the world's designation, and is refused with DepartmentNotInCompany, EM-002.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Ada can't make Olga a clerk under Bo's title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Ada hires Olga as an engineer in Engineering.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n- **Ada can't hire Olga again while she works there.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and is refused with EmployeeAlreadyHired, EM-001, carrying person the cast's olga person.\n- **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.\n- **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.\n\n## How to call\n\n```sh\ncapxul employee hire --company <company> --person <person> --firstName <firstName> --gender <gender> --dateOfBirth <dateOfBirth> --dateOfJoining <dateOfJoining> --department <department> --designation <designation>\n```\n\nHTTP: `POST /employee/hire` with the payload as JSON. SDK: `Sdk.employee.hire(payload)`.\n",
+    "employee/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.get\n\nRead one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n\n**Who may call:** the self of the employee, or the owner of its employee.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | employee.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of the employee, or the owner of its employee.company; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga still reads her old record, which shows she has left.** `olga` (signed in) calls and sends id the world's employee, and gets back [`2026-01-05`, `left`].\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Bo can't read Olga's record.** `bo` (signed in) calls and sends id the last call's employee, and is refused with NotAllowed, AR-001.\n- **Olga reads her own record, with every field Ada typed.** `olga` (signed in) calls and sends id the last call's employee, and gets back [the world's company, the cast's olga person, `Olga Petrova`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `active`].\n\n## How to call\n\n```sh\ncapxul employee get --id <id>\n```\n\nHTTP: `POST /employee/get` with the payload as JSON. SDK: `Sdk.employee.get(payload)`.\n",
+    "employee/hire.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.hire\n\nHire a person into a company, placed in one of its departments under one of its job titles.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n\n## Move\n\n`hire`: from nothing (it creates) to active, emitting EmployeeHired.\n\n## Steps\n\n- `employee.hire.load` (database)\n- `employee.hire.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNotInCompany | 42 | EM-002 | declared in errors.ts |\n| DesignationNotInCompany | 43 | EM-003 | declared in errors.ts |\n| JoinedBeforeBorn | 44 | EM-004 | declared in errors.ts, carrying dateOfBirth |\n| EmployeeAlreadyHired | 41 | EM-001 | another active employee holds this company and person; by the rule employee.onePlacePerPerson, carrying person |\n| DepartmentNotFound | 4 | DE-901 | nothing has the id in department; the handler never runs; carries `id` |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in designation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Ada may hire her again, as a new employee.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2027-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Ada can't place Olga in Bo's department.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the last call's department, designation the world's designation, and is refused with DepartmentNotInCompany, EM-002.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Ada can't give Olga Bo's job title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Ada hires Olga into her team.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n- **Ada can't hire Olga again while she works there.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and is refused with EmployeeAlreadyHired, EM-001, carrying person the cast's olga person.\n- **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.\n- **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.\n\n## How to call\n\n```sh\ncapxul employee hire --company <company> --person <person> --firstName <firstName> --gender <gender> --dateOfBirth <dateOfBirth> --dateOfJoining <dateOfJoining> --department <department> --designation <designation>\n```\n\nHTTP: `POST /employee/hire` with the payload as JSON. SDK: `Sdk.employee.hire(payload)`.\n",
     "employee/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee\n\nA person a company employs.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| person | id | The person employed, who signs in as themselves. |\n| firstName | Name |  |\n| gender | Gender |  |\n| dateOfBirth | Day |  |\n| dateOfJoining | Day |  |\n| department | department.id |  |\n| designation | designation.id |  |\n\n## Machine\n\nStates: active, left. A move from the wrong state is refused EmployeeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| hire | (creates) | active | EmployeeHired |\n| relieve | active | left | EmployeeRelieved |\n\n## Invariants\n\n- `employee.onePlacePerPerson`: another active employee holds this company and person. Unique on company, person, while active; refused EmployeeAlreadyHired.\n\n## Events\n\n- `EmployeeHired`: carries employee (employee.id), company (employee.company), person (employee.person: The person employed, who signs in as themselves.); emitted by the move hire\n- `EmployeeRelieved`: carries employee (employee.id), relievingDate (Day); emitted by the move relieve\n\n## Roles\n\n- self\n\n## Operations\n\n- [employee.get](get.md): Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n- [employee.hire](hire.md): Hire a person into a company, placed in one of its departments under one of its job titles.\n- [employee.relieve](relieve.md): Record that an employee has left the company, on the day they were relieved.\n",
     "employee/relieve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.relieve\n\nRecord that an employee has left the company, on the day they were relieved.\n\n**Who may call:** the owner of its employee.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Move\n\n`relieve`: from active to left, emitting EmployeeRelieved.\n\n## Steps\n\n- `employee.relieve.load` (database)\n- `employee.relieve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RelievedBeforeJoined | 45 | EM-005 | declared in errors.ts, carrying dateOfJoining |\n| EmployeeNotActive | 40 | EM-900 | the employee is in a state relieve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its employee.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga can't relieve herself.** `olga` (signed in) calls and sends employee the world's employee, relievingDate `2026-11-30`, and is refused with NotAllowed, AR-001.\n- **Ada can't relieve her the day before she joined.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-01-04`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2026-01-05`.\n- **Ada relieves her on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back [the world's employee, `2026-11-30`].\n- **she can't be relieved twice.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-12-01`, and is refused with EmployeeNotActive, EM-900, carrying state `left`.\n\n## How to call\n\n```sh\ncapxul employee relieve --employee <employee> --relievingDate <relievingDate>\n```\n\nHTTP: `POST /employee/relieve` with the payload as JSON. SDK: `Sdk.employee.relieve(payload)`.\n"
   },
@@ -4135,5 +4495,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "9845ded003396d54b5cb9b6f9250163dc6c91d4fc22be5564eb5073a1e5abd24"
+  "digest": "8361d7a6454dca9f2e806ebfc298561afa2438cdfc88ca8b25d6f71aeb27d74a"
 }

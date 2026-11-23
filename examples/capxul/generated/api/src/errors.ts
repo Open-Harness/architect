@@ -1,12 +1,15 @@
 // Generated from the blueprint. Do not edit.
 import { Schema } from "effect";
 import { ErrorNames, wireStruct } from "orthograph/server";
+import * as Company from "../../../blueprint/things/company/errors.ts";
 import * as Department from "../../../blueprint/things/department/errors.ts";
 import * as Designation from "../../../blueprint/things/designation/errors.ts";
 import * as Employee from "../../../blueprint/things/employee/errors.ts";
 
 /** Every refusal's code, its exit for the CLI and its HTTP status: one row each, read by the CLI, HTTP and MCP. */
 export const refusals = {
+  CompanyNameTaken: { code: "CO-001", exit: 41, status: 422 },
+  CompanyAbbrTaken: { code: "CO-002", exit: 42, status: 422 },
   DepartmentNameTaken: { code: "DE-001", exit: 41, status: 422 },
   DesignationNameTaken: { code: "DS-001", exit: 41, status: 422 },
   EmployeeAlreadyHired: { code: "EM-001", exit: 41, status: 422 },
@@ -25,6 +28,10 @@ export const refusals = {
 } as const;
 type Refusal = keyof typeof refusals;
 
+ErrorNames.name(Company.CompanyNameTaken, "CompanyNameTaken");
+export class CompanyNameTaken extends Schema.TaggedError<CompanyNameTaken>()("CompanyNameTaken", { code: Schema.Literal(refusals.CompanyNameTaken.code), ...wireStruct(Company.CompanyNameTaken.fields).fields }, { httpApiStatus: refusals.CompanyNameTaken.status }) { static readonly code = refusals.CompanyNameTaken.code; }
+ErrorNames.name(Company.CompanyAbbrTaken, "CompanyAbbrTaken");
+export class CompanyAbbrTaken extends Schema.TaggedError<CompanyAbbrTaken>()("CompanyAbbrTaken", { code: Schema.Literal(refusals.CompanyAbbrTaken.code), ...wireStruct(Company.CompanyAbbrTaken.fields).fields }, { httpApiStatus: refusals.CompanyAbbrTaken.status }) { static readonly code = refusals.CompanyAbbrTaken.code; }
 ErrorNames.name(Department.DepartmentNameTaken, "DepartmentNameTaken");
 export class DepartmentNameTaken extends Schema.TaggedError<DepartmentNameTaken>()("DepartmentNameTaken", { code: Schema.Literal(refusals.DepartmentNameTaken.code), ...wireStruct(Department.DepartmentNameTaken.fields).fields }, { httpApiStatus: refusals.DepartmentNameTaken.status }) { static readonly code = refusals.DepartmentNameTaken.code; }
 ErrorNames.name(Designation.DesignationNameTaken, "DesignationNameTaken");
@@ -56,6 +63,8 @@ export const codes = Object.fromEntries(Object.entries(refusals).map(([k, r]) =>
 
 /** The declared errors themselves, by name: their fields say who may see a value (the visibility rule cuts a refusal by them). */
 export const declared = {
+  CompanyNameTaken: Company.CompanyNameTaken,
+  CompanyAbbrTaken: Company.CompanyAbbrTaken,
   DepartmentNameTaken: Department.DepartmentNameTaken,
   DesignationNameTaken: Designation.DesignationNameTaken,
   EmployeeAlreadyHired: Employee.EmployeeAlreadyHired,
@@ -66,4 +75,4 @@ export const declared = {
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, DepartmentNotFound, DesignationNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, DepartmentNotFound, DesignationNotFound, NotAllowed, IdempotencyConflict };

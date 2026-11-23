@@ -35,5 +35,36 @@ export default Blueprint.journey("set up a company", {
       ]),
       noEvents(),
     ),
+    s.step(
+      "Bo sets up a company of his own, which he runs",
+      s.bo.run(create, {
+        companyName: "Kilimanjaro Coffee Exporters",
+        abbr: "KCE",
+        country: "Tanzania",
+        defaultCurrency: "TZS",
+      }),
+      expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
+      emits(CompanyCreated, { company: s.last.company, owner: s.bo.person }),
+      machine.isIn(s.last.company, "active"),
+    ),
+    s.step(
+      "Ada can't read Bo's company",
+      s.ada.run(get, { id: s.last.company }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+    ),
+    s.step(
+      "Bo reads his back, exactly as he typed it",
+      s.bo.run(get, { id: s.last.company }),
+      expect((a) => [a.companyName, a.abbr, a.country, a.defaultCurrency, a.owner, a.state]).toEqual([
+        "Kilimanjaro Coffee Exporters",
+        "KCE",
+        "Tanzania",
+        "TZS",
+        s.bo.person,
+        "active",
+      ]),
+      noEvents(),
+    ),
   ],
 });

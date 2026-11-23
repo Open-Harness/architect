@@ -1,5 +1,7 @@
 {
   "refusals": {
+    "CompanyAbbrTaken": "CO-002",
+    "CompanyNameTaken": "CO-001",
     "CompanyNotActive": "CO-900",
     "DepartmentNameTaken": "DE-001",
     "DepartmentNotActive": "DE-900",
@@ -90,17 +92,21 @@
       },
       "lives": "database",
       "invariants": {
-        "oneAbbr": {
+        "oneAbbrPerOwner": {
           "kind": "unique",
           "fields": [
+            "owner",
             "abbr"
-          ]
+          ],
+          "refuse": "CompanyAbbrTaken"
         },
-        "oneName": {
+        "oneNamePerOwner": {
           "kind": "unique",
           "fields": [
+            "owner",
             "companyName"
-          ]
+          ],
+          "refuse": "CompanyNameTaken"
         }
       },
       "machine": {
@@ -141,7 +147,34 @@
           }
         }
       },
-      "errors": {},
+      "errors": {
+        "CompanyNameTaken": {
+          "fields": {
+            "companyName": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "Name"
+            }
+          },
+          "exit": 41,
+          "code": "CO-001"
+        },
+        "CompanyAbbrTaken": {
+          "fields": {
+            "abbr": {
+              "value": {
+                "type": "text",
+                "max": 10
+              },
+              "named": "Abbr"
+            }
+          },
+          "exit": 42,
+          "code": "CO-002"
+        }
+      },
       "roles": [
         "owner"
       ],
@@ -151,7 +184,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "5f3d7650eefb9381"
+      "hash": "7e7c8934b44c2510"
     },
     "department": {
       "name": "department",
@@ -633,11 +666,17 @@
         "emits": "CompanyCreated"
       },
       "errors": [],
+      "invariants": {
+        "CompanyAbbrTaken": "company.oneAbbrPerOwner",
+        "CompanyNameTaken": "company.oneNamePerOwner"
+      },
       "breaks": [
-        "company.oneAbbr",
-        "company.oneName"
+        "company.oneAbbrPerOwner",
+        "company.oneNamePerOwner"
       ],
       "refusals": [
+        "CompanyAbbrTaken",
+        "CompanyNameTaken",
         "NotAllowed",
         "IdempotencyConflict"
       ],
@@ -660,7 +699,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "ccadf0724b53e954"
+      "hash": "9c2724f9ccd72ac5"
     },
     "company.get": {
       "kind": "read",
@@ -1650,7 +1689,7 @@
                   "person"
                 ]
               },
-              "firstName": "Olga",
+              "firstName": "Olga Petrova",
               "gender": "Female",
               "dateOfBirth": "1994-03-17",
               "dateOfJoining": "2027-02-01",
@@ -1718,7 +1757,7 @@
           ]
         }
       ],
-      "sourceHash": "640cbce7a74c401a486b35abcbab5dc54ca750d1ffd7f66dc27f51954b4c7d42"
+      "sourceHash": "960c9add8ce66f8eda8da54f42d957e1bc4d38bffdc1da5383ecae52b186ea8e"
     },
     "journeys/another-companys-department-is-refused.ts": {
       "name": "another company's department is refused",
@@ -1758,7 +1797,7 @@
           ]
         },
         {
-          "title": "Bo adds Sales to it",
+          "title": "Bo adds a department to it",
           "call": {
             "actor": "bo",
             "operation": "department.create",
@@ -1799,7 +1838,7 @@
                   "person"
                 ]
               },
-              "firstName": "Olga",
+              "firstName": "Olga Petrova",
               "gender": "Female",
               "dateOfBirth": "1994-03-17",
               "dateOfJoining": "2026-01-05",
@@ -1839,7 +1878,7 @@
           ]
         }
       ],
-      "sourceHash": "7b9580bfe0249ef52bbcd45267a7b8c29b795d730f17b608c7ddb4cdec8abe8a"
+      "sourceHash": "98b53cb2bc907d683e10b71cb239b2a3f1ddfab01b39f5b8516f242ffd8203be"
     },
     "journeys/another-companys-job-title-is-refused.ts": {
       "name": "another company's job title is refused",
@@ -1879,7 +1918,7 @@
           ]
         },
         {
-          "title": "Bo adds the job title Clerk to it",
+          "title": "Bo adds a job title to it",
           "call": {
             "actor": "bo",
             "operation": "designation.create",
@@ -1902,7 +1941,7 @@
           ]
         },
         {
-          "title": "Ada can't make Olga a clerk under Bo's title",
+          "title": "Ada can't give Olga Bo's job title",
           "call": {
             "actor": "ada",
             "operation": "employee.hire",
@@ -1920,7 +1959,7 @@
                   "person"
                 ]
               },
-              "firstName": "Olga",
+              "firstName": "Olga Petrova",
               "gender": "Female",
               "dateOfBirth": "1994-03-17",
               "dateOfJoining": "2026-01-05",
@@ -1960,7 +1999,186 @@
           ]
         }
       ],
-      "sourceHash": "446ba8d99f487a774c780d2365659c52047bfe604d3d6f7b9174a0ee11ec9a3b"
+      "sourceHash": "4a4ab32fd007147f42b7c3140faeaedb8e860d70577b3001cc4af249f3933e53"
+    },
+    "journeys/companies-are-kept-apart.ts": {
+      "name": "companies are kept apart",
+      "file": "journeys/companies-are-kept-apart.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a company",
+      "steps": [
+        {
+          "title": "Ada can't give a second company of hers the same name",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Trading",
+              "abbr": "AT2",
+              "country": "Kenya",
+              "defaultCurrency": "USD"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "CompanyNameTaken",
+              "fields": {
+                "companyName": "Acme Trading"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor the same abbreviation",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Holdings",
+              "abbr": "AT",
+              "country": "Kenya",
+              "defaultCurrency": "USD"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "CompanyAbbrTaken",
+              "fields": {
+                "abbr": "AT"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo may use both for his own company, because her names don't bind him",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Trading",
+              "abbr": "AT",
+              "country": "Uganda",
+              "defaultCurrency": "UGX"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "CompanyCreated",
+              "fields": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "owner": {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "company",
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "Bo still can't read Ada's",
+          "call": {
+            "actor": "bo",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada's company is untouched and still hers",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Trading",
+                "AT",
+                "Kenya",
+                "USD",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "68af707f20264a3493f7ca285ee3ebbc8c6f77c447c2a7164857365442e5a3a7"
     },
     "journeys/hire-an-employee.ts": {
       "name": "hire an employee",
@@ -1980,7 +2198,7 @@
       "starts": "a team",
       "steps": [
         {
-          "title": "Ada hires Olga as an engineer in Engineering",
+          "title": "Ada hires Olga into her team",
           "call": {
             "actor": "ada",
             "operation": "employee.hire",
@@ -1998,7 +2216,7 @@
                   "person"
                 ]
               },
-              "firstName": "Olga",
+              "firstName": "Olga Petrova",
               "gender": "Female",
               "dateOfBirth": "1994-03-17",
               "dateOfJoining": "2026-01-05",
@@ -2113,7 +2331,7 @@
                   "person"
                 ]
               },
-              "firstName": "Olga",
+              "firstName": "Olga Petrova",
               "gender": "Female",
               "dateOfBirth": "1994-03-17",
               "dateOfJoining": "2026-02-01",
@@ -2169,7 +2387,7 @@
                   "person"
                 ]
               },
-              "firstName": "Bo",
+              "firstName": "Bo Mensah",
               "gender": "Male",
               "dateOfBirth": "1990-06-01",
               "dateOfJoining": "2026-01-05",
@@ -2225,7 +2443,7 @@
                   "person"
                 ]
               },
-              "firstName": "Bo",
+              "firstName": "Bo Mensah",
               "gender": "Male",
               "dateOfBirth": "1990-06-01",
               "dateOfJoining": "1990-05-31",
@@ -2294,7 +2512,7 @@
                     "person"
                   ]
                 },
-                "Olga",
+                "Olga Petrova",
                 "Female",
                 "1994-03-17",
                 "2026-01-05",
@@ -2319,7 +2537,7 @@
           ]
         }
       ],
-      "sourceHash": "3281a484ac9f8c0337f5c0a1fad2220e4a882e624b3ef302c58e8791bd3fbd44"
+      "sourceHash": "23d5ed5bab091dd5f013109d43897d28704ba73f82f1f0be1640917718d10f98"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
@@ -2449,9 +2667,121 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Bo sets up a company of his own, which he runs",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Kilimanjaro Coffee Exporters",
+              "abbr": "KCE",
+              "country": "Tanzania",
+              "defaultCurrency": "TZS"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "CompanyCreated",
+              "fields": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "owner": {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "company",
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "Ada can't read Bo's company",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads his back, exactly as he typed it",
+          "call": {
+            "actor": "bo",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Kilimanjaro Coffee Exporters",
+                "KCE",
+                "Tanzania",
+                "TZS",
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "393f7d35ebda9f19854e388206910feb2d39886a4bdb1235b8a78a8d1e23e825"
+      "sourceHash": "91b416bbfb8a2428e62fbf99573e390a5534dbe494bf94efc65d364bd17d3842"
     },
     "journeys/set-up-departments-and-job-titles.ts": {
       "name": "set up departments and job titles",
@@ -2468,7 +2798,7 @@
       "starts": "a company",
       "steps": [
         {
-          "title": "Ada adds Engineering",
+          "title": "Ada adds a department",
           "call": {
             "actor": "ada",
             "operation": "department.create",
@@ -2553,7 +2883,7 @@
           ]
         },
         {
-          "title": "Ada can't add a second Engineering",
+          "title": "Ada can't add a second department of the same name",
           "call": {
             "actor": "ada",
             "operation": "department.create",
@@ -2615,7 +2945,7 @@
           ]
         },
         {
-          "title": "Ada reads Engineering back",
+          "title": "Ada reads the department back",
           "call": {
             "actor": "ada",
             "operation": "department.get",
@@ -2648,7 +2978,7 @@
           ]
         },
         {
-          "title": "Ada adds the job title Engineer",
+          "title": "Ada adds a job title",
           "call": {
             "actor": "ada",
             "operation": "designation.create",
@@ -2708,7 +3038,7 @@
           ]
         },
         {
-          "title": "Ada can't add Engineer twice",
+          "title": "Ada can't add the same job title twice",
           "call": {
             "actor": "ada",
             "operation": "designation.create",
@@ -2761,7 +3091,7 @@
           ]
         },
         {
-          "title": "Ada reads Engineer back",
+          "title": "Ada reads the job title back",
           "call": {
             "actor": "ada",
             "operation": "designation.get",
@@ -2814,7 +3144,7 @@
           ]
         },
         {
-          "title": "Bo's company may have its own Engineering, because names are unique within a company",
+          "title": "Bo's company may have a department of that name too, because names are unique within a company",
           "call": {
             "actor": "bo",
             "operation": "department.create",
@@ -2849,7 +3179,7 @@
           ]
         }
       ],
-      "sourceHash": "67e699469cdd773674fc06e4b96081c078c988a24ca17c32ef7fe73fcc195dca"
+      "sourceHash": "9e8a362867f55a5948c773e3eb18f9ac2e35110bcbb6b47d343d7fe0e997db78"
     }
   },
   "startingWorlds": {
@@ -2986,7 +3316,7 @@
           "kind": "signed-in"
         }
       },
-      "sourceHash": "8e4529bba4cd93830280f6293a4f33690ae689d47d9b4bf33687af5aab0aef60",
+      "sourceHash": "26355d32920d0b48cdf6b67e49411f2668a126b04b3e49124c3945e2e78dea0b",
       "makes": [
         {
           "actor": "ada",
@@ -3005,7 +3335,7 @@
                 "person"
               ]
             },
-            "firstName": "Olga",
+            "firstName": "Olga Petrova",
             "gender": "Female",
             "dateOfBirth": "1994-03-17",
             "dateOfJoining": "2026-01-05",
@@ -3092,6 +3422,26 @@
         "code": "AR-002",
         "severity": "ticket",
         "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:CO-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "CO-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/company/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:CO-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "CO-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/company/errors.ts"
       }
     },
     {
@@ -4017,6 +4367,16 @@
         "journey": "another company's job title is refused",
         "severity": "page",
         "owner": "journeys/another-companys-job-title-is-refused.ts"
+      }
+    },
+    {
+      "id": "verdict:companies are kept apart:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "companies are kept apart",
+        "severity": "page",
+        "owner": "journeys/companies-are-kept-apart.ts"
       }
     },
     {

@@ -17,16 +17,16 @@ export default Blueprint.journey("another company's job title is refused", {
       expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
     ),
     s.step(
-      "Bo adds the job title Clerk to it",
+      "Bo adds a job title to it",
       s.bo.run(createDesignation, { company: s.last.company, designationName: "Clerk" }),
       expect((a) => a.designation).toMatch(/^dsg_[0-9a-z]+$/),
     ),
     s.step(
-      "Ada can't make Olga a clerk under Bo's title",
+      "Ada can't give Olga Bo's job title",
       s.ada.run(hire, {
         company: s.world.company,
         person: s.olga.person,
-        firstName: "Olga",
+        firstName: "Olga Petrova",
         gender: "Female",
         dateOfBirth: "1994-03-17",
         dateOfJoining: "2026-01-05",

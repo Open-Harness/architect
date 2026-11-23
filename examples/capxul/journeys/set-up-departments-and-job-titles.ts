@@ -20,7 +20,7 @@ export default Blueprint.journey("set up departments and job titles", {
   starts: "a company",
   steps: (s) => [
     s.step(
-      "Ada adds Engineering",
+      "Ada adds a department",
       s.ada.run(createDepartment, { company: s.world.company, departmentName: "Engineering" }),
       expect((a) => a.department).toMatch(/^dep_[0-9a-z]+$/),
       emits(DepartmentCreated, { department: s.last.department, company: s.world.company }),
@@ -34,7 +34,7 @@ export default Blueprint.journey("set up departments and job titles", {
       noEvents(),
     ),
     s.step(
-      "Ada can't add a second Engineering",
+      "Ada can't add a second department of the same name",
       s.ada.run(createDepartment, { company: s.world.company, departmentName: "Engineering" }),
       refuses(DepartmentNameTaken, { departmentName: "Engineering" }),
       noEvents(),
@@ -47,13 +47,13 @@ export default Blueprint.journey("set up departments and job titles", {
       spans({ absent: ["department.create", "department.create.insert"] }),
     ),
     s.step(
-      "Ada reads Engineering back",
+      "Ada reads the department back",
       s.ada.run(getDepartment, { id: s.last.department }),
       expect((a) => [a.company, a.departmentName, a.state]).toEqual([s.world.company, "Engineering", "active"]),
       noEvents(),
     ),
     s.step(
-      "Ada adds the job title Engineer",
+      "Ada adds a job title",
       s.ada.run(createDesignation, { company: s.world.company, designationName: "Engineer" }),
       expect((a) => a.designation).toMatch(/^dsg_[0-9a-z]+$/),
       emits(DesignationCreated, { designation: s.last.designation, company: s.world.company }),
@@ -61,7 +61,7 @@ export default Blueprint.journey("set up departments and job titles", {
       spans({ present: ["designation.create", "designation.create.insert"] }),
     ),
     s.step(
-      "Ada can't add Engineer twice",
+      "Ada can't add the same job title twice",
       s.ada.run(createDesignation, { company: s.world.company, designationName: "Engineer" }),
       refuses(DesignationNameTaken, { designationName: "Engineer" }),
       noEvents(),
@@ -73,7 +73,7 @@ export default Blueprint.journey("set up departments and job titles", {
       noEvents(),
     ),
     s.step(
-      "Ada reads Engineer back",
+      "Ada reads the job title back",
       s.ada.run(getDesignation, { id: s.last.designation }),
       expect((a) => [a.company, a.designationName, a.state]).toEqual([s.world.company, "Engineer", "active"]),
       noEvents(),
@@ -84,7 +84,7 @@ export default Blueprint.journey("set up departments and job titles", {
       expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
     ),
     s.step(
-      "Bo's company may have its own Engineering, because names are unique within a company",
+      "Bo's company may have a department of that name too, because names are unique within a company",
       s.bo.run(createDepartment, { company: s.last.company, departmentName: "Engineering" }),
       expect((a) => a.department).toMatch(/^dep_[0-9a-z]+$/),
       emits(DepartmentCreated, { department: s.last.department }),
