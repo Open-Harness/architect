@@ -5,7 +5,7 @@ import type { Model, OperationModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
 import { callImports, renderHandlerScaffold, wired } from "#modules/handlers/service.js";
 import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, pascal, storeFileAt, thingFileAt, toRoot } from "#modules/names/service.js";
-import { renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
+import { hasDoors, renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 
 const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
 
@@ -49,6 +49,10 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const mountVar = (mount: string) => `${camel(mount)}Mount`;
   // Each adapter a `service` role names (M2-auth, fork 3): the runtime reads the role against the mount's name, so the server hands it each mount by name.
   const serviced = [...new Set(ops.flatMap((o) => o.allowed.flatMap((a) => ("service" in a && a.service !== undefined ? [a.service] : []))))].filter((m) => model.mounts?.[m]).sort();
+  // Each adapter that receives events has a door at /_in/<mount> (M5-reach-out Q2): its mount, the sources that map its events, and its signing secret's binding.
+  const doored = Object.entries(model.mounts ?? {}).filter(([, m]) => m.door !== undefined).sort(([a], [b]) => a.localeCompare(b));
+  const sourcesOf = (mount: string) => Object.values((model.sources ?? {}) as Record<string, { readonly mount?: string; readonly file: string; readonly export: string }>).filter((s) => s.mount === mount);
+  const sourceAt = (file: string) => (file.startsWith("@") ? file.replace(/\.ts$/, ".js") : `${toRoot("generated/server/main.ts")}${file}`);
   const mountsOption = serviced.length > 0 ? ", mounts" : "";
   const served = (o: OperationModel) => (o.from.kind !== "app" && mounted.includes(o.from.mount) ? `Mount.serving(${mountVar(o.from.mount)}, ${opVar(o)}Handler)` : `${opVar(o)}Handler`);
   // Each declared database store (K3) has a D1 binding of its own, and its own journal and request keys.
@@ -89,7 +93,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `import { HttpApiBuilder } from "effect/http-api";`,
       `import { SqlClient } from "effect/sql";`,
       `import type { Principal } from "${Names.frontDoor}";`,
-      `import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "${Names.pkg("host-cloudflare")}";`,
+      `import { AuthD1, Database, ${doored.length > 0 ? "Inbound, " : ""}JournalD1, StoreD1, Telemetry, toWorld } from "${Names.pkg("host-cloudflare")}";`,
       `import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, Wire, ${ruled.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
       `import { Mcp, type McpResult, type ShownOperation } from "${Names.pkg("language-effect")}";`,
       `import { Api, Errors } from "../api/src/index.ts";`,
@@ -101,6 +105,8 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       callImports(model),
       mounted.map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
       serviced.filter((m) => !mounted.includes(m)).map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
+      doored.filter(([m]) => !mounted.includes(m) && !serviced.includes(m)).map(([m]) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
+      doored.flatMap(([m]) => sourcesOf(m)).map((src) => `import { ${src.export} } from "${sourceAt(src.file)}";`),
       things.map((t) => `import * as ${camel(t.name)}Thing from "${thingFileAt("generated/server/main.ts", t, "thing")}";`),
       ruled.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
       stores.map((s) => `import ${camel(s.name)}Store from "${storeFileAt("generated/server/main.ts", s)}";`),
@@ -118,6 +124,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `const tables = [${things.map((t) => `[thingIn(${camel(t.name)}Thing), "${t.name}"]`).join(", ")}] as const;`,
       ruled.length > 0 ? ["", "/** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */", `const rules = [${ruled.map((t) => `...invariantsIn("${t.name}", ${camel(t.name)}Invariants)`).join(", ")}] as const;`] : [],
       "",
+      doored.length > 0 ? ["/** Each door: the adapter that says how its sender signs, the events the mount includes, the sources that map them, and the binding of its signing secret. */", `const doors = [${doored.map(([m, mm]) => `{ mount: "${m}", adapter: ${mountVar(m)}.plugin, events: ${JSON.stringify(mm.events ?? [])}, sources: [${sourcesOf(m).map((x) => x.export).join(", ")}], secret: "${mm.door!.secret}" }`).join(", ")}];`, ""] : [],
       "const refusals = Wire.refusals(Errors.wire);",
       "const CallApi = Api.middleware(CallTelemetry);",
       "type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth;",
@@ -143,6 +150,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       actors ? "  readonly ACTORS: DurableObjectNamespace;" : [],
       "  /** Better Auth's secret, at least 32 characters: fresh per local world, a named secret per environment. */",
       "  readonly AUTH_SECRET: string;",
+      doored.map(([, mm]) => `  /** The signing secret of a door: set by whoever runs the Worker, never written in a file. */\n  readonly ${mm.door!.secret}?: string;`),
       "  readonly OTLP_URL?: string;",
       "  /** The environment's telemetry sinks beside the collector, as JSON: each one's OTLP endpoints and headers. A secret. */",
       "  readonly OTLP_SINKS?: string;",
@@ -244,6 +252,13 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "        ? Promise.resolve(Response.json({ revision: env.ORTHO_REVISION, sha256: env.ORTHO_BUNDLE_SHA256 }))",
       "        : Promise.resolve(Response.json({ _tag: \"NotAnEnvironment\" }, { status: 404 }));",
       "    }",
+      doored.length > 0
+        ? [
+          "    if (new URL(request.url).pathname.startsWith(\"/_in/\")) {",
+          `      return Telemetry.serve({ url: env.OTLP_URL || undefined, sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT, service: "${name}", handler: (req, context) => Inbound.handle({ doors, db: env.DB, secrets: env as unknown as Record<string, unknown> }, req, context), waitUntil: (p) => ctx.waitUntil(p) }, request);`,
+          "    }",
+        ]
+        : [],
       "    if (portal.owns(new URL(request.url).pathname)) return portal.serve(request, env);",
       "    if (new URL(request.url).pathname.startsWith(\"/api/auth/\")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));",
       "    if (new URL(request.url).pathname.startsWith(\"/.well-known/\")) {",

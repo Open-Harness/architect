@@ -6,7 +6,7 @@ import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
-import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
+import { AuthD1, Database, Inbound, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
 import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, Mount, Principals, Reads, Store, Wire, invariantsIn, thingIn } from "@orthograph/language-effect";
 import { Mcp, type McpResult, type ShownOperation } from "@orthograph/language-effect";
 import { Api, Errors } from "../api/src/index.ts";
@@ -180,6 +180,10 @@ import agentsMount from "../../blueprint/features/agents.ts";
 import ticketsMount from "../../blueprint/features/tickets.ts";
 import promptsMount from "../../blueprint/features/prompts.ts";
 import superagentMount from "../../blueprint/features/superagent.ts";
+import githubMount from "../../blueprint/adapters/github.ts";
+import slackMount from "../../blueprint/adapters/slack.ts";
+import { githubSource } from "@orthograph/intake/blueprint/sources/github.js";
+import { slackSource } from "@orthograph/intake/blueprint/sources/slack.js";
 import * as accountThing from "@orthograph/intake/blueprint/things/account/thing.js";
 import * as agentThing from "@orthograph/agents/blueprint/things/agent/thing.js";
 import * as assignmentThing from "@orthograph/tickets/blueprint/things/assignment/thing.js";
@@ -297,6 +301,9 @@ const tables = [[thingIn(accountThing), "account"], [thingIn(agentThing), "agent
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
 const rules = [...invariantsIn("account", accountInvariants), ...invariantsIn("assignment", assignmentInvariants), ...invariantsIn("subscription", subscriptionInvariants)] as const;
+
+/** Each door: the adapter that says how its sender signs, the events the mount includes, the sources that map them, and the binding of its signing secret. */
+const doors = [{ mount: "github", adapter: githubMount.plugin, events: ["checkRun","issueComment","issues","pullRequest","pullRequestReview","pullRequestReviewComment"], sources: [githubSource], secret: "GITHUB_WEBHOOK_SIGNING" }, { mount: "slack", adapter: slackMount.plugin, events: ["appMention","message"], sources: [slackSource], secret: "SLACK_WEBHOOK_SIGNING" }];
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
@@ -490,6 +497,10 @@ export interface Env {
   readonly ACTORS: DurableObjectNamespace;
   /** Better Auth's secret, at least 32 characters: fresh per local world, a named secret per environment. */
   readonly AUTH_SECRET: string;
+  /** The signing secret of a door: set by whoever runs the Worker, never written in a file. */
+  readonly GITHUB_WEBHOOK_SIGNING?: string;
+  /** The signing secret of a door: set by whoever runs the Worker, never written in a file. */
+  readonly SLACK_WEBHOOK_SIGNING?: string;
   readonly OTLP_URL?: string;
   /** The environment's telemetry sinks beside the collector, as JSON: each one's OTLP endpoints and headers. A secret. */
   readonly OTLP_SINKS?: string;
@@ -594,6 +605,9 @@ export default {
       return env.ORTHO_REVISION && env.ORTHO_BUNDLE_SHA256
         ? Promise.resolve(Response.json({ revision: env.ORTHO_REVISION, sha256: env.ORTHO_BUNDLE_SHA256 }))
         : Promise.resolve(Response.json({ _tag: "NotAnEnvironment" }, { status: 404 }));
+    }
+    if (new URL(request.url).pathname.startsWith("/_in/")) {
+      return Telemetry.serve({ url: env.OTLP_URL || undefined, sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT, service: "superagent", handler: (req, context) => Inbound.handle({ doors, db: env.DB, secrets: env as unknown as Record<string, unknown> }, req, context), waitUntil: (p) => ctx.waitUntil(p) }, request);
     }
     if (portal.owns(new URL(request.url).pathname)) return portal.serve(request, env);
     if (new URL(request.url).pathname.startsWith("/api/auth/")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));

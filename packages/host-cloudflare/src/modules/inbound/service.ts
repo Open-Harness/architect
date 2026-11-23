@@ -21,12 +21,12 @@ const taken = (door: Door, name: string, payload: unknown): Effect.Effect<boolea
   door.sources.length === 0
     ? Effect.succeed(true)
     : Effect.forEach(door.sources, (kind) => {
-        const spec = kind.spec;
+        const spec = kind.spec as { readonly on?: Readonly<Record<string, ((e: unknown, c: unknown) => unknown) | undefined>>; readonly closed?: Readonly<Record<string, ((e: unknown) => unknown) | undefined>> } | undefined;
         const ctx = { config: {}, me: { id: "", login: "" } };
         return Effect.try({
-          try: () => spec?.on?.[name]?.(payload as never, ctx as never) !== undefined || spec?.closed?.[name]?.(payload as never) !== undefined,
+          try: () => spec?.on?.[name]?.(payload, ctx) !== undefined || spec?.closed?.[name]?.(payload) !== undefined,
           catch: () => true,
-        }).pipe(Effect.merge);
+        }).pipe(Effect.catch(() => Effect.succeed(true)));
       }).pipe(Effect.map((each) => each.some(Boolean)));
 
 const deliver = (door: Door, options: InboundOptions, request: Request): Effect.Effect<Response> =>

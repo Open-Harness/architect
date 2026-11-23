@@ -15,6 +15,8 @@
   "sources": {
     "github": {
       "mount": "github",
+      "file": "@orthograph/intake/blueprint/sources/github.ts",
+      "export": "githubSource",
       "events": [
         "checkRun",
         "issueComment",
@@ -41,6 +43,8 @@
     },
     "posthog": {
       "mount": "posthog",
+      "file": "@orthograph/intake/blueprint/sources/posthog.ts",
+      "export": "posthogSource",
       "events": [
         "errorAlert",
         "errorResolved"
@@ -58,6 +62,8 @@
     },
     "slack": {
       "mount": "slack",
+      "file": "@orthograph/intake/blueprint/sources/slack.ts",
+      "export": "slackSource",
       "events": [
         "appMention",
         "message"
@@ -14222,7 +14228,7 @@
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-7m0snMWeKiCn8wUlF10yAbN2CrHOcG93zHd8pljlKVY=",
+      "integrity": "sha256-2yri8C4UvJlbCqpUXz6qFIBbUQkXBav0pO/ElMASG+s=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -14247,7 +14253,10 @@
         "how": "process",
         "what": "a bare git repository served by git http-backend, with a small server for GitHub's REST API over it"
       },
-      "hash": "a604ef12dd24af3b"
+      "door": {
+        "secret": "GITHUB_WEBHOOK_SIGNING"
+      },
+      "hash": "7d9617cd6fb04ff9"
     },
     "intake": {
       "kind": "feature",
@@ -14263,7 +14272,7 @@
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-twlYA045CAL/eqnPP3c3AnxZA/0wulAYPJ+FUEQw04w=",
+      "integrity": "sha256-f4GWwLntJhjpCWQOE37qqkVNMQM3BXVbJeErsxyVOoA=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
@@ -14278,7 +14287,7 @@
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "f9dfcee05f451aa2"
+      "hash": "f0d93648359426f7"
     },
     "prompts": {
       "kind": "feature",
@@ -14294,7 +14303,7 @@
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-f/SZjHrjolrjEeG8/1D43xpqjM2Ime0idefUf24Nptw=",
+      "integrity": "sha256-A81tsrSDlCfTfvb1eoiw4qh6jHWvCskP67AfhTtQtQA=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
@@ -14309,7 +14318,10 @@
         "how": "process",
         "what": "a small server over channel C024BE91L that answers Slack's Web API as Slack does"
       },
-      "hash": "f8de1c8a7f35b19c"
+      "door": {
+        "secret": "SLACK_WEBHOOK_SIGNING"
+      },
+      "hash": "e30078e58778c834"
     },
     "superagent": {
       "kind": "feature",
