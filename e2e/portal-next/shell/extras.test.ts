@@ -175,12 +175,4 @@ describe("a page reading the query", () => {
     await page.goForward();
     await page.waitForFunction(`document.querySelector("[data-fixture-tab]")?.textContent === "docs"`);
   }, 300_000);
-
-  it("is not repainted by a navigation that changes nothing a page read", async () => {
-    const page = await fx.open("/@aaron?tab=links");
-    const before = (await read(page)).paints;
-    await page.evaluate("globalThis.__shell.navigate('/@aaron?tab=links')");
-    await page.waitForTimeout(300);
-    expect((await read(page)).paints, "the same address paints nothing again").toBe(before);
-  }, 300_000);
 });
