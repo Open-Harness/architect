@@ -1,0 +1,349 @@
+{
+  "layout": "none",
+  "home": "home",
+  "pages": [
+    {
+      "name": "access",
+      "path": "/portal/reference/access",
+      "params": [],
+      "description": "Who may call what.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "compare",
+      "path": "/portal/compare",
+      "params": [],
+      "description": "Every environment side by side.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "environment",
+      "path": "/portal/environments/:name",
+      "params": [
+        "name"
+      ],
+      "description": "One declared environment: its summary, its fields and its proof.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "events",
+      "path": "/portal/reference/events",
+      "params": [],
+      "description": "Every event a thing emits.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "home",
+      "path": "/portal",
+      "params": [],
+      "description": "The things as cards in the tree's order, and what each did in the window.",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "journeys",
+      "path": "/portal/journeys",
+      "params": [],
+      "description": "Every declared journey as a sequence of steps.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "machines",
+      "path": "/portal/reference/machines",
+      "params": [],
+      "description": "Every lifecycle.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "monitor",
+      "path": "/portal/monitor",
+      "params": [],
+      "description": "The alerts, issues and objectives the declarations imply.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "operation",
+      "path": "/portal/operations/:name",
+      "params": [
+        "name"
+      ],
+      "description": "One operation, on five tabs: contract, metrics, proof, docs and notes.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": [
+        {
+          "name": "tab-contract",
+          "description": "The contract tab: what the operation takes, answers, refuses and who may call it.",
+          "shows": [],
+          "offers": []
+        },
+        {
+          "name": "tab-metrics",
+          "description": "The metrics tab: the window's tiles, its refusals by code and its calls table.",
+          "shows": [],
+          "offers": []
+        },
+        {
+          "name": "tab-proof",
+          "description": "The proof tab: the verdict per environment.",
+          "shows": [],
+          "offers": []
+        },
+        {
+          "name": "tab-docs",
+          "description": "The docs tab: the generated docs of the operation.",
+          "shows": [],
+          "offers": []
+        },
+        {
+          "name": "tab-notes",
+          "description": "The notes tab: the notes pinned to the operation.",
+          "shows": [],
+          "offers": []
+        }
+      ]
+    },
+    {
+      "name": "plugins",
+      "path": "/portal/plugins",
+      "params": [],
+      "description": "A card per mounted plugin, then the stores and what each runs on.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "refusals",
+      "path": "/portal/reference/refusals",
+      "params": [],
+      "description": "Every refusal code, counted in the window.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "thing",
+      "path": "/portal/things/:name",
+      "params": [
+        "name"
+      ],
+      "description": "One thing: its lifecycle, its operations, its rules, events and errors.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "trace",
+      "path": "/portal/traces/:id",
+      "params": [
+        "id"
+      ],
+      "description": "One call's trace: its structure and timing, never a value.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "values",
+      "path": "/portal/reference/values",
+      "params": [],
+      "description": "Every value a field can take.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    },
+    {
+      "name": "worlds",
+      "path": "/portal/starting-worlds",
+      "params": [],
+      "description": "The starting worlds, and the journeys that start from each.",
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "shows": [],
+      "offers": [],
+      "components": []
+    }
+  ],
+  "groups": [
+    {
+      "title": "things",
+      "folded": false,
+      "pages": [
+        {
+          "page": "thing",
+          "path": "/portal/things/:name"
+        }
+      ]
+    },
+    {
+      "title": "proof",
+      "folded": false,
+      "pages": [
+        {
+          "page": "environment",
+          "path": "/portal/environments/:name"
+        },
+        {
+          "page": "compare",
+          "path": "/portal/compare"
+        },
+        {
+          "page": "journeys",
+          "path": "/portal/journeys"
+        },
+        {
+          "page": "worlds",
+          "path": "/portal/starting-worlds"
+        }
+      ]
+    },
+    {
+      "title": "reference",
+      "folded": false,
+      "pages": [
+        {
+          "page": "access",
+          "path": "/portal/reference/access"
+        },
+        {
+          "page": "refusals",
+          "path": "/portal/reference/refusals"
+        },
+        {
+          "page": "events",
+          "path": "/portal/reference/events"
+        },
+        {
+          "page": "values",
+          "path": "/portal/reference/values"
+        },
+        {
+          "page": "machines",
+          "path": "/portal/reference/machines"
+        }
+      ]
+    },
+    {
+      "title": "plugins",
+      "folded": false,
+      "pages": [
+        {
+          "page": "plugins",
+          "path": "/portal/plugins"
+        }
+      ]
+    },
+    {
+      "title": "monitor",
+      "folded": false,
+      "pages": [
+        {
+          "page": "monitor",
+          "path": "/portal/monitor"
+        }
+      ]
+    }
+  ]
+}

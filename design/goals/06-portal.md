@@ -5,11 +5,11 @@ milestone: "Goal 6: the new portal"
 release: beta
 branch: goal/portal
 base: goal/stage-1
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: claude      # claude | amp | codex | opencode, set by the lead when it starts
-  model: claude-opus-5-5 # the model id it runs on
-  since: 2026-11-22    # the date it started
+  harness: null        # claude | amp | codex | opencode, set by the lead when it starts
+  model: null          # the model id it runs on
+  since: null          # the date it started
 done_check: nx run e2e:portal-next
 owns:
   - packages/theme/
@@ -312,6 +312,8 @@ thing.
 |---|---|---|
 | 12 | **Cutover (ST1.27)**, after the cut-off (the protocol, point 5). Check 15 rewritten first by a checks author (ST1.28); then one pull request into `goal/stage-1` that serves `portal-next` at `/portal`, deletes the old client, `@orthograph/portal-ui`, HeroUI and the licence machinery (`pro.mjs`, `sheets.mjs`, the CI step and cache, `ortho/no-pro-outside-portal-ui`), folds `e2e:portal-next` into the normal portal checks, and rewrites every live doc line that still names `portal-ui` or HeroUI as current (`git grep -n "portal-ui\|HeroUI"` outside `design/decisions/`, `design/history/` and `design/process/`: the `portal-design` skill, `design/history/retired-2026-11-23/walkthrough/journey.md`, `design/ui/heroui-inventory.md` section 8, `portal.md`, `packages.md`), with a Supersedes list. It merges after the freeze, with Goal 3's lead's yes and a 🔍 pass | every portal check passes on the one client; check 15 passes; the portal builds with `HEROUI_AUTH_TOKEN` unset |
 
+**After cutover: M1.50, the one Graph** (`design/decisions/M1-50-after-cutover.md`, Goal 3's call of 22 November 2026). The one Graph for machines, the map and the worlds is this goal's, built in `@orthograph/shell` once the old client is gone. Check 40 (`e2e/m1/40-m1-50-graph.test.ts`) moves to the shell first, rewritten by a checks author. Goal 3 offered to build the generator half (elk layout into the portal's data); this goal asks for it in an Ask issue if it wants it.
+
 ## Decision IDs
 
 A decision this goal makes is named `MAP-<slug>` or `PORTAL-<slug>` (K32), never a number, so no allocator is
@@ -323,6 +325,9 @@ started, since it crosses goals.
 | K31 | `design/decisions/K31-app-map.md` | the 📐 designer, before this goal started |
 | MAP-theme | `design/decisions/MAP-theme.md` | slice 1, the theme's values, schemes and pin |
 | MAP-screens | `design/decisions/MAP-screens.md` | Aaron, 23 November 2026: the Map tab, the page tree, the derived map marked, the "As an agent" drawer |
+| MAP-language | `design/decisions/MAP-language.md` | slice 3, the map language, the compiler's `app` module and its refusals |
+| MAP-projection | `design/decisions/MAP-projection.md` | slice 4, `generated/app/` and the derived default |
+| MAP-shell | `design/decisions/MAP-shell.md` | slice 5, the shell: router, layouts, navigation, palette, 404, the query |
 
 ## The done check
 
@@ -358,7 +363,15 @@ the map language and the shell being new. Part 2: about 18 to 26 hours, six page
 
 ## Where it stands
 
-22 November 2026. The theme is built, one shared look on UI SDK taken from today's portal, and it is on its way
-into stage 1 on its own, for the UI layer. The map's checks have landed: a hundred portal checks and forty-four grid
-cells are owed by the new portal, all red so far, and the list can only shrink. The shell's checks land with this.
-The map language, the app projection and the shell are built and reviewed, and land next.
+Parked on 23 November 2026, as K42 section 7 says. Nobody leads this goal now; its open slices are items on the board.
+
+**In stage 1.** The theme (slice 1). The checks (slice 2), the map language, the app projection and the shell (slices 3 to 5) landed today in one pull request (#697): a blueprint can now declare its pages, layouts and navigation, and every app without a map generates exactly what it did before, byte for byte. A route parameter can't be money, since an address carries an id or text, never an amount and its asset.
+
+**In this goal's branch, `goal/portal`, only.** The new portal's frame (slice 6, `packages/portal-next`), and with it 52 lines off the parity list: stage 1's list still holds all 100 portal checks, this branch's 48, and those 48 are what slices 7 to 11 owe. Also only here: the parity ratchet's self-test, which now runs the same locally and in CI. The grid's page reader no longer reads text out of a script or a style, which had made seven cells falsely green.
+
+**Left for the board.**
+- Slices 7 to 12 as the table above gives them, each starting from `goal/portal`. Slice 7's Map tab checks are written and wait as a draft (#708). Aaron's screen answers stand for them (MAP-screens): the map in its own tab beside the things, the pages as a tree, the worked-out map marked when nobody declared one, and an "As an agent" drawer on every page.
+- Goal 17's ask (#596): derived reads are `Blueprint.read` with `derive:`, shown like any read. Not yet answered; it belongs to whoever takes slice 7 or 11.
+- The canon's model page still says the model has thirteen parts; it has fourteen with `app`. Filed as a snag for Goal 18 (#738).
+
+Nothing runs and nothing was spent on cloud.
