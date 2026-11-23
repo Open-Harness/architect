@@ -107,7 +107,7 @@ thread's worktree stay until that thread's worktree is cleaned.
 ## Decision IDs
 
 Next free in `design/handoff.md`; reserved and in flight: K28 (releases, merged), K29 (UI layer, #272), K30 (the model and
-the map, merged), K31 (the app map, #285). After #285, the next free K is K32. Slice IDs given out on 21 November: M1.51 (the npm preview, in `milestones.md`);
+the map, merged), K31 (the app map, #285). K32 (goals coordinate themselves) and K34 (goals by needs, the goal map) are merged, and K33 (GitHub-native work, #301) is reserved; K35 (Goals 8 to 16 briefed) is on `main`; the next free K is K36. Slice IDs given out on 21 November: M1.51 (the npm preview, in `milestones.md`);
 ST1.25 (the web projection), ST1.26 (its checks), ST1.27 (retire the old portal client at cutover) and ST1.28 (check 15
 rewritten), held only in this file until #272 writes them into `milestones.md`.
 

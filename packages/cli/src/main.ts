@@ -18,6 +18,7 @@ import { Ship } from "#modules/ship/service.js";
 import { Brief } from "#modules/brief/service.js";
 import { TelemetryCommand } from "#modules/telemetry/service.js";
 import { WatchCommand } from "#modules/watch/service.js";
+import { proveAddress, stagingLive } from "#modules/staging/service.js";
 import { Compiler, nodeSource } from "@orthograph/compiler";
 
 const model = Command.make(
@@ -65,7 +66,7 @@ const attestation = (root: string) =>
 const prove = Command.make(
   "prove",
   {
-    env: Flag.Literals("env", ["local", "test"]).pipe(Flag.withDefault("local")),
+    env: Flag.Literals("env", ["local", "test", "staging"]).pipe(Flag.withDefault("local")),
     root: Flag.String("root").pipe(Flag.withDefault(process.cwd())),
     port: Flag.Int("port").pipe(Flag.withDefault(0)),
     empty: Flag.Boolean("empty").pipe(Flag.withDefault(false)),
@@ -75,13 +76,27 @@ const prove = Command.make(
     // The run as data (per journey, per step: verdict, expected, got, handler and declaration files; totals; timings).
     json: Flag.Boolean("json").pipe(Flag.withDefault(false)),
     report: Flag.String("report").pipe(Flag.optional),
+    // The run whose deployed Worker is judged (`--env staging` only): the address is formed from it and the account's subdomain.
+    run: Flag.String("run").pipe(Flag.optional),
   },
-  ({ env, root, port, empty, only, changed, json, report }) => {
+  ({ env, root, port, empty, only, changed, json, report, run }) => {
+    if (env !== "staging" && Option.isSome(run)) return fail("--run requires --env staging", 2);
+    if (env === "staging" && (empty || changed)) return fail(`${empty ? "--empty" : "--changed"} can't be used with --env staging: it judges the deployed Worker, not a world of its own`, 2);
     if (env === "test" && (empty || Option.isSome(only))) return fail("--empty and --only require --env local", 2);
     if (env === "test" && changed) return fail("--changed requires --env local", 2);
     if (changed && (empty || Option.isSome(only))) return fail("--changed can't be combined with --empty or --only", 2);
     if (env === "test" && (json || Option.isSome(report))) return fail("--json and --report require --env local", 2);
-    const proved = env === "test"
+    const proved = env === "staging"
+      ? proveAddress({ root, run: Option.getOrUndefined(run), subdomain: process.env[Names.variable("STAGING_SUBDOMAIN")], origin: process.env[Names.variable("STAGING_ORIGIN")] }).pipe(
+          Effect.mapError((e) => e.message),
+          Effect.flatMap(({ url, label, owns }) => Prove.staged({ root, url, label, ...(process.env["CLOUDFLARE_API_TOKEN"] && process.env["CLOUDFLARE_ACCOUNT_ID"] ? { d1: { token: process.env["CLOUDFLARE_API_TOKEN"], account: process.env["CLOUDFLARE_ACCOUNT_ID"], owns } } : {}), ...(Option.isSome(only) ? { only: only.value } : {}) })),
+          Effect.tap((proved) => Effect.sync(() => {
+            if (Option.isSome(report)) writeFileSync(report.value, JSON.stringify(proved.structured, null, 2) + "\n");
+            process.stdout.write(json ? JSON.stringify(proved.structured, null, 2) + "\n" : proved.lines.join("\n") + "\n");
+            process.exitCode = proved.passed ? 0 : 1;
+          })),
+        )
+      : env === "test"
       ? attestation(root).pipe(
           Effect.flatMap(({ token, logbook }) => {
             const lifetime = process.env[Names.variable("LIFETIME")];
@@ -296,6 +311,18 @@ const build = Command.make(
     ),
 );
 
+// `ortho env up <env> --plan|--run <id>` and `ortho env destroy <env> --run <id>`: an environment in the cloud (M7.03, M7.04). `--plan` prints what would be made and touches nothing.
+// The Cloudflare credentials are read here and nowhere else.
+const cloud = (verb: "up" | "destroy", env: string, plan: boolean, run: Option.Option<string>, root: string) => {
+  const options = { root, environment: env, run: Option.getOrUndefined(run), credentials: { token: process.env["CLOUDFLARE_API_TOKEN"], account: process.env["CLOUDFLARE_ACCOUNT_ID"] } };
+  const api = stagingLive((millis) => Effect.sleep(millis), process.env);
+  return (plan ? api.plan(options) : verb === "up" ? api.up(options) : api.destroy(options)).pipe(
+    Effect.tap((said) => (said.out ? Effect.sync(() => process.stdout.write(said.out)) : Effect.void)),
+    Effect.tap((said) => (said.err ? Console.error(said.err.trimEnd()) : Effect.void)),
+    Effect.tap((said) => Effect.sync(() => (process.exitCode = said.exit))),
+  );
+};
+
 // `ortho env up|down|status <env>`: a long-lived local environment (D3 #4).
 const environment = (verb: "up" | "down" | "status") =>
   Command.make(
@@ -304,9 +331,13 @@ const environment = (verb: "up" | "down" | "status") =>
       env: Argument.String("env"),
       port: Flag.optional(Flag.Int("port")),
       revision: Flag.optional(Flag.String("revision")),
+      plan: Flag.Boolean("plan").pipe(Flag.withDefault(false)),
+      run: Flag.optional(Flag.String("run")),
       root: Flag.String("root").pipe(Flag.withDefault(process.cwd())),
     },
-    ({ env, port, revision, root }) => {
+    ({ env, port, revision, plan, run, root }) => {
+      // `up` with `--plan` or `--run` is the cloud's (the same plan, printed or made); with neither it stays the long-lived local environment.
+      if (verb === "up" && (plan || Option.isSome(run))) return cloud("up", env, plan, run, root);
       const name = { root, name: env };
       // The logbook trusts one issuer, a repository, refs and workflows: from the environment, like a prove's token (D3 #33).
       const list = (text: string | undefined) => (text ?? "").split(",").map((s) => s.trim()).filter((s) => s !== "");
@@ -328,7 +359,12 @@ const environment = (verb: "up" | "down" | "status") =>
       return said.pipe(Effect.flatMap((lines) => Console.log(lines.join("\n"))), Effect.catchTag("EnvironmentFailed", (e) => fail(e.message, 2)));
     },
   );
-const env = Command.make("env").pipe(Command.withSubcommands([environment("up"), environment("down"), environment("status")]));
+const destroyEnvironment = Command.make(
+  "destroy",
+  { env: Argument.String("env"), plan: Flag.Boolean("plan").pipe(Flag.withDefault(false)), run: Flag.optional(Flag.String("run")), root: Flag.String("root").pipe(Flag.withDefault(process.cwd())) },
+  ({ env, plan, run, root }) => cloud("destroy", env, plan, run, root),
+);
+const env = Command.make("env").pipe(Command.withSubcommands([environment("up"), environment("down"), environment("status"), destroyEnvironment]));
 
 // `ortho worlds reap`: destroys every world of the test environment that is past its lifetime (D3 #7, #50).
 const reap = Command.make(

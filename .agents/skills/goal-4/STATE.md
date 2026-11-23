@@ -1,45 +1,56 @@
 # Goal 4: state
 
-Updated 21 November 2026 by the Goal 4 lead. Check against GitHub before acting (the skill's resume step 6).
+Updated 22 November 2026 by the Goal 4 lead. Check against GitHub before acting (the skill's resume step 6).
 
 ## Hand-over in one line
 
-Lead Goal 4: read this file, then the goal-4 skill's "Resume in this order". Next action: merge [#287](https://github.com/AaronAbuUsama/architect/pull/287) (money) when
-CI is green, then get slice 3's checks (with money's cases) through a hostile pass and a 🔍, then build slice 3.
+Lead Goal 4: read this file, then the goal-4 skill's "Resume in this order". Next action: merge [#331](https://github.com/Open-Harness/orthograph/pull/331) (slice 3's
+build) once its merge of `goal/stage-1` and the Codex fix are green and a 🔍 has passed the merge. Then take the relayer
+and follower checks and the ABI codec checks through a 🔍 and into builders.
 
 ## Where it stands
 
-- `goal/on-chain` has stage 1 merged in at `37778735` ([#273](https://github.com/AaronAbuUsama/architect/pull/273), merged as `51c0bd87`), the snag log, and the branch's
-  protection recorded.
-- The goal-4 skill and this file: **merged** 21 November 2026 ([#284](https://github.com/AaronAbuUsama/architect/pull/284), `ef768ce1`). Later notes ride the next pull request (CI-drafts).
-- Slice 0 (K27): done before the goal.
-- Slice 1 (the language and host seam): **held** until Goal 3's sign-in extraction (M2.05) merges on `goal/stage-1`
-  (K28; both reshape `host-cloudflare`). Not merged as of this update. Check at each slice start: M2.05's row in
-  `git show origin/goal/stage-1:design/milestones.md` is ticked ✅, or `gh pr list --base goal/stage-1 --state merged --search M2.05`.
-- Slice 1b (the chain decision, M6.01): `design/decisions/M6-chain.md`, **merged** 21 November 2026 ([#275](https://github.com/AaronAbuUsama/architect/pull/275), `dee1926b`).
-- Slice 2 (M6.02): the budgets blueprint and seven journeys, **merged** 21 November 2026 ([#276](https://github.com/AaronAbuUsama/architect/pull/276), `b776818d`); the `e2e:on-chain` done check, **merged** 21 November 2026 ([#279](https://github.com/AaronAbuUsama/architect/pull/279), `607d62cf`);
-  `e2e-on-chain` is now a required check on `goal/on-chain`. Slice 2 is done.
-- Slice 3 (M6.10, the chain store and values): checks written, [#283](https://github.com/AaronAbuUsama/architect/pull/283), aligned to M6-chain item 11 (its lock-wire file moved to slice 4); a hostile pass was running (a subagent of the old lead; if its result isn't on #283, run it again), then
-  a 🔍 and a framework builder. Money's cases, two hostile passes' fixes and proof 2 (a stand-in ortho passing every 04 file) are in; the 🔍 passed on its second round (head `763b6d1c`), and #283 is ready, in CI. A framework builder (a subagent of this lead, its own worktree) builds on `goal-4/m610-build` from the checks plus M6-money, and opens a draft. Merge [#287](https://github.com/AaronAbuUsama/architect/pull/287) before #283 (item 11 cites M6-money). Tell slice 3's builder: `02-seam-byte-identical` needs acme's and Plugged In's `blueprint/refusals.lock` committed.
-- Slices 4 to 12: not started.
+- **Landed on `goal/on-chain`:**
+  - slice 0, 1b ([#275](https://github.com/Open-Harness/orthograph/pull/275)) and 2 ([#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279));
+  - M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287), `cbd0bbf0`);
+  - slice 3's checks ([#283](https://github.com/Open-Harness/orthograph/pull/283), `224af530`);
+  - `goal/stage-1` with CI-drafts, K32, K33 and Effect 4.1.4 ([#303](https://github.com/Open-Harness/orthograph/pull/303));
+  - the two lock calls in M6-chain item 4 ([#332](https://github.com/Open-Harness/orthograph/pull/332)).
+- **Slice 3, build:** [#331](https://github.com/Open-Harness/orthograph/pull/331), ready.
+  - Three 🔍 rounds passed (round 3 at `02753816`).
+  - It then sat a day BLOCKED: `goal/stage-1` had moved 113 commits, and an unanswered Codex finding remained (a
+    unique invariant whose refusal field is `money.of(...)` crashes `sameValue` on a cyclic `JSON.stringify`).
+  - The builder (a subagent of this lead, worktree `agent-acbbee5078f80ab9d`) is merging `goal/stage-1` in. Six
+    conflicts are expected: AGENTS.md, three canon pages, `describe.ts`, `model/types.ts`.
+  - The builder is also fixing the Codex finding with a test. The merge needs a 🔍 before #331 merges.
+- **Order changed under K38 (22 November):**
+  - Slices 9 and 10 (relayer, follower) come straight after 3, before 4 to 8.
+  - M6.09 lands early into `goal/stage-1` for Goal 9 (Ask #442, answered).
+  - Slice 3b, `chain-evm`'s ABI codec and `ChainPort.read`, is for Goal 12 (Ask #471, answered: its shape as asked).
+    It is cut from `goal/stage-1` and lands there directly.
+  - The follower calls Goal 11's `Inbox.accept` per `Confirmed` and per `Corrected` with `wasConfirmed: true`, never
+    for an unconfirmed take-back, or a `FollowerSink` port until `Inbox` is on `goal/stage-1` (Ask #481, answered;
+    narrowed by M6-chain item 12).
+- **Checks authors running (subagents):**
+  - `goal-4/abi-codec-check`, off `goal/stage-1`;
+  - `goal-4/m607-m609-check`, off `goal/on-chain`.
+- **Slice 1:** held. M2.05 is not ✅ on `goal/stage-1` as of 22 November.
+- **Slices 4 to 8, 11 and 12:** not started. Slice 4's checks author starts when a builder slot frees (at most three
+  builders).
+- **Closed issues:** #333, #335 and #336 (slices 0, 1b and 2), #300 (K32 adopted), and #349 (Goal 3's OTLP status
+  question: no Goal 4 check asserts a span status).
 
 ## Open pull requests, in merge order
 
 | PR | Branch | What | Waiting on |
 |---|---|---|---|
-| [#303](https://github.com/AaronAbuUsama/architect/pull/303) | `goal-4/main-merge` | `goal/stage-1` merged in (with CI-drafts); K32 and K33 | 🔍, then ready |
-| [#287](https://github.com/AaronAbuUsama/architect/pull/287) | `goal-4/m6-money` | the money decision | CI (🔍 passed) |
-| [#283](https://github.com/AaronAbuUsama/architect/pull/283) | `goal-4/m610-check` | slice 3's checks | CI (🔍 passed); merge after [#287](https://github.com/AaronAbuUsama/architect/pull/287) |
+| [#331](https://github.com/Open-Harness/orthograph/pull/331) | `goal-4/m610-build` | slice 3's build | the `goal/stage-1` merge and Codex fix, a 🔍 of the merge, CI |
+| this one | `goal-4/k38-order` | brief and state: K38 order, Asks answered | 🔍, CI |
+| (draft, opening) | `goal-4/abi-codec-check` | slice 3b's checks, into `goal/stage-1` | the author, then a 🔍 |
+| (draft, opening) | `goal-4/m607-m609-check` | slices 9 and 10's checks | the author, then a hostile pass and a 🔍 |
 
-`e2e-on-chain` is required on `goal/on-chain` since 21 November 2026 (`design/decisions/CI-branch-protection.md`).
-
-**`goal/stage-1` merged in** by [#303](https://github.com/AaronAbuUsama/architect/pull/303), which carries Goal 3's own merge of `main` (#277) and with it
-CI-drafts (#293); the draft guard added to `e2e-on-chain`; the brief adopting K32 and K33 (front matter, "Where it
-stands", owned paths). **Effect 4.1.4** came the right way: Goal 3 pinned every package to it on `goal/stage-1` (#302, `0a359317`) and
-regenerated acme and Plugged In; #303 merges that and moves `examples/budgets` to 4.1.4 with it. (Bumping it from
-`main` first would have moved Goal 3's integrity hashes on this branch alone, which `02-seam-byte-identical` refuses.) When
-[#287](https://github.com/AaronAbuUsama/architect/pull/287) merges, its own row puts `M6-money` in the brief's decision list. Slice 1b doesn't parse as a slice number in K33's
-`readSlice` (digits only), so the sync skips it; asked on [#301](https://github.com/AaronAbuUsama/architect/pull/301#issuecomment-7061949704) to accept `\d+[a-z]?`. Goal 4 keeps the name `1b`.
+`goal/on-chain` and `goal/stage-1` require their CI jobs and every thread resolved. Neither requires the branch to be
+up to date (`strict=false`).
 
 ## Waiting on Aaron
 
@@ -109,6 +120,8 @@ issue in the milestone closed or parked, before the goal lands.
 - A reviewer checked out a branch in the lead's worktree and left a detached head.
 - The kanban snapshot carried a superseded phrase and failed CI's supersede check on the first push.
 - CI is slow (45 to 60 minutes a pull request), so a stacked chain of four takes hours to land.
+- #331 sat a day ready and BLOCKED (21 to 22 November): an open Codex thread, and `goal/stage-1` moving 113 commits
+  meanwhile. The conductor had to nudge.
 
 ## Lessons for the next lead
 
@@ -117,3 +130,7 @@ issue in the milestone closed or parked, before the goal lands.
 - Answer an author's questions in the decision itself, as a numbered item, not only in a message.
 - Turn off auto-archive on PR close at the start.
 - Keep this file current in the same pull request as every merge.
+- A ready pull request with everything green can still sit BLOCKED on one unanswered Codex thread. Read the
+  unresolved threads, not only the checks, before leaving a pull request to CI.
+- The lead's session does not get CI events for a pull request it didn't bind. Check every open pull request at each
+  wake, or a ready one can sit for a day.

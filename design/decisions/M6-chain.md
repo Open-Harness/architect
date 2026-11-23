@@ -377,6 +377,28 @@ accepted as written. The slices that build each (S-01 to S-10 in `04-snags.md`) 
   store, since a minted id is the prefix, `_` and 16 characters (`language-effect/src/modules/ids/service.ts:8`) and must
   fit 32 bytes.
 
+### 12. The relayer and the follower (slices 9 and 10's checks, #513; 22 November 2026)
+
+The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m6-07-relayer.test.ts` and
+`11-m6-09-follower.test.ts`: two Durable Object classes, `Relayer` and `Follower`, exported from
+`@orthograph/host-cloudflare`. What follows settles what that seam left open.
+
+- **The relayer replaces a dropped transaction on its own.** Its alarm notices a submission the node no longer holds
+  and resends it at the same nonce with a higher fee. `reconcile` does the same work on call, but a relayer that only
+  replaces when `reconcile` is called is wrong. Each actor's alarm runs at the `pollIntervalMs` its `configure` is given;
+  an actor configured with none sets no alarm, so a check that drives `poll` or `reconcile` by hand is never raced.
+- **The relayer's answers carry at least the keys the checks name.** An answer may carry more, so the checks match the
+  keys they need, not the whole object. The relayer's key never appears in an answer, a log or storage.
+- **The follower hands on only what it confirmed.** The sink (`FOLLOWER_SINK`, `Inbox.accept`'s shape, Ask #481) gets
+  each `Confirmed` event, and a `Corrected { wasConfirmed: true }` when a confirmed event is taken back. When an event
+  is taken back before it was confirmed, the follower drops it: the sink never saw it, so there is nothing to correct.
+  K7 Q6 keeps `wasConfirmed` in the event for any later reader of unconfirmed events, such as the portal's live view.
+  This narrows Ask #481's "once per `Corrected`" to the corrections of confirmed events; M6.09's follower hands on
+  nothing else.
+- **The checkpoint moves only after the sink has taken the change.** If the sink answers with an error, the follower
+  keeps its checkpoint and hands the same change on again at its next poll. A replay after a restart may call the sink
+  again with an id it has taken; `seen` is harmless, and what may never happen twice is `accepted` for one id.
+
 ## The budgets example, as the journey author will write it
 
 A sketch for slice 2, not its words: the journey author owns `examples/budgets/blueprint/`.
@@ -452,3 +474,5 @@ account until then.
 - design/decisions/K7-chain-languages.md (Q3, decided): "For a vote the intent is `(proposal, voter)`." → "The intent of a chain call is `(contract, by, nonce)` (M6-chain item 3)."
 - design/milestones.md (M2.17): "a `who` field that holds no person's id or email" → "a `who` field that holds no person's id, email or, on a chain store, account (M6-chain item 5)"
 - design/decisions/K7-chain-languages.md (Q5, decided item 1): "A rename of a published code is refused." → "A renamed error takes a new code and the old one is retired (M6-chain item 4)."
+- .agents/skills/goal-4/STATE.md (decisions in force): "The follower calls Goal 11's `Inbox.accept` per `Confirmed` and `Corrected`" → "The follower calls Goal 11's `Inbox.accept` per `Confirmed` and per `Corrected` with `wasConfirmed: true`, never for an unconfirmed take-back (M6-chain item 12)"
+- design/goals/04-on-chain.md (Part 2): "The follower's events go to Goal 11's `Inbox.accept`" → "The follower hands Goal 11's `Inbox.accept` only what it confirmed: `Confirmed`, and `Corrected` with `wasConfirmed: true` (M6-chain item 12)"
