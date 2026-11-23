@@ -490,6 +490,7 @@ expect "watch: waits while the run is in progress, then reads the checks" 0 watc
 MAXS=0 expect "watch: a required check still missing at the deadline is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"}]' "$req"
 expect "watch: a required check missing after the run completed is waited on (a draft run on the same commit)" 0 watch_late "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"SUCCESS"}]' "$req"
 expect "watch: a merged pull request with no ci run cannot be watched" 2 watch '{"state":"MERGED","isDraft":false,"headRefOid":"abc","baseRefName":"main"}' '[]' '[]' "$req"
+expect "watch: a failed required check is reported at once, while another is still missing" 1 watch "$open" "$done_ok" '[{"name":"check","state":"FAILURE"}]' "$req"
 expect "watch: a cancelled required check is a failure" 1 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED"}]' "$req"
 expect "watch: the newest row decides when an older run listed the same name" 0 watch "$open" "$done_ok" '[{"name":"check","state":"SUCCESS"},{"name":"e2e-m1","state":"CANCELLED","startedAt":"2026-11-23T01:00:00Z"},{"name":"e2e-m1","state":"SUCCESS","startedAt":"2026-11-23T02:00:00Z"}]' "$req"
 expect "watch: an unprotected base goes by the run's conclusion (success)" 0 watch "$open" "$done_ok" '[]' ""

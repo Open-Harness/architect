@@ -57,7 +57,9 @@ while :; do
       printf '%s\t%s\n' "$name" "$(jq -r --arg n "$name" '[.[] | select(.name == $n)] | if length == 0 then "MISSING" else (sort_by(.startedAt // "") | last | .state) end' <<<"$checks")"
     done < <(jq -r '.contexts[]' <<<"$required"))
     unfinished=$(awk -F'\t' '$2 == "MISSING" || $2 == "PENDING" || $2 == "QUEUED" || $2 == "IN_PROGRESS" || $2 == "WAITING" { n++ } END { print n + 0 }' <<<"$report")
-    if [ "$unfinished" = 0 ] || [ "$SECONDS" -ge "$max" ]; then
+    # A required check that already finished red is reported at once, whatever else is still missing.
+    failed=$(awk -F'\t' '$2 == "FAILURE" || $2 == "CANCELLED" || $2 == "TIMED_OUT" || $2 == "ERROR" || $2 == "STARTUP_FAILURE" || $2 == "ACTION_REQUIRED" { n++ } END { print n + 0 }' <<<"$report")
+    if [ "$unfinished" = 0 ] || [ "$failed" != 0 ] || [ "$SECONDS" -ge "$max" ]; then
       echo "$report"
       awk -F'\t' '$2 != "SUCCESS" && $2 != "SKIPPED" && $2 != "NEUTRAL" { bad = 1 } END { exit bad }' <<<"$report"; exit $?
     fi
