@@ -54,6 +54,7 @@ superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssu
 superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesRetrieve: refuses an answer the spec doesn't allow, one wrong part at a time
 superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesRetrieve: returns exactly what came back, whole
 superagent/03-calls.test.ts > 03 posthog: each included call > errorTrackingIssuesRetrieve: sends what the spec says, with the token as a bearer, for required inputs and for every scalar one
+superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: an answer whose channel, ts or message.ts breaks the spec's pattern is refused, and a matching one is not
 superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: fails with what the server said
 superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: refuses a wrong input before it sends anything
 superagent/03-calls.test.ts > 03 slack: each included call > chatPostMessage: refuses an answer the spec doesn't allow, one wrong part at a time

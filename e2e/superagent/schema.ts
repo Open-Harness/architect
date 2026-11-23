@@ -8,6 +8,35 @@ const FORMATS: Record<string, string> = {
   url: "https://example.test/x", uuid: "0190f5d8-0000-7000-8000-000000000001", email: "ann@example.test",
 };
 
+/**
+ * A string that matches `pattern`, for the shapes the pinned specs use (specs/README.md): a run of literals, `\\d`, `\\.`
+ * and classes such as `[CGD]` or `[A-Z0-9]`, each with `{n}`, `{n,}` or `{n,m}`, between `^` and `$`. Anything else
+ * throws, so a new pattern is a loud failure to handle, never a silent "a".
+ */
+export const stringFor = (pattern: string): string => {
+  const body = /^\^(.*)\$$/.exec(pattern)?.[1];
+  if (body === undefined) throw new Error(`pattern ${pattern} is not anchored`);
+  let out = "";
+  for (let i = 0; i < body.length; ) {
+    let atom: string;
+    if (body[i] === "[") { const end = body.indexOf("]", i); atom = body.slice(i + 1, end).replace(/^(.).*$/, (_, c: string) => c); i = end + 1; }
+    else if (body[i] === "\\") { atom = body[i + 1] === "d" ? "1" : body[i + 1]!; i += 2; }
+    else if (/[A-Za-z0-9]/.test(body[i]!)) { atom = body[i]!; i += 1; }
+    else throw new Error(`pattern ${pattern}: no sample for ${body[i]} at ${i}`);
+    const q = /^\{(\d+)(,(\d*))?\}/.exec(body.slice(i));
+    const count = q === null ? 1 : Number(q[1]);
+    if (q !== null) i += q[0].length;
+    out += atom.repeat(count);
+  }
+  if (!new RegExp(pattern).test(out)) throw new Error(`pattern ${pattern}: sample ${out} does not match`);
+  return out;
+};
+
+const stringSample = (node: Node): string => {
+  const base = node["pattern"] !== undefined ? stringFor(node["pattern"]) : FORMATS[node["format"]] ?? "a".repeat(Math.max(1, node["minLength"] ?? 1));
+  return typeof node["maxLength"] === "number" ? base.slice(0, node["maxLength"]) : base;
+};
+
 export interface SampleOptions {
   /** Every documented property, not only the required ones. */
   readonly full?: boolean;
@@ -51,9 +80,8 @@ export const sample = (spec: Spec, schema: Node, options: SampleOptions = {}, de
   if (Array.isArray(node["enum"])) return node["enum"][0];
   if (node["example"] !== undefined && typeof node["example"] !== "object") return node["example"];
   switch (typeOf(node)) {
-    case "string": return FORMATS[node["format"]] ?? "a".repeat(Math.max(1, node["minLength"] ?? 1));
-    case "integer": return Math.max(1, node["minimum"] ?? 1);
-    case "number": return Math.max(1, node["minimum"] ?? 1);
+    case "string": return stringSample(node);
+    case "integer": case "number": return Math.min(Math.max(1, node["minimum"] ?? 1), node["maximum"] ?? Infinity);
     case "boolean": return true;
     case "array": return depth <= 0 ? [] : [sample(spec, node["items"] ?? {}, options, depth - 1)];
     case "object": {
@@ -85,6 +113,15 @@ export const problems = (spec: Spec, schema: Node, value: unknown, at = "$"): Re
   const found = Array.isArray(value) ? "array" : typeof value === "number" ? (Number.isInteger(value) ? "integer" : "number") : typeof value;
   const fine = kinds.length === 0 || kinds.some((k) => k === found || (k === "number" && found === "integer"));
   if (!fine) return [`${at}: ${found}, not ${kinds.join("|")}`];
+  if (typeof value === "string") {
+    if (typeof node["pattern"] === "string" && !new RegExp(node["pattern"]).test(value)) return [`${at}: ${JSON.stringify(value)} breaks the pattern ${String(node["pattern"])}`];
+    if (typeof node["minLength"] === "number" && value.length < node["minLength"]) return [`${at}: shorter than ${String(node["minLength"])}`];
+    if (typeof node["maxLength"] === "number" && value.length > node["maxLength"]) return [`${at}: longer than ${String(node["maxLength"])}`];
+  }
+  if (typeof value === "number") {
+    if (typeof node["minimum"] === "number" && value < node["minimum"]) return [`${at}: under ${String(node["minimum"])}`];
+    if (typeof node["maximum"] === "number" && value > node["maximum"]) return [`${at}: over ${String(node["maximum"])}`];
+  }
   if (Array.isArray(node["enum"]) && !node["enum"].includes(value)) return [`${at}: ${JSON.stringify(value)} not in the enum`];
   if (Array.isArray(value)) return node["items"] === undefined ? [] : value.flatMap((v, i) => problems(spec, node["items"], v, `${at}[${i}]`));
   if (found === "object") {
@@ -121,6 +158,10 @@ export const plants = (spec: Spec, schema: Node, base: Json): ReadonlyArray<Plan
       for (const [i, other] of wrongTypes((at as Record<string, Json>)[name]!).entries()) {
         const swap = clone(base); (walk(swap, path) as Record<string, Json>)[name] = other;
         keep(`${[...path, name].join(".")} is ${JSON.stringify(other)} (${i})`, swap);
+      }
+      if (typeof flatten(spec, flat["properties"]?.[name] ?? {})["pattern"] === "string") {
+        const swap = clone(base); (walk(swap, path) as Record<string, Json>)[name] = "not matching !";
+        keep(`${[...path, name].join(".")} breaks its pattern`, swap);
       }
       if (Array.isArray(flatten(spec, flat["properties"]?.[name] ?? {})["enum"])) {
         const swap = clone(base); (walk(swap, path) as Record<string, Json>)[name] = "not-in-the-enum";
