@@ -207,7 +207,7 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 | K39 | the superagent, built as Orthograph plugins (Goal 17) | `main`, by the 📐 superagent designer thread |
 | K40 | what a superagent needs that Orthograph lacks: outside accounts as things, versions, agents as things, the sandbox over pi-env, catching up, lent tokens | `main`, by the 📐 superagent gaps thread |
 | K41 | the canon map applied: eight clashes settled; the frame, the old docs page, the walkthrough and the sign-up sheet retired; scope, the package map and the model draft merged into the canon | `main`, by the conductor's canon-map session |
-| K42 | a goal is a long-running agent; apps lead; the framework goal (18) always runs; 1.0 is Capxul core | decided with Aaron, 23 November (#694) |
+| K42 | a goal is a long-running agent; the framework goal (18) and the lander (19) always run; the apps dogfood the framework, the superagent first; the releases are the framework's | decided with Aaron, 23 November (#694) |
 | K43 | Capxul core: free software in ERPNext's shapes; verification, bank accounts and incorporation are paid | decided with Aaron, 23 November (#694) |
 
 **Also taken, off `main`:** K24 (UI SDK is the base, #217), K25 (the blueprint on chain), K26 (on-chain pulled forward), K27 (five plugin kinds), K29

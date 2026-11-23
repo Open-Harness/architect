@@ -16,7 +16,7 @@ owns:
   - design/goals/19-lander.md
 slices:
   - "1 · goal/stage-1 lands in main and is retired; every goal branch then bases on main"
-  - "2 · The winding-down goals' finished work lands in main"
+  - "2 · The winding-down goals' finished work lands in main (after 1)"
   - "3 · The landing loop (after 1)"
 ---
 # Goal 19: the lander, keeping main fresh
@@ -40,6 +40,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 - **Done when:** never; it stops only when Aaron says so.
 - **Waits on:** nothing.
 - **Words used:**
+  - the framework goal: the always-running goal that decides what gets built next;
   - a slice: one piece of an app's work that ends green, with its own tests passing;
   - landing: bringing a slice into the main branch by a reviewed pull request;
   - merging the main branch in: an app bringing the main branch's new work into its own branch, never by rewriting
@@ -57,7 +58,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 | # | Slice | After |
 |---|---|---|
 | 1 | `goal/stage-1` lands in `main` once Goal 3's last pull requests (#683, #690) are in and it is green, then it is retired. First check that `main` requires each protection `goal/stage-1` has (its CI jobs, `builder-paths`, resolved threads). Then every goal branch, `goal/superagent` and `goal/capxul` among them, bases on and merges in `main` | — |
-| 2 | The winding-down goals' finished work lands in `main`: each goal's green slices on its branch (K42, section 7), by the landing method below. What is unfinished stays on its branch, and its items wait on the board | — |
+| 2 | The winding-down goals' finished work lands in `main`: each goal's green slices on its branch (K42, section 7), by the landing method below. What is unfinished stays on its branch, and its items wait on the board | 1 |
 | 3 | The landing loop, run from then on | 1 |
 
 ## The landing loop

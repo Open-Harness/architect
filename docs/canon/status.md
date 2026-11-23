@@ -137,7 +137,7 @@ once planned.
 
 The factory and the work board (M3.04 to M3.21), the bench and the builder's tools (M4.11 to M4.14), workspaces and
 the building agents (M4.17 to M4.25; M4.25 is Goal 17's since K39), Stripe, Resend, adapters from OpenAPI, outbox and
-views (M5.04 to M5.13), and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43). Most are None; the work board and E2B workspaces are
+views (M5.04 to M5.13), and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) proves 1.0 (K42, K43). Most are None; the work board and E2B workspaces are
 Spiked.
 
 ## 3. Holes no slice owns
@@ -196,7 +196,7 @@ published to npm before the preview; every milestone before it publishes to the 
 ### Capxul's own pieces
 
 Capxul is not built on Orthograph yet; since K43 (23 November 2026) it is rebuilt in this repository on
-`goal/capxul`, in ERPNext's shapes, and it is 1.0. What follows is the earlier plan K43 replaces. It has its own blueprint package and generator, with the same ideas by hand, so
+`goal/capxul`, in ERPNext's shapes, and it proves 1.0. What follows is the earlier plan K43 replaces. It has its own blueprint package and generator, with the same ideas by hand, so
 moving it onto Orthograph means declaring it again. Hats, budgets and the Safe adapter become standard library, because
 Plugged In's stage 3 needs them too. What stays Capxul's is what only it needs: approvals as its directors run them,
 payments into ERPNext, and the Frappe bench (a source through an adapter, K3). Two repositories (K30, section 2):

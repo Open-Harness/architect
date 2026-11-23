@@ -48,8 +48,8 @@ Branch `goal/superagent`, cut from `goal/stage-1`: an integration branch, where 
 needs are built together and handed back whole. Written 22 November 2026 by a 📐 designer thread with Aaron, from
 DeepSeek's `dsh-superagent-prototype` (its `README.md` and `docs/000` to `008`), Pi Durable 1.5.0, the calls in
 [`K39-superagent.md`](../decisions/K39-superagent.md) and the framework fixes in
-[`K40-superagent-gaps.md`](../decisions/K40-superagent-gaps.md). Milestone `Goal 17: the superagent`, no release
-label: it is off the 1.0 path.
+[`K40-superagent-gaps.md`](../decisions/K40-superagent-gaps.md). Milestone `Goal 17: the superagent`, label
+`release:beta` (K42: the beta is every framework piece this goal proves).
 
 **To start it, in any harness** (Claude Code, Amp, Codex): "You lead Goal 17. Read `AGENTS.md` and
 `design/goals/17-superagent.md`, and run it." Nothing else is needed.
@@ -595,7 +595,7 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
 - **Claims.** Since K42 this is an app goal like Capxul's. A framework fix made here is claimed on the board first
   (`lane:goal-17` and a "Touches" line, K42, section 3), built here unless a running goal has it or its paths, and
   landed in `main` as soon as it is green. An Ask issue is only for overlapping claims.
-- **On GitHub.** Every issue and pull request carries the milestone `Goal 17: the superagent` and the label `goal-17`;
+- **On GitHub.** Every issue and pull request carries the milestone `Goal 17: the superagent` and the labels `goal-17` and `release:beta`;
   every comment an agent posts starts `[goal-17 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" at every slice
   merge. Decisions this goal makes are named `GOAL17-<slug>`.

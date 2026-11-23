@@ -50,7 +50,9 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
    should split the pieces up amongst them ... we want to get the super agent done first because it's gonna help build
    capsule."
 10. **Organisations are separate.** Asked whether organisations belong to the superagent's launch or to Capxul's
-    books: "they are both separate".
+    books: "they are both separate". Read here as: the superagent's teams and Capxul's companies are different
+    things, each built in its own lane. That reading is the framework goal's, under Aaron's standing authority; his
+    word overrides it.
 11. **The releases are the framework's.** "The beta should be the actual framework not the apps. The apps dogfood the
     framework. This is the most important thing."
 12. **A lane that lands work on `main`.** "All of this work should be carrying on in their own branches ... and then
@@ -148,8 +150,8 @@ Each round:
   it. A piece no app has pulled sits in "Not yet needed", with no date. Each goal's milestone closes when its goal
   stops.
 - **The release is a label**, as K33 has it: `release:preview`, `release:beta` or `release:1.0`, the framework
-  release a piece ships in (section 6). A piece the superagent pulls ships in the beta; one only Capxul pulls ships in
-  1.0.
+  release a piece ships in (section 6). A piece the superagent pulls for its slices 1 to 14 ships in the beta; one
+  pulled only for the superagent's launch, or only by Capxul, ships in 1.0.
 - **The roadmap is computed, never typed.** An item's Start is the day a goal claims it and its End the day it is
   built; the sync writes both. For an item not yet started, Goal 18 forecasts both every round from what needs what
   and the pace measured so far (196 pull requests merged from 21 to 23 November; GitHub search `is:pr is:merged merged:2026-11-21..2026-11-23`). A milestone's target date is the
@@ -196,7 +198,7 @@ one through, and the lander lands what each has finished. The pull requests belo
 | 4 · On chain | #679, the follower (Capxul's first feature needs it), and #677, the relayer | parked |
 | 5 · The UI layer | nothing in review; slice 3 landed (#655) | parked |
 | 6 · The new portal | #669, the frame, and #692, the parity ratchet's self-test (#584 landed the shell, the map language and the app projection) | parked; #693 stays a draft for its board item |
-| 7 · Safe, Hats and budgets | #294, landed or closed by Goal 18 | done |
+| 7 · Safe, Hats and budgets | #294, landed by the lander or closed by Goal 18 | done |
 | 8 · Workflows | #472, the workflow decision | parked |
 | 9 · Time | #696, timers across processes landed early for Goals 8 and 10 | parked |
 | 10 · Agents | #469, where an agent run lives | parked; #490 stays a draft |
@@ -222,7 +224,7 @@ and every release is cut from it (Aaron's call 12).
 2. **Peeled only at extraction.** Moving a plugin out of an app's `plugins/` into `packages/` is its own pull request
    on `main`, which the lander or the app goal opens; the app then mounts the package.
 3. **Merge `main` in, never rebase.** After each landing the lander tells the running goals, and each merges `main`
-   into its branch at its next slice start. Rebasing is only for a short-lived branch one agent uses alone.
+   into its branch at its next slice start, as `AGENTS.md` already says: never by rebasing.
 4. **It owns `main` being green.** A red `main` is the lander's first job, ahead of any landing.
 5. **It keeps CI predictable.** The pull requests that bring app branches into `main` are its own, at most two in CI
    at once (CI-drafts).
@@ -245,7 +247,7 @@ and every release is cut from it (Aaron's call 12).
   name paths, and fixes land in `main` small and early.
 - The board needs the sync to read the status page's capability map (Goal 18, slice 2). Until then the Project still shows goals.
 - Retiring `goal/stage-1` leaves `main` as the only branch where its protections (CI jobs, `builder-paths`, resolved
-  threads) apply. Goal 18 checks that `main` already requires each of them before it retires the branch.
+  threads) apply. The lander (Goal 19) checks that `main` already requires each of them in its slice 1, before it retires the branch.
 
 ## Supersedes
 
@@ -266,7 +268,7 @@ Each line is one phrase that sat on one line of a live doc; `tools/ci/supersedes
 - `.agents/skills/kanban/STATE.md`: "**1.0:** the beta, then stages 2 to 4 and the release slices." → "**1.0:** the same for every piece Capxul core pulled (K43), and the release slices (K42)."
 - `docs/canon/status.md`: "| **1.0** (stages 2 to 4) |" → "| **1.0** (Capxul core, K42) |"
 - `docs/canon/status.md`: "the canon's one example, the app 1.0 is built as (K9)" → "the canon's one example (K9)"
-- `docs/canon/status.md`: "and Capxul on Orthograph (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43)"
+- `docs/canon/status.md`: "and Capxul on Orthograph (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) proves 1.0 (K42, K43)"
 - `design/milestones.md`: "Orthograph is the only focus until it is **workable, at the end of M2**" → "the framework is built by the apps that dogfood it"
 - `design/milestones.md`: "A slice starts once what it `needs` has landed, in any" → "An app goal builds what it"
 - `design/milestones.md`: "**After Gate M2 the order is by stage**" → "Goal 18 ranks what runs next"
@@ -287,8 +289,8 @@ Each line is one phrase that sat on one line of a live doc; `tools/ci/supersedes
 - `design/handoff.md`: "That is the beta (K28), the end of stage 1." → "Under K28 this was workable at the end of M2"
 - `design/handoff.md`: "The beta (K28) is the critical path." → "The superagent's next slice is the critical path (K42)."
 - `design/milestones.md`: "the beta plus stages 2 to 4 and the release" → "the same for every piece Capxul core pulled (K43), plus the release (K42)"
-- `design/milestones.md`: "**v1.0** is the four stage gates on `main`, plus the release" → "**v1.0** is Capxul core on Orthograph (K42, K43), plus the release"
-- `design/milestones.md`: "and Capxul (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43)"
+- `design/milestones.md`: "**v1.0** is the four stage gates on `main`, plus the release" → "**v1.0** is the framework with every piece Capxul core pulled, extracted and published (K42, K43), plus the release"
+- `design/milestones.md`: "and Capxul (M7.07 to M7.11)" → "and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) proves 1.0 (K42, K43)"
 
 ## What else it touches
 

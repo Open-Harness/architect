@@ -56,7 +56,7 @@ Aaron, 18 November 2026: one example grows through four stages, "each stage is a
 v1.0" ([`decisions/K9-growing-example.md`](decisions/K9-growing-example.md)). The app is Plugged In (`plugged-in`), in
 `examples/plugged-in`. The milestones below keep their slices and ids; this section says which slices each stage needs,
 adds the slices no milestone had (ids `ST<stage>.<n>`), and gives each stage its gate. Each passing stage is tagged
-`plugged-in/stage-<n>`. (Superseded for 1.0 by K42, 23 November 2026: 1.0 is Capxul core; the stages stay Plugged In's.)
+`plugged-in/stage-<n>`. (Superseded for 1.0 by K42, 23 November 2026: 1.0 is the framework Capxul core proves; the stages stay Plugged In's.)
 
 **Renamed by K15** (19 November 2026, Aaron): the example app is **Plugged In** (`plugged-in`), no longer `links`. This file is updated in place: `examples/plugged-in`, the tags `plugged-in/stage-<n>`, the command `plugged-in`.
 Codex's branch `links/stage-1` (#56) keeps its name. [`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md).
@@ -65,7 +65,7 @@ Codex's branch `links/stage-1` (#56) keeps its name. [`decisions/K15-plugged-in.
 the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is the framework with every piece the superagent pulled, extracted and published, the superagent running on it (K42). **v1.0** is
 the same for every piece Capxul core pulled (K43), plus the release (K42), as the next paragraph says.
 
-**v1.0** is Capxul core on Orthograph (K42, K43), plus the release: M7.01 to M7.04, M7.06 and M7.13 (the cloud passes for staging and for the release, the npm
+**v1.0** is the framework with every piece Capxul core pulled, extracted and published (K42, K43), plus the release: M7.01 to M7.04, M7.06 and M7.13 (the cloud passes for staging and for the release, the npm
 release, the infra projection, a deploy and destroy that leaves nothing, real releases), each credential with Aaron's
 written yes.
 
@@ -78,7 +78,7 @@ written yes.
 
 **Beside the stages, off v1.0's path:** the factory (M3.04 to M3.14), the builder's tools and the bench (M4.11 to
 M4.14), workspaces, experiments and the building agents (M3.20, M4.17 to M4.25, K10; M4.25 built by Goal 17, K39), views, Stripe, Resend, adapters from OpenAPI, MariaDB and a second app (M5.05 to M5.09, M5.11, M5.13), the
-`examples/workshop` (M6.20, dropped by K9), and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) is 1.0 (K42, K43). They run when a thread is free; a stage
+`examples/workshop` (M6.20, dropped by K9), and the real vendors, the builder's staging token and contracts on a testnet (M7.07 to M7.09); Capxul (M7.10, M7.11) proves 1.0 (K42, K43). They run when a thread is free; a stage
 never waits on them.
 
 **The gates of M3 to M6 no longer order the work.** Their suites still run, beside, once their slices exist. Where a

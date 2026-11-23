@@ -14,7 +14,7 @@ is built to the page. When the two disagree, one of them is wrong, and the chang
 
 The canon describes all of 1.0, built or not, for Aaron and for anyone who builds on Orthograph or helps build it.
 One example runs through it: Plugged In, [`examples/plugged-in`](../../examples/plugged-in), in the four stages it is
-built in (K9); 1.0 itself is Capxul core on Orthograph (K42, K43). `outline.md` says which stage teaches which page, and K37 records the switch. acme stays the fixture the
+built in (K9); 1.0 itself is the framework Capxul core proves (K42, K43). `outline.md` says which stage teaches which page, and K37 records the switch. acme stays the fixture the
 tests and gates run on.
 
 The map behind this plan, drawn for Aaron's review, is the canon board (a convenience: the link dies with the account,

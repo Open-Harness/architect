@@ -59,7 +59,7 @@ Milestone `Goal 18: the framework`, label `release:1.0`.
 - K42, then K43 (what Capxul is), K39 and K40 (the superagent), K38 (early landing), `docs/canon/status.md` and
   `.agents/skills/kanban/STATE.md`.
 - The `conductor`, `threads`, `github` and `reviewer` skills. Use the conductor's steps for starting, briefing and
-  landing threads; where the conductor skill and K42 disagree, K42 wins, and slice 3 rewrites the skill whole.
+  landing threads; where the conductor skill and K42 disagree, K42 wins, and slice 2 rewrites the skill whole.
 
 ## The slices
 

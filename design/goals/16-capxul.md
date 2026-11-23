@@ -88,14 +88,14 @@ keep the numbers their issues already have.
 
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18
-sorts those asks in its slice 2.
+sorts those asks in its slice 1.
 
 ## The superagent goes first
 
 Under K42 (Aaron's call 9) the superagent goes first, because once it works its coding agent helps build Capxul. So
 this goal does its design grill, its two experiments and its provisional map now, and writes the map as tickets the
-superagent's coding agent can take. It builds now only what waits on nothing: money, the token adapter, the follower
-and its own things. Getting paid lands after the superagent's events and pages. Shared pieces are split between the
+superagent's coding agent can take. It takes money (M6.10) and the follower (M6.09, #679) from Goal 4's branch as the
+lander brings them into `main`, and builds now only the token adapter (ST2.02) and its own things. Getting paid lands after the superagent's events and pages. Shared pieces are split between the
 two apps (K42, section 3); organisations are separate, and Capxul's companies are its own.
 
 ## How it runs

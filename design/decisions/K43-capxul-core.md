@@ -39,8 +39,8 @@ meetups, mixers and workshops, "a really undecided thing".
    HRMS and Frappe CRM, translated into Orthograph things, machines, operations and journeys. Its screens are
    Orthograph's own (UI SDK and the generated pieces, K24 and K29). No Frappe runs inside it.
 2. **Its layers:**
-   - **Orthograph's library:** sign-in, organisations, wallets, the chain, events, workflows, agents and money. Every
-     app uses these.
+   - **Orthograph's library:** sign-in, wallets, the chain, events, workflows, agents and money. Every app uses these.
+     Organisations are each app's own (K42, call 10): Capxul's are its companies.
    - **Capxul core,** free and self-hostable: accounts, parties, invoices, payments, the books, HR and payroll, plus
      the Bridge adapter.
    - **Capxul modules,** also free, each a plugin a running Capxul mounts when someone switches it on, starting with the
