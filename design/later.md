@@ -228,3 +228,7 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. Both 
   included transaction is not noticed. The relayer would keep a mined row open until it is a chosen number of blocks deep, and send the transaction
   again if the node no longer shows it. **Trigger:** the relayer runs on a chain that reorgs, or the follower reports a `Corrected` event for a
   transaction the relayer sent.
+- **The follower's outbox, one key per entry.** Today a step stores all its sink entries as one value and rewrites the
+  rest after each delivery, so a backfill with many confirmed events makes one large value and quadratic writes (🔍 on
+  #679). The step would cap its entries or store one key per entry. **Trigger:** a follower backfills from an old
+  `fromBlock` with thousands of events, or a Durable Object value nears its size limit.
