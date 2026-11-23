@@ -34,6 +34,15 @@ describe("Access", () => {
     expect(Exit.isFailure(await check(allowed, fields, { allowance: "alw_1" }, bob))).toBe(true);
   });
 
+  it("the keeper is allowed only where it is listed, even by an operation open to anyone, and no one else may be the keeper", async () => {
+    const keeper: Principal = { kind: "keeper" };
+    expect(Exit.isSuccess(await check([Blueprint.keeper] as never, {}, {}, keeper))).toBe(true);
+    expect(Exit.isFailure(await check([Blueprint.anyone] as never, {}, {}, keeper))).toBe(true);
+    expect(Exit.isFailure(await check([Blueprint.signedIn] as never, {}, {}, keeper))).toBe(true);
+    expect(Exit.isFailure(await check([Blueprint.keeper] as never, {}, {}, ada))).toBe(true);
+    expect(Exit.isFailure(await check([Blueprint.keeper] as never, {}, {}, { kind: "anonymous" }))).toBe(true);
+  });
+
   it("signedIn refuses the anonymous; anyone allows them", async () => {
     expect(Exit.isFailure(await check([Blueprint.signedIn] as never, {}, {}, { kind: "anonymous" }))).toBe(true);
     expect(Exit.isSuccess(await check([Blueprint.anyone] as never, {}, {}, { kind: "anonymous" }))).toBe(true);
