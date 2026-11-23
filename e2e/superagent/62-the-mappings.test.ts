@@ -14,7 +14,8 @@ import { APP_MENTION, BOT_MESSAGE, THREAD_REPLY, USER_MESSAGE } from "./slack-ev
 import { SLACK_CONFIG } from "./connections.ts";
 
 const ADDR = { repository: "acme/widgets", number: 12 };
-const OBSERVED = { listed: "explicit", unlisted: "none", unnamed: "none" };
+// GOAL17-stage-one call 8: a listed person's plain message is inferred, never explicit, so `observedRow` is `{ listed: "inferred", ... }`.
+const OBSERVED = { listed: "inferred", unlisted: "none", unnamed: "none" };
 const INFERRED = { listed: "none", unlisted: "none", unnamed: "inferred" };
 
 describe("62 github: each event makes the trigger the record says", () => {
@@ -159,7 +160,7 @@ describe("62 github: each event makes the trigger the record says", () => {
     expect(history!.page([], undefined).next).toBeUndefined();
   });
 
-  it("its part of the policy has one admission row, the repository, that an explicit mention from a listed account passes and nothing else does", async () => {
+  it("its part of the policy has one admission row, the repository, that admits a listed account's message as inferred and nothing else", async () => {
     expect((await spec()).policyPart.rows(GITHUB_CONFIG)).toEqual([{ id: "acme/widgets", label: "acme/widgets", cells: OBSERVED }]);
   });
 
