@@ -8,6 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { createServer, request as forward, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
+import { pathToFileURL } from "node:url";
 import { join } from "node:path";
 import { chromium, type Browser, type Page } from "playwright";
 import { build } from "esbuild";
@@ -147,9 +148,10 @@ export const openSite = async (scene: "claim" | "release" | "profile"): Promise<
 
 // ---- Plugged In's own SDK, from Node: how the checks set a world up and read it back (a recording, never the page) ----
 
-type Sdk = typeof import("../../examples/plugged-in/generated/sdk/src/index.ts");
+// The SDK is loaded by path (it is generated and belongs to the example), so it is typed by what the checks use of it.
+interface Sdk { readonly layer: (options: { readonly url: string; readonly credential?: unknown }) => unknown; readonly Credential: { readonly session: (token: string) => unknown }; readonly [thing: string]: unknown }
 let sdk: Sdk | undefined;
-const sdkOf = async () => (sdk ??= await import("../../examples/plugged-in/generated/sdk/src/index.ts"));
+const sdkOf = async () => (sdk ??= (await import(pathToFileURL(join(pluggedIn, "generated/sdk/src/index.ts")).href)) as Sdk);
 
 /** One call through the generated SDK as `who` (nobody: a visitor): the answer, or the declared error's name and code. */
 export const call = async <A = Record<string, unknown>>(site: Site, who: Person | undefined, operation: `${"handle" | "link" | "profile"}.${string}`, payload: Record<string, unknown>): Promise<{ readonly ok: true; readonly answer: A } | { readonly ok: false; readonly error: string; readonly code: string | undefined }> => {
@@ -160,7 +162,7 @@ export const call = async <A = Record<string, unknown>>(site: Site, who: Person 
     fn(payload).pipe(
       Effect.map((answer) => ({ ok: true as const, answer: answer as A })),
       Effect.catch((error) => Effect.succeed({ ok: false as const, error: error._tag, code: error.code })),
-      Effect.provide(S.layer({ url: site.loop.url, ...(who ? { credential: S.Credential.session(who.token) } : {}) })) as never,
+      Effect.provide(S.layer({ url: site.loop.url, ...(who ? { credential: S.Credential.session(who.token) } : {}) }) as never) as never,
     ),
   ) as never;
 };

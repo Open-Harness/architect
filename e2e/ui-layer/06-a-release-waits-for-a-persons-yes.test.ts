@@ -19,7 +19,7 @@
 // button (its `data-agent-confirm`), the bridge's snapshot and `act`, what the bridge asked (`window.__ortho.asked`) and what the host asked, the requests
 // that reached the world's door, the journal and `handle.resolve`.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { act, call, declaredError, model, needPieces, openSite, reached, snapshot, until, written, type Entry, type Person, type Site } from "./web-support.ts";
+import { act, call, declaredError, model, needPieces, openSite, reached, snapshot, until, written, type Entry, type Site } from "./web-support.ts";
 
 const m = model();
 const release = m.operations["handle.release"]!;
