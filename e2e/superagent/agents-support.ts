@@ -58,8 +58,10 @@ export const withJourneys = (names: ReadonlyArray<string>, extra: ReadonlyArray<
 
 export interface Proved { readonly status: number | null; readonly out: string; readonly lines: ReadonlyArray<string> }
 
-/** `ortho prove --env local --port 0`, its exit and its lines. */
+/** `ortho generate`, then `ortho prove --env local --port 0`, its exit and its lines: a copy has no `generated/` until it is generated, as a user's checkout. */
 export const prove = (root: string): Proved => {
+  const generated = run(root, ["generate"]);
+  expect(generated.status, `ortho generate on the copy with slice 8's journeys:\n${generated.out}`).toBe(0);
   const r = run(root, ["prove", "--env", "local", "--port", "0"]);
   return { status: r.status, out: r.out, lines: r.stdout.split("\n") };
 };
