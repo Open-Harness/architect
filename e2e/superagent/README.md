@@ -1,4 +1,4 @@
-# Goal 17's checks: adapters from a spec (slice 3)
+# Goal 17's checks: adapters from a spec (slice 3), and stage one's blueprint (slice 5, below)
 
 Written before slice 4 builds anything, by an author who builds none of it (`AGENTS.md`, "Journeys and checks come
 first"). Slice 4 builds `ortho new adapter <name> --from-openapi <spec>`, the conformance of what it makes, and the
@@ -109,6 +109,112 @@ pnpm vitest run --root e2e --config vitest.superagent.config.ts superagent/01   
 
 `07` fetches GitHub's (14 MB), PostHog's (21 MB) and Slack's (1.2 MB) specs once into `tmp/specs/`; the first run needs the
 network, and no key.
+
+# Goal 17's checks: stage one's blueprint (slice 5)
+
+Written before slice 5 builds `examples/superagent`, by an author who builds none of it. Slice 5's done-when is "`ortho check`
+passes; the generated docs, CLI and MCP list every operation; a blueprint without these plugins generates byte for byte as
+before". Every check below is red today because `examples/superagent` does not exist, except `17`, which passes today and must
+keep passing. They judge the app only through what a user runs: `ortho generate`, `ortho model --json`, `ortho check`, the
+generated docs, the generated CLI and the generated MCP catalog, on a copy of the example outside the repository.
+
+| Check | What it proves | Reads |
+|---|---|---|
+| `08-ortho-check-passes` | `ortho check` exits 0 on a copy of examples/superagent with its checked-in `generated/` (types, rules, drift, check); the four plugins are in `plugins/` | `ortho check` |
+| `09-the-superagent-plugin` | `@orthograph/superagent`: the Superagent (states, moves, fields, sizes of the pause fields, operations incl. `health` and `boot`) and the Proposal; its events and `SlotsOutOfRange`; pause and resume are a signed-in person's through a session; a proposal is applied by a person only; every one in the docs, CLI and MCP | model, docs, CLI, MCP |
+| `10-the-intake-plugin` | `@orthograph/intake`: Source, Account, Trigger, Thread, Correlation, Eval, Decision, Policy with their states, operations, events, `StaleRevision`; Policy keyed by superagent; the Account's unique key; Eval's clock fields | model, docs, CLI, MCP |
+| `11-the-tickets-plugin` | `@orthograph/tickets`: Mandate, Ticket, Subscription, Assignment (the six moves, from and to), Input (four moves), Report, Attention, Outgoing message; their events with their fields; `NoSeat`, `SeatTaken`, `ExecutorAlreadyQueued`; the two unique rules of a seat; `seq` is uint(64); `ticket.accept` is `listed.of("account")` and nothing wider | model, docs, CLI, MCP |
+| `12-the-prompts-plugin` | `@orthograph/prompts`: the PromptSet, its operations, versions, `compose` for the system alone | model, docs, CLI, MCP |
+| `13-the-app` | the app: mounts (five features, three adapters), environments, Settings with versions and `settings.save`, `superagent.fill` and `reap` declared by the app for the system, `@orthograph/agents`' Agent (its states, `tell`, `close`, `AgentIdled`, `AgentClosed`, `StaleAssignment`), the declared `coder`, nothing else declared; the generated CLI starts; every operation of the model is in the docs, CLI and MCP | model, docs, CLI, MCP |
+| `14-the-framework-forms` | each form is accepted and in the model as its record says: `versions:` (K40 fix 2: Policy's four generated operations, `StaleRevision { current }`, a Mandate's pin), `actor:` and `agent:` (K40 fixes 1, 3), `Agent`, `Source.from` and `Source.timer` (the `sources` entries, their variables), `Blueprint.hold` (the held and unheld lists of GOAL17-pause), `Blueprint.problem` | model |
+| `15-the-framework-refusals` | the refusals below, each a record states, with a named problem: `derive:`'s five (GOAL17-derived-reads), the hold's four (GOAL17-pause :133), a variable named against the record's rules (GOAL17-source-from :325), a mount that leaves out what its source uses, a mapping of an event the adapter lacks, `listed.of` with no `superagent`, a prefix no thing owns; each against a copy that passes without the fault. Three of source-from's are deferred to slice 11 (item 4b) | `ortho generate`, `ortho check` |
+| `16-the-derived-reads` | `ticket.stage`, `ticket.waiting`, `superagent.health`, `proposal.waiting` and `superagent.boot` exist as GOAL17-derived-reads declares them: looks, adds, `only`, pages, budgets, who may call | model |
+| `17-nothing-else-moves` | acme, plugged-in, signup, starter and work, regenerated, are the checked-in `generated/` byte for byte; the comparison is shown to see a changed, a missing and a new file | `ortho generate` |
+
+`blueprint-names.ts` holds every list the design names, each entry with the section it comes from, and `CONFLICTS`: names two
+documents spell differently, empty since GOAL17-names settled the first six. No check judges a name in `CONFLICTS`; when the design settles one, the name moves into the lists in
+the same change (an author's change, since a builder never edits these).
+
+## What the builder must make, and where the checks read it (slice 5)
+
+The design settles most of it. These are the points it leaves open, fixed here so a check can read them. A builder who needs one
+changed stops and asks its author.
+
+1. **Where things are.** `examples/superagent/` is an app like acme (`ortho.config.ts` named `superagent`, `blueprint/`, `src/`,
+   `journeys/`, a checked-in `generated/`). Its plugins are folders `plugins/{superagent,intake,tickets,prompts}/`, each a package
+   `@orthograph/<name>` with `orthograph.kind` `"feature"` and `orthograph.blueprint` its `blueprint` folder as written (no build
+   step: checks 15 edits a copy of a plugin's `blueprint/` files), linked in the app's `node_modules/@orthograph/<name>`.
+   `@orthograph/agents` is mounted as a feature too. Mounts are `blueprint/features/<name>.ts` and `blueprint/adapters/<name>.ts`;
+   a mount's name is the file's, as acme's projections are.
+2. **Names.** A thing is its folder's name, kebab case (`outgoing-message`, `prompt-set`); an operation is `<thing>.<verb>` with
+   the verb its file's name in kebab case (`go-live`, `request-status`, `turn-ended`, `delivery-failed`), as acme's `person.sign-up`.
+   An operation a plugin declares on another plugin's thing (`trigger.handback`, `thread.follow`) is the plugin's, by the full name.
+   An event is its class, `AssignmentStarted`; a move is camel case (`goLive`, `turnEnded`), as acme's moves are.
+3. **The model's keys for the new forms** (`ortho model --json`; every other key is as it is today):
+   - `things.<t>.versions`: `{ "key": "<a field of t>" }`; absent when the thing has none.
+   - `things.<t>.roles` lists a role made with `actor:` or `agent:` like any other (`listed`, `itsMain`, `itsAgent`); an operation's
+     `allowed` shows it as `{ kind: "role", role: "<thing>.<role>" }` or, through `.of`, `{ kind: "role-of", role, path }`.
+   - `things.<t>.fields.<f>.optional`: `true` for a `Blueprint.optional` field (`pausedAt`), absent otherwise, as an operation's payload shows it today.
+   - `things.thread.events` has `ThreadSubscribed` and `ThreadUnsubscribed` (the brief names the events, not their thing; fixed here).
+   - `agents.<name>`: one entry per `Blueprint.agent`, `<name>` its file's name (`main`, `executor`): `{ file, slots? }`, `file` relative to the plugin's folder
+     from the app (`blueprint/agents/executor.ts`), and `slots`, only where the declaration has one, `{ size: "<thing>.<field>", reserve: <n>, held: "<thing>" }`
+     (`{ size: "superagent.slots", reserve: 1, held: "assignment" }`, GOAL17-executor-slots :88 and :520).
+   - `things.<t>.invariants.<name>`: `{ kind: "unique", fields, while, refuse }`, as today.
+   - an operation's `derive`: `{ looks, adds, hash }` (GOAL17-derived-reads, "How it reaches"); `looks.<name>` is
+     `{ thing, by, state?, where?, take, max }` with `thing` and `by` the look's thing and the field's names, and a problems look is
+     `{ kind: "problems" }`; `hash` a string. A read's `only` is the object it pins, beside today's `list: { where, order, page }`
+     and `budget: { p95Ms }`; a read with no derive has no `derive` key.
+   - `sources.<mount>`: `{ mount, events, calls, variables, kinds }` (GOAL17-source-from, "How a door and a poll both feed it"), `events`
+     and `calls` the dotted names it uses, `variables` an object keyed by the variable's name, `kinds` every string literal in the `kind:` expression of the results of the
+     source's `on` mappings, sorted and distinct (Slack's conditional `kind: e.channel_type === "im" ? "direct" : "message"`, with `"mention"`, gives `direct`, `message`, `mention`) (the record doesn't say how `kinds` is read; this is the least that can be). Only an active source is there: in slice 5, GitHub and Slack.
+     PostHog has no events until slice 11 (GOAL17-names call 6), so it is not, and the checks say so. `sources.timer` is `{ mount: null, config: { every, says } }`,
+     `config` an object keyed by the two fields `Source.timer` takes.
+   - `holds.<name>`: `{ thing, key, while, held, unheld }`, `<name>` the identifier the declaration is exported as (`processing`);
+     `held` rows `{ event, to }` and `unheld` rows `{ event, to, reason }`, `event` the event's class name and `to` the operation's
+     full name (`outgoing-message.send`).
+   - `problems`: a list of `{ kind, thing, of, name, failures, after }`, each a field name but `after`, which is the field name
+     `failAfter` for a source and the number `3` for a channel.
+   - `declared.superagents`: a list of `{ name, file, purpose, connections: [{ source }], policy: { mode, allowed }, playbook: { endsWhen } }`,
+     one per `Superagent.declare`, `file` relative to the app.
+4. **A refusal's wording.** `ortho check` (or `ortho generate`) exits non-zero and its output names the file written in the first
+   column below and the words after it. Where a record writes the sentence, it is the sentence's parts (the mount's refusal,
+   GOAL17-source-from: "does not include", the event or call as `events.issueComment` / `calls.issues.createComment`, the
+   source's name, and the line to add, written with whatever the mount calls its parameter). A planted fault that TypeScript
+   would also catch is written past it (`as never`), and the output must then carry no `TS` error: the model's own check refuses.
+
+   | Fault | Names |
+   |---|---|
+   | a look's `by` is not the root's id | the read's file, the look, the field |
+   | a look at a thing that lives as actors | the read's file, the look, the thing |
+   | an `adds` name that is a stored field | the read's file, the name |
+   | a list read's `where` names neither | the read's file, the name |
+   | a look's `max` outside 1 to 100 | the read's file, `max`, the value |
+   | a delivery of an event carrying `superagent` in neither list | the app's feature file, the event, where it goes |
+   | one event with deliveries on both lists | the feature file, the event |
+   | a held row of the hold thing's own move | the feature file, the event, and "own move", "deadlock" or "resume" |
+   | a mapping of an event the adapter lacks | the event, "doesn't have" or "does not have" |
+   | `listed.of("account")` with no `superagent` to compare | the operation, `superagent` |
+   | a hold on a thing in another store | `processing`, "store" |
+   | a variable ending in `_TOKEN`, or without its source's prefix | the variable |
+   | an id prefix no thing owns | the prefix |
+
+4b. **Refusals deferred, not judged in slice 5** (so check 15 proves the refusals listed in its header, not every one a record states): GOAL17-source-from :322, a `gone`
+   error that is not in the reply call's errors; :324, `config` with no `me` of the `{ id, login }` shape; :326, a connection naming an event no `Mapped.kind` produces;
+   the second half of :325 (`environment.of` returning a key not in `variables`) because only a run reads `of`. Each is a fault TypeScript catches in the source's own file,
+   or a value only a running mapping gives, so the model's check can't be shown to refuse it alone. Slice 11's checks take them. GOAL17-derived-reads' fifth refusal and
+   GOAL17-pause's three more are in 15.
+
+5. **Two notes from the throwaway.** A thing named `eval` makes the generated CLI unloadable (`const eval = ...` is a syntax error in
+   strict mode): the generator must make a reserved word a safe identifier and keep the operation's name `eval.due` (GOAL17-names call 1); check 13 starts the CLI. And two pairs of
+   things collide on refusal codes (`proposal` and `prompt-set` on `PR-`, `superagent` and `subscription` on `SU-`): Proposal and
+   Subscription take an explicit `code` (GOAL17-names).
+6. **`SUPERAGENT_APP=<folder>`** points the checks at another app. It is for an author's fairness proof, never CI.
+7. **The held, sources and actor refusals edit the design's own text.** Check 15 edits a copy of `blueprint/features/superagent.ts`
+   (the `held:` and `unheld:` lists, rows written `{ event: tickets.events.X, to: input.operations.route }`),
+   `blueprint/adapters/github.ts` (one `x.include(x.events.issueComment)` per line), and the plugins' `blueprint/sources/github.ts`,
+   `blueprint/things/ticket/verbs/accept.ts` (a `payload: { ... superagent: ... }`) and `blueprint/things/assignment/thing.ts`
+   (`Blueprint.id("sag")`), as the brief and records print them. A builder who writes them another way tells the author, who changes
+   the edit, not the builder the file.
 
 ## Outside this folder, for whoever lands this
 
