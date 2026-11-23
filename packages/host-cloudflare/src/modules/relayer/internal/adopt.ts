@@ -1,6 +1,5 @@
-// Taking back what the store kept: the signed transaction of a submission the relayer has no live copy of (after a restart, or a
-// first attempt that failed), so the port can reserve its nonce and replace it.
-import { ChainRefusal, type Signed } from "@orthograph/chain-evm/device";
+// What the relayer's store owns: every open row holds its own nonce reservation, and on a restart each takes it back before any call is served.
+import { ChainRefusal } from "@orthograph/chain-evm/device";
 import { Effect } from "effect";
 import type { Live } from "./live.ts";
 import type { Row, Store } from "./store.ts";
@@ -10,8 +9,8 @@ const DEFINITE = new Set(["funds", "rejected", "revert", "panic", "signing", "co
 /** The hash a row holds while it has no transaction yet (a fill that is waiting to be sent). */
 export const NO_HASH = `0x${"0".repeat(64)}` as const;
 
-/** A row with no bytes: its nonce is kept for a fill. */
-export const unsent = (row: Row) => row.fill && row.serialized === "0x";
+/** A row with no bytes: its nonce is held for a fill (its call was never signed, or could not be sent). */
+export const unsent = (row: Row) => row.serialized === "0x";
 
 /**
  * A failure that sending again cannot cure: the call itself is refused (a revert, no funds). Anything else, a transport error, a
@@ -27,24 +26,24 @@ export const reason = (error: unknown): string =>
     : typeof error === "object" && error !== null && "message" in error && typeof error.message === "string" ? error.message : "the send failed";
 
 /**
- * The live signed transaction for a row, taking it back from the store's bytes when there is none. Bytes that can no longer be read
- * turn the row into a fill: the nonce may be unused on the chain, so it is kept and plugged, not given up. Another failure (the nonce
- * is reserved by something else) leaves the row for the next look. A row waiting for its fill has no bytes; its nonce is held.
+ * After a restart, before any call is served: every open row takes back the reservation of its own nonce, lowest first. A row with bytes
+ * is resumed from them; a row without bytes (a fill waiting) is held. Bytes that can no longer be read turn the row into a fill, since
+ * that nonce may be unused on the chain. Nothing else is swallowed: a nonce another reservation already holds means the relayer's two
+ * records disagree, and that is a defect to surface.
  */
-export const adopt = (live: Live, store: Store, row: Row): Effect.Effect<Signed | undefined> => Effect.gen(function* () {
-  const held = live.sent.get(row.id);
-  if (held !== undefined) return held;
-  if (unsent(row)) {
-    yield* live.port.hold(live.key.address, row.nonce).pipe(Effect.ignore);
-    return undefined;
-  }
-  const signed = yield* live.port.resume(row.serialized, row.fromBlock).pipe(Effect.catch((error) => Effect.gen(function* () {
-    if (error.kind === "signing") {
-      store.toFill(row.id, "its signed bytes can no longer be read");
-      yield* live.port.hold(live.key.address, row.nonce).pipe(Effect.ignore);
+export const register = (live: Live, store: Store) => Effect.gen(function* () {
+  const { port, key, held } = live;
+  for (const row of store.open()) {
+    const signed = unsent(row) ? undefined : yield* port.resume(row.serialized, row.fromBlock).pipe(
+      Effect.catch((error) => error.kind === "signing" ? Effect.succeed(undefined) : Effect.fail(error)),
+    );
+    if (signed !== undefined) {
+      const reservation = port.reservationOf(signed.prepared);
+      if (reservation === undefined) return yield* Effect.die(new Error("a resumed transaction has no reservation"));
+      held.set(row.id, { reservation, signed });
+      continue;
     }
-    return undefined;
-  })));
-  if (signed !== undefined) live.sent.set(row.id, signed);
-  return signed;
-});
+    if (!unsent(row)) store.toFill(row.id, "its signed bytes can no longer be read");
+    held.set(row.id, { reservation: yield* port.hold(key.address, row.nonce) });
+  }
+}).pipe(Effect.orDie);

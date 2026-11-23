@@ -18,18 +18,25 @@ its own storage and its alarm.
 set by `configure` and `relay`, and by itself again after each run, and stops when everything is mined). With none configured there
 is no alarm. `reconcile` and the alarm take one lock, so a dropped transaction is replaced once.
 
-**Write before send.** `relay` first asks the node to run the call (`port.read`), so a call that would revert never holds a nonce. It
-then prepares, simulates and signs, and stores the submission, with its signed bytes, in state `submitting` before it sends, so a crash
-cannot orphan a transaction. A send that fails in transit (or that the node does not explain) is answered as sent and left to the alarm,
-which looks at the node and sends it again if it is gone. A crash after the row is written and before the send means the alarm sends it,
-so a call is at-least-once: a caller that got no answer should check `status` before it relays again.
+**The store owns the nonces.** The moment `prepare` reserves a nonce, `relay` writes a row for it (the nonce, no bytes yet), before anything
+that can fail, and holds that row's reservation object in a map keyed by the row's id. Only that reservation is ever filled or replaced:
+`ChainPort.fill` takes the caller's own reservation object and refuses any other, and the port is built with `keepOnReject`, so a send the
+node refuses for good leaves the nonce held by its owner instead of handing it back. A nonce is let go only once the node's count has
+passed it (the allocator prunes it). On a restart, inside `blockConcurrencyWhile`, every open row takes back its own reservation before a
+call is served: `resume` for rows with bytes, `hold` for rows without. A failure there is a defect and restarts the Durable Object.
 
-**One rule for a nonce that is reserved and then fails** (a simulation, a signature, a send the node refuses for good): the nonce is kept,
-a `fill` row waits at it with no bytes, and the alarm sends a zero-value transfer from the relayer to itself there (`ChainPort.fill`), so
-the calls queued behind it go through. The caller still gets the error. Bytes that can no longer be read turn a row into a fill the same
-way, since that nonce may be unused. A nonce another transaction already used needs no fill. A replacement that fails in transit is
-recorded as the current transaction, as a first send is; one the node refuses for good leaves the old one current and the reason on the
-row (`status` shows it as `problem`). A submission with no live copy is taken back from its bytes when it is next looked at.
+**Write before send.** `relay` first asks the node to run the call (`port.read`), so a call that would revert never takes a nonce. It
+then simulates and signs, stores the signed bytes on the row (state `submitting`) before it sends, and, while it works, the alarm leaves
+the row alone. A send that fails in transit (or that the node does not explain) is answered as sent and left to the alarm, which looks
+at the node and sends it again if it is gone. A crash after the row is written and before the send means the alarm sends it, so a call is
+at-least-once: a caller that got no answer should check `status` before it relays again.
+
+**A reserved nonce that fails** (a simulation, a signature, a send the node refuses for good) keeps its reservation, and its row becomes a
+`fill` row without bytes. The alarm sends a zero-value transfer from the relayer to itself there, from that row's reservation, so the
+calls queued behind it go through; a fill the node refuses is tried again at the next alarm. The caller still gets the error. Bytes that
+can no longer be read turn a row into a fill the same way. A nonce another transaction already used needs no fill. A replacement that
+fails in transit is recorded as the current transaction, as a first send is; one the node refuses for good leaves the old one current and
+the reason on the row (`status` shows it as `problem`).
 
 **What is stored** (the Durable Object's SQLite): the configuration, and one row per submission: id, nonce, state, the current
 hash, the signed bytes of the current transaction (public), the hashes it replaced, the block it was first sent at, and the fee

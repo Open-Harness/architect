@@ -20,7 +20,7 @@ export interface Row {
   readonly fromBlock: bigint;
   /** The most a replacement may pay per gas, fixed when the call was first sent. */
   readonly cap: bigint;
-  /** The call failed for good, so this row holds its nonce and the alarm fills it with a zero-value transfer to the relayer itself. */
+  /** The call could not be sent: this row holds its nonce, with no bytes, until the alarm fills it with a zero-value transfer to the relayer itself. */
   readonly fill: boolean;
   /** Why the last attempt to send this again failed, or empty. */
   readonly note: string;
@@ -63,11 +63,15 @@ export const makeStore = (sql: SqlStorage) => {
     setState: (id: string, state: Kept) => { sql.exec("UPDATE submissions SET state = ? WHERE id = ?", state, id); },
     /** The node accepted it: it is `submitted`, from this block. */
     sent: (id: string, fromBlock: bigint) => { sql.exec("UPDATE submissions SET state = 'submitted', from_block = ?, note = '' WHERE id = ?", fromBlock.toString(), id); },
+    /** The call was signed: its bytes join the row that has held its nonce since `prepare`. */
+    bytes: (id: string, hash: Hex, serialized: Hex, cap: bigint) => {
+      sql.exec("UPDATE submissions SET hash = ?, serialized = ?, cap = ? WHERE id = ?", hash, serialized, cap.toString(), id);
+    },
     /** The call can no longer be sent: the row keeps its nonce, without bytes, for the alarm to fill. */
     toFill: (id: string, note: string) => { sql.exec("UPDATE submissions SET fill = 1, state = 'submitting', serialized = '0x', note = ? WHERE id = ?", note, id); },
     /** The fill was signed and sent (or may have been): it is the row's transaction now. */
     filled: (id: string, hash: Hex, serialized: Hex, fromBlock: bigint, cap: bigint) => {
-      sql.exec("UPDATE submissions SET state = 'submitted', hash = ?, serialized = ?, from_block = ?, cap = ?, note = '' WHERE id = ?",
+      sql.exec("UPDATE submissions SET state = 'submitted', fill = 1, hash = ?, serialized = ?, from_block = ?, cap = ?, note = '' WHERE id = ?",
         hash, serialized, fromBlock.toString(), cap.toString(), id);
     },
     note: (id: string, note: string) => { sql.exec("UPDATE submissions SET note = ? WHERE id = ?", note, id); },

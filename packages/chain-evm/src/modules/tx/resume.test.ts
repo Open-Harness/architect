@@ -44,7 +44,8 @@ test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("probes a submission, 
     // The first hash was never mined, and the same call took its nonce under the new hash: it reads as included under that hash.
     expect(yield* second.probe(submission)).toMatchObject({ _tag: "Included", receipt: { transactionHash: next.hash } });
     // A held nonce is skipped by prepare, and cannot be held twice.
-    yield* second.hold(account.address, 1);
+    const held = yield* second.hold(account.address, 1);
+    expect(held).toMatchObject({ nonce: 1 });
     expect(yield* second.hold(account.address, 1).pipe(Effect.flip)).toMatchObject({ _tag: "ChainFault", kind: "nonce" });
     expect((yield* second.prepare({ from: account.address, to: recipient, value: 1n })).transaction.nonce).toBe(2);
     expect(yield* second.resume("0x1234", 0n).pipe(Effect.flip)).toMatchObject({ _tag: "ChainFault", kind: "signing" });
@@ -72,7 +73,10 @@ test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("a nonce whose call fa
     const queued = yield* send(c);
     const mined = (hash: `0x${string}`) => fixtureRpc(() => publicClient.getTransactionReceipt({ hash })).pipe(Effect.catch(() => Effect.succeed(undefined)));
     expect(yield* mined(queued.hash), "queued behind the missing nonce").toBeUndefined();
-    const filler = yield* port.fill(account.address, b.transaction.nonce, signer);
+    const mine = port.reservationOf(b)!;
+    // Only the owner can fill: a look-alike reservation (same sender, same nonce) is refused, and so is one that was never reserved here.
+    expect(yield* port.fill({ ...mine }, signer).pipe(Effect.flip)).toMatchObject({ _tag: "ChainFault", kind: "nonce" });
+    const filler = yield* port.fill(mine, signer);
     expect(filler.prepared.transaction).toMatchObject({ nonce: b.transaction.nonce, to: account.address, value: 0n, gas: 21_000n });
     yield* port.submit(filler);
     yield* fixtureRpc(() => testClient.mine({ blocks: 1 }));
@@ -80,3 +84,36 @@ test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("a nonce whose call fa
     expect(yield* fixtureRpc(() => publicClient.getTransactionCount({ address: account.address }))).toBe(3);
   }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 30_000);
 
+
+test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("a refused broadcast keeps its nonce for its owner (keepOnReject): the fill lands once funded, and a new call takes the next nonce", () =>
+  Effect.runPromise(Effect.gen(function* () {
+    const { chain, rpcUrl, transport } = yield* withAnvil;
+    const account = yield* Effect.sync(() => privateKeyToAccount(generatePrivateKey()));
+    const recipient = yield* Effect.sync(() => privateKeyToAccount(generatePrivateKey()).address);
+    const testClient = createTestClient({ chain, transport, mode: "anvil" });
+    const publicClient = createPublicClient({ chain, transport });
+    const fund = (value: bigint) => fixtureRpc(() => testClient.setBalance({ address: account.address, value }));
+    yield* fund(10n ** 18n);
+    const signer = {
+      address: account.address,
+      signTransaction: (transaction: Parameters<typeof account.signTransaction>[0]) =>
+        Effect.tryPromise({ try: () => account.signTransaction(transaction), catch: () => new Error("Anvil fixture signing failed") }).pipe(Effect.orDie),
+    };
+    const port = yield* makeChainPort({ chainId: chain.id, rpcUrl, keepOnReject: true });
+    const call = { from: account.address, to: recipient, value: 1n };
+    const first = yield* port.prepare(call);
+    yield* port.simulate(first);
+    const signed = yield* port.sign(first, signer);
+    const mine = port.reservationOf(first)!;
+    yield* fund(0n);
+    expect(yield* port.submit(signed).pipe(Effect.flip), "the node refuses it for want of funds").toMatchObject({ kind: "funds" });
+    // The refusal gave the nonce back to nobody: it is still its owner's, and a fill is refused the same way while there is no money.
+    const filler = yield* port.fill(mine, signer);
+    expect(yield* port.submit(filler).pipe(Effect.flip)).toMatchObject({ kind: "funds" });
+    yield* fund(10n ** 18n);
+    expect((yield* port.prepare(call)).transaction.nonce, "a new call is not given the held nonce").toBe(first.transaction.nonce + 1);
+    const again = yield* port.fill(mine, signer);
+    yield* port.submit(again);
+    yield* fixtureRpc(() => testClient.mine({ blocks: 1 }));
+    expect((yield* fixtureRpc(() => publicClient.getTransactionReceipt({ hash: again.hash }))).status, "the fill lands").toBe("success");
+  }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 30_000);

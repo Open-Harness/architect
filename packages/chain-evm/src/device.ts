@@ -17,4 +17,5 @@ export type {
 } from "./modules/events/types.ts";
 export { Keys } from "./modules/keys/service.ts";
 export type { Key, KeysApi } from "./modules/keys/types.ts";
+export type { NonceReservation } from "./modules/nonce/types.ts";
 export type { Address, Hash, Hex, TransactionReceipt } from "viem";

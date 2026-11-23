@@ -22,6 +22,17 @@ export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
   private readonly starting = Semaphore.makeUnsafe(1);
   private live: Live | undefined;
 
+  constructor(ctx: DurableObjectState, env: RelayerEnv) {
+    super(ctx, env);
+    // Before any call is served, every open row takes back the reservation of its own nonce. A relayer that is not set up yet (no
+    // configuration, no key, a node that does not answer) starts on its first call instead, which waits for the same step; a failure to take
+    // a nonce back is a defect and is not caught here, so the Durable Object restarts rather than serve calls that could be handed a nonce
+    // a row holds.
+    void ctx.blockConcurrencyWhile(() => this.store.config() === undefined || !env.RELAYER_KEY
+      ? Promise.resolve()
+      : Effect.runPromise(this.parts.pipe(Effect.asVoid, Effect.catch(() => Effect.void))));
+  }
+
   /** Run an Effect for a caller across Durable Object RPC: a failure arrives as an Error whose message holds no secret. */
   private run<A>(work: Effect.Effect<A, unknown, never>): Promise<A> {
     return Effect.runPromise(work.pipe(Effect.mapError((error) => new Error(describe(error)))));

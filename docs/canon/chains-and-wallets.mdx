@@ -185,7 +185,7 @@ export const depthOf = (setting: ChainSetting): Effect.Effect<number> =>
    passed it (`ChainFault` of kind `unsimulated`, `packages/chain-evm/src/modules/tx/internal/manager.ts:59`), so no
    path sends without simulating, and a failed simulation hands its nonce back (`release`):
 
-```ts file=packages/chain-evm/src/modules/tx/types.ts name=ChainPort lines=78-116
+```ts file=packages/chain-evm/src/modules/tx/types.ts name=ChainPort lines=79-120
 export interface ChainPort {
   readonly prepare: (call: Call) => Effect.Effect<Unsigned, ChainError>;
   /** An `eth_call` of the prepared transaction. `sign` and `submit` refuse a transaction that has not passed it. On failure, `release` it. */
@@ -214,16 +214,19 @@ export interface ChainPort {
    */
   readonly resume: (serialized: Hex, fromBlock: bigint) => Effect.Effect<Signed, ChainFault>;
   /**
-   * Keep a nonce of this sender out of `prepare`'s reach without sending anything with it, for a transaction that exists but can
-   * no longer be read. The hold ends when the node's finalized count passes the nonce. Fails when the nonce is already reserved.
+   * Reserve a nonce of this sender without sending anything with it, for a call that can no longer be sent (a transaction that cannot be
+   * read, or a fill waiting after a restart). The reservation is the caller's: only it is ever filled or released. It fails when the
+   * nonce is already reserved.
    */
-  readonly hold: (from: Address, nonce: number) => Effect.Effect<void, ChainFault>;
+  readonly hold: (from: Address, nonce: number) => Effect.Effect<NonceReservation, ChainFault>;
+  /** The reservation a prepared (or resumed, or filled) transaction holds: the owner's handle for `fill`. */
+  readonly reservationOf: (tx: Unsigned) => NonceReservation | undefined;
   /**
-   * A zero-value transfer from `from` to itself at `nonce`, signed and ready for `submit`: what plugs a nonce whose call can no longer
-   * be sent, so the nonces after it are not queued behind it. It takes the nonce's reservation as it is (held by a prepared call that
-   * failed, or by a broadcast that must be replaced), or reserves it when it is free. Fails when someone else holds the nonce.
+   * A zero-value transfer from the reservation's sender to itself at its nonce, signed and ready for `submit`: what plugs a nonce whose
+   * call can no longer be sent, so the nonces after it are not queued behind it. It takes the caller's own reservation object, never one
+   * looked up by address: a reservation that is not the one held at its nonce is refused (`ChainFault` of kind `nonce`).
    */
-  readonly fill: (from: Address, nonce: number, signer: Signer) => Effect.Effect<Signed, ChainFault>;
+  readonly fill: (reservation: NonceReservation, signer: Signer) => Effect.Effect<Signed, ChainFault>;
 }
 ```
 

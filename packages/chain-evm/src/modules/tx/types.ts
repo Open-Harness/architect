@@ -3,6 +3,7 @@ import type { Effect, Stream } from "effect";
 import type { Address, Hash, Hex, TransactionReceipt, TransactionSerializableEIP1559, TransactionSerializableLegacy } from "viem";
 import type { ChainError, ChainFault, RefusalLockEntry } from "../faults/types.ts";
 import type { DecodedEvent, EventFollower, EventSource } from "../events/types.ts";
+import type { NonceReservation } from "../nonce/types.ts";
 
 export interface Call {
   readonly from: Address;
@@ -103,16 +104,19 @@ export interface ChainPort {
    */
   readonly resume: (serialized: Hex, fromBlock: bigint) => Effect.Effect<Signed, ChainFault>;
   /**
-   * Keep a nonce of this sender out of `prepare`'s reach without sending anything with it, for a transaction that exists but can
-   * no longer be read. The hold ends when the node's finalized count passes the nonce. Fails when the nonce is already reserved.
+   * Reserve a nonce of this sender without sending anything with it, for a call that can no longer be sent (a transaction that cannot be
+   * read, or a fill waiting after a restart). The reservation is the caller's: only it is ever filled or released. It fails when the
+   * nonce is already reserved.
    */
-  readonly hold: (from: Address, nonce: number) => Effect.Effect<void, ChainFault>;
+  readonly hold: (from: Address, nonce: number) => Effect.Effect<NonceReservation, ChainFault>;
+  /** The reservation a prepared (or resumed, or filled) transaction holds: the owner's handle for `fill`. */
+  readonly reservationOf: (tx: Unsigned) => NonceReservation | undefined;
   /**
-   * A zero-value transfer from `from` to itself at `nonce`, signed and ready for `submit`: what plugs a nonce whose call can no longer
-   * be sent, so the nonces after it are not queued behind it. It takes the nonce's reservation as it is (held by a prepared call that
-   * failed, or by a broadcast that must be replaced), or reserves it when it is free. Fails when someone else holds the nonce.
+   * A zero-value transfer from the reservation's sender to itself at its nonce, signed and ready for `submit`: what plugs a nonce whose
+   * call can no longer be sent, so the nonces after it are not queued behind it. It takes the caller's own reservation object, never one
+   * looked up by address: a reservation that is not the one held at its nonce is refused (`ChainFault` of kind `nonce`).
    */
-  readonly fill: (from: Address, nonce: number, signer: Signer) => Effect.Effect<Signed, ChainFault>;
+  readonly fill: (reservation: NonceReservation, signer: Signer) => Effect.Effect<Signed, ChainFault>;
 }
 
 export interface ReplacementPolicy {
@@ -127,6 +131,11 @@ export interface ChainPortOptions {
   readonly receiptTimeoutMs?: number;
   readonly rpcTimeoutMs?: number;
   readonly refusals?: ReadonlyArray<RefusalLockEntry>;
+  /**
+   * Off by default. When on, a broadcast the node refuses for good leaves its nonce as a plain reservation held by its owner, instead of
+   * giving it back to the allocator, so the owner decides what the nonce is for (a relayer fills it).
+   */
+  readonly keepOnReject?: boolean;
   /** Optional trace provider for recovering data from mined reverts. */
   readonly traceRevert?: (hash: Hash) => Effect.Effect<Hex | undefined, ChainFault>;
 }
