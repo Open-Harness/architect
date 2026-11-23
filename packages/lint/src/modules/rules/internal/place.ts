@@ -1,6 +1,7 @@
 // no-wall-clock and handler-matches-path: time goes through Timers and Clock; a handler file is where its operation says.
 import type { Rule } from "../types.ts";
 import { SCHEMA, constructed, factsOf, pathOf } from "./facts.ts";
+import { sqlClockMessage } from "./sql-clock.ts";
 
 export const noWallClock: Rule = {
   meta: { schema: SCHEMA, docs: { description: "No Date.now, new Date(), setTimeout or raw Effect.sleep outside the runtime: use Clock and Timers." } },
@@ -20,6 +21,15 @@ export const noWallClock: Rule = {
       CallExpression: (node) => {
         const name = constructed(node);
         if (name === "setTimeout" || name === "setInterval") context.report({ node, message: `${name} waits outside counted work: use Timers` });
+      },
+      // SQL that asks the database for the time: a world has one clock, and the database is not it (K23 section 6).
+      Literal: (node) => {
+        const message = sqlClockMessage(node);
+        if (message !== undefined) context.report({ node, message });
+      },
+      TemplateElement: (node) => {
+        const message = sqlClockMessage(node);
+        if (message !== undefined) context.report({ node, message });
       },
     };
   },

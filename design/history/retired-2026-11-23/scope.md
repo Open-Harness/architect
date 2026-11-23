@@ -120,7 +120,7 @@ core everything else uses.
 | Model adapters and a stand-in model | None | | M4.05, M4.06 |
 | Tools from operations; the Run thing | None | | M4.07, M4.10 |
 | An agent writes a handler from a brief | Built | `ortho brief`, layer 1 check 04 | Gate 1 |
-| No wall clock; `Timers`; counted work | Partial | in-memory timers and the lint rule; no world timer table | M8.06, M8.07 |
+| No wall clock; `Timers`; counted work | Built | `Timers` and `Busy` on the world's table and count (`design/decisions/M8-07-timers-and-quiet.md`), the lint rule | Gate M8 |
 | World clock, moves made by time, the keeper | Spiked/None | `design/spikes/world-clock.md` | M8 |
 
 ### Stage 4 and the release (1.0)

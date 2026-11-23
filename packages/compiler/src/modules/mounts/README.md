@@ -11,3 +11,7 @@ and its `layer` and declared stand-in are recorded too (section 9.1). A projecti
 
 A feature's `stores/` are read with its `things/` and named `<mount>-<store>`, always prefixed (K3 item 7); a clash with
 the project's own store, or another mount's, is refused naming the mount's file.
+
+A mount's secrets are read with the plugin's files (`secrets.js` in its blueprint folder, any kind of plugin) and returned
+as `Folded.secrets`, each with the mount that brought it, so the model can derive its name from the mount and the export
+(M2.04).

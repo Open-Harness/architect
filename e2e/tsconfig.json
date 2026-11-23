@@ -4,5 +4,5 @@
   // The connection journeys and their starting worlds (superagent/journeys, superagent/connection-worlds) import what slice 9 and 11 build: the stand-in descriptors (@orthograph/github/stand, @orthograph/slack/stand),
   // `outbox`, `s.runner` and `s.clock.settle` (GOAL17-check-harness). They cannot resolve until then, so tsc leaves them out; check 66 runs them through `ortho prove`.
   // Slice 11 takes this line out when the packages exist. Slice 8 excludes the same folder in its own list.
-  "exclude": ["superagent/journeys/**", "superagent/connection-worlds/**", "superagent/agent-journeys/**", "superagent/kit/**", "superagent/starting-worlds/**", "superagent/tapes/**", "superagent/tape/**"]
+  "exclude": ["portal-next/fixtures/**", "superagent/journeys/**", "superagent/connection-worlds/**", "superagent/agent-journeys/**", "superagent/kit/**", "superagent/starting-worlds/**", "superagent/tapes/**", "superagent/tape/**"]
 }

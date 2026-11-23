@@ -145,6 +145,37 @@ importers:
         specifier: 5.20261101.1
         version: 5.20261101.1
 
+  examples/budgets:
+    dependencies:
+      '@effect/platform-node':
+        specifier: 4.1.4
+        version: 4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0))
+      '@effect/sql-d1':
+        specifier: 4.1.4
+        version: 4.1.4(effect@4.1.4)
+      '@orthograph/host-cloudflare':
+        specifier: workspace:*
+        version: link:../../packages/host-cloudflare
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../../packages/language-effect
+      '@orthograph/portal':
+        specifier: workspace:*
+        version: link:../../packages/portal
+      '@orthograph/projections':
+        specifier: workspace:*
+        version: link:../../packages/projections
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      orthograph:
+        specifier: workspace:*
+        version: link:../../packages/orthograph
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: 5.20261101.1
+        version: 5.20261101.1
+
   examples/plugged-in:
     dependencies:
       '@alchemy.run/cloudflare':
@@ -550,6 +581,9 @@ importers:
       '@effect/sql-d1':
         specifier: 4.1.4
         version: 4.1.4(effect@4.1.4)
+      '@orthograph/chain-evm':
+        specifier: workspace:*
+        version: link:../chain-evm
       '@orthograph/language-effect':
         specifier: workspace:*
         version: link:../language-effect
@@ -853,6 +887,28 @@ importers:
       verdaccio:
         specifier: 6.11.1
         version: 6.11.1(supports-color@10.2.2)(typanion@3.14.0)
+
+  packages/shell:
+    dependencies:
+      '@ui-sdk/core':
+        specifier: 0.1.0-beta.10
+        version: 0.1.0-beta.10
+      '@ui-sdk/react':
+        specifier: 0.1.0-beta.10
+        version: 0.1.0-beta.10(@types/react@19.3.0)(@ui-sdk/core@0.1.0-beta.10)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: 19.3.1
+        version: 19.3.1(react@19.3.1)
 
   packages/theme: {}
 
@@ -3762,6 +3818,17 @@ packages:
 
   '@ui-sdk/core@0.1.0-beta.10':
     resolution: {integrity: sha512-Rtm3QtuRT9U5nAlhIwKf2TzNIDZeOq3VmPzIiy55K3nFGeZokpPmHdF5ryaZmsByImNhOdRv5P7TOMro48NB+Q==}
+
+  '@ui-sdk/react@0.1.0-beta.10':
+    resolution: {integrity: sha512-iObTzV2owJmF6GNVIiudpunoPlQ7mnDezdXc7XVajkmBpAzwq6gMuT0xLesWH71ct9wKcWRPkxbWC+E3ahOUPA==}
+    peerDependencies:
+      '@types/react': '>=19.2.10'
+      '@ui-sdk/core': ^0.1.0-beta.10
+      react: '>=19'
+      react-dom: '>=19'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@ungap/structured-clone@1.4.0':
     resolution: {integrity: sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ==}
@@ -10114,6 +10181,14 @@ snapshots:
       '@typescript/old': typescript@6.0.3
 
   '@ui-sdk/core@0.1.0-beta.10': {}
+
+  '@ui-sdk/react@0.1.0-beta.10(@types/react@19.3.0)(@ui-sdk/core@0.1.0-beta.10)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
+    dependencies:
+      '@ui-sdk/core': 0.1.0-beta.10
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
+    optionalDependencies:
+      '@types/react': 19.3.0
 
   '@ungap/structured-clone@1.4.0': {}
 

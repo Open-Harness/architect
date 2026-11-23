@@ -49,6 +49,16 @@ describe("ortho/effect-only", () => {
     expect(run({ [`${src}/x.ts`]: eight })).toEqual(Array(8).fill(`${src}/x.ts effect-only`));
   });
 
+  it("reports SQL that reads the database's clock: now(), CURRENT_TIMESTAMP and datetime('now')", T, () => {
+    const sql = [
+      "export const a = `INSERT INTO t (at) VALUES (now())`;",
+      `export const b = "UPDATE t SET at = CURRENT_TIMESTAMP";`,
+      `export const c = "SELECT datetime('now')";`,
+      `export const d = "INSERT INTO t (at) VALUES (?)";`,
+    ].join("\n");
+    expect(run({ [`${src}/x.ts`]: sql })).toEqual(Array(3).fill(`${src}/x.ts effect-only`));
+  });
+
   it("reports async functions and methods and setInterval; leaves new Date(0) and Date as a type", T, () => {
     expect(run({
       [`${src}/x.ts`]: `export async function f() {}\nexport const o = { async m() {} };\nsetInterval(() => 0, 1);\n`,

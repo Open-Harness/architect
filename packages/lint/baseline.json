@@ -40,7 +40,6 @@
     "packages/orthograph/src/modules/secrets": 1,
     "packages/orthograph/src/modules/stores": 1,
     "packages/orthograph/src/modules/telemetry": 1,
-    "packages/orthograph/src/modules/values": 1,
     "packages/orthograph/src/modules/visibility": 1,
     "packages/portal-ui/src/modules/content": 1,
     "packages/portal/src/modules/reader": 1,

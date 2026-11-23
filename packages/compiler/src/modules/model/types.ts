@@ -2,10 +2,19 @@
 import { Data, type Effect } from "effect";
 import type { BlueprintSource, SourceError } from "#modules/source/types.js";
 import type { ClockModel, MoveTimeModel } from "#modules/time/types.js";
-import type { ValueMeta } from "orthograph";
+import type { ValueMeta as DeclaredMeta } from "orthograph";
 import type { MountModel } from "#modules/mounts/types.js";
+import type { AppModel } from "#modules/app/types.js";
 
-export type { MountModel, ValueMeta };
+/** What an amount counts, in the model: an asset file's name (a token or a currency), or the field of the same row that holds the token. */
+export type MoneyAssetModel = { readonly token: string } | { readonly currency: string } | { readonly field: string };
+
+/** A value as the model records it: the declared meta, its money resolved to names (M6-money). */
+export type ValueMeta =
+  | Exclude<DeclaredMeta, { readonly type: "money" }>
+  | { readonly type: "money"; readonly bits: number; readonly signed: boolean; readonly asset: MoneyAssetModel };
+
+export type { MountModel };
 
 /** A declaration belongs to the app or to a mount, with its original name inside that plugin. */
 export type FromModel =
@@ -22,6 +31,8 @@ export interface FieldModel {
   readonly ref?: string;
   /** A payload field the caller may leave out (a list's filters and cursor). */
   readonly optional?: true;
+  /** The Solidity type the value works out to on a chain store (M6-chain item 2); present only on a field of a thing that lives in one. */
+  readonly solidity?: string;
   /** What the field is for, as the blueprint says (`Blueprint.described`); every output carries it (M1.42). */
   readonly description?: string;
   /** Absent means public, the default. Only a public field's value may be a span attribute, a log line or a journal field. */
@@ -62,7 +73,7 @@ export interface ThingModel {
   /** A thing with versions (K40 fix 2): one current version per `key`. Absent when it has none. */
   readonly versions?: { readonly key: string };
   /** The kind of place its state is kept: D1 rows, or a Durable Object per instance. */
-  readonly lives: "database" | "actor";
+  readonly lives: "database" | "actor" | (string & {});
   /** The declared store it lives in (a key of `Model.stores`); absent when it lives in the project's default store. */
   readonly store?: string;
   /** Its rules (G5), by name: what stays true among its instances. Absent when it has none; a rule's full name is `<thing>.<name>`. */
@@ -77,7 +88,10 @@ export interface ThingModel {
   /** Each with its code, which never moves once released. */
   readonly errors: Readonly<Record<string, { readonly fields: FieldsModel; readonly exit: number; readonly code: string }>>;
   readonly roles: ReadonlyArray<string>;
-  readonly roleRules: Readonly<Record<string, string | null>>;
+  /** A `rule` role's text (null while it is a `Blueprint.todo`), or a `who` role as declared: the field of the thing that holds whoever the role is for (K20). */
+  readonly roleRules: Readonly<Record<string, string | null | { readonly kind: "who"; readonly who: string }>>;
+  /** On a chain store: each state's number on chain, `absent` 0 and then the declared states in order (M6-chain item 2). */
+  readonly stateNumbers?: Readonly<Record<string, number>>;
   readonly from: FromModel;
   readonly hash: string;
 }
@@ -140,8 +154,8 @@ export interface OperationModel {
   readonly idempotent: "request" | null;
   /** A person must say yes before it runs. Present only when declared, and only ever `true` (#466). */
   readonly needsApproval?: true;
-  /** Where it runs: `server`, or `client` (on the caller's device) for a plugin's operation that has a code entry per host. */
-  readonly runs: "server" | "client";
+  /** Where it runs: `server`, `client` (on the caller's device) for a plugin's operation that has a code entry per host, or `chain` for an operation of a thing in a chain store (K25 item 6). */
+  readonly runs: "server" | "client" | "chain";
   /** `network` when its guarantee needs a network test (a target sets it); `unit` otherwise. */
   readonly test: "unit" | "network";
   readonly budget: { readonly p95Ms: number } | null;
@@ -184,8 +198,10 @@ export interface EnvironmentModel {
   readonly lifetimeMs: number | null;
   readonly cloud: { readonly provider: "cloudflare"; readonly database: "d1" | "d1-local" } | null;
   readonly database: "d1" | "d1-local" | null;
-  /** Only the stores it binds differently from the default, by store name; present only when it binds any. */
-  readonly stores?: Readonly<Record<string, "d1" | "d1-local">>;
+  /** Only the stores it binds differently from the default, by store name; present only when it binds any. A chain store is bound to a network. */
+  readonly stores?: Readonly<Record<string, "d1" | "d1-local" | { readonly chain: "evm"; readonly network: string }>>;
+  /** The contract each fixed token asset is, by asset and then by chain store; present only when it binds any (M6-money item 2). */
+  readonly assets?: Readonly<Record<string, Readonly<Record<string, { readonly chain: "evm"; readonly address: string }>>>>;
   /** Secret names, and how each gets its value. Never a value. */
   readonly secrets: Readonly<Record<string, "generated" | "stored">>;
   readonly promotesFrom: string | null;
@@ -242,6 +258,22 @@ export interface StoreFromModel {
   readonly store: string;
 }
 
+/** Where a secret was declared: the app's own `blueprint/secrets.ts`, or the plugin a mount brought in. */
+export type SecretFromModel =
+  | { readonly kind: "app" }
+  | { readonly kind: "feature" | "adapter" | "projection"; readonly mount: string; readonly package: string; readonly version: string };
+
+/** A declared secret, by the name derived from its mount and export: how it gets a value and who holds it. Never a value. */
+export interface SecretModel {
+  readonly how: "generated" | "stored";
+  /** `runtime` (a running place holds it), `release` (CI's) or `builder` (a developer's machine's). */
+  readonly kind: "runtime" | "release" | "builder";
+  /** The export's name in the declaring `secrets.ts`: what the plugin's layer reads it by. */
+  readonly export: string;
+  readonly from: SecretFromModel;
+  readonly describe?: string;
+}
+
 /** A store, named by its file (`blueprint/stores/ledger.ts` is `ledger`), or by its mount and path (`echo-ledger`). */
 export interface StoreModel {
   readonly name: string;
@@ -251,6 +283,17 @@ export interface StoreModel {
   /** Present only for a plugin's store; its `file` is then a package specifier. */
   readonly from?: StoreFromModel;
   readonly hash: string;
+}
+
+/** An asset, named by its file (`blueprint/assets/usdc.ts` is `usdc`): a token with its symbol and places, or a currency with its code and places. */
+export interface AssetModel {
+  readonly name: string;
+  readonly file: string;
+  readonly kind: "token" | "currency";
+  readonly symbol?: string;
+  readonly code?: string;
+  /** The places of an amount: 6 for USDC, so `1250000` is 1.25 USDC; a currency's come from its code. */
+  readonly decimals: number;
 }
 
 /** One burn alert of an objective: it fires when the objective burns at `burn` or more over both windows (long, then short). */
@@ -281,6 +324,8 @@ export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;
   readonly values: Readonly<Record<string, ValueMeta>>;
+  /** The declared assets, by name: present only when the blueprint declares any (M6-money). */
+  readonly assets?: Readonly<Record<string, AssetModel>>;
   /** The declared stores, by name: present only when the blueprint (or a mount) declares any. */
   readonly stores?: Readonly<Record<string, StoreModel>>;
   readonly things: Readonly<Record<string, ThingModel>>;
@@ -296,6 +341,8 @@ export interface Model {
   readonly blanks?: Readonly<Record<string, ReadonlyArray<string>>>;
   /** Where the application runs, by name: present only when the blueprint has an `environments/` folder. */
   readonly environments?: Readonly<Record<string, EnvironmentModel>>;
+  /** The declared secrets by derived name (`STRIPE_API_KEY`): present only when the app or a mount declares any. */
+  readonly secrets?: Readonly<Record<string, SecretModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
   /** Each agent kind, by its file's name: present only when the blueprint (or a mount) declares any. */
@@ -310,6 +357,8 @@ export interface Model {
   readonly declared?: Readonly<Record<string, ReadonlyArray<unknown>>>;
   /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
   readonly alertRules: ReadonlyArray<AlertRuleModel>;
+  /** The app's map: its pages, components and navigation (K31, K36). Present only when the blueprint has an `app/` folder. */
+  readonly app?: AppModel;
 }
 
 /** A blueprint the compiler refuses, with every problem found, each naming its file. */
@@ -318,4 +367,6 @@ export class BlueprintInvalid extends Data.TaggedError("BlueprintInvalid")<{ rea
 export interface CompilerApi {
   /** Load the blueprint and build its model. */
   readonly model: Effect.Effect<Model, BlueprintInvalid | SourceError, BlueprintSource>;
+  /** The model, and the text `blueprint/refusals.lock` must have for it (M6-chain item 4): what `ortho generate` writes. */
+  readonly locked: Effect.Effect<{ readonly model: Model; readonly lock: string }, BlueprintInvalid | SourceError, BlueprintSource>;
 }

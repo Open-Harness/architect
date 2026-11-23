@@ -3,7 +3,7 @@
 import type { Effect } from "effect";
 import type { Agent, SourceKind } from "orthograph";
 import type { BlueprintSource } from "#modules/source/types.js";
-import type { Layout, StoreFile, ThingFiles } from "#modules/model/internal/layout.js";
+import type { Layout, MountSecret, StoreFile, ThingFiles } from "#modules/model/internal/layout.js";
 
 /** What a mount adds to the model, by the mount's name. */
 export interface MountModel {
@@ -67,6 +67,8 @@ export interface Folded {
   readonly agents: ReadonlyMap<string, BroughtAgent>;
   /** The source kinds the features bring, by the file's name. */
   readonly sources: ReadonlyMap<string, BroughtSource>;
+  /** Every mounted plugin's secrets, from its `secrets.ts`, each with the mount that brought it. */
+  readonly secrets: ReadonlyArray<MountSecret>;
   readonly problems: ReadonlyArray<string>;
 }
 

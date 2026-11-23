@@ -39,6 +39,22 @@
             "allowedExternalImports": []
           },
           {
+            "sourceTag": "scope:shell",
+            "onlyDependOnLibsWithTags": [
+              "scope:theme"
+            ],
+            "allowedExternalImports": [
+              "react",
+              "react/*",
+              "react-dom",
+              "react-dom/*",
+              "@ui-sdk/core",
+              "@ui-sdk/core/*",
+              "@ui-sdk/react",
+              "@ui-sdk/react/*"
+            ]
+          },
+          {
             "sourceTag": "env:runtime",
             "onlyDependOnLibsWithTags": [
               "env:runtime"
@@ -160,6 +176,23 @@
                 "sourceTag": "scope:theme",
                 "onlyDependOnLibsWithTags": [],
                 "allowedExternalImports": [
+                  "vitest"
+                ]
+              },
+              {
+                "sourceTag": "scope:shell",
+                "onlyDependOnLibsWithTags": [
+                  "scope:theme"
+                ],
+                "allowedExternalImports": [
+                  "react",
+                  "react/*",
+                  "react-dom",
+                  "react-dom/*",
+                  "@ui-sdk/core",
+                  "@ui-sdk/core/*",
+                  "@ui-sdk/react",
+                  "@ui-sdk/react/*",
                   "vitest"
                 ]
               },

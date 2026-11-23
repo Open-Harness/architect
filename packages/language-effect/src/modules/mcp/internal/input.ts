@@ -3,6 +3,9 @@ import type { FieldsInput } from "orthograph";
 
 type Json = { readonly [key: string]: unknown };
 
+const UNSIGNED = "^(0|[1-9][0-9]*)$";
+const SIGNED = "^(0|-?[1-9][0-9]*)$";
+
 /** A payload field the caller may not give: declared, and not public. A tool never offers it and never takes it. */
 export const hiddenInputs = (payload: FieldsInput): ReadonlyArray<string> =>
   Object.keys(payload).filter((k) => payload[k]!.visibility !== "public");
@@ -20,7 +23,12 @@ export const inputSchema = (payloadSchema: Schema.Top, payload: FieldsInput): Js
     // Each property says what its field is for, in the blueprint's own words (M1.42).
     properties: Object.fromEntries(Object.entries(full.properties ?? {}).filter(([k]) => !hidden.has(k)).map(([k, p]) => {
       const description = payload[k]?.description;
-      return [k, description === undefined ? p : { ...(p as Json), description }] as const;
+      const input = payload[k];
+      const meta = input === undefined ? undefined : (input.kind === "field" ? input.value : input).meta;
+      // A whole number travels as base-unit digits only (M6-money (c)); the pattern is on the string, which the generated schema does not carry, so it is said here.
+      const digits = meta?.type === "uint" ? UNSIGNED : meta?.type === "money" ? (meta.signed ? SIGNED : UNSIGNED) : undefined;
+      const said = digits === undefined ? p : { ...(p as Json), pattern: digits };
+      return [k, description === undefined ? said : { ...(said as Json), description }] as const;
     })),
     required: (full.required ?? []).filter((k) => !hidden.has(k)),
     additionalProperties: false,

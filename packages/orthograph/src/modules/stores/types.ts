@@ -17,5 +17,9 @@ export interface StoresApi {
     readonly actor: () => Store<"actor">;
     /** A kind some host or language supplies, such as `chain`: the compiler refuses a kind the project's host doesn't supply. */
     readonly kind: <const K extends string>(of: K) => Store<K>;
+    readonly chain: {
+      /** A contract on an EVM chain, written in Solidity: its name is the file's (K25). One module per network, which any Safe enables. */
+      readonly evm: () => Store<"chain.evm">;
+    };
   };
 }
