@@ -189,7 +189,7 @@ export default Blueprint.operation(Assignment, {
 
 `fill` is declared by the **app**, not by `tickets`: it reads the Superagent's `slots` and state, and `tickets` imports
 nothing of `superagent` (GOAL17-pause). `tickets` offers the pure `slots` module and `assignment.start` and
-`assignment.list` through its feature's exports. The app's file joins them. `slots` is a value to `tickets`, never an
+`assignment.list` through its feature's exports (Superseded by GOAL17-names, 23 November 2026: `assignment.started` and `assignment.waiting`). The app's file joins them. `slots` is a value to `tickets`, never an
 import: it reaches the pure rule as the `size` argument.
 
 ```ts
@@ -238,7 +238,7 @@ const fillSeats = (id: SuperagentId) => Effect.gen(function* () {
   committed with the move that ended the turn, and delivered at least once. `fill` is safe to run twice, because a
   second run finds nothing waiting that can start.
 - **A sweep backs it up** every 30 seconds through `Timers.at` (`language-effect/src/modules/timers/types.ts:15-16`),
-  as counted work (`work/types.ts:5-6`), the same kind as `evals.due`'s 2-second pass (brief :324). It runs `superagent.reap`,
+  as counted work (`work/types.ts:5-6`), the same kind as `evals.due`'s (Superseded by GOAL17-names, 23 November 2026: `eval.due`'s) 2-second pass (brief :324). It runs `superagent.reap`,
   then `superagent.fill`, for each live superagent. A lost event costs at most 30 seconds, never a stuck queue. No handler
   sleeps, reads a clock or awaits: every wait is a timer.
 - **Whether one call may start several Assignments is open** (see risks). If a call moves one instance, `fill` calls
@@ -281,7 +281,7 @@ Blueprint.on(AssignmentInterrupted, (e) => ({ agent: e.agent, assignment: e.assi
 
 **A person's Input on a pending Assignment promotes it.** A CI result queues an Assignment (`why: "input"`) while the pool is
 full. A person then writes to the same executor. `oneLivePerExecutor` means no second Assignment, so `input.route` runs
-`assignment.promote` in the same commit as it leaves the Input waiting: the move `promoted` (`pending → pending`) sets `why` to
+`assignment.promote` (Superseded by GOAL17-names, 23 November 2026: `assignment.promoted`) in the same commit as it leaves the Input waiting: the move `promoted` (`pending → pending`) sets `why` to
 `person`, and the Assignment row's version guards it against `start`. If `start` won, `route` runs again and finds
 `running`, so it routes the Input directly. If `promote` won, `fill`'s `start` of that Assignment conflicts on the row and
 runs again, reads `person`, and `seatFor` may now give it the reserve seat, with the person's place in the line. `AssignmentPromoted` is
@@ -362,7 +362,7 @@ works steers it". An Input to an idle executor makes a pending Assignment, and t
 seat commits. `oneLivePerExecutor` makes two Inputs arriving at once share one Assignment: the second `queued`
 commit loses the index and runs again, then finds the first. `ticket.accept` queues the first Assignment with
 `why: "launch"` and its first `input` in its one commit (brief :361); a resume queues one the same way.
-`assignment.start` also moves the Assignment's own `input` to `routed` in the commit that takes the seat.
+`assignment.start` (Superseded by GOAL17-names, 23 November 2026: `assignment.started`) also moves the Assignment's own `input` to `routed` in the commit that takes the seat.
 
 ### 6. What "a person's message" means here
 
@@ -459,7 +459,7 @@ const s = Blueprint.journey("a full pool keeps its slot for a person", { world: 
     emits(AssignmentEnded, { seat: 1n }), emits(AssignmentStarted, { seat: 1n, why: "person" }))
   .step("a restart changes none of it", call(world.restart),
     expect((a) => seatsOf(a.running), [1n, 2n, 255n]))
-  .step("a duplicate start is refused", call(assignment.start, { id: s.world.first }), refuses(machine.notFrom));
+  .step("a duplicate start is refused", call(assignment.start, { id: s.world.first }), refuses(machine.notFrom));   // Superseded by GOAL17-names, 23 November 2026: `assignment.started`
 ```
 
 What proves it, each from a place a journey already reads (`journeys/types.ts:57-66`): the machine's state
@@ -483,7 +483,7 @@ lives. This is every such pair across the four records, with its guard. Rows mar
 | `route` and `turnEnded` (an Input and a turn that ends) | `route` reads a running Assignment and writes an Input; `turnEnded` writes the Assignment | **the Agent actor's own commit**: a steer for an Assignment that is not its `current` is refused (`StaleAssignment`), and the Input is requeued. The seat state is never trusted across two commits |
 | `route` for a pending Assignment and `start` | `route` reads `pending` and leaves the Input waiting; `start` writes the Assignment | state only moves forward: `start`'s own `input.route` lists the waiting Inputs after the commit, and an Input stored later routes against `running`. Neither can miss the other |
 | `route`, `requeue` and `delivered` on one Input | each moves the Input | the Input's machine (`from` states) and the row's version |
-| `stop` or a handoff and `start` / `fill` | `stop` reads a pending Assignment; `fill` starts it | both write the Assignment row; `started` is `from: ["pending"]` and `interrupted` from `pending` or `running`, so one refuses |
+| `stop` or a handoff and `start` / `fill` | `stop` reads a pending Assignment; `fill` starts it | both write the Assignment row; `started` is `from: ["pending"]` and `interrupted` from `pending` or `running` (Superseded by GOAL17-names, 23 November 2026: `interrupted` is from `running` only, as the machine says; a pending one is `cancelled`), so one refuses |
 | `turnEnded`, `reap` and a late `AgentIdled` (**fixed**) | each can end an Assignment, and a delayed idle for A1 could arrive after A2 started | `turnEnded` takes the Assignment id from the event (`AgentIdled.assignment` or `AgentClosed.assignment`) and matches that `id`, never "the executor's live one". A stale one for A1 meets `notFrom` on A1 and cannot end A2. `reap` ends nothing: it only moves to `closing` |
 | `reap` and the opening tell (**fixed**) | `reap` reads an idle Agent and frees a seat; the tell is still on its way | the Agent's own commit: `reap` moves to `closing` (the seat is still held), `agent.close` records the id as closed, and only `AgentClosed` ends the Assignment. A late open is refused. A seat is never freed before the Agent has acknowledged the id |
 | `promote` and `start` (**fixed**) | `route` reads a pending Assignment and writes `why`; `fill` reads `why` and starts it | the Assignment row's version: both write the Assignment, the loser re-reads (`fill` then sees `person`, or `route` then sees `running`) |
