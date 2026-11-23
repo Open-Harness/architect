@@ -28,6 +28,7 @@
     "@orthograph/language-effect": "workspace:*",
     "@orthograph/superagent": "workspace:*",
     "@orthograph/github": "workspace:*",
-    "@orthograph/slack": "workspace:*"
+    "@orthograph/slack": "workspace:*",
+    "@orthograph/posthog": "workspace:*"
   }
 }

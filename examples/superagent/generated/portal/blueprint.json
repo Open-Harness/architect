@@ -14232,7 +14232,7 @@
         "file": "blueprint/adapters/github.ts",
         "package": "@orthograph/github",
         "version": "0.0.0",
-        "integrity": "sha256-2yri8C4UvJlbCqpUXz6qFIBbUQkXBav0pO/ElMASG+s=",
+        "integrity": "sha256-CAUnDeUqjBpnYub4fXTsDFmVCSblbezu1as5rGcQwC8=",
         "chosen": {},
         "calls": [
           "issues.createComment",
@@ -14260,16 +14260,16 @@
         "door": {
           "secret": "GITHUB_WEBHOOK_SIGNING"
         },
-        "hash": "7d9617cd6fb04ff9"
+        "hash": "e8baeb91fc9464a7"
       },
       "intake": {
         "kind": "feature",
         "file": "blueprint/features/intake.ts",
         "package": "@orthograph/intake",
         "version": "0.0.0",
-        "integrity": "sha256-BPCCelgkg0byV4liFYFzO1xk0sTnKEWISd/iIA9aimo=",
+        "integrity": "sha256-RbCkPMbTs5KuG/1Y6ztry3A4lJTQB7249IJ+qDpJDtc=",
         "chosen": {},
-        "hash": "8c2695c85946a699"
+        "hash": "556ff9cc33185967"
       },
       "posthog": {
         "kind": "adapter",
@@ -14885,5 +14885,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "99d1f6d3c4592f251dc09d8465048095507e283c2c88fc5d1331841d0041a9d4"
+  "digest": "81c2e5c1d200b4c17f343f2709dbbf1e0d8f26693572dca9548b406bf14fd01d"
 }
