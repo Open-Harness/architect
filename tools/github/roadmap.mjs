@@ -4,7 +4,7 @@
 // An item's Start is the day a goal first claimed it or its first evidence pull request merged, its End the day it was
 // built. For an item not yet done the sync forecasts both from what needs what and the pace measured so far:
 //
-//   pace         pull requests merged per day over the last three full days (repository-wide, as K42 measured it)
+//   pace         pull requests merged per day over the last seven full days (repository-wide, as K42 measured it)
 //   per item     all pull requests ever merged, divided by the items' progress (a stage counts a share of an item), so the
 //                work an item takes is in the same unit as the pace
 //   the forecast a day at a time: the day's pace is spent on the items that are ready (everything they need was done on an
@@ -17,7 +17,7 @@ import { APP_MILESTONES, isDone } from "./board.mjs";
 export const STAGE_SHARE = { provisional: 0, spiked: 0.2, scaffoldable: 0.4, building: 0.6, built: 1, extracted: 1 };
 /** How many items the pace is spread over at once (20 CI jobs, two ready pull requests per goal, K42 section 4). */
 export const WIDTH = 8;
-export const WINDOW_DAYS = 3;
+export const WINDOW_DAYS = 7;
 const HORIZON = 730;
 
 export const addDays = (day, n) => {
@@ -26,7 +26,7 @@ export const addDays = (day, n) => {
   return d.toISOString().slice(0, 10);
 };
 
-/** Pull requests merged per day over the WINDOW_DAYS full days before `today`. mergedDays: each merge's day, "YYYY-MM-DD". */
+/** Pull requests merged per day over the WINDOW_DAYS (seven) full days before `today`. mergedDays: each merge's day, "YYYY-MM-DD". */
 export const pace = (mergedDays, today) => {
   const from = addDays(today, -WINDOW_DAYS);
   return mergedDays.filter((d) => d >= from && d < today).length / WINDOW_DAYS;

@@ -53,17 +53,18 @@ changing its words, not its id.
 
 **Adopting an issue.** Many open issues already describe items, and the sync must not make a second one. An Evidence
 cell can hold, each in backticks, `` `issue #531` `` to adopt that issue and `` `folds #533, #538` `` for other issues that are the same
-item. The sync then writes the row's marker, labels (its kind, release and lane, replacing `kind:ask` or `kind:snag`), milestone,
+item. The sync then writes the row's marker, labels (its kind, release and lane, replacing `kind:ask`), milestone,
 issue type and Project fields onto the adopted issue, and keeps the words it had under a line of its own, so nothing is lost. It
 closes each folded issue as a duplicate with a comment pointing at the row's issue. A row adopts at most one issue, an issue
 belongs to at most one row, and the sync stops before any write if an adopted or folded number is no issue, is a pull request or
-is another row's. Bugs, snags and decisions are not items and are never adopted. A case-2 ask (K42, section 3) stays an Ask until
-Goal 18 settles it.
+is another row's, or is not a `kind:ask` issue. **Only `kind:ask` issues are adopted or folded.** A snag, a claim (a `kind:snag`
+issue another goal waits on), a decision, a goal or a slice is never touched; name it as a plain `#N` in Evidence. A case-2 ask
+(K42, section 3) stays an Ask until Goal 18 settles it.
 
 **Status and dates.** The Project's Status follows the row: Done when it is built or extracted, Running (the Project's "in progress")
 when it has a lane, Ready when everything in Needs is built, otherwise Blocked. Start is the day its lane first appeared on this
 page or its first evidence pull request merged; End is the day it was built (the last evidence pull request's merge); a row not
-yet done gets a forecast from `tools/github/roadmap.mjs` (dependency order and the pace of the last three days), and a
+yet done gets a forecast from `tools/github/roadmap.mjs` (dependency order and the pace of the last seven days), recomputed every run, and a
 milestone's due date is the forecast end of its last item. A row no app has pulled has no dates.
 
 The split (K42, section 3, Aaron's call 9): the superagent pulls versions, timers, safe repeats, events in and the
@@ -156,11 +157,11 @@ once planned.
 | confirmation-depth | Confirmation depth: confirmation depth per environment | building | Capxul | 1.0 | getting paid | none | `packages/chain-evm` | chain-evm | check 18; slice M1.38; not yet proved by an app's journeys: its own check only; no app's journeys yet (Capxul pulls it) |
 | browser-wallet-signer | Browser wallet signer: only against a stub, never in Chromium | building | framework | — | — | none | `packages/wallets` | wallets-keys | slices M1.29, ST2.03 |
 | relayer-follower | Relayer and follower: both actors are on `main`, and the relayer has reorg and ordering bugs | building | Capxul | 1.0 | getting paid | none | `packages/host-cloudflare/src/modules/follower`, `packages/host-cloudflare/src/modules/relayer`, `packages/chain-evm/src/modules/tx` | wallets-keys, chain-evm | #679 (`Follower`, on `main`); #677, the relayer, landed on `main` by #778; snag #784 blocks it, so it stays building until the fixes and an app's journeys prove it: a first receipt is treated as final so a reorg is missed, a fill is broadcast before it is stored so a restart may sign a second transaction at one nonce, and a resumed transaction drops its access list; #700 (fees are not bumped); slices M6.07, M6.09 |
-| siwe-linking | Link a wallet with SIWE: 26 checks in a spike, in no goal | spiked | Capxul | 1.0 | — | none | `packages/wallets` | sign-in | slice M2.13; `issue #486`: Capxul's later sign-in with a Safe needs ERC-1271, after its first feature |
+| siwe-linking | Link a wallet with SIWE: 26 checks in a spike, in no goal | spiked | Capxul | 1.0 | — | none | `packages/wallets` | sign-in | slice M2.13; #486: Capxul's later sign-in with a Safe needs ERC-1271, after its first feature |
 | pay-by-handle | Pay by handle: pay a person by their handle | provisional | framework | — | — | none | `examples/plugged-in` | handles-plugin, wallets-keys | slices ST2.04 to ST2.06 |
 | plugin-kinds-language-host | Language and host plugin kinds: design only | provisional | framework | — | — | none | `packages/orthograph/src/modules/plugins` | plugins-mounts | K27; Goal 4 slice 1 |
 | chain-solidity | Solidity: chain store, Solidity output, Foundry tests and fuzz; `language-solidity` is empty | spiked | framework | — | — | none | `packages/language-solidity` | plugin-kinds-language-host | `spikes/chain-languages`; slices M6.10 to M6.13 |
-| contract-client | Contract client: contract client and signing | spiked | Capxul | 1.0 | getting paid | none | `packages/chain-evm` | chain-evm | slices M6.01, M6.14, M6.15; #475; `issue #475` |
+| contract-client | Contract client: contract client and signing | spiked | Capxul | 1.0 | getting paid | none | `packages/chain-evm` | chain-evm | slices M6.01, M6.14, M6.15; #475; #475 |
 | safe-hats-budgets | Safe, Hats and budgets: Safe, Hats and the budgets module; the budgets design is decided when an app pulls budgets | spiked | Capxul | 1.0 | books | none | `packages/wallets` | contract-client | `spikes/safe-hats-module` (#294); `design/decisions/ST3-budgets.md`; slices ST3.01 to ST3.08, M6.16; `issue #484` |
 
 ### Workflows, agents, time
@@ -181,13 +182,13 @@ once planned.
 | id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
 |---|---|---|---|---|---|---|---|---|---|
 | versions | Versions: things with versions (`versions:`), for Policy, PromptSet and Settings | building | superagent | beta | coding agent | goal-17 | `packages/orthograph/src/modules/things` | things-machines-ops | K40 fix 2; Goal 17 slices 2 and 5; `issue #532`; the form is built on `goal/superagent`, and slice 7 serves it (snag #685) |
-| safe-repeats | Safe repeats: `idempotent: { by }` on an operation, so a repeated call settles once | provisional | superagent | beta | coding agent | goal-17 | `packages/orthograph/src/modules/operations` | events-in | slice M3.26; Goal 17 slice 11 |
+| safe-repeats | Safe repeats: `idempotent: { by }` on an operation, so a repeated call settles once | provisional | superagent | beta | coding agent | none | `packages/orthograph/src/modules/operations` | events-in | slice M3.26; Goal 17 slice 11 |
 | events-in | Events in: `Blueprint.on`, `on:`, an adapter's `events`; stage 2 also needs them, and until Goal 17's slice 11 they are in no goal | building | superagent | beta | coding agent | goal-17 | `packages/orthograph/src/modules/events`, `packages/orthograph/src/modules/plugins` | principals | slices M5.01, M5.03; no decision, nothing scheduled; `issue #480`, `folds #477`; adapter events carry `id` and `actor` on `goal/superagent` (slice 11) |
 | webhook-doors | Webhook doors: signed endpoints with the account and object keys, catch-up polling and `lend` | building | superagent | beta | coding agent | goal-17 | `packages/host-cloudflare`, `packages/orthograph/src/modules/plugins` | secrets, principals | K40 fixes 1, 5, 6; slices M5.01, M5.03; `issue #536`, `folds #534, #538`; the doors at `/_in/<mount>` are built on `goal/superagent` (slice 11) |
-| outbox | The outbox: sends retried in order, `agent.tell` through it, and views | provisional | superagent | beta | coding agent | goal-17 | `packages/host-cloudflare` | events-in, safe-repeats | slices M5.04 to M5.13; K40 fix 3; `issue #595`; the hold and `onRefused` seams are Goal 17 slices 9 and 11 |
+| outbox | The outbox: sends retried in order, `agent.tell` through it, and views | provisional | superagent | beta | coding agent | none | `packages/host-cloudflare` | events-in, safe-repeats | slices M5.04 to M5.13; K40 fix 3; `issue #595`; the hold and `onRefused` seams are Goal 17 slices 9 and 11 |
 | adapters-from-spec | Adapters from an OpenAPI spec: `ortho new adapter --from-openapi` and the conformance harness | building | superagent | beta | coding agent | goal-17 | `packages/cli`, `packages/generators`, `examples/superagent/plugins` | secrets | slice M5.07; Goal 17 slices 3 and 4; `issue #739`, so the five generator gaps Capxul's Bridge adapter found are built here; #601 (merged on `goal/superagent`) |
 | adapters-from-abi | Adapters from an ABI: `ortho new adapter --from-abi`, a CLI module over `adapters-abi` | provisional | framework | — | — | none | `packages/cli`, `packages/generators` | adapters-from-spec | #474; `issue #474`; Goal 12 is parked, so Goal 18 ranks it |
-| sandbox | The sandbox adapter (`@orthograph/sandbox`): a bridge on the Mac as its stand-in, E2B later | building | superagent | beta | coding agent | goal-17 | `packages/sandbox` | secrets | K40 fix 4; Goal 17 slice 9; `issue #758`, Goal 17's claim; #781 (first stretches, in review on `goal/superagent`) |
+| sandbox | The sandbox adapter (`@orthograph/sandbox`): a bridge on the Mac as its stand-in, E2B later | building | superagent | beta | coding agent | goal-17 | `packages/sandbox` | secrets | K40 fix 4; Goal 17 slice 9; #758, Goal 17's claim; #781 (first stretches, in review on `goal/superagent`) |
 | service-adapters | Service adapters: the GitHub, Slack and PostHog adapters, generated from each service's spec, and `@orthograph/webhook` for a service with none | building | superagent | beta | coding agent | goal-17 | `examples/superagent/plugins` | adapters-from-spec, webhook-doors | slice M4.25 (Goal 17's); K39; slice 4 merged on `goal/superagent` (#601): GitHub, Slack and PostHog generate and pass against stand-ins |
 | superagent-features | The superagent's four features: `@orthograph/superagent`, `intake`, `tickets` and `prompts`, written first inside `examples/superagent/plugins/` | building | superagent | beta | coding agent | goal-17 | `examples/superagent` | principals, versions, ortho-add | K39; Goal 17 slices 5 to 7; slice 5 built (#670); slices 6 and 7 follow |
 | superagent-extraction | Extraction: the superagent's plugins moved from `plugins/` into `packages/` and published | provisional | superagent | beta | extraction | none | `packages/` | superagent-features, service-adapters, sandbox | Goal 17 slice 14; K42, sections 2 and 8 |

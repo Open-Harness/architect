@@ -6,7 +6,9 @@ name: goals
 # label, and every three hours, so the progress, the open snags and what waits on other goals stay true.
 # Since K42 it also keeps the board: on every push to main, and every three hours so the roadmap's forecast stays
 # current, `sync.mjs --board --project --apply` writes one issue per row of docs/canon/status.md's capability map (or
-# adopts the issue a row names) and the Project's fields and dates.
+# adopts the issue a row names) and the Project's fields and dates. The organization's issue types need admin:org, which
+# this workflow's token never has: they are made once, locally, by `sync.mjs --board --bootstrap --apply`. Until then
+# the steps below print a ::warning:: and write nothing; they never go red for it.
 on:
   push:
     branches: [main]

@@ -21,10 +21,15 @@ const graphql = (query, variables = {}) =>
 
 /** The signed-in token's scopes, from the scope header only (never the token). Empty for a token without one. */
 export const tokenScopes = () => {
-  const head = execFileSync("gh", ["api", "-i", "user"], { encoding: "utf8" }).split("\r\n\r\n")[0];
-  return new Set((/^x-oauth-scopes:\s*(.*)$/im.exec(head)?.[1] ?? "").split(",").map((s) => s.trim()).filter(Boolean));
+  // Null when they cannot be read at all: an installation token has no `user` to ask about.
+  try {
+    const head = execFileSync("gh", ["api", "-i", "user"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).split("\r\n\r\n")[0];
+    return new Set((/^x-oauth-scopes:\s*(.*)$/im.exec(head)?.[1] ?? "").split(",").map((s) => s.trim()).filter(Boolean));
+  } catch {
+    return null;
+  }
 };
-export const hasProjectScope = () => tokenScopes().has("project");
+export const hasProjectScope = () => tokenScopes()?.has("project") ?? false;
 
 const FIELDS = `fields(first: 50) { nodes {
   ... on ProjectV2FieldCommon { id name dataType }

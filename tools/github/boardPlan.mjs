@@ -4,6 +4,10 @@
 // applies the steps; `project.mjs` fills the Project's fields from the same rows.
 import { BOARD_KINDS, BOARD_MILESTONES, NOT_YET_NEEDED, isDone, milestoneOf } from "./board.mjs";
 
+/** Said in a milestone's description wherever the sync writes it a due date: the date is a forecast, never a promise. */
+export const FORECAST_NOTE = "Forecast, recomputed every run (K42 §5).";
+const described = (want, due) => (due[want.title] ? { ...want, description: `${want.description} ${FORECAST_NOTE}` } : want);
+
 export const itemMarker = (id) => `<!-- orthograph:item=${id} -->`;
 /** Under this line an adopted issue keeps the words it had; the sync rewrites everything above it. */
 export const ORIGINAL = "<!-- orthograph:original -->";
@@ -48,6 +52,8 @@ const ownedOn = (issue, row) => (l) => (l.startsWith("kind:") && !BOARD_KINDS.in
 
 export const laneLabel = (lane) => ({ name: `lane:${lane}`, color: "c2e0c6", description: `Claimed by Goal ${lane.slice(5)}: it works this item and its paths (K42, section 3)` });
 
+/** A snag (a claim is one), a decision, a goal or a slice is another goal's page, never an item's: only an ask is adopted. */
+export const NEVER_ADOPTED = ["kind:snag", "kind:decision", "kind:goal", "kind:slice"];
 const real = (i) => !i.pullRequest && i.trusted !== false;
 /** The issue that is a row's: the one it adopts, else a trusted issue of a board kind with the row's marker (the oldest wins). */
 export const issueOfRow = (row, issues) =>
@@ -65,6 +71,7 @@ export const adoptionProblems = (rows, issues) => {
       if (!i) problems.push(`${r.id} ${verb} #${n}, which is no issue`);
       else if (i.pullRequest) problems.push(`${r.id} ${verb} #${n}, which is a pull request`);
       else if (i.trusted === false) problems.push(`${r.id} ${verb} #${n}, which an outsider opened`);
+      else if (NEVER_ADOPTED.some((k) => i.labels.includes(k))) problems.push(`${r.id} ${verb} #${n}, which is a ${i.labels.find((k) => NEVER_ADOPTED.includes(k)).slice(5)}: only kind:ask issues are adopted or folded, so name it as a plain #${n}`);
       else if (mark && mark !== r.id && i.labels.some((l) => BOARD_KINDS.includes(l))) problems.push(`${r.id} ${verb} #${n}, which is the board's issue for ${mark}`);
     }
   }
@@ -87,7 +94,8 @@ export const boardPlan = ({ rows, state, statusUrl, typeOf, due = {} }) => {
     if (!haveLabel.has(want.name)) steps.push({ do: "createLabel", ...want });
   }
   const haveMilestone = new Map(state.milestones.map((m) => [m.title, m]));
-  for (const want of BOARD_MILESTONES) {
+  for (const base of BOARD_MILESTONES) {
+    const want = described(base, due);
     const have = haveMilestone.get(want.title);
     if (!have) steps.push({ do: "createMilestone", ...want });
     else if (have.description !== want.description) steps.push({ do: "updateMilestone", number: have.number, ...want });

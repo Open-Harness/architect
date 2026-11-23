@@ -7,9 +7,9 @@ import { pause, withRetry } from "./pace.mjs";
 const mk = (id, stage, milestone = null, lane = null, ...needs) => ({ id, stage, milestone, lane, needs });
 const today = "2026-11-23";
 
-test("the pace is the merges per day over the three full days before today, today left out", () => {
-  const days = ["2026-11-19", "2026-11-20", "2026-11-20", "2026-11-21", "2026-11-22", "2026-11-22", "2026-11-22", "2026-11-23", "2026-11-23"];
-  assert.equal(pace(days, today), 6 / 3);
+test("the pace is the merges per day over the seven full days before today, today left out", () => {
+  const days = ["2026-11-15", "2026-11-16", "2026-11-19", "2026-11-20", "2026-11-20", "2026-11-21", "2026-11-22", "2026-11-22", "2026-11-22", "2026-11-23", "2026-11-23"];
+  assert.equal(pace(days, today), 8 / 7, "the 15th is before the window, the 23rd is today");
   assert.equal(addDays("2026-11-30", 2), "2026-12-02");
   assert.equal(addDays("2026-12-31", 1), "2027-01-01");
 });
