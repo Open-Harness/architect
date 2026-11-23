@@ -46,7 +46,7 @@ release it asks the switch first.
 pausedFrom: Blueprint.optional(Blueprint.oneOf(["observing", "live"])),  // where resume returns to
 pausedAt:   Blueprint.optional(Blueprint.uint(64)),   // the world's clock, in ms, when the pause began
 pausedFor:  Blueprint.uint(64),                       // ms spent paused in every earlier pause; 0 at create
-passGen:    Blueprint.uint(32),                       // the live chain of the eval pass; `eval.due` bumps it
+passGen:    Blueprint.uint(32),                       // the live chain of the eval pass; a bigint in code; `eval.due` bumps it
 
 // events.ts
 export const SuperagentPaused  = Blueprint.event({ superagent: Superagent.fields.id, from: Blueprint.text(), at: Blueprint.uint(64) });
@@ -103,6 +103,7 @@ export const pausable = processing.holds({
   unheld: [                                                  // each says why it is not held
     { event: tickets.events.InputStored,          to: input.operations.route,      reason: "rows only: routes an Input or queues an Assignment; the tell and the seat stay held" },
     { event: agents.events.AgentIdled,            to: assignment.operations.turnEnded, reason: "a turn that ends during a pause gives its seat back; fill stays held" },
+    { event: tickets.events.AssignmentInterrupted, to: agent.operations.close,          reason: "a person's stop must reach the Agent during a pause; it moves no work and closes a seat's side" },
     { event: intake.events.TriggerReceived,       to: input.operations.store,          reason: "sources keep recording; the Input's tell stays held" },
     { event: superagent.events.SuperagentCreated, to: eval.operations.due,              reason: "starts the eval pass; a new superagent is never paused" },
     { event: superagent.events.SuperagentResumed, to: eval.operations.due,              reason: "the event that ends the hold" },
@@ -190,7 +191,7 @@ a 60 s eval gives a deadline of 360, and a second pause adds its own length agai
 // plugins/intake/src/modules/evals/service.ts: one pass, then the next. Timers decides when; nothing sleeps by itself.
 // `Supers` is a port intake declares (types.ts) and the app implements from superagent's `pause` module: `get`, and
 // `expired`, the function above. Intake imports no other plugin.
-export const pass = (superagent: SuperagentId, gen: number): Effect.Effect<void, never, Timers | Supers | Evals> =>
+export const pass = (superagent: SuperagentId, gen: bigint): Effect.Effect<void, never, Timers | Supers | Evals> =>
   Effect.gen(function* () {
     const timers = yield* Timers;
     const now = BigInt(yield* Clock.currentTimeMillis);
@@ -207,7 +208,7 @@ export const pass = (superagent: SuperagentId, gen: number): Effect.Effect<void,
 // carries a generation: `arm` bumps `Superagent.passGen` in its commit (a row `pass` reads) and starts the chain with it, and
 // a pass whose generation is no longer the Superagent's ends at its next run.
 export const arm = (superagent: SuperagentId) => Effect.gen(function* () {
-  const gen = yield* (yield* Supers).bumpPassGen(superagent);                    // one commit on the Superagent row
+  const gen = yield* (yield* Supers).bumpPassGen(superagent);                    // one commit on the Superagent row; answers the new `passGen` (a bigint)
   yield* (yield* Timers).at(Number(yield* Clock.currentTimeMillis), owner(superagent), "evals.due", pass(superagent, gen));
 });
 ```
@@ -215,6 +216,17 @@ export const arm = (superagent: SuperagentId) => Effect.gen(function* () {
 `Timers` has no cancel and this goal does not change it (`17-superagent.md:567`), so nothing needs one. The pass does
 not move a timer. It reads stored fields each time and stops re-arming while paused. The `Timers` surface used is
 `at` and `pending` (`language-effect/src/modules/timers/types.ts:15, :24`).
+
+**After a restart.** `TimersMemory` is the only `Timers` layer today and keeps its waits in memory; nothing in it
+persists a wait (`language-effect/src/modules/timers/service.ts:21`), and a durable layer on the world is Goal 9's. So the eval
+pass, the seat sweep and the reply-retry sweep can be gone until something arms them. The world's once-a-minute Cron
+(`M5-reach-out.md:111-116`) calls `superagent.boot` (system) as its backstop, which runs `eval.due` for each live superagent
+(idempotent through `passGen`: a stale chain ends) and arms each sweep when `Timers.pending` shows none (a race can leave one
+duplicate, harmless because each sweep's work is idempotent). A trigger's arrival also arms the eval pass, so a restart is
+repaired by whichever comes first.
+
+**`passGen` is bookkeeping, not a save.** `Superagent` has versions (K40 fix 2), which keep each save. `eval.due` writes
+`passGen` as a move-side write, like `pausedFor`, and makes no new version.
 
 ### What is recorded
 

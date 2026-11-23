@@ -220,7 +220,8 @@ could leave a message pending with no row (it read "a head exists" while the hea
 emit a head. So **both bump `Ticket.seq`** (the per-ticket sequence above) in their commits. Any two such commits on one
 ticket then conflict on the Ticket row's version, the loser runs again, re-reads the conversation and decides on the
 new state. No wake-up is lost and no second head appears. A duplicate `ReplyQueued` for one head is harmless: the second
-`send` finds the message `sent` and meets the machine's `notFrom`. The outbox orders rows per `(to, subject)`, with the
+`send` finds the message `sent` and meets the machine's `notFrom`. `withdraw` of a head (a retire, a ticket's end) bumps
+`Ticket.seq` as well, so a `reply` that read the head cannot miss that it was dropped. The outbox orders rows per `(to, subject)`, with the
 conversation as subject, so two rows of one conversation never run at once. The slice 8 journey for this runs two
 replies together, and a head that sends at the same moment.
 
