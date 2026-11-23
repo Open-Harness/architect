@@ -295,11 +295,11 @@ thing.
 | # | Slice | Done when |
 |---|---|---|
 | 6 | **The frame.** `packages/portal-next`: its `blueprint/app/` declaring `portal.md`'s map (home, things, operations and their five tabs, environments, compare, journeys, starting worlds, reference, plugins, monitor, traces), the top bar (environment picker, ⌘K), the rail and its panels, the tree, the live rail, each keeping its `data-portal` hook | check 21's frame clauses leave the parity list |
-| 7 | **Home, things and operations** (the contract, metrics, proof, docs and notes tabs) | their lines leave the list |
+| 7 | **Home, things and operations** (the contract, metrics, proof, docs and notes tabs), and the app's **Map** tab beside Things (MAP-screens Q1 to Q3) | their lines leave the list |
 | 8 | **Environments, compare, journeys, starting worlds** | their lines leave the list |
 | 9 | **Reference, plugins and the rules** (check 28) | their lines leave the list |
 | 10 | **Monitor and traces** (a trace on UI SDK's `Waterfall`, or ours if it is still experimental) | their lines leave the list; the screenshots are byte-identical across two runs |
-| 11 | **The agent's portal.** The agent's map tool on the portal; every control by name | an agent's `snapshot()` lists the search, the tree, the tabs and the environment picker by name |
+| 11 | **The agent's portal.** The agent's map tool on the portal; every control by name; the **As an agent** drawer on every page (MAP-screens Q4) | an agent's `snapshot()` lists the search, the tree, the tabs and the environment picker by name |
 
 ### Part 3: cutover
 
