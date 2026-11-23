@@ -145,6 +145,8 @@ export interface HandlerApi {
     readonly codes?: Readonly<Record<string, string>>;
     /** Each refusal the runtime makes for a rule this operation can break (G5), by the error's tag, and the full name of the rule (`handle.oneHolderPerName`). */
     readonly invariants?: Readonly<Record<string, string>>;
+    /** Each adapter's mount by the name it is mounted under, when some `allowed` entry is a `service` role: what that role is read against. */
+    readonly mounts?: ReadonlyMap<unknown, string>;
   }) => Served<O, R>;
   readonly blank: {
     /** What a scaffold returns until it is written: dies with `BlankReached`, typed as anything. */
@@ -178,5 +180,5 @@ export interface ReadsApi {
    * for a list), then its answer is made. A missing id is refused `NotAllowed`, so a read never tells an outsider what
    * exists; a list answers `{ items, next }`, and `next` goes back as the `cursor` of the page after it.
    */
-  readonly serve: <R extends Read<any, any, any>>(spec: { readonly name: string; readonly read: R }) => ServedRead;
+  readonly serve: <R extends Read<any, any, any>>(spec: { readonly name: string; readonly read: R; readonly mounts?: ReadonlyMap<unknown, string> }) => ServedRead;
 }

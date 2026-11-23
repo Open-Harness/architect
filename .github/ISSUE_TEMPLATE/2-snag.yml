@@ -1,0 +1,23 @@
+name: Snag
+description: Something a goal hit and couldn't fix inside its own paths. Its own snags only; to ask another goal, use Ask.
+title: "Snag: <what went wrong, in plain words>"
+type: Snag
+labels: ["kind:snag"]
+body:
+  - type: markdown
+    attributes:
+      value: Put it in your goal's milestone. Add `blocked` if your goal can't go on until it is fixed.
+  - type: textarea
+    id: hit
+    attributes: { label: Hit, description: "What you were doing, and where (file:line, command, slice)" }
+    validations: { required: true }
+  - type: textarea
+    id: lost
+    attributes: { label: Lost, description: "What it cost: what fails, what you couldn't do" }
+    validations: { required: true }
+  - type: textarea
+    id: cause
+    attributes: { label: Cause, description: "What you found, with evidence, or 'not known yet'" }
+  - type: textarea
+    id: fix
+    attributes: { label: Fix, description: "The fix you'd make, and who owns the paths it needs" }

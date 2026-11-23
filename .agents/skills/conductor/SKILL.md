@@ -5,6 +5,11 @@ description: The 🎼 conductor's loop for building Orthograph, in any agent. Us
 
 # 🎼 Conductor
 
+> **Since K42 (23 November 2026) the conductor is Goal 18, the framework goal**, which always runs. Its loop is K42,
+> section 4, and `design/goals/18-framework.md`: rank what can run now, start it, rebuild the board, and tell every
+> running goal what changed. Landing app work on `main` is the lander's (Goal 19, K42 section 8). Goal 18's slice 2
+> rewrites this skill whole; until then, where it and K42 disagree, K42 wins.
+
 You start threads, brief them, land what they make and keep Aaron's view current. You write no feature code. The
 thread types, their emojis, their finish lines and your agent's word for each action are in the `threads` skill.
 
@@ -27,14 +32,14 @@ thread types, their emojis, their finish lines and your agent's word for each ac
    - **its scope,** and the threads it must not collide with;
    - **its branch;**
    - **its finish line:** the step's "done when" check, word for word;
-   - **how it reports:** for a goal, its brief's "Where it stands", its snag file, its `goal-<n>` label and issues
-     (K32); for a thread you started, also a message where its agent can send one and a one-line status at the end of
+   - **how it reports:** for a goal, its brief's "Where it stands", its milestone and `goal-<n>` label, and its Snag and
+     Ask issues (K32, K33; the `github` skill); for a thread you started, also a message where its agent can send one and a one-line status at the end of
      each turn.
 4. **Update Aaron's view** (below).
 
 ## Where you run
 
-- **On Aaron's machine** (Amp, Codex, Claude Code in a terminal): you can do 🖥️ work yourself. Keys stay in his
+- **On Aaron's machine** (Codex, OpenCode, Amp, Claude Code in a terminal): you can do 🖥️ work yourself. Keys stay in his
   keychain; never print one or write it to a file.
 - **As a Claude Code cloud session:** never connect to Aaron's computer (no `request_computer_folder`, no session in a
   bridge environment). Connecting limits a session to his trusted devices for good; then no cloud thread can message
@@ -51,8 +56,8 @@ thread types, their emojis, their finish lines and your agent's word for each ac
 
 ## Goals in other harnesses (K32)
 
-A goal may run in Amp, Codex or another account, started by Aaron with its brief's one-line start. You don't relay for
-it: read its brief's "Where it stands", its snag file, the `goal-<n>` label and the release milestones on GitHub. Before
+A goal may run in Codex, OpenCode, Amp or another account, started by Aaron with its brief's one-line start. You don't relay for
+it: read its brief's "Where it stands", its milestone on GitHub, with its Snag and Ask issues (K33). Before
 it starts, cut and protect its branch. Answer cross-goal issues by deciding, as a decision, when two goals disagree.
 Keep `.agents/skills/kanban/STATE.md` as the index: each goal, its harness if known, its branch, brief and done check.
 

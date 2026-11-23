@@ -2,7 +2,7 @@
 
 The projections Orthograph ships, each a plugin of kind `projection` that an app mounts in `blueprint/projections/<name>.ts`
 ([`design/decisions/M1-plugins.md`](../../design/decisions/M1-plugins.md) sections 2, 3 and 15;
-[`design/frame/projections.md`](../../design/frame/projections.md) sections 1 and 2):
+[`design/history/retired-2026-11-23/frame/projections.md`](../../design/history/retired-2026-11-23/frame/projections.md) sections 1 and 2):
 
 ```ts
 // blueprint/projections/server.ts

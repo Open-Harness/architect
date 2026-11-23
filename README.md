@@ -9,6 +9,6 @@ docs and the portal from it. The only code you write by hand is behaviour, a han
 blueprint made. `ortho prove` judges the running app against its journeys from real evidence, so a coding agent can
 climb them until they are green, and a change to the blueprint marks exactly what it made stale.
 
-- How to think in it, the loops and the map: [`design/model/README.md`](design/model/README.md).
-- What is built, what is left, and the releases: [`design/scope.md`](design/scope.md).
+- The documentation, the canon, which also says how to think in it: [`docs/canon/`](docs/canon/README.md).
+- What is built, what is left, the releases and the packages: [`docs/canon/status.md`](docs/canon/status.md).
 - How work runs here: [`AGENTS.md`](AGENTS.md).

@@ -49,7 +49,7 @@ stays small: its profile and its links. Everything else is mounted.
 | 3 · the vault | run a group's Safe; give hats; spend within a hat's budget alone; collect owner signatures above it | `@orthograph/organizations`, the `safe` and `hats` adapters, `@orthograph/budgets` (a Safe module), `@orthograph/agents` | auth, handles, wallets, chain-evm |
 | 4 · the club | join a members-only club on Aztec; spend privately within budget; decide big spends by private ballot | `@orthograph/chain-aztec`, `language-noir`, `@orthograph/ballots`, the budgets feature's Aztec choice | auth, handles, budgets |
 
-**v1.0 is the four stage gates on `main`, plus the release** (M7.01 to M7.04 and M7.06: the cloud pass, the packages
+**v1.0 is the four stage gates on `main`, plus the release** (superseded by K42, 23 November 2026: 1.0 is Capxul core on Orthograph, K43) (M7.01 to M7.04 and M7.06: the cloud pass, the packages
 on npm, the infra projection, and a deploy and destroy that leaves nothing behind).
 
 ## Stage 1: links
@@ -430,7 +430,7 @@ The docs canon thread owns `docs/canon/`. These are the changes this record asks
 ## Decided here
 
 1. One app, `links`, in `examples/links`, grows through four stages. Each passing stage is tagged `links/stage-<n>`.
-2. v1.0 is the four stage gates plus M7.01 to M7.04 and M7.06.
+2. v1.0 is the four stage gates plus M7.01 to M7.04 and M7.06. (Superseded by K42, 23 November 2026: 1.0 is Capxul core on Orthograph, K43.)
 3. The pieces:
    - `handles` and `budgets` are new features;
    - `ballots` is K7's governance contract as a feature;

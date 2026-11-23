@@ -1,0 +1,35 @@
+{
+  "name": "theme",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/theme/src",
+  "projectType": "library",
+  "tags": [
+    "scope:theme",
+    "env:runtime",
+    "layer:2"
+  ],
+  "targets": {
+    "lint": {},
+    "typecheck": {},
+    "test": {},
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "tsc -p {projectRoot}/tsconfig.build.json",
+          "node {projectRoot}/dist/main.js {projectRoot}/dist/theme.css"
+        ]
+      },
+      "cache": true,
+      "inputs": [
+        "production",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/tsconfig.build.base.json"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
+    }
+  }
+}

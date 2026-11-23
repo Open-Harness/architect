@@ -3,7 +3,7 @@ import glob, html, json, os, re
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 EV = os.path.join(ROOT, "design", "evidence")
-REPO = "https://github.com/AaronAbuUsama/architect"
+REPO = "https://github.com/Open-Harness/orthograph"
 META = re.compile(r"# commit ([0-9a-f]{7,40}) · (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z) · exit (\d+) \(expected (\d+)\) · (\d+(?:\.\d+)?s)")
 
 
