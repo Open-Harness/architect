@@ -56,7 +56,9 @@ Slice 9, with the outbox doors, must give a call the means to emit them (or `due
 `gate.of` takes the tickets that follow a thread, but `intake` cannot import `tickets` (the reverse is true), so `trigger.receive` passes none. A ticket's `accept` must write what follows a thread where intake can read it;
 that is the follow-up journeys of `22`, with the doors of slices 8 and 9.
 
-### 9. `observedRow` is not changed yet: check 62 pins the old value
+### 9. `observedRow` is `inferred` (after #760 changed check 62)
+
+Flipped to `{ listed: "inferred", unlisted: "none", unnamed: "none" }` once #760 landed; check 62's `observedRow` tests pass and its expected-failing file is deleted. The history, kept as written:
 
 GOAL17-stage-one call 8 (and the slice 6 README, point 14) says `observedRow` is `{ listed: "inferred", ... }`. Check `62-the-mappings` (slice 10) pins `OBSERVED = { listed: "explicit", unlisted: "none", unnamed: "none" }` at its line 17,
 for GitHub's and Slack's admission rows, and passed before this slice. I changed it, and two of its tests went red (the repository row, and the Slack channel rows); a builder may not edit a check and the ratchet must exit 0, so I put
