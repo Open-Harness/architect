@@ -17,10 +17,13 @@ const deferred = () => { let open!: () => void; const wait = new Promise<void>((
 const pause = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
 
 type Answer = (params: unknown[]) => Promise<unknown> | unknown;
+/** A JSON-RPC error answer, as a node gives one (an HTTP 200 with an `error`), as opposed to a node that is down (an HTTP 500). */
+class Refusal extends Error {}
 /** A node that holds what it was sent, mines on request, and lets a test override any method (an override that throws is an HTTP 500). */
 const stubNode = (overrides: Record<string, Answer> = {}) => {
   const sends: string[] = [];
-  const node = { sends, mined: false };
+  /** `refuse`: the node answers `eth_sendRawTransaction` with this error. `evicted`: it no longer holds what it was sent, until it is sent again. */
+  const node = { sends, mined: false, refuse: undefined as string | undefined, evicted: false };
   const answers: Record<string, Answer> = {
     eth_chainId: () => "0x7a69",
     eth_call: () => "0x",
@@ -29,16 +32,23 @@ const stubNode = (overrides: Record<string, Answer> = {}) => {
     eth_maxPriorityFeePerGas: () => "0x3b9aca00",
     eth_getTransactionCount: (params) => (node.mined && params[1] === "latest" ? "0x1" : "0x0"),
     eth_blockNumber: () => "0x1",
-    eth_sendRawTransaction: (params) => { sends.push(String(params[0])); return hashOf(String(params[0])); },
+    eth_sendRawTransaction: (params) => {
+      if (node.refuse !== undefined) throw new Refusal(node.refuse);
+      sends.push(String(params[0]));
+      node.evicted = false;
+      return hashOf(String(params[0]));
+    },
     eth_getTransactionReceipt: (params) => (node.mined && sends.some((raw) => hashOf(raw) === params[0]) ? receiptOf(String(params[0])) : null),
-    eth_getTransactionByHash: (params) => (sends.some((raw) => hashOf(raw) === params[0]) ? heldTransaction(String(params[0])) : null),
+    eth_getTransactionByHash: (params) => (!node.evicted && sends.some((raw) => hashOf(raw) === params[0]) ? heldTransaction(String(params[0])) : null),
     ...overrides,
   };
   vi.stubGlobal("fetch", async (_url: unknown, init: { body: string }) => {
     const { id, method, params } = JSON.parse(init.body) as { id: number; method: string; params: unknown[] };
     const answer = answers[method];
     if (answer === undefined) throw new Error(`the stub node has no ${method}`);
-    try { return Response.json({ jsonrpc: "2.0", id, result: await answer(params) }); } catch { return new Response("the node failed", { status: 500 }); }
+    try { return Response.json({ jsonrpc: "2.0", id, result: await answer(params) }); } catch (error) {
+      return error instanceof Refusal ? Response.json({ jsonrpc: "2.0", id, error: { code: -32000, message: error.message } }) : new Response("the node failed", { status: 500 });
+    }
   });
   return node;
 };
@@ -94,6 +104,42 @@ describe("the relayer against a node", () => {
       node.mined = true;
       expect(await relayer.status(sent.id)).toMatchObject({ hash: sent.hash, nonce: 0, state: "included" });
       expect(node.sends, "sent exactly once").toHaveLength(1);
+    });
+  }, 60_000);
+
+  it("a rebroadcast the node refuses keeps the call: its bytes stay, it is no fill, health names it, and the next alarm sends the original and it lands under its own hash", async () => {
+    const node = stubNode();
+    await inRelayer("eip155:31339", async (relayer, store) => {
+      await relayer.configure({ rpcUrl: "http://rpc-a.test", chainId: 31337, stuckAfterMs: 50 });
+      const sent = await relayer.relay({ to: ADDRESS as `0x${string}`, data: "0x" });
+      const bytes = store.find(sent.id)!.serialized;
+      expect(node.sends).toHaveLength(1);
+      // The node evicts it from its pool; the relayer's balance is short, so the node refuses the same bytes when they are sent again.
+      node.evicted = true;
+      node.refuse = "insufficient funds for gas * price + value";
+      await relayer.reconcile();
+      expect(store.find(sent.id), "still the call, with its bytes, and no fill").toMatchObject({ hash: sent.hash, serialized: bytes, fill: false });
+      expect(store.find(sent.id)?.note, "and the reason is on the row").not.toBe("");
+      await pause(80);
+      expect((await relayer.health()).stuck.map((s) => [s.id, s.nonce]), "stuck past its deadline, so health names it").toEqual([[sent.id, 0]]);
+      // The balance is back: the next alarm sends the original again.
+      node.refuse = undefined;
+      await relayer.reconcile();
+      expect(node.sends, "the call itself, twice, and nothing else").toEqual([bytes, bytes]);
+      expect(store.find(sent.id)).toMatchObject({ hash: sent.hash, fill: false, note: "" });
+      node.mined = true;
+      expect(await relayer.status(sent.id), "the original call is the one that lands").toMatchObject({ hash: sent.hash, nonce: 0, state: "included" });
+    });
+  }, 60_000);
+
+  it("a call refused on its first relay is told so: relay fails with the refusal, never answers as sent, and its nonce is held for a fill", async () => {
+    const node = stubNode();
+    node.refuse = "insufficient funds for gas * price + value";
+    await inRelayer("eip155:31340", async (relayer, store) => {
+      await relayer.configure({ rpcUrl: "http://rpc-a.test", chainId: 31337 });
+      await expect(relayer.relay({ to: ADDRESS as `0x${string}`, data: "0x" })).rejects.toThrow(/^funds:/);
+      expect(node.sends, "nothing reached the pool").toEqual([]);
+      expect(store.open().map((r) => [r.nonce, r.fill, r.serialized])).toEqual([[0, true, "0x"]]);
     });
   }, 60_000);
 });

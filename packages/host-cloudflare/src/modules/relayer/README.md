@@ -47,8 +47,9 @@ means the alarm sends it, so a call is at-least-once: a caller that got no answe
 `fill` row without bytes. The alarm sends a zero-value transfer from the relayer to itself there, from that row's reservation, so the
 calls queued behind it go through; a fill the node refuses is tried again at the next alarm, and a fill the node drops is sent again as it
 is. The caller still gets the error. Bytes that can no longer be read turn a row into a fill the same way. A nonce another transaction
-already used needs no fill. A rebroadcast the node now refuses for good turns its row into a fill; one that fails in transit is noted on the
-row (`status` shows it as `problem`) and tried again at the next alarm.
+already used needs no fill. A rebroadcast the node refuses (for any reason: a balance that is short can clear) never turns its row into a fill: the row keeps its
+bytes and its reservation, the reason is noted once on the row (`status` shows it as `problem`; written again only if it changes, cleared when the row
+moves), and the next alarm, at the normal interval, sends it again. A row stuck that way shows in `health`.
 
 **What is stored** (the Durable Object's SQLite): the configuration, and one row per submission: id, nonce, state, the hash, the signed
 bytes (public), the block it was first sent at, whether it is a fill, the last note, and when it was written (read from the Clock).

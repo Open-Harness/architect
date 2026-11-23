@@ -26,6 +26,8 @@ describe("the relayer, in workerd (the chain side is checked on Anvil by e2e/on-
       await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 2 })).rejects.toThrow(/^transport: EVM RPC request failed$/);
       await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 0 })).rejects.toThrow(/chainId/);
       await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 2, pollIntervalMs: -5 })).rejects.toThrow(/pollIntervalMs/);
+      await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 2, stuckAfterMs: 0 })).rejects.toThrow(/stuckAfterMs/);
+      await expect(relayer.configure({ rpcUrl: "http://127.0.0.1:1", chainId: 2, stuckAfterMs: 1.5 })).rejects.toThrow(/stuckAfterMs/);
     });
   });
 

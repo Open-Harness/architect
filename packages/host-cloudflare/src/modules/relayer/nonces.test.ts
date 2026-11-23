@@ -86,18 +86,40 @@ describe("a transaction the node dropped", () => {
     expect(await run(status(parts, "a"))).toEqual({ id: "a", nonce: 5, hash: hash(1), state: "submitted", replaces: [] });
   }));
 
-  it("that fails to go in transit is noted and sent again at the next alarm, the same bytes; one the node refuses for good becomes a fill", () => inDo("eip155:12", async (store) => {
+  it("that the node refuses, in transit or for good, keeps its bytes and its reservation, is noted, and is sent again at the next alarm; it is never made a fill", () => inDo("eip155:12", async (store) => {
     store.add(row("b", 5, 1));
     store.add(row("c", 6, 2));
-    const s = script({ probe: [{ _tag: "Dropped" }], submit: [new ChainFault({ kind: "transport", message: "reset" }), new ChainFault({ kind: "rejected", message: "The node refused the transaction for good" }), "ok"] });
-    const parts = harness(store, s, holding(["b", 5, 1], ["c", 6, 2]));
+    const s = script({ probe: [{ _tag: "Dropped" }], submit: [new ChainFault({ kind: "transport", message: "reset" }), new ChainFault({ kind: "funds", message: "short of funds" }), "ok"] });
+    const held = holding(["b", 5, 1], ["c", 6, 2]);
+    const parts = harness(store, s, held);
     await run(reconcile(parts));
-    expect(store.find("b")).toMatchObject({ hash: hash(1), state: "submitted", note: "reset", fill: false });
-    expect(store.find("c")).toMatchObject({ fill: true, serialized: "0x", state: "submitting" });
-    expect(parts.live.held.get("c")).toEqual({ reservation: reservation(6) });
+    expect(store.find("b")).toMatchObject({ hash: hash(1), serialized: signedAt(5, 1).serialized, state: "submitted", note: "reset", fill: false });
+    expect(store.find("c")).toMatchObject({ hash: hash(2), serialized: signedAt(6, 2).serialized, note: "short of funds", fill: false });
+    expect(held.get("c")?.signed?.hash).toBe(hash(2));
     await run(reconcile(parts));
-    expect(store.find("b")).toMatchObject({ hash: hash(1), note: "", state: "submitted" });
-    expect(s.calls.filter((c) => c.name === "fill")).toEqual([{ name: "fill", arg: 6 }]);
+    expect(store.open().map((r) => [r.nonce, r.note, r.fill])).toEqual([[5, "", false], [6, "", false]]);
+    expect(s.calls.filter((c) => c.name === "fill")).toEqual([]);
+  }));
+
+  it("that stays refused is retried once per alarm, no more, and its note is written once, when it first sticks", () => inDo("eip155:23", async (store) => {
+    store.add(row("q", 5, 1));
+    const writes: string[] = [];
+    const counted = { ...store, note: (id: string, note: string) => { writes.push(note); store.note(id, note); } } as Store;
+    const refused = new ChainFault({ kind: "funds", message: "short of funds" });
+    const s = script({ probe: [{ _tag: "Dropped" }], submit: [refused] });
+    const parts = harness(counted, s, holding(["q", 5, 1]));
+    for (let alarm = 1; alarm <= 4; alarm++) {
+      await run(reconcile(parts));
+      expect(s.atSubmit, "one send per alarm, none inside it").toHaveLength(alarm);
+    }
+    expect(writes, "the same reason is written once").toEqual(["short of funds"]);
+    expect(store.find("q")).toMatchObject({ note: "short of funds", fill: false, serialized: signedAt(5, 1).serialized });
+    s.submit.splice(0, s.submit.length, new ChainFault({ kind: "funds", message: "a different reason" }));
+    await run(reconcile(parts));
+    expect(writes, "a new reason is written").toEqual(["short of funds", "a different reason"]);
+    s.submit.splice(0, s.submit.length, "ok");
+    await run(reconcile(parts));
+    expect(store.find("q"), "and cleared when the row moves").toMatchObject({ note: "", state: "submitted" });
   }));
 
   it("that is a fill is sent again as it is, its own bytes", () => inDo("eip155:22", async (store) => {

@@ -48,22 +48,16 @@ export const status = (parts: Parts, id: string) => Effect.gen(function* () {
 
 /**
  * The node no longer holds the transaction and its nonce is unused: send the same signed bytes again. Sending them is safe at any moment (the
- * port answers "already known" and a nonce used by this hash as success, and registers the broadcast if it never got to). A call the node now
- * refuses for good becomes a fill row that keeps its reservation. Anything else is noted on the row and tried again at the next alarm.
+ * port answers "already known" and a nonce used by this hash as success, and registers the broadcast if it never got to). A rebroadcast is
+ * refused only on the node's pool checks (a balance that is short, a fee below the floor), and those can clear: so a failure of any kind keeps
+ * the row's bytes and reservation, notes the reason, and leaves it for the next alarm. Only a call refused while it is being relayed (the caller
+ * got the error) becomes a fill. A row stuck this way shows in `health` once it is past its deadline.
  */
 const rebroadcast = (parts: Parts, row: Row) => Effect.gen(function* () {
   const { live, store } = parts;
   const held = live.held.get(row.id);
   if (held?.signed === undefined) return undefined;
-  const submission = yield* live.port.submit(held.signed).pipe(Effect.catch((error) => {
-    if (!definite(error) || row.fill) return Effect.fail(error);
-    return Effect.sync(() => {
-      store.toFill(row.id, reason(error));
-      live.held.set(row.id, { reservation: held.reservation });
-      return undefined;
-    });
-  }));
-  if (submission === undefined) return undefined;
+  const submission = yield* live.port.submit(held.signed);
   store.sent(row.id, submission.fromBlock);
   return { id: row.id, nonce: row.nonce, hash: row.hash } satisfies Rebroadcast;
 });
@@ -120,7 +114,11 @@ export const reconcile = (parts: Parts) => Effect.gen(function* () {
   const sent: Rebroadcast[] = [];
   for (const row of parts.store.open()) {
     if (parts.live.inflight.has(row.id)) continue;
-    const done = yield* settle(parts, row).pipe(Effect.catch((error) => Effect.sync(() => { parts.store.note(row.id, reason(error)); return undefined; })));
+    // A row stuck on the same refusal is noted once, when it sticks: the note is written again only if the reason changes, and it is cleared when the row moves.
+    const done = yield* settle(parts, row).pipe(Effect.catch((error) => Effect.sync(() => {
+      if (row.note !== reason(error)) parts.store.note(row.id, reason(error));
+      return undefined;
+    })));
     if (done !== undefined) sent.push(done);
   }
   return { replaced: [], rebroadcast: sent };

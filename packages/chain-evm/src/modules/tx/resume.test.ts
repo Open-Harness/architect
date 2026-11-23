@@ -150,3 +150,29 @@ test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("a fee-cap refusal is 
     expect((yield* fixtureRpc(() => publicClient.getTransactionReceipt({ hash: filler.hash }))).status, "the fill lands").toBe("success");
     expect((yield* port.prepare(call)).transaction.nonce, "a later call goes through at the next nonce").toBe(first.transaction.nonce + 1);
   }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 30_000);
+
+test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1")("a broadcast refused for good (keepOnReject) is registered again by the next send of the same bytes, and lands", () =>
+  Effect.runPromise(Effect.gen(function* () {
+    const { chain, rpcUrl, transport } = yield* withAnvil;
+    const account = yield* Effect.sync(() => privateKeyToAccount(generatePrivateKey()));
+    const recipient = yield* Effect.sync(() => privateKeyToAccount(generatePrivateKey()).address);
+    const testClient = createTestClient({ chain, transport, mode: "anvil" });
+    const publicClient = createPublicClient({ chain, transport });
+    const fund = (value: bigint) => fixtureRpc(() => testClient.setBalance({ address: account.address, value }));
+    yield* fund(10n ** 18n);
+    const signer = {
+      address: account.address,
+      signTransaction: (transaction: Parameters<typeof account.signTransaction>[0]) =>
+        Effect.tryPromise({ try: () => account.signTransaction(transaction), catch: () => new Error("Anvil fixture signing failed") }).pipe(Effect.orDie),
+    };
+    const port = yield* makeChainPort({ chainId: chain.id, rpcUrl, keepOnReject: true });
+    const first = yield* port.prepare({ from: account.address, to: recipient, value: 1n });
+    yield* port.simulate(first);
+    const signed = yield* port.sign(first, signer);
+    yield* fund(0n);
+    expect(yield* port.submit(signed).pipe(Effect.flip), "refused for want of funds, and the port says it is final").toMatchObject({ kind: "funds" });
+    yield* fund(10n ** 18n);
+    yield* port.submit(signed);
+    yield* fixtureRpc(() => testClient.mine({ blocks: 1 }));
+    expect((yield* fixtureRpc(() => publicClient.getTransactionReceipt({ hash: signed.hash }))).status, "the same bytes land under their own hash").toBe("success");
+  }).pipe(Effect.scoped, Effect.provideService(Timers, liveFixtureTimers))), 30_000);

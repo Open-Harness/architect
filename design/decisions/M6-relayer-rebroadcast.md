@@ -23,6 +23,14 @@ used by the same hash as success, and registers the broadcast when it never got 
 transaction, and sends it again if it does not. The two other owners stay: the row owns its nonce from the moment it is taken, and the port alone
 says whether a refusal is final (`isDefinite`).
 
+## Refused calls
+
+A call refused while it is being relayed becomes a fill, and its caller gets the error. A rebroadcast that is refused keeps the call: the node can
+refuse a rebroadcast only on its pool checks (a short balance, a fee below the floor, since `submit` does not simulate), and those can clear. So
+the row keeps its bytes and its reservation, notes the reason once, and is sent again at the next alarm, at the alarm's normal interval; a row stuck
+that way shows in `health()` past its deadline. (A fresh broadcast the node refuses for good resets the entry to a plain held reservation with
+`keepOnReject`, and the next send of the same bytes registers it again.)
+
 ## What the cut costs
 
 Without a fee bump, a transaction sent too cheap during a fee spike stays stuck, and every nonce behind it waits. The cost is not hidden:
