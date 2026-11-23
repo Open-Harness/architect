@@ -1,6 +1,8 @@
 // Scaffolded from blueprint/things/company/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { acting } from "orthograph";
+import { Records } from "@orthograph/language-effect";
+import { Company } from "../../blueprint/things/company/thing.ts";
 import type { Handler } from "../../generated/api/src/company/create.handler.ts";
 
 /**
@@ -37,10 +39,14 @@ import type { Handler } from "../../generated/api/src/company/create.handler.ts"
  *   once it answers, it writes CompanyCreated: company from the answer, owner from the company as the call left it;
  *   the call is the span company.create, and its commit company.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ companyName, abbr, country, defaultCurrency }, { principal, steps, move, id }) =>
   Effect.gen(function* () {
+    // `signedIn` admits a person and an agent acting for one: the company is the person's either way.
+    const who = acting(principal);
+    if (!who) return yield* Effect.die(new Error("reached without a signed-in person"));
+    const records = yield* Records;
     // Step insert: database, span company.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    yield* steps.insert(records.insert(Company, { id, companyName, abbr, country, defaultCurrency, owner: who.person as never }));
 
     // The move create, to active.
     yield* move();

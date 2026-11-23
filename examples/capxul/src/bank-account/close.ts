@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/bank-account/verbs/close.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/bank-account/close.handler.ts";
 
 /**
@@ -37,17 +36,14 @@ import type { Handler } from "../../generated/api/src/bank-account/close.handler
  *   once it answers, it writes BankAccountClosed: account from the answer;
  *   the call is the span bank-account.close, and its commit bank-account.close.commit.
  */
-const close: Handler = (_payload, { steps, move }) =>
+const close: Handler = ({ account }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bank-account.close.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
+    // Step update: database, span bank-account.close.update. Closing changes the state; the deposit details stay, and
+    // the name is free again (bank-account.oneNamePerCompany holds only while open).
     // The move close, from open, to closed.
-    yield* move();
+    yield* steps.update(move());
 
-    return {
-      account: yield* Handlers.blank("account, a bank-account.id"),
-    };
+    return { account };
   });
 
 export default close;
