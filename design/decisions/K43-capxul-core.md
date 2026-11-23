@@ -27,6 +27,8 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
    the software itself, it should just be free."
 6. **Bank accounts are paid.** "Being able to issue them a bank account, this is a paid feature ... they need to have
    some sort of maintenance to keep the accounts open".
+7. **The licence check comes afterwards.** "We're not going to the lawyer thing. Yeah, we're going to just do that
+   afterwards."
 
 Still open, in his words: the network, meaning other companies and their agents reached through the CRM, plus
 meetups, mixers and workshops, "a really undecided thing".
@@ -57,9 +59,8 @@ meetups, mixers and workshops, "a really undecided thing".
 5. **Licences:** ERPNext is under GPL version 3 and Frappe CRM under AGPL version 3 (Frappe's licence page,
    https://docs.frappe.io/legal/others/license-and-trademark). Frappe HRMS's licence is still to be read from its
    repository. A close translation likely carries the original's licence. That fits, because all of Capxul's software
-   is free (call 5), but the paid services must contain no translated code. Before the Capxul goal translates
-   anything, Aaron gets a lawyer's read. That is outward-facing, so the Capxul goal waits on him for it
-   (`needs-aaron`).
+   is free (call 5), but the paid services must contain no translated code. By Aaron's call 7, the Capxul goal
+   translates now and nothing waits on a lawyer; Aaron gets a lawyer's read afterwards.
 
 ## Open, for the Capxul goal's grill (its slice 3)
 

@@ -52,8 +52,8 @@ and run it." Nothing else is needed.
 - **It isn't:** Frappe or ERPNext running underneath. Their logic is translated, not run.
 - **Done when:** the tests for the books, HR, payroll, the identity checks and the bank account pass in Capxul's own
   test copy on the internet.
-- **Waits on:** Aaron, for the first design conversation and for a lawyer's read on the licence before anything is
-  translated.
+- **Waits on:** Aaron, for the first design conversation. A lawyer's read on the licence comes afterwards and holds
+  nothing up.
 - **Words used:**
   - Capxul: a business app for small companies, being rebuilt here; its core is the free books, HR, payroll and Bridge;
   - the books: accounting (invoices, payments, the ledger); HR and payroll: a company's people, and paying them;
@@ -80,7 +80,7 @@ keep the numbers their issues already have.
 |---|---|---|
 | 1 | Capxul's plugins mapped, the first map: #487 lands with K43's superseded marks | — |
 | 2 | The first feature, one person gets paid (`M7-capxul.md`, section 4): a sales invoice with a pay link, paid from any wallet, settled only by the chain, with the ledger lines posted | 6 |
-| 3 | The grill, with Aaron by voice: what is core, what is a module, what is paid and how a self-hosted Capxul reaches it, which licence Capxul carries, and K43's open list. A lawyer's read on translating ERPNext is Aaron's to get | — |
+| 3 | The grill, with Aaron by voice: what is core, what is a module, what is paid and how a self-hosted Capxul reaches it, which licence Capxul carries, and K43's open list. A lawyer's read on the licence comes afterwards, by Aaron's call, and blocks nothing | — |
 | 4 | Spike: can Orthograph things, machines and journeys be scaffolded from ERPNext's record-type files (Sales Invoice, Payment Entry, GL Entry first)? If so, it becomes a scaffolder in the framework, built under K42's collision rule | — |
 | 5 | Spike: `ortho new adapter --from-openapi` on Bridge's published description; customers, KYC links, virtual accounts and transfers, against a stand-in | — |
 | 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge and the paid services as board items, each at its stage | 1, 3, 4, 5 |
