@@ -28,10 +28,11 @@ standing authority in `AGENTS.md`. His word overrides any reading.
 
 **Aaron's call,** declining the narrow first cut: "I want to document all the record types that we need, which is
 pretty much all of them, and then have them all together." Capxul takes essentially every ERPNext and Frappe HRMS
-doctype its books, HR and payroll use, and later every Frappe CRM doctype, all listed in one place.
+doctype its books, HR and payroll use, all listed in one place.
 
 **The goal's reading:**
 
+- Every Frappe CRM doctype joins them for slice 11.
 - The one place is `examples/capxul/doctypes.md`, written by slice 6 (#712). Each row gives the doctype, its source
   file, the Capxul part that takes it, and its kind.
 - A doctype that is not taken is listed with its reason.
@@ -81,8 +82,10 @@ Bridge account.
 ## 5. The network (#734): dropped
 
 **Aaron's call:** "Drop network altogether. We're just going to drop it for now altogether." The network (other
-companies and their agents reached through the CRM, plus meetups, mixers and workshops) is not part of Goal 16. Slice 11
-(#717) builds the CRM module without it, and no slice waits on it. Bringing it back would take a new call from Aaron.
+companies and their agents reached through the CRM, plus meetups, mixers and workshops) is not part of Goal 16.
+
+**The goal's reading:** Slice 11 (#717) builds the CRM module without it, and no slice waits on it. Bringing it back
+would take a new call from Aaron.
 
 ## Still open
 
