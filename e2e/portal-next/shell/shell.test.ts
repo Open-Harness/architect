@@ -8,8 +8,9 @@
 //  `mountShell(root: HTMLElement, props): { agent, unmount(), navigate(path) }`, framework-free to call. `props`:
 //    routes, navigation, map   the contents of generated/app/routes.json, navigation.json and map.json, as they are
 //    palette                   `entries` of generated/app/palette.json
-//    caller                    "anonymous" | "person": what the palette lists (the rule in map/projection.test.ts: a page when its `allowed` has
-//                              `anyone` (anonymous) or anything (a person); an operation when its page is and its own `allowed` passes)
+//    caller, roles             "anonymous" | "person", and the names of the roles the caller holds (`"handle.handleOwner"`, as `allowed` names
+//                              them): what the palette lists, by the rule of `palette.ts` in map/projection.test.ts. No `roles` is none held, so
+//                              a page or operation open only to a role is listed only to a person who holds it; an anonymous caller holds none
 //    pages                     { [page name]: (el: HTMLElement, params: Record<string, string>) => void | (() => void) }: a page paints itself
 //                              into the element the shell gives it (the look is the page's own code, K31 section 2); params are decoded
 //    slots                     { header?, switcher?, footer?, actions? }: each the same kind of function; `nav` is the shell's own
@@ -183,18 +184,27 @@ describe("the breadcrumb", () => {
 });
 
 describe("the palette", () => {
-  const palette = async (route: string, caller: "anonymous" | "person") => {
-    const page = await fx.open(route, { caller });
+  const palette = async (route: string, caller: "anonymous" | "person", roles: ReadonlyArray<string> = []) => {
+    const page = await fx.open(route, { caller, roles });
     await page.keyboard.press("Control+K");
     await page.waitForSelector('[data-shell="palette"]');
     return page;
   };
   it("lists the pages a person may open, and the operations they may call on the page they are on", async () => {
-    const page = await palette("/@aaron", "person");
+    // The handle's owner: `handle.release` is open only to the `handle.handleOwner` role, which they hold.
+    const page = await palette("/@aaron", "person", ["handle.handleOwner"]);
     expect(await names(page, "page")).toEqual(["account", "edit", "home", "profile", "thing"]);
     expect(await names(page, "operation")).toEqual(["handle.release", "link.add"]);
     expect(await attrs(page, '[data-shell="palette-item"][data-kind="operation"]', "data-page")).toEqual(["profile", "profile"]);
     expect(await names(await palette("/", "person"), "operation")).toEqual(["handle.claim"]);
+  }, 300_000);
+  it("does not list an operation only a role may call to a person who does not hold the role, nor to one who holds another", async () => {
+    for (const roles of [[], ["link.linkOwner"]]) {
+      const page = await palette("/@aaron", "person", roles);
+      expect(await names(page, "page"), JSON.stringify(roles)).toEqual(["account", "edit", "home", "profile", "thing"]);
+      expect(await names(page, "operation"), JSON.stringify(roles)).toEqual(["link.add"]);
+    }
+    expect(await names(await palette("/@aaron", "anonymous", ["handle.handleOwner"]), "operation"), "an anonymous caller holds no role").toEqual([]);
   }, 300_000);
   it("lists only what an anonymous caller may open and call", async () => {
     const page = await palette("/@aaron", "anonymous");
@@ -277,7 +287,7 @@ describe("on UI SDK, and readable by an agent", () => {
   }, 300_000);
 
   it("lists the palette's operations by name on the page they belong to, and every entry and item has a name", async () => {
-    const page = await fx.open("/@aaron");
+    const page = await fx.open("/@aaron", { roles: ["handle.handleOwner"] });
     await page.keyboard.press("Control+K");
     await page.waitForSelector('[data-shell="palette"]');
     const entries = await snapshot(page);
