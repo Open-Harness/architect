@@ -42,6 +42,11 @@ export interface ClockState {
   readonly now: () => number;
   /** What a request runs inside to read this clock: `undefined` for a real clock, which is never patched. */
   readonly source: () => ClockSource | undefined;
+  /**
+   * Back to the declared `starts`, a scaled clock re-anchored at the real now: the one sanctioned way back, for the warm
+   * reset between runs (ST1.24). The door's `move-to` still refuses an earlier instant. A real clock has nothing to reset.
+   */
+  readonly reset: () => void;
   /** Move by a span in words (`"1 month"`; months and years on the calendar, in UTC). A real clock refuses. */
   readonly advance: (span: string) => Moved;
   /** Move to an instant (ISO 8601). It never goes back. A real clock refuses. */

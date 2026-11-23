@@ -39,7 +39,10 @@ export class World extends DurableObject<WorldEnv> {
     const clock = WorldClock.door(this.clock, request);
     if (clock) return clock;
     // The cast signs up and in through Better Auth, which reads `Date`: at the world's instant, not the machine's.
-    return this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)));
+    const answered = this.inTime(() => Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, this.env.ORTHO_WORLD_NONCE)));
+    // The warm reset between runs (ST1.24) is the one way back: the clock returns to its declared start, a scaled one re-anchored now.
+    // Only the reset the world itself accepted (its nonce matched) does it.
+    return pathname === "/_world/reset" && request.method === "POST" ? answered.then((response) => { if (response.ok) this.clock.reset(); return response; }) : answered;
   }
 
   /** The world's instant now. */

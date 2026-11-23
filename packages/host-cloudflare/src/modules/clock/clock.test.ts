@@ -71,6 +71,31 @@ describe("the instant a world keeps", () => {
     });
   });
 
+  it("goes back to its declared start only through reset (the warm reset between runs): a stepped world reads `starts` again, a scaled one re-anchors at the real now, a real one is untouched", async () => {
+    await inStorage("clock-reset", (sql) => {
+      const clock = WorldClock.state(sql, STEPPED);
+      clock.advance("1 year");
+      expect(clock.moveTo("2027-01-10T09:00:00Z")).toMatchObject({ ok: false, status: 400 });
+      clock.reset();
+      expect(iso(clock.now())).toBe("2027-01-10T09:00:00.000Z");
+      expect(clock.advance("1 month")).toMatchObject({ ok: true });
+    });
+    await inStorage("clock-reset-scaled", (sql) => {
+      const clock = WorldClock.state(sql, { kind: "scaled", starts: "2027-01-10T09:00:00.000Z", speed: 3600 });
+      clock.advance("1 year");
+      const before = WorldClock.wall();
+      clock.reset();
+      expect(clock.source()).toMatchObject({ kind: "scaled", worldAnchor: ms("2027-01-10T09:00:00.000Z"), speed: 3600 });
+      expect((clock.source() as { realAnchor: number }).realAnchor).toBeGreaterThanOrEqual(before);
+      expect(clock.now() - ms("2027-01-10T09:00:00.000Z")).toBeLessThan(3_600_000);
+    });
+    await inStorage("clock-reset-real", (sql) => {
+      const clock = WorldClock.state(sql, { kind: "real" });
+      clock.reset();
+      expect(Math.abs(clock.now() - WorldClock.wall())).toBeLessThan(1000);
+    });
+  });
+
   it("flows at its speed when scaled, from where it was last set", async () => {
     await inStorage("clock-scaled", (sql) => {
       const clock = WorldClock.state(sql, { kind: "scaled", starts: "2027-01-10T09:00:00.000Z", speed: 3600 });

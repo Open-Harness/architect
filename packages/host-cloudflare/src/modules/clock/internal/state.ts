@@ -34,7 +34,7 @@ const SCHEMA = "CREATE TABLE IF NOT EXISTS clock (one INTEGER PRIMARY KEY CHECK 
 export const stateOf = (sql: SqlStorage, declaration: ClockDeclaration): ClockState => {
   if (declaration.kind === "real") {
     const no = () => refused(409, "ClockNotMovable", "this world runs on the real clock, which nothing can move");
-    return { kind: "real", now: wall, source: () => undefined, advance: no, moveTo: no };
+    return { kind: "real", now: wall, source: () => undefined, reset: () => undefined, advance: no, moveTo: no };
   }
   sql.exec(SCHEMA);
   const speed = declaration.kind === "scaled" ? declaration.speed : 0;
@@ -54,6 +54,7 @@ export const stateOf = (sql: SqlStorage, declaration: ClockDeclaration): ClockSt
   return {
     kind: declaration.kind,
     now,
+    reset: () => void sql.exec("UPDATE clock SET instant = ?, anchor = ? WHERE one = 1", starts, wall()),
     source: () => {
       const r = row();
       return r.speed === 0 ? { kind: "stepped", instant: r.instant } : { kind: "scaled", realAnchor: r.anchor, worldAnchor: r.instant, speed: r.speed };

@@ -93,6 +93,12 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
    migrations never use these, and a `git grep` for them over `packages/` and `examples/` finds none. Both `no-wall-clock`
    (project code) and `effect-only` (package source) report it.
 
+10. **The warm reset puts the clock back** (review of #615, Codex P2). `ortho prove` reuses an `ortho dev` world and calls
+    `POST /_world/reset` before each run (ST1.24). The world's Durable Object, once its own nonce check has accepted that
+    request, sets its clock back to the declared `starts` (a scaled one re-anchored at the real now); a real world's reset
+    does nothing to time. It is the one sanctioned way back: `move-to` still refuses an earlier instant. Done in
+    host-cloudflare only; `prove` is untouched.
+
 ## What is not built here, and which slice owns it
 
 - The world's timer table, `Timers` provided to handlers, `Busy` across processes, `NeverQuiet` and the controller's firing
