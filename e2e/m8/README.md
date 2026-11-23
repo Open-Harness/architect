@@ -38,6 +38,5 @@ check, the layout G9 gave M1; `../ratchet/README.md` says how the list works). I
 `pnpm nx run e2e:m8` runs the checks alone, and is Gate M8's check once the list is empty.
 
 When a slice lands and its checks pass, the ratchet prints `newly passing, take it off the list` for each: delete those
-lines in the same pull request. `tools/ci/builder-paths.sh` lets a builder shrink only M1's list today, so an M8 builder
-needs it to treat `e2e/m8/expected-failing/` the same way; that change waits for stage one's version of the script to
-reach `main`.
+lines in the same pull request. `tools/ci/builder-paths.sh` lets a builder shrink every e2e suite's list, this one
+included (CI-ratchet-suites), and refuses an added line or file.
