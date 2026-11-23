@@ -400,6 +400,7 @@ The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m
 - **The checkpoint moves only after the sink has taken the change.** If the sink answers with an error, the follower
   keeps its checkpoint and hands the same change on again at its next poll. A replay after a restart may call the sink
   again with an id it has taken; `seen` is harmless, and what may never happen twice is `accepted` for one id.
+- **A follower configured for another source starts over, and shows its faults.** `configure` keeps the checkpoint when the source is the same (chain, contract, event and starting block) and clears it when the source differs, since that is a new stream; a new `rpcUrl` or `depth` for the same source keeps it. A failed step keeps the checkpoint, and `health()` reports the last fault (its tag and kind, never a URL or key), how many in a row and when, until a step succeeds (🔍 on #679, 23 November 2026).
 
 ## The budgets example, as the journey author will write it
 

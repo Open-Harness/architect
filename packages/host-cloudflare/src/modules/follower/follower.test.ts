@@ -82,8 +82,10 @@ describe("configure and health", () => {
     await runInDurableObject(stub, async (follower, state) => {
       const health = (await follower.health())!;
       expect(health.failures).toBe(2);
-      expect(health.lastError.tag.length).toBeGreaterThan(0);
-      expect(JSON.stringify(health)).not.toMatch(/secret|127\.0\.0\.1/);
+      expect(health.lastError).toMatchObject({ tag: "ChainFault", message: expect.any(String) });
+      // An allow-list: the tag, the kind and a fixed sentence; none of the error's own words (it named the URL).
+      expect(Object.keys(health.lastError).sort()).toEqual(["at", "kind", "message", "tag"]);
+      expect(JSON.stringify(health)).not.toMatch(/secret|127\.0\.0\.1|http|:1\//);
       expect(await state.storage.getAlarm()).not.toBeNull();
     });
   });

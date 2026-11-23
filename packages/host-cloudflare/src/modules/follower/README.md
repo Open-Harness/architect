@@ -11,18 +11,18 @@ A Worker binds the sink as `FOLLOWER_SINK`; Goal 11's `Inbox` takes that binding
   `Corrected` change with `wasConfirmed: true` (id with `:corrected`, event `Contract.EventCorrected`); `Observed` is not
   handed on, and a take-back of an unconfirmed event is dropped, because the sink never saw it (M6-chain item 12).
 - `checkpoint()`: `{ through, window }` as stored, numbers as decimal strings.
-- `health()`: `null` while well; after failed alarm steps `{ failures, lastError: { tag, message, at } }`.
+- `health()`: `null` while well; after failed alarm steps `{ failures, lastError: { tag, kind, message, at } }`.
 
 The checkpoint (chain-evm's, with the events it still needs to confirm or correct) is written in one `put`, only after the
 sink has taken every change of the step. A failed hand-on leaves it where it was, so the next poll reads the same changes
 again, and the sink answers `seen` for any it already took: nothing is accepted twice. A restart resumes from the stored
 checkpoint.
 
-`configure`, `poll` and the alarm run one at a time. `configure` with a `pollIntervalMs` arms an alarm at that interval (and
+Each `accept` has 30 seconds (through `Timers`); a sink that does not answer is a failed step. `configure`, `poll` and the alarm run one at a time. `configure` with a `pollIntervalMs` arms an alarm at that interval (and
 resets it when the interval changes); with none, any alarm is deleted and there is none, so a check that calls `poll` by hand
 is never raced. The alarm runs the same step as `poll` and sets the next alarm. When the step fails (a wrong `rpcUrl`, a sink
 that refuses, a reorg deeper than the window) the checkpoint stays where it was and the alarm tries again; `health()` answers
-the last error's tag and message (URLs and 32-byte hex are scrubbed), when it happened and how many steps in a row failed, or
+the last error's tag, kind and a fixed sentence for them (nothing the error said is stored), when it happened and how many steps in a row failed, or
 `null` once a step has succeeded. A `configure` for a different source (chain, contract, address, event or start block) starts a
 new stream and clears the checkpoint; the same source keeps it.
 

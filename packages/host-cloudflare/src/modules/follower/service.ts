@@ -72,9 +72,9 @@ export class Follower extends DurableObject implements FollowerApi {
     const { ctx, env } = this;
     return () => Effect.runPromise(Effect.gen(function* () {
       const config = yield* Effect.promise(() => ctx.storage.get<FollowerConfig>(CONFIG));
-      if (config === undefined) return yield* new FollowerFault({ message: "this follower has not been configured" });
+      if (config === undefined) return yield* new FollowerFault({ kind: "unconfigured", message: "this follower has not been configured" });
       const old = yield* Effect.promise(() => ctx.storage.get<Stored>(CHECKPOINT));
-      const sink = (env as unknown as FollowerEnv).FOLLOWER_SINK.getByName(ctx.id.name ?? `eip155:${config.chainId}:${config.address}`);
+      const sink = () => (env as unknown as FollowerEnv).FOLLOWER_SINK.getByName(ctx.id.name ?? `eip155:${config.chainId}:${config.address}`);
       const next = yield* step(config, old, sink);
       yield* Effect.promise(() => ctx.storage.put(CHECKPOINT, next.checkpoint));
       yield* Effect.promise(() => ctx.storage.delete(HEALTH));

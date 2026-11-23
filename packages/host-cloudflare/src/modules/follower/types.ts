@@ -22,10 +22,14 @@ export interface BlockView { readonly number: string; readonly hash: string }
 /** What `checkpoint()` answers: the last block read, and the window of block hashes, oldest first. */
 export interface CheckpointView { readonly through?: BlockView; readonly window: ReadonlyArray<BlockView> }
 
-/** Why the alarm's last steps failed: the error's tag and message (no URL, no key), when (ms), and how many in a row. Cleared by the next step that succeeds. */
+/** How long the follower waits for the sink to answer one `accept`; a hung sink must not hold the follower's turn for ever. */
+export const SINK_TIMEOUT_MS = 30_000;
+
+/** Why the alarm's last steps failed: the error's tag and kind and a fixed sentence, when (ms), and how many in a row. Cleared by the next step that succeeds. */
 export interface FollowerHealth {
   readonly failures: number;
-  readonly lastError: { readonly tag: string; readonly message: string; readonly at: number };
+  /** Only the error's tag, its kind and a fixed sentence for them: nothing the error said, which might hold a URL or a key. */
+  readonly lastError: { readonly tag: string; readonly kind?: string; readonly message: string; readonly at: number };
 }
 
 /** What reaches the sink: `Inbox.accept`'s shape (Ask #481). */
