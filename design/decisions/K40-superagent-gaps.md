@@ -190,6 +190,7 @@ a socket but can't spawn anything. The daemon speaks plain frames over a byte st
 // packages/sandbox (Blueprint.adapter): Pi's ExecutionEnv, over a socket an actor can open
 export default Blueprint.adapter({
   calls: { open, close },                       // one sandbox per agent, tagged, swept at the end
+  // Superseded by GOAL17-check-harness, 23 November 2026: calls are open, close, exec, write, read and list, with named refusals (call 4)
   env: (sandbox) => new RemoteExecutionEnv({ connection: socketConnection(sandbox.address), id: sandbox.id, cwd: "/work" }),
   standIn: Stand.process(bridge),               // on the Mac: listens on localhost, starts `pi-env serve` per sandbox in a temp folder
 });
