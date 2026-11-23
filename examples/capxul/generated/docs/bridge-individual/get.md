@@ -61,7 +61,7 @@ Starts from the world `two kycs started`.
 
 - **Bo reads his back whole, with his own form and terms.** `bo` (role bridge-individual.self) calls and sends id the world's boIndividual, and gets back [the cast's bo person, `Bo Otieno`, `bo@bo-ltd.test`, the world's boKycLink, the world's boTosLink, `started`] and gets back false.
 - **Ada reads hers back whole, unchanged by his.** `ada` (role bridge-individual.self) calls and sends id the world's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, the world's kycLink, the world's tosLink, `started`].
-- **neither reads the other's.** `ada` (role bridge-individual.self) calls and sends id the world's boIndividual, and is refused with NotAllowed, AR-001.
+- **Ada can't read his.** `ada` (role bridge-individual.self) calls and sends id the world's boIndividual, and is refused with NotAllowed, AR-001.
 
 ## How to call
 

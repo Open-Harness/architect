@@ -95,7 +95,7 @@ description and judged against it.
 | **blueprint** | the description and the folder `blueprint/`, written with the `Blueprint.*` API; the framework itself is Orthograph |
 | **model** | the compiled blueprint: one JSON, every declaration with its hash, every name written once |
 | **thing** | a noun with an identity, fields and an owner of its state (`lives`: the database, an actor, a chain) |
-| **value** | a named field type that says what it is in every target (`Amount`: bigint in Effect, uint128 in Solidity) |
+| **value** | a named field type that says what it is in every target (`Blueprint.uint(128)`: bigint in Effect, uint128 in Solidity; money is `Blueprint.money`, M6-money) |
 | **machine** | a thing's states and moves; refusals for a wrong state are generated |
 | **event** | what a move emits, `<Thing><PastTense>` |
 | **error** | a declared refusal, with an exit code and a stable refusal code |
