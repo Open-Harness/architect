@@ -7,8 +7,14 @@
     "sha256": "8fefb24297c732ec6c914db39d7aca8dd0b91667a80462d74bf0f4c816a577cb",
     "bytes": 14395662,
     "fetched": "2026-11-22",
-    "counts": { "operations": 1281, "events": 76 },
-    "trimmed": { "file": "github.trimmed.json", "sha256": "8991e8f2a8f0e7f9c6c7eee71bfbdd1c800f7c3797aa1b731346673776c1bf00" }
+    "counts": {
+      "operations": 1281,
+      "events": 76
+    },
+    "trimmed": {
+      "file": "github.trimmed.json",
+      "sha256": "e20e9cf6fcec9152d07321f07d839f49bfef75deb50bd4f528a87a6a87bec8ab"
+    }
   },
   "slack": {
     "title": "Slack Web API",
@@ -18,8 +24,14 @@
     "sha256": "742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
     "bytes": 1237332,
     "fetched": "2026-11-22",
-    "counts": { "operations": 174, "events": 0 },
-    "trimmed": { "file": "slack.trimmed.json", "sha256": "d549c25af93838da4b5ce40d46a86e233ae03015b3bf26f0d9119a00a7347af1" }
+    "counts": {
+      "operations": 174,
+      "events": 0
+    },
+    "trimmed": {
+      "file": "slack.trimmed.json",
+      "sha256": "7d1172690d507689b56acd5953854999d93088f117cf69f71e0cc6d3d2118f2d"
+    }
   },
   "posthog": {
     "title": "PostHog API",
@@ -29,7 +41,13 @@
     "sha256": "50b3f1c294aaf27775e41ef23fd4904a2ffb48ee8c8d831e807211426cf8786f",
     "bytes": 21573241,
     "fetched": "2026-11-22",
-    "counts": { "operations": 2802, "events": 0 },
-    "trimmed": { "file": "posthog.trimmed.json", "sha256": "97f4ced1b38f6fad761e65af22250c1bebebfa953b57df436d003f67086d9e36" }
+    "counts": {
+      "operations": 2802,
+      "events": 0
+    },
+    "trimmed": {
+      "file": "posthog.trimmed.json",
+      "sha256": "97f4ced1b38f6fad761e65af22250c1bebebfa953b57df436d003f67086d9e36"
+    }
   }
 }

@@ -243,7 +243,7 @@ superagent.create({
   name: "triage",
   purpose: "Finds errors worth fixing, and fixes them.",
   connections: [
-    posthogSource({ project: "web", kinds: ["errorIssue", "alert"] }),
+    posthogSource({ project: "web", kinds: ["errorIssue"] }),
     githubSource({ repo: "acme/widgets", me: { id: "<bot id>", login: "<bot login>" }, events: ["issues"] }),
     slackSource({ channels: ["#triage"], me: { id: "<bot id>", login: "<bot login>" } }),
     Source.timer({ every: "1 week", says: "sweep the open errors" }),   // a standing goal: its thread never closes
@@ -284,7 +284,7 @@ GitHub, the secrets and the stand-in.
 ```ts
 // packages/github: by hand, on each event the adapter offers
 issueComment: Blueprint.event(IssueComment, {
-  id: (e) => `comment:${e.comment.id}:${e.action}`,                        // the same from the door and the poll
+  id: (e) => `comment:${e.repository.full_name}:${e.comment.id}:${e.comment.updated_at}`,   // the object and its own last change: the same from the door and the poll
   actor: (e) => ({ id: String(e.sender.id), name: e.sender.login, bot: e.sender.type === "Bot" }),
 }),
 

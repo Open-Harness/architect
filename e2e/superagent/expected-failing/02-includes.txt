@@ -1,1 +1,6 @@
 # Written before slice 4. Red until generated adapters have nested call groups and events and `ortho check` refuses a missing include (slice 4); due before it merges.
+# Slice 10: needs.ts lists PostHog's two alert events and the two sync calls, which the held plugins lack until slice 11 writes the events and regenerates GitHub and Slack from the re-trimmed fixtures.
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > github: every call and event the superagent includes is in the plugin, and a missing one is refused
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > posthog: every call and event the superagent includes is in the plugin, and a missing one is refused
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > slack: every call and event the superagent includes is in the plugin, and a missing one is refused
+superagent/02-includes.test.ts > 02 includes: the plugins the app holds, with Slack's hand-written events > the held GitHub plugin has every GitHub call and event the fixture does, so the app's choice is a narrowing, not a copy

@@ -14,6 +14,7 @@ const KEEP = {
     operations: [
       "issues/create-comment", "issues/list-comments", "pulls/create", "pulls/get", "pulls/create-review", "pulls/list-reviews",
       "pulls/create-review-comment", "pulls/list-review-comments",
+      "repos/list-collaborators",
       "issues/get", "issues/get-comment", "issues/update-comment", "issues/delete-comment", "pulls/list", "pulls/merge", "repos/get",
     ],
     // The webhook entries (the spec lists one per action): the six events the superagent listens to, three actions of each
@@ -29,7 +30,7 @@ const KEEP = {
     ],
   },
   slack: {
-    operations: ["chat_postMessage", "conversations_replies", "conversations_history", "chat_delete", "auth_test"],
+    operations: ["chat_postMessage", "conversations_replies", "usergroups_users_list", "conversations_history", "chat_delete", "auth_test"],
     webhooks: [],
   },
   posthog: {
