@@ -1,6 +1,6 @@
 // Starting worlds of check 66's journeys (slice 10). Each is made by declared operations (D2 #4), one step on the one before, as slice 8's
 // are; these are the same chain under names of their own (`reply-…`), so check 66 needs nothing of slice 8's branch. They are overlaid on
-// the app's `blueprint/starting-worlds/`.
+// the app's `blueprint/starting-worlds/` by check 66 and live in `connection-worlds/`, apart from slice 8's `starting-worlds/`.
 import { Blueprint } from "orthograph";
 import agentOpen from "@orthograph/agents/blueprint/things/agent/verbs/open.ts";
 

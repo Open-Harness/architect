@@ -4,8 +4,8 @@
 // are overlaid on a copy of the app's `journeys/` and run as a user runs them, `ortho prove`, and each must pass, step by step.
 // Red until others land what the journeys use: slice 9's journey surface (`s.runner`, `s.clock.settle`, `outbox`, `Stand.command`, the
 // scripted model `@orthograph/stand-in-model/stand`) and slice 11's stand-in commands (`github.comment`, `deliver`, `replies`; `slack.say`,
-// `deliver`) and its doors and catch-up. The starting worlds they name are this check's own, in `starting-worlds/` (overlaid on the app's
-// `blueprint/starting-worlds/`): `a-live-superagent-listening-to-acme-widgets`, and `a-live-superagent-with-a-ticket`, a ticket on issue 12
+// `deliver`) and its doors and catch-up. The starting worlds they name are this check's own, in `connection-worlds/` (overlaid on the app's
+// `blueprint/starting-worlds/`; not `starting-worlds/`, which is slice 8's): `a-live-superagent-listening-to-acme-widgets`, and `a-live-superagent-with-a-ticket`, a ticket on issue 12
 // that waits paused so the journey scripts its model first; both stand on a chain of `reply-…` worlds, so nothing of slice 8's is needed.
 import { cpSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -14,7 +14,7 @@ import { copyApp, removeCopies, run } from "./app.ts";
 
 afterAll(removeCopies);
 const mine = join(import.meta.dirname, "journeys");
-const worlds = join(import.meta.dirname, "starting-worlds");
+const worlds = join(import.meta.dirname, "connection-worlds");
 const TITLES = [
   "a webhook and a catch-up poll of one comment make one trigger",
   "a comment made while the world was down is found by the poll once",
@@ -28,7 +28,7 @@ describe("66 the connection journeys run through `ortho prove`", () => {
     expect(readdirSync(mine).filter((f) => f.endsWith(".ts")).sort()).toEqual(["a-delivery-survives-a-kill.ts", "a-poll-after-sleep.ts", "a-reply-goes-out-once-in-order.ts", "one-comment.ts", "slack-door.ts"]);
   });
 
-  it("the starting worlds the journeys name are in `starting-worlds/`, each by the name a journey gives", () => {
+  it("the starting worlds the journeys name are in `connection-worlds/`, each by the name a journey gives", () => {
     const found = readdirSync(worlds).filter((f) => f.endsWith(".ts")).flatMap((f) => [...readFileSync(join(worlds, f), "utf8").matchAll(/startingWorld\("([^"]+)"/g)].map((m) => m[1]!)).sort();
     expect(found).toEqual(["a-live-superagent-listening-to-acme-widgets", "a-live-superagent-with-a-ticket", "reply-a-listed-account", "reply-a-live-superagent", "reply-a-main-agent-exists", "reply-an-executor-waits"]);
     const named = new Set(readdirSync(mine).flatMap((f) => [...readFileSync(join(mine, f), "utf8").matchAll(/starts: "([^"]+)"/g)].map((m) => m[1]!)));
@@ -43,7 +43,10 @@ describe("66 the connection journeys run through `ortho prove`", () => {
     const checked = run(root, ["check"]);
     expect(checked.status, `ortho check with the starting worlds:\n${checked.out}`).toBe(0);
     const model = JSON.parse(run(root, ["model", "--json"]).stdout) as { startingWorlds?: Record<string, unknown> | ReadonlyArray<unknown> };
-    expect(JSON.stringify(model.startingWorlds ?? {}), "the model names the worlds").toContain("a-live-superagent-with-a-ticket");
+    const all = (model.startingWorlds ?? {}) as Record<string, { from: string | null }>;
+    expect(Object.keys(all), "the model names the worlds").toContain("a-live-superagent-with-a-ticket");
+    const dangling = Object.entries(all).filter(([, w]) => w.from !== null && !(w.from in all)).map(([n, w]) => `${n} from ${w.from}`);
+    expect(dangling, "every world stands on a world that is there, or on nothing").toEqual([]);
   });
 
   it("every journey passes, each of its steps, and none is skipped for want of an instrument or a world", () => {
