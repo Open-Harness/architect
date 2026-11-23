@@ -11,25 +11,30 @@ into `goal/on-chain`; then land M6.09 early into `goal/stage-1` (K38, Ask #442),
 ## Where it stands
 
 - **Landed on `goal/on-chain`:**
-  - slice 0, 1b ([#275](https://github.com/Open-Harness/orthograph/pull/275)) and 2 ([#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279));
-  - M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287)); slice 3's checks ([#283](https://github.com/Open-Harness/orthograph/pull/283)); two lock calls in M6-chain item 4 ([#332](https://github.com/Open-Harness/orthograph/pull/332));
-  - slice 3, M6.10, the chain store, values and money, the refusals lock ([#331](https://github.com/Open-Harness/orthograph/pull/331), `d93a16ca`), with Codex's two
-    fixes: an asset change a money field uses is major, and a changed prefix keeps the codes that shipped;
-  - M6-chain item 12, the relayer and the follower ([#518](https://github.com/Open-Harness/orthograph/pull/518), `d1e045cd`);
-  - the checks for slices 9 and 10 ([#513](https://github.com/Open-Harness/orthograph/pull/513), `c0ccbb28`): 13 failing on the empty seam, listed in the ratchet;
-  - `goal/stage-1` up to `dc471c87` ([#663](https://github.com/Open-Harness/orthograph/pull/663), `0494d896`): the draft-race fix, the fast gate (CI-integration B1),
-    Goal 3's flake fix (#452) and monitor history fix (#541). The merge with slice 3 decided two things: a chain
-    operation's `allowed` refuses `.via`/`.notVia`, `Blueprint.system` and a service role (M6-chain item 1), and the
-    refusals lock records `instant` as its own kind.
+  - Slices 0, 1b and 2: the plan, the chain decision, and the budgets example with its done check ([#275](https://github.com/Open-Harness/orthograph/pull/275),
+    [#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279)).
+  - Money, M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287)). Slice 3's checks ([#283](https://github.com/Open-Harness/orthograph/pull/283)). Two lock calls in M6-chain item 4 ([#332](https://github.com/Open-Harness/orthograph/pull/332)).
+  - Slice 3, M6.10: the chain store, values and money, and the refusals lock ([#331](https://github.com/Open-Harness/orthograph/pull/331), `d93a16ca`). Codex's two
+    fixes went in with it: an asset change a money field uses is major, and a changed prefix keeps the codes that
+    shipped.
+  - The relayer and follower decision, M6-chain item 12 ([#518](https://github.com/Open-Harness/orthograph/pull/518), `d1e045cd`).
+  - The relayer and follower checks ([#513](https://github.com/Open-Harness/orthograph/pull/513), `c0ccbb28`). Thirteen tests fail on the empty seam, and each is
+    listed in the ratchet.
+  - `goal/stage-1` again, up to `dc471c87` ([#663](https://github.com/Open-Harness/orthograph/pull/663), `0494d896`). It brought CI that goes by a pull request's live
+    draft state, the faster gate for goal branches, Goal 3's timing-test fix ([#528](https://github.com/Open-Harness/orthograph/pull/528)) and its monitor history fix
+    ([#552](https://github.com/Open-Harness/orthograph/pull/552)).
+  - The merge with slice 3 made two calls. A chain operation's `allowed` refuses `.via`/`.notVia`, `Blueprint.system`
+    and a service role (M6-chain item 1). The refusals lock records an `instant` as its own kind (M6-chain item 4).
 - **Landed on `goal/stage-1` (K38):** slice 3b, `chain-evm`'s ABI codec and `ChainPort.read`, for Goal 12 (checks
   [#509](https://github.com/Open-Harness/orthograph/pull/509), `e1bcb79a`; build [#521](https://github.com/Open-Harness/orthograph/pull/521), `b0673ee8`). Ask #471 is closed.
 - **Running (subagents of this lead, each in its own worktree):** the relayer builder (slice 9, M6.07) and the
   follower builder (slice 10, M6.09). Each builds a Durable Object in its own `host-cloudflare` module and pushes
   its `-build` branch; the lead opens the pull request.
-- **CI since 23 November:** a pull request into `goal/on-chain` runs the fast gate: `check`, `builder-paths` and
-  `e2e-on-chain`; the other required jobs pass without steps. The lead posts the local proof of the rest in the pull
-  request. Watch with `tools/ci/watch-required.sh <n>` in the background after each push, and wait a minute after a
-  push before `gh pr ready` (the draft race).
+- **CI since 23 November:** a pull request into `goal/on-chain` runs only `check`, `builder-paths` and
+  `e2e-on-chain`. The other required jobs pass without running. The lead runs the rest locally and posts the result in
+  the pull request. To watch CI, copy the watcher from `main` until this branch has it:
+  `git show origin/main:tools/ci/watch-required.sh > tmp/watch-required.sh`, then run `tmp/watch-required.sh <n>` in
+  the background after each push. Wait a minute after a push before `gh pr ready`.
 - **Order (K38):** slices 9 and 10 before 4 to 8. M6.09 lands early into `goal/stage-1` for Goal 9 (Ask #442). The
   follower calls Goal 11's `Inbox.accept` per `Confirmed` and per `Corrected` with `wasConfirmed: true`, never for an
   unconfirmed take-back, or a `FollowerSink` port until `Inbox` is on `goal/stage-1` (Ask #481, answered; narrowed by
@@ -54,12 +59,9 @@ up to date (`strict=false`).
 
 ## Waiting on Aaron
 
-Nothing. Money (ledger `THI-07`) was answered by Aaron himself on 21 November 2026, all five recommendations ("agreed on
-all questions"; the conductor had given the same under his standing authority). Recorded in
-`design/decisions/M6-money.md`, [#287](https://github.com/AaronAbuUsama/architect/pull/287) (🔍 passed on the second round; waits on CI): every amount names its asset (fixed, or
-`money.of` a field of the same thing); assets are files in `blueprint/assets/`; base units everywhere, digits-only on
-the wire, formatted at the faces; unsigned unless signed; built in slice 3. Slice 3's checks author (a subagent of
-this lead) was asked to add money's seven cases to [#283](https://github.com/AaronAbuUsama/architect/pull/283); Goal 7's lead (Foreman) was given the same shape.
+Nothing. Aaron answered money himself on 21 November 2026 ("agreed on all questions"). It is recorded in
+`design/decisions/M6-money.md` and built in slice 3: every amount names its asset, assets are files in
+`blueprint/assets/`, amounts are base units, digits only on the wire, and unsigned unless declared signed.
 
 ## From Goal 7 (Safe, Hats and budgets; Foreman runs it)
 
