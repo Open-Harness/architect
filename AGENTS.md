@@ -52,7 +52,7 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
 - **Journeys and checks come first.** A different agent from the builder writes an operation's journeys and checks,
   and they fail on empty handlers before the builder starts (the `author` skill). A builder never edits journeys, the
   evals or the runner's generic checks; on `m1` and the goal branches it may only remove lines from the ratchet lists, a file per check
-  in `e2e/m1/expected-failing/` and a file per test file in `packages/<package>/expected-failing/` (G11), or delete a file there. Authors' branches end in `-check` and builders' in `-build`. A builder that needs a
+  in an e2e suite's `expected-failing/` (`e2e/m1/`, `e2e/ui-layer/` and the rest; CI-ratchet-suites) and a file per test file in `packages/<package>/expected-failing/` (G11), or delete a file there. Authors' branches end in `-check` and builders' in `-build`. A builder that needs a
   check changed stops and asks its author. A slice that changes acme's wire, its model or its checked-in `generated/` lands as a
   pair, `goal-3/<slice>-check` and `goal-3/<slice>-build`, because layer 1 and layer 2 have no ratchet (G12,
   `design/decisions/G12-paired-landing.md`).
