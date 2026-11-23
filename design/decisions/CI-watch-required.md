@@ -24,6 +24,10 @@ requires by name, taking its newest row (an older cancelled run can list the sam
 | 2 | it cannot watch: no number, a draft (a draft runs no CI), a closed pull request, a merged one with no `ci` run, or `gh` failing (only a 404 on the protection reads as "unprotected") |
 | 3 | `WATCH_MAX_SECONDS` (default three hours) ran out before the run finished. Read 1, 2 and 3 alike as "not green" |
 
+The newest run is the highest run id among the head's `ci` runs: two can share a creation second (#658, a draft-race run
+cancelled and the ready run green), and `gh run list` does not then list the newer first. On an unprotected base a
+cancelled newest run is waited past, since a newer run replaced it; at the deadline it is reported as not green.
+
 Its cases are in `tools/ci/ci.test.sh`, with a fake `gh` on the PATH. Tried on GitHub: #653 (merged into `main`) prints
 its nine required checks and exits 0; #656 as a draft exits 2; #654, into the unprotected `goal/superagent`, goes by its
 run's conclusion.

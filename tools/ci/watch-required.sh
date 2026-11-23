@@ -37,7 +37,10 @@ while :; do
   state=$(jq -r .state <<<"$pr_json")
   [ "$state" = "OPEN" ] || [ "$state" = "MERGED" ] || { echo "#$pr is closed" >&2; exit 2; }
   head=$(jq -r .headRefOid <<<"$pr_json")
-  run=$(gh run list -R "$repo" --commit "$head" --workflow ci --event pull_request --limit 1 --json databaseId,status,conclusion 2>/dev/null) || run='[]'
+  run=$(gh run list -R "$repo" --commit "$head" --workflow ci --event pull_request --limit 10 --json databaseId,status,conclusion 2>/dev/null |
+    jq 'sort_by(.databaseId) | reverse' 2>/dev/null) || run='[]'
+  # Newest first by id: two runs can share a creation second (a draft-race run and the ready run, #658), and then the
+  # list's own order is not the order they started in.
   if [ "$(jq -r '.[0].status // "none"' <<<"$run")" = "none" ] && [ "$state" = "MERGED" ]; then
     echo "#$pr is merged and has no ci run on its head" >&2; exit 2
   fi
@@ -46,7 +49,10 @@ while :; do
     # run with no such job tells an unprotected base anything; a draft run here is the one before the ready run starts.
     drafted=$(gh run view "$(jq -r '.[0].databaseId' <<<"$run")" -R "$repo" --json jobs 2>/dev/null |
       jq '[.jobs[]?.name | select(endswith(" (draft)"))] | length' 2>/dev/null) || drafted=unknown
-    if [ -z "$required" ] && [ "$drafted" = 0 ]; then
+    # A cancelled run is one a newer run replaced (cancel-in-progress) or one cancelled by hand: wait for the newer one,
+    # and at the deadline report it as not green.
+    if [ -z "$required" ] && [ "$drafted" = 0 ] &&
+      { [ "$(jq -r '.[0].conclusion' <<<"$run")" != "cancelled" ] || [ "$SECONDS" -ge "$max" ]; }; then
       conclusion=$(jq -r '.[0].conclusion' <<<"$run")
       echo "$base has no required checks; the ci run's conclusion: $conclusion"
       if [ "$conclusion" = "success" ]; then exit 0; else exit 1; fi
