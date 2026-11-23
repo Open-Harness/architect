@@ -1,0 +1,2 @@
+# Wallet send safety (Codex PRRT_kwDOVwjszM66rbjB on #616): a send cancelled after prepare reserved its nonce never hands it back, so the shared port skips it and every later send is queued behind a gap. Waits on the build.
+src/modules/submit/interrupted-send.test.ts > a keyed send interrupted after it reserved its nonce > gives the nonce back: the next send from the account is mined at that nonce
