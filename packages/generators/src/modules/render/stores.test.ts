@@ -69,7 +69,8 @@ describe("a feature's own store, rendered", () => {
     // acme mounts its projections, so its first lines name the mounts; the copy mounts none. Only that line may differ.
     const body = (text: string | undefined) => text?.replace(/^\/\/ Generated from blueprint\/projections\/[a-z-]+\.ts\./, "// Generated from the blueprint.");
     const changed = [...alone].filter(([path, text]) => body(beside.get(path)) !== body(text)).map(([path]) => path);
-    expect(changed.filter((path) => /\/(allowance|api-key|invitation|membership|organization|person|session|system)\//.test(path))).toEqual([]);
+    // acme also mounts the actions, which the copy's standing set does not have: its files are acme's alone.
+    expect(changed.filter((path) => !path.startsWith("generated/actions/") && /\/(allowance|api-key|invitation|membership|organization|person|session|system)\//.test(path))).toEqual([]);
     expect(changed).not.toContain("generated/server/migrations/0001_things.sql");
   });
 
