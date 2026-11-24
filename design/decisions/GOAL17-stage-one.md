@@ -121,7 +121,7 @@ The table, top first, first match wins (a trigger and its context in, a strength
 | 4 | a person (listed or not) on a thread an `open` or `ended` ticket owns (`own`, `attached`, `bound`), not stopped by a person: listed `explicit`, else `inferred`, unless the row's `unlisted` cell is `explicit` | as said | `followup` |
 | 5 | not listed, addressing: the row's `unlisted` cell | the cell | `admission` |
 | 6 | listed, not addressing, on an `observed` row: the row's `listed` cell | the cell | `admission` |
-| 7 | not listed or no sender, not addressing, on an `observed` row: the row's `unnamed` cell | the cell | `admission` |
+| 7 | not listed or no sender, not addressing, on an `observed` row: the row's `unnamed` cell (Superseded by GOAL17-gate-no-sender, 24 November 2026: a message with no sender reads this cell whether it addresses or not) | the cell | `admission` |
 | 8 | anything else | `none` | `admission` |
 
 Then `mode === "off"` turns every `inferred` into `none`. `ThreadView` carries nothing the table reads beyond the tickets; it is kept because the brief's `Gate.of` takes it.

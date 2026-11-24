@@ -68,6 +68,19 @@ const C: ReadonlyArray<Case> = [
   { name: "a bot not on the list is none, even addressing", t: botTrig("mention"), p: policy(), want: "none", basis: "bot" },
   { name: "a bot is never explicit, even where the unlisted cell is explicit", t: botTrig("mention"), p: policy("observe", ["UB1"], { C1: { unlisted: "explicit" } }), want: "inferred" },
   { name: "a bot's message on a thread with a ticket is still a bot's: inferred at most", t: botTrig("mention"), tickets: [own()], p: onList, want: "inferred" },
+  // Row 4 before row 5: a stranger who addresses the agent on a followed thread is a follow-up, not the row's unlisted cell (#932, 1).
+  { name: "an unlisted person who addresses the agent on a followed thread is a follow-up: inferred, not the unlisted cell", t: trig(person("seen"), "mention"), tickets: [own()], p: policy(), want: "inferred", basis: "followup" },
+  { name: "an unlisted person's addressed follow-up is none in off", t: trig(person("seen"), "mention"), tickets: [own()], p: policy("off"), want: "none", basis: "followup" },
+  // Row 4 names `bound` with `own` and `attached` (#932, 2).
+  { name: "a bound thread's follow-up counts", t: trig(person("seen"), undefined), tickets: [{ state: "open", mode: "bound", stoppedBy: undefined }], p: policy(), want: "inferred", basis: "followup" },
+  { name: "a listed person's follow-up on a bound thread is explicit", t: trig(person("listed"), undefined), tickets: [{ state: "ended", mode: "bound", stoppedBy: undefined }], p: policy(), want: "explicit", basis: "followup" },
+  // Row 4 is a person's: a message with no sender on a followed thread is row 7's, the unnamed cell (#932, 3).
+  { name: "a message with no sender on a followed thread is no follow-up: the unnamed cell, none by default", t: trig(null, undefined), tickets: [own()], p: policy(), want: "none", basis: "admission" },
+  { name: "a message with no sender on a followed thread, unnamed inferred, is inferred by admission", t: trig(null, undefined), tickets: [own()], p: policy("observe", [], { C1: { unnamed: "inferred" } }), want: "inferred", basis: "admission" },
+  // No sender, addressing: never row 3 or row 5, which judge a person; the unnamed cell judges it (#932, 4, GOAL17-gate-no-sender).
+  { name: "a message with no sender that addresses the agent is the unnamed cell: none by default", t: trig(null, "mention"), p: policy(), want: "none", basis: "admission" },
+  { name: "a message with no sender that addresses the agent, unnamed inferred, is inferred", t: trig(null, "mention"), p: policy("observe", [], { C1: { unnamed: "inferred" } }), want: "inferred", basis: "admission" },
+  { name: "a message with no sender that addresses the agent does not read the unlisted cell", t: trig(null, "direct"), p: policy("observe", [], { C1: { unlisted: "explicit" } }), want: "none", basis: "admission" },
 ];
 
 export const problemsOf = (gate: Gate, cases: ReadonlyArray<Case> = C): ReadonlyArray<string> =>
@@ -94,6 +107,7 @@ const reference: Gate = {
     else if (a !== null && followed) out = { strength: a.state === "listed" || row.unlisted === "explicit" ? "explicit" : "inferred", basis: "followup" };
     else if (a?.state !== "listed" && a !== null && addressed) out = { strength: cell("unlisted", "none"), basis: "admission" };
     else if (a?.state === "listed" && t.observed) out = { strength: cell("listed", "inferred"), basis: "admission" };
+    // Row 7: not listed and not addressing, or no sender at all, addressing or not (GOAL17-gate-no-sender).
     else if (t.observed) out = { strength: cell("unnamed", "none"), basis: "admission" };
     else out = { strength: "none", basis: "admission" };
     return p.mode === "off" && out.strength === "inferred" ? { ...out, strength: "none" } : out;
@@ -122,6 +136,13 @@ describe("23 the gate: controls", () => {
     ["a message with no sender is read as a listed person's", { of: (t, th, k, p) => reference.of(t.author === null ? { ...t, author: person("listed") } : t, th, k, p) }],
     ["the listed cell is ignored", { of: (t, th, k, p) => reference.of(t, th, k, { ...p, admission: {} }) }],
     ["everything is none", { of: () => ({ strength: "none", basis: "admission" }) }],
+    // #932: the four cells the first list missed, each a wrong gate that passed it.
+    ["row 5 before row 4: a stranger's mention on a followed thread reads the unlisted cell", { of: (t, th, k, p) => (t.author !== null && !t.author.bot && t.author.state !== "listed" && t.addressed !== undefined ? reference.of(t, th, [], p) : reference.of(t, th, k, p)) }],
+    ["a bound thread does not follow", { of: (t, th, k, p) => reference.of(t, th, k.filter((x) => x.mode !== "bound"), p) }],
+    ["a message with no sender on a followed thread is a follow-up", { of: (t, th, k, p) => { const o = reference.of(t, th, k, p); return t.author === null && k.some((x) => x.mode !== "context" && x.state !== "stopped") ? { strength: p.mode === "off" ? "none" : "inferred", basis: "followup" } : o; } }],
+    ["a message with no sender that addresses the agent is explicit", { of: (t, th, k, p) => (t.author === null && t.addressed !== undefined ? { strength: "explicit", basis: "addressed" } : reference.of(t, th, k, p)) }],
+    ["a message with no sender that addresses the agent reads the unlisted cell", { of: (t, th, k, p) => (t.author === null && t.addressed !== undefined ? reference.of({ ...t, author: person("seen") }, th, [], p) : reference.of(t, th, k, p)) }],
+    ["a message with no sender that addresses the agent is always none", { of: (t, th, k, p) => (t.author === null && t.addressed !== undefined ? { strength: "none", basis: "admission" } : reference.of(t, th, k, p)) }],
   ];
   it.each(planted)("a gate with %s is refused", (_why, gate) => {
     expect(problemsOf(gate)).not.toEqual([]);
