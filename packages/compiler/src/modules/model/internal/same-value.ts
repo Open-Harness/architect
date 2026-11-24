@@ -49,6 +49,7 @@ export const describeValue = (v: Value): string => {
     case "id": return `an id with the prefix ${v.meta.prefix}`;
     case "uint": return `a ${v.meta.bits}-bit number`;
     case "text": return `text of at most ${v.meta.max} characters`;
+    case "decimal": return `a decimal with ${v.meta.places} places`;
     default: return "a schema declared on its own";
   }
 };

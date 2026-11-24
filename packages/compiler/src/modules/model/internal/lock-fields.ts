@@ -18,5 +18,6 @@ const valueOf = (meta: ValueMeta): LockValue => {
   }
 };
 
+// A field turning optional changes what clients parse too; a required field is written as it always was, so no lock changes.
 export const lockFields = (fields: FieldsModel): Readonly<Record<string, LockValue>> =>
-  Object.fromEntries(Object.entries(fields).map(([k, f]) => [k, valueOf(f.value)]));
+  Object.fromEntries(Object.entries(fields).map(([k, f]) => [k, f.optional === true ? { ...valueOf(f.value), optional: true as const } : valueOf(f.value)]));
