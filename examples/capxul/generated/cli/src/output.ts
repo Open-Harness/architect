@@ -12,8 +12,9 @@ export const supplied = (flags: Readonly<Record<string, unknown>>) =>
 
 /** A value as it travels: a bigint as its digits, a decimal as its text (`1.50`, never an exponent). */
 const wire = (v: unknown): unknown => (typeof v === "bigint" ? v.toString() : BigDecimal.isBigDecimal(v) ? decimalText(v) : v);
-// The replacer reads the value from its holder, since JSON.stringify has already called a decimal's own toJSON on the one it hands over.
-const text = (x: unknown) => JSON.stringify(x, function (this: Readonly<Record<string, unknown>>, k: string, v: unknown) { return wire(this[k] ?? v); });
+// A decimal is read from its holder, since JSON.stringify has already called its toJSON; every other value keeps what its own toJSON made of it.
+const text = (x: unknown) =>
+  JSON.stringify(x, function (this: Readonly<Record<string, unknown>>, k: string, v: unknown) { const raw = this[k]; return BigDecimal.isBigDecimal(raw) ? decimalText(raw) : wire(v); });
 const exitOf = (tag: unknown): number =>
   typeof tag === "string" && tag in Errors.refusals ? Errors.refusals[tag as keyof typeof Errors.refusals].exit : tag === "SchemaError" ? 2 : 1;
 
