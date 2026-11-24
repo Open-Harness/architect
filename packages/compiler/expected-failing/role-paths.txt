@@ -1,9 +1,0 @@
-# #767 is not built: `check` accepts an `allowed` role path that cannot walk to the role's thing. Clears with its build.
-src/modules/model/role-paths.test.ts > check refuses a role path that walks to nothing (#767) > refuses a list read's first key that is not one of its filters
-src/modules/model/role-paths.test.ts > check refuses a role path that walks to nothing (#767) > refuses a narrowed entry's path, as it does a plain one
-src/modules/model/role-paths.test.ts > check refuses a role path that walks to nothing (#767) > refuses a read's first key that is neither a field of the subject nor the subject's own thing
-src/modules/model/role-paths.test.ts > check refuses a role path that walks to nothing (#767) > refuses a read's path that ends on a thing that isn't the role's
-src/modules/model/role-paths.test.ts > check refuses a role path that walks to nothing (#767) > refuses a read's path that walks past the role's thing to a field it doesn't have
-src/modules/model/role-paths.test.ts > check refuses a role path that walks to nothing (#767) > refuses an operation's first key that is neither a payload field nor a field of the subject
-src/modules/model/role-paths.test.ts > check refuses a role path that walks to nothing (#767) > refuses an operation's path that walks from a payload field to another thing
-src/modules/model/role-paths.test.ts > check refuses a role path that walks to nothing (#767) > refuses an operation's path with a key past the role's thing
