@@ -110,7 +110,7 @@ the 🎼 conductor. The lander, Goal 19, runs as its own thread and in Amp.
   and 15 by Goal 18 (#779), since their leads stopped without parking and had nothing in review. Goal 7 is done.
 - The lander brought their finished work into `main`: #771 (stage 1 retired), #774 (the portal), #777 (workflows, wallets,
   the club), #778 (the relayer, kept at building by snag #784) and #785 (the UI layer).
-- The 34 open Ask issues are sorted: case 3 to Goals 17 and 16, Goal 18's own as board items, the rest closed as done or
+- The 34 Ask issues open on 23 November are sorted: case 3 to Goals 17 and 16, Goal 18's own as board items, the rest closed as done or
   no longer applying. With the board live, the asks that describe an item were adopted or folded into its issue (below),
   and #475, #486 and #749 closed with pointers.
 
@@ -120,7 +120,7 @@ the 🎼 conductor. The lander, Goal 19, runs as its own thread and in Amp.
   Touches, Needs and evidence (#780, #791). "Built" is K42's: proved by an app's journeys (Plugged In's for the core).
 - `tools/github/sync.mjs --board` writes one issue per row, found by its marker; a row adopts a `kind:ask` issue or folds
   duplicates into it, never a snag, claim or decision (#791, #792). The `goals` workflow runs it on every push to `main`
-  and every three hours; its first run wrote the 116 issues, adopted 16 asks and folded 4.
+  and every three hours; its first run wrote the 116 issues, adopted 16 asks and folded 3 duplicates.
 - The Project "Orthograph" (https://github.com/orgs/Open-Harness/projects/1) has Stage, Pulled by, Release, Lane, Kind,
   Status, Start and End, a view per goal, and each app milestone's due date as a forecast recomputed every run.
 - The workflow has no Project token (no `ORTHOGRAPH_PROJECT_TOKEN` secret), so the Project's fields are filled by Goal 18's
