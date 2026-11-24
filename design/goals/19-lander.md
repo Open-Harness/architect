@@ -85,9 +85,9 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-24 November 2026, about 09:50 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
-every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
-agreed on #707.
+24 November 2026, about 13:40 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
+minutes for Aaron. A Claude Code lead started the goal and took slice 1; the Goal 16 conductor reports that Aaron has
+said no Claude-led goal is running now.
 
 - **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`, with all ten required checks green.
   `goal/stage-1` is retired: it is locked read-only with its protections kept, and not deleted. `main` requires all ten
@@ -100,17 +100,30 @@ agreed on #707.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Two Capxul rounds have landed: #832 (`goal/capxul` through #786) at
-  `1770ffad`, and #913 (#787, slice 10's Bridge build, and #911, Goal 16's brief) at `5027d6a8`. `goal/capxul` is 0
-  commits ahead of `main`. #887 lands `goal/superagent` through #790 and stays a draft, with `main` merged in at
-  `dfcd6760`. Its merge, ratchet and checks hold, but two things block it. 18 of its 26 pull requests have no 🔍 pass
-  recorded on GitHub, and Goal 17 is asked on #563 to link them. The 🔍's review of the three builds that change
-  framework code found three fixes, filed for Goal 17 as Snags #899 (#670: the generated SDK types optional fields as
-  required), #900 (#756: `versioned.ts` writes "StaleRevision" as a string) and #901 (#747: the door answers a same-id,
-  different-payload delivery `seen`, not `in.mismatch`). Goal 17 had not answered by 09:50; Goal 18 is asked on #718 to
-  rank them. #781 (the superagent's agents build) is still open on its branch.
+- **Slice 3, the landing loop, is running.** Five Capxul rounds have landed, and `goal/capxul` is 0 commits ahead of
+  `main`:
+  - #832 brought `goal/capxul` through #786, at `1770ffad`.
+  - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
+  - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
+  - #929 brought #921 (Goal 16's docs) and #922 (`Day` becomes `Blueprint.day()`), at `9295d2ab`.
+  - #936 brought slice 8's Branch and Employee Grade, at `792d6062`: #924, the checks, and #927, the build.
+
+  Capxul has no `prove` job in CI and no ratchet, so a checks slice lands only with its build. A 🔍 failed #919 while
+  it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
+  #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks) turned
+  `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`.
+
+  #887 lands `goal/superagent` through #790 and stays a draft, with `main` merged in at `dfcd6760`. Goal 16 has taken
+  over Goal 17's lane. A reviewer thread that wrote none of them recorded the 18 missing 🔍 verdicts, indexed on #887:
+  11 pass, and 7 block. Three block on the fixes the lander's 🔍 found in the builds that change framework code: Snags
+  #899 (#670: the generated SDK types optional fields as required), #900 (#756: `versioned.ts` writes "StaleRevision"
+  as a string) and #901 (#747: the door answers a same-id, different-payload delivery `seen`, not `in.mismatch`). Four
+  block on new checks-side Snags: #932 (#686), #933 (#687 and #740) and #934 (#703). For #899 to #901, Goal 16
+  writes checks on `goal/superagent` and a builder fixes them; #932 to #934 are fixed by the checks author alone.
+  `goal/superagent` has also merged #903, which #887 takes when it is refreshed; #781 and #905 are still open there.
 - **Snags filed for Goal 18:** #762 (a flaky port check in `portal.test.ts`), #788 (`examples/budgets` imports
   `receipts`, which `orthograph` does not export), #898 (the board sync takes over closed Asks)
-  and #908 (`e2e-layer1` check 4 fails at random; it turned `main` red once at `06877509`, and a rerun passed).
-- **Next:** land #887 once Goal 17 has fixed #899, #900 and #901 and every slice in it has a 🔍 pass. Each round
-  lands what the app branches have merged since, and tells every running goal after each landing.
+  and #908 (`e2e-layer1` check 4 fails at random; it turned `main` red at `06877509` and #919 red at `3822d439`,
+  and a rerun passed each time).
+- **Next:** land #887 once Snags #899–#901 and #932–#934 are fixed on `goal/superagent`, with a fresh 🔍 on the whole
+  landing. Each round lands what the app branches have merged since, and tells every running goal after each landing.
