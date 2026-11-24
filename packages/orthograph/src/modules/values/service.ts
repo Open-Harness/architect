@@ -1,7 +1,7 @@
 import { DateTime, Option, Schema } from "effect";
 import type { Field } from "#modules/things/types.js";
 import type { MoneyApi, MoneyOptions, Value, ValueMeta, ValuesApi } from "./types.ts";
-import { decimal, whole } from "./internal/wire.ts";
+import { decimal, decimalText, whole } from "./internal/wire.ts";
 import { lazy, link, linkTo } from "./internal/link.ts";
 import { Days, isRealDay } from "./internal/days.ts";
 
@@ -77,4 +77,4 @@ export const Values: ValuesApi = {
   email: () => Object.freeze({ ...described(Schema.String.check(Schema.isMaxLength(254), Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)), { type: "text", max: 254 }), format: "email" as const }),
 };
 
-export { isValue, Days, lazy, linkTo };
+export { isValue, Days, lazy, linkTo, decimalText };
