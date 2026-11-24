@@ -306,6 +306,106 @@
       },
       "earlier": []
     },
+    "HD-001": {
+      "name": "HolidayDateTaken",
+      "owner": "holiday",
+      "from": "blueprint/things/holiday/errors.ts",
+      "fields": {
+        "holidayDate": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayDateTaken"
+        }
+      },
+      "earlier": []
+    },
+    "HD-002": {
+      "name": "HolidayOutsideList",
+      "owner": "holiday",
+      "from": "blueprint/things/holiday/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "schema"
+        },
+        "toDate": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayOutsideList"
+        }
+      },
+      "earlier": []
+    },
+    "HD-900": {
+      "name": "HolidayNotActive",
+      "owner": "holiday",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "HL-001": {
+      "name": "HolidayListNameTaken",
+      "owner": "holiday-list",
+      "from": "blueprint/things/holiday-list/errors.ts",
+      "fields": {
+        "holidayListName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayListNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "HL-002": {
+      "name": "HolidayListEndsBeforeStart",
+      "owner": "holiday-list",
+      "from": "blueprint/things/holiday-list/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayListEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "HL-900": {
+      "name": "HolidayListNotActive",
+      "owner": "holiday-list",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayListNotActive"
+        }
+      },
+      "earlier": []
+    },
     "KB-001": {
       "name": "KybAlreadyStarted",
       "owner": "bridge-business",
