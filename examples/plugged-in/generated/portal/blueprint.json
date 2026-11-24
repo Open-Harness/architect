@@ -3928,6 +3928,15 @@
       }
     ],
     "mounts": {
+      "actions": {
+        "kind": "projection",
+        "file": "blueprint/projections/actions.ts",
+        "package": "@orthograph/projections",
+        "version": "0.0.0",
+        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
+        "chosen": {},
+        "hash": "d56c3fb839a74896"
+      },
       "api": {
         "kind": "projection",
         "file": "blueprint/projections/api.ts",
@@ -4056,5 +4065,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "0d332472fdb67918e4e42ecfa2a38248df7a357d14b81f659544ed5f9e8969f1"
+  "digest": "c44e1917fcc55ba6b5079b3d8131b4e439bb277e45c43e82968221dafac494e3"
 }

@@ -9,8 +9,9 @@ const valueOf = (meta: ValueMeta): LockValue => {
     case "text": return { value: "text", max: meta.max };
     case "account": return { value: "account" };
     case "money": return { value: "money", bits: meta.bits, signed: meta.signed, asset: meta.asset };
-    // Its own kind, though it travels as ISO text: a field moving between an instant and text changes what clients parse.
+    // Their own kinds, though both travel as ISO text: a field moving between an instant, a day and text changes what clients parse.
     case "instant": return { value: "instant" };
+    case "day": return { value: "day" };
     case "schema": return { value: "schema" };
   }
 };

@@ -22,7 +22,7 @@ import { Roles } from "#modules/roles/service.js";
 import { Stores } from "#modules/stores/service.js";
 import { Things } from "#modules/things/service.js";
 import { Clocks, Times } from "#modules/time/service.js";
-import { Values } from "#modules/values/service.js";
+import { Days, Values } from "#modules/values/service.js";
 import { Visibilities } from "#modules/visibility/service.js";
 
 export const Blueprint = Object.freeze({
@@ -50,11 +50,12 @@ export const Blueprint = Object.freeze({
 });
 
 export { Schema } from "effect";
+export { Days };
 export { Auth, Telemetry, Cloud, Chain, Deploy, Identity, Stand, Secret };
 export { Via, Host, Door, Ships } from "#modules/plugins/types.js";
 export const { expect, emits, noEvents, refuses, spans, lacks, has } = Checks;
 export { NotAllowed } from "#modules/errors/types.js";
-export type { Value, ValueMeta, AssetRef, MoneyOptions, TypeOf } from "#modules/values/types.js";
+export type { Value, ValueMeta, AssetRef, MoneyOptions, TypeOf, Day, DaysApi } from "#modules/values/types.js";
 export type { Asset, TokenAsset, CurrencyAsset } from "#modules/assets/types.js";
 export type { ChainNetwork, ChainToken } from "#modules/chains/types.js";
 export type { Visibility, PrivateTo } from "#modules/visibility/types.js";

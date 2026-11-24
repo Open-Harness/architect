@@ -3,11 +3,11 @@ import { Effect } from "effect";
 import type { Address } from "viem";
 import { rpcFault } from "../faults/service.ts";
 import type { Rpc } from "../tx/internal/rpc.ts";
-import { makeNonceManager } from "./internal/manager.ts";
+import { makeNonceManagerWith } from "./internal/manager.ts";
 
-export const makeNonces = (rpc: Rpc) =>
+export const makeNonces = (rpc: Rpc, keepOnReject = false) =>
   Effect.gen(function* () {
-    const manager = yield* makeNonceManager;
+    const manager = yield* makeNonceManagerWith(keepOnReject);
     const count = (address: Address, blockTag: "pending" | "latest" | "finalized") =>
       rpc((client) => client.getTransactionCount({ address, blockTag })).pipe(Effect.mapError((error) => rpcFault(error)));
 

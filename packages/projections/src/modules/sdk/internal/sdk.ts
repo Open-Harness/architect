@@ -1,13 +1,10 @@
 // generated/sdk: a typed client. One function per operation; refusals arrive as their own classes.
 import { Names } from "orthograph/server";
 import type { Model, OperationModel } from "@orthograph/compiler";
-import { GENERATED, camel, exportedAs, lines, local, onDevice, pascal, toRoot } from "#modules/names/service.js";
+import { GENERATED, camel, exportedAs, lines, local, member, onDevice, pascal, toRoot } from "#modules/names/service.js";
 import type { RenderedFile } from "#modules/names/types.js";
 import { sdkTypes } from "./types.ts";
 import { clientSource } from "./client.ts";
-
-/** `.create`, or `["sign-in"]` for a name that isn't an identifier. */
-const member = (name: string) => (/^[A-Za-z_$][\w$]*$/.test(name) ? `.${name}` : `[${JSON.stringify(name)}]`);
 
 /** The plugin's entry for the host that imports this, found by the SDK's own `imports` (`generated/sdk/package.json`). */
 const hostEntry = (o: OperationModel) => `#host/${o.name}`;

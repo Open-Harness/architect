@@ -815,7 +815,7 @@
   "what": "Live steps (K5 seam 10): a step signal as each step starts and ends, sent under waitUntil, not at dispose; committed events read from the journal for the portal"
  },
  "M1-22": {
-  "doneWhen": "an action's run refused by the role check returns the same typed refusal as the SDK; an operation .notVia(Via.agent) has no agent tool; a type test checks each generated options(host) against the field list and the no-write error's fields recorded from agent-native 0.228.2, with no agent-native package installed; every generated action advertises non-empty parameters",
+  "doneWhen": "an action's run refused by the role check returns the same typed refusal as the SDK; an operation .notVia(Via.agent) has no agent tool; a type test checks each generated options(host) against the field list and the no-write error's fields recorded from agent-native 0.228.2, with no agent-native package installed; every action whose payload has fields advertises non-empty parameters",
   "history": [
    {
     "at": "2026-11-19T09:00:00Z",
@@ -2958,7 +2958,7 @@
   "what": "Run telemetry through the Collector (A4)"
  },
  "M4-09": {
-  "doneWhen": "evicting mid-turn resumes with no duplicate model call",
+  "doneWhen": "evicting mid-turn, after the model's step committed, resumes with no duplicate model call; evicting with a model reply in flight repeats only that request (decisions/M4-agents.md, call 3)",
   "history": [],
   "id": "M4-09",
   "kind": "build",
@@ -2987,9 +2987,10 @@
   "lane": "M4",
   "needs": [
    "M4.02",
+   "M4.08",
    "M4.09"
   ],
-  "needsText": "M4.02, M4.09",
+  "needsText": "M4.02, M4.08, M4.09",
   "order": 94,
   "plain": "",
   "pr": null,
@@ -3000,7 +3001,7 @@
   "title": "@orthograph/agents",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "@orthograph/agents: Run, its machine, start, steer, cancel, the system's moves, Blueprint.agent; Agent as a thing read from the declarations; run.start taking key, the caller's request key; runFinished.outcome closed (pushed, reviewed, answered, blocked) and runFailed.reason closed with transient (K10 section 5); RunPoolFull"
+  "what": "@orthograph/agents under K40 fixes 3 and 4: Agent is a thing living in its own actor (machine idle ⇄ working, and stopped), its Pi Durable conversation in that actor's SQLite; agent.tell, with on:, fed through the outbox with the delivering event's id as Pi's requestId (whenBusy: \"steer\"); any operation allowed to create an Agent makes one, under its own roles; the agent acts as itself; Blueprint.agent({ env }) names its ExecutionEnv; a run is one input and its answer inside the conversation, read from Pi, not a row; K10 section 5's run contract kept: a run started through run.start taking key, the caller's request key, runFinished.outcome closed (pushed, reviewed, answered, blocked) and runFailed.reason closed with transient, and RunPoolFull, each now about one input and its answer inside an agent"
  },
  "M4-11": {
   "doneWhen": "a builder script lists blanks and runs one journey through bp",
@@ -3117,7 +3118,7 @@
   "what": "Gate M4"
  },
  "M4-16": {
-  "doneWhen": "evicting a chat's run mid-turn resumes it with no second model call; a refused action shows its typed refusal in the thread",
+  "doneWhen": "evicting a chat's run mid-turn, after the model's step committed, resumes it with no second model call; a refused action shows its typed refusal in the thread",
   "history": [],
   "id": "M4-16",
   "kind": "build",
@@ -3828,7 +3829,7 @@
   "what": "Moved to M1.31 (K7 F4: the wallet is the first plugin)"
  },
  "M6-07": {
-  "doneWhen": "100 concurrent submissions, nonces 0 to 99, a dropped one replaced",
+  "doneWhen": "100 concurrent submissions, nonces 0 to 99, a dropped one rebroadcast (replacing it with a higher fee is later)",
   "history": [],
   "id": "M6-07",
   "kind": "build",

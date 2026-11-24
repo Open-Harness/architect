@@ -1,0 +1,95 @@
+forge Version: 1.8.6
+Commit SHA: 6bad0a66de7c83f7b33695044138f0f5fa4c5990
+Build Timestamp: 2026-10-21T17:44:12.747118000Z (1792604652)
+Build Profile: dist
+
+Configured runs: 128
+Depth: 64 calls per run
+Seed: 0x0000000000000000000000000000000000000000000000000000000000000007
+Invariant failures persisted to separate fresh directories for these runs.
+
+$ HAT_BUDGET_MUTANT=false forge test --threads 1 -vv
+Compiling 3 files with Solc 0.8.30
+Solc 0.8.30 finished in 2.35s
+Compiler run successful!
+
+Ran 1 test for test/HatBudgetInvariant.t.sol:HatBudgetInvariantTest
+[PASS] invariant_budgetAccounting() (runs: 128, calls: 8192, reverts: 0)
+
+╭---------------+-------------+-------+---------+----------╮
+| Contract      | Selector    | Calls | Reverts | Discards |
++==========================================================+
+| BudgetActions | advance     | 2697  | 0       | 0        |
+|---------------+-------------+-------+---------+----------|
+| BudgetActions | changeLimit | 2773  | 0       | 0        |
+|---------------+-------------+-------+---------+----------|
+| BudgetActions | spend       | 2722  | 0       | 0        |
+╰---------------+-------------+-------+---------+----------╯
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 1.56s (1.55s CPU time)
+
+Ran 8 tests for test/HatBudgetModule.t.sol:HatBudgetModuleTest
+[PASS] testAgentQuotaAndParentAdmitsOrTurnsOffChild() (gas: 451180)
+[PASS] testOnlySafeCanAdministerAndRevokedRowCannotBeReused() (gas: 594401)
+[PASS] testPersonSpendsExactRemainingAndOverspendIsAtomic() (gas: 361777)
+[PASS] testRolloverRestoresFullBudgetAtExactBoundary() (gas: 324350)
+[PASS] testSameHatHasSeparateRowsForSixAndEighteenDecimalTokens() (gas: 1610177)
+[PASS] testSignatureCheckOrderAndSharedSpendNonce() (gas: 430920)
+[PASS] testTokenRevertRestoresBudgetAndNonce() (gas: 253860)
+[PASS] testUint128MaximumTransfersWithoutOverflow() (gas: 394227)
+Suite result: ok. 8 passed; 0 failed; 0 skipped; finished in 5.80ms (3.76ms CPU time)
+
+Ran 5 tests for test/HatSpendModule.t.sol:HatSpendModuleTest
+[PASS] testDisabledModuleCannotPay() (gas: 87460)
+[PASS] testInactiveHatIsRefused() (gas: 223755)
+[PASS] testIneligibleWearerIsRefused() (gas: 268615)
+[PASS] testNonWearerIsRefused() (gas: 197218)
+[PASS] testWearerSpendsEtherAndTokenFromSafe() (gas: 362435)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 1.92ms (894.08µs CPU time)
+
+Ran 3 test suites in 1.58s (1.57s CPU time): 14 tests passed, 0 failed, 0 skipped (14 total tests)
+
+Exit: 0
+
+$ HAT_BUDGET_MUTANT=true forge test --threads 1 -vv --match-contract '^HatBudgetInvariantTest$'
+No files changed, compilation skipped
+{"timestamp":1795256127,"event":"failure","invariant":"invariant_budgetAccounting","target":"test/HatBudgetInvariant.t.sol:HatBudgetInvariantTest","reason":"period spend: 100 != 0"}
+
+Ran 1 test for test/HatBudgetInvariant.t.sol:HatBudgetInvariantTest
+[FAIL: period spend: 100 != 0]
+	[Sequence] (original: 9, shrunk: 3)
+		sender=0x0000000000000000000000000000000000002B6c addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=spend(bool,uint128,uint8) args=[false, 292776029463061551 [2.927e17], 1]
+		sender=0x8be3D8925328a8E16051aB56dB334858CB8d9a31 addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=advance(uint64) args=[18446744073709551615 [1.844e19]]
+		sender=0x6fe29B05763453B319399b981E52c8cede649516 addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=changeLimit(bool,uint128) args=[false, 100]
+ invariant_budgetAccounting() (runs: 1, calls: 9, reverts: 0)
+
+╭---------------+-------------+-------+---------+----------╮
+| Contract      | Selector    | Calls | Reverts | Discards |
++==========================================================+
+| BudgetActions | advance     | 4     | 0       | 0        |
+|---------------+-------------+-------+---------+----------|
+| BudgetActions | changeLimit | 3     | 0       | 0        |
+|---------------+-------------+-------+---------+----------|
+| BudgetActions | spend       | 2     | 0       | 0        |
+╰---------------+-------------+-------+---------+----------╯
+
+Suite result: FAILED. 0 passed; 1 failed; 0 skipped; finished in 1.30s (1.30s CPU time)
+
+Ran 1 test suite in 1.31s (1.30s CPU time): 0 tests passed, 1 failed, 0 skipped (1 total tests)
+
+Failing tests:
+Encountered 1 failing test in test/HatBudgetInvariant.t.sol:HatBudgetInvariantTest
+[FAIL: period spend: 100 != 0]
+	[Sequence] (original: 9, shrunk: 3)
+		sender=0x0000000000000000000000000000000000002B6c addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=spend(bool,uint128,uint8) args=[false, 292776029463061551 [2.927e17], 1]
+		sender=0x8be3D8925328a8E16051aB56dB334858CB8d9a31 addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=advance(uint64) args=[18446744073709551615 [1.844e19]]
+		sender=0x6fe29B05763453B319399b981E52c8cede649516 addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=changeLimit(bool,uint128) args=[false, 100]
+ invariant_budgetAccounting() (runs: 1, calls: 9, reverts: 0)
+
+Encountered a total of 1 failing tests, 0 tests succeeded
+
+Tip: Run `forge test --rerun` to retry only the 1 failed test
+
+Fuzz seed: 0x7 (use `--fuzz-seed` to reproduce)
+
+Exit: 1 (expected invariant failure)

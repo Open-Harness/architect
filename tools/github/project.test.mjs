@@ -1,7 +1,7 @@
 // node --test tools/github/project.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { itemValues, projectFields, projectPlan, projectViews } from "./project.mjs";
+import { harnessOf, itemValues, projectFields, projectPlan, projectViews } from "./project.mjs";
 
 const goal = { number: 6, milestone: "Goal 6: the new portal", release: "beta", status: "running", lead: { harness: "amp", model: "claude-opus-5-5", since: "2026-11-22" } };
 const issues = [
@@ -67,4 +67,8 @@ test("a slice parked by hand stays parked while open, and is Done once closed", 
   const project = full();
   project.items[3].values.Status = "Parked";
   assert.ok(!projectPlan({ goals: [goal], issues, project }).some((s) => s.number === 13 && s.field === "Status"));
+});
+
+test("an older brief's harness, claude-code, is claude on the Project; an unknown harness is no value", () => {
+  assert.deepEqual([harnessOf("claude-code"), harnessOf("claude"), harnessOf("amp"), harnessOf("vim"), harnessOf(undefined)], ["claude", "claude", "amp", null, null]);
 });

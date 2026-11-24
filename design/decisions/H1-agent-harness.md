@@ -142,7 +142,7 @@ It is question 1. **The key is never read, printed or searched for by anyone bui
 
 ## 7. The recommendation (H1.1 to H1.9)
 
-**H1.1 Wrap Pi Durable behind an Effect seam, in a new package `@architect/agent`. Pin `pi-durable`, `pi-ai`, `chord`,
+**H1.1 Wrap Pi Durable behind an Effect seam, in a new package `@architect/agent`. (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`, a feature plugin.) Pin `pi-durable`, `pi-ai`, `chord`,
 `pi-codemode`, `pi-schema` and `pi-telemetry` at 1.5.0 exactly.** 1.5.0 was published 2 November 2026, so it is 14 days old today:
 the oldest-enough version, and 1.5.1 and 1.5.2 (9 and 10 November) are not allowed until 23 and 24 November. The seam is the only
 place that touches Pi; if Pi breaks or is dropped, only the seam changes, and Option E is the way out (section 8).
@@ -156,10 +156,10 @@ the package has `async`. The Durable Object class and the CLI entry are the name
 **H1.3 Time is ours.** `now` is `Clock`; `setTimer` is `Timers.at(...)` with the disarm as fiber interruption; `onWake` sets a Durable
 Object alarm (host) or, on Node, is absent and the Harness's own timer is replaced by `Timers`. Set provider-level retries to zero so all
 retrying is Pi's stored `sleepUntil`, because `pi-ai`'s in-request retry uses a plain `setTimeout` (`packages/ai/src/utils/provider-retry.ts:88`).
-The agent runs *outside* any world (it is dev tooling), so its `Timers` is a real-clock layer; stepped-clock tests of agent waits are layer 5.
+The agent runs *outside* any world (it is dev tooling), so its `Timers` is a real-clock layer; stepped-clock tests of agent waits are layer 5. (Superseded by M4-agents, 22 November 2026: an agent in a world waits on the world's clock.)
 
 **H1.4 Models: use `pi-ai`'s providers, not Effect AI.** A `Models` registry from run config `{ provider, model, thinking }`,
-the built-in Anthropic provider, and a `commandcode` provider written with `createProvider` (about 40 lines, plus a price table read
+the built-in Anthropic provider, and a `commandcode` provider written with `createProvider` (Superseded by M4-agents, 22 November 2026: `@orthograph/openai`, one OpenAI-compatible adapter for Command Code and the stand-in) (about 40 lines, plus a price table read
 from `/models`). Less code than Effect AI because Pi's loop already speaks `pi-ai`; using Effect AI would mean writing a `pi-ai` provider
 over it. Switching is `configure({ model })` per run, and the run record keeps the choice.
 
@@ -347,13 +347,13 @@ Fields come from: `harness.usage()` and `pi.usage` (cost per `provider/model`), 
 
 ## 13. Fit with the build
 
-- **Package `packages/agent`, `@architect/agent`**, tags `scope:agent`, `env:build`, `layer:2` (see `design/packages.md`). Depends on `blueprint` (types), `compiler` (the model), `target-effect` (the `Timers` and `Clock` interfaces, types only), `prove` (`Collectors`, worlds), and on Pi. `cli` depends on it for `architect agent run` and `architect agent bench`. **Never runs in production** in v0; the Durable Object host (A6) is the first runtime use, tagged then as a separate entry (`@architect/agent/do`), the only runtime-facing file. Pi and its closure appear only in this package, so no generated project imports them.
+- **Package `packages/agent`, `@architect/agent`** (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.), tags `scope:agent`, `env:build`, `layer:2` (see `design/packages.md`). Depends on `blueprint` (types), `compiler` (the model), `target-effect` (the `Timers` and `Clock` interfaces, types only), `prove` (`Collectors`, worlds), and on Pi. `cli` depends on it for `architect agent run` and `architect agent bench`. **Never runs in production** in v0; the Durable Object host (A6) is the first runtime use, tagged then as a separate entry (`@architect/agent/do`), the only runtime-facing file. Pi and its closure appear only in this package, so no generated project imports them.
 - **Layer:** a layer 2 track beside the logbook (it needs only Gate 1, which has passed on `main`): dev tooling used from now by the build, not a new layer. Its Durable Object host needs L2.01 (cloud deploy, local worlds). Agent waits on the world clock wait for L5.01. Items beyond (declared `Run` kit, scheduled agents, Cloudflare sandbox) are in `design/later.md`.
 - The steps are in `design/build-plan.md`, "The agent harness track".
 
 ## 14. Decisions this changes
 
-- **D2 #76** stays true for check 4 (Agent SDK, our tools only). Check 4 does not switch to the new harness until A3 passes with the same assertions; then a second check (4b) runs through `@architect/agent`, and the SDK path stays as the comparison runner.
+- **D2 #76** stays true for check 4 (Agent SDK, our tools only). Check 4 does not switch to the new harness until A3 passes with the same assertions; then a second check (4b) runs through `@architect/agent` (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.), and the SDK path stays as the comparison runner.
 - **`design/later.md`'s Pi note** is replaced: Pi Durable is **adopted behind a seam** for the build-time harness (this record), no longer "the reference, not a dependency". The *declared-workflow* version of a durable agent (steps as declared operations, resumed by the world's `Timers`) stays in later.md for L5.04.
 
 ## 15. Questions only Aaron can answer

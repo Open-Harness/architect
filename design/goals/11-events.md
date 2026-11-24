@@ -5,7 +5,7 @@ milestone: "Goal 11: events in and out"
 release: "1.0"
 branch: goal/events
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: null        # claude | codex | opencode | amp, set by the lead when it starts
   model: null          # the model id it runs on
@@ -46,7 +46,7 @@ Branch `goal/events`, cut from `goal/stage-1`. Written 21 November 2026 by the �
 - **It is:** a way to declare what the app does when an event arrives, doors that check an event really came from its sender, and an outbox that keeps every event the app sends.
 - **It isn't:** Stripe, email or any real vendor (those adapters come later), or the views that rebuild data from events.
 - **Done when:** its tests pass: duplicates settle once, deliveries survive a crash, and events go out only when a call succeeds.
-- **Waits on:** nothing to start. Its last slice follows the workflows goal's first decision.
+- **Waits on:** nothing to start the checks. The signed-door build waits for Goal 3's service principal.
 - **Words used:** an outbox: a list of events kept with the data they describe, so they go out at least once. A door: the address an outside system calls.
 
 ## Read first
@@ -62,13 +62,15 @@ table. "After" names this goal's own earlier slices; "Waits on" names work anoth
 | # | Slice | Row | After | Waits on |
 |---|---|---|---|---|
 | 1 | Views, the outbox and waiting on outside events, decided | M5.01 | — | — |
-| 2 | Journeys for payments and notifications | M5.02 | 1 | — |
-| 3 | Events in: signed doors and `on:` | M5.03 | 1 | — |
+| 3 | Events in: signed doors and `on:` | M5.03 | 1 | Goal 3's service principal, M2.03 (#297), for the build |
 | 4 | The outbox for every move | M5.04 | 3 | — |
-| 5 | `emits:` on an operation | M3.16 | 1 | the shape of a workflow, M3.01 (Goal 8) |
+| 2 | Journeys for payments and notifications (later, Aaron 22 November) | M5.02 | 1 | after the beta |
+| 5 | `emits:` on an operation (later, Aaron 22 November) | M3.16 | 1 | after the beta; the shape of a workflow, M3.01 (Goal 8) |
 
-The wallets goal (stage 2) reads slice 3 for the follower's chain events, so land it before slice 4 if the two compete.
-Slice 2's payment journeys run against a stand-in adapter; the real Stripe adapter is off the 1.0 path.
+**Aaron's call, 22 November 2026:** un-park Goal 11 and run slices 1, 3, then 4. Slices 2 and 5 wait until after
+the beta. Land slice 3 early for the wallets goal (K38, #477) before starting slice 4. The signed-door checks include
+a GitHub-style webhook: HMAC-SHA256 over the raw body and an event id for idempotency. Aaron writes his own adapter;
+Goal 11 ships no GitHub adapter. Slice 2's later payment journeys use a stand-in adapter, not the real Stripe adapter.
 
 ## What it owns, and the seams it touches
 
@@ -102,4 +104,28 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+23 November 2026, parked under K42 (section 7: "11 · Events | nothing in review | parked; #498 stays a draft"). The
+lander updated this at the `goal/events` landing (#794). Its open slices are board items at their stage; no lead holds
+them.
+
+- **Landed in `main`** with #794: the sync with stage 1 (#454), slice 1, `design/decisions/M5-reach-out.md` (#479),
+  and the parking (#726). Codex's five findings on #479 were answered and resolved. Its last pass never reviewed the
+  final head and posted nothing after the merge, so nothing from it is open.
+- **K40 changes M5-reach-out** (22 November, applied at #794, answering Asks #536 and #538):
+  - Fix 1: the door's `service` caller carries the sender's outside account (`actor`), and a role admits it through
+    `actor:`.
+  - Fix 5: an event is keyed by the change to its object, the same from a webhook and a poll. An adapter catches up
+    after sleep with `catchUp` and a cursor, a new slice, M5.16.
+- **Open, as board items:**
+  - Slice 3, events in (#389, M5.03): signed doors and `on:`, keyed and attributed as K40 says. Nothing written. Goal
+    3's service principal (M2.03) is on `main`. It needs the engine seams of #480.
+  - M5.16, catching up after sleep: after M5.03.
+  - Slice 4, the outbox for every move (#390, M5.04): after slice 3; seams in #480.
+  - Slice 2, journeys for payments and notifications (#388, M5.02): after the beta (Aaron, 22 November). Draft #498
+    holds `design/decisions/M5-checks.md`, a `builder-paths` change making `e2e/events/expected-failing/` shrink-only,
+    and unrun, unreviewed checks under `e2e/events/` that slice 3's checks can start from.
+  - Slice 5, `emits:` on an operation (#391): after the beta. It needs M3.01, the workflows decision (#462).
+- **Who picks it up.** Under K42 the superagent (Goal 17) takes events in and the outbox first, since its GitHub door
+  slice pulls them (K40). #480, #462 and #477 are older Asks. Under K42 they're read as the needs of these board items,
+  and Goal 12, which made #477, is parked. Whoever takes slice 3 merges `main` in, writes the signed-door and `on:`
+  checks from #498's start, then builds.

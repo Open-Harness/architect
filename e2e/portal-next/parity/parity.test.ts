@@ -13,15 +13,20 @@ const dirs: Array<string> = [];
 afterAll(() => { for (const d of dirs) rmSync(d, { recursive: true, force: true }); });
 
 const FILE = "m1/21-portal-viewer.test.ts";
-const verdict = (statuses: Record<string, "passed" | "failed">, listed: ReadonlyArray<string>) => {
+/** The runner's own environment is a choice of the test, never the machine's: on GitHub Actions it says `::error::`, elsewhere `ERROR: `. */
+const environment = (actions: boolean): NodeJS.ProcessEnv => {
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  delete env["GITHUB_ACTIONS"];
+  if (actions) env["GITHUB_ACTIONS"] = "true";
+  return env;
+};
+const verdict = (statuses: Record<string, "passed" | "failed">, listed: ReadonlyArray<string>, actions = false) => {
   const dir = mkdtempSync(join(tmpdir(), "parity-"));
   dirs.push(dir);
   const report = { testResults: [{ name: join(e2e, FILE), status: "failed", assertionResults: Object.entries(statuses).map(([title, status]) => ({ ancestorTitles: ["A the portal"], title, status })) }] };
   writeFileSync(join(dir, "report.json"), JSON.stringify(report));
   writeFileSync(join(dir, "expected-failing.txt"), `# parity list\n${listed.map((t) => `${FILE} > A the portal > ${t}`).join("\n")}\n`);
-  // Off GitHub Actions, so main.ts writes `ERROR:` and not `::error::` on any runner.
-  const env = { ...process.env, GITHUB_ACTIONS: "" };
-  const run = spawnSync(process.execPath, [main, join(dir, "report.json"), join(dir, "expected-failing.txt")], { encoding: "utf8", env });
+  const run = spawnSync(process.execPath, [main, join(dir, "report.json"), join(dir, "expected-failing.txt")], { encoding: "utf8", env: environment(actions) });
   return { status: run.status, out: `${run.stdout}${run.stderr}` };
 };
 
@@ -35,10 +40,11 @@ describe("the parity ratchet", () => {
     expect(run.out).toContain("failing and not on the expected-failing list");
     expect(run.out).toContain(`${FILE} > A the portal > draws`);
   });
-  it("fails on a listed check that passes, naming it", () => {
-    const run = verdict({ opens: "failed", draws: "passed" }, ["opens", "draws"]);
-    expect(run.status).toBe(1);
-    expect(run.out).toMatch(/ERROR: newly passing, take it off the list: .*draws/);
+  it.each([["on GitHub Actions", true, "::error::"], ["anywhere else", false, "ERROR: "]] as const)("fails on a listed check that passes, naming it, as an error %s", (_where, actions, marker) => {
+    const run = verdict({ opens: "failed", draws: "passed" }, ["opens", "draws"], actions);
+    expect(run.status, run.out).toBe(1);
+    // An error line, in the form the environment asks for: the check's own warning of it is not enough.
+    expect(run.out.split("\n").filter((l) => l.startsWith(marker) && l.includes("newly passing, take it off the list:") && l.includes("draws"))).toHaveLength(1);
   });
   it("fails when there is no report", () => {
     const run = spawnSync(process.execPath, [main, join(tmpdir(), "no-such-report.json"), join(e2e, "portal-next/expected-failing.txt")], { encoding: "utf8" });
