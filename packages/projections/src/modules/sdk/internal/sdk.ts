@@ -83,7 +83,9 @@ const clientFile = (name: string, client: string, hasDevice: boolean): RenderedF
 export const renderSdk = (model: Model, name: string): ReadonlyArray<RenderedFile> => {
   const ops = Object.values(model.operations);
   const things = [...new Set(ops.map((o) => o.thing))];
-  const client = pascal(name);
+  // The client's class is named for the project; a thing, a state or an event of that name keeps its own, and the client is `<Name>Client`.
+  const named = Object.values(model.things).flatMap((t) => [t.identifier, `${t.identifier}State`, ...Object.keys(t.events)]);
+  const client = named.includes(pascal(name)) ? `${pascal(name)}Client` : pascal(name);
   const devices = ops.filter((o) => onDevice(o) && o.from.kind !== "app");
   const perOp = ops.map((o) => (devices.includes(o) ? device(model, o, client) : server(o, client)));
   const types = sdkTypes(model);

@@ -97,7 +97,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
           const id = String(after["id"]);
           const other = yield* holder(rule, after, id, index);
           if (other !== undefined) {
-            return { rule: rule.name, refuse: rule.declared?.refuse, row: after, own: heldFor(rule.thing, String(other["id"])) !== undefined } satisfies Violation;
+            return { rule: rule.name, refuse: rule.declared?.refuse, row: after, own: heldFor(rule.thing, String(other["id"])) !== undefined, retry: rule.declared?.retry === true } satisfies Violation;
           }
         }
       }
@@ -113,7 +113,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
             const id = String((fields as Record<string, unknown>)["id"]);
             hold({ thing, id, kind: "insert", version: 0, fields: { ...(fields as Record<string, unknown>) }, state });
           }),
-        update: (thing, id, changes) => change(thing, id, changes as Record<string, unknown>, undefined),
+        update: (thing, id, changes, state) => change(thing, id, changes as Record<string, unknown>, state),
       },
       read: find,
       setState: (thing, id, state) => change(thing, id, {}, state),

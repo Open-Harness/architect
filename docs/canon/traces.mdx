@@ -145,7 +145,7 @@ The failure still leaves the span unchanged, so the caller gets its typed refusa
 
 The declaration provides the allowlist. A field must be declared and public. Free text also needs `Blueprint.traced`.
 
-```ts file=packages/language-effect/src/modules/handler/internal/attributes.ts name=canTrace,tracedEntries lines=8-11
+```ts file=packages/language-effect/src/modules/handler/internal/attributes.ts name=canTrace,tracedEntries lines=18-21
 const canTrace = (key: string, fields: FieldsInput): boolean => Object.hasOwn(fields, key) && Visibility.sees(Audience.telemetry, fields[key]!);
 
 const tracedEntries = (values: object, fields: FieldsInput): Array<[string, unknown]> =>

@@ -243,7 +243,7 @@ runs as a workflow: each step commits to one store, and the workflow remembers w
 A kind declares what it can serve, and the compiler refuses a read the kind can't. An actor holds one instance, so it
 has nothing to list, and the compiler already says so:
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=200
+```ts file=packages/compiler/src/modules/model/internal/reads.ts name=readModelOf lines=34
 if (list && t?.thing?.lives === "actor") problems.push(`${file}: a list read needs a thing that lives in the database, and ${thing} lives as actors`);
 ```
 
@@ -252,11 +252,12 @@ To list things that live as actors, or across stores, declare a view.
 ### Migrations
 
 Migrations are generated from the model, one set per store, and never for a source: one file per store, with a
-version column on every table:
+version column on every table. A field that may have no value (optional, or a union with null) is a column that may be NULL, a
+boolean is an INTEGER, and a list, a struct, a union of structs or an unknown value is kept as its JSON:
 
-```ts file=packages/projections/src/modules/server/internal/worker-config.ts name=tablesOf lines=73-83
+```ts file=packages/projections/src/modules/server/internal/worker-config.ts name=tablesOf lines=80-90
 things.map((t) => {
-  const columns = Object.keys(t.fields).map((f) => (f === "id" ? `  "id" TEXT PRIMARY KEY` : `  "${f}" TEXT NOT NULL`));
+  const columns = Object.entries(t.fields).map(([f, field]) => (f === "id" ? `  "id" TEXT PRIMARY KEY` : `  "${f}" ${columnOf(field)}`));
   // Empty until the thing's first move sets it.
   if (t.machine) columns.push(`  "state" TEXT`);
   columns.push(`  "version" INTEGER NOT NULL DEFAULT 0`);

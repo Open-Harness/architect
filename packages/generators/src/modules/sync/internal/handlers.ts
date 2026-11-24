@@ -4,17 +4,19 @@
 // package and the host. Nothing is shimmed (M1-plugins sections 8 and 8.1).
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { handlerFiles, packageDir, type Model } from "@orthograph/compiler";
+import { handlerFiles, isVersioned, packageDir, type Model } from "@orthograph/compiler";
 
 export const missingHandlers = (absoluteRoot: string, model: Model): ReadonlyArray<string> =>
   Object.values(model.operations).flatMap((op) => {
-    if (op.kind !== "operation" || op.from.kind === "app") return [];
+    if (op.kind !== "operation" || op.from.kind === "app" || isVersioned(op, model.things[op.thing]?.versions)) return [];
     const from = op.from;
     const mount = model.mounts?.[from.mount];
     const dir = packageDir(absoluteRoot, from.package);
     const src = dir ? (JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as { orthograph?: { src?: string } }).orthograph?.src ?? "./dist/src" : undefined;
     const entry = ({ host, module }: { readonly host: string; readonly module: string }) => {
-      return dir && src && existsSync(join(dir, src, module.slice("src/".length)))
+      // A plugin shipped as source (no build) has the handler as `.ts`; a built one as `.js`.
+      const at = dir && src ? join(dir, src, module.slice("src/".length)) : undefined;
+      return at && (existsSync(at) || existsSync(at.replace(/\.js$/, ".ts")))
         ? []
         : [`${mount?.file ?? "a mount"}: ${op.name} has no ${host === "worker" ? "handler for the worker" : `${host} entry`} in ${from.package}: ${from.package}/${module} is missing`];
     };

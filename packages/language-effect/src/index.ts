@@ -8,7 +8,7 @@ export type { McpEntry, McpRefusals, McpResult, McpServed, McpTool } from "#modu
 export { Calls } from "#modules/calls/service.js";
 export type { CallRunner, CallWiring, Callable } from "#modules/calls/types.js";
 export { Device, Environment, Handlers, Reads } from "#modules/handler/service.js";
-export { BlankReached, DeviceWorld, IdempotencyConflict, InvalidPayload, NotFound, NotFrom } from "#modules/handler/types.js";
+export { BlankReached, DeviceWorld, IdempotencyConflict, InvalidPayload, NotFound, NotFrom, ReadNotServed } from "#modules/handler/types.js";
 export type { Device as DeviceOf, DeviceWhere, DeviceWorldOf, Handler, HandlerContext, ReadAnswer, ReadPayload, Served, ServedRead, StepRunners } from "#modules/handler/types.js";
 export { journalOf } from "#modules/journal/service.js";
 export { Journal, type Entry } from "#modules/journal/types.js";
@@ -26,4 +26,6 @@ export type { ShownOperation, WireClasses } from "#modules/wire/types.js";
 export { BusyLive, BusyReporting } from "#modules/work/service.js";
 export { Busy, BusyBoxRef, WorldCount, genOf, makeBox, type BusyBox, type BusyShape, type Lease } from "#modules/work/types.js";
 export { Mount } from "#modules/mount/service.js";
+export { Versions } from "#modules/versions/service.js";
+export type { VersionContext, VersionHandler, VersionVerb } from "#modules/versions/types.js";
 export { Mounted, type MountApi } from "#modules/mount/types.js";

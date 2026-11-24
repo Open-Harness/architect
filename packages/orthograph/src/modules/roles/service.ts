@@ -1,4 +1,6 @@
 import type { Via } from "#modules/plugins/types.js";
+import type { State } from "#modules/machines/types.js";
+import type { Field } from "#modules/things/types.js";
 import type { Allowed, Narrowed, Role, RoleOf, RolesApi, ServiceRole, SignedIn } from "./types.ts";
 
 const ALL_WAYS: ReadonlyArray<Via> = ["session", "key", "device", "agent"];
@@ -27,7 +29,7 @@ export const admitsAgent = (allowed: ReadonlyArray<Allowed>): boolean =>
   allowed.some((a) => {
     const entry = a.kind === "narrowed" ? a.entry : a;
     if (entry.kind === "anyone") return true;
-    if (entry.kind === "system" || entry.kind === "keeper" || (entry.kind === "role" && entry.service !== undefined) || (entry.kind === "role-of" && entry.role.service !== undefined)) return false;
+    if (entry.kind === "system" || entry.kind === "keeper" || (entry.kind === "role" && (entry.service !== undefined || entry.actor !== undefined)) || (entry.kind === "role-of" && (entry.role.service !== undefined || entry.role.actor !== undefined))) return false;
     return a.kind !== "narrowed" || a.via.includes("agent");
   });
 
@@ -35,11 +37,14 @@ export const admitsAgent = (allowed: ReadonlyArray<Allowed>): boolean =>
 const whoRule = (key: string): Role["rule"] => (instance, principal) => (instance as unknown as Record<string, unknown>)[key] === principal.person;
 
 export const Roles: RolesApi = {
-  role: ((thing: Role["thing"], spec: { readonly rule?: Role["rule"]; readonly service?: ServiceRole["service"]; readonly who?: Role["who"] }) => {
+  role: ((thing: Role["thing"], spec: { readonly rule?: Role["rule"]; readonly service?: ServiceRole["service"]; readonly who?: Role["who"]; readonly actor?: { readonly mount: Field; readonly id: Field }; readonly within?: Field; readonly while?: ReadonlyArray<State>; readonly agent?: Field }) => {
     const role: object = Object.freeze({
       kind: "role" as const,
       thing,
+      // An account or an agent is matched by id at the door, never by a person's rule: a rule given a person admits no one.
       rule: spec.rule ?? (spec.who === undefined ? () => false : whoRule(spec.who.key)),
+      ...(spec.actor === undefined ? {} : { actor: Object.freeze({ mount: spec.actor.mount, id: spec.actor.id, within: spec.within, while: Object.freeze([...(spec.while ?? [])]) }) }),
+      ...(spec.agent === undefined ? {} : { agent: spec.agent }),
       ...(spec.service === undefined ? { who: spec.who } : { service: spec.service }),
       of: (path: string): RoleOf<any, string> => roleOf(role as Role, path),
       ...(spec.service === undefined ? narrowable(() => role) : {}),

@@ -1,6 +1,6 @@
 // The Worker's configuration and its database, both from the model.
 import { Names } from "orthograph/server";
-import type { ClockModel, Model, StoreModel, ThingModel } from "@orthograph/compiler";
+import type { ClockModel, FieldModel, Model, StoreModel, ThingModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
 import { GENERATED, bindingOf, databaseStores, lines } from "#modules/names/service.js";
 
@@ -66,12 +66,19 @@ CREATE TABLE "_requests" (
 );`;
 
 /**
- * One table per thing: a text column per field (each field's wire form), `state` when it has a machine, and the
+ * A field's column, from the form its value encodes to: INTEGER for a boolean (the store binds 1 or 0 and reads a
+ * boolean back), TEXT for everything else (ids and amounts as text, a list, a struct, a union or an unknown as its JSON).
+ * A field that may have no value, optional or nullable, is a column that may be NULL; any other is NOT NULL.
+ */
+const columnOf = (field: FieldModel): string => `${field.value.type === "schema" && field.value.format === "bool" ? "INTEGER" : "TEXT"}${field.optional === true || field.nullable === true ? "" : " NOT NULL"}`;
+
+/**
+ * One table per thing: a column per field (see `columnOf`), `state` when it has a machine, and the
  * `version` every update is guarded by (D2 #36). A field that is an array or a struct is its JSON text (STO-23).
  */
 const tablesOf = (things: ReadonlyArray<ThingModel>) =>
   things.map((t) => {
-    const columns = Object.keys(t.fields).map((f) => (f === "id" ? `  "id" TEXT PRIMARY KEY` : `  "${f}" TEXT NOT NULL`));
+    const columns = Object.entries(t.fields).map(([f, field]) => (f === "id" ? `  "id" TEXT PRIMARY KEY` : `  "${f}" ${columnOf(field)}`));
     // Empty until the thing's first move sets it.
     if (t.machine) columns.push(`  "state" TEXT`);
     columns.push(`  "version" INTEGER NOT NULL DEFAULT 0`);
@@ -89,6 +96,14 @@ const header = (...extra: ReadonlyArray<string>) => [
   ...extra,
 ];
 
+/** A door-enabled app's journal is also its inbox: each accepted delivery is a row with a unique `id` (`<mount>:<the event's identity>`) and the account that sent it. */
+const INBOX = `-- The inbox (M5-reach-out Q2.3): an accepted delivery is one row, by a unique id, so a delivery that comes twice settles once.
+ALTER TABLE "_journal" ADD COLUMN "id" TEXT;
+ALTER TABLE "_journal" ADD COLUMN "actor" TEXT;
+CREATE UNIQUE INDEX "_journal_id" ON "_journal" ("id");`;
+
+export const hasDoors = (model: Model): boolean => Object.values(model.mounts ?? {}).some((m) => m.door !== undefined);
+
 /** The default database's tables: one per thing that lives in the database and in no declared store. Actors keep their own rows. */
 export const renderMigration = (model: Model): RenderedFile => ({
   path: "generated/server/migrations/0001_things.sql",
@@ -98,6 +113,7 @@ export const renderMigration = (model: Model): RenderedFile => ({
     tablesOf(Object.values(model.things).filter((t) => t.lives === "database" && !t.store)),
     "-- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).",
     JOURNAL,
+    hasDoors(model) ? INBOX : [],
   ),
 });
 
