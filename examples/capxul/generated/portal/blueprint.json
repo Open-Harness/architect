@@ -6,6 +6,8 @@
     "refusals": {
       "BankAccountNameTaken": "BA-002",
       "BankAccountNotOpen": "BA-900",
+      "BranchNameTaken": "BR-001",
+      "BranchNotActive": "BR-900",
       "BridgeBusinessNotFound": "KB-901",
       "BridgeBusinessNotStarted": "KB-900",
       "BridgeIndividualNotFound": "KC-901",
@@ -22,6 +24,8 @@
       "DesignationNotFound": "DS-901",
       "DesignationNotInCompany": "EM-003",
       "EmployeeAlreadyHired": "EM-001",
+      "EmployeeGradeNameTaken": "EG-001",
+      "EmployeeGradeNotActive": "EG-900",
       "EmployeeNotActive": "EM-900",
       "HolidayDateTaken": "HD-001",
       "HolidayListEndsBeforeStart": "HL-002",
@@ -56,7 +60,7 @@
         "type": "schema"
       },
       "Day": {
-        "type": "schema"
+        "type": "day"
       },
       "DepositDetail": {
         "type": "text",
@@ -278,6 +282,103 @@
           "kind": "app"
         },
         "hash": "25003fc246749f17"
+      },
+      "branch": {
+        "name": "branch",
+        "identifier": "Branch",
+        "code": "BR",
+        "description": "A place a company works from, such as an office or a site.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "brn"
+            }
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "company.id"
+          },
+          "branchName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name"
+          }
+        },
+        "lives": "database",
+        "invariants": {
+          "oneNamePerCompany": {
+            "kind": "unique",
+            "fields": [
+              "company",
+              "branchName"
+            ],
+            "refuse": "BranchNameTaken"
+          }
+        },
+        "machine": {
+          "states": [
+            "active"
+          ],
+          "moves": {
+            "create": {
+              "from": [],
+              "to": [
+                "active"
+              ],
+              "emits": "BranchCreated"
+            }
+          },
+          "notFrom": {
+            "error": "BranchNotActive",
+            "exit": 40,
+            "code": "BR-900"
+          }
+        },
+        "events": {
+          "BranchCreated": {
+            "branch": {
+              "value": {
+                "type": "id",
+                "prefix": "brn"
+              },
+              "ref": "branch.id"
+            },
+            "company": {
+              "value": {
+                "type": "id",
+                "prefix": "com"
+              },
+              "ref": "branch.company"
+            }
+          }
+        },
+        "errors": {
+          "BranchNameTaken": {
+            "fields": {
+              "branchName": {
+                "value": {
+                  "type": "text",
+                  "max": 140
+                },
+                "named": "Name"
+              }
+            },
+            "exit": 41,
+            "code": "BR-001"
+          }
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "b95916d437b0e7fc"
       },
       "bridge-business": {
         "name": "bridge-business",
@@ -1022,13 +1123,13 @@
           },
           "dateOfBirth": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           },
           "dateOfJoining": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           },
@@ -1125,7 +1226,7 @@
             },
             "relievingDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1160,7 +1261,7 @@
             "fields": {
               "dateOfBirth": {
                 "value": {
-                  "type": "schema"
+                  "type": "day"
                 },
                 "named": "Day"
               }
@@ -1172,7 +1273,7 @@
             "fields": {
               "dateOfJoining": {
                 "value": {
-                  "type": "schema"
+                  "type": "day"
                 },
                 "named": "Day"
               }
@@ -1190,7 +1291,104 @@
         "from": {
           "kind": "app"
         },
-        "hash": "a2627df8b7120d80"
+        "hash": "a8047ea627464d19"
+      },
+      "employee-grade": {
+        "name": "employee-grade",
+        "identifier": "EmployeeGrade",
+        "code": "EG",
+        "description": "A level a company places its employees at, such as junior or senior.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "egr"
+            }
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "company.id"
+          },
+          "gradeName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name"
+          }
+        },
+        "lives": "database",
+        "invariants": {
+          "oneNamePerCompany": {
+            "kind": "unique",
+            "fields": [
+              "company",
+              "gradeName"
+            ],
+            "refuse": "EmployeeGradeNameTaken"
+          }
+        },
+        "machine": {
+          "states": [
+            "active"
+          ],
+          "moves": {
+            "create": {
+              "from": [],
+              "to": [
+                "active"
+              ],
+              "emits": "EmployeeGradeCreated"
+            }
+          },
+          "notFrom": {
+            "error": "EmployeeGradeNotActive",
+            "exit": 40,
+            "code": "EG-900"
+          }
+        },
+        "events": {
+          "EmployeeGradeCreated": {
+            "grade": {
+              "value": {
+                "type": "id",
+                "prefix": "egr"
+              },
+              "ref": "employee-grade.id"
+            },
+            "company": {
+              "value": {
+                "type": "id",
+                "prefix": "com"
+              },
+              "ref": "employee-grade.company"
+            }
+          }
+        },
+        "errors": {
+          "EmployeeGradeNameTaken": {
+            "fields": {
+              "gradeName": {
+                "value": {
+                  "type": "text",
+                  "max": 140
+                },
+                "named": "Name"
+              }
+            },
+            "exit": 41,
+            "code": "EG-001"
+          }
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "a09fa37da72df7db"
       },
       "holiday": {
         "name": "holiday",
@@ -1213,7 +1411,7 @@
           },
           "holidayDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           },
@@ -1273,7 +1471,7 @@
             },
             "holidayDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day",
               "ref": "holiday.holidayDate"
@@ -1285,7 +1483,7 @@
             "fields": {
               "holidayDate": {
                 "value": {
-                  "type": "schema"
+                  "type": "day"
                 },
                 "named": "Day"
               }
@@ -1297,13 +1495,13 @@
             "fields": {
               "fromDate": {
                 "value": {
-                  "type": "schema"
+                  "type": "day"
                 },
                 "named": "Day"
               },
               "toDate": {
                 "value": {
-                  "type": "schema"
+                  "type": "day"
                 },
                 "named": "Day"
               }
@@ -1317,7 +1515,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "220935de8c9cf66e"
+        "hash": "01b09fff6edfbe67"
       },
       "holiday-list": {
         "name": "holiday-list",
@@ -1347,13 +1545,13 @@
           },
           "fromDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           },
           "toDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           },
@@ -1469,7 +1667,7 @@
             "fields": {
               "fromDate": {
                 "value": {
-                  "type": "schema"
+                  "type": "day"
                 },
                 "named": "Day"
               }
@@ -1483,7 +1681,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "694252bdabf797a0"
+        "hash": "16818aa2c445bbee"
       }
     },
     "operations": {
@@ -1797,6 +1995,155 @@
           "p95Ms": 800
         },
         "hash": "010a747b50ed2cac"
+      },
+      "branch.create": {
+        "kind": "operation",
+        "name": "branch.create",
+        "thing": "branch",
+        "verb": "create",
+        "identifier": "create",
+        "file": "blueprint/things/branch/verbs/create.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Add a branch to a company.",
+        "payload": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "branch.company"
+          },
+          "branchName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "branch.branchName"
+          }
+        },
+        "answer": {
+          "branch": {
+            "value": {
+              "type": "id",
+              "prefix": "brn"
+            },
+            "ref": "branch.id"
+          }
+        },
+        "move": {
+          "key": "create",
+          "from": [],
+          "to": [
+            "active"
+          ],
+          "emits": "BranchCreated"
+        },
+        "errors": [],
+        "invariants": {
+          "BranchNameTaken": "branch.oneNamePerCompany"
+        },
+        "breaks": [
+          "branch.oneNamePerCompany"
+        ],
+        "refusals": [
+          "BranchNameTaken",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "company": "company"
+        },
+        "mints": "branch",
+        "steps": {
+          "insert": {
+            "name": "branch.create.insert",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "6025f829ff1158b1"
+      },
+      "branch.get": {
+        "kind": "read",
+        "name": "branch.get",
+        "thing": "branch",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/branch/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one branch by its id: company, branchName, state.",
+        "payload": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "brn"
+            },
+            "ref": "branch.id"
+          }
+        },
+        "answer": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "branch.company"
+          },
+          "branchName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "branch.branchName"
+          },
+          "state": {
+            "value": {
+              "type": "text",
+              "max": 64
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 50
+        },
+        "hash": "61a4bd948bfd4067"
       },
       "bridge-business.approve": {
         "kind": "operation",
@@ -3058,14 +3405,14 @@
           },
           "dateOfBirth": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "employee.dateOfBirth"
           },
           "dateOfJoining": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "employee.dateOfJoining"
@@ -3116,7 +3463,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "9ad5dc63bac5d397"
+        "hash": "a8d9cd6cacdea98f"
       },
       "employee.hire": {
         "kind": "operation",
@@ -3163,14 +3510,14 @@
           },
           "dateOfBirth": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "employee.dateOfBirth"
           },
           "dateOfJoining": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "employee.dateOfJoining"
@@ -3262,7 +3609,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "770ffef979712da8"
+        "hash": "8aec44f4e7f54d34"
       },
       "employee.relieve": {
         "kind": "operation",
@@ -3285,7 +3632,7 @@
           },
           "relievingDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           }
@@ -3300,7 +3647,7 @@
           },
           "relievingDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           }
@@ -3352,7 +3699,156 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "7c1133cc15b01f7d"
+        "hash": "7bf2f33973faef34"
+      },
+      "employee-grade.create": {
+        "kind": "operation",
+        "name": "employee-grade.create",
+        "thing": "employee-grade",
+        "verb": "create",
+        "identifier": "create",
+        "file": "blueprint/things/employee-grade/verbs/create.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Add a grade to a company.",
+        "payload": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "employee-grade.company"
+          },
+          "gradeName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "employee-grade.gradeName"
+          }
+        },
+        "answer": {
+          "grade": {
+            "value": {
+              "type": "id",
+              "prefix": "egr"
+            },
+            "ref": "employee-grade.id"
+          }
+        },
+        "move": {
+          "key": "create",
+          "from": [],
+          "to": [
+            "active"
+          ],
+          "emits": "EmployeeGradeCreated"
+        },
+        "errors": [],
+        "invariants": {
+          "EmployeeGradeNameTaken": "employee-grade.oneNamePerCompany"
+        },
+        "breaks": [
+          "employee-grade.oneNamePerCompany"
+        ],
+        "refusals": [
+          "EmployeeGradeNameTaken",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "company": "company"
+        },
+        "mints": "grade",
+        "steps": {
+          "insert": {
+            "name": "employee-grade.create.insert",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "c3bfdfa5f0f7387f"
+      },
+      "employee-grade.get": {
+        "kind": "read",
+        "name": "employee-grade.get",
+        "thing": "employee-grade",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/employee-grade/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one employee-grade by its id: company, gradeName, state.",
+        "payload": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "egr"
+            },
+            "ref": "employee-grade.id"
+          }
+        },
+        "answer": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "employee-grade.company"
+          },
+          "gradeName": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "Name",
+            "ref": "employee-grade.gradeName"
+          },
+          "state": {
+            "value": {
+              "type": "text",
+              "max": 64
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 50
+        },
+        "hash": "c8d9aa1745af26ee"
       },
       "holiday.add": {
         "kind": "operation",
@@ -3375,7 +3871,7 @@
           },
           "holidayDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "holiday.holidayDate"
@@ -3463,7 +3959,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "98a8336cc841fb81"
+        "hash": "7ed5e2d0c6b320b8"
       },
       "holiday.get": {
         "kind": "read",
@@ -3495,7 +3991,7 @@
           },
           "holidayDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "holiday.holidayDate"
@@ -3536,7 +4032,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "5ed187acb8f1de42"
+        "hash": "c2b4433e9fe1c3e3"
       },
       "holiday-list.add-weekly-off": {
         "kind": "operation",
@@ -3681,14 +4177,14 @@
           },
           "fromDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "holiday-list.fromDate"
           },
           "toDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "holiday-list.toDate"
@@ -3750,7 +4246,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "430cff72738c544e"
+        "hash": "f76dce33cb0c7786"
       },
       "holiday-list.get": {
         "kind": "read",
@@ -3790,14 +4286,14 @@
           },
           "fromDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "holiday-list.fromDate"
           },
           "toDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "holiday-list.toDate"
@@ -3838,7 +4334,7 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "f90afd729f9c4b70"
+        "hash": "3d273c4ff0dd5602"
       }
     },
     "journeys": {
@@ -5150,6 +5646,479 @@
           }
         ],
         "sourceHash": "4a4ab32fd007147f42b7c3140faeaedb8e860d70577b3001cc4af249f3933e53"
+      },
+      "journeys/branch-names-are-the-companys.ts": {
+        "name": "branch names are the company's",
+        "file": "journeys/branch-names-are-the-companys.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "four branches",
+        "steps": [
+          {
+            "title": "Ada can't add a second branch of the same name",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "branchName": "Nairobi"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "BranchNameTaken",
+                "fields": {
+                  "branchName": "Nairobi"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor reuse a name her second company holds there",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "BranchNameTaken",
+                "fields": {
+                  "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't add a branch to Ada's company",
+            "call": {
+              "actor": "bo",
+              "operation": "branch.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "branchName": "007"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "branch.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Bo adds his company's first branch, named with digits alone",
+            "call": {
+              "actor": "bo",
+              "operation": "branch.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "boCompany"
+                  ]
+                },
+                "branchName": "007"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^brn_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "BranchCreated",
+                "fields": {
+                  "branch": {
+                    "ref": [
+                      "last",
+                      "branch"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "boCompany"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "title": "Ada can't read Bo's branch",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo reads it back whole, in his own company",
+            "call": {
+              "actor": "bo",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "boCompany"
+                    ]
+                  },
+                  "007",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Ada's first branch",
+            "call": {
+              "actor": "bo",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "branch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "her first company's first branch is unchanged by every create after it",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "branch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Nairobi",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "the one with the longest name allowed reads back whole",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "longBranch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "her second company's branch of the same name as the first is its own record",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "otherBranch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "otherCompany"
+                    ]
+                  },
+                  "Nairobi",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "her second company's other branch keeps every letter and space she typed",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "oddBranch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "otherCompany"
+                    ]
+                  },
+                  "murang'a  Côte/Est JKIA depot’s አዲስ",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "her first company is unchanged by its branches",
+            "call": {
+              "actor": "ada",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Acme Trading",
+                  "AT",
+                  "Kenya",
+                  "USD",
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "and so is her second",
+            "call": {
+              "actor": "ada",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Acme Logistics",
+                  "AL",
+                  "Uganda",
+                  "UGX",
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "and Bo's",
+            "call": {
+              "actor": "bo",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "boCompany"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Bo Ltd",
+                  "BL",
+                  "Tanzania",
+                  "TZS",
+                  {
+                    "ref": [
+                      "cast",
+                      "bo",
+                      "person"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "4c6009afbd089e2c381ea718487c3f1812cd10ab67495c5aa51534be978d396c"
       },
       "journeys/bridge-a-bank-account-closes.ts": {
         "name": "bridge: a bank account closes",
@@ -8247,6 +9216,479 @@
         ],
         "sourceHash": "b8bffdc92e15a47d8b12ce62de6298b41957fd323af6b5aea0bc19f07fe494a1"
       },
+      "journeys/grade-names-are-the-companys.ts": {
+        "name": "grade names are the company's",
+        "file": "journeys/grade-names-are-the-companys.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "four grades",
+        "steps": [
+          {
+            "title": "Ada can't add a second grade of the same name",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "gradeName": "Senior"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "EmployeeGradeNameTaken",
+                "fields": {
+                  "gradeName": "Senior"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor reuse a name her second company holds there",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "EmployeeGradeNameTaken",
+                "fields": {
+                  "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't add a grade to Ada's company",
+            "call": {
+              "actor": "bo",
+              "operation": "employee-grade.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "gradeName": "007"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "employee-grade.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Bo adds his company's first grade, named with digits alone",
+            "call": {
+              "actor": "bo",
+              "operation": "employee-grade.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "boCompany"
+                  ]
+                },
+                "gradeName": "007"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^egr_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "EmployeeGradeCreated",
+                "fields": {
+                  "grade": {
+                    "ref": [
+                      "last",
+                      "grade"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "boCompany"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "title": "Ada can't read Bo's grade",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo reads it back whole, in his own company",
+            "call": {
+              "actor": "bo",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "boCompany"
+                    ]
+                  },
+                  "007",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Ada's first grade",
+            "call": {
+              "actor": "bo",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "grade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "her first company's first grade is unchanged by every create after it",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "grade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Senior",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "the one with the longest name allowed reads back whole",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "longGrade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027.",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "her second company's grade of the same name as the first is its own record",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "otherGrade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "otherCompany"
+                    ]
+                  },
+                  "Senior",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "her second company's other grade keeps every letter and space she typed",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "oddGrade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "otherCompany"
+                    ]
+                  },
+                  "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "her first company is unchanged by its grades",
+            "call": {
+              "actor": "ada",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Acme Trading",
+                  "AT",
+                  "Kenya",
+                  "USD",
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "and so is her second",
+            "call": {
+              "actor": "ada",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Acme Logistics",
+                  "AL",
+                  "Uganda",
+                  "UGX",
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "and Bo's",
+            "call": {
+              "actor": "bo",
+              "operation": "company.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "boCompany"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Bo Ltd",
+                  "BL",
+                  "Tanzania",
+                  "TZS",
+                  {
+                    "ref": [
+                      "cast",
+                      "bo",
+                      "person"
+                    ]
+                  },
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "b542e7ca0b670c6a1694604becd2156d2c4bcbd70f5b2ba255b7cc989115a74e"
+      },
       "journeys/hire-an-employee.ts": {
         "name": "hire an employee",
         "file": "journeys/hire-an-employee.ts",
@@ -9338,6 +10780,175 @@
         ],
         "sourceHash": "c46835fedab510253b62596fded6bd698fa97a02b8e3abd0a37d7d9f6c1b00ef"
       },
+      "journeys/set-up-branches.ts": {
+        "name": "set up branches",
+        "file": "journeys/set-up-branches.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "a company",
+        "steps": [
+          {
+            "title": "Ada adds a branch",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "branchName": "Nairobi"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^brn_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "BranchCreated",
+                "fields": {
+                  "branch": {
+                    "ref": [
+                      "last",
+                      "branch"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "branch",
+                "id": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "branch.create",
+                  "branch.create.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Ada's branch",
+            "call": {
+              "actor": "bo",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't add a branch to Ada's company",
+            "call": {
+              "actor": "bo",
+              "operation": "branch.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "branchName": "Mombasa"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "branch.create",
+                  "branch.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Ada reads the branch back",
+            "call": {
+              "actor": "ada",
+              "operation": "branch.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Nairobi",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "409bd6a97ec8142a9dd20e873524525e2b0efae7f8418d9dcbc84cd1a9a85970"
+      },
       "journeys/set-up-departments-and-job-titles.ts": {
         "name": "set up departments and job titles",
         "file": "journeys/set-up-departments-and-job-titles.ts",
@@ -9884,6 +11495,175 @@
         ],
         "sourceHash": "a51f1bf2e205b3a6bccd4100b01da942e61197a6b9c453c024d5e2ad836dd6ee"
       },
+      "journeys/set-up-grades.ts": {
+        "name": "set up grades",
+        "file": "journeys/set-up-grades.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "a company",
+        "steps": [
+          {
+            "title": "Ada adds a grade",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "gradeName": "Junior"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^egr_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "EmployeeGradeCreated",
+                "fields": {
+                  "grade": {
+                    "ref": [
+                      "last",
+                      "grade"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "employee-grade",
+                "id": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "employee-grade.create",
+                  "employee-grade.create.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Ada's grade",
+            "call": {
+              "actor": "bo",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't add a grade to Ada's company",
+            "call": {
+              "actor": "bo",
+              "operation": "employee-grade.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "gradeName": "Lead"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "employee-grade.create",
+                  "employee-grade.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Ada reads the grade back",
+            "call": {
+              "actor": "ada",
+              "operation": "employee-grade.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Junior",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "7f0cb3dd66fdeb039e58234d520b19a72d893bb5c22c718e297a55d72f0f3b5f"
+      },
       "journeys/weekly-offs.ts": {
         "name": "weekly offs",
         "file": "journeys/weekly-offs.ts",
@@ -10346,6 +12126,59 @@
           }
         }
       },
+      "a branch": {
+        "name": "a branch",
+        "file": "blueprint/starting-worlds/a-branch.ts",
+        "from": "three companies",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "c619f25cbc5f7b9130327ede7ef0f7d859179415b3913da32624e770cc1c549c",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Nairobi"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "world",
+              "boCompany"
+            ]
+          },
+          "branch": {
+            "ref": [
+              "last",
+              "branch"
+            ]
+          }
+        }
+      },
       "a company": {
         "name": "a company",
         "file": "blueprint/starting-worlds/a-company.ts",
@@ -10415,6 +12248,59 @@
             "ref": [
               "last",
               "department"
+            ]
+          }
+        }
+      },
+      "a grade": {
+        "name": "a grade",
+        "file": "blueprint/starting-worlds/a-grade.ts",
+        "from": "three companies",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "5890d4691de97d7c88a96cfb364029112a67858515ef05511abdae94d0873417",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "Senior"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "world",
+              "boCompany"
+            ]
+          },
+          "grade": {
+            "ref": [
+              "last",
+              "grade"
             ]
           }
         }
@@ -10813,6 +12699,148 @@
           }
         }
       },
+      "four branches": {
+        "name": "four branches",
+        "file": "blueprint/starting-worlds/four-branches.ts",
+        "from": "three branches",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "78ae93b29aab51dbf0486b05cc682c72a0caab097199673f9e4eda6708a59617",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              },
+              "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "world",
+              "boCompany"
+            ]
+          },
+          "branch": {
+            "ref": [
+              "world",
+              "branch"
+            ]
+          },
+          "longBranch": {
+            "ref": [
+              "world",
+              "longBranch"
+            ]
+          },
+          "otherBranch": {
+            "ref": [
+              "world",
+              "otherBranch"
+            ]
+          },
+          "oddBranch": {
+            "ref": [
+              "last",
+              "branch"
+            ]
+          }
+        }
+      },
+      "four grades": {
+        "name": "four grades",
+        "file": "blueprint/starting-worlds/four-grades.ts",
+        "from": "three grades",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "16bf12e8402c4156ed067590f1977f118ced98a799f6f23f2968209e5b545f19",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              },
+              "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "world",
+              "boCompany"
+            ]
+          },
+          "grade": {
+            "ref": [
+              "world",
+              "grade"
+            ]
+          },
+          "longGrade": {
+            "ref": [
+              "world",
+              "longGrade"
+            ]
+          },
+          "otherGrade": {
+            "ref": [
+              "world",
+              "otherGrade"
+            ]
+          },
+          "oddGrade": {
+            "ref": [
+              "last",
+              "grade"
+            ]
+          }
+        }
+      },
       "kyb approved": {
         "name": "kyb approved",
         "file": "blueprint/starting-worlds/kyb-approved.ts",
@@ -10949,6 +12977,179 @@
           }
         }
       },
+      "three branches": {
+        "name": "three branches",
+        "file": "blueprint/starting-worlds/three-branches.ts",
+        "from": "two branches",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "5bfaaf6c5f3dfd54bb90b9195f9a83bc1a2e96335abc431f0d5b8b6510203fda",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              },
+              "branchName": "Nairobi"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "world",
+              "boCompany"
+            ]
+          },
+          "branch": {
+            "ref": [
+              "world",
+              "branch"
+            ]
+          },
+          "longBranch": {
+            "ref": [
+              "world",
+              "longBranch"
+            ]
+          },
+          "otherBranch": {
+            "ref": [
+              "last",
+              "branch"
+            ]
+          }
+        }
+      },
+      "three companies": {
+        "name": "three companies",
+        "file": "blueprint/starting-worlds/three-companies.ts",
+        "from": "two companies",
+        "cast": {
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "sourceHash": "6bbcda711acd04b68459ad8b3ed478bf48cbd661c6e1687e558b3d3312b8d515",
+        "makes": [
+          {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Bo Ltd",
+              "abbr": "BL",
+              "country": "Tanzania",
+              "defaultCurrency": "TZS"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "last",
+              "company"
+            ]
+          }
+        }
+      },
+      "three grades": {
+        "name": "three grades",
+        "file": "blueprint/starting-worlds/three-grades.ts",
+        "from": "two grades",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "1719ed9fabcb3a580e8fba0fc93f83f060f744282a0d3f3a9b909b413a8393a6",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              },
+              "gradeName": "Senior"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "world",
+              "boCompany"
+            ]
+          },
+          "grade": {
+            "ref": [
+              "world",
+              "grade"
+            ]
+          },
+          "longGrade": {
+            "ref": [
+              "world",
+              "longGrade"
+            ]
+          },
+          "otherGrade": {
+            "ref": [
+              "last",
+              "grade"
+            ]
+          }
+        }
+      },
       "two bank accounts": {
         "name": "two bank accounts",
         "file": "blueprint/starting-worlds/two-bank-accounts.ts",
@@ -11036,6 +13237,161 @@
             "ref": [
               "last",
               "routingNumber"
+            ]
+          }
+        }
+      },
+      "two branches": {
+        "name": "two branches",
+        "file": "blueprint/starting-worlds/two-branches.ts",
+        "from": "a branch",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "37f3e666b6960e93e3e2765364083c671f67d75a7e1cbd7222d84c1e356357ff",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "world",
+              "boCompany"
+            ]
+          },
+          "branch": {
+            "ref": [
+              "world",
+              "branch"
+            ]
+          },
+          "longBranch": {
+            "ref": [
+              "last",
+              "branch"
+            ]
+          }
+        }
+      },
+      "two companies": {
+        "name": "two companies",
+        "file": "blueprint/starting-worlds/two-companies.ts",
+        "from": "a company",
+        "cast": {
+          "ada": {
+            "kind": "signed-in"
+          }
+        },
+        "sourceHash": "2a8ed7b1c5dbceb4a508842bc2933f0ff8cc10a17482a2bffde96db553d3053e",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Logistics",
+              "abbr": "AL",
+              "country": "Uganda",
+              "defaultCurrency": "UGX"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "last",
+              "company"
+            ]
+          }
+        }
+      },
+      "two grades": {
+        "name": "two grades",
+        "file": "blueprint/starting-worlds/two-grades.ts",
+        "from": "a grade",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "4130078499712f158837070931a9c55bcb29b47c2a73d52eb24969f189db3d55",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027."
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "otherCompany": {
+            "ref": [
+              "world",
+              "otherCompany"
+            ]
+          },
+          "boCompany": {
+            "ref": [
+              "world",
+              "boCompany"
+            ]
+          },
+          "grade": {
+            "ref": [
+              "world",
+              "grade"
+            ]
+          },
+          "longGrade": {
+            "ref": [
+              "last",
+              "grade"
             ]
           }
         }
@@ -11257,6 +13613,26 @@
         }
       },
       {
+        "id": "anomaly:BR-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "BR-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/branch/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:BR-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "BR-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
         "id": "anomaly:CO-001",
         "kind": "anomaly",
         "labels": {
@@ -11342,6 +13718,26 @@
         "labels": {
           "environment": "*",
           "code": "DS-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:EG-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EG-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/employee-grade/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EG-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EG-900",
           "severity": "ticket",
           "owner": "orthograph"
         }
@@ -11618,6 +14014,90 @@
           "operation": "bank-account.open",
           "severity": "page",
           "owner": "blueprint/things/bank-account/verbs/open.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:branch.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "branch.create",
+          "severity": "page",
+          "owner": "blueprint/things/branch/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:branch.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "branch.get",
+          "severity": "page",
+          "owner": "blueprint/things/branch/verbs/get.ts"
         },
         "target": 0.999,
         "windowDays": 28,
@@ -12241,6 +14721,90 @@
         ]
       },
       {
+        "id": "defect:employee-grade.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "employee-grade.create",
+          "severity": "page",
+          "owner": "blueprint/things/employee-grade/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:employee-grade.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "employee-grade.get",
+          "severity": "page",
+          "owner": "blueprint/things/employee-grade/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
         "id": "defect:employee.get",
         "kind": "defect",
         "labels": {
@@ -12674,6 +15238,92 @@
         "target": 0.95,
         "windowDays": 28,
         "thresholdMs": 800,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:branch.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "branch.create",
+          "severity": "page",
+          "owner": "blueprint/things/branch/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:branch.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "branch.get",
+          "severity": "page",
+          "owner": "blueprint/things/branch/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
         "minCalls": 20,
         "alerts": [
           {
@@ -13308,6 +15958,92 @@
         ]
       },
       {
+        "id": "latency:employee-grade.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "employee-grade.create",
+          "severity": "page",
+          "owner": "blueprint/things/employee-grade/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:employee-grade.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "employee-grade.get",
+          "severity": "page",
+          "owner": "blueprint/things/employee-grade/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
         "id": "latency:employee.get",
         "kind": "latency",
         "labels": {
@@ -13702,6 +16438,16 @@
         }
       },
       {
+        "id": "verdict:branch names are the company's:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "branch names are the company's",
+          "severity": "page",
+          "owner": "journeys/branch-names-are-the-companys.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: a bank account closes:local",
         "kind": "verdict",
         "labels": {
@@ -13822,6 +16568,16 @@
         }
       },
       {
+        "id": "verdict:grade names are the company's:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "grade names are the company's",
+          "severity": "page",
+          "owner": "journeys/grade-names-are-the-companys.ts"
+        }
+      },
+      {
         "id": "verdict:hire an employee:local",
         "kind": "verdict",
         "labels": {
@@ -13852,6 +16608,16 @@
         }
       },
       {
+        "id": "verdict:set up branches:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "set up branches",
+          "severity": "page",
+          "owner": "journeys/set-up-branches.ts"
+        }
+      },
+      {
         "id": "verdict:set up departments and job titles:local",
         "kind": "verdict",
         "labels": {
@@ -13859,6 +16625,16 @@
           "journey": "set up departments and job titles",
           "severity": "page",
           "owner": "journeys/set-up-departments-and-job-titles.ts"
+        }
+      },
+      {
+        "id": "verdict:set up grades:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "set up grades",
+          "severity": "page",
+          "owner": "journeys/set-up-grades.ts"
         }
       },
       {
@@ -13890,6 +16666,16 @@
       "operation:bank-account.open": "010a747b50ed2cac",
       "thing:bank-account": "25003fc246749f17",
       "thing:bridge-business": "246b83887f7efa44",
+      "thing:company": "7e7c8934b44c2510"
+    },
+    "branch.create": {
+      "operation:branch.create": "6025f829ff1158b1",
+      "thing:branch": "b95916d437b0e7fc",
+      "thing:company": "7e7c8934b44c2510"
+    },
+    "branch.get": {
+      "operation:branch.get": "61a4bd948bfd4067",
+      "thing:branch": "b95916d437b0e7fc",
       "thing:company": "7e7c8934b44c2510"
     },
     "bridge-business.approve": {
@@ -13956,53 +16742,63 @@
       "thing:company": "7e7c8934b44c2510",
       "thing:designation": "e8e38d92bb6471e1"
     },
+    "employee-grade.create": {
+      "operation:employee-grade.create": "c3bfdfa5f0f7387f",
+      "thing:company": "7e7c8934b44c2510",
+      "thing:employee-grade": "a09fa37da72df7db"
+    },
+    "employee-grade.get": {
+      "operation:employee-grade.get": "c8d9aa1745af26ee",
+      "thing:company": "7e7c8934b44c2510",
+      "thing:employee-grade": "a09fa37da72df7db"
+    },
     "employee.get": {
-      "operation:employee.get": "9ad5dc63bac5d397",
+      "operation:employee.get": "a8d9cd6cacdea98f",
       "thing:company": "7e7c8934b44c2510",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
-      "thing:employee": "a2627df8b7120d80"
+      "thing:employee": "a8047ea627464d19"
     },
     "employee.hire": {
-      "operation:employee.hire": "770ffef979712da8",
+      "operation:employee.hire": "8aec44f4e7f54d34",
       "thing:company": "7e7c8934b44c2510",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
-      "thing:employee": "a2627df8b7120d80"
+      "thing:employee": "a8047ea627464d19"
     },
     "employee.relieve": {
-      "operation:employee.relieve": "7c1133cc15b01f7d",
+      "operation:employee.relieve": "7bf2f33973faef34",
       "thing:company": "7e7c8934b44c2510",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
-      "thing:employee": "a2627df8b7120d80"
+      "thing:employee": "a8047ea627464d19"
     },
     "holiday-list.add-weekly-off": {
       "operation:holiday-list.add-weekly-off": "d3da45d5dc3ea553",
       "thing:company": "7e7c8934b44c2510",
-      "thing:holiday-list": "694252bdabf797a0"
+      "thing:holiday-list": "16818aa2c445bbee"
     },
     "holiday-list.create": {
-      "operation:holiday-list.create": "430cff72738c544e",
+      "operation:holiday-list.create": "f76dce33cb0c7786",
       "thing:company": "7e7c8934b44c2510",
-      "thing:holiday-list": "694252bdabf797a0"
+      "thing:holiday-list": "16818aa2c445bbee"
     },
     "holiday-list.get": {
-      "operation:holiday-list.get": "f90afd729f9c4b70",
+      "operation:holiday-list.get": "3d273c4ff0dd5602",
       "thing:company": "7e7c8934b44c2510",
-      "thing:holiday-list": "694252bdabf797a0"
+      "thing:holiday-list": "16818aa2c445bbee"
     },
     "holiday.add": {
-      "operation:holiday.add": "98a8336cc841fb81",
+      "operation:holiday.add": "7ed5e2d0c6b320b8",
       "thing:company": "7e7c8934b44c2510",
-      "thing:holiday": "220935de8c9cf66e",
-      "thing:holiday-list": "694252bdabf797a0"
+      "thing:holiday": "01b09fff6edfbe67",
+      "thing:holiday-list": "16818aa2c445bbee"
     },
     "holiday.get": {
-      "operation:holiday.get": "5ed187acb8f1de42",
+      "operation:holiday.get": "c2b4433e9fe1c3e3",
       "thing:company": "7e7c8934b44c2510",
-      "thing:holiday": "220935de8c9cf66e",
-      "thing:holiday-list": "694252bdabf797a0"
+      "thing:holiday": "01b09fff6edfbe67",
+      "thing:holiday-list": "16818aa2c445bbee"
     }
   },
   "docs": {
@@ -14010,6 +16806,9 @@
     "bank-account/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account.get\n\nRead one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bank-account.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | bank-account.company |  |\n| business | bank-account.business | The company's approved KYB the account is opened on. |\n| accountName | bank-account.accountName | What the company calls the account (ERPNext's `account_name`). |\n| currency | bank-account.currency | The currency it takes deposits in. |\n| bankName | bank-account.bankName | The bank that holds it, as Bridge names it. |\n| accountNumber | bank-account.accountNumber | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | bank-account.routingNumber | Its routing number, or BIC, as Bridge gives it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### bridge: a bank account closes\n\nStarts from the world `two bank accounts`.\n\n- **Ada reads it back with the deposit details she was given.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].\n- **the new account is a different one.** `ada` (role company.owner) calls and sends id the last call's account, and gets back `open`.\n- **and the old one stays closed.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `closed`].\n- **the euro account is untouched, with the details it was opened with.** `ada` (role company.owner) calls and sends id the world's payroll, and gets back [the world's company, the world's business, `Payroll`, `EUR`, the world's payrollBankName, the world's payrollAccountNumber, the world's payrollRoutingNumber, `open`].\n\n### bridge: a reopened account is its own\n\nStarts from the world `a reopened account`.\n\n- **the new account reads back with the details its opening answered.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].\n- **the old one is closed, and keeps its own number.** `ada` (role company.owner) calls and sends id the world's old, and gets back [the world's oldAccountNumber, `closed`].\n\n### bridge: open a bank account\n\nStarts from the world `kyb approved`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's account, and is refused with NotAllowed, AR-001.\n- **it reads back as the second account, not the first.** `ada` (role company.owner) calls and sends id the last call's account, and gets back [the world's company, the world's business, `Payroll`, `EUR`, `open`] and gets back an answer matching `^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$`.\n\n## How to call\n\n```sh\ncapxul bank-account get --id <id>\n```\n\nHTTP: `POST /bank-account/get` with the payload as JSON. SDK: `Sdk.bank-account.get(payload)`.\n",
     "bank-account/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account\n\nA bank account a company holds through Bridge, which takes deposits in one currency.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| business | bridge-business.id | The company's approved KYB the account is opened on. |\n| accountName | Name | What the company calls the account (ERPNext's `account_name`). |\n| currency | AccountCurrency | The currency it takes deposits in. |\n| bankName | DepositDetail | The bank that holds it, as Bridge names it. |\n| accountNumber | DepositDetail | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | DepositDetail | Its routing number, or BIC, as Bridge gives it. |\n\n## Machine\n\nStates: open, closed. A move from the wrong state is refused BankAccountNotOpen (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | open | BankAccountOpened |\n| close | open | closed | BankAccountClosed |\n\n## Invariants\n\n- `bank-account.oneAccountPerNumber`: another bank account holds this account number. Unique on accountNumber, in every state; refuses nothing, a break is a defect.\n- `bank-account.oneNamePerCompany`: another open bank account holds this company and account name. Unique on company, accountName, while open; refused BankAccountNameTaken.\n\n## Events\n\n- `BankAccountClosed`: carries account (bank-account.id); emitted by the move close\n- `BankAccountOpened`: carries account (bank-account.id), company (bank-account.company), business (bank-account.business: The company's approved KYB the account is opened on.), currency (bank-account.currency: The currency it takes deposits in.); emitted by the move open\n\n## Operations\n\n- [bank-account.close](close.md): Close a company's bank account; it takes no more deposits.\n- [bank-account.get](get.md): Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.\n- [bank-account.open](open.md): Open a bank account for a company whose KYB Bridge approved: answers where to send deposits.\n",
     "bank-account/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account.open\n\nOpen a bank account for a company whose KYB Bridge approved: answers where to send deposits.\n\n**Who may call:** the owner of its business.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 800ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| business | bank-account.business | The company's approved KYB the account is opened on. |\n| accountName | bank-account.accountName | What the company calls the account (ERPNext's `account_name`). |\n| currency | bank-account.currency | The currency it takes deposits in. |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| account | bank-account.id |  |\n| bankName | bank-account.bankName | The bank that holds it, as Bridge names it. |\n| accountNumber | bank-account.accountNumber | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | bank-account.routingNumber | Its routing number, or BIC, as Bridge gives it. |\n\n## Move\n\n`open`: from nothing (it creates) to open, emitting BankAccountOpened.\n\n## Steps\n\n- `bank-account.open.load` (database)\n- `bank-account.open.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KybNotApproved | 41 | BA-001 | declared in errors.ts |\n| BankAccountNameTaken | 42 | BA-002 | another open bank account holds this company and account name; by the rule bank-account.oneNamePerCompany, carrying accountName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its business.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a bank account closes\n\nStarts from the world `two bank accounts`.\n\n- **a closed account frees its name for a new one.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, and gets back an answer matching `^bac_[0-9a-z]+$`.\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `two kybs started`.\n\n- **nor open a bank account before Bridge approves it.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, and is refused with KybNotApproved, BA-001.\n- **and opens no bank account.** `bo` (signed in) calls and sends business the world's boBusiness, accountName `Main`, currency `EUR`, and is refused with KybNotApproved, BA-001.\n\n### bridge: open a bank account\n\nStarts from the world `kyb approved`.\n\n- **Bo can't open an account on Ada's company.** `bo` (signed in) calls and sends business the world's business, accountName `Operating`, currency `USD`, and is refused with NotAllowed, AR-001.\n- **Ada opens a US dollar account and gets where to send deposits.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `USD`, with the request key `acme-operating`, and gets back an answer matching `^bac_[0-9a-z]+$` and gets back an answer matching `\\S` and gets back an answer matching `^\\d{4,17}$` and gets back an answer matching `^\\d{9}$`.\n- **the company has one open account by a name.** `ada` (role company.owner) calls and sends business the world's business, accountName `Operating`, currency `EUR`, and is refused with BankAccountNameTaken, BA-002, carrying accountName `Operating`.\n- **she opens a euro account under another name.** `ada` (role company.owner) calls and sends business the world's business, accountName `Payroll`, currency `EUR`, and gets back an answer matching `^bac_[0-9a-z]+$` and gets back an answer matching `\\S` and gets back an answer matching `^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$` and gets back an answer matching `^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$`.\n\n## How to call\n\n```sh\ncapxul bank-account open --business <business> --accountName <accountName> --currency <currency>\n```\n\nHTTP: `POST /bank-account/open` with the payload as JSON. SDK: `Sdk.bank-account.open(payload)`.\n",
+    "branch/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# branch.create\n\nAdd a branch to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | branch.company |\n| branchName | branch.branchName |\n\n## Answer\n\n| field | value |\n|---|---|\n| branch | branch.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting BranchCreated.\n\n## Steps\n\n- `branch.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| BranchNameTaken | 41 | BR-001 | another branch holds this company and branch name; by the rule branch.oneNamePerCompany, carrying branchName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### branch names are the company's\n\nStarts from the world `four branches`.\n\n- **Ada can't add a second branch of the same name.** `ada` (role company.owner) calls and sends company the world's company, branchName `Nairobi`, and is refused with BranchNameTaken, BR-001, carrying branchName `Nairobi`.\n- **nor reuse a name her second company holds there.** `ada` (role company.owner) calls and sends company the world's otherCompany, branchName `murang'a  Côte/Est JKIA depot’s አዲስ`, and is refused with BranchNameTaken, BR-001, carrying branchName `murang'a  Côte/Est JKIA depot’s አዲስ`.\n- **Bo can't add a branch to Ada's company.** `bo` (signed in) calls and sends company the world's company, branchName `007`, and is refused with NotAllowed, AR-001.\n- **Bo adds his company's first branch, named with digits alone.** `bo` (signed in) calls and sends company the world's boCompany, branchName `007`, and gets back an answer matching `^brn_[0-9a-z]+$`.\n\n### set up branches\n\nStarts from the world `a company`.\n\n- **Ada adds a branch.** `ada` (role company.owner) calls and sends company the world's company, branchName `Nairobi`, and gets back an answer matching `^brn_[0-9a-z]+$`.\n- **Bo can't add a branch to Ada's company.** `bo` (signed in) calls and sends company the world's company, branchName `Mombasa`, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul branch create --company <company> --branchName <branchName>\n```\n\nHTTP: `POST /branch/create` with the payload as JSON. SDK: `Sdk.branch.create(payload)`.\n",
+    "branch/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# branch.get\n\nRead one branch by its id: company, branchName, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | branch.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | branch.company |\n| branchName | branch.branchName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### branch names are the company's\n\nStarts from the world `four branches`.\n\n- **Ada can't read Bo's branch.** `ada` (role company.owner) calls and sends id the last call's branch, and is refused with NotAllowed, AR-001.\n- **Bo reads it back whole, in his own company.** `bo` (signed in) calls and sends id the last call's branch, and gets back [the world's boCompany, `007`, `active`].\n- **Bo can't read Ada's first branch.** `bo` (signed in) calls and sends id the world's branch, and is refused with NotAllowed, AR-001.\n- **her first company's first branch is unchanged by every create after it.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].\n- **the one with the longest name allowed reads back whole.** `ada` (role company.owner) calls and sends id the world's longBranch, and gets back [the world's company, `Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019`, `active`].\n- **her second company's branch of the same name as the first is its own record.** `ada` (role company.owner) calls and sends id the world's otherBranch, and gets back [the world's otherCompany, `Nairobi`, `active`].\n- **her second company's other branch keeps every letter and space she typed.** `ada` (role company.owner) calls and sends id the world's oddBranch, and gets back [the world's otherCompany, `murang'a  Côte/Est JKIA depot’s አዲስ`, `active`].\n\n### set up branches\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's branch.** `bo` (signed in) calls and sends id the last call's branch, and is refused with NotAllowed, AR-001.\n- **Ada reads the branch back.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's company, `Nairobi`, `active`].\n\n## How to call\n\n```sh\ncapxul branch get --id <id>\n```\n\nHTTP: `POST /branch/get` with the payload as JSON. SDK: `Sdk.branch.get(payload)`.\n",
+    "branch/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# branch\n\nA place a company works from, such as an office or a site.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| branchName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused BranchNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | BranchCreated |\n\n## Invariants\n\n- `branch.oneNamePerCompany`: another branch holds this company and branch name. Unique on company, branchName, in every state; refused BranchNameTaken.\n\n## Events\n\n- `BranchCreated`: carries branch (branch.id), company (branch.company); emitted by the move create\n\n## Operations\n\n- [branch.create](create.md): Add a branch to a company.\n- [branch.get](get.md): Read one branch by its id: company, branchName, state.\n",
     "bridge-business/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business.approve\n\nRecord that Bridge approved a company's KYB.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| business | bridge-business.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| business | bridge-business.id |\n\n## Move\n\n`approve`: from started to approved, emitting KybApproved.\n\n## Steps\n\n- `bridge-business.approve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KybAlreadyStarted | 41 | KB-001 | another bridge business holds this company; by the rule bridge-business.oneKybPerCompany, carrying company |\n| BridgeBusinessNotStarted | 40 | KB-900 | the bridge-business is in a state approve can't start from; carries `state` |\n| BridgeBusinessNotFound | 4 | KB-901 | nothing has the id in business; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `two kybs started`.\n\n- **Ada can't approve her own company's KYB.** `ada` (role company.owner) calls and sends business the world's business, and is refused with NotAllowed, AR-001.\n- **Bridge approves it.** `bridge` (system) calls and sends business the world's business, and gets back the world's business.\n- **an approved KYB can't be approved again.** `bridge` (system) calls and sends business the world's business, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `approved`.\n- **a turned-down KYB can't then be approved.** `bridge` (system) calls and sends business the world's boBusiness, and is refused with BridgeBusinessNotStarted, KB-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul bridge-business approve --business <business>\n```\n\nHTTP: `POST /bridge-business/approve` with the payload as JSON. SDK: `Sdk.bridge-business.approve(payload)`.\n",
     "bridge-business/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business.get\n\nRead one bridge-business by its id: company, legalName, email, kybLink, tosLink, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bridge-business.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | bridge-business.company |  |\n| legalName | bridge-business.legalName | The company's name as it is registered, which Bridge checks. |\n| email | bridge-business.email | Where Bridge writes to the business about its KYB. |\n| kybLink | bridge-business.kybLink | Bridge's hosted KYB form for this business. |\n| tosLink | bridge-business.tosLink | Bridge's terms of service, which the business accepts before it is approved. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### bridge: a rejected kyb keeps what bridge gave\n\nStarts from the world `kyb started`.\n\n- **the decision changes nothing else Ada was given.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, the world's kybLink, the world's tosLink, `rejected`].\n\n### bridge: kyb is decided by bridge\n\nStarts from the world `two kybs started`.\n\n- **Ada reads it back approved, with everything else as it was started.** `ada` (role company.owner) calls and sends id the world's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, the world's kybLink, the world's tosLink, `approved`].\n- **Bo reads his back turned down, as he typed it.** `bo` (signed in) calls and sends id the world's boBusiness, and gets back [`Bo Limited`, `bo@bo-ltd.test`, the world's boKybLink, the world's boTosLink, `rejected`] and gets back false.\n- **Ada's approval is untouched by Bo's refusal.** `ada` (role company.owner) calls and sends id the world's business, and gets back `approved`.\n\n### bridge: start a kyb\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's KYB.** `bo` (signed in) calls and sends id the last call's business, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, still started, with a form and terms that differ.** `ada` (role company.owner) calls and sends id the last call's business, and gets back [the world's company, `Acme Trading Limited`, `finance@acme-trading.test`, `started`] and gets back false.\n\n## How to call\n\n```sh\ncapxul bridge-business get --id <id>\n```\n\nHTTP: `POST /bridge-business/get` with the payload as JSON. SDK: `Sdk.bridge-business.get(payload)`.\n",
     "bridge-business/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-business\n\nA company's KYB with Bridge: the check of who the business is, which its bank accounts need.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| legalName | LegalName | The company's name as it is registered, which Bridge checks. |\n| email | text | Where Bridge writes to the business about its KYB. |\n| kybLink | BridgeLink | Bridge's hosted KYB form for this business. |\n| tosLink | BridgeLink | Bridge's terms of service, which the business accepts before it is approved. |\n\n## Machine\n\nStates: started, approved, rejected. A move from the wrong state is refused BridgeBusinessNotStarted (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| start | (creates) | started | KybStarted |\n| approve | started | approved | KybApproved |\n| reject | started | rejected | KybRejected |\n\n## Invariants\n\n- `bridge-business.oneKybPerCompany`: another bridge business holds this company. Unique on company, in every state; refused KybAlreadyStarted.\n- `bridge-business.oneKybPerForm`: another bridge business holds this kyb link. Unique on kybLink, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `KybApproved`: carries business (bridge-business.id); emitted by the move approve\n- `KybRejected`: carries business (bridge-business.id), reason (RejectionReason); emitted by the move reject\n- `KybStarted`: carries business (bridge-business.id), company (bridge-business.company); emitted by the move start\n\n## Operations\n\n- [bridge-business.approve](approve.md): Record that Bridge approved a company's KYB.\n- [bridge-business.get](get.md): Read one bridge-business by its id: company, legalName, email, kybLink, tosLink, state.\n- [bridge-business.reject](reject.md): Record that Bridge turned down a company's KYB, and why.\n- [bridge-business.start](start.md): Start a company's KYB with Bridge: answers the form the business fills in, and Bridge's terms.\n",
@@ -14021,7 +16820,7 @@
     "bridge-individual/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.reject\n\nRecord that Bridge turned down a person's KYC, and why.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n| reason | RejectionReason |\n\n## Answer\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n\n## Move\n\n`reject`: from started to rejected, emitting KycRejected.\n\n## Steps\n\n- `bridge-individual.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KycAlreadyStarted | 41 | KC-001 | another bridge individual holds this person; by the rule bridge-individual.oneKycPerPerson, carrying person |\n| BridgeIndividualNotStarted | 40 | KC-900 | the bridge-individual is in a state reject can't start from; carries `state` |\n| BridgeIndividualNotFound | 4 | KC-901 | nothing has the id in individual; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a kyc keeps what bridge gave\n\nStarts from the world `kyc started`.\n\n- **Bridge turns her down.** `bridge` (system) calls and sends individual the world's individual, reason `document photo too dark`, and is answered.\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **Bridge turns Bo down, with its reason.** `bridge` (system) calls and sends individual the last call's individual, reason `selfie does not match the passport`, and gets back an answer matching `^kyc_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul bridge-individual reject --individual <individual> --reason <reason>\n```\n\nHTTP: `POST /bridge-individual/reject` with the payload as JSON. SDK: `Sdk.bridge-individual.reject(payload)`.\n",
     "bridge-individual/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.start\n\nStart your own KYC with Bridge: answers the form you fill in, and Bridge's terms.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 800ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| fullName | bridge-individual.fullName | The person's name as their documents give it, which Bridge checks. |\n| email | bridge-individual.email | Where Bridge writes to the person about their KYC. |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| individual | bridge-individual.id |  |\n| kycLink | bridge-individual.kycLink | Bridge's hosted KYC form for this person. |\n| tosLink | bridge-individual.tosLink | Bridge's terms of service, which the person accepts before they are approved. |\n\n## Move\n\n`start`: from nothing (it creates) to started, emitting KycStarted.\n\n## Steps\n\n- `bridge-individual.start.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KycAlreadyStarted | 41 | KC-001 | another bridge individual holds this person; by the rule bridge-individual.oneKycPerPerson, carrying person |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **the system can't start a KYC: it is nobody.** `bridge` (system) calls and sends fullName `Nobody At All`, email `nobody@capxul.test`, and is refused with NotAllowed, AR-001.\n- **Ada starts her own KYC and gets Bridge's form and terms.** `ada` (signed in) calls and sends fullName `Ada Wanjiru Kamau`, email `ada@acme-trading.test`, with the request key `ada-kyc`, and gets back an answer matching `^kyc_[0-9a-z]+$` and gets back an answer matching `^https:\\/\\/\\S+$` and gets back an answer matching `^https:\\/\\/\\S+$`.\n- **a person has one KYC, so a second start is refused.** `ada` (signed in) calls and sends fullName `Ada W. Kamau`, email `ada.k@acme-trading.test`, and is refused with KycAlreadyStarted, KC-001, carrying person the cast's ada person.\n- **Bo starts his own, which Ada's doesn't block.** `bo` (signed in) calls and sends fullName `Bo Otieno`, email `bo@bo-ltd.test`, and gets back an answer matching `^kyc_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul bridge-individual start --fullName <fullName> --email <email>\n```\n\nHTTP: `POST /bridge-individual/start` with the payload as JSON. SDK: `Sdk.bridge-individual.start(payload)`.\n",
     "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| CompanyAbbrTaken | 42 | CO-002 | another company holds this owner and abbr; by the rule company.oneAbbrPerOwner, carrying abbr |\n| CompanyNameTaken | 41 | CO-001 | another company holds this owner and company name; by the rule company.oneNamePerOwner, carrying companyName |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### companies are kept apart\n\nStarts from the world `a company`.\n\n- **Ada can't give a second company of hers the same name.** `ada` (role company.owner) calls and sends companyName `Acme Trading`, abbr `AT2`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyNameTaken, CO-001, carrying companyName `Acme Trading`.\n- **nor the same abbreviation.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyAbbrTaken, CO-002, carrying abbr `AT`.\n- **Bo may use both for his own company, because her names don't bind him.** `bo` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.\n- **Ada sets up a second company under other names, which she runs too.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AH`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n- **Bo sets up a company of his own, which he runs.** `bo` (signed in) calls and sends companyName `Kilimanjaro Coffee Exporters`, abbr `KCE`, country `Tanzania`, defaultCurrency `TZS`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
-    "company/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.get\n\nRead one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n\n**Who may call:** the owner of the company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | company.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| companyName | company.companyName |  |\n| abbr | company.abbr |  |\n| country | company.country |  |\n| defaultCurrency | company.defaultCurrency |  |\n| owner | company.owner | The person who set the company up, and runs it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the company; the handler never runs |\n\n## Worked examples\n\n### companies are kept apart\n\nStarts from the world `a company`.\n\n- **her second company reads back as she typed it, not as her first.** `ada` (role company.owner) calls and sends id the last call's company, and gets back [`Acme Holdings`, `AH`, `Uganda`, `UGX`, the cast's ada person, `active`].\n- **Bo still can't read Ada's.** `bo` (signed in) calls and sends id the world's company, and is refused with NotAllowed, AR-001.\n- **Ada's company is untouched and still hers.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n\n### set up a company\n\nStarts from an empty world.\n\n- **Bo can't read a company he doesn't run.** `bo` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, with her as its owner.** `ada` (signed in) calls and sends id the last call's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n- **Ada can't read Bo's company.** `ada` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **Bo reads his back, exactly as he typed it.** `bo` (signed in) calls and sends id the last call's company, and gets back [`Kilimanjaro Coffee Exporters`, `KCE`, `Tanzania`, `TZS`, the cast's bo person, `active`].\n\n## How to call\n\n```sh\ncapxul company get --id <id>\n```\n\nHTTP: `POST /company/get` with the payload as JSON. SDK: `Sdk.company.get(payload)`.\n",
+    "company/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.get\n\nRead one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n\n**Who may call:** the owner of the company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | company.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| companyName | company.companyName |  |\n| abbr | company.abbr |  |\n| country | company.country |  |\n| defaultCurrency | company.defaultCurrency |  |\n| owner | company.owner | The person who set the company up, and runs it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the company; the handler never runs |\n\n## Worked examples\n\n### branch names are the company's\n\nStarts from the world `four branches`.\n\n- **her first company is unchanged by its branches.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n- **and so is her second.** `ada` (role company.owner) calls and sends id the world's otherCompany, and gets back [`Acme Logistics`, `AL`, `Uganda`, `UGX`, the cast's ada person, `active`].\n- **and Bo's.** `bo` (signed in) calls and sends id the world's boCompany, and gets back [`Bo Ltd`, `BL`, `Tanzania`, `TZS`, the cast's bo person, `active`].\n\n### companies are kept apart\n\nStarts from the world `a company`.\n\n- **her second company reads back as she typed it, not as her first.** `ada` (role company.owner) calls and sends id the last call's company, and gets back [`Acme Holdings`, `AH`, `Uganda`, `UGX`, the cast's ada person, `active`].\n- **Bo still can't read Ada's.** `bo` (signed in) calls and sends id the world's company, and is refused with NotAllowed, AR-001.\n- **Ada's company is untouched and still hers.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n\n### grade names are the company's\n\nStarts from the world `four grades`.\n\n- **her first company is unchanged by its grades.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n- **and so is her second.** `ada` (role company.owner) calls and sends id the world's otherCompany, and gets back [`Acme Logistics`, `AL`, `Uganda`, `UGX`, the cast's ada person, `active`].\n- **and Bo's.** `bo` (signed in) calls and sends id the world's boCompany, and gets back [`Bo Ltd`, `BL`, `Tanzania`, `TZS`, the cast's bo person, `active`].\n\n### set up a company\n\nStarts from an empty world.\n\n- **Bo can't read a company he doesn't run.** `bo` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, with her as its owner.** `ada` (signed in) calls and sends id the last call's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n- **Ada can't read Bo's company.** `ada` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **Bo reads his back, exactly as he typed it.** `bo` (signed in) calls and sends id the last call's company, and gets back [`Kilimanjaro Coffee Exporters`, `KCE`, `Tanzania`, `TZS`, the cast's bo person, `active`].\n\n## How to call\n\n```sh\ncapxul company get --id <id>\n```\n\nHTTP: `POST /company/get` with the payload as JSON. SDK: `Sdk.company.get(payload)`.\n",
     "company/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company\n\nA business that keeps its books, people and payroll in Capxul.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| companyName | Name |  |\n| abbr | Abbr |  |\n| country | Country |  |\n| defaultCurrency | CurrencyCode |  |\n| owner | id | The person who set the company up, and runs it. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused CompanyNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | CompanyCreated |\n\n## Invariants\n\n- `company.oneAbbrPerOwner`: another company holds this owner and abbr. Unique on owner, abbr, in every state; refused CompanyAbbrTaken.\n- `company.oneNamePerOwner`: another company holds this owner and company name. Unique on owner, companyName, in every state; refused CompanyNameTaken.\n\n## Events\n\n- `CompanyCreated`: carries company (company.id), owner (company.owner: The person who set the company up, and runs it.); emitted by the move create\n\n## Roles\n\n- owner\n\n## Operations\n\n- [company.create](create.md): Set up a company; the person who sets it up runs it.\n- [company.get](get.md): Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n",
     "department/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.create\n\nAdd a department to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n\n## Answer\n\n| field | value |\n|---|---|\n| department | department.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DepartmentCreated.\n\n## Steps\n\n- `department.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNameTaken | 41 | DE-001 | another department holds this company and department name; by the rule department.oneNamePerCompany, carrying departmentName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo adds a department to it.** `bo` (signed in) calls and sends company the last call's company, departmentName `Sales`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds a department.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Ada can't add a second department of the same name.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and is refused with DepartmentNameTaken, DE-001, carrying departmentName `Engineering`.\n- **Bo can't add a department to Ada's company.** `bo` (signed in) calls and sends company the world's company, departmentName `Sales`, and is refused with NotAllowed, AR-001.\n- **Ada adds a second department.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Finance and Accounts`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Bo's company may have a department of that name too, because names are unique within a company.** `bo` (signed in) calls and sends company the last call's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul department create --company <company> --departmentName <departmentName>\n```\n\nHTTP: `POST /department/create` with the payload as JSON. SDK: `Sdk.department.create(payload)`.\n",
     "department/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.get\n\nRead one department by its id: company, departmentName, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | department.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's department.** `bo` (signed in) calls and sends id the last call's department, and is refused with NotAllowed, AR-001.\n- **Ada reads the department back.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Engineering`, `active`].\n- **it reads back under its own name.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Finance and Accounts`, `active`].\n\n## How to call\n\n```sh\ncapxul department get --id <id>\n```\n\nHTTP: `POST /department/get` with the payload as JSON. SDK: `Sdk.department.get(payload)`.\n",
@@ -14029,6 +16828,9 @@
     "designation/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.create\n\nAdd a job title to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n\n## Answer\n\n| field | value |\n|---|---|\n| designation | designation.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DesignationCreated.\n\n## Steps\n\n- `designation.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DesignationNameTaken | 41 | DS-001 | another designation holds this company and designation name; by the rule designation.oneNamePerCompany, carrying designationName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo adds a job title to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds a job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n- **Ada can't add the same job title twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.\n- **Ada adds a second job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Senior Accountant`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul designation create --company <company> --designationName <designationName>\n```\n\nHTTP: `POST /designation/create` with the payload as JSON. SDK: `Sdk.designation.create(payload)`.\n",
     "designation/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.get\n\nRead one designation by its id: company, designationName, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | designation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's job title.** `bo` (signed in) calls and sends id the last call's designation, and is refused with NotAllowed, AR-001.\n- **Ada reads the job title back.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Engineer`, `active`].\n- **that reads back under its own name too.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Senior Accountant`, `active`].\n\n## How to call\n\n```sh\ncapxul designation get --id <id>\n```\n\nHTTP: `POST /designation/get` with the payload as JSON. SDK: `Sdk.designation.get(payload)`.\n",
     "designation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation\n\nA job title a company gives its employees.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| designationName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused DesignationNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | DesignationCreated |\n\n## Invariants\n\n- `designation.oneNamePerCompany`: another designation holds this company and designation name. Unique on company, designationName, in every state; refused DesignationNameTaken.\n\n## Events\n\n- `DesignationCreated`: carries designation (designation.id), company (designation.company); emitted by the move create\n\n## Operations\n\n- [designation.create](create.md): Add a job title to a company.\n- [designation.get](get.md): Read one designation by its id: company, designationName, state.\n",
+    "employee-grade/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-grade.create\n\nAdd a grade to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | employee-grade.company |\n| gradeName | employee-grade.gradeName |\n\n## Answer\n\n| field | value |\n|---|---|\n| grade | employee-grade.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting EmployeeGradeCreated.\n\n## Steps\n\n- `employee-grade.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EmployeeGradeNameTaken | 41 | EG-001 | another employee grade holds this company and grade name; by the rule employee-grade.oneNamePerCompany, carrying gradeName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### grade names are the company's\n\nStarts from the world `four grades`.\n\n- **Ada can't add a second grade of the same name.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Senior`, and is refused with EmployeeGradeNameTaken, EG-001, carrying gradeName `Senior`.\n- **nor reuse a name her second company holds there.** `ada` (role company.owner) calls and sends company the world's otherCompany, gradeName `cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ`, and is refused with EmployeeGradeNameTaken, EG-001, carrying gradeName `cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ`.\n- **Bo can't add a grade to Ada's company.** `bo` (signed in) calls and sends company the world's company, gradeName `007`, and is refused with NotAllowed, AR-001.\n- **Bo adds his company's first grade, named with digits alone.** `bo` (signed in) calls and sends company the world's boCompany, gradeName `007`, and gets back an answer matching `^egr_[0-9a-z]+$`.\n\n### set up grades\n\nStarts from the world `a company`.\n\n- **Ada adds a grade.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Junior`, and gets back an answer matching `^egr_[0-9a-z]+$`.\n- **Bo can't add a grade to Ada's company.** `bo` (signed in) calls and sends company the world's company, gradeName `Lead`, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul employee-grade create --company <company> --gradeName <gradeName>\n```\n\nHTTP: `POST /employee-grade/create` with the payload as JSON. SDK: `Sdk.employee-grade.create(payload)`.\n",
+    "employee-grade/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-grade.get\n\nRead one employee-grade by its id: company, gradeName, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | employee-grade.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | employee-grade.company |\n| gradeName | employee-grade.gradeName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### grade names are the company's\n\nStarts from the world `four grades`.\n\n- **Ada can't read Bo's grade.** `ada` (role company.owner) calls and sends id the last call's grade, and is refused with NotAllowed, AR-001.\n- **Bo reads it back whole, in his own company.** `bo` (signed in) calls and sends id the last call's grade, and gets back [the world's boCompany, `007`, `active`].\n- **Bo can't read Ada's first grade.** `bo` (signed in) calls and sends id the world's grade, and is refused with NotAllowed, AR-001.\n- **her first company's first grade is unchanged by every create after it.** `ada` (role company.owner) calls and sends id the world's grade, and gets back [the world's company, `Senior`, `active`].\n- **the one with the longest name allowed reads back whole.** `ada` (role company.owner) calls and sends id the world's longGrade, and gets back [the world's company, `L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027.`, `active`].\n- **her second company's grade of the same name as the first is its own record.** `ada` (role company.owner) calls and sends id the world's otherGrade, and gets back [the world's otherCompany, `Senior`, `active`].\n- **her second company's other grade keeps every letter and space she typed.** `ada` (role company.owner) calls and sends id the world's oddGrade, and gets back [the world's otherCompany, `cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ`, `active`].\n\n### set up grades\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's grade.** `bo` (signed in) calls and sends id the last call's grade, and is refused with NotAllowed, AR-001.\n- **Ada reads the grade back.** `ada` (role company.owner) calls and sends id the last call's grade, and gets back [the world's company, `Junior`, `active`].\n\n## How to call\n\n```sh\ncapxul employee-grade get --id <id>\n```\n\nHTTP: `POST /employee-grade/get` with the payload as JSON. SDK: `Sdk.employee-grade.get(payload)`.\n",
+    "employee-grade/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-grade\n\nA level a company places its employees at, such as junior or senior.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| gradeName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused EmployeeGradeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | EmployeeGradeCreated |\n\n## Invariants\n\n- `employee-grade.oneNamePerCompany`: another employee grade holds this company and grade name. Unique on company, gradeName, in every state; refused EmployeeGradeNameTaken.\n\n## Events\n\n- `EmployeeGradeCreated`: carries grade (employee-grade.id), company (employee-grade.company); emitted by the move create\n\n## Operations\n\n- [employee-grade.create](create.md): Add a grade to a company.\n- [employee-grade.get](get.md): Read one employee-grade by its id: company, gradeName, state.\n",
     "employee/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.get\n\nRead one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n\n**Who may call:** the self of the employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | employee.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of the employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Ada reads Olga's record, as the company's owner.** `ada` (role company.owner) calls and sends id the world's employee, and gets back [the world's company, the cast's olga person, `2026-01-05`, `active`].\n- **Olga still reads her old record, unchanged but for showing she has left.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the cast's olga person, `Olga Petrova`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `left`].\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Bo can't read Olga's record.** `bo` (signed in) calls and sends id the last call's employee, and is refused with NotAllowed, AR-001.\n- **Olga reads her own record, with every field Ada typed.** `olga` (signed in) calls and sends id the last call's employee, and gets back [the world's company, the cast's olga person, `Olga Petrova`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `active`].\n- **Ada reads Bo's record back with every field she typed for him.** `ada` (role company.owner) calls and sends id the last call's employee, and gets back [the world's company, the cast's bo person, `Bo Mensah`, `Male`, `1990-06-01`, `1990-06-01`, the world's department, the world's designation, `active`].\n\n## How to call\n\n```sh\ncapxul employee get --id <id>\n```\n\nHTTP: `POST /employee/get` with the payload as JSON. SDK: `Sdk.employee.get(payload)`.\n",
     "employee/hire.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.hire\n\nHire a person into a company, placed in one of its departments under one of its job titles.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n\n## Move\n\n`hire`: from nothing (it creates) to active, emitting EmployeeHired.\n\n## Steps\n\n- `employee.hire.load` (database)\n- `employee.hire.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNotInCompany | 42 | EM-002 | declared in errors.ts |\n| DesignationNotInCompany | 43 | EM-003 | declared in errors.ts |\n| JoinedBeforeBorn | 44 | EM-004 | declared in errors.ts, carrying dateOfBirth |\n| EmployeeAlreadyHired | 41 | EM-001 | another active employee holds this company and person; by the rule employee.onePlacePerPerson, carrying person |\n| DepartmentNotFound | 4 | DE-901 | nothing has the id in department; the handler never runs; carries `id` |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in designation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Ada may hire her again, as a new employee.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2027-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Ada can't place Olga in Bo's department.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the last call's department, designation the world's designation, and is refused with DepartmentNotInCompany, EM-002.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Ada can't give Olga Bo's job title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Ada hires Olga into her team.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n- **Ada can't hire Olga again while she works there.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and is refused with EmployeeAlreadyHired, EM-001, carrying person the cast's olga person.\n- **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.\n- **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.\n- **Ada may hire Bo on the day he was born, which ERPNext allows.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-06-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul employee hire --company <company> --person <person> --firstName <firstName> --gender <gender> --dateOfBirth <dateOfBirth> --dateOfJoining <dateOfJoining> --department <department> --designation <designation>\n```\n\nHTTP: `POST /employee/hire` with the payload as JSON. SDK: `Sdk.employee.hire(payload)`.\n",
     "employee/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee\n\nA person a company employs.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| person | id | The person employed, who signs in as themselves. |\n| firstName | Name |  |\n| gender | Gender |  |\n| dateOfBirth | Day |  |\n| dateOfJoining | Day |  |\n| department | department.id |  |\n| designation | designation.id |  |\n\n## Machine\n\nStates: active, left. A move from the wrong state is refused EmployeeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| hire | (creates) | active | EmployeeHired |\n| relieve | active | left | EmployeeRelieved |\n\n## Invariants\n\n- `employee.onePlacePerPerson`: another active employee holds this company and person. Unique on company, person, while active; refused EmployeeAlreadyHired.\n\n## Events\n\n- `EmployeeHired`: carries employee (employee.id), company (employee.company), person (employee.person: The person employed, who signs in as themselves.); emitted by the move hire\n- `EmployeeRelieved`: carries employee (employee.id), relievingDate (Day); emitted by the move relieve\n\n## Roles\n\n- self\n\n## Operations\n\n- [employee.get](get.md): Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n- [employee.hire](hire.md): Hire a person into a company, placed in one of its departments under one of its job titles.\n- [employee.relieve](relieve.md): Record that an employee has left the company, on the day they were relieved.\n",
@@ -14055,5 +16857,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "62ff519fe8c4864b7f474292e42b26c00930141faf742ac65cd8963769bec463"
+  "digest": "82095f1bc6fcb1cd4b4faea980bd205532d67810fe5873398815d34cb5921b1a"
 }

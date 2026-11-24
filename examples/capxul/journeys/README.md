@@ -9,6 +9,16 @@ record types are listed in `../doctypes.md`.
 - `a company`: Ada (signed in) sets up Acme Trading (`AT`, Kenya, USD). It gives `company`.
 - `a department`, from `a company`: Ada adds Engineering. It gives `company` and `department`.
 - `a team`, from `a department`: Ada adds the job title Engineer. It gives `company`, `department` and `designation`.
+- `two companies`, from `a company`: Ada sets up Acme Logistics (`AL`, Uganda, UGX) too. It gives `company` and
+  `otherCompany`.
+- `three companies`, from `two companies`: Bo sets up Bo Ltd (`BL`, Tanzania, TZS). It gives those and `boCompany`.
+- `a branch`, from `three companies`: Ada adds the branch Nairobi to Acme Trading. It gives those and `branch`.
+- `two branches`, `three branches` and `four branches`, each from the one before: Ada adds a branch with all 140
+  letters a name allows to Acme Trading (`longBranch`), then Nairobi (`otherBranch`) and a name with a lower-case
+  start, straight and curly apostrophes, an accent, a slash, two spaces in a row, a word in capitals and Ethiopic
+  letters (`oddBranch`) to Acme Logistics. The names, with the digits-only one Bo gives his first
+  branch in the journey, are in `blueprint/values/branches-names.ts`.
+- `a grade` to `four grades`: the same for grades, from Senior (`grade`, `longGrade`, `otherGrade`, `oddGrade`).
 - `an employee`, from `a team`: Ada hires Olga (signed in) as an engineer in Engineering, joining 2026-01-05. It gives
   those and `employee`.
 - `kyb started`, from `a company`: Ada starts Acme Trading's KYB with Bridge. It gives `company`, `business`, `kybLink`
@@ -47,6 +57,10 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 | `another-companys-department-is-refused` | `a team` | Ada (owner), Olga, Bo (signed in) | Bo's own company's department can't be used to place Olga in Ada's company (`DepartmentNotInCompany`, after `load`, before `insert`) |
 | `another-companys-job-title-is-refused` | `a team` | Ada (owner), Olga, Bo (signed in) | The same for a job title (`DesignationNotInCompany`) |
 | `an-employee-leaves` | `an employee` | Ada (owner), Olga (signed in) | Ada reads Olga's record as the company's owner. Olga can't relieve herself (`NotAllowed`). A relieving day before the joining day is refused `RelievedBeforeJoined`, and she stays `active`. `employee.relieve` answers and emits `EmployeeRelieved` with the day, and leaves her `left`. A second relieve is refused by the machine (`state: left`). Olga still reads her old record, every field unchanged but its state. Ada may hire her again as a new employee while the old one stays `left`. The new one can't be relieved the day before rejoining (`RelievedBeforeJoined`, carrying the new joining day) but can on that day itself |
+| `set-up-branches` | `a company` | Ada (owner), Bo (signed in) | `branch.create` answers a `brn_` id, emits `BranchCreated` with the company and leaves it `active`, with the `insert` span; it reads back as typed. Bo can't add to Ada's company or read hers (`NotAllowed`) |
+| `branch-names-are-the-companys` | `four branches` | Ada (owner of two), Bo (owner of one) | A name taken in either of Ada's companies is refused (`BranchNameTaken`). Bo can't add to Ada's company. Bo adds his company's first branch, named with digits alone; it reads back whole, Ada can't read it, and he can't read hers. Then every branch the worlds made reads back exactly, in its own company, and all three companies read back unchanged: a create that changes any earlier record or company fails here |
+| `set-up-grades` | `a company` | Ada (owner), Bo (signed in) | The same for `employee-grade.create`: an `egr_` id, `EmployeeGradeCreated` with the company, `active` |
+| `grade-names-are-the-companys` | `four grades` | Ada (owner of two), Bo (owner of one) | The same for grades (`EmployeeGradeNameTaken`) |
 | `bridge-start-a-kyb` | `a company` | Ada (owner), Bo (signed in) | `bridge-business.start` answers a `kyb_` id and two `https://` pages, Bridge's KYB form and its terms, which differ; emits `KybStarted` with the company, leaves it `started`, with the `insert` span. Bo can't start one for Ada's company or read hers (`NotAllowed`). A second start is refused `KybAlreadyStarted`. It reads back as she typed it |
 | `bridge-kyb-is-decided-by-bridge` | `two kybs started` | Ada (owner), Bo (signed in), Bridge (the system) | Only Bridge decides: Ada can't approve her own, Bo can't turn his down (`NotAllowed`). Before approval no account opens (`KybNotApproved`, after `load`, before `insert`). Bridge approves (`KybApproved`, `approved`); an approved KYB can't be approved or turned down again (`notFrom`). Bridge turns Bo's down with its reason (`KybRejected`, `rejected`), which can't then be approved and opens no account; Bo reads his back whole against the world, his form and terms differing. Ada's reads back approved, every field as it was started, the links as `start` gave them |
 | `bridge-a-rejected-kyb-keeps-what-bridge-gave` | `kyb started` | Ada (owner), Bridge (the system) | Bridge turning the KYB down (`KybRejected`, with its reason) changes no field but the state |
@@ -77,6 +91,8 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 - **Country.** `country` is free text until Capxul takes ERPNext's Country list in.
 - **What a journey can't see.** A call that writes a row it shouldn't, such as a second company, passes every journey
   here, because no answer carries its id. That needs a generic check in `prove` (snag #759).
+  The same holds across journeys: a handler that keeps state in memory between calls can change a record an earlier
+  journey made, which no later step reads (the Branch and Grade hostile pass, round 3). That too needs `prove`.
 - **Department and Designation per company.** ERPNext shares one list of job titles across a site. Capxul's companies
   are separate organisations, so each keeps its own, unique by name within the company. ERPNext's tree of departments
   (`parent_department`) waits on optional references (#742, item 5).
@@ -125,7 +141,19 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
   ERPNext's `weekly_off` flag waits on booleans that round-trip (#742, item 2); colours and a country's public holidays
   wait on optional fields and a holiday source. A weekly off's description (its weekday) isn't checked until a list's
   holidays can be listed (#764). Deleting a day comes with a move that ends one.
+  A list's span has no upper limit, as in ERPNext; a weekly off costs at least a store read or two per day it adds (snag #920, at commit), plus a lookup per day of the
+  span when the list already holds days, so a
+  list of many years is slow until that lands. A weekly off emits one `WeeklyOffAdded` with its count and total, not a
+  `HolidayAdded` per day, as ERPNext saves those rows in one go.
 - **Bridge, part two.** Not checked yet, each waiting on the adapter (#739 for its generator gaps): the call to Bridge
   as a step in each operation, Bridge's webhooks as events (deposits landing as Bank Transactions, transfers), Bridge's
   other KYC states, a business's associated persons, transfers out, and help with incorporation. Those checks come with
   the adapter, in a later author pull request on this slice.
+- **Branch and Employee Grade.** ERPNext's Branch is one name (`branch`) and HRMS's Employee Grade is named by the user,
+  each unique across a site; here each is unique within a company, as departments and job titles are, so one owner's
+  two companies may share one. A grade's three fields (`default_salary_structure`, `default_base_pay` and its
+  `currency`, fetched from the structure) come with Salary Structure in payroll (slice 9), so neither needs record
+  listing (#764) or the company's currency (#882). Employee's own `branch` and `grade` links wait on optional
+  references (#742); until then no employee names either. A journey hands on only its latest answer, so the records
+  read back after a later create come from starting worlds, each name journey makes its one create (Bo's) after them,
+  and each set-up journey makes only one.

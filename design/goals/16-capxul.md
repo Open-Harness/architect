@@ -132,10 +132,13 @@ Slice 6 has begun: every record type Capxul takes is in `examples/capxul/doctype
 (#749, closed by #791). Slice 8a is built: Capxul's app and its Company (#757) and employees, departments and job
 titles (#763) have their checks, and a builder that wrote none of them made them green (#786, 57d43997). Leave (8b) waits on handlers
 that can list records (#764), which Goal 16 now builds (`decisions/CX-takeover.md`). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
-and bank accounts). Their handlers are built as well (#787, d0f02a2b), and `prove` passes all 17 journeys in `goal/capxul`; the generated Bridge
+and bank accounts). Their handlers are built as well (#787, d0f02a2b). Slice 8c, holiday lists, is built: its checks are #914 (4f5cefaf), and a separate
+builder made them green (#918, 15c79143), so `prove` passes all 22 journeys in `goal/capxul`. Every Capxul amount is USDC for now (Aaron, 24 November
+2026; `decisions/CX-grill.md`, section 3, #926), so expense claims no longer wait on a company's currency (#882, parked). The generated Bridge
 adapter waits on the five generator gaps in #739, which Goal 16 builds on `goal/superagent`. Goal 16 has claimed two
 framework gaps under K42's case 3: #761's access part, landed in `main` by #768 and merged into `goal/capxul` by #773,
-and #759 (a check on extra writes), which Goal 16 builds after #764 and #920, now that an unset `writes` means the operation's own thing only (`decisions/CX-takeover.md`). Slice 3 is decided
+and #759 (a check on extra writes), which Goal 16 builds after #764 and #920, now that an unset `writes` means the operation's own thing only (`decisions/CX-takeover.md`).
+It has also claimed Dates (#866) under case 3, chiefly in `packages/orthograph/src/modules/values`; Dates' checks landed in `main` by #915 (bf3c60bf). Slice 3 is decided
 (`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
 customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged into
 `goal/capxul` at the restart (#745), so this brief replaced the branch's old one; #773 merged it in again. The lead rewrites this section at

@@ -1,0 +1,6 @@
+# Exact decimals (#742, item 5) are not built: no `Blueprint.decimal`, and the model, the lock and a chain store know no decimal. Clears with the value types build.
+src/modules/model/decimal-value.test.ts > Exact decimals: the compiler and a decimal > carries a decimal field into the model as a decimal with its places
+src/modules/model/decimal-value.test.ts > Exact decimals: the compiler and a decimal > carries a decimal with no places given as 9 places
+src/modules/model/decimal-value.test.ts > Exact decimals: the compiler and a decimal > records a decimal error field in the refusals lock as its own kind with its places, not as a schema
+src/modules/model/decimal-value.test.ts > Exact decimals: the compiler and a decimal > refuses a decimal field on a chain-stored thing, which a contract cannot hold
+src/modules/model/decimal-value.test.ts > Exact decimals: the compiler and a decimal > refuses places that are no whole number of at least 0, naming the field and places

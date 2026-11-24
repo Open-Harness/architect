@@ -69,6 +69,39 @@
       },
       "earlier": []
     },
+    "BR-001": {
+      "name": "BranchNameTaken",
+      "owner": "branch",
+      "from": "blueprint/things/branch/errors.ts",
+      "fields": {
+        "branchName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BranchNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "BR-900": {
+      "name": "BranchNotActive",
+      "owner": "branch",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BranchNotActive"
+        }
+      },
+      "earlier": []
+    },
     "CO-001": {
       "name": "CompanyNameTaken",
       "owner": "company",
@@ -217,6 +250,39 @@
       },
       "earlier": []
     },
+    "EG-001": {
+      "name": "EmployeeGradeNameTaken",
+      "owner": "employee-grade",
+      "from": "blueprint/things/employee-grade/errors.ts",
+      "fields": {
+        "gradeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeGradeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "EG-900": {
+      "name": "EmployeeGradeNotActive",
+      "owner": "employee-grade",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeGradeNotActive"
+        }
+      },
+      "earlier": []
+    },
     "EM-001": {
       "name": "EmployeeAlreadyHired",
       "owner": "employee",
@@ -264,7 +330,7 @@
       "from": "blueprint/things/employee/errors.ts",
       "fields": {
         "dateOfBirth": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -280,7 +346,7 @@
       "from": "blueprint/things/employee/errors.ts",
       "fields": {
         "dateOfJoining": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -312,7 +378,7 @@
       "from": "blueprint/things/holiday/errors.ts",
       "fields": {
         "holidayDate": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -328,10 +394,10 @@
       "from": "blueprint/things/holiday/errors.ts",
       "fields": {
         "fromDate": {
-          "value": "schema"
+          "value": "day"
         },
         "toDate": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -380,7 +446,7 @@
       "from": "blueprint/things/holiday-list/errors.ts",
       "fields": {
         "fromDate": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {

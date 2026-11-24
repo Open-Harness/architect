@@ -2,6 +2,8 @@
   "refusals": {
     "BankAccountNameTaken": "BA-002",
     "BankAccountNotOpen": "BA-900",
+    "BranchNameTaken": "BR-001",
+    "BranchNotActive": "BR-900",
     "BridgeBusinessNotFound": "KB-901",
     "BridgeBusinessNotStarted": "KB-900",
     "BridgeIndividualNotFound": "KC-901",
@@ -18,6 +20,8 @@
     "DesignationNotFound": "DS-901",
     "DesignationNotInCompany": "EM-003",
     "EmployeeAlreadyHired": "EM-001",
+    "EmployeeGradeNameTaken": "EG-001",
+    "EmployeeGradeNotActive": "EG-900",
     "EmployeeNotActive": "EM-900",
     "HolidayDateTaken": "HD-001",
     "HolidayListEndsBeforeStart": "HL-002",
@@ -52,7 +56,7 @@
       "type": "schema"
     },
     "Day": {
-      "type": "schema"
+      "type": "day"
     },
     "DepositDetail": {
       "type": "text",
@@ -274,6 +278,103 @@
         "kind": "app"
       },
       "hash": "25003fc246749f17"
+    },
+    "branch": {
+      "name": "branch",
+      "identifier": "Branch",
+      "code": "BR",
+      "description": "A place a company works from, such as an office or a site.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "brn"
+          }
+        },
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "company.id"
+        },
+        "branchName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name"
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneNamePerCompany": {
+          "kind": "unique",
+          "fields": [
+            "company",
+            "branchName"
+          ],
+          "refuse": "BranchNameTaken"
+        }
+      },
+      "machine": {
+        "states": [
+          "active"
+        ],
+        "moves": {
+          "create": {
+            "from": [],
+            "to": [
+              "active"
+            ],
+            "emits": "BranchCreated"
+          }
+        },
+        "notFrom": {
+          "error": "BranchNotActive",
+          "exit": 40,
+          "code": "BR-900"
+        }
+      },
+      "events": {
+        "BranchCreated": {
+          "branch": {
+            "value": {
+              "type": "id",
+              "prefix": "brn"
+            },
+            "ref": "branch.id"
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "branch.company"
+          }
+        }
+      },
+      "errors": {
+        "BranchNameTaken": {
+          "fields": {
+            "branchName": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "Name"
+            }
+          },
+          "exit": 41,
+          "code": "BR-001"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "b95916d437b0e7fc"
     },
     "bridge-business": {
       "name": "bridge-business",
@@ -1018,13 +1119,13 @@
         },
         "dateOfBirth": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
         "dateOfJoining": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
@@ -1121,7 +1222,7 @@
           },
           "relievingDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           }
@@ -1156,7 +1257,7 @@
           "fields": {
             "dateOfBirth": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1168,7 +1269,7 @@
           "fields": {
             "dateOfJoining": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1186,7 +1287,104 @@
       "from": {
         "kind": "app"
       },
-      "hash": "a2627df8b7120d80"
+      "hash": "a8047ea627464d19"
+    },
+    "employee-grade": {
+      "name": "employee-grade",
+      "identifier": "EmployeeGrade",
+      "code": "EG",
+      "description": "A level a company places its employees at, such as junior or senior.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "egr"
+          }
+        },
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "company.id"
+        },
+        "gradeName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name"
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneNamePerCompany": {
+          "kind": "unique",
+          "fields": [
+            "company",
+            "gradeName"
+          ],
+          "refuse": "EmployeeGradeNameTaken"
+        }
+      },
+      "machine": {
+        "states": [
+          "active"
+        ],
+        "moves": {
+          "create": {
+            "from": [],
+            "to": [
+              "active"
+            ],
+            "emits": "EmployeeGradeCreated"
+          }
+        },
+        "notFrom": {
+          "error": "EmployeeGradeNotActive",
+          "exit": 40,
+          "code": "EG-900"
+        }
+      },
+      "events": {
+        "EmployeeGradeCreated": {
+          "grade": {
+            "value": {
+              "type": "id",
+              "prefix": "egr"
+            },
+            "ref": "employee-grade.id"
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "employee-grade.company"
+          }
+        }
+      },
+      "errors": {
+        "EmployeeGradeNameTaken": {
+          "fields": {
+            "gradeName": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "Name"
+            }
+          },
+          "exit": 41,
+          "code": "EG-001"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "a09fa37da72df7db"
     },
     "holiday": {
       "name": "holiday",
@@ -1209,7 +1407,7 @@
         },
         "holidayDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
@@ -1269,7 +1467,7 @@
           },
           "holidayDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "holiday.holidayDate"
@@ -1281,7 +1479,7 @@
           "fields": {
             "holidayDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1293,13 +1491,13 @@
           "fields": {
             "fromDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             },
             "toDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1313,7 +1511,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "220935de8c9cf66e"
+      "hash": "01b09fff6edfbe67"
     },
     "holiday-list": {
       "name": "holiday-list",
@@ -1343,13 +1541,13 @@
         },
         "fromDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
         "toDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
@@ -1465,7 +1663,7 @@
           "fields": {
             "fromDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1479,7 +1677,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "694252bdabf797a0"
+      "hash": "16818aa2c445bbee"
     }
   },
   "operations": {
@@ -1793,6 +1991,155 @@
         "p95Ms": 800
       },
       "hash": "010a747b50ed2cac"
+    },
+    "branch.create": {
+      "kind": "operation",
+      "name": "branch.create",
+      "thing": "branch",
+      "verb": "create",
+      "identifier": "create",
+      "file": "blueprint/things/branch/verbs/create.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Add a branch to a company.",
+      "payload": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "branch.company"
+        },
+        "branchName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "branch.branchName"
+        }
+      },
+      "answer": {
+        "branch": {
+          "value": {
+            "type": "id",
+            "prefix": "brn"
+          },
+          "ref": "branch.id"
+        }
+      },
+      "move": {
+        "key": "create",
+        "from": [],
+        "to": [
+          "active"
+        ],
+        "emits": "BranchCreated"
+      },
+      "errors": [],
+      "invariants": {
+        "BranchNameTaken": "branch.oneNamePerCompany"
+      },
+      "breaks": [
+        "branch.oneNamePerCompany"
+      ],
+      "refusals": [
+        "BranchNameTaken",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "company": "company"
+      },
+      "mints": "branch",
+      "steps": {
+        "insert": {
+          "name": "branch.create.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "6025f829ff1158b1"
+    },
+    "branch.get": {
+      "kind": "read",
+      "name": "branch.get",
+      "thing": "branch",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/branch/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one branch by its id: company, branchName, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "brn"
+          },
+          "ref": "branch.id"
+        }
+      },
+      "answer": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "branch.company"
+        },
+        "branchName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "branch.branchName"
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "61a4bd948bfd4067"
     },
     "bridge-business.approve": {
       "kind": "operation",
@@ -3054,14 +3401,14 @@
         },
         "dateOfBirth": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "employee.dateOfBirth"
         },
         "dateOfJoining": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "employee.dateOfJoining"
@@ -3112,7 +3459,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "9ad5dc63bac5d397"
+      "hash": "a8d9cd6cacdea98f"
     },
     "employee.hire": {
       "kind": "operation",
@@ -3159,14 +3506,14 @@
         },
         "dateOfBirth": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "employee.dateOfBirth"
         },
         "dateOfJoining": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "employee.dateOfJoining"
@@ -3258,7 +3605,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "770ffef979712da8"
+      "hash": "8aec44f4e7f54d34"
     },
     "employee.relieve": {
       "kind": "operation",
@@ -3281,7 +3628,7 @@
         },
         "relievingDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         }
@@ -3296,7 +3643,7 @@
         },
         "relievingDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         }
@@ -3348,7 +3695,156 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "7c1133cc15b01f7d"
+      "hash": "7bf2f33973faef34"
+    },
+    "employee-grade.create": {
+      "kind": "operation",
+      "name": "employee-grade.create",
+      "thing": "employee-grade",
+      "verb": "create",
+      "identifier": "create",
+      "file": "blueprint/things/employee-grade/verbs/create.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Add a grade to a company.",
+      "payload": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "employee-grade.company"
+        },
+        "gradeName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "employee-grade.gradeName"
+        }
+      },
+      "answer": {
+        "grade": {
+          "value": {
+            "type": "id",
+            "prefix": "egr"
+          },
+          "ref": "employee-grade.id"
+        }
+      },
+      "move": {
+        "key": "create",
+        "from": [],
+        "to": [
+          "active"
+        ],
+        "emits": "EmployeeGradeCreated"
+      },
+      "errors": [],
+      "invariants": {
+        "EmployeeGradeNameTaken": "employee-grade.oneNamePerCompany"
+      },
+      "breaks": [
+        "employee-grade.oneNamePerCompany"
+      ],
+      "refusals": [
+        "EmployeeGradeNameTaken",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "company": "company"
+      },
+      "mints": "grade",
+      "steps": {
+        "insert": {
+          "name": "employee-grade.create.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "c3bfdfa5f0f7387f"
+    },
+    "employee-grade.get": {
+      "kind": "read",
+      "name": "employee-grade.get",
+      "thing": "employee-grade",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/employee-grade/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one employee-grade by its id: company, gradeName, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "egr"
+          },
+          "ref": "employee-grade.id"
+        }
+      },
+      "answer": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "employee-grade.company"
+        },
+        "gradeName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "employee-grade.gradeName"
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "c8d9aa1745af26ee"
     },
     "holiday.add": {
       "kind": "operation",
@@ -3371,7 +3867,7 @@
         },
         "holidayDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday.holidayDate"
@@ -3459,7 +3955,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "98a8336cc841fb81"
+      "hash": "7ed5e2d0c6b320b8"
     },
     "holiday.get": {
       "kind": "read",
@@ -3491,7 +3987,7 @@
         },
         "holidayDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday.holidayDate"
@@ -3532,7 +4028,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "5ed187acb8f1de42"
+      "hash": "c2b4433e9fe1c3e3"
     },
     "holiday-list.add-weekly-off": {
       "kind": "operation",
@@ -3677,14 +4173,14 @@
         },
         "fromDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday-list.fromDate"
         },
         "toDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday-list.toDate"
@@ -3746,7 +4242,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "430cff72738c544e"
+      "hash": "f76dce33cb0c7786"
     },
     "holiday-list.get": {
       "kind": "read",
@@ -3786,14 +4282,14 @@
         },
         "fromDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday-list.fromDate"
         },
         "toDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday-list.toDate"
@@ -3834,7 +4330,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "f90afd729f9c4b70"
+      "hash": "3d273c4ff0dd5602"
     }
   },
   "journeys": {
@@ -5146,6 +5642,479 @@
         }
       ],
       "sourceHash": "4a4ab32fd007147f42b7c3140faeaedb8e860d70577b3001cc4af249f3933e53"
+    },
+    "journeys/branch-names-are-the-companys.ts": {
+      "name": "branch names are the company's",
+      "file": "journeys/branch-names-are-the-companys.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "four branches",
+      "steps": [
+        {
+          "title": "Ada can't add a second branch of the same name",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Nairobi"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "BranchNameTaken",
+              "fields": {
+                "branchName": "Nairobi"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor reuse a name her second company holds there",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              },
+              "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "BranchNameTaken",
+              "fields": {
+                "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't add a branch to Ada's company",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "007"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "branch.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Bo adds his company's first branch, named with digits alone",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              },
+              "branchName": "007"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^brn_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BranchCreated",
+              "fields": {
+                "branch": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "boCompany"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "Ada can't read Bo's branch",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads it back whole, in his own company",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "boCompany"
+                  ]
+                },
+                "007",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's first branch",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her first company's first branch is unchanged by every create after it",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Nairobi",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the one with the longest name allowed reads back whole",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "longBranch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her second company's branch of the same name as the first is its own record",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "otherBranch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "Nairobi",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her second company's other branch keeps every letter and space she typed",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "oddBranch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "murang'a  Côte/Est JKIA depot’s አዲስ",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her first company is unchanged by its branches",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Trading",
+                "AT",
+                "Kenya",
+                "USD",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so is her second",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Logistics",
+                "AL",
+                "Uganda",
+                "UGX",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and Bo's",
+          "call": {
+            "actor": "bo",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Bo Ltd",
+                "BL",
+                "Tanzania",
+                "TZS",
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "4c6009afbd089e2c381ea718487c3f1812cd10ab67495c5aa51534be978d396c"
     },
     "journeys/bridge-a-bank-account-closes.ts": {
       "name": "bridge: a bank account closes",
@@ -8243,6 +9212,479 @@
       ],
       "sourceHash": "b8bffdc92e15a47d8b12ce62de6298b41957fd323af6b5aea0bc19f07fe494a1"
     },
+    "journeys/grade-names-are-the-companys.ts": {
+      "name": "grade names are the company's",
+      "file": "journeys/grade-names-are-the-companys.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "four grades",
+      "steps": [
+        {
+          "title": "Ada can't add a second grade of the same name",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "Senior"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "EmployeeGradeNameTaken",
+              "fields": {
+                "gradeName": "Senior"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor reuse a name her second company holds there",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              },
+              "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "EmployeeGradeNameTaken",
+              "fields": {
+                "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't add a grade to Ada's company",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "007"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "employee-grade.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Bo adds his company's first grade, named with digits alone",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              },
+              "gradeName": "007"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^egr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeGradeCreated",
+              "fields": {
+                "grade": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "boCompany"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "Ada can't read Bo's grade",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads it back whole, in his own company",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "boCompany"
+                  ]
+                },
+                "007",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's first grade",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her first company's first grade is unchanged by every create after it",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Senior",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the one with the longest name allowed reads back whole",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "longGrade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027.",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her second company's grade of the same name as the first is its own record",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "otherGrade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "Senior",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her second company's other grade keeps every letter and space she typed",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "oddGrade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her first company is unchanged by its grades",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Trading",
+                "AT",
+                "Kenya",
+                "USD",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so is her second",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Logistics",
+                "AL",
+                "Uganda",
+                "UGX",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and Bo's",
+          "call": {
+            "actor": "bo",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Bo Ltd",
+                "BL",
+                "Tanzania",
+                "TZS",
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "b542e7ca0b670c6a1694604becd2156d2c4bcbd70f5b2ba255b7cc989115a74e"
+    },
     "journeys/hire-an-employee.ts": {
       "name": "hire an employee",
       "file": "journeys/hire-an-employee.ts",
@@ -9334,6 +10776,175 @@
       ],
       "sourceHash": "c46835fedab510253b62596fded6bd698fa97a02b8e3abd0a37d7d9f6c1b00ef"
     },
+    "journeys/set-up-branches.ts": {
+      "name": "set up branches",
+      "file": "journeys/set-up-branches.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a company",
+      "steps": [
+        {
+          "title": "Ada adds a branch",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Nairobi"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^brn_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BranchCreated",
+              "fields": {
+                "branch": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "branch",
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              },
+              "state": "active"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "branch.create",
+                "branch.create.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's branch",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't add a branch to Ada's company",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Mombasa"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "branch.create",
+                "branch.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada reads the branch back",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Nairobi",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "409bd6a97ec8142a9dd20e873524525e2b0efae7f8418d9dcbc84cd1a9a85970"
+    },
     "journeys/set-up-departments-and-job-titles.ts": {
       "name": "set up departments and job titles",
       "file": "journeys/set-up-departments-and-job-titles.ts",
@@ -9880,6 +11491,175 @@
       ],
       "sourceHash": "a51f1bf2e205b3a6bccd4100b01da942e61197a6b9c453c024d5e2ad836dd6ee"
     },
+    "journeys/set-up-grades.ts": {
+      "name": "set up grades",
+      "file": "journeys/set-up-grades.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a company",
+      "steps": [
+        {
+          "title": "Ada adds a grade",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "Junior"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^egr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeGradeCreated",
+              "fields": {
+                "grade": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-grade",
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              },
+              "state": "active"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "employee-grade.create",
+                "employee-grade.create.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's grade",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't add a grade to Ada's company",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "Lead"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "employee-grade.create",
+                "employee-grade.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada reads the grade back",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Junior",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "7f0cb3dd66fdeb039e58234d520b19a72d893bb5c22c718e297a55d72f0f3b5f"
+    },
     "journeys/weekly-offs.ts": {
       "name": "weekly offs",
       "file": "journeys/weekly-offs.ts",
@@ -10342,6 +12122,59 @@
         }
       }
     },
+    "a branch": {
+      "name": "a branch",
+      "file": "blueprint/starting-worlds/a-branch.ts",
+      "from": "three companies",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "c619f25cbc5f7b9130327ede7ef0f7d859179415b3913da32624e770cc1c549c",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "branch.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "branchName": "Nairobi"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "branch": {
+          "ref": [
+            "last",
+            "branch"
+          ]
+        }
+      }
+    },
     "a company": {
       "name": "a company",
       "file": "blueprint/starting-worlds/a-company.ts",
@@ -10411,6 +12244,59 @@
           "ref": [
             "last",
             "department"
+          ]
+        }
+      }
+    },
+    "a grade": {
+      "name": "a grade",
+      "file": "blueprint/starting-worlds/a-grade.ts",
+      "from": "three companies",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "5890d4691de97d7c88a96cfb364029112a67858515ef05511abdae94d0873417",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-grade.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "gradeName": "Senior"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "grade": {
+          "ref": [
+            "last",
+            "grade"
           ]
         }
       }
@@ -10809,6 +12695,148 @@
         }
       }
     },
+    "four branches": {
+      "name": "four branches",
+      "file": "blueprint/starting-worlds/four-branches.ts",
+      "from": "three branches",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "78ae93b29aab51dbf0486b05cc682c72a0caab097199673f9e4eda6708a59617",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "branch.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            },
+            "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "branch": {
+          "ref": [
+            "world",
+            "branch"
+          ]
+        },
+        "longBranch": {
+          "ref": [
+            "world",
+            "longBranch"
+          ]
+        },
+        "otherBranch": {
+          "ref": [
+            "world",
+            "otherBranch"
+          ]
+        },
+        "oddBranch": {
+          "ref": [
+            "last",
+            "branch"
+          ]
+        }
+      }
+    },
+    "four grades": {
+      "name": "four grades",
+      "file": "blueprint/starting-worlds/four-grades.ts",
+      "from": "three grades",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "16bf12e8402c4156ed067590f1977f118ced98a799f6f23f2968209e5b545f19",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-grade.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            },
+            "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "grade": {
+          "ref": [
+            "world",
+            "grade"
+          ]
+        },
+        "longGrade": {
+          "ref": [
+            "world",
+            "longGrade"
+          ]
+        },
+        "otherGrade": {
+          "ref": [
+            "world",
+            "otherGrade"
+          ]
+        },
+        "oddGrade": {
+          "ref": [
+            "last",
+            "grade"
+          ]
+        }
+      }
+    },
     "kyb approved": {
       "name": "kyb approved",
       "file": "blueprint/starting-worlds/kyb-approved.ts",
@@ -10945,6 +12973,179 @@
         }
       }
     },
+    "three branches": {
+      "name": "three branches",
+      "file": "blueprint/starting-worlds/three-branches.ts",
+      "from": "two branches",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "5bfaaf6c5f3dfd54bb90b9195f9a83bc1a2e96335abc431f0d5b8b6510203fda",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "branch.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            },
+            "branchName": "Nairobi"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "branch": {
+          "ref": [
+            "world",
+            "branch"
+          ]
+        },
+        "longBranch": {
+          "ref": [
+            "world",
+            "longBranch"
+          ]
+        },
+        "otherBranch": {
+          "ref": [
+            "last",
+            "branch"
+          ]
+        }
+      }
+    },
+    "three companies": {
+      "name": "three companies",
+      "file": "blueprint/starting-worlds/three-companies.ts",
+      "from": "two companies",
+      "cast": {
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "6bbcda711acd04b68459ad8b3ed478bf48cbd661c6e1687e558b3d3312b8d515",
+      "makes": [
+        {
+          "actor": "bo",
+          "operation": "company.create",
+          "payload": {
+            "companyName": "Bo Ltd",
+            "abbr": "BL",
+            "country": "Tanzania",
+            "defaultCurrency": "TZS"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "last",
+            "company"
+          ]
+        }
+      }
+    },
+    "three grades": {
+      "name": "three grades",
+      "file": "blueprint/starting-worlds/three-grades.ts",
+      "from": "two grades",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "1719ed9fabcb3a580e8fba0fc93f83f060f744282a0d3f3a9b909b413a8393a6",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-grade.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            },
+            "gradeName": "Senior"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "grade": {
+          "ref": [
+            "world",
+            "grade"
+          ]
+        },
+        "longGrade": {
+          "ref": [
+            "world",
+            "longGrade"
+          ]
+        },
+        "otherGrade": {
+          "ref": [
+            "last",
+            "grade"
+          ]
+        }
+      }
+    },
     "two bank accounts": {
       "name": "two bank accounts",
       "file": "blueprint/starting-worlds/two-bank-accounts.ts",
@@ -11032,6 +13233,161 @@
           "ref": [
             "last",
             "routingNumber"
+          ]
+        }
+      }
+    },
+    "two branches": {
+      "name": "two branches",
+      "file": "blueprint/starting-worlds/two-branches.ts",
+      "from": "a branch",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "37f3e666b6960e93e3e2765364083c671f67d75a7e1cbd7222d84c1e356357ff",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "branch.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "branchName": "Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "branch": {
+          "ref": [
+            "world",
+            "branch"
+          ]
+        },
+        "longBranch": {
+          "ref": [
+            "last",
+            "branch"
+          ]
+        }
+      }
+    },
+    "two companies": {
+      "name": "two companies",
+      "file": "blueprint/starting-worlds/two-companies.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "2a8ed7b1c5dbceb4a508842bc2933f0ff8cc10a17482a2bffde96db553d3053e",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "company.create",
+          "payload": {
+            "companyName": "Acme Logistics",
+            "abbr": "AL",
+            "country": "Uganda",
+            "defaultCurrency": "UGX"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "last",
+            "company"
+          ]
+        }
+      }
+    },
+    "two grades": {
+      "name": "two grades",
+      "file": "blueprint/starting-worlds/two-grades.ts",
+      "from": "a grade",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "4130078499712f158837070931a9c55bcb29b47c2a73d52eb24969f189db3d55",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-grade.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "gradeName": "L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027."
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "grade": {
+          "ref": [
+            "world",
+            "grade"
+          ]
+        },
+        "longGrade": {
+          "ref": [
+            "last",
+            "grade"
           ]
         }
       }
@@ -11253,6 +13609,26 @@
       }
     },
     {
+      "id": "anomaly:BR-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BR-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/branch/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:BR-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BR-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
       "id": "anomaly:CO-001",
       "kind": "anomaly",
       "labels": {
@@ -11338,6 +13714,26 @@
       "labels": {
         "environment": "*",
         "code": "DS-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:EG-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "EG-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/employee-grade/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:EG-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "EG-900",
         "severity": "ticket",
         "owner": "orthograph"
       }
@@ -11614,6 +14010,90 @@
         "operation": "bank-account.open",
         "severity": "page",
         "owner": "blueprint/things/bank-account/verbs/open.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:branch.create",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "branch.create",
+        "severity": "page",
+        "owner": "blueprint/things/branch/verbs/create.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:branch.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "branch.get",
+        "severity": "page",
+        "owner": "blueprint/things/branch/verbs/get.ts"
       },
       "target": 0.999,
       "windowDays": 28,
@@ -12237,6 +14717,90 @@
       ]
     },
     {
+      "id": "defect:employee-grade.create",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "employee-grade.create",
+        "severity": "page",
+        "owner": "blueprint/things/employee-grade/verbs/create.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:employee-grade.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "employee-grade.get",
+        "severity": "page",
+        "owner": "blueprint/things/employee-grade/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "defect:employee.get",
       "kind": "defect",
       "labels": {
@@ -12670,6 +15234,92 @@
       "target": 0.95,
       "windowDays": 28,
       "thresholdMs": 800,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:branch.create",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "branch.create",
+        "severity": "page",
+        "owner": "blueprint/things/branch/verbs/create.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:branch.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "branch.get",
+        "severity": "page",
+        "owner": "blueprint/things/branch/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
       "minCalls": 20,
       "alerts": [
         {
@@ -13304,6 +15954,92 @@
       ]
     },
     {
+      "id": "latency:employee-grade.create",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "employee-grade.create",
+        "severity": "page",
+        "owner": "blueprint/things/employee-grade/verbs/create.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:employee-grade.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "employee-grade.get",
+        "severity": "page",
+        "owner": "blueprint/things/employee-grade/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "latency:employee.get",
       "kind": "latency",
       "labels": {
@@ -13698,6 +16434,16 @@
       }
     },
     {
+      "id": "verdict:branch names are the company's:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "branch names are the company's",
+        "severity": "page",
+        "owner": "journeys/branch-names-are-the-companys.ts"
+      }
+    },
+    {
       "id": "verdict:bridge: a bank account closes:local",
       "kind": "verdict",
       "labels": {
@@ -13818,6 +16564,16 @@
       }
     },
     {
+      "id": "verdict:grade names are the company's:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "grade names are the company's",
+        "severity": "page",
+        "owner": "journeys/grade-names-are-the-companys.ts"
+      }
+    },
+    {
       "id": "verdict:hire an employee:local",
       "kind": "verdict",
       "labels": {
@@ -13848,6 +16604,16 @@
       }
     },
     {
+      "id": "verdict:set up branches:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "set up branches",
+        "severity": "page",
+        "owner": "journeys/set-up-branches.ts"
+      }
+    },
+    {
       "id": "verdict:set up departments and job titles:local",
       "kind": "verdict",
       "labels": {
@@ -13855,6 +16621,16 @@
         "journey": "set up departments and job titles",
         "severity": "page",
         "owner": "journeys/set-up-departments-and-job-titles.ts"
+      }
+    },
+    {
+      "id": "verdict:set up grades:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "set up grades",
+        "severity": "page",
+        "owner": "journeys/set-up-grades.ts"
       }
     },
     {

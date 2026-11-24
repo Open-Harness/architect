@@ -1,0 +1,3 @@
+# Two-way links (#742, item 5) are not built: there is no `Blueprint.link`, so two thing.ts files that import each other fail to load. Clears with the value types build.
+src/modules/model/link-cycle.test.ts > Two-way links: two things that link to each other load > keeps a link's sentence in the model
+src/modules/model/link-cycle.test.ts > Two-way links: two things that link to each other load > loads when both sides link, and the model keeps both edges
