@@ -1,6 +1,9 @@
 // Scaffolded from blueprint/things/attendance-request/verbs/approve.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Days } from "orthograph";
+import { Ids, Records } from "@orthograph/language-effect";
+import { Attendance } from "../../blueprint/things/attendance/thing.ts";
+import { oneAttendancePerDay } from "../../blueprint/things/attendance/invariants.ts";
 import type { Handler } from "../../generated/api/src/attendance-request/approve.handler.ts";
 
 /**
@@ -41,24 +44,50 @@ import type { Handler } from "../../generated/api/src/attendance-request/approve
  *   once it answers, it writes AttendanceRequestApproved: attendanceRequest, marked and changed from the answer;
  *   the call is the span attendance-request.approve, and its commit attendance-request.approve.commit.
  */
-const approve: Handler = (_payload, { steps, move }) =>
+const approve: Handler = ({ attendanceRequest }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span attendance-request.approve.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // Step mark: database, in the store attendance-request, attendance, span attendance-request.approve.mark.
-    yield* steps.mark(Handlers.blank("mark: the work this step does"));
+    // Step load: database, span attendance-request.approve.load. The runtime read the request for its role and state
+    // checks and hands it in; this step finds each of its days' attendance through oneAttendancePerDay. The employee
+    // isn't judged again: a request opened before they left can still be approved (CX-expense-leavers).
+    const { request, days } = yield* steps.load(
+      Effect.gen(function* () {
+        if (!subject) return yield* Effect.die(new Error(`attendance request ${attendanceRequest} was checked and then not found`));
+        const fromDate = subject["fromDate"] as string;
+        const employee = subject["employee"] as string;
+        const all = Array.from({ length: Days.between(fromDate, subject["toDate"] as string) + 1 }, (_, k) => Days.add(fromDate, k));
+        const held = yield* Effect.forEach(all, (day) =>
+          records.findBy(oneAttendancePerDay, { employee: employee as never, attendanceDate: day as never }),
+        );
+        return { request: subject, days: all.map((day, i) => ({ day, held: held[i] })) };
+      }),
+    );
+
+    // Step mark: database, in the store attendance-request, attendance, span attendance-request.approve.mark. Every day
+    // is marked Work From Home for that reason and Present for On Duty, weekends included. A day already marked with
+    // another status is changed to it, and one with the same status is left, as HRMS's create_or_update_attendance does.
+    const status = request["reason"] === "Work From Home" ? "Work From Home" : "Present";
+    const fresh = days.filter((d) => d.held === undefined);
+    const other = days.flatMap((d) => (d.held !== undefined && d.held["status"] !== status ? [d.held] : []));
+    yield* steps.mark(
+      Effect.gen(function* () {
+        for (const { day } of fresh) {
+          const id = yield* Ids.of(Attendance.fields.id);
+          yield* records.insert(
+            Attendance,
+            { id, company: request["company"] as never, employee: request["employee"] as never, attendanceDate: day as never, status },
+            "marked",
+          );
+        }
+        for (const held of other) yield* records.update(Attendance, held["id"] as string, { status });
+      }),
+    );
 
     // The move approve, from draft, to approved.
     yield* move();
 
-    return {
-      attendanceRequest: yield* Handlers.blank("attendanceRequest, an attendance-request.id"),
-      // AttendanceRequestApproved needs marked, and only the answer can give it.
-      marked: yield* Handlers.blank("marked, a DayCount"),
-      // AttendanceRequestApproved needs changed, and only the answer can give it.
-      changed: yield* Handlers.blank("changed, a DayCount"),
-    };
+    return { attendanceRequest, marked: BigInt(fresh.length), changed: BigInt(other.length) };
   });
 
 export default approve;
