@@ -67,6 +67,8 @@ describe("Exact decimals: the compiler and a decimal", () => {
   });
 
   it("refuses a decimal field on a chain-stored thing, which a contract cannot hold", async () => {
-    expect(said(await modelOf(project(true)))).toMatch(/field rate[^"]*a decimal[^"]*contract/);
+    for (const rate of ["Blueprint.decimal({ places: 4 })", "Blueprint.decimal({ places: 0 })"]) {
+      expect(said(await modelOf(project(true, rate))), rate).toMatch(/field rate[^"]*a decimal[^"]*contract/);
+    }
   });
 });

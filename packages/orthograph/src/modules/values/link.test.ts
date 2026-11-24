@@ -7,7 +7,8 @@
 //  1. `Blueprint.link(() => Other.fields.id)` declares a field taken from another thing's field, read only when it is
 //     first used, so the other thing may be declared after it, in this file or in one that imports this one.
 //  2. Once both things exist, a field declared with it is the same as one declared with the field itself: its `from`
-//     is that field (the edge the compiler follows), its value is that field's value, and it keeps a `described` sentence.
+//     is that field (the edge the compiler follows), its value and visibility are that field's, and it keeps a
+//     `described` sentence. Before it is placed in a thing, a link already gives the other field's value once read.
 //
 // `Blueprint.link` is read loosely so this file type-checks before and after the surface exists.
 import { Schema } from "effect";
@@ -38,6 +39,20 @@ describe("Two-way links: a thing may link to one declared after it", () => {
     expect(PurchaseInvoice.fields.returnOf.key).toBe("returnOf");
     expect(PurchaseInvoice.fields.returnOf.value.meta).toEqual({ type: "id", prefix: "si" });
     expect(SalesInvoice.fields.interCompany.from).toBe(PurchaseInvoice.fields.id);
+  });
+
+  it("keeps the other field's visibility, so a link to a secret field is secret", () => {
+    const Login = Blueprint.thing({ description: "A login.", fields: { id: Blueprint.id("lgn"), key: link((): Field => Key.fields.secret) } });
+    const Key = Blueprint.thing({ description: "A key.", fields: { id: Blueprint.id("key"), secret: Blueprint.visibility.secret(Blueprint.id("sk")) } });
+    expect(Key.fields.secret.visibility).toBe("secret");
+    expect(Login.fields.key.visibility).toBe("secret");
+  });
+
+  it("gives the other field's value when read outside a thing, as a payload field would", () => {
+    const later = link((): Field => Invoice.fields.id);
+    const Invoice = Blueprint.thing({ description: "An invoice.", fields: { id: Blueprint.id("inv") } });
+    expect(later.value.meta).toEqual({ type: "id", prefix: "inv" });
+    expect(later.from).toBe(Invoice.fields.id);
   });
 
   it("holds the other thing's ids and no one else's", () => {

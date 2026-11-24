@@ -9,8 +9,10 @@
 //     is `{ type: "decimal", places }`, its own kind: clients parse it as a decimal, not as text.
 //  3. The wire is plain decimal text: an optional `-`, digits with no leading zero, and an optional point with at least
 //     one digit after it. No exponent, no `+`, no `-0`, no spaces, no thousands separator. Trailing zeros are allowed
-//     (`"1.50"`, as ERPNext writes them) and count as places. It may be negative: a return's quantity is.
-//  4. Encoding writes the same text a canonical input was decoded from, with no exponent, so a value round-trips exactly.
+//     (`"1.50"`, as ERPNext writes them) and count as places, so `"1.230"` is three. It may be negative: a return's
+//     quantity is. `-0` is refused because a `BigDecimal` has no negative zero, so it could never be written back.
+//  4. Encoding writes the same text a canonical input was decoded from, with no exponent at any size, so a value
+//     round-trips exactly. (Effect's own `BigDecimal.format` writes an exponent from 16 digits of scale.)
 //
 // `Blueprint.decimal` is read loosely so this file type-checks before and after the surface exists.
 import { BigDecimal, Schema } from "effect";
@@ -49,9 +51,10 @@ describe("Exact decimals: a decimal is a value", () => {
 
   it("round-trips decimal text exactly, past what a float can hold, negatives included", () => {
     const v = decimal();
-    for (const text of ["0", "0.1", "-12.5", "1180", "1.25", "123456789012345678901234567890.123456789", "-0.000000001", "9007199254740993"]) {
+    for (const text of ["0", "0.1", "-12.5", "1180", "1.25", "123456789012345678901234567890.123456789", "-0.000000001", "9007199254740993", "10000000000000000", "-123000000000000000000"]) {
       expect(roundTrip(v, text), text).toBe(text);
     }
+    expect(roundTrip(decimal({ places: 20 }), "0.00000000000000001")).toBe("0.00000000000000001");
   });
 
   it("holds trailing zeros as written by ERPNext, as the same number", () => {
@@ -63,6 +66,7 @@ describe("Exact decimals: a decimal is a value", () => {
   it("holds up to its places after the point and refuses one more", () => {
     expect(holds(decimal({ places: 2 }), "1.23")).toBe("Success");
     expect(holds(decimal({ places: 2 }), "1.234")).toBe("Failure");
+    expect(holds(decimal({ places: 2 }), "1.230")).toBe("Failure");
     expect(holds(decimal({ places: 0 }), "7")).toBe("Success");
     expect(holds(decimal({ places: 0 }), "7.5")).toBe("Failure");
     expect(holds(decimal(), "0.123456789")).toBe("Success");
