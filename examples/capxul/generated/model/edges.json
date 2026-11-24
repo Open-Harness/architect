@@ -110,6 +110,76 @@
     "kind": "refers"
   },
   {
+    "from": "interview.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview.jobApplicant",
+    "to": "job-applicant.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview.interviewRound",
+    "to": "interview-round.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview-feedback.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview-feedback.interview",
+    "to": "interview.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview-feedback.interviewer",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview-round.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-applicant.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-applicant.jobOpening",
+    "to": "job-opening.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-offer.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-offer.jobApplicant",
+    "to": "job-applicant.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-offer.designation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-opening.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-opening.designation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
     "from": "shift-type.company",
     "to": "company.id",
     "kind": "refers"
@@ -716,6 +786,281 @@
   },
   {
     "from": "holiday-list.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview.clear",
+    "to": "interview",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview.clear",
+    "to": "interview.InterviewCleared",
+    "kind": "emits"
+  },
+  {
+    "from": "interview.clear",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview.create",
+    "to": "interview",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview.create",
+    "to": "interview.InterviewScheduled",
+    "kind": "emits"
+  },
+  {
+    "from": "interview.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview.get",
+    "to": "interview",
+    "kind": "reads"
+  },
+  {
+    "from": "interview.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview.reject",
+    "to": "interview",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview.reject",
+    "to": "interview.InterviewRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "interview.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-feedback.get",
+    "to": "interview-feedback",
+    "kind": "reads"
+  },
+  {
+    "from": "interview-feedback.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-feedback.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-feedback.give",
+    "to": "interview-feedback",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview-feedback.give",
+    "to": "interview-feedback.InterviewFeedbackGiven",
+    "kind": "emits"
+  },
+  {
+    "from": "interview-feedback.give",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-round.create",
+    "to": "interview-round",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview-round.create",
+    "to": "interview-round.InterviewRoundCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "interview-round.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-round.get",
+    "to": "interview-round",
+    "kind": "reads"
+  },
+  {
+    "from": "interview-round.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.accept",
+    "to": "job-applicant",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-applicant.accept",
+    "to": "job-applicant.JobApplicantAccepted",
+    "kind": "emits"
+  },
+  {
+    "from": "job-applicant.accept",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.create",
+    "to": "job-applicant",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-applicant.create",
+    "to": "job-applicant.JobApplicantCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "job-applicant.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.get",
+    "to": "job-applicant",
+    "kind": "reads"
+  },
+  {
+    "from": "job-applicant.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.hold",
+    "to": "job-applicant",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-applicant.hold",
+    "to": "job-applicant.JobApplicantHeld",
+    "kind": "emits"
+  },
+  {
+    "from": "job-applicant.hold",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.reject",
+    "to": "job-applicant",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-applicant.reject",
+    "to": "job-applicant.JobApplicantRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "job-applicant.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-offer.accept",
+    "to": "job-offer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-offer.accept",
+    "to": "job-offer.JobOfferAccepted",
+    "kind": "emits"
+  },
+  {
+    "from": "job-offer.accept",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-offer.create",
+    "to": "job-offer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-offer.create",
+    "to": "job-offer.JobOfferMade",
+    "kind": "emits"
+  },
+  {
+    "from": "job-offer.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-offer.get",
+    "to": "job-offer",
+    "kind": "reads"
+  },
+  {
+    "from": "job-offer.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-offer.reject",
+    "to": "job-offer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-offer.reject",
+    "to": "job-offer.JobOfferRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "job-offer.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-opening.close",
+    "to": "job-opening",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-opening.close",
+    "to": "job-opening.JobOpeningClosed",
+    "kind": "emits"
+  },
+  {
+    "from": "job-opening.close",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-opening.create",
+    "to": "job-opening",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-opening.create",
+    "to": "job-opening.JobOpeningCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "job-opening.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-opening.get",
+    "to": "job-opening",
+    "kind": "reads"
+  },
+  {
+    "from": "job-opening.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
