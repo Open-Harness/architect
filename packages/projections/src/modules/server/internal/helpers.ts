@@ -36,12 +36,16 @@ export const peopleOf = (model: Model) => {
  * route (M8.07): each kind of durable timer to the code that wakes it, empty until a feature registers a kind. Any other
  * blueprint re-exports the host's, exactly as it always did.
  */
-export const worldExports = (timed: boolean, actors: boolean): ReadonlyArray<string> => {
+export const worldExports = (timed: boolean, actors: boolean, resident = false): ReadonlyArray<string> => {
   const host = Names.pkg("host-cloudflare");
-  if (!timed) return [actors ? `export { Actor, World } from "${host}";` : `export { World } from "${host}";`];
+  // The agents' actor: the host's `Actor` with a Pi conversation resident in it (K40 fix 3), made by the agents' own `src/agent/actor.ts`.
+  const actor = resident
+    ? [`import { Actor as ActorHost } from "${host}";`, `import { agentActor } from "${Names.pkg("agents")}/src/modules/resident/service.ts";`, "export const Actor = agentActor(ActorHost);"]
+    : [`export { Actor } from "${host}";`];
+  if (!timed) return actors && resident ? [...actor, `export { World } from "${host}";`] : [actors ? `export { Actor, World } from "${host}";` : `export { World } from "${host}";`];
   return [
     `import { World as WorldHost, type WorldWakes } from "${host}";`,
-    ...(actors ? [`export { Actor } from "${host}";`] : []),
+    ...(actors ? actor : []),
     "",
     "/** Which code wakes each kind of durable timer when it falls due: empty until a feature registers a kind (a workflow, an agent, the keeper). */",
     "const wakes: WorldWakes = {};",

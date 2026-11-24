@@ -13,7 +13,7 @@ interface Stored { readonly row: string; readonly state: string | null; readonly
  * run between the version check and the write, and a failed write rolls the whole commit back.
  */
 export class Actor extends DurableObject implements ActorApi {
-  private readonly world: EntryEnv;
+  protected readonly world: EntryEnv;
 
   constructor(ctx: DurableObjectState, env: unknown) {
     super(ctx, env as never);
@@ -21,7 +21,7 @@ export class Actor extends DurableObject implements ActorApi {
     for (const statement of SCHEMA) ctx.storage.sql.exec(statement);
   }
 
-  private stored(): Stored | undefined {
+  protected stored(): Stored | undefined {
     return this.ctx.storage.sql.exec<Stored & Record<string, SqlStorageValue>>("SELECT row, state, version FROM instance").toArray()[0];
   }
 
@@ -31,15 +31,24 @@ export class Actor extends DurableObject implements ActorApi {
   }
 
   commit(writes: ReadonlyArray<ActorWrite>, entries: ReadonlyArray<ActorEntry>): Committed | Promise<Committed> {
-    return WorldEntry.withinNow(this.world, () => this.write(writes, entries));
+    return WorldEntry.withinNow(this.world, () => {
+      const outcome = this.write(writes, entries);
+      if (outcome === "committed") this.committed(entries);
+      return outcome;
+    });
   }
 
-  private read(): ActorRow | null {
+  /** What a resident of this actor does once a commit is stored (the agents' Pi conversation takes an input told to it): nothing, for a plain actor. */
+  protected committed(_entries: ReadonlyArray<ActorEntry>): void {}
+
+  /** The instance as the actor keeps it, for a resident. */
+  protected read(): ActorRow | null {
     const s = this.stored();
     return s ? { row: JSON.parse(s.row) as Record<string, unknown>, state: s.state, version: s.version } : null;
   }
 
-  private write(writes: ReadonlyArray<ActorWrite>, entries: ReadonlyArray<ActorEntry>): Committed {
+  /** A commit made by the actor itself (a resident ending its turn): the same all-or-nothing write, with the actor's own version guard. */
+  protected write(writes: ReadonlyArray<ActorWrite>, entries: ReadonlyArray<ActorEntry>): Committed {
     const sql = this.ctx.storage.sql;
     return this.ctx.storage.transactionSync((): Committed => {
       const now = this.stored();

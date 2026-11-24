@@ -14461,9 +14461,9 @@
         "file": "blueprint/features/agents.ts",
         "package": "@orthograph/agents",
         "version": "0.0.0",
-        "integrity": "sha256-NzJtD+rxImSQMBIyOUTU1YCFJMqjfH7D8WXEixy/Cv8=",
+        "integrity": "sha256-K5atOLs/RIiaRZvDEZl/Kit7JGDjWMNBNJk9zhWI1w8=",
         "chosen": {},
-        "hash": "5f800a061be0f4ec"
+        "hash": "a51b9c20e4548344"
       },
       "github": {
         "kind": "adapter",
@@ -15162,5 +15162,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "8984aa8e9acd2314960be1fd49b9a506cadcf6fd513752f462e358eef87917e3"
+  "digest": "70d793ec2e9eb3d32c939e9411fd88acd9b429ce99ee6a5813d14290b5c20dc7"
 }

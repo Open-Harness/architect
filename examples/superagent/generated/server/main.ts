@@ -209,7 +209,9 @@ import * as threadInvariants from "@orthograph/intake/blueprint/things/thread/in
 import * as triggerInvariants from "@orthograph/intake/blueprint/things/trigger/invariants.js";
 
 import { World as WorldHost, type WorldWakes } from "@orthograph/host-cloudflare";
-export { Actor } from "@orthograph/host-cloudflare";
+import { Actor as ActorHost } from "@orthograph/host-cloudflare";
+import { agentActor } from "@orthograph/agents/src/modules/resident/service.ts";
+export const Actor = agentActor(ActorHost);
 
 /** Which code wakes each kind of durable timer when it falls due: empty until a feature registers a kind (a workflow, an agent, the keeper). */
 const wakes: WorldWakes = {};

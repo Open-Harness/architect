@@ -167,3 +167,20 @@ Pinned exactly, published 2 November 2026 (older than R1's three days; 1.6.0 of 
 ### 10 (settled). `local.ts` steps again
 
 The coordinator decided (24 November 2026): `local.ts` is the stepped environment, from `2026-12-01T09:00:00.000Z`, and check 63 was the side that was wrong (a stand-in delivery is signed at the world's instant, M8.11). The author's change (#903) landed in `goal/superagent` at `2bec09b4`; the clock is back in `local.ts`.
+
+## Seventh stretch: Pi Durable in the agent's actor
+
+### 16. One conversation per agent, resident in its actor (`@orthograph/agents`, `modules/resident`)
+
+`agentActor(Base)` makes the agents' Durable Object class from the host's `Actor` (the generated Worker hands the host's class in, so the plugin depends on no host, and `Actor.committed(entries)` is the host's one new hook). When `agent.tell` commits, the actor opens its Pi Durable `Harness` on its own SQLite
+(`openDurableObjectSqliteStorage`), takes the root conversation for good, and submits what it was told with the delivering event's id as `requestId` and `whenBusy: "steer"`; when no turn is left it commits `idled` itself (`working → idle`, `current` cleared, `AgentIdled { agent, about, assignment }` journalled in that commit). Pi's timers fall due on the actor's alarm. `steps()` answers the conversation's model steps (one per `pi.assistant` entry, numbered from 1 in each run), and the `calls` probe reads it: the 501 is gone.
+- **The endpoint and models come from the environment** (`MODELS_BASE_URL`, or the stand-in's `ORTHO_STAND_MODELS` + `/v1`; `MODEL_<KIND>`, else the kind's own name; `MODELS_API_KEY` if one is needed), each request carrying `x-orthograph-agent` and `-about`, which the stand-in matches scripts by. `@orthograph/openai` is the `models` mount; its stand-in is the scripted model.
+- **No tools yet.** A turn is a model answer; the executor's tools (`ticket.ack`, `bash`, ...) and the main agent's are the next step, with the sandbox's bridge and the agent's own credential. The model step runs on the real clock: a stepped world's counted-work accounting for a turn (`Timers.within`) is not wired, so `s.clock.settle` does not yet wait for a turn.
+- **The lint rule about async** names this one file (`.oxlintrc.json`, `entries`): it is a Durable Object class, the actor's own entry.
+- **Evidence:** `packages/prove/src/modules/world/agent-turn.test.ts`: in a real world on the scripted stand-in, `agent.tell` is called directly; the model is asked once (as an `executor`, `about: ticket/…`, with the agent's id), the answer is committed as one step (`calls`: round 1, "Added both."), the agent is idle with `current` null, `told` records it, and the stand-in's `done` is 200.
+
+### 17. The VibeProxy smoke, run by hand (Aaron's standing yes, 24 November 2026)
+
+`ORTHO_SMOKE_MODELS=http://localhost:8317/v1 pnpm exec vitest run src/modules/world/agent-smoke.test.ts` (`agent-smoke.test.ts`, skipped unless that variable is set, so never in CI; no key: the endpoint holds the sign-ins; the endpoint and models reach the Worker as process secrets, never a file or an argument). Result: both kinds ran one turn through Pi Durable and stored one model step each.
+- the **executor on `gpt-6.2-sol`** answered `ready` to "Reply with the single word: ready.";
+- the **main agent on `deepseek-v4-flash-0731`** stored one step with **no text part** (a reply of reasoning only, or an empty content: Pi's model entry holds no `text` part). The step exists, the request was a valid one, and the agent went idle; what DeepSeek's reply holds beyond text is not read yet, and the main agent's decisions will be tool calls, so it is read when its tools are wired. Nothing was logged but the world's own log lines; no key was used.

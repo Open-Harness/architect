@@ -27,13 +27,21 @@ const told: ProbeHandler = (request, world) => {
   const only = query.get("requestId");
   return found(world, agent).then((held) => {
     if (held === null) return json({ error: `no agent ${agent}` }, 404);
-    const all = (held.row["told"] ?? []) as ReadonlyArray<{ readonly requestId: string }>;
+    // An actor keeps a list field as it travels: JSON text, or the list itself.
+    const kept = held.row["told"];
+    const all = (typeof kept === "string" ? JSON.parse(kept) : kept ?? []) as ReadonlyArray<{ readonly requestId: string }>;
     return json({ inputs: only === null ? all : all.filter((t) => t.requestId === only) });
   });
 };
 
-/** An agent's committed model steps are Pi's, kept in the agent's conversation: until Pi Durable runs in the actor, this answers that it cannot. */
-const calls: ProbeHandler = () => Promise.resolve(json({ _tag: "NotBuilt", message: "an agent's model steps are Pi Durable's, and Pi does not run in the agent's actor yet" }, 501));
+/** An agent's committed model steps are its Pi conversation's, answered by its actor: one for each stored model response, numbered from 1 in the run that follows its input. */
+const calls: ProbeHandler = (request, world) => {
+  const query = new URL(request.url).searchParams;
+  const stub = world.actors?.get(world.actors.idFromName(`agent:${query.get("agent") ?? ""}`)) as { steps(): Promise<ReadonlyArray<{ readonly requestId: string }>> } | undefined;
+  if (stub === undefined) return Promise.resolve(json({ error: "this world has no agents' actors" }, 404));
+  const only = query.get("requestId");
+  return stub.steps().then((steps) => json({ steps: only === null ? steps : steps.filter((s) => s.requestId === only) }));
+};
 
 /** The probes this package answers, by the route under `/_world/` their descriptors name. */
 export const probes: Readonly<Record<string, ProbeHandler>> = {

@@ -14457,9 +14457,9 @@
       "file": "blueprint/features/agents.ts",
       "package": "@orthograph/agents",
       "version": "0.0.0",
-      "integrity": "sha256-NzJtD+rxImSQMBIyOUTU1YCFJMqjfH7D8WXEixy/Cv8=",
+      "integrity": "sha256-K5atOLs/RIiaRZvDEZl/Kit7JGDjWMNBNJk9zhWI1w8=",
       "chosen": {},
-      "hash": "5f800a061be0f4ec"
+      "hash": "a51b9c20e4548344"
     },
     "github": {
       "kind": "adapter",

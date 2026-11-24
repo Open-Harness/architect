@@ -153,7 +153,7 @@
       "error",
       {
         "baseline": "packages/lint/baseline.json",
-        "entries": []
+        "entries": ["packages/agents/src/modules/resident/service.ts"]
       }
     ],
     "ortho/max-lines": [
