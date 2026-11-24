@@ -1,0 +1,972 @@
+[
+  {
+    "from": "account.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "assignment.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "assignment.ticket",
+    "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "assignment.agent",
+    "to": "agent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "assignment.input",
+    "to": "input.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attention.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attention.ticket",
+    "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "correlation.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "decision.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "eval.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "input.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "input.ticket",
+    "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "mandate.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "mandate.ticket",
+    "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "mandate.account",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "outgoing-message.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "outgoing-message.ticket",
+    "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "policy.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "prompt-set.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "proposal.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "report.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "report.ticket",
+    "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "source.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "subscription.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "subscription.ticket",
+    "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "superagent.main",
+    "to": "agent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "thread.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "ticket.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "ticket.agent",
+    "to": "agent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "trigger.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "account.list",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.list",
+    "to": "account.AccountListed",
+    "kind": "emits"
+  },
+  {
+    "from": "account.seen",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.seen",
+    "to": "account.AccountSeen",
+    "kind": "emits"
+  },
+  {
+    "from": "account.sync",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.unlist",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.unlist",
+    "to": "account.AccountUnlisted",
+    "kind": "emits"
+  },
+  {
+    "from": "agent.close",
+    "to": "agent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "agent.close",
+    "to": "agent.AgentClosed",
+    "kind": "emits"
+  },
+  {
+    "from": "agent.open",
+    "to": "agent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "agent.open",
+    "to": "agent.AgentOpened",
+    "kind": "emits"
+  },
+  {
+    "from": "agent.tell",
+    "to": "agent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "agent.tell",
+    "to": "agent.AgentTold",
+    "kind": "emits"
+  },
+  {
+    "from": "assignment.cancelled",
+    "to": "assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "assignment.cancelled",
+    "to": "assignment.AssignmentEnded",
+    "kind": "emits"
+  },
+  {
+    "from": "assignment.interrupted",
+    "to": "assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "assignment.interrupted",
+    "to": "assignment.AssignmentInterrupted",
+    "kind": "emits"
+  },
+  {
+    "from": "assignment.promoted",
+    "to": "assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "assignment.promoted",
+    "to": "assignment.AssignmentPromoted",
+    "kind": "emits"
+  },
+  {
+    "from": "assignment.queued",
+    "to": "assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "assignment.queued",
+    "to": "assignment.AssignmentQueued",
+    "kind": "emits"
+  },
+  {
+    "from": "assignment.started",
+    "to": "assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "assignment.started",
+    "to": "assignment.AssignmentStarted",
+    "kind": "emits"
+  },
+  {
+    "from": "assignment.turn-ended",
+    "to": "assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "assignment.turn-ended",
+    "to": "assignment.AssignmentEnded",
+    "kind": "emits"
+  },
+  {
+    "from": "assignment.waiting",
+    "to": "assignment",
+    "kind": "reads"
+  },
+  {
+    "from": "decision.dismiss",
+    "to": "decision",
+    "kind": "acts-on"
+  },
+  {
+    "from": "decision.dismiss",
+    "to": "decision.DecisionDismissed",
+    "kind": "emits"
+  },
+  {
+    "from": "decision.route",
+    "to": "decision",
+    "kind": "acts-on"
+  },
+  {
+    "from": "decision.route",
+    "to": "decision.DecisionRecorded",
+    "kind": "emits"
+  },
+  {
+    "from": "decision.route",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "eval.context",
+    "to": "eval",
+    "kind": "acts-on"
+  },
+  {
+    "from": "eval.context",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "eval.decide",
+    "to": "eval",
+    "kind": "acts-on"
+  },
+  {
+    "from": "eval.decide",
+    "to": "eval.EvalDecided",
+    "kind": "emits"
+  },
+  {
+    "from": "eval.decide",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "eval.delivered",
+    "to": "eval",
+    "kind": "acts-on"
+  },
+  {
+    "from": "eval.delivered",
+    "to": "eval.EvalDelivered",
+    "kind": "emits"
+  },
+  {
+    "from": "eval.due",
+    "to": "eval",
+    "kind": "acts-on"
+  },
+  {
+    "from": "eval.expire",
+    "to": "eval",
+    "kind": "acts-on"
+  },
+  {
+    "from": "eval.expire",
+    "to": "eval.EvalExpired",
+    "kind": "emits"
+  },
+  {
+    "from": "eval.read",
+    "to": "eval",
+    "kind": "acts-on"
+  },
+  {
+    "from": "eval.read",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "eval.start",
+    "to": "eval",
+    "kind": "acts-on"
+  },
+  {
+    "from": "eval.start",
+    "to": "eval.EvalStarted",
+    "kind": "emits"
+  },
+  {
+    "from": "input.delivered",
+    "to": "input",
+    "kind": "acts-on"
+  },
+  {
+    "from": "input.delivered",
+    "to": "input.InputDelivered",
+    "kind": "emits"
+  },
+  {
+    "from": "input.delivery-failed",
+    "to": "input",
+    "kind": "acts-on"
+  },
+  {
+    "from": "input.delivery-failed",
+    "to": "input.InputFailed",
+    "kind": "emits"
+  },
+  {
+    "from": "input.read",
+    "to": "input",
+    "kind": "acts-on"
+  },
+  {
+    "from": "input.requeue",
+    "to": "input",
+    "kind": "acts-on"
+  },
+  {
+    "from": "input.requeue",
+    "to": "input.InputStored",
+    "kind": "emits"
+  },
+  {
+    "from": "input.route",
+    "to": "input",
+    "kind": "acts-on"
+  },
+  {
+    "from": "input.route",
+    "to": "input.InputRouted",
+    "kind": "emits"
+  },
+  {
+    "from": "input.store",
+    "to": "input",
+    "kind": "acts-on"
+  },
+  {
+    "from": "input.store",
+    "to": "input.InputStored",
+    "kind": "emits"
+  },
+  {
+    "from": "mandate.revalidate",
+    "to": "mandate",
+    "kind": "acts-on"
+  },
+  {
+    "from": "mandate.revalidate",
+    "to": "mandate.MandateRevalidated",
+    "kind": "emits"
+  },
+  {
+    "from": "outgoing-message.reply",
+    "to": "outgoing-message",
+    "kind": "acts-on"
+  },
+  {
+    "from": "outgoing-message.reply",
+    "to": "outgoing-message.ReplyQueued",
+    "kind": "emits"
+  },
+  {
+    "from": "outgoing-message.reply",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "outgoing-message.retry",
+    "to": "outgoing-message",
+    "kind": "acts-on"
+  },
+  {
+    "from": "outgoing-message.retry",
+    "to": "outgoing-message.ReplyQueued",
+    "kind": "emits"
+  },
+  {
+    "from": "outgoing-message.send",
+    "to": "outgoing-message",
+    "kind": "acts-on"
+  },
+  {
+    "from": "outgoing-message.send",
+    "to": "outgoing-message.ReplySettled",
+    "kind": "emits"
+  },
+  {
+    "from": "outgoing-message.withdraw",
+    "to": "outgoing-message",
+    "kind": "acts-on"
+  },
+  {
+    "from": "outgoing-message.withdraw",
+    "to": "outgoing-message.ReplyWithdrawn",
+    "kind": "emits"
+  },
+  {
+    "from": "policy.get",
+    "to": "policy",
+    "kind": "acts-on"
+  },
+  {
+    "from": "policy.get",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "policy.history",
+    "to": "policy",
+    "kind": "acts-on"
+  },
+  {
+    "from": "policy.restore",
+    "to": "policy",
+    "kind": "acts-on"
+  },
+  {
+    "from": "policy.restore",
+    "to": "policy.PolicyChanged",
+    "kind": "emits"
+  },
+  {
+    "from": "policy.save",
+    "to": "policy",
+    "kind": "acts-on"
+  },
+  {
+    "from": "policy.save",
+    "to": "policy.PolicyChanged",
+    "kind": "emits"
+  },
+  {
+    "from": "policy.sync",
+    "to": "policy",
+    "kind": "acts-on"
+  },
+  {
+    "from": "prompt-set.compose",
+    "to": "prompt-set",
+    "kind": "acts-on"
+  },
+  {
+    "from": "prompt-set.history",
+    "to": "prompt-set",
+    "kind": "acts-on"
+  },
+  {
+    "from": "prompt-set.preview",
+    "to": "prompt-set",
+    "kind": "acts-on"
+  },
+  {
+    "from": "prompt-set.save",
+    "to": "prompt-set",
+    "kind": "acts-on"
+  },
+  {
+    "from": "proposal.approve",
+    "to": "proposal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "proposal.approve",
+    "to": "proposal.ProposalApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "proposal.propose",
+    "to": "proposal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "proposal.propose",
+    "to": "proposal.ProposalRecorded",
+    "kind": "emits"
+  },
+  {
+    "from": "proposal.propose",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "proposal.reject",
+    "to": "proposal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "proposal.reject",
+    "to": "proposal.ProposalRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "proposal.waiting",
+    "to": "proposal",
+    "kind": "reads"
+  },
+  {
+    "from": "proposal.waiting",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "settings.save",
+    "to": "settings",
+    "kind": "acts-on"
+  },
+  {
+    "from": "settings.save",
+    "to": "settings.SettingsSaved",
+    "kind": "emits"
+  },
+  {
+    "from": "source.disable",
+    "to": "source",
+    "kind": "acts-on"
+  },
+  {
+    "from": "source.disable",
+    "to": "source.SourceDisabled",
+    "kind": "emits"
+  },
+  {
+    "from": "source.enable",
+    "to": "source",
+    "kind": "acts-on"
+  },
+  {
+    "from": "source.enable",
+    "to": "source.SourceEnabled",
+    "kind": "emits"
+  },
+  {
+    "from": "source.position-advanced",
+    "to": "source",
+    "kind": "acts-on"
+  },
+  {
+    "from": "source.position-advanced",
+    "to": "source.SourcePositionAdvanced",
+    "kind": "emits"
+  },
+  {
+    "from": "source.problem",
+    "to": "source",
+    "kind": "acts-on"
+  },
+  {
+    "from": "source.problem",
+    "to": "source.SourceFailed",
+    "kind": "emits"
+  },
+  {
+    "from": "source.save",
+    "to": "source",
+    "kind": "acts-on"
+  },
+  {
+    "from": "source.save",
+    "to": "source.SourceSaved",
+    "kind": "emits"
+  },
+  {
+    "from": "superagent.boot",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.create",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.create",
+    "to": "superagent.SuperagentCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "superagent.fill",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.go-live",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.go-live",
+    "to": "superagent.SuperagentWentLive",
+    "kind": "emits"
+  },
+  {
+    "from": "superagent.health",
+    "to": "superagent",
+    "kind": "reads"
+  },
+  {
+    "from": "superagent.health",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "superagent.pause",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.pause",
+    "to": "superagent.SuperagentPaused",
+    "kind": "emits"
+  },
+  {
+    "from": "superagent.reap",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.resume",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.resume",
+    "to": "superagent.SuperagentResumed",
+    "kind": "emits"
+  },
+  {
+    "from": "superagent.retire",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.retire",
+    "to": "superagent.SuperagentRetired",
+    "kind": "emits"
+  },
+  {
+    "from": "superagent.update",
+    "to": "superagent",
+    "kind": "acts-on"
+  },
+  {
+    "from": "superagent.update",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "thread.bind",
+    "to": "thread",
+    "kind": "acts-on"
+  },
+  {
+    "from": "thread.bind",
+    "to": "thread.ThreadSubscribed",
+    "kind": "emits"
+  },
+  {
+    "from": "thread.closed",
+    "to": "thread",
+    "kind": "acts-on"
+  },
+  {
+    "from": "thread.closed",
+    "to": "thread.ThreadClosed",
+    "kind": "emits"
+  },
+  {
+    "from": "thread.follow",
+    "to": "thread",
+    "kind": "acts-on"
+  },
+  {
+    "from": "thread.follow",
+    "to": "ticket.itsAgent",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "thread.unrelated",
+    "to": "thread",
+    "kind": "acts-on"
+  },
+  {
+    "from": "thread.unrelated",
+    "to": "ticket.itsAgent",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "thread.unsubscribe",
+    "to": "thread",
+    "kind": "acts-on"
+  },
+  {
+    "from": "thread.unsubscribe",
+    "to": "thread.ThreadUnsubscribed",
+    "kind": "emits"
+  },
+  {
+    "from": "thread.unsubscribe",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.accept",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.accept",
+    "to": "ticket.TicketCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "ticket.accept",
+    "to": "account.listed",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.ack",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.ack",
+    "to": "ticket.itsAgent",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.attach",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.attach",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.end",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.end",
+    "to": "ticket.TicketEnded",
+    "kind": "emits"
+  },
+  {
+    "from": "ticket.note",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.note",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.policy-changed",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.report",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.report",
+    "to": "ticket.itsAgent",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.request-status",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.request-status",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.resume",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.resume",
+    "to": "ticket.TicketResumed",
+    "kind": "emits"
+  },
+  {
+    "from": "ticket.retry",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.retry",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.stage",
+    "to": "ticket",
+    "kind": "reads"
+  },
+  {
+    "from": "ticket.stage",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.stage",
+    "to": "ticket.itsAgent",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.stop",
+    "to": "ticket",
+    "kind": "acts-on"
+  },
+  {
+    "from": "ticket.stop",
+    "to": "ticket.TicketStopped",
+    "kind": "emits"
+  },
+  {
+    "from": "ticket.stop",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "ticket.waiting",
+    "to": "ticket",
+    "kind": "reads"
+  },
+  {
+    "from": "ticket.waiting",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "trigger.handback",
+    "to": "trigger",
+    "kind": "acts-on"
+  },
+  {
+    "from": "trigger.handback",
+    "to": "ticket.itsAgent",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "trigger.receive",
+    "to": "trigger",
+    "kind": "acts-on"
+  },
+  {
+    "from": "trigger.receive",
+    "to": "trigger.TriggerReceived",
+    "kind": "emits"
+  },
+  {
+    "from": "trigger.reevaluate",
+    "to": "trigger",
+    "kind": "acts-on"
+  },
+  {
+    "from": "trigger.requeue",
+    "to": "trigger",
+    "kind": "acts-on"
+  },
+  {
+    "from": "trigger.requeue",
+    "to": "trigger.TriggerRequeued",
+    "kind": "emits"
+  },
+  {
+    "from": "trigger.requeue",
+    "to": "superagent.itsMain",
+    "kind": "allowed-by"
+  }
+]

@@ -1,4 +1,9 @@
 // orthograph: the declaration language projects import. `import { Blueprint } from "orthograph"`.
+import { Agents } from "#modules/agents/service.js";
+import { Declares } from "#modules/declare/service.js";
+import { Derives } from "#modules/derive/service.js";
+import { Holds } from "#modules/holds/service.js";
+import { Sources } from "#modules/sources/service.js";
 import { Apps } from "#modules/app/service.js";
 import { Blanks } from "#modules/blanks/service.js";
 import { Cloud } from "#modules/cloud/service.js";
@@ -37,6 +42,10 @@ export const Blueprint = Object.freeze({
   ...Invariants,
   ...Roles,
   ...Operations,
+  ...Agents,
+  ...Declares,
+  ...Derives,
+  ...Holds,
   ...Journeys,
   ...Environments,
   ...Plugins,
@@ -50,6 +59,8 @@ export const Blueprint = Object.freeze({
 });
 
 export { Schema } from "effect";
+/** `Source.from(adapter, mapping)` and `Source.timer` (GOAL17-source-from). */
+export const Source = Sources;
 export { Days };
 export { Auth, Telemetry, Cloud, Chain, Deploy, Identity, Stand, Secret };
 export { Via, Host, Door, Ships } from "#modules/plugins/types.js";
@@ -80,4 +91,11 @@ export type { CloudProvider, Database } from "#modules/cloud/types.js";
 export type { Deployment, Publication } from "#modules/deploy/types.js";
 export type { Config, ConfigSpec, AuthKit } from "#modules/config/types.js";
 export type { Sink, LocalSink, AxiomSink } from "#modules/telemetry/types.js";
-export type { Feature, Adapter, Projection, Plugin, Mount, Verb, Choice, Choices, Option, OptionsIn, Need, NeedWhen, Call as AdapterCall, CallsOf, MissingCall, AnyChoice, Setting, StandIn, FeatureSpec, AdapterSpec, ProjectionSpec, ProjectedOperation, ProjectionInput, Output, ViewOf } from "#modules/plugins/types.js";
+export type { Feature, Adapter, Projection, Plugin, Mount, Verb, Choice, Choices, Option, OptionsIn, Need, NeedWhen, Call as AdapterCall, CallTree, AdapterEvent, AdapterDoor, EventActor, EventIdentity, CallsOf, MissingCall, MissingEvent, AnyChoice, Setting, StandIn, FeatureSpec, AdapterSpec, ProjectionSpec, ProjectedOperation, ProjectionInput, Output, ViewOf } from "#modules/plugins/types.js";
+export type { Agent, AgentSpec, Slots } from "#modules/agents/types.js";
+export type { Declared } from "#modules/declare/types.js";
+export type { AnyDerive, Derive, Look, Looks, Problem, Problems, FoundOf } from "#modules/derive/types.js";
+export type { Hold, Held, Delivery, Unheld } from "#modules/holds/types.js";
+export type { On } from "#modules/events/types.js";
+export type { SourceKind, SourceSpec, Connection, Mapped, Scope, AccountRef, Seen, Cells, AdmissionRow, ContextMessage, TimerConfig } from "#modules/sources/types.js";
+export type { ActorForm } from "#modules/roles/types.js";

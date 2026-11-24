@@ -1,6 +1,8 @@
 // Operations and reads: what can be called. An operation's name is its path; nothing here carries a name.
 import type { Duration, Schema } from "effect";
+import type { AnyDerive } from "#modules/derive/types.js";
 import type { AnyErrorClass } from "#modules/errors/types.js";
+import type { On } from "#modules/events/types.js";
 import type { Move } from "#modules/machines/types.js";
 import type { Call } from "#modules/plugins/types.js";
 import type { Allowed, Builtin, Narrowed, Role, RoleOf, ServiceRole, SignedIn, System } from "#modules/roles/types.js";
@@ -64,6 +66,8 @@ export interface OperationSpec<P extends FieldsInput, A extends FieldsInput, E e
   readonly runs?: Runs;
   /** A target can say a guarantee needs a network test; defaults to `unit`. */
   readonly test?: TestKind;
+  /** The events that call it, each as an outbox hop (`Blueprint.on`). The model records them; the outbox is Goal 11's. */
+  readonly on?: ReadonlyArray<On>;
 }
 
 export interface Operation<
@@ -94,6 +98,7 @@ export interface Operation<
   /** Whether the author wrote `runs`, and what: the compiler refuses it on an operation of a chain-stored thing, where it is worked out. */
   readonly runsDeclared: Runs | undefined;
   readonly test: TestKind;
+  readonly on: ReadonlyArray<On>;
 }
 
 /** What a read by id answers: the fields it names, decoded, with `state` as text. */
@@ -110,7 +115,7 @@ export interface Page<I> {
 
 /** The payload of a list read: each `where` field, and the cursor, all optional (an omitted filter filters nothing). */
 export type ListPayload<T extends Thing, W extends ReadonlyArray<string>> = {
-  readonly [K in W[number] as K extends "state" ? never : K]?: K extends keyof T["fields"] ? TypeOf<T["fields"][K]["value"]> : never;
+  readonly [K in W[number] as K extends "state" ? never : K]?: K extends keyof T["fields"] ? TypeOf<T["fields"][K]["value"]> : string;
 } & { readonly state?: string; readonly cursor?: string };
 
 export type ListItem<T extends Thing> = { readonly [K in keyof T["fields"]]: TypeOf<T["fields"][K]["value"]> } & { readonly state: string };
@@ -138,6 +143,10 @@ export interface Read<T extends Thing = Thing, P = { readonly id: string }, A = 
   readonly optional: ReadonlyArray<string>;
   /** The fields it names, with `state` as text; or a list's `items` and `next`. */
   readonly answer: FieldsInput;
+  /** What it works out from other records and adds to each answer (GOAL17-derived-reads). */
+  readonly derive: AnyDerive | undefined;
+  /** Fields pinned to one value, taken out of the payload: a caller can't set them. */
+  readonly only: { readonly [field: string]: unknown } | undefined;
   readonly payloadSchema: Schema.Codec<P, unknown>;
   readonly answerSchema: Schema.Codec<A, unknown>;
 }
@@ -165,14 +174,21 @@ export interface OperationsApi {
       readonly fields: ReadonlyArray<keyof T["fields"] | "state">;
       readonly allowed: readonly [Allowed, ...Array<Allowed>];
       readonly budget?: Budget;
+      /** Worked out from other records and added to the answer. */
+      readonly derive?: AnyDerive;
     }): Read<T>;
-    /** A page of instances: filtered by `where`, in `order`, `page` to a page. Answers `{ items, next }`. */
-    <T extends Thing, const W extends ReadonlyArray<(keyof T["fields"] & string) | "state">>(thing: T, spec: {
+    /**
+     * A page of instances: filtered by `where` (a derived field too), in `order`, `page` to a page. Answers `{ items, next }`.
+     * `only` pins a field to one value and takes it out of the payload.
+     */
+    <T extends Thing, const W extends ReadonlyArray<string>>(thing: T, spec: {
       readonly where: W;
       readonly order: Order;
       readonly page: number;
       readonly allowed: readonly [Allowed, ...Array<Allowed>];
       readonly budget?: Budget;
+      readonly derive?: AnyDerive;
+      readonly only?: { readonly [field: string]: unknown };
     }): Read<T, ListPayload<T, W>, Page<ListItem<T>>>;
   };
   readonly step: {

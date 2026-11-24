@@ -473,6 +473,33 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: NX_DAEMON=false pnpm nx run e2e:m8-ratchet --outputStyle=static
 
+  # Goal 17's checks (e2e/superagent/README.md), written before the superagent is built: the ratchet passes while every
+  # failure is listed in e2e/superagent/expected-failing/, and fails on any other. Check 07 fetches the full published
+  # specs once into tmp/specs/ (no key). Skipped on a docs-only pull request, like the gates above. Unlike them, it also
+  # runs on the fast gate of a pull request into goal/superagent: these are that goal's own checks, so its builders' pull
+  # requests must run them (an exception to CI-integration.md B1, for Goal 17's integration branch). Like every job, it
+  # goes by the live draft state from `ready` (CI-drafts-race).
+  e2e-superagent:
+    needs: [ready, changes]
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || (needs.changes.outputs.fast == 'true' && github.base_ref != 'goal/superagent'))) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/cache@v6.1.0
+        with:
+          path: tmp/specs
+          key: superagent-specs-${{ hashFiles('e2e/superagent/specs/pins.json') }}
+      - run: NX_DAEMON=false pnpm nx run e2e:superagent-ratchet --outputStyle=static
+      # Goal 17 decides its records on this branch, where e2e-m0's supersedes guard is skipped by the fast gate, so it runs here too.
+      - run: tools/ci/supersedes.sh
+
   # Gate M0 (M0.06): no old name outside the records. The canon's check (docs/canon/README.md) runs beside it: every quote,
   # reference and component in the MDX pages, and every link in its READMEs and status page. It replaced the old docs page's
   # link check when K41 retired that page (design/decisions/K41-canon-map.md).

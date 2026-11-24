@@ -12,6 +12,8 @@ const valueOf = (meta: ValueMeta): LockValue => {
     // Their own kinds, though both travel as ISO text: a field moving between an instant, a day and text changes what clients parse.
     case "instant": return { value: "instant" };
     case "day": return { value: "day" };
+    // Its own kind with its places: a field moving between a decimal and text, or changing its places, changes what clients parse.
+    case "decimal": return { value: "decimal", places: meta.places };
     case "schema": return { value: "schema" };
   }
 };

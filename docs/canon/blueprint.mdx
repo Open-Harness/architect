@@ -72,7 +72,7 @@ This is what the model says about it, rendered from the sign-up sheet's compiled
 3. **The path says what a file is.** `readLayout` splits each path and decides from it alone. Under `blueprint/things/`,
    the folder is the thing's name, and the rest of the path says which part of it the file holds:
 
-```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=174-181
+```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=203-210
 if (parts[0] !== "things" || parts.length < 3) {
   layout.problems.push(`${at(path)}: not a place the blueprint reads (secrets.ts, values/<file>.ts, assets/<name>.ts, environments/<name>.ts, stores/<name>.ts, things/<thing>/..., or a mount in features/, adapters/ or projections/)`);
   continue;
@@ -85,7 +85,7 @@ const file = parts.slice(2).join("/");
 
    A file in a thing's `verbs` folder is one operation, named by its file and nothing else:
 
-```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=199-205
+```ts file=packages/compiler/src/modules/model/internal/layout.ts name=readLayout lines=236-242
 } else if (parts[2] === "verbs" && parts.length === 4) {
   const verb = parts[3]!;
   if (!NAME.test(verb)) layout.problems.push(`${at(path)}: verb "${verb}" must be lowercase words joined by dashes`);
@@ -111,9 +111,11 @@ declaration instead.
 
 ### The model
 
-The model is the one contract every projection is made from (K5, seam 1). Today it has fifteen parts. This is its type:
+The model is the one contract every projection is made from (K5, seam 1). This is its type. The optional parts after
+`mounts` (`agents`, `sources`, `holds`, `problems` and `declared`) come from the superagent's forms (Goal 17) and appear only
+when a blueprint uses them:
 
-```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=315-344
+```ts file=packages/compiler/src/modules/model/types.ts name=Model lines=329-368
 export interface Model {
   /** Every refusal in the project and its code: declared errors, each machine's, and the runtime's (`NotAllowed`). */
   readonly refusals: Readonly<Record<string, string>>;
@@ -139,6 +141,16 @@ export interface Model {
   readonly secrets?: Readonly<Record<string, SecretModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
+  /** Each agent kind, by its file's name: present only when the blueprint (or a mount) declares any. */
+  readonly agents?: Readonly<Record<string, { readonly file: string; readonly slots?: { readonly size: string; readonly reserve: number; readonly held: string } }>>;
+  /** Each active source, by its file's name (GOAL17-source-from). */
+  readonly sources?: Readonly<Record<string, unknown>>;
+  /** Each hold, by the name it is exported under, with the app's held and unheld deliveries (GOAL17-pause). */
+  readonly holds?: Readonly<Record<string, unknown>>;
+  /** What can fail beside a thing, and when it shows (GOAL17-derived-reads). */
+  readonly problems?: ReadonlyArray<{ readonly kind: string; readonly thing: string; readonly of: string; readonly name: string; readonly failures: string; readonly after: string | number }>;
+  /** Instances the blueprint declares, by their thing's plural (`superagents`). */
+  readonly declared?: Readonly<Record<string, ReadonlyArray<unknown>>>;
   /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
   readonly alertRules: ReadonlyArray<AlertRuleModel>;
   /** The app's map: its pages, components and navigation (K31, K36). Present only when the blueprint has an `app/` folder. */

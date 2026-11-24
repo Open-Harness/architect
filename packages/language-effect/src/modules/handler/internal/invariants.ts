@@ -15,10 +15,13 @@ export const settleViolation = <L extends { readonly around: <A, E, R>(work: Eff
   operation: string,
   invariants: Readonly<Record<string, string>>,
   logs: L,
+  /** What a lost race becomes: the call's retry, which meets what the winner made (a version save is then refused as stale). */
+  retry: () => unknown,
 ) => (violation: Violation) =>
   Effect.gen(function* () {
-    const { rule, refuse, row, own } = violation;
+    const { rule, refuse, row, own, retry: lost } = violation;
     if (own) return yield* Effect.die(new Error(`${operation} wrote two rows that hold one key of the unique rule ${rule}: that is the handler's bug, not a race`));
+    if (lost === true && refuse === undefined) return yield* Effect.fail(retry());
     if (refuse === undefined) return yield* Effect.die(new Error(`${operation} broke ${rule}, which names no refusal: that is the app's own bug`));
     if (!Object.values(invariants).includes(rule)) {
       return yield* Effect.die(new Error(`${operation} broke ${rule}, which the compiler did not list it as able to break: declare \`writes\` on the step that writes it`));

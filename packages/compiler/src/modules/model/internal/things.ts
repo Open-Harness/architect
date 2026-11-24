@@ -7,6 +7,7 @@ import type { Lock, Wanted } from "#modules/lock/types.js";
 import type { ThingModel } from "../types.ts";
 import { MACHINE_NUMBER, inDeclarationOrder } from "./codes.ts";
 import { NOT_FOUND_NUMBER, notFoundOf } from "./found.ts";
+import { roleRuleOf } from "./bits.ts";
 import { hashOf } from "./hash.ts";
 import { invariantsOf } from "./invariants.ts";
 import { pascal, type Layout } from "./layout.ts";
@@ -47,6 +48,10 @@ export const thingsOf = (env: ThingsEnv): { readonly things: Record<string, Thin
   // G4's `unique:` key is retired (S-30): a thing still carrying it is refused, by thing name only (never a field name).
   for (const [n, t] of layout.things) if (t.thing && "unique" in t.thing) problems.push(`thing ${n} declares unique, which is retired: declare it with Blueprint.invariant.unique in blueprint/things/${n}/invariants.ts`);
 
+  // The id prefixes some thing owns: its own `id` field's. A field that names another prefix names nothing.
+  // `per` is the identity's own: the people who sign in are a thing of Better Auth's, which a blueprint refers to without declaring.
+  const owned = new Set(["per", ...[...layout.things.values()].flatMap((t) => { const m = t.thing?.fields["id"]?.value.meta; return m?.type === "id" ? [m.prefix] : []; })]);
+
   const wanted: Array<Wanted> = [];
   const drafts = [...layout.things].sort(([a], [b]) => a.localeCompare(b)).flatMap(([name, t]) => {
     if (!t.thing) return [];
@@ -75,13 +80,18 @@ export const thingsOf = (env: ThingsEnv): { readonly things: Record<string, Thin
       : null;
     if (m && m.thing !== t.thing) problems.push(`${where}/machine.ts: is a machine of another thing`);
     const invariants = invariantsOf(t, { thingNames, errorNames, verbs }, problems);
+    if (t.thing.versions !== undefined && !(t.thing.versions.key in t.thing.fields)) problems.push(`${where}/thing.ts: versions key ${t.thing.versions.key} is not a field of ${name}`);
+    for (const [k, f] of Object.entries(t.thing.fields)) {
+      const meta = f.value.meta;
+      if (k !== "id" && meta.type === "id" && !owned.has(meta.prefix)) problems.push(`${where}/thing.ts field ${k}: the id prefix "${meta.prefix}" is no thing's own id: name a prefix some thing owns`);
+    }
     if (onChain && t.invariants.size > 0) problems.push(`${where}/invariants.ts: ${name} lives in a chain store, which enforces no invariants yet: a chain-stored thing declares none`);
     const errors = inDeclarationOrder(t.errors).map(([n, e]) => ({ name: n, fields: fieldsModel(e.fields, `${where}/errors.ts ${n}`, { place: "an error", ...ctx }), exit: e.exit }));
     const events = Object.fromEntries(byName(t.events).map(([n, e]) => [n, fieldsModel(e.fields, `${where}/events.ts ${n}`, { place: "an event", ...ctx })]));
     for (const role of t.roles.values()) {
       if (role.who !== undefined && role.who.of !== t.thing) problems.push(`${where}/roles.ts: a who role names a field of another thing; a role's who is a field of ${name}`);
     }
-    const roleRules = Object.fromEntries(byName(t.roles).map(([role, r]) => [role, r.who !== undefined ? { kind: "who" as const, who: r.who.key } : Blanks.isBlank(r.rule) ? null : r.rule.toString()]));
+    const roleRules = Object.fromEntries(byName(t.roles).map(([role, r]) => [role, r.who !== undefined ? { kind: "who" as const, who: r.who.key } : Blanks.isBlank(r.rule) ? null : roleRuleOf(r)]));
     // Every refusal this thing has, for the lock: its declared errors in order, the machine's 900 and the generated not-found, 901.
     const owner = name;
     const idValue = t.thing.fields["id"]?.value.meta;
@@ -104,7 +114,7 @@ export const thingsOf = (env: ThingsEnv): { readonly things: Record<string, Thin
     const errors = Object.fromEntries(d.errors.map((e) => [e.name, { fields: e.fields, exit: e.exit, code: codeFor(d.name, e.name) }]));
     const machine = d.machine ? { ...d.machine, notFrom: { ...d.machine.notFrom, code: `${d.code}-${MACHINE_NUMBER}` } } : null;
     const entry = {
-      name: d.name, identifier: pascal(d.name), code: d.code, description: Blanks.isBlank(d.t.thing!.description) ? "" : d.t.thing!.description, fields: d.fields,
+      name: d.name, identifier: pascal(d.name), code: d.code, description: Blanks.isBlank(d.t.thing!.description) ? "" : d.t.thing!.description, fields: d.fields, ...(d.t.thing!.versions ? { versions: { key: d.t.thing!.versions.key } } : {}),
       lives: (d.t.thing!.lives ?? "database") as ThingModel["lives"], ...storeOf(d.t.thing!.store, d.where), ...(d.invariants ? { invariants: d.invariants } : {}), machine,
       events: d.events,
       errors, ...(missable.has(d.t.thing!) ? { notFound: notFoundOf(pascal(d.name), `${d.code}-${NOT_FOUND_NUMBER}`, errors) } : {}),

@@ -1,7 +1,7 @@
 // What the generated Worker says about its operations and its identity: the runtime's refusals each names, and where the people live.
 import type { Model, OperationModel } from "@orthograph/compiler";
 import { Names } from "orthograph/server";
-import { camel } from "#modules/names/service.js";
+import { camel, opVar, pascal } from "#modules/names/service.js";
 
 export const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
 
@@ -52,5 +52,25 @@ export const worldExports = (timed: boolean, actors: boolean): ReadonlyArray<str
     "    return wakes;",
     "  }",
     "}",
+  ];
+};
+
+/** One thing's routes: each operation handled through the runtime's wrapper, under the services taken once. */
+export const groupOf = (ops: ReadonlyArray<OperationModel>, empty: boolean, timed: boolean) => (t: string): ReadonlyArray<string> => {
+  const handles = ops
+    .filter((o) => o.thing === t)
+    .map((o) => {
+      const serve = empty && o.kind === "operation"
+        ? `request.headers["x-ortho-starting-world"] === "1" ? ${opVar(o)}Served : ${opVar(o)}Scaffolded`
+        : `${opVar(o)}Served`;
+      return `      .handle("${o.verb}", ({ payload, request }) => call(${serve}, payload, request.headers).pipe(Effect.provideContext(services)))`;
+    });
+  return [
+    `const ${pascal(t)}Live = HttpApiBuilder.group(CallApi, "${t}", Effect.fn(function* (handlers) {`,
+    "  // The services are taken once, when the routes are built; each request keeps its own tracer and span.",
+    `  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth${timed ? ", Timers, DurableTimers" : ""})(yield* Effect.context<Services>());`,
+    "  return handlers",
+    ...handles.map((h, i) => (i === handles.length - 1 ? `${h};` : h)),
+    "}));",
   ];
 };
