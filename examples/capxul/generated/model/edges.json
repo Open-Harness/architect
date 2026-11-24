@@ -50,6 +50,16 @@
     "kind": "refers"
   },
   {
+    "from": "holiday.holidayList",
+    "to": "holiday-list.id",
+    "kind": "refers"
+  },
+  {
+    "from": "holiday-list.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "bank-account.close",
     "to": "bank-account",
     "kind": "acts-on"
@@ -336,6 +346,71 @@
   },
   {
     "from": "employee-grade.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday.add",
+    "to": "holiday",
+    "kind": "acts-on"
+  },
+  {
+    "from": "holiday.add",
+    "to": "holiday.HolidayAdded",
+    "kind": "emits"
+  },
+  {
+    "from": "holiday.add",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday.get",
+    "to": "holiday",
+    "kind": "reads"
+  },
+  {
+    "from": "holiday.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday-list.add-weekly-off",
+    "to": "holiday-list",
+    "kind": "acts-on"
+  },
+  {
+    "from": "holiday-list.add-weekly-off",
+    "to": "holiday-list.WeeklyOffAdded",
+    "kind": "emits"
+  },
+  {
+    "from": "holiday-list.add-weekly-off",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday-list.create",
+    "to": "holiday-list",
+    "kind": "acts-on"
+  },
+  {
+    "from": "holiday-list.create",
+    "to": "holiday-list.HolidayListCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "holiday-list.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday-list.get",
+    "to": "holiday-list",
+    "kind": "reads"
+  },
+  {
+    "from": "holiday-list.get",
     "to": "company.owner",
     "kind": "allowed-by"
   }

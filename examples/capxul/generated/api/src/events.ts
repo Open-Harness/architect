@@ -9,6 +9,8 @@ import * as Department from "../../../blueprint/things/department/events.ts";
 import * as Designation from "../../../blueprint/things/designation/events.ts";
 import * as Employee from "../../../blueprint/things/employee/events.ts";
 import * as EmployeeGrade from "../../../blueprint/things/employee-grade/events.ts";
+import * as Holiday from "../../../blueprint/things/holiday/events.ts";
+import * as HolidayList from "../../../blueprint/things/holiday-list/events.ts";
 
 EventNames.name(BankAccount.BankAccountClosed, "BankAccountClosed");
 EventNames.name(BankAccount.BankAccountOpened, "BankAccountOpened");
@@ -25,5 +27,8 @@ EventNames.name(Designation.DesignationCreated, "DesignationCreated");
 EventNames.name(Employee.EmployeeHired, "EmployeeHired");
 EventNames.name(Employee.EmployeeRelieved, "EmployeeRelieved");
 EventNames.name(EmployeeGrade.EmployeeGradeCreated, "EmployeeGradeCreated");
+EventNames.name(Holiday.HolidayAdded, "HolidayAdded");
+EventNames.name(HolidayList.HolidayListCreated, "HolidayListCreated");
+EventNames.name(HolidayList.WeeklyOffAdded, "WeeklyOffAdded");
 
-export const names = ["BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated"] as const;
+export const names = ["BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded"] as const;

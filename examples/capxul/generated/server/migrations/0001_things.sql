@@ -96,6 +96,26 @@ CREATE TABLE "employee-grade" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "employee-grade_oneNamePerCompany" ON "employee-grade" ("company", "gradeName");
+CREATE TABLE "holiday" (
+  "id" TEXT PRIMARY KEY,
+  "holidayList" TEXT NOT NULL,
+  "holidayDate" TEXT NOT NULL,
+  "description" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "holiday_oneHolidayPerDay" ON "holiday" ("holidayList", "holidayDate");
+CREATE TABLE "holiday-list" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "holidayListName" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "totalHolidays" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "holiday-list_oneNamePerCompany" ON "holiday-list" ("company", "holidayListName");
 -- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).
 CREATE TABLE "_journal" (
   "seq" INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -24,6 +24,11 @@ import { declaration as employeeHire } from "../../api/src/employee/hire.ts";
 import { declaration as employeeRelieve } from "../../api/src/employee/relieve.ts";
 import { declaration as employeeGradeCreate } from "../../api/src/employee-grade/create.ts";
 import { declaration as employeeGradeGet } from "../../api/src/employee-grade/get.ts";
+import { declaration as holidayAdd } from "../../api/src/holiday/add.ts";
+import { declaration as holidayGet } from "../../api/src/holiday/get.ts";
+import { declaration as holidayListAddWeeklyOff } from "../../api/src/holiday-list/add-weekly-off.ts";
+import { declaration as holidayListCreate } from "../../api/src/holiday-list/create.ts";
+import { declaration as holidayListGet } from "../../api/src/holiday-list/get.ts";
 
 /** One tool per operation and read, named as the operation is. */
 export const catalog = {
@@ -51,4 +56,9 @@ export const catalog = {
   "employee.relieve": { description: "Record that an employee has left the company, on the day they were relieved.", operation: employeeRelieve, states: ["active","left"], move: {"key":"relieve","from":["active"],"to":["left"],"emits":"EmployeeRelieved"} },
   "employee-grade.create": { description: "Add a grade to a company. Refuses EmployeeGradeNameTaken when another employee grade holds this company and grade name.", operation: employeeGradeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"EmployeeGradeCreated"} },
   "employee-grade.get": { description: "Read one employee-grade by its id: company, gradeName, state.", operation: employeeGradeGet, states: ["active"] },
+  "holiday.add": { description: "Add one day off to a holiday list. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"HolidayAdded"} },
+  "holiday.get": { description: "Read one holiday by its id: holidayList, holidayDate, description, state.", operation: holidayGet, states: ["active"] },
+  "holiday-list.add-weekly-off": { description: "Make every given weekday in a holiday list a day off. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListAddWeeklyOff, states: ["active"], move: {"key":"addWeeklyOff","from":["active"],"to":["active"],"emits":"WeeklyOffAdded"} },
+  "holiday-list.create": { description: "Start a company's list of days off, between two days. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"HolidayListCreated"} },
+  "holiday-list.get": { description: "Read one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.", operation: holidayListGet, states: ["active"] },
 } as const satisfies { readonly [name: string]: McpEntry };
