@@ -6,7 +6,7 @@ const ops = ["superagent.update", "policy.save", "policy.sync", "account.list", 
 const waiting = (names: ReadonlyArray<string>) => ({ items: names.map((operation) => ({ operation, changes: { slots: 9 }, why: "the pool is too small" })), next: null });
 export default {
   world: WORLD,
-  steps: { "#2": { answer: { revision: 2n } }, "#7": { answer: waiting(ops) }, "#8": { answer: { revision: 1n } }, "#9": { answer: { revision: 1n } } },
+  steps: { "#11": { answer: { account: "acc_roster_3" } }, "#2": { answer: { revision: 2n } }, "#7": { answer: waiting(ops) }, "#8": { answer: { revision: 1n } }, "#9": { answer: { revision: 1n } } },
   plants: [
     { name: "the main agent's change was applied, so ann's save from the same base is one revision on", step: "#2", with: () => ({ answer: { revision: 3n } }) },
     { name: "the main agent's update was applied instead of recorded", step: "#1", with: () => ({ events: [] }) },
@@ -22,5 +22,11 @@ export default {
     { name: "the main agent's policy change was applied: ann's save from the first base is stale", step: "#8", with: () => ({ answer: { revision: 2n } }) },
     { name: "the main agent's settings change was applied: ann's save from the first base is stale", step: "#9", with: () => ({ answer: { revision: 2n } }) },
     { name: "a proposal records no reason", step: "#7", with: () => ({ answer: { items: ops.map((operation) => ({ operation, changes: { slots: 9 }, why: "" })), next: null } }) },
+    // #934: a change applied as well as recorded passes its own step (its journal still holds ProposalRecorded); a later step catches it.
+    { name: "the main agent's listing was applied as well as recorded: ann's own listing finds the account listed and lists nothing", step: "#10", follows: "#5", with: () => ({ events: [] }) },
+    { name: "the main agent's sync was applied as well as recorded: the roster's person is listed already, so ann's listing lists nothing", step: "#12", follows: "#4", with: () => ({ events: [] }) },
+    { name: "REVIEW: the main agent's update was applied as well as recorded: ann's save from the same base is one revision on", step: "#2", follows: "#1", with: () => ({ answer: { revision: 3n } }) },
+    { name: "REVIEW: the main agent's policy change was applied as well as recorded: ann's save from the first base is stale", step: "#8", follows: "#3", with: () => ({ answer: { revision: 2n } }) },
+    { name: "REVIEW: the main agent's settings change was applied as well as recorded: ann's save from the first base is stale", step: "#9", follows: "#6", with: () => ({ answer: { revision: 2n } }) },
   ],
 };

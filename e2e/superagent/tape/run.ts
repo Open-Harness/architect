@@ -73,6 +73,19 @@ for (const [n, step] of steps.entries()) {
   if (step.checks.some((c) => c.kind === "no-events")) eventRuns.push({ step: step.title, what: "an event where none is allowed", failed: run([[journey, {}]]) });
 }
 
+// Something added (the author skill's proof 5): a step whose title claims "only" or "nothing" and which asks for an event, with one event more
+// in its journal than a correct system writes. `emits` is a subset match, so the step itself rarely sees it; it must then be caught by a
+// planted tape that `follows` it at a later step, the place a wrong build's extra change shows (#934). The plants are judged above. Its limit:
+// this proves that some later step is named as catching it and that its plant fails there, not that the plant is the extra change itself;
+// the plant's name says which change it stands for, and a reviewer reads it. Steps are chosen by the words of their titles.
+const extraRuns = steps.flatMap((step, n) => {
+  if (!/\b(only|nothing)\b/.test(step.title) || !step.checks.some((c) => c.kind === "emits")) return [];
+  const own = stepData(tape, step.title, n);
+  const atStep = failing(judge(journey, tape, { step: step.title, data: { ...own, events: [...(own.events ?? []), [journey, {}] as const] } })).includes(step.title);
+  const followers = tape.plants.filter((p) => p.follows !== undefined && titleOf(titles, p.follows) === step.title && titles.indexOf(titleOf(titles, p.step) ?? "") > n).map((p) => p.name);
+  return [{ step: step.title, atStep, followers }];
+});
+
 if (process.env["TAPE_DUMP"]) {
   const dump = steps.flatMap((step, n) => {
     const asks = step.checks.flatMap((c) => (c.kind === "emits" ? [c] : []));
@@ -81,4 +94,4 @@ if (process.env["TAPE_DUMP"]) {
   console.log(JSON.stringify({ name, dump }, (_, v) => (typeof v === "bigint" ? { $big: v.toString() } : v)));
   process.exit(0);
 }
-console.log(JSON.stringify({ name, journey: journey.name, titles, unknownTapeSteps: Object.keys(tape.steps).filter((k) => !titles.includes(titleOf(titles, k) ?? "")), unknownPlantSteps: tape.plants.filter((p) => !titles.includes(titleOf(titles, p.step) ?? "")).map((p) => p.name), good: failing(good), plants, mutantRuns, eventRuns }));
+console.log(JSON.stringify({ name, journey: journey.name, titles, unknownTapeSteps: Object.keys(tape.steps).filter((k) => !titles.includes(titleOf(titles, k) ?? "")), unknownPlantSteps: tape.plants.filter((p) => !titles.includes(titleOf(titles, p.step) ?? "")).map((p) => p.name), good: failing(good), plants, mutantRuns, eventRuns, extraRuns }));

@@ -34,6 +34,7 @@ describe("every slice 8 journey is fair", () => {
         const r = result();
         expect(r.mutantRuns.filter((m) => m.read && !m.failed).map((m) => `${m.step}: ${m.path} ${m.kind}`)).toEqual([]);
         expect(r.eventRuns.filter((e) => !e.failed).map((e) => `${e.step}: ${e.what}`)).toEqual([]);
+        expect(r.extraRuns.filter((e) => !e.atStep && e.followers.length === 0).map((e) => `${e.step}: an event added, and no later step catches it`)).toEqual([]);
       });
     });
   }
