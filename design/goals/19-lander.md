@@ -127,8 +127,9 @@ said no Claude-led goal is running now.
   Goal 16 has run Goal 17's lane since CX-takeover. A reviewer thread that wrote none of them recorded the 18 🔍
   verdicts the slices lacked, indexed on #887: 11 passed and 7 blocked. The blocks were Snags #899 to #901 (fixes the
   lander's 🔍 found in framework code) and #932 to #935 (checks-side), and #940, #941, #949 and #951 fixed them all.
-  `main` then no longer merged in: seven files conflicted, four of them framework code that both sides of Goal 16 had
-  changed, so Goal 16 merged `main` into `goal/superagent` itself (#962, with its own 🔍), not the lander. #962 also
+  `main` then no longer merged in: seven files conflicted, four of them framework code that both `main` and
+  `goal/superagent` had changed, so Goal 16 merged `main` into `goal/superagent` itself (#962, with its own 🔍), not
+  the lander. #962 also
   pointed the plugins' fields at `Superagent.fields.id` and `Account.fields.id`, so #939's role paths walk
   (GOAL17-dead-role-paths), and moved checks 15, 19 and 25 off made-up ids; Goal 16 both authorised and made those
   check edits. #887's 🔍 found #903 with no 🔍 and #949's pass only in the builder's words, and recorded both. The
