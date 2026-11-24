@@ -1,4 +1,0 @@
-# Dates, part one (#866), is not built: there is no `Blueprint.day`, and the lock and the chain check know no day. Clears with the Dates build.
-src/modules/model/day-value.test.ts > Dates: the compiler and a calendar day > records a day error field in the refusals lock as its own kind, not as text
-src/modules/model/day-value.test.ts > Dates: the compiler and a calendar day > carries a day field into the model as a day
-src/modules/model/day-value.test.ts > Dates: the compiler and a calendar day > refuses a day field on a chain-stored thing, which a contract cannot hold
