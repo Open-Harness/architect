@@ -17,6 +17,12 @@ import * as ExpenseClaim from "../../../blueprint/things/expense-claim/events.ts
 import * as ExpenseClaimType from "../../../blueprint/things/expense-claim-type/events.ts";
 import * as Holiday from "../../../blueprint/things/holiday/events.ts";
 import * as HolidayList from "../../../blueprint/things/holiday-list/events.ts";
+import * as Interview from "../../../blueprint/things/interview/events.ts";
+import * as InterviewFeedback from "../../../blueprint/things/interview-feedback/events.ts";
+import * as InterviewRound from "../../../blueprint/things/interview-round/events.ts";
+import * as JobApplicant from "../../../blueprint/things/job-applicant/events.ts";
+import * as JobOffer from "../../../blueprint/things/job-offer/events.ts";
+import * as JobOpening from "../../../blueprint/things/job-opening/events.ts";
 import * as ShiftType from "../../../blueprint/things/shift-type/events.ts";
 
 EventNames.name(Attendance.AttendanceMarked, "AttendanceMarked");
@@ -47,6 +53,20 @@ EventNames.name(ExpenseClaimType.ExpenseClaimTypeCreated, "ExpenseClaimTypeCreat
 EventNames.name(Holiday.HolidayAdded, "HolidayAdded");
 EventNames.name(HolidayList.HolidayListCreated, "HolidayListCreated");
 EventNames.name(HolidayList.WeeklyOffAdded, "WeeklyOffAdded");
+EventNames.name(Interview.InterviewCleared, "InterviewCleared");
+EventNames.name(Interview.InterviewRejected, "InterviewRejected");
+EventNames.name(Interview.InterviewScheduled, "InterviewScheduled");
+EventNames.name(InterviewFeedback.InterviewFeedbackGiven, "InterviewFeedbackGiven");
+EventNames.name(InterviewRound.InterviewRoundCreated, "InterviewRoundCreated");
+EventNames.name(JobApplicant.JobApplicantAccepted, "JobApplicantAccepted");
+EventNames.name(JobApplicant.JobApplicantCreated, "JobApplicantCreated");
+EventNames.name(JobApplicant.JobApplicantHeld, "JobApplicantHeld");
+EventNames.name(JobApplicant.JobApplicantRejected, "JobApplicantRejected");
+EventNames.name(JobOffer.JobOfferAccepted, "JobOfferAccepted");
+EventNames.name(JobOffer.JobOfferMade, "JobOfferMade");
+EventNames.name(JobOffer.JobOfferRejected, "JobOfferRejected");
+EventNames.name(JobOpening.JobOpeningClosed, "JobOpeningClosed");
+EventNames.name(JobOpening.JobOpeningCreated, "JobOpeningCreated");
 EventNames.name(ShiftType.ShiftTypeCreated, "ShiftTypeCreated");
 
-export const names = ["AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "ShiftTypeCreated"] as const;
+export const names = ["AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "InterviewCleared", "InterviewRejected", "InterviewScheduled", "InterviewFeedbackGiven", "InterviewRoundCreated", "JobApplicantAccepted", "JobApplicantCreated", "JobApplicantHeld", "JobApplicantRejected", "JobOfferAccepted", "JobOfferMade", "JobOfferRejected", "JobOpeningClosed", "JobOpeningCreated", "ShiftTypeCreated"] as const;

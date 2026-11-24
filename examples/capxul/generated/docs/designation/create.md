@@ -46,6 +46,12 @@ Starts from the world `a team`.
 
 - **Bo adds a job title to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.
 
+### make a job offer
+
+Starts from the world `an outside employee`.
+
+- **Ada adds the job title Dispatcher to Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, designationName `Dispatcher`, and gets back an answer matching `^dsg_[0-9a-z]+$`.
+
 ### set up departments and job titles
 
 Starts from the world `a company`.
