@@ -3,3 +3,5 @@ superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > a s
 superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > a versioned save that declares no stale refusal is refused by `ortho check`, naming policy.save
 superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > a versioned restore that declares no stale refusal is refused by `ortho check`, naming policy.restore
 superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > no framework package writes the superagent's error name as a string
+superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > a versioned save whose only declared error carries no `current` is refused by `ortho check`, naming policy.save
+superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > a versioned restore whose only declared error carries no `current` is refused by `ortho check`, naming policy.restore

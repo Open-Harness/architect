@@ -3,6 +3,8 @@
 // under CX-takeover. So: a pass after the timeout makes no eval for those triggers, nor does the pass after it; a trigger that arrives
 // later on the same thread is new and gets an eval as usual; after `trigger.reevaluate` a pass leaves exactly one live eval covering the
 // trigger. `eval.due` and `trigger.reevaluate` are served as the app serves them, over the memory store with the eval's own rules.
+// Reevaluating one trigger releases that trigger alone (the lead's call on #935: a person judges a trigger): the expired eval covers two,
+// and the other stays covered.
 // CONTROLS (proved by hand on #935's pull request): `due.ts` as #756 wrote it (unavailable evals left out of `covered`) fails the first
 // two; a `due.ts` that counts an unavailable eval as running fails the new trigger; the blank `reevaluate` fails the last. Dropping only
 // the `unavailable` filter is not enough: the eval a pass expires is not `standing`, so `covered` must read every eval.
@@ -37,8 +39,8 @@ const world = async () => {
     load<{ default: unknown }>("blueprint/things/trigger/verbs/reevaluate.ts"),
   ]);
   const at = BigInt(await Effect.runPromise(Clock.currentTimeMillis)) - 700_000n;
-  const told: Instance = { id: "evl_old", superagent, thread: "thr_0001", triggers: ["trg_0001"], activeAtStart: 0n, timeoutMs: 600_000n, deliveredAt: at, state: "delivered" };
-  const memory = storeMemory([[Superagent, owner], [Thread, thread], [Trigger, trigger("trg_0001")], [Eval, told]] as never, invariantsIn("eval", rules as never));
+  const told: Instance = { id: "evl_old", superagent, thread: "thr_0001", triggers: ["trg_0001", "trg_0003"], activeAtStart: 0n, timeoutMs: 600_000n, deliveredAt: at, state: "delivered" };
+  const memory = storeMemory([[Superagent, owner], [Thread, thread], [Trigger, trigger("trg_0001")], [Trigger, trigger("trg_0003")], [Eval, told]] as never, invariantsIn("eval", rules as never));
   const layer = Layer.mergeAll(BusyLive, memory.layer);
   const serve = (name: string, operation: unknown, handler: unknown, payload: unknown, who: unknown = system) =>
     Effect.runPromise((Handlers.serve({ name, operation: operation as never, handler: handler as never }).run(payload as never, who as never) as unknown as Effect.Effect<unknown, unknown, never>).pipe(Effect.provide(layer)));
@@ -60,9 +62,9 @@ describe("26 an unavailable eval waits for a person", () => {
     await w.pass();
     const after = await w.evals();
     expect(after.find((e) => e["id"] === "evl_old")?.state, "the expired eval").toBe("unavailable");
-    expect(covering(after, "trg_0001"), "an eval made by the pass that expired it").toEqual([]);
+    expect([...covering(after, "trg_0001"), ...covering(after, "trg_0003")], "an eval made by the pass that expired it").toEqual([]);
     await w.pass();
-    expect(covering(await w.evals(), "trg_0001"), "an eval made by the pass after").toEqual([]);
+    expect([...covering(await w.evals(), "trg_0001"), ...covering(await w.evals(), "trg_0003")], "an eval made by the pass after").toEqual([]);
   });
 
   it("a trigger that arrives afterwards on the same thread is new: the next pass makes one eval for it alone", async () => {
@@ -81,5 +83,6 @@ describe("26 an unavailable eval waits for a person", () => {
     await w.pass();
     await w.pass();
     expect(covering(await w.evals(), "trg_0001")).toEqual(["queued"]);
+    expect(covering(await w.evals(), "trg_0003"), "the expired eval's other trigger was not reevaluated: it stays covered").toEqual([]);
   });
 });

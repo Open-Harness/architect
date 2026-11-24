@@ -4,7 +4,8 @@
 // edited GitHub review keeps its `submitted_at`, so its id (GOAL17-connections A), and the edit was answered `seen` with nothing said.
 // What is compared is the event's object (the review, the comment, the message), not what GitHub or Slack wrap around it, so the repeats check
 // 63 calls one event (another delivery id, sender, installation or action; a message delivered again as an app mention) say nothing.
-// Spans are read from the world's own Collector, by the trace each request carried. The kept row is never changed by a repeat.
+// Spans are read from the world's own Collector, by the trace each request carried: `in.mismatch` must carry a `defect` attribute, as every
+// defect on a span does. The kept row is read back by the first delivery's trace, and a repeat never changes it.
 // CONTROLS (proved by hand on #901's pull request): today's door, which never compares, fails the three mismatches; a door that compares the
 // whole body fails the four repeats that are one event; a door that says `in.mismatch` on every `seen` fails the exact redelivery.
 import { mkdtempSync, rmSync } from "node:fs";
@@ -20,7 +21,7 @@ import { github, journalOf, slack, trace, type Door } from "./door.ts";
 import { APP_MENTION, USER_MESSAGE } from "./slack-events.ts";
 
 const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
-interface Seen extends Door { readonly spans: (trace: string, mount: string) => Promise<ReadonlyArray<string>> }
+interface Seen extends Door { readonly spans: (trace: string, mount: string) => Promise<ReadonlyArray<Span>> }
 
 /** The app in a world with a Collector, its doors' secrets made here, as check 63 opens it. */
 const open = async (): Promise<Seen> => {
@@ -40,14 +41,15 @@ const open = async (): Promise<Seen> => {
   return {
     url: made.world.url, secrets,
     close: async () => { await Effect.runPromise(Scope.close(scope, Exit.void)); rmSync(dir, { recursive: true, force: true }); },
-    // The door's spans for one request: wait for its outcome span (`in.<mount>.<outcome>`), then a moment more for the rest.
+    // The door's spans for one request: wait for its root span, `in.<mount>`, which ends after every span inside it, so they are exported with
+    // it or before it; then a moment more for the export to land.
     spans: async (t, mount) => {
       const end = Date.now() + 20_000;
       while (Date.now() < end) {
-        if ((await read(t)).some((s) => s.name.startsWith(`in.${mount}.`))) { await sleep(500); break; }
+        if ((await read(t)).some((s) => s.name === `in.${mount}`)) { await sleep(500); break; }
         await sleep(100);
       }
-      return (await read(t)).map((s) => s.name);
+      return read(t);
     },
   };
 };
@@ -62,13 +64,19 @@ const SEEN = [200, { seen: true }];
 /** Send `first`, which must be new, then `again`: answered seen, and its spans say `in.mismatch` exactly when `differs`; nothing is written for it. */
 const repeat = async (send: (d: Seen, body: Obj, t?: string) => Promise<{ status: number; body: unknown }>, mount: string, first: Obj, again: Obj, differs: boolean) => {
   const d = await world();
-  expect(said(await send(d, first)), "the first delivery is new").toEqual(ACCEPTED);
+  const f = trace();
+  expect(said(await send(d, first, f.header)), "the first delivery is new").toEqual(ACCEPTED);
   const t = trace();
   expect(said(await send(d, again, t.header)), "the repeat").toEqual(SEEN);
-  const names = await d.spans(t.id, mount);
-  expect(names, "the door's outcome span").toContain(`in.${mount}.seen`);
-  expect(names.includes("in.mismatch"), differs ? "the repeat says something else: in.mismatch" : "the repeat is the same event: no in.mismatch").toBe(differs);
+  const spans = await d.spans(t.id, mount);
+  expect(spans.map((s) => s.name), "the door's outcome span").toContain(`in.${mount}.seen`);
+  // A defect on the span (Q2.2, GOAL17-repeat-mismatch): a span `in.mismatch` whose `defect` attribute is set, which trace trees and `watch` show.
+  const mismatch = spans.filter((s) => s.name === "in.mismatch" && typeof s.attrs["defect"] === "string" && s.attrs["defect"] !== "");
+  expect(mismatch.length > 0, differs ? "the repeat says something else: in.mismatch, with its defect" : "the repeat is the same event: no in.mismatch").toBe(differs);
+  if (!differs) expect(spans.map((s) => s.name), "no in.mismatch span at all").not.toContain("in.mismatch");
   expect(await journalOf(d.url, t.id), "a repeat writes nothing").toEqual([]);
+  const kept = (await journalOf(d.url, f.id)).filter((r) => r.operation === `in:${mount}`);
+  expect(kept.map((r) => r.fields), "the first delivery's row is kept as it came").toEqual([first]);
 };
 const gh = (event: string) => (d: Seen, body: Obj, t?: string) => github(d, event, body, t === undefined ? {} : { trace: t });
 const sl = (d: Seen, body: Obj, t?: string) => slack(d, body, t === undefined ? {} : { trace: t });
