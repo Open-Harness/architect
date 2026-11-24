@@ -10327,6 +10327,10 @@
       "file": "blueprint/environments/local.ts",
       "runs": "on this machine",
       "identity": "test-principals",
+      "clock": {
+        "kind": "stepped",
+        "starts": "2026-12-01T09:00:00.000Z"
+      },
       "lifetimeMs": null,
       "cloud": null,
       "database": "d1-local",
@@ -10339,7 +10343,7 @@
       ],
       "deploy": {},
       "publish": {},
-      "hash": "0f14705e03d3bc97"
+      "hash": "3203bdcf48498b69"
     },
     "test": {
       "name": "test",

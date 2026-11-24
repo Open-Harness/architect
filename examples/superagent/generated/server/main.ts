@@ -6,8 +6,8 @@ import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
-import { AuthD1, Database, Inbound, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
-import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, Mount, Principals, Reads, Store, Versions, Wire, invariantsIn, thingIn } from "@orthograph/language-effect";
+import { AuthD1, Database, Inbound, JournalD1, StoreD1, Telemetry, WorldEntry, toWorld } from "@orthograph/host-cloudflare";
+import { Auth, Busy, CallTelemetry, DurableTimers, Environment, Handlers, Journal, Mount, Principals, Reads, Store, Timers, Versions, Wire, invariantsIn, thingIn } from "@orthograph/language-effect";
 import { Mcp, type McpResult, type ShownOperation } from "@orthograph/language-effect";
 import { Api, Errors } from "../api/src/index.ts";
 import * as portal from "../portal/main.ts";
@@ -208,7 +208,18 @@ import * as subscriptionInvariants from "@orthograph/tickets/blueprint/things/su
 import * as threadInvariants from "@orthograph/intake/blueprint/things/thread/invariants.js";
 import * as triggerInvariants from "@orthograph/intake/blueprint/things/trigger/invariants.js";
 
-export { Actor, World } from "@orthograph/host-cloudflare";
+import { World as WorldHost, type WorldWakes } from "@orthograph/host-cloudflare";
+export { Actor } from "@orthograph/host-cloudflare";
+
+/** Which code wakes each kind of durable timer when it falls due: empty until a feature registers a kind (a workflow, an agent, the keeper). */
+const wakes: WorldWakes = {};
+
+/** The world, with its wake route: a due timer of a kind that is not here fails its step and stays pending. */
+export class World extends WorldHost {
+  protected override wakeKinds(): WorldWakes {
+    return wakes;
+  }
+}
 
 const accountListServed = Handlers.serve({ name: "account.list", operation: accountList.declaration, handler: Mount.serving(intakeMount, accountListHandler), notFrom: "AccountNotSeen", notFound: { account: "AccountNotFound" }, invariants: { AccountExists: "account.oneAccountPerExternalId" }, codes: Errors.codes });
 const accountSeenServed = Handlers.serve({ name: "account.seen", operation: accountSeen.declaration, handler: Mount.serving(intakeMount, accountSeenHandler), invariants: { AccountExists: "account.oneAccountPerExternalId" }, codes: Errors.codes });
@@ -307,7 +318,7 @@ const doors = [{ mount: "github", adapter: githubMount.plugin, events: ["checkRu
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
-type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth;
+type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth | Timers | DurableTimers;
 
 /** Who is calling, then the operation or read, its refusals sent as their wire classes. */
 type Run = (payload: never, principal: Principal, request?: string) => Effect.Effect<unknown, unknown, unknown>;
@@ -323,7 +334,7 @@ const call = <P extends object>(served: { readonly run: Run; readonly operation:
 
 const AccountLive = HttpApiBuilder.group(CallApi, "account", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("list", ({ payload, request }) => call(accountListServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("seen", ({ payload, request }) => call(accountSeenServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -332,7 +343,7 @@ const AccountLive = HttpApiBuilder.group(CallApi, "account", Effect.fn(function*
 }));
 const AgentLive = HttpApiBuilder.group(CallApi, "agent", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("close", ({ payload, request }) => call(agentCloseServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("open", ({ payload, request }) => call(agentOpenServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -340,7 +351,7 @@ const AgentLive = HttpApiBuilder.group(CallApi, "agent", Effect.fn(function* (ha
 }));
 const AssignmentLive = HttpApiBuilder.group(CallApi, "assignment", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("cancelled", ({ payload, request }) => call(assignmentCancelledServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("interrupted", ({ payload, request }) => call(assignmentInterruptedServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -352,14 +363,14 @@ const AssignmentLive = HttpApiBuilder.group(CallApi, "assignment", Effect.fn(fun
 }));
 const DecisionLive = HttpApiBuilder.group(CallApi, "decision", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("dismiss", ({ payload, request }) => call(decisionDismissServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("route", ({ payload, request }) => call(decisionRouteServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const EvalLive = HttpApiBuilder.group(CallApi, "eval", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("context", ({ payload, request }) => call(evalContextServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("decide", ({ payload, request }) => call(evalDecideServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -371,7 +382,7 @@ const EvalLive = HttpApiBuilder.group(CallApi, "eval", Effect.fn(function* (hand
 }));
 const InputLive = HttpApiBuilder.group(CallApi, "input", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("delivered", ({ payload, request }) => call(inputDeliveredServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("delivery-failed", ({ payload, request }) => call(inputDeliveryFailedServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -382,13 +393,13 @@ const InputLive = HttpApiBuilder.group(CallApi, "input", Effect.fn(function* (ha
 }));
 const MandateLive = HttpApiBuilder.group(CallApi, "mandate", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("revalidate", ({ payload, request }) => call(mandateRevalidateServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const OutgoingMessageLive = HttpApiBuilder.group(CallApi, "outgoing-message", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("reply", ({ payload, request }) => call(outgoingMessageReplyServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("retry", ({ payload, request }) => call(outgoingMessageRetryServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -397,7 +408,7 @@ const OutgoingMessageLive = HttpApiBuilder.group(CallApi, "outgoing-message", Ef
 }));
 const PolicyLive = HttpApiBuilder.group(CallApi, "policy", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("get", ({ payload, request }) => call(policyGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("history", ({ payload, request }) => call(policyHistoryServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -407,7 +418,7 @@ const PolicyLive = HttpApiBuilder.group(CallApi, "policy", Effect.fn(function* (
 }));
 const PromptSetLive = HttpApiBuilder.group(CallApi, "prompt-set", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("compose", ({ payload, request }) => call(promptSetComposeServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("history", ({ payload, request }) => call(promptSetHistoryServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -416,7 +427,7 @@ const PromptSetLive = HttpApiBuilder.group(CallApi, "prompt-set", Effect.fn(func
 }));
 const ProposalLive = HttpApiBuilder.group(CallApi, "proposal", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("approve", ({ payload, request }) => call(proposalApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("propose", ({ payload, request }) => call(proposalProposeServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -425,13 +436,13 @@ const ProposalLive = HttpApiBuilder.group(CallApi, "proposal", Effect.fn(functio
 }));
 const SettingsLive = HttpApiBuilder.group(CallApi, "settings", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("save", ({ payload, request }) => call(settingsSaveServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const SourceLive = HttpApiBuilder.group(CallApi, "source", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("disable", ({ payload, request }) => call(sourceDisableServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("enable", ({ payload, request }) => call(sourceEnableServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -441,7 +452,7 @@ const SourceLive = HttpApiBuilder.group(CallApi, "source", Effect.fn(function* (
 }));
 const SuperagentLive = HttpApiBuilder.group(CallApi, "superagent", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("boot", ({ payload, request }) => call(superagentBootServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("create", ({ payload, request }) => call(superagentCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -456,7 +467,7 @@ const SuperagentLive = HttpApiBuilder.group(CallApi, "superagent", Effect.fn(fun
 }));
 const ThreadLive = HttpApiBuilder.group(CallApi, "thread", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("bind", ({ payload, request }) => call(threadBindServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("closed", ({ payload, request }) => call(threadClosedServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -466,7 +477,7 @@ const ThreadLive = HttpApiBuilder.group(CallApi, "thread", Effect.fn(function* (
 }));
 const TicketLive = HttpApiBuilder.group(CallApi, "ticket", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("accept", ({ payload, request }) => call(ticketAcceptServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("ack", ({ payload, request }) => call(ticketAckServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -484,7 +495,7 @@ const TicketLive = HttpApiBuilder.group(CallApi, "ticket", Effect.fn(function* (
 }));
 const TriggerLive = HttpApiBuilder.group(CallApi, "trigger", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("handback", ({ payload, request }) => call(triggerHandbackServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("receive", ({ payload, request }) => call(triggerReceiveServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -529,15 +540,15 @@ export const steps = {
 // Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the
 // layer's instance, so a session either one issues is a person to both.
 let routes: ReturnType<typeof AuthD1.make> | undefined;
-const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, cli: "superagent-cli", worlds: hostsWorlds(env) }));
+const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, cli: "superagent-cli", worlds: hostsWorlds(env) }));
 
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
       Layer.provide([AccountLive, AgentLive, AssignmentLive, DecisionLive, EvalLive, InputLive, MandateLive, OutgoingMessageLive, PolicyLive, PromptSetLive, ProposalLive, SettingsLive, SourceLive, SuperagentLive, ThreadLive, TicketLive, TriggerLive]),
       Layer.provideMerge(CallTelemetry.layer),
-      Layer.provide([StoreD1.layer({ tables, actors: env.ACTORS, rules }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
-      Layer.provideMerge(Database.d1(env.DB)),
+      Layer.provide([StoreD1.layer({ tables, actors: env.ACTORS, rules }), JournalD1.layer, WorldEntry.work(env, wakes), Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
+      Layer.provideMerge(Database.d1(WorldEntry.fenced(env, env.DB))),
       Layer.provide(HttpServer.layerServices),
     ),
   );
@@ -567,7 +578,7 @@ const tools = Mcp.tools<Services>({
 let mcpRuntime: ManagedRuntime.ManagedRuntime<Services, never> | undefined;
 const runtimeOf = (env: Env) =>
   (mcpRuntime ??= ManagedRuntime.make(
-    Layer.mergeAll(StoreD1.layer({ tables, actors: env.ACTORS, rules }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(env.DB))),
+    Layer.mergeAll(StoreD1.layer({ tables, actors: env.ACTORS, rules }), JournalD1.layer, WorldEntry.work(env, wakes), Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(WorldEntry.fenced(env, env.DB)))),
   ));
 
 const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/;
@@ -600,7 +611,8 @@ let probes: Parameters<typeof toWorld>[0]["probes"];
 /** The world's own entry (world.ts) registers its packages' probes here; this file imports none, so a deployed Worker answers no probe. */
 export const registerProbes = (found: typeof probes): void => { probes = found; };
 
-export default {
+/** Each request runs in its world's time: `Date` and Effect's `Clock` read the instant its world keeps (stepped and scaled worlds only). */
+export default WorldEntry.entry<Env>({
   fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     // Closed before anything reads it: outside worlds there is no door to cast, to read facts, or to register a world.
     if (new URL(request.url).pathname.startsWith("/_world/") && !hostsWorlds(env)) return Promise.resolve(Response.json({ error: "not found" }, { status: 404 }));
@@ -616,7 +628,7 @@ export default {
       return Telemetry.serve({ url: env.OTLP_URL || undefined, sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT, service: "superagent", handler: (req, context) => Inbound.handle({ doors, db: env.DB, secrets: env as unknown as Record<string, unknown> }, req, context), waitUntil: (p) => ctx.waitUntil(p) }, request);
     }
     if (portal.owns(new URL(request.url).pathname)) return portal.serve(request, env);
-    if (new URL(request.url).pathname.startsWith("/api/auth/")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));
+    if (new URL(request.url).pathname.startsWith("/api/auth/")) return WorldEntry.section(env, () => Effect.runPromise(AuthD1.handle(routesOf(env), request)));
     if (new URL(request.url).pathname.startsWith("/.well-known/")) {
       return Effect.runPromise(AuthD1.oauth.discovery(routesOf(env), request)).then((found) => found ?? Response.json({ error: "not found" }, { status: 404 }));
     }
@@ -627,4 +639,4 @@ export default {
     Telemetry.configure({ sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT });
     return Telemetry.serve({ url: env.OTLP_URL || undefined, service: "superagent", handler: app.handler, waitUntil: (p) => ctx.waitUntil(p) }, request);
   },
-};
+});

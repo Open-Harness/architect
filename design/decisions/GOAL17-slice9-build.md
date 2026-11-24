@@ -163,3 +163,7 @@ The Agent row (in its own actor) gains `closed` (the Assignments it was told to 
 ### 15. Pi Durable 1.5.0 is a dependency of `@orthograph/agents`
 
 Pinned exactly, published 2 November 2026 (older than R1's three days; 1.6.0 of 20 November is newer than the 1.5.0 the records and spikes read, so it waits for a reason). Nothing imports it yet: the next step puts a Pi conversation in the Agent's actor, on `agent.tell` and the model stand-in.
+
+### 10 (settled). `local.ts` steps again
+
+The coordinator decided (24 November 2026): `local.ts` is the stepped environment, from `2026-12-01T09:00:00.000Z`, and check 63 was the side that was wrong (a stand-in delivery is signed at the world's instant, M8.11). The author's change (#903) landed in `goal/superagent` at `2bec09b4`; the clock is back in `local.ts`.
