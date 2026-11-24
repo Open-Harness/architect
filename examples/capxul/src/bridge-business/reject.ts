@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/bridge-business/verbs/reject.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/bridge-business/reject.handler.ts";
 
 /**
@@ -41,17 +40,14 @@ import type { Handler } from "../../generated/api/src/bridge-business/reject.han
  *   once it answers, it writes KybRejected: business from the answer, reason from the payload;
  *   the call is the span bridge-business.reject, and its commit bridge-business.reject.commit.
  */
-const reject: Handler = (_payload, { steps, move }) =>
+const reject: Handler = ({ business }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bridge-business.reject.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
+    // Step update: database, span bridge-business.reject.update. Bridge's decision changes the state and nothing else; the
+    // reason travels in the event alone.
     // The move reject, from started, to rejected.
-    yield* move();
+    yield* steps.update(move());
 
-    return {
-      business: yield* Handlers.blank("business, a bridge-business.id"),
-    };
+    return { business };
   });
 
 export default reject;

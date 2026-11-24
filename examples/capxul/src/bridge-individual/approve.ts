@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/bridge-individual/verbs/approve.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/bridge-individual/approve.handler.ts";
 
 /**
@@ -40,17 +39,14 @@ import type { Handler } from "../../generated/api/src/bridge-individual/approve.
  *   once it answers, it writes KycApproved: individual from the answer;
  *   the call is the span bridge-individual.approve, and its commit bridge-individual.approve.commit.
  */
-const approve: Handler = (_payload, { steps, move }) =>
+const approve: Handler = ({ individual }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bridge-individual.approve.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
+    // Step update: database, span bridge-individual.approve.update. Bridge's decision changes the state and nothing else; the
+    // reason travels in the event alone.
     // The move approve, from started, to approved.
-    yield* move();
+    yield* steps.update(move());
 
-    return {
-      individual: yield* Handlers.blank("individual, a bridge-individual.id"),
-    };
+    return { individual };
   });
 
 export default approve;

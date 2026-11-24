@@ -1,6 +1,8 @@
 // Scaffolded from blueprint/things/bridge-individual/verbs/start.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { acting } from "orthograph";
+import { Records } from "@orthograph/language-effect";
+import { BridgeIndividual } from "../../blueprint/things/bridge-individual/thing.ts";
 import type { Handler } from "../../generated/api/src/bridge-individual/start.handler.ts";
 
 /**
@@ -40,10 +42,19 @@ import type { Handler } from "../../generated/api/src/bridge-individual/start.ha
  *   once it answers, it writes KycStarted: individual from the answer, person from the bridge-individual as the call left it;
  *   the call is the span bridge-individual.start, and its commit bridge-individual.start.commit.
  */
-const start: Handler = (_payload, { steps, move, id }) =>
+const start: Handler = ({ fullName, email }, { principal, steps, move, id }) =>
   Effect.gen(function* () {
+    // The person checked is the caller, signed in in person or through an agent acting for them.
+    const who = acting(principal);
+    if (!who) return yield* Effect.die(new Error("reached without a signed-in person"));
+    const records = yield* Records;
+    // Bridge makes the form and the terms (`POST /v0/kyc_links`, `type: "individual"`). Until Capxul mounts the Bridge
+    // adapter they are the stand-in's, one pair per KYC, named by its id, so no two KYCs share a form.
+    const kycLink = `https://bridge.capxul.test/kyc/${id}`;
+    const tosLink = `https://bridge.capxul.test/terms/${id}`;
+
     // Step insert: database, span bridge-individual.start.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    yield* steps.insert(records.insert(BridgeIndividual, { id, person: who.person as never, fullName, email, kycLink, tosLink }));
 
     // The move start, to started.
     yield* move();
@@ -51,8 +62,8 @@ const start: Handler = (_payload, { steps, move, id }) =>
     return {
       // KycStarted needs individual, and only the answer can give it.
       individual: id,
-      kycLink: yield* Handlers.blank("kycLink, a bridge-individual.kycLink"),
-      tosLink: yield* Handlers.blank("tosLink, a bridge-individual.tosLink"),
+      kycLink,
+      tosLink,
     };
   });
 
