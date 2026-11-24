@@ -1,0 +1,2 @@
+# #899 (from #670): red until the SDK generator marks a field `Blueprint.optional` makes optional (packages/projections/src/modules/sdk/internal/types.ts) and examples/superagent is regenerated.
+superagent/24-optional-fields-in-the-sdk.test.ts > 24 optional fields in the SDK: the apps > the superagent's SDK, as `ortho generate` writes it, marks every field the model may leave out, and no other
