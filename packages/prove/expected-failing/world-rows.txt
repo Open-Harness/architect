@@ -6,3 +6,4 @@ src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the serv
 src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a list held as its JSON text reads back as the list
 src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a reference to any thing held as its JSON text reads back as the reference
 src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > an unknown value held as its JSON text reads back as the value
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a nullable list held as its JSON text reads back as the list, and as NULL reads back as null
