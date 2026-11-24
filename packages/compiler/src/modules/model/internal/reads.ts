@@ -19,11 +19,14 @@ export interface ReadContext {
   readonly fieldsModel: (fields: FieldsInput, where: string, ctx: FieldContext) => FieldsModel;
   readonly onChain: (thing: Thing | undefined) => boolean;
   readonly openToAll: (allowed: ReadonlyArray<AllowedModel>) => boolean;
+  /** The problems with a read's role paths (#767). */
+  readonly rolePaths: (thing: string, read: Read, file: string) => ReadonlyArray<string>;
 }
 
 export const readModelOf = (c: ReadContext, thing: string, verb: string, file: string, from: OperationModel["from"], read: Read): OperationModel => {
   const { problems, fieldsModel } = c;
   const allowed = read.allowed.map((a) => c.allowedModel(a, file));
+  problems.push(...c.rolePaths(thing, read, file));
   problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "read", move: undefined, allowed }));
   const list = read.by === "list";
   const t = c.layout.things.get(thing);

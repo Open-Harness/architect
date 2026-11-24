@@ -80,7 +80,6 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Read
   // With a keeper in the blueprint, even an operation open to anyone refuses it NotAllowed (M8-checks call 4).
   const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
   const hopsOf = (op: Operation): ReadonlyArray<On> => [...op.on, ...(mountHops.get(op) ?? [])];
-  const readCtx: ReadContext = { layout, thingNames, problems, allowedModel, fieldsModel, openToAll, onChain };
   const pathNames = { role: (r: unknown) => roleNames.get(r as never) ?? "?", thing: (t: Thing) => thingNames.get(t) ?? "?" };
   /** The problems with an operation's or a read's role paths: each must walk to an instance of its role's thing (#767). */
   const rolePaths = (thing: string, d: Operation | Read, file: string) => {
@@ -89,6 +88,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Read
     const ownName = from === undefined || from.kind === "app" ? thing : from.thing;
     return d.allowed.flatMap((entry) => rolePathProblem({ entry, payload: d.payload, own: d.thing, ownName, names: pathNames, where: file }) ?? []);
   };
+  const readCtx: ReadContext = { layout, thingNames, problems, allowedModel, fieldsModel, openToAll, onChain, rolePaths };
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
   const entries = new Map<string, Array<{ readonly file: string; readonly name: string; readonly identifier: string }>>();
@@ -216,7 +216,6 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Read
   }
 
   function readModel(thing: string, verb: string, file: string, from: OperationModel["from"], read: Read): OperationModel {
-    problems.push(...rolePaths(thing, read, file));
     return readModelOf(readCtx, thing, verb, file, from, read);
   }
 
