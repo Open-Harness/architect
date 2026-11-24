@@ -105,63 +105,78 @@
         "held": [
           {
             "event": "AssignmentEnded",
-            "to": "input.route"
+            "to": "input.route",
+            "field": "superagent"
           },
           {
             "event": "AssignmentEnded",
-            "to": "superagent.fill"
+            "to": "superagent.fill",
+            "field": "superagent"
           },
           {
             "event": "AssignmentPromoted",
-            "to": "superagent.fill"
+            "to": "superagent.fill",
+            "field": "superagent"
           },
           {
             "event": "AssignmentQueued",
-            "to": "superagent.fill"
+            "to": "superagent.fill",
+            "field": "superagent"
           },
           {
             "event": "AssignmentStarted",
-            "to": "agent.tell"
+            "to": "agent.tell",
+            "field": "superagent"
           },
           {
             "event": "AssignmentStarted",
-            "to": "input.route"
+            "to": "input.route",
+            "field": "superagent"
           },
           {
             "event": "DecisionRecorded",
-            "to": "eval.due"
+            "to": "eval.due",
+            "field": "superagent"
           },
           {
             "event": "EvalDelivered",
-            "to": "agent.tell"
+            "to": "agent.tell",
+            "field": "superagent"
           },
           {
             "event": "EvalStarted",
-            "to": "eval.delivered"
+            "to": "eval.delivered",
+            "field": "superagent"
           },
           {
             "event": "InputRouted",
-            "to": "agent.tell"
+            "to": "agent.tell",
+            "field": "superagent"
           },
           {
             "event": "ReplyQueued",
-            "to": "outgoing-message.send"
+            "to": "outgoing-message.send",
+            "field": "superagent"
           },
           {
             "event": "ThreadUnsubscribed",
-            "to": "eval.due"
+            "to": "eval.due",
+            "field": "superagent"
           },
           {
             "event": "TicketCreated",
-            "to": "outgoing-message.reply"
+            "to": "outgoing-message.reply",
+            "field": "superagent"
           },
           {
             "event": "TicketResumed",
-            "to": "mandate.revalidate"
+            "to": "mandate.revalidate",
+            "field": "superagent"
           },
           {
             "event": "TriggerRequeued",
-            "to": "eval.due"
+            "to": "eval.due",
+            "field": "superagent"
           }
         ],
         "unheld": [
@@ -15146,5 +15161,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "508222d09284550b64614dc71614224a304002e7e9e56b46e1e2d579e8b72de7"
+  "digest": "06fbec800fed50386aa175f3f978eff7d0be34e228c9d6384ad7fface824ebe8"
 }

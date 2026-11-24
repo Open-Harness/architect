@@ -269,6 +269,15 @@ export type SecretFromModel =
   | { readonly kind: "app" }
   | { readonly kind: "feature" | "adapter" | "projection"; readonly mount: string; readonly package: string; readonly version: string };
 
+/** One hold (GOAL17-pause): the thing whose states switch it on, the field that names what is held, and the app's held and unheld deliveries. A held delivery names the event field that carries the key. */
+export interface HoldModel {
+  readonly thing: string;
+  readonly key: string;
+  readonly while: ReadonlyArray<string>;
+  readonly held: ReadonlyArray<{ readonly event: string; readonly to: string; readonly field?: string }>;
+  readonly unheld: ReadonlyArray<{ readonly event: string; readonly to: string; readonly reason: string }>;
+}
+
 /** A declared secret, by the name derived from its mount and export: how it gets a value and who holds it. Never a value. */
 export interface SecretModel {
   readonly how: "generated" | "stored";
@@ -356,7 +365,7 @@ export interface Model {
   /** Each active source, by its file's name (GOAL17-source-from). */
   readonly sources?: Readonly<Record<string, unknown>>;
   /** Each hold, by the name it is exported under, with the app's held and unheld deliveries (GOAL17-pause). */
-  readonly holds?: Readonly<Record<string, unknown>>;
+  readonly holds?: Readonly<Record<string, HoldModel>>;
   /** What can fail beside a thing, and when it shows (GOAL17-derived-reads). */
   readonly problems?: ReadonlyArray<{ readonly kind: string; readonly thing: string; readonly of: string; readonly name: string; readonly failures: string; readonly after: string | number }>;
   /** Instances the blueprint declares, by their thing's plural (`superagents`). */

@@ -13,7 +13,7 @@ import { listRows } from "./internal/list.ts";
 const ownerOf = (thing: Thing): unknown => thing.store ?? thing.lives;
 
 export const StoreD1: StoreD1Api = {
-  layer: ({ tables, actors, stores = [], people, rules = [] }) =>
+  layer: ({ tables, actors, stores = [], people, rules = [], outbox }) =>
     Layer.effect(Store, Effect.gen(function* () {
       const home: Db = { sql: yield* SqlClient.SqlClient, d1: yield* D1Client.D1Client };
       // Each declared database store has a binding of its own, and its own `_journal` and `_requests` beside its tables.
@@ -26,6 +26,8 @@ export const StoreD1: StoreD1Api = {
       const tableOf = (thing: Thing) => tables.find(([t]) => t === thing)?.[1] ?? "";
       const noActors = Effect.die(new Error("a thing lives as an actor, but the Worker has no ACTORS binding"));
       const everyDb = [home, ...apart.values()];
+      // A declared store's event ids carry its place in the list: the ids of two databases never meet.
+      const storeNumber = (store: unknown) => stores.findIndex(([s]) => s === store) + 1;
 
       return Store.of({
         rules,
@@ -58,7 +60,7 @@ export const StoreD1: StoreD1Api = {
           const owners = new Set(commit.writes.map((w) => ownerOf(w.thing)));
           if (owners.size > 1) return Effect.die(new Error("a call wrote to more than one store: one call commits to one store, and work across stores is a workflow (K3 item 5)"));
           const first = commit.writes[0]?.thing;
-          if (first?.lives !== "actor") return commitD1(first ? dbOf(first) : home, tableOf, commit, rules);
+          if (first?.lives !== "actor") return commitD1(first ? dbOf(first) : home, tableOf, commit, rules, outbox === undefined ? undefined : { hops: outbox, prefix: first?.store ? `evt_${storeNumber(first.store)}_` : "evt_" });
           if (commit.request) return Effect.die(new Error("a request key on an actor's operation: idempotent actors arrive with layer four (design/later.md)"));
           return actors ? actorCommit(actors, commit, tableOf) : noActors;
         },

@@ -171,17 +171,17 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
       );
     });
 
-  const run = (payload: object, principal: Principal, request?: string) => {
+  const run = (payload: object, principal: Principal, request?: string, delivery?: string) => {
     // Keyed by operation and caller as well, so one caller's key never answers another's call.
     // Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
     const who = "person" in principal ? `${principal.kind}:${principal.person}`
       : principal.kind === "service" ? `service:${principal.mount}${principal.actor === undefined ? "" : `:${principal.actor.id}`}`
       : principal.kind === "agent" ? `agent:${principal.agent}` : principal.kind;
-    const key = op.idempotent === "request" && request !== undefined ? `${name}|${who}|${request}` : undefined;
+    const key = delivery !== undefined ? `on|${delivery}|${name}` : op.idempotent === "request" && request !== undefined ? `${name}|${who}|${request}` : undefined;
     // The call is named once, before its first attempt, and every attempt's span carries the name: attempts of one call are sequential, but different
     // calls' attempts overlap, so nothing else in a trace says which attempts belong together (O3).
     const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
-      attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
+      attempt(payload, principal, key, key === undefined ? undefined : (request ?? delivery), number, callId).pipe(
         Effect.catch((e) =>
           !(e instanceof Conflict) ? Effect.fail(e)
           : number < ATTEMPTS ? loop(number + 1, callId)
@@ -199,7 +199,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         Effect.flatMap((payload) => run(payload, principal)),
         measureCall(name, principal, callRefusals, budgetMs),
       ),
-    run: (payload: object, principal: Principal, request?: string) => run(payload, principal, request).pipe(measureCall(name, principal, refusals, budgetMs)),
+    run: (payload: object, principal: Principal, request?: string, delivery?: string) => run(payload, principal, request, delivery).pipe(measureCall(name, principal, refusals, budgetMs)),
   };
 };
 

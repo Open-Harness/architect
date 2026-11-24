@@ -6,6 +6,7 @@ import { AuthD1 } from "#modules/auth/service.js";
 import type { AuthInstance } from "#modules/auth/types.js";
 import { WorldClock } from "#modules/clock/service.js";
 import type { ClockSource, ClockState } from "#modules/clock/types.js";
+import { Outbox } from "#modules/outbox/service.js";
 import { WorldTimers } from "#modules/timers/service.js";
 import type { WorldTimersRpc, WorldTimersState, WorldWakes } from "#modules/timers/types.js";
 import { entry, within, withinNow } from "./internal/entry.ts";
@@ -191,6 +192,8 @@ export type { WorldWakes };
 export const toWorld = (world: WorldHost, request: Request): Promise<Response> => {
   const { pathname } = new URL(request.url);
   if (pathname.startsWith("/_world/facts/")) return Effect.runPromise(facts(world, request));
+  // The outbox's rows, read and parked straight from the databases, as the facts are; an app without a hop has no such door.
+  if (pathname.startsWith("/_world/outbox")) return (world.outbox === undefined ? undefined : Outbox.door(world.outbox, request)) ?? Promise.resolve(json({ error: "not a door the world has" }, 404));
   // A warm world is emptied between runs (ST1.24); a world with leases ends by its own lease instead. The header makes the
   // request one a browser page cannot send cross-origin without a preflight; the world checks its value against its own.
   if (pathname === "/_world/reset" && request.method === "POST") {

@@ -102,6 +102,58 @@ ALTER TABLE "_journal" ADD COLUMN "id" TEXT;
 ALTER TABLE "_journal" ADD COLUMN "actor" TEXT;
 CREATE UNIQUE INDEX "_journal_id" ON "_journal" ("id");`;
 
+/**
+ * The event outbox (M5-reach-out Q1, GOAL17-pause): a row per declared hop, written in the commit that journals its event. `to` is `op:<operation>`; `seq`
+ * is the journal's, which orders a subject's rows. `hold` is what a hold keys on (the superagent whose pause parks the row) and `hold_by` the hold's name;
+ * a test's park (`outbox.hold`) is `hold_by = 'test'`, and a rule in `_outbox_rules` parks the future rows of an event. A row's `claim` is the token of the
+ * drain that holds it, and its `due` is the claim's lease while it is claimed. `_stats` counts the commits that lost their race.
+ */
+const OUTBOX = `CREATE TABLE "_outbox" (
+  "event" TEXT NOT NULL,
+  "to" TEXT NOT NULL,
+  "seq" INTEGER NOT NULL,
+  "name" TEXT NOT NULL,
+  "subject" TEXT NOT NULL,
+  "trace" TEXT NOT NULL,
+  "state" TEXT NOT NULL,
+  "claim" TEXT,
+  "attempts" INTEGER NOT NULL DEFAULT 0,
+  "due" INTEGER NOT NULL,
+  "hold" TEXT,
+  "hold_by" TEXT,
+  "outcome" TEXT,
+  PRIMARY KEY ("event", "to")
+);
+CREATE INDEX "_outbox_order" ON "_outbox" ("to", "subject", "seq");
+CREATE INDEX "_outbox_due" ON "_outbox" ("state", "due");
+CREATE TABLE "_outbox_rules" ("hold" TEXT PRIMARY KEY, "name" TEXT NOT NULL, "to" TEXT NOT NULL);
+CREATE TABLE "_stats" ("key" TEXT PRIMARY KEY, "n" INTEGER NOT NULL);`;
+
+/** Every hop the model declares, by the event's name: each operation's `on` list (a mount's hops are in it too). */
+export const hopsOf = (model: Model): ReadonlyMap<string, ReadonlyArray<{ readonly to: string; readonly hold?: { readonly by: string; readonly field: string } }>> => {
+  const held = Object.entries(model.holds ?? {}).flatMap(([by, h]) => h.held.flatMap((d) => (d.field === undefined ? [] : [{ by, event: d.event, to: d.to, field: d.field }])));
+  const table = new Map<string, Array<{ to: string; hold?: { by: string; field: string } }>>();
+  for (const o of Object.values(model.operations)) {
+    for (const on of o.on ?? []) {
+      const hold = held.find((h) => h.event === on.event && h.to === o.name);
+      const rows = table.get(on.event) ?? [];
+      if (!rows.some((r) => r.to === `op:${o.name}`)) rows.push({ to: `op:${o.name}`, ...(hold === undefined ? {} : { hold: { by: hold.by, field: hold.field } }) });
+      table.set(on.event, rows);
+    }
+  }
+  return table;
+};
+
+export const hasHops = (model: Model): boolean => hopsOf(model).size > 0;
+
+/** A hold's view of the table of the thing it holds: the keys of the instances whose state switches it on. A held row is parked while its key is in it. */
+const holdViews = (model: Model, store: string | undefined) =>
+  Object.entries(model.holds ?? {}).flatMap(([name, h]) => {
+    const thing = model.things[h.thing];
+    if (thing === undefined || thing.store !== store || thing.lives !== "database") return [];
+    return [`CREATE VIEW "_hold_${name}" AS SELECT "${h.key}" AS "key" FROM "${thing.name}" WHERE "state" IN (${h.while.map((s) => `'${s.replaceAll("'", "''")}'`).join(", ")});`];
+  });
+
 export const hasDoors = (model: Model): boolean => Object.values(model.mounts ?? {}).some((m) => m.door !== undefined);
 
 /** The default database's tables: one per thing that lives in the database and in no declared store. Actors keep their own rows. */
@@ -114,6 +166,7 @@ export const renderMigration = (model: Model): RenderedFile => ({
     "-- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).",
     JOURNAL,
     hasDoors(model) ? INBOX : [],
+    hasHops(model) ? ["-- The outbox: a row per declared hop of each event, written with the event.", OUTBOX, ...holdViews(model, undefined)] : [],
   ),
 });
 
@@ -127,5 +180,6 @@ export const renderStoreMigrations = (model: Model): ReadonlyArray<RenderedFile>
       tablesOf(Object.values(model.things).filter((t) => t.store === s.name)),
       "-- Every event a move of this store emitted, with the trace of the call that made it.",
       JOURNAL,
+      hasHops(model) ? ["-- The outbox of this store.", OUTBOX, ...holdViews(model, s.name)] : [],
     ),
   }));

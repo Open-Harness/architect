@@ -36,20 +36,24 @@ export const peopleOf = (model: Model) => {
  * route (M8.07): each kind of durable timer to the code that wakes it, empty until a feature registers a kind. Any other
  * blueprint re-exports the host's, exactly as it always did.
  */
-export const worldExports = (timed: boolean, actors: boolean): ReadonlyArray<string> => {
+export const worldExports = (timed: boolean, actors: boolean, outbox = false): ReadonlyArray<string> => {
   const host = Names.pkg("host-cloudflare");
   if (!timed) return [actors ? `export { Actor, World } from "${host}";` : `export { World } from "${host}";`];
   return [
     `import { World as WorldHost, type WorldWakes } from "${host}";`,
     ...(actors ? [`export { Actor } from "${host}";`] : []),
     "",
-    "/** Which code wakes each kind of durable timer when it falls due: empty until a feature registers a kind (a workflow, an agent, the keeper). */",
-    "const wakes: WorldWakes = {};",
+    outbox
+      ? "/** Which code wakes each kind of durable timer when it falls due: the outbox's drain (a feature adds a kind: a workflow, an agent, the keeper). */"
+      : "/** Which code wakes each kind of durable timer when it falls due: empty until a feature registers a kind (a workflow, an agent, the keeper). */",
+    outbox
+      ? "const wakesOf = (env: Env): WorldWakes => ({ outbox: () => Effect.promise(() => runtimeOf(env).runPromise(drainOutbox(env))) });"
+      : "const wakes: WorldWakes = {};",
     "",
     "/** The world, with its wake route: a due timer of a kind that is not here fails its step and stays pending. */",
     "export class World extends WorldHost {",
     "  protected override wakeKinds(): WorldWakes {",
-    "    return wakes;",
+    outbox ? "    return wakesOf(this.env as unknown as Env);" : "    return wakes;",
     "  }",
     "}",
   ];

@@ -1,6 +1,7 @@
 // The world: one Durable Object per running world. Its front door is `/_world/*`. It keeps the cast, signing each
 // one up for real through Better Auth; its clock (M8.06) answers at `/_world/clock`; the registry of things joins it in stage five.
 import type { CastMember } from "#modules/auth/types.js";
+import type { OutboxDb } from "#modules/outbox/types.js";
 
 export interface WorldEnv {
   readonly DB: D1Database;
@@ -45,6 +46,8 @@ export interface WorldHost {
   /** The Durable Objects things that live as actors are kept in, and the tables they go by: their facts are read from the actor, never from D1. */
   readonly actors?: DurableObjectNamespace;
   readonly actorTables?: ReadonlyArray<string>;
+  /** The databases the event outbox lives in, when the blueprint declares a hop: the outbox door answers from their `_outbox` rows. */
+  readonly outbox?: ReadonlyArray<OutboxDb>;
   /** This environment hosts worlds with lifetimes (a test environment): `/_world/worlds` is open, and each world is its own Durable Object. */
   readonly leases?: boolean;
 }

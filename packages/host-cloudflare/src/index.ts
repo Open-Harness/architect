@@ -5,6 +5,8 @@ export { JournalD1 } from "#modules/journal/service.js";
 export { Telemetry } from "#modules/telemetry/service.js";
 export type { WebHandler } from "#modules/telemetry/types.js";
 export { StoreD1 } from "#modules/store/service.js";
+export { Outbox } from "#modules/outbox/service.js";
+export type { HopRow, HopTable, OutboxRow, Served as OutboxServed } from "#modules/outbox/types.js";
 export type { StoreD1Options } from "#modules/store/types.js";
 export { Actor } from "#modules/actors/service.js";
 export { Follower } from "#modules/follower/service.js";

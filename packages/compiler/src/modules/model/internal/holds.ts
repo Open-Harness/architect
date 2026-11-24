@@ -29,9 +29,12 @@ const idPrefix = (input: Field | Value): string | undefined => {
   return meta.type === "id" ? meta.prefix : undefined;
 };
 
-/** Whether an event has a field holding the id the hold keys on: `superagent`, whichever thing declares the event. */
-const carries = (event: Event, prefix: string | undefined) =>
-  prefix !== undefined && Object.values(event.fields).some((f) => idPrefix(f) === prefix);
+/** The event's field that holds the id the hold keys on (`superagent`, whichever thing declares the event), if it has one. */
+const holdField = (event: Event, prefix: string | undefined): string | undefined =>
+  prefix === undefined ? undefined : Object.entries(event.fields).find(([, f]) => idPrefix(f) === prefix)?.[0];
+
+/** Whether an event has a field holding the id the hold keys on. */
+const carries = (event: Event, prefix: string | undefined) => holdField(event, prefix) !== undefined;
 
 const where = (ctx: HoldContext, thing: string) => ctx.things[thing];
 const placeOf = (t: ThingModel | undefined) => (t === undefined ? "?" : t.store ? `store ${t.store}` : t.lives === "actor" ? "the actor store" : "the default store");
@@ -49,7 +52,8 @@ export const holdsModel = (ctx: HoldContext) => {
       const lists = ctx.layout.holdLists.filter((l) => l.declaration.hold === hold);
       const file = lists[0]?.file ?? `${t.base}/holds.ts`;
       const named = (event: Event, to: unknown) => ({ event: ctx.eventNames.get(event) ?? "?", to: ctx.opName(to) ?? "?" });
-      const held = lists.flatMap((l) => l.declaration.held.map((d) => named(d.event, d.to)));
+      // A held delivery says which field of its event is the hold's key: the outbox writes it on the row, and the hold's view is read against it.
+      const held = lists.flatMap((l) => l.declaration.held.map((d) => ({ ...named(d.event, d.to), field: holdField(d.event, prefix) })));
       const unheld = lists.flatMap((l) => l.declaration.unheld.map((d) => ({ ...named(d.event, d.to), reason: d.reason })));
       const ownMoves = new Set(Object.values(t.machine?.moves ?? {}).map((m) => m.emits));
       const row = (r: { event: string; to: string }) => `${r.event} to ${r.to}`;

@@ -5,6 +5,7 @@ import type { SqlClient } from "effect/sql";
 import type { D1Client } from "@effect/sql-d1";
 import type { Store as Declared, Thing } from "orthograph";
 import type { NamedRule, Store } from "@orthograph/language-effect";
+import type { HopTable } from "#modules/outbox/types.js";
 
 export interface StoreD1Options {
   /** Each thing and its table name; the generated server writes the list from the things' paths. */
@@ -30,6 +31,12 @@ export interface StoreD1Options {
    * runtime, whose `findBy` and before-commit check look through the same ones.
    */
   readonly rules?: ReadonlyArray<NamedRule>;
+  /**
+   * The outbox (M5-reach-out Q1): each event's hops, by the event's name. A commit writes one `_outbox` row per hop of each entry, in the batch
+   * that journals the entry, so an event and its rows commit together or not at all. The default database's event ids are `evt_<seq>`, and a declared
+   * store's `evt_<n>_<seq>`, `n` its place in `stores`.
+   */
+  readonly outbox?: HopTable;
 }
 
 export interface StoreD1Api {

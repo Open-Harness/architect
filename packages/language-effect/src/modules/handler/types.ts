@@ -83,7 +83,8 @@ export interface Served<O, R> {
    * From a server that has already decoded the payload against the same declaration. `request` is the caller's
    * idempotency key: for an operation declared `idempotent: "request"`, the same key from the same caller is one call.
    */
-  readonly run: (payload: PayloadOf<O>, principal: Principal, request?: string) => Effect.Effect<AnswerOf<O>, ErrorOf<O> | NotAllowed | NotFrom, Exclude<R, Records> | Busy | Store>;
+  /** `delivery`: the outbox's call, keyed by its event (`on|<event id>|<operation>`) whatever `idempotent` says, so a redelivery answers what the first answered and changes nothing (M5-reach-out Q3.2). */
+  readonly run: (payload: PayloadOf<O>, principal: Principal, request?: string, delivery?: string) => Effect.Effect<AnswerOf<O>, ErrorOf<O> | NotAllowed | NotFrom, Exclude<R, Records> | Busy | Store>;
 }
 
 /** Nothing has the id a payload field names, and no role check read it. Named `<Thing>NotFound`; refused before the handler. */
