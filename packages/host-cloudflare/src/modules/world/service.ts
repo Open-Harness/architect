@@ -191,6 +191,9 @@ export type { WorldWakes };
 export const toWorld = (world: WorldHost, request: Request): Promise<Response> => {
   const { pathname } = new URL(request.url);
   if (pathname.startsWith("/_world/facts/")) return Effect.runPromise(facts(world, request));
+  // A probe a package's `testing.ts` answers, where the world's own entry registered it.
+  const probe = world.probes?.[pathname.slice("/_world/".length)];
+  if (probe !== undefined) return probe(request, { ...(world.actors === undefined ? {} : { actors: world.actors }), ...(world.actorTables === undefined ? {} : { actorTables: world.actorTables }) });
   // A warm world is emptied between runs (ST1.24); a world with leases ends by its own lease instead. The header makes the
   // request one a browser page cannot send cross-origin without a preflight; the world checks its value against its own.
   if (pathname === "/_world/reset" && request.method === "POST") {

@@ -18,6 +18,7 @@
   "exports": {
     ".": "./index.ts",
     "./probes": "./src/probes.ts",
+    "./testing": "./src/testing.ts",
     "./blueprint/*.js": "./blueprint/*.ts",
     "./blueprint/*": "./blueprint/*",
     "./src/*.js": "./src/*.ts",

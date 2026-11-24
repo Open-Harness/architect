@@ -549,8 +549,20 @@
           },
           "current": {
             "value": {
-              "type": "id",
-              "prefix": "asg"
+              "type": "schema"
+            },
+            "optional": true,
+            "nullable": true
+          },
+          "closed": {
+            "value": {
+              "type": "schema"
+            },
+            "optional": true
+          },
+          "told": {
+            "value": {
+              "type": "schema"
             },
             "optional": true
           }
@@ -713,7 +725,7 @@
           "version": "0.0.0",
           "thing": "agent"
         },
-        "hash": "a369aaa882ce59e7"
+        "hash": "9dc5653265f36599"
       },
       "assignment": {
         "name": "assignment",
@@ -14445,9 +14457,9 @@
         "file": "blueprint/features/agents.ts",
         "package": "@orthograph/agents",
         "version": "0.0.0",
-        "integrity": "sha256-wvH1Vkiv+njXb9ewuCUx02zGODJNH3NvAAhvHo8OfZs=",
+        "integrity": "sha256-u7ga9yZ6pfxwso46oHdBVEOXDEnYtxS8dWoOilPLDAk=",
         "chosen": {},
-        "hash": "a6583fab3899a955"
+        "hash": "6492691de2012f3c"
       },
       "github": {
         "kind": "adapter",
@@ -14622,61 +14634,61 @@
     },
     "agent.close": {
       "operation:agent.close": "7317cbbfb8608be0",
-      "thing:agent": "a369aaa882ce59e7"
+      "thing:agent": "9dc5653265f36599"
     },
     "agent.open": {
       "operation:agent.open": "1148dc63e996aafe",
-      "thing:agent": "a369aaa882ce59e7"
+      "thing:agent": "9dc5653265f36599"
     },
     "agent.tell": {
       "operation:agent.tell": "a489d661855eb40a",
-      "thing:agent": "a369aaa882ce59e7"
+      "thing:agent": "9dc5653265f36599"
     },
     "assignment.cancelled": {
       "operation:assignment.cancelled": "2e2801ce794509f7",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "assignment.interrupted": {
       "operation:assignment.interrupted": "ac6778ac935b1f4c",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "assignment.promoted": {
       "operation:assignment.promoted": "db63b0c0f1be5d14",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "assignment.queued": {
       "operation:assignment.queued": "ab532bb706898d73",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "assignment.started": {
       "operation:assignment.started": "fa5ebaae1c94d7b4",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "assignment.turn-ended": {
       "operation:assignment.turn-ended": "dc930f7d532bbefa",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "assignment.waiting": {
       "operation:assignment.waiting": "916fe964873841a5",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:assignment": "accdfa33c8f8d6bf",
       "thing:input": "38b64757c54edca9",
       "thing:ticket": "41fd9017a6d64eb1"
@@ -14743,7 +14755,7 @@
     },
     "input.route": {
       "operation:input.route": "a93194708fc97534",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:input": "38b64757c54edca9",
       "thing:ticket": "41fd9017a6d64eb1"
     },
@@ -14861,52 +14873,52 @@
     },
     "superagent.boot": {
       "operation:superagent.boot": "b7c916c005256a27",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.create": {
       "operation:superagent.create": "5efe7d8005653498",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.fill": {
       "operation:superagent.fill": "a48cf79e5114ba6f",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.go-live": {
       "operation:superagent.go-live": "d87a5ee14c98de9c",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.health": {
       "operation:superagent.health": "1326987bd4639187",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.pause": {
       "operation:superagent.pause": "05c46ba6c650f8aa",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.reap": {
       "operation:superagent.reap": "355b22a1909403f0",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.resume": {
       "operation:superagent.resume": "f2fcdba6ac4d9b8b",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.retire": {
       "operation:superagent.retire": "3cf79b9fd7bdf31e",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "superagent.update": {
       "operation:superagent.update": "fbf9f8cbe0cbc9df",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d"
     },
     "thread.bind": {
@@ -14935,73 +14947,73 @@
     "ticket.accept": {
       "operation:ticket.accept": "6c60427e91c1c590",
       "thing:account": "c261b466a3c7689c",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.ack": {
       "operation:ticket.ack": "feeee6918b82d623",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.attach": {
       "operation:ticket.attach": "ed5474f48fe13d88",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.end": {
       "operation:ticket.end": "63083245d3cdf7d6",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.note": {
       "operation:ticket.note": "20a5ad29a22df3fd",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.policy-changed": {
       "operation:ticket.policy-changed": "0e4f3912688cd01f",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.report": {
       "operation:ticket.report": "4c3254d7512b5ff5",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.request-status": {
       "operation:ticket.request-status": "d677fb4fd75872a9",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.resume": {
       "operation:ticket.resume": "7fed577b9a2eefc9",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.retry": {
       "operation:ticket.retry": "2cad321f4bed953d",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.stage": {
       "operation:ticket.stage": "6d74660c97146385",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.stop": {
       "operation:ticket.stop": "3f773ba3fee96889",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
     "ticket.waiting": {
       "operation:ticket.waiting": "f03d0f0a2cf0c4ff",
-      "thing:agent": "a369aaa882ce59e7",
+      "thing:agent": "9dc5653265f36599",
       "thing:superagent": "ff7dbe0e279c2b4d",
       "thing:ticket": "41fd9017a6d64eb1"
     },
@@ -15031,7 +15043,7 @@
     "account/sync.md": "<!-- Generated from the blueprint. Do not edit. -->\n# account.sync\n\nList the accounts a connection's own roster names: a repository's collaborators, a user group.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | account.superagent |\n| source | account.source |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent account sync --superagent <superagent> --source <source>\n```\n\nHTTP: `POST /account/sync` with the payload as JSON. SDK: `Sdk.account.sync(payload)`.\n",
     "account/unlist.md": "<!-- Generated from the blueprint. Do not edit. -->\n# account.unlist\n\nStop letting an account ask.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| account | account.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`unlist`: from listed to unlisted, emitting AccountUnlisted.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AccountExists | 82 | AC-001 | another account holds this superagent, source and external; by the rule account.oneAccountPerExternalId, carrying superagent, source, external |\n| AccountNotSeen | 81 | AC-900 | the account is in a state unlist can't start from; carries `state` |\n| AccountNotFound | 4 | AC-901 | nothing has the id in account; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent account unlist --account <account>\n```\n\nHTTP: `POST /account/unlist` with the payload as JSON. SDK: `Sdk.account.unlist(payload)`.\n",
     "agent/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# agent.close\n\nStop an agent's turn for one Assignment and say so: the seat that held it is then free.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| agent | agent.id |\n| assignment | id |\n\n## Answer\n\n(none)\n\n## Move\n\n`close`: from idle or working to idle or stopped, emitting AgentClosed.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AgentNotIdle | 50 | AG-900 | the agent is in a state close can't start from; carries `state` |\n| AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent agent close --agent <agent> --assignment <assignment>\n```\n\nHTTP: `POST /agent/close` with the payload as JSON. SDK: `Sdk.agent.close(payload)`.\n",
-    "agent/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# agent\n\nOne agent: a durable conversation that lives in its own actor, told through the outbox and acting as itself.\n\nLives in its own Durable Object.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| kind | text |\n| about | text |\n| current (optional) | id |\n\n## Machine\n\nStates: idle, working, stopped. A move from the wrong state is refused AgentNotIdle (exit 50).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | idle | AgentOpened |\n| tell | idle, working | working | AgentTold |\n| idled | working | idle | AgentIdled |\n| close | idle, working | idle, stopped | AgentClosed |\n\n## Events\n\n- `AgentClosed`: carries agent (agent.id), assignment (id); emitted by the move close\n- `AgentIdled`: carries agent (agent.id), about (agent.about), assignment (id); emitted by the move idled\n- `AgentOpened`: carries agent (agent.id), kind (agent.kind), about (agent.about); emitted by the move open\n- `AgentTold`: carries agent (agent.id), requestId (text); emitted by the move tell\n\n## Operations\n\n- [agent.close](close.md): Stop an agent's turn for one Assignment and say so: the seat that held it is then free.\n- [agent.open](open.md): Make an agent of one kind, about one thing: any operation allowed to create one makes it.\n- [agent.tell](tell.md): Give an agent one input, steering it when it is busy. Only an outbox hop calls it, with the delivering event's id as the request id.\n",
+    "agent/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# agent\n\nOne agent: a durable conversation that lives in its own actor, told through the outbox and acting as itself.\n\nLives in its own Durable Object.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| kind | text |\n| about | text |\n| current (optional) | schema |\n| closed (optional) | schema |\n| told (optional) | schema |\n\n## Machine\n\nStates: idle, working, stopped. A move from the wrong state is refused AgentNotIdle (exit 50).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | idle | AgentOpened |\n| tell | idle, working | working | AgentTold |\n| idled | working | idle | AgentIdled |\n| close | idle, working | idle, stopped | AgentClosed |\n\n## Events\n\n- `AgentClosed`: carries agent (agent.id), assignment (id); emitted by the move close\n- `AgentIdled`: carries agent (agent.id), about (agent.about), assignment (id); emitted by the move idled\n- `AgentOpened`: carries agent (agent.id), kind (agent.kind), about (agent.about); emitted by the move open\n- `AgentTold`: carries agent (agent.id), requestId (text); emitted by the move tell\n\n## Operations\n\n- [agent.close](close.md): Stop an agent's turn for one Assignment and say so: the seat that held it is then free.\n- [agent.open](open.md): Make an agent of one kind, about one thing: any operation allowed to create one makes it.\n- [agent.tell](tell.md): Give an agent one input, steering it when it is busy. Only an outbox hop calls it, with the delivering event's id as the request id.\n",
     "agent/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# agent.open\n\nMake an agent of one kind, about one thing: any operation allowed to create one makes it.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| kind | agent.kind |\n| about | agent.about |\n\n## Answer\n\n| field | value |\n|---|---|\n| agent | agent.id |\n\n## Move\n\n`open`: from nothing (it creates) to idle, emitting AgentOpened.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent agent open --kind <kind> --about <about>\n```\n\nHTTP: `POST /agent/open` with the payload as JSON. SDK: `Sdk.agent.open(payload)`.\n",
     "agent/tell.md": "<!-- Generated from the blueprint. Do not edit. -->\n# agent.tell\n\nGive an agent one input, steering it when it is busy. Only an outbox hop calls it, with the delivering event's id as the request id.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| agent | agent.id |\n| requestId | text |\n| input | text |\n| assignment (optional) | id |\n| opens | schema |\n\n## Answer\n\n(none)\n\n## Move\n\n`tell`: from idle or working to working, emitting AgentTold.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleAssignment | 51 | AG-001 | declared in errors.ts, carrying assignment |\n| AgentNotIdle | 50 | AG-900 | the agent is in a state tell can't start from; carries `state` |\n| AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent agent tell --agent <agent> --requestId <requestId> --input <input> [--assignment <assignment>] --opens <opens>\n```\n\nHTTP: `POST /agent/tell` with the payload as JSON. SDK: `Sdk.agent.tell(payload)`.\n",
     "assignment/cancelled.md": "<!-- Generated from the blueprint. Do not edit. -->\n# assignment.cancelled\n\nEnd a pending Assignment that was never seated or told.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| assignment | assignment.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`cancelled`: from pending to ended, emitting AssignmentEnded.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AssignmentNotPending | 94 | AS-900 | the assignment is in a state cancelled can't start from; carries `state` |\n| AssignmentNotFound | 4 | AS-901 | nothing has the id in assignment; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent assignment cancelled --assignment <assignment>\n```\n\nHTTP: `POST /assignment/cancelled` with the payload as JSON. SDK: `Sdk.assignment.cancelled(payload)`.\n",
@@ -15146,5 +15158,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "508222d09284550b64614dc71614224a304002e7e9e56b46e1e2d579e8b72de7"
+  "digest": "9e41d209230b9fe1ed668c767ffc9b0919e8604c43fadb61c073cce9fa9c2679"
 }

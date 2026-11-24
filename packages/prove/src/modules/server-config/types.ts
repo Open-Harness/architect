@@ -15,7 +15,8 @@ export interface ServerConfigApi {
    * there is a client, its folder as the Worker's static assets, bound as `PORTAL_ASSETS`, with the Worker answering first (it routes
    * `/portal`, serves the files itself and falls back to the shell for a route).
    */
-  readonly derive: (root: string, baseText: string, client: string | undefined) => string;
+  /** `main` names the entry file under `generated/server/` the config runs, in place of the one it says (a world runs `world.ts`, which registers its probes). */
+  readonly derive: (root: string, baseText: string, client: string | undefined, main?: string) => string;
   /** The `assets` block of a config for a folder of the portal's client: what a world, a build and an environment all write, from here alone. */
   readonly assets: (directory: string) => { readonly directory: string; readonly binding: string; readonly run_worker_first: true };
 }

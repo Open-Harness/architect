@@ -12,7 +12,9 @@ Lives in its own Durable Object.
 | id | id |
 | kind | text |
 | about | text |
-| current (optional) | id |
+| current (optional) | schema |
+| closed (optional) | schema |
+| told (optional) | schema |
 
 ## Machine
 

@@ -8,6 +8,7 @@ import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, p
 import { emptyPath, groupOf, notFromOf, peopleOf, worldExports } from "./helpers.ts";
 import { clocksOf, renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 import { doorsOf } from "./doors.ts";
+import { renderWorldEntry } from "./world-entry.ts";
 import { actorOptionOf } from "./actors.ts";
 import { rulesByOrigin, staleOf, versioned } from "./versioned.ts";
 
@@ -207,12 +208,16 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "  });",
       "",
       // An environment with a stepped or scaled clock (K23): the entry reads its world's instant and runs each request in it (M8.06).
+      "let probes: Parameters<typeof toWorld>[0][\"probes\"];",
+      "/** The world's own entry (world.ts) registers its packages' probes here; this file imports none, so a deployed Worker answers no probe. */",
+      "export const registerProbes = (found: typeof probes): void => { probes = found; };",
+      "",
       timed ? ["/** Each request runs in its world's time: `Date` and Effect's `Clock` read the instant its world keeps (stepped and scaled worlds only). */", "export default WorldEntry.entry<Env>({"] : "export default {",
       "  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {",
       "    // Closed before anything reads it: outside worlds there is no door to cast, to read facts, or to register a world.",
       "    if (new URL(request.url).pathname.startsWith(\"/_world/\") && !hostsWorlds(env)) return Promise.resolve(Response.json({ error: \"not found\" }, { status: 404 }));",
       "    if (new URL(request.url).pathname.startsWith(\"/_world/\")) {",
-      `      return toWorld({ worlds: env.WORLD, db: env.DB, ${world}, leases: env.ORTHO_WORLDS === "1" }, request);`,
+      `      return toWorld({ worlds: env.WORLD, db: env.DB, ${world}, leases: env.ORTHO_WORLDS === "1", ...(probes === undefined ? {} : { probes }) }, request);`,
       "    }",
       "    if (new URL(request.url).pathname === \"/_ortho/bundle\") {",
       "      return env.ORTHO_REVISION && env.ORTHO_BUNDLE_SHA256",
@@ -241,6 +246,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
 
 export const renderServer = (model: Model, name: string, empty = false): ReadonlyArray<RenderedFile> => [
   main(model, name, empty),
+  ...renderWorldEntry(model, empty),
   renderWrangler(name, Object.values(model.things).some((t) => t.lives === "actor"), databaseStores(model), clocksOf(model)),
   renderMigration(model),
   ...renderStoreMigrations(model),

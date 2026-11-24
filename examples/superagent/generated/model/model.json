@@ -545,8 +545,20 @@
         },
         "current": {
           "value": {
-            "type": "id",
-            "prefix": "asg"
+            "type": "schema"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        "closed": {
+          "value": {
+            "type": "schema"
+          },
+          "optional": true
+        },
+        "told": {
+          "value": {
+            "type": "schema"
           },
           "optional": true
         }
@@ -709,7 +721,7 @@
         "version": "0.0.0",
         "thing": "agent"
       },
-      "hash": "a369aaa882ce59e7"
+      "hash": "9dc5653265f36599"
     },
     "assignment": {
       "name": "assignment",
@@ -14441,9 +14453,9 @@
       "file": "blueprint/features/agents.ts",
       "package": "@orthograph/agents",
       "version": "0.0.0",
-      "integrity": "sha256-wvH1Vkiv+njXb9ewuCUx02zGODJNH3NvAAhvHo8OfZs=",
+      "integrity": "sha256-u7ga9yZ6pfxwso46oHdBVEOXDEnYtxS8dWoOilPLDAk=",
       "chosen": {},
-      "hash": "a6583fab3899a955"
+      "hash": "6492691de2012f3c"
     },
     "github": {
       "kind": "adapter",

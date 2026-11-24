@@ -15,6 +15,8 @@ export type Agent = {
   readonly "kind": Of<Declared["kind"]>;
   readonly "about": Of<Declared["about"]>;
   readonly "current": Of<Declared["current"]>;
+  readonly "closed": Of<Declared["closed"]>;
+  readonly "told": Of<Declared["told"]>;
   readonly "state": AgentState;
 };
 
