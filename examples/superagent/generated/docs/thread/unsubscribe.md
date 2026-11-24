@@ -25,6 +25,7 @@ Stop a ticket following a thread: a person's call, or the main agent's.
 | refusal | exit | code | when |
 |---|---|---|---|
 | ThreadNotIdle | 84 | TH-900 | the thread is in a state unsubscribe can't start from; carries `state` |
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | ThreadNotFound | 4 | TH-901 | nothing has the id in thread; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |
 

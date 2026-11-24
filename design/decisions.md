@@ -131,11 +131,11 @@ clocks; `s.clock` in journeys; calendar anchors; each system's hook; adapters th
 
 ## The agent harness (proposed, H1)
 
-- A package of its own, `@architect/agent`: Pi Durable 1.5.0 behind an Effect seam, providers through `pi-ai` (Anthropic and Command Code), tools derived from the blueprint's operations, skills as a small extension, a copy-of-the-project tools-only sandbox first, Pi's telemetry exported through Effect's OTLP layer, run records scored by `check` and `prove`. Effect AI with Cluster/Workflow on Durable Objects is the named fallback. See `decisions/H1-agent-harness.md`; steps A1 to A7 in `build-plan.md`.
+- A package of its own, `@architect/agent` (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.): Pi Durable 1.5.0 behind an Effect seam, providers through `pi-ai` (Anthropic and Command Code), tools derived from the blueprint's operations, skills as a small extension, a copy-of-the-project tools-only sandbox first, Pi's telemetry exported through Effect's OTLP layer, run records scored by `check` and `prove`. Effect AI with Cluster/Workflow on Durable Objects is the named fallback. See `decisions/H1-agent-harness.md`; steps A1 to A7 in `build-plan.md`.
 
 ## Agent runs and internal benchmarks (proposed, H2)
 
-- Check 4 becomes the first runner (`sdk`) of `@architect/agent` at A0, with `oracle` and `null` runners that check the bench itself in
+- Check 4 becomes the first runner (`sdk`) of `@architect/agent` (Superseded by M4-agents, 22 November 2026: `@orthograph/agents`.) at A0, with `oracle` and `null` runners that check the bench itself in
   CI with no key; Pi joins as the `pi` runner for open models. A run is one folder (a typed `record.json` of numbers and hashes,
   beside its transcript, spans, logs, output and score), kept as files now and in R2 and D1 at A6. Tasks are derived per project,
   operation and variant (`blank`, `isolated`, `repair`, `review`; 49 today), scored by `check` and `prove`; suites run under a daily

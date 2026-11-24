@@ -9,5 +9,6 @@ key that is none of the subject's fields names the subject's own thing: on `memb
 `owner.of("membership.organization")` and `owner.of("organization")` are the same walk (#761). A field named like the
 thing wins: on a `Folder` with a `folder` field, `folder.organization` walks the parent. Only a read by id skips the
 key. On an operation, a first key that is neither a payload field nor a field of the subject still admits nobody, and
-a list starts from its `where` field (`owner.of("organization")`). Until #767 makes `ortho check` refuse a first key
-that is neither, a typo there on a read by id is taken as the thing's name.
+a list starts from its `where` field (`owner.of("organization")`). `ortho check` refuses a path that can't walk to the
+role's thing, and on a read by id it takes only the thing's own name in camel case (`bankAccount`) as that first key, so
+a typo the runtime would take as the thing's name is caught (#767).

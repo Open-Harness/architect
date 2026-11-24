@@ -10,7 +10,7 @@ import unlist from "@orthograph/intake/blueprint/things/account/verbs/unlist.ts"
 
 export default Blueprint.journey("an account is seen once", {
   cast: { ada: Blueprint.signedIn, source: Blueprint.system },
-  starts: "a-sender-was-seen",
+  starts: "a-sender-was-seen-beside-another-superagent",
   steps: (s) => [
     s.step(
       "the source sees the account again before anyone lists it: the same account, still seen, nothing recorded",
@@ -66,8 +66,8 @@ export default Blueprint.journey("an account is seen once", {
     ),
     s.step(
       "the same outside id on another superagent is another account, and the first stays listed",
-      s.source.run(seen, { superagent: "sag_otheraccounts1", source: "slack", external: "U1", login: "ann", bot: false }),
-      emits(AccountSeen, { superagent: "sag_otheraccounts1" }),
+      s.source.run(seen, { superagent: s.world.other, source: "slack", external: "U1", login: "ann", bot: false }),
+      emits(AccountSeen, { superagent: s.world.other }),
       machine.isIn(s.last.account, "seen"),
       machine.isIn(s.world.account, "listed"),
     ),

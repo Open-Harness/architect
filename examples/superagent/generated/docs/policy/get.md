@@ -27,6 +27,7 @@ Read the policy: the current version, or the one named.
 
 | refusal | exit | code | when |
 |---|---|---|---|
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |
 
 ## How to call

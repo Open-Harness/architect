@@ -1,5 +1,15 @@
 [
   {
+    "from": "account.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "assignment.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
     "from": "assignment.ticket",
     "to": "ticket.id",
     "kind": "refers"
@@ -15,8 +25,33 @@
     "kind": "refers"
   },
   {
+    "from": "attention.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
     "from": "attention.ticket",
     "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "correlation.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "decision.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "eval.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "input.superagent",
+    "to": "superagent.id",
     "kind": "refers"
   },
   {
@@ -25,8 +60,23 @@
     "kind": "refers"
   },
   {
+    "from": "mandate.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
     "from": "mandate.ticket",
     "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "mandate.account",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "outgoing-message.superagent",
+    "to": "superagent.id",
     "kind": "refers"
   },
   {
@@ -35,13 +85,38 @@
     "kind": "refers"
   },
   {
+    "from": "policy.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "prompt-set.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
     "from": "proposal.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "report.superagent",
     "to": "superagent.id",
     "kind": "refers"
   },
   {
     "from": "report.ticket",
     "to": "ticket.id",
+    "kind": "refers"
+  },
+  {
+    "from": "source.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "subscription.superagent",
+    "to": "superagent.id",
     "kind": "refers"
   },
   {
@@ -55,8 +130,23 @@
     "kind": "refers"
   },
   {
+    "from": "thread.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "ticket.superagent",
+    "to": "superagent.id",
+    "kind": "refers"
+  },
+  {
     "from": "ticket.agent",
     "to": "agent.id",
+    "kind": "refers"
+  },
+  {
+    "from": "trigger.superagent",
+    "to": "superagent.id",
     "kind": "refers"
   },
   {
