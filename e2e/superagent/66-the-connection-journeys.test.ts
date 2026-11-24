@@ -35,6 +35,21 @@ describe("66 the connection journeys run through `ortho prove`", () => {
     for (const w of named) expect(found, `${w} is a world of this check`).toContain(w);
   });
 
+  // #933: `s.world` is only what the starting world's `gives` returned, so a journey that reads anything else fails at that step on a correct build.
+  it("every `s.world` value a journey reads is one its starting world gives", () => {
+    const gives = new Map(readdirSync(worlds).filter((f) => f.endsWith(".ts")).map((f) => {
+      const text = readFileSync(join(worlds, f), "utf8");
+      const body = /gives: \(s\) => \(\{([^}]*)\}\)/.exec(text)?.[1] ?? "";
+      return [/startingWorld\("([^"]+)"/.exec(text)?.[1] ?? f, new Set([...body.matchAll(/(\w+):/g)].map((m) => m[1]!))] as const;
+    }));
+    const unread = readdirSync(mine).filter((f) => f.endsWith(".ts")).flatMap((f) => {
+      const text = readFileSync(join(mine, f), "utf8");
+      const world = /starts: "([^"]+)"/.exec(text)?.[1] ?? "";
+      return [...new Set([...text.matchAll(/s\.world\.(\w+)/g)].map((m) => m[1]!))].filter((k) => !gives.get(world)?.has(k)).map((k) => `${f} reads s.world.${k}, which ${world} does not give`);
+    });
+    expect(unread).toEqual([]);
+  });
+
   it("the worlds load: the app with them overlaid generates and passes `ortho check`, and each is a starting world of its model", () => {
     const root = copyApp();
     cpSync(worlds, join(root, "blueprint/starting-worlds"), { recursive: true });
