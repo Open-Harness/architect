@@ -402,6 +402,7 @@ its author.
    `X-GitHub-Delivery`, settles it. Slack: `X-Slack-Signature`, `X-Slack-Request-Timestamp` (more than five minutes from the door's
    clock, either way, is refused), its `url_verification` answered with the challenge (the body says it, as JSON or as text), a
    retry of one event seen. A header or an event the door does not know is `ignored`, and an included event that does not decode is too.
+   The check signs and stamps a Slack delivery at the world's time (`GET /_world/clock`, `door.ts` `worldSeconds`), never the wall's: the door's clock is the world's, and a stepped world stands away from the wall.
 5. **The signing secret** of a mount is its adapter's export `webhookSigning` (as `design/frame/adapters.md` names it), so the
    world's name for it is `GITHUB_WEBHOOK_SIGNING`, `SLACK_WEBHOOK_SIGNING` (`frame/secrets.md`: `<MOUNT>_<EXPORT>`). A world takes
    it as a Worker secret (`Worlds.start`'s `secretEnv`), which the check makes random.
