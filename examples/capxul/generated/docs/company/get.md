@@ -34,6 +34,14 @@ Read one company by its id: companyName, abbr, country, defaultCurrency, owner, 
 
 ## Worked examples
 
+### branch names are the company's
+
+Starts from the world `four branches`.
+
+- **her first company is unchanged by its branches.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].
+- **and so is her second.** `ada` (role company.owner) calls and sends id the world's otherCompany, and gets back [`Acme Logistics`, `AL`, `Uganda`, `UGX`, the cast's ada person, `active`].
+- **and Bo's.** `bo` (signed in) calls and sends id the world's boCompany, and gets back [`Bo Ltd`, `BL`, `Tanzania`, `TZS`, the cast's bo person, `active`].
+
 ### companies are kept apart
 
 Starts from the world `a company`.
@@ -41,6 +49,14 @@ Starts from the world `a company`.
 - **her second company reads back as she typed it, not as her first.** `ada` (role company.owner) calls and sends id the last call's company, and gets back [`Acme Holdings`, `AH`, `Uganda`, `UGX`, the cast's ada person, `active`].
 - **Bo still can't read Ada's.** `bo` (signed in) calls and sends id the world's company, and is refused with NotAllowed, AR-001.
 - **Ada's company is untouched and still hers.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].
+
+### grade names are the company's
+
+Starts from the world `four grades`.
+
+- **her first company is unchanged by its grades.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].
+- **and so is her second.** `ada` (role company.owner) calls and sends id the world's otherCompany, and gets back [`Acme Logistics`, `AL`, `Uganda`, `UGX`, the cast's ada person, `active`].
+- **and Bo's.** `bo` (signed in) calls and sends id the world's boCompany, and gets back [`Bo Ltd`, `BL`, `Tanzania`, `TZS`, the cast's bo person, `active`].
 
 ### set up a company
 

@@ -10,6 +10,11 @@
     "kind": "refers"
   },
   {
+    "from": "branch.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "bridge-business.company",
     "to": "company.id",
     "kind": "refers"
@@ -37,6 +42,11 @@
   {
     "from": "employee.designation",
     "to": "designation.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-grade.company",
+    "to": "company.id",
     "kind": "refers"
   },
   {
@@ -86,6 +96,31 @@
   },
   {
     "from": "bank-account.open",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "branch.create",
+    "to": "branch",
+    "kind": "acts-on"
+  },
+  {
+    "from": "branch.create",
+    "to": "branch.BranchCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "branch.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "branch.get",
+    "to": "branch",
+    "kind": "reads"
+  },
+  {
+    "from": "branch.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
@@ -286,6 +321,31 @@
   },
   {
     "from": "employee.relieve",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-grade.create",
+    "to": "employee-grade",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-grade.create",
+    "to": "employee-grade.EmployeeGradeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-grade.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-grade.get",
+    "to": "employee-grade",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-grade.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
