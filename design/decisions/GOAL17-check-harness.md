@@ -286,10 +286,17 @@ s.clock.advance("5 seconds")        // fired: [] unless a declared move made by 
 s.clock.settle()                    // new: advance("0 seconds"): move nothing, fire only what is already due now (usually nothing: `fired` is []), and answer once the world is quiet
 ```
 
-- **Every Goal 17 environment that runs journeys is stepped:** `examples/superagent/blueprint/environments/test.ts` declares
+- **Every Goal 17 environment that runs journeys is stepped:** `examples/superagent/blueprint/environments/local.ts`, the one `ortho prove --env local` runs, declares
   `Blueprint.clock.stepped({ starts: "2026-12-01T09:00:00.000Z" })` (`packages/orthograph/src/modules/environments/types.ts:20`).
   Its waits are 2 s, 5 s doubling to 300 s, 30 s and two weeks (GOAL17-pause, -derived-reads): a real clock cannot check them.
   M5's stopgap, `ORTHO_OUTBOX_LEASE` and `ORTHO_OUTBOX_BACKOFF` (M5-reach-out Q1.6), is not used here and is not built here.
+
+  **A delivery that stands in for Slack is signed at the world's time** (the lead's call, 23 November 2026, after check 63 failed seven tests as stale
+  on a stepped `local.ts`). `door.ts` reads the instant from the world's clock door (`GET /_world/clock`, `worldSeconds`) for the default stamp and for each
+  test's offsets, as every stand-in reads the world's time (M8.11). The door judges Slack's five minutes against the world's `Clock`
+  (`packages/host-cloudflare/src/modules/inbound/internal/verify.ts`), which is right: in a real world, world time is real time. So check 63, not the door, was
+  wrong, and `local.ts` stays stepped from the fixed instant. A stepped clock started at "now" was rejected: it stands still, so a test that runs more than five
+  wall minutes after boot would go stale, and flake on a loaded machine. On a real clock the world's instant is the wall's, so the check reads the same either way.
 - **`settle` is the one addition to Goal 9's step,** and it is sugar, not a second clock: it asks Goal 9's controller for a move of
   zero, which waits for quiet and fires only timers already due now (Goal 9's controller fires a timer "due at or before the target", so a zero move fires one due exactly at this instant, and none later). What it delivers is only what is due **now** and already running as counted work:
   the post-commit kick delivers each row due at the current instant, so a quiet world has delivered them. A row due later (a
@@ -690,3 +697,4 @@ not use it, and each lane would write its own.
 - `design/goals/17-superagent.md`: "thing with versions, the app; execution variables, blocked commands" → "thing with versions, the app; `variables` (each a name, value and description, never a credential) and `blocked` (command names), GOAL17-check-harness"
 - `design/goals/17-superagent.md`: "| 8 | Checks for the agents and the sandbox: " → "| 8 | The harness's surface (a builder's pull request first, GOAL17-check-harness), then checks for the agents and the sandbox: "
 - `design/goals/17-superagent.md`: "`lend` (fix 6), slots and pause | 4, 7, 8 |" → "`lend` (fix 6), slots and pause, and the harness's instruments (GOAL17-check-harness) | 4, 7, 8 |"
+- `design/decisions/GOAL17-check-harness.md`: "`examples/superagent/blueprint/environments/test.ts` declares" → "`examples/superagent/blueprint/environments/local.ts`, the one `ortho prove --env local` runs, declares"
