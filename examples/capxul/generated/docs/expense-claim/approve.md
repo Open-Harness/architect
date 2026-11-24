@@ -54,7 +54,7 @@ Starts from the world `an expense claim with two types`.
 
 Starts from the world `an expense claim`.
 
-- **a claim with something claimed may be approved for nothing.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and gets back [the world's expenseClaim, `0`].
+- **a claim with less than a USDC claimed may be approved for nothing.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and gets back [the world's expenseClaim, `0`].
 
 ### reject an expense claim
 

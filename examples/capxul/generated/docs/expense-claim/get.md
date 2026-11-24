@@ -48,7 +48,7 @@ Starts from the world `an expense claim with two types`.
 
 Starts from the world `an expense claim`.
 
-- **it reads back approved, owing nothing.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `5000000`, `0`, `approved`].
+- **it reads back approved, owing nothing.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `500000`, `0`, `approved`].
 
 ### reject an expense claim
 

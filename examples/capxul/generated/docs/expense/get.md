@@ -45,7 +45,7 @@ Starts from the world `an expense claim with two types`.
 
 Starts from the world `an expense claim`.
 
-- **that line reads back on Olga's claim, sanctioned at nothing.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's expenseClaimType, `5000000`, `0`, `active`].
+- **that line reads back on Olga's claim, sanctioned at nothing.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's expenseClaimType, `500000`, `0`, `active`].
 
 ### reject an expense claim
 

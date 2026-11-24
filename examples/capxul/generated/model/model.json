@@ -10305,7 +10305,7 @@
           ]
         },
         {
-          "title": "a line is judged on its own amounts, not the claim's: 12 USDC can't be sanctioned on a 10 USDC lunch",
+          "title": "a line is judged on its own amounts, not the claim's: 12 USDC can't be sanctioned on a 10.50 USDC lunch",
           "call": {
             "actor": "ada",
             "operation": "expense.add",
@@ -10323,7 +10323,7 @@
                   "expenseClaimType"
                 ]
               },
-              "amount": "10000000",
+              "amount": "10500000",
               "sanctionedAmount": "12000000"
             }
           },
@@ -10332,7 +10332,7 @@
               "kind": "refuses",
               "error": "SanctionedOverClaimed",
               "fields": {
-                "amount": "10000000"
+                "amount": "10500000"
               }
             },
             {
@@ -10560,7 +10560,7 @@
           ]
         }
       ],
-      "sourceHash": "952b22c1c28e88e28bd4b69561984335a11d4a3ea28e3a3bc5e6bf29724f6f84"
+      "sourceHash": "e16d0b4ef5d55637a8e9a4cfa44e9bf7ead662f6d56a13df284cdf8d70629def"
     },
     "journeys/companies-are-kept-apart.ts": {
       "name": "companies are kept apart",
@@ -11430,7 +11430,7 @@
           ]
         },
         {
-          "title": "Ada adds 5 USDC Olga spent before leaving, sanctioning none of it",
+          "title": "Ada adds half a USDC Olga spent before leaving, sanctioning none of it",
           "call": {
             "actor": "ada",
             "operation": "expense.add",
@@ -11448,7 +11448,7 @@
                   "expenseClaimType"
                 ]
               },
-              "amount": "5000000",
+              "amount": "500000",
               "sanctionedAmount": "0"
             }
           },
@@ -11456,7 +11456,7 @@
             {
               "kind": "expect-equal",
               "value": [
-                "5000000",
+                "500000",
                 "0"
               ]
             }
@@ -11493,7 +11493,7 @@
                     "expenseClaimType"
                   ]
                 },
-                "5000000",
+                "500000",
                 "0",
                 "active"
               ]
@@ -11504,7 +11504,7 @@
           ]
         },
         {
-          "title": "a claim with something claimed may be approved for nothing",
+          "title": "a claim with less than a USDC claimed may be approved for nothing",
           "call": {
             "actor": "ada",
             "operation": "expense-claim.approve",
@@ -11587,7 +11587,7 @@
                   ]
                 },
                 "2026-11-20",
-                "5000000",
+                "500000",
                 "0",
                 "approved"
               ]
@@ -11675,7 +11675,7 @@
           ]
         }
       ],
-      "sourceHash": "7ff178e56d3f1251ebc77de0a81ac899a896d76611d52f58825740e514959f8b"
+      "sourceHash": "c87a39897fad8359c652898b92fb38cc9e7d6df59a353fbe2d849004cbe66717"
     },
     "journeys/grade-names-are-the-companys.ts": {
       "name": "grade names are the company's",
@@ -12844,7 +12844,7 @@
           ]
         },
         {
-          "title": "a rejected claim takes no more expenses",
+          "title": "a rejected claim takes no more expenses, not even an over-sanctioned one",
           "call": {
             "actor": "ada",
             "operation": "expense.add",
@@ -12863,7 +12863,7 @@
                 ]
               },
               "amount": "1000000",
-              "sanctionedAmount": "1000000"
+              "sanctionedAmount": "2000000"
             }
           },
           "checks": [
@@ -13233,7 +13233,7 @@
           ]
         }
       ],
-      "sourceHash": "f4c3f3b9c4ec8658069b38d1503fce7a2c4959d337687f52889c07b34fa24472"
+      "sourceHash": "66592beb6284f2ad7e1d3e22b973345efe89ba34bf36cefcf83fe467ec48863f"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",

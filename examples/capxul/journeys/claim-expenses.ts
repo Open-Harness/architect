@@ -130,15 +130,16 @@ export default Blueprint.journey("claim expenses", {
       noEvents(),
     ),
     s.step(
-      "a line is judged on its own amounts, not the claim's: 12 USDC can't be sanctioned on a 10 USDC lunch",
+      "a line is judged on its own amounts, not the claim's: 12 USDC can't be sanctioned on a 10.50 USDC lunch",
       s.ada.run(add, {
         expenseClaim: s.world.expenseClaim,
         expenseDate: "2026-11-19",
         expenseType: s.world.expenseClaimType,
-        amount: 10000000n,
+        amount: 10500000n,
         sanctionedAmount: 12000000n,
       }),
-      refuses(SanctionedOverClaimed, { amount: 10000000n }),
+      // The refusal carries the line's amount to the base unit, not rounded to whole USDC.
+      refuses(SanctionedOverClaimed, { amount: 10500000n }),
       noEvents(),
     ),
     s.step(

@@ -62,14 +62,15 @@ export default Blueprint.journey("reject an expense claim", {
       machine.isIn(s.world.expenseClaim, "rejected"),
     ),
     s.step(
-      "a rejected claim takes no more expenses",
+      "a rejected claim takes no more expenses, not even an over-sanctioned one",
       s.ada.run(add, {
         expenseClaim: s.world.expenseClaim,
         expenseDate: "2026-11-19",
         expenseType: s.world.expenseClaimType,
         amount: 1000000n,
-        sanctionedAmount: 1000000n,
+        sanctionedAmount: 2000000n,
       }),
+      // Order: ClaimNotDraft before SanctionedOverClaimed, on a rejected claim as on an approved one.
       refuses(ClaimNotDraft),
       noEvents(),
     ),
