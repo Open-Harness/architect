@@ -70,7 +70,7 @@ export const Secret = Blueprint.visibility.secret(Blueprint.text({ max: 512 }));
 A value is a schema with a name and a visibility. Orthograph gives you a maker for each common shape, and `Blueprint.value` names
 anything else, such as an Effect `Schema.Literals`:
 
-```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=62-108
+```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=62-114
 export interface ValuesApi {
   /** Name a type: `export const Amount = Blueprint.value(Blueprint.uint(128))`. */
   readonly value: <S extends Schema.Constraint>(schema: S | Value<S>) => Value<S>;
@@ -115,8 +115,14 @@ export interface ValuesApi {
   readonly oneOf: <const O extends ReadonlyArray<string>>(options: O) => Value<Schema.Literals<O>>;
   /** Many of one value: a list, written as an array. */
   readonly list: <S extends Schema.Constraint>(item: Value<S>) => Value<Schema.$Array<S>>;
-  /** A field the record may lack: absent from a payload, an event or a row until it is set. */
-  readonly optional: <S extends Schema.Constraint>(value: Value<S>) => Value<Schema.optionalKey<S>>;
+  /**
+   * A field the record may lack: absent from a payload, an event or a row until it is set. Given another thing's field
+   * (or a link to one), the field it makes keeps its edge to that thing: an optional reference.
+   */
+  readonly optional: {
+    <S extends Schema.Constraint>(value: Value<S>): Value<Schema.optionalKey<S>>;
+    <V extends Value, K extends string, F extends FieldsInput>(field: Field<V, K, F>): Field<Value<Schema.optionalKey<V["schema"]>>, K, F>;
+  };
 }
 ```
 
