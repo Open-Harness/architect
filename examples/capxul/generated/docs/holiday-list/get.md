@@ -46,6 +46,12 @@ Starts from the world `a holiday list`.
 
 - **the list now counts two holidays.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`Kenya 2027`, `2027-01-01`, `2027-12-31`, `2`].
 
+### every weekday
+
+Starts from the world `a leap fortnight`.
+
+- **every day of the list is now a holiday.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`2028-02-22`, `2028-03-07`, `15`].
+
 ### set up a holiday list
 
 Starts from the world `a company`.

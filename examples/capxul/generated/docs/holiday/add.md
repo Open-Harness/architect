@@ -64,6 +64,15 @@ Starts from the world `a holiday list`.
 - **Bo can't add a day to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, holidayDate `2027-05-01`, description `Bo's day`, and is refused with NotAllowed, AR-001.
 - **the list's last day may be a holiday too.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-31`, description `New Year's Eve`, and gets back [`2`].
 
+### every weekday
+
+Starts from the world `a leap fortnight`.
+
+- **the leap day is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-02-29`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-02-29`.
+- **the first of March is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-03-01`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-03-01`.
+- **the second of March is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-03-02`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-03-02`.
+- **the fourth of March is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-03-04`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-03-04`.
+
 ### weekly offs
 
 Starts from the world `a sunday holiday`.

@@ -7895,6 +7895,354 @@
       ],
       "sourceHash": "ef131afdf39ece71ee0a0f30111be7d4a39ac55871982f4f876cf49c3be9f525"
     },
+    "journeys/every-weekday.ts": {
+      "name": "every weekday",
+      "file": "journeys/every-weekday.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "starts": "a leap fortnight",
+      "steps": [
+        {
+          "title": "the weekday the list starts and ends on adds three, the leap day among them",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Tuesday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "3",
+                "3"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Tuesday",
+                "added": "3",
+                "totalHolidays": "3"
+              }
+            }
+          ]
+        },
+        {
+          "title": "the leap day is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-02-29",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-02-29"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the day after it adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Wednesday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "5"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the first of March is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-03-01",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-03-01"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the third weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Thursday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "7"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the second of March is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-03-02",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-03-02"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the fourth weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Friday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "9"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the fifth weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Saturday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "11"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the fourth of March is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-03-04",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-03-04"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the sixth weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Sunday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "13"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the last weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Monday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "15"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "every day of the list is now a holiday",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2028-02-22",
+                "2028-03-07",
+                "15"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "b8bffdc92e15a47d8b12ce62de6298b41957fd323af6b5aea0bc19f07fe494a1"
+    },
     "journeys/hire-an-employee.ts": {
       "name": "hire an employee",
       "file": "journeys/hire-an-employee.ts",
@@ -8809,6 +9157,36 @@
           ]
         },
         {
+          "title": "nor end a day before it starts, inside one month",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "holidayListName": "Backwards again",
+              "fromDate": "2028-08-15",
+              "toDate": "2028-08-14"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayListEndsBeforeStart",
+              "fields": {
+                "fromDate": "2028-08-15"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "a second list can't take the first one's name",
           "call": {
             "actor": "ada",
@@ -8954,7 +9332,7 @@
           ]
         }
       ],
-      "sourceHash": "fefaeed7ed39c279ce817c8d3c028941a3c765f6cf159bcef6a674132a7c5bc3"
+      "sourceHash": "c46835fedab510253b62596fded6bd698fa97a02b8e3abd0a37d7d9f6c1b00ef"
     },
     "journeys/set-up-departments-and-job-titles.ts": {
       "name": "set up departments and job titles",
@@ -10062,6 +10440,49 @@
             "holidayListName": "Kenya 2027",
             "fromDate": "2027-01-01",
             "toDate": "2027-12-31"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "holidayList": {
+          "ref": [
+            "last",
+            "holidayList"
+          ]
+        }
+      }
+    },
+    "a leap fortnight": {
+      "name": "a leap fortnight",
+      "file": "blueprint/starting-worlds/a-leap-fortnight.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "21d6e20f14861419f59c41aa49dde4d29a3e6c481ee5dd92c00a1956026193f0",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "holiday-list.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "holidayListName": "Leap fortnight",
+            "fromDate": "2028-02-22",
+            "toDate": "2028-03-07"
           }
         }
       ],
@@ -13384,6 +13805,16 @@
         "journey": "companies are kept apart",
         "severity": "page",
         "owner": "journeys/companies-are-kept-apart.ts"
+      }
+    },
+    {
+      "id": "verdict:every weekday:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "every weekday",
+        "severity": "page",
+        "owner": "journeys/every-weekday.ts"
       }
     },
     {
