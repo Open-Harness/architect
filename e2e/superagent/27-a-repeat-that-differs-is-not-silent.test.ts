@@ -17,7 +17,7 @@ import { Effect, Exit, Scope } from "effect";
 import { afterAll, describe, expect, it } from "vitest";
 import { Collectors, Worlds, type Span } from "@orthograph/prove";
 import { build, lazy, removeCopies } from "./app.ts";
-import { COMMENT_CREATED, COMMENT_EDITED, REVIEW_SUBMITTED, githubPayload, setAt, type Obj } from "./connections.ts";
+import { CHECK_ON_PR, COMMENT_CREATED, COMMENT_EDITED, ISSUE_OPENED, PR_CLOSED, REVIEW_COMMENT_CREATED, REVIEW_SUBMITTED, githubPayload, setAt, type Obj } from "./connections.ts";
 import { github, journalOf, slack, trace, type Door } from "./door.ts";
 import { APP_MENTION, USER_MESSAGE } from "./slack-events.ts";
 
@@ -154,6 +154,23 @@ describe("27 a repeat that differs is not silent: every field of a github object
         const object = kept[key] as Obj;
         await repeat(gh(event), "github", kept, { ...kept, [key]: { ...object, [field]: changed(field, object[field]) as never } }, true);
       });
+    });
+  }
+});
+
+// Each other event the app takes compares its own object too (the 🔍's fourth pass: a door that finds the object of reviews and comments only).
+describe("27 a repeat that differs is not silent: every other github event", () => {
+  for (const [what, event, base, key, idPath, id, field] of [
+    ["an issue", "issues", ISSUE_OPENED, "issue", "issue.number", 2715, "title"],
+    ["a review comment", "pull_request_review_comment", REVIEW_COMMENT_CREATED, "comment", "comment.id", 9715, "body"],
+    ["a check run", "check_run", CHECK_ON_PR, "check_run", "check_run.id", 5715, "conclusion"],
+    ["a closed pull request", "pull_request", PR_CLOSED, "pull_request", "pull_request.number", 2716, "title"],
+  ] as const) {
+    it(`${what} re-sent with only its ${field} changed says in.mismatch`, async () => {
+      const kept = setAt(base, idPath, id);
+      const object = kept[key] as Obj;
+      const value = field === "conclusion" ? (object[field] === "failure" ? "success" : "failure") : changed(field, object[field]);
+      await repeat(gh(event), "github", kept, { ...kept, [key]: { ...object, [field]: value as never } }, true);
     });
   }
 });

@@ -20,6 +20,11 @@ A repeat is compared on the event's **object**, never on what the service wraps 
 - **Slack:** the message as a person wrote it: its user, channel, text, `ts` and thread. The envelope (`event_id`, `event_time`, a retry)
   and the event's `type` and kind-only fields (`channel_type`, `event_ts`) are not.
 
+Slack's other event fields (`blocks`, `client_msg_id` and the like) are not compared: the same message delivered as a `message` and as an
+`app_mention` may carry them differently. A catch-up poll, when one lands, reads a service's REST copy of an object, which carries other
+fields than the webhook's: a repeat that comes by a poll is compared only on the fields both copies carry, so a poll and a webhook of one
+unchanged object say nothing.
+
 A repeat whose object differs is still answered `seen`, writes nothing and keeps the first row, and its request's span tree holds a
 span `in.mismatch` with its `defect` attribute set (a sentence naming the mount and the event's id, never the payload), as every defect on a
 span is written, so trace trees and `watch` show it as one. Where the object lives is the adapter's to say (beside its `id`), so the door compares without knowing GitHub or Slack.

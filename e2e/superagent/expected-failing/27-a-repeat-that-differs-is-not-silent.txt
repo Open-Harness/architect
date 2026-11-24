@@ -27,3 +27,7 @@ superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that dif
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts and text but in another thread says in.mismatch
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts by another user says in.mismatch
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts with other text says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every other github event > a check run re-sent with only its conclusion changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every other github event > a closed pull request re-sent with only its title changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every other github event > a review comment re-sent with only its body changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every other github event > an issue re-sent with only its title changed says in.mismatch
