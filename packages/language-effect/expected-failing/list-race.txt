@@ -1,0 +1,10 @@
+# Records.list (#764) is not built, and a list's rows don't count as read, so two calls that each checked "no overlap" can both commit. Clears with the records-list build.
+src/modules/records/list-race.test.ts > two calls that each list, then insert (#764) > can't both commit overlapping leave: one runs again, sees the other's row, and is refused
+src/modules/records/list-race.test.ts > two calls that each list, then insert (#764) > control: two calls whose leave doesn't overlap both commit
+src/modules/records/list-race.test.ts > a change the list didn't read doesn't make the call run again (#764) > another employee's new leave: ada's call commits on its first run
+src/modules/records/list-race.test.ts > a change the list didn't read doesn't make the call run again (#764) > another employee's leave changed: ada's call commits on its first run
+src/modules/records/list-race.test.ts > a change the list didn't read doesn't make the call run again (#764) > ada's cancelled leave changed: ada's call commits on its first run
+src/modules/records/list-race.test.ts > a change the list didn't read doesn't make the call run again (#764) > control, ada's new leave on other days: ada's call runs again and then commits
+src/modules/records/list-race.test.ts > a change the list didn't read doesn't make the call run again (#764) > control, ada's listed leave changed: ada's call runs again and then commits
+src/modules/records/list-race.test.ts > a change the list didn't read doesn't make the call run again (#764) > control, bob's leave moved to ada, on other days: ada's call runs again and then commits
+src/modules/records/list-race.test.ts > a change the list didn't read doesn't make the call run again (#764) > control, ada's cancelled leave reopened, on other days: ada's call runs again and then commits
