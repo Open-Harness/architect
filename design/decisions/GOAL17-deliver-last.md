@@ -15,7 +15,8 @@ step. Each journey failed on a correct build with `nothing at world.comment`. GO
 The stand-ins' `deliver` command, which slice 11 builds, takes an optional `of`:
 
 - **With no `of`,** it sends the event of what the stand-in made last: GitHub's latest comment for `issue_comment`, Slack's latest
-  message for `message` or `app_mention`. It is a new delivery, with a new delivery id.
+  message for `message` or `app_mention`, made by its own `comment` or `say` command: never one the app posted through the stand-in's API, so
+  an agent's reply in between cannot take its place. It is a new delivery, with a new delivery id.
 - **`again: true`** re-sends the stand-in's last delivery as it was: the same delivery id, the same body, signed again unless
   `signed` says otherwise. It reads no `of`.
 - **`signed`** is unchanged: `"wrongly"` or `"late"` applies to whatever is sent.

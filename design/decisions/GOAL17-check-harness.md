@@ -590,8 +590,8 @@ export default Blueprint.journey("a webhook and a catch-up poll of one comment m
       spans({ present: ["account.seen"] }), emits(TriggerReceived, { thread: "issue/12" })),
     s.step("the poll finds the same comment five minutes later", s.clock.advance("5 minutes"), noEvents()),   // no second TriggerReceived
     s.step("still one", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
-    s.step("the same webhook again changes nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, again: true }), expect((a) => a.status).toBe(200)),   // Superseded by GOAL17-deliver-last, 24 November 2026: no world gives `comment`
-    s.step("a webhook signed with another secret is refused and stores nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, signed: "wrongly" }), expect((a) => a.status).toBe(401)),   // Superseded by GOAL17-deliver-last, 24 November 2026: no world gives `comment`
+    s.step("the same webhook again changes nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, again: true }), expect((a) => a.status).toBe(200)),   // Superseded by GOAL17-deliver-last, 24 November 2026: no world gives `comment`; the step leaves out `of`
+    s.step("a webhook signed with another secret is refused and stores nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, signed: "wrongly" }), expect((a) => a.status).toBe(401)),   // Superseded by GOAL17-deliver-last, 24 November 2026: no world gives `comment`; the step leaves out `of`
     s.step("nothing was written for it", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
   ],
 });

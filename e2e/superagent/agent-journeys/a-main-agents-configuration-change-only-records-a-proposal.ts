@@ -4,7 +4,7 @@
 // so a change applied as well as recorded passes the step that makes it; the later steps catch it, each by a person making the same change
 // herself and being answered as a world where nothing was applied would answer (#934). The tape names which later step catches each one.
 import { Blueprint, emits, expect } from "orthograph";
-import { superagentUpdate, policySave, policySync, accountList, settingsSave, proposalWaiting, ProposalRecorded, AccountListed, itsMain } from "../kit/ops.ts";
+import { superagentUpdate, policySave, policySync, accountList, settingsSave, proposalWaiting, ProposalRecorded, AccountSeen, AccountListed, itsMain } from "../kit/ops.ts";
 import { PLAYBOOK, CONNECTIONS } from "../kit/consts.ts";
 
 export default Blueprint.journey("a main agent's configuration change only records a proposal", {
@@ -31,8 +31,9 @@ export default Blueprint.journey("a main agent's configuration change only recor
     s.step("and settings: the same", s.ann.run(settingsSave, { base: 0n, variables: [], blocked: [] }), expect((a) => a.revision).toBe(1n)),
     s.step("ann lists the account herself: it was still seen, so the main agent's listing was not applied", s.ann.run(accountList, { account: s.world.account }),
       emits(AccountListed, { account: s.world.account })),
-    // The stand-in's roster is ann (GitHub 3) and coder-bot (7), not the world's account (583231), so the listing above leaves the sync something to list.
-    s.step("ann syncs the allowed list from GitHub herself: the roster is listed now, so the main agent's sync was not applied", s.ann.run(policySync, { superagent: s.world.superagent, source: "github" }),
-      emits(AccountListed, {})),
+    // The stand-in's roster is ann (GitHub 3, a person) and coder-bot (7, a bot), not the world's account (583231). A person's sync sees and lists
+    // its one person (GOAL17-person-sync): had the main agent's sync been applied, she would be listed already and this would emit nothing.
+    s.step("ann syncs the allowed list from GitHub herself: its one person is seen and listed now, so the main agent's sync was not applied", s.ann.run(policySync, { superagent: s.world.superagent, source: "github" }),
+      emits(AccountSeen, {}), emits(AccountListed, {})),
   ],
 });

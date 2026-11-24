@@ -34,7 +34,7 @@ export { InputStored, InputRouted, InputDelivered } from "@orthograph/tickets/bl
 export { SuperagentPaused, SuperagentResumed } from "@orthograph/superagent/blueprint/things/superagent/events.ts";
 export { ProposalRecorded } from "@orthograph/superagent/blueprint/things/proposal/events.ts";
 export { TriggerReceived } from "@orthograph/intake/blueprint/things/trigger/events.ts";
-export { AccountListed } from "@orthograph/intake/blueprint/things/account/events.ts";
+export { AccountSeen, AccountListed } from "@orthograph/intake/blueprint/things/account/events.ts";
 export { EvalStarted, EvalExpired } from "@orthograph/intake/blueprint/things/eval/events.ts";
 export { AgentClosed } from "@orthograph/agents/blueprint/things/agent/events.ts";
 export { ReplyQueued } from "@orthograph/tickets/blueprint/things/outgoing-message/events.ts";
