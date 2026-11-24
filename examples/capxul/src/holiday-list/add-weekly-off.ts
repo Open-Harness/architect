@@ -9,11 +9,14 @@ import { oneHolidayPerDay } from "../../blueprint/things/holiday/invariants.ts";
 
 const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
 
-/** Every day from `from` to `to`, both ends inside, that falls on `weekday`: the first such day, then each a week on. */
+/**
+ * Every day from `from` to `to`, both ends inside, that falls on `weekday`: the first such day, then each a week on.
+ * Counted as offsets from `from`, so no day past `to` is ever made (a step past 9999-12-31 is no day `Days` can read).
+ */
 const daysFalling = (weekday: (typeof weekdays)[number], from: string, to: string): ReadonlyArray<string> => {
   const days: Array<string> = [];
-  const ahead = (weekdays.indexOf(weekday) - weekdays.indexOf(Days.weekday(from)) + 7) % 7;
-  for (let day = Days.add(from, ahead); Days.between(day, to) >= 0; day = Days.add(day, 7)) days.push(day);
+  const span = Days.between(from, to);
+  for (let k = (weekdays.indexOf(weekday) - weekdays.indexOf(Days.weekday(from)) + 7) % 7; k <= span; k += 7) days.push(Days.add(from, k));
   return days;
 };
 
