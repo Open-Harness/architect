@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/job-opening/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/job-opening/create.handler.ts";
+import { JobOpening } from "../../blueprint/things/job-opening/thing.ts";
 
 const { OpeningWithoutVacancies } = Errors.declared;
 
@@ -42,19 +43,25 @@ const { OpeningWithoutVacancies } = Errors.declared;
  *   once it answers, it writes JobOpeningCreated: jobOpening from the answer, company from the job-opening as the call left it, vacancies from the payload;
  *   the call is the span job-opening.create, and its commit job-opening.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ designation, jobTitle, vacancies }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span job-opening.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // OpeningWithoutVacancies: exit 41, JO-001.
-    if (yield* Handlers.blank<boolean>("refuse OpeningWithoutVacancies when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why OpeningWithoutVacancies was refused"));
+    // Step load: database, span job-opening.create.load. The runtime read the job title for the role check and hands
+    // it in, so this step only takes it.
+    const title = yield* steps.load(Effect.succeed(refs.designation));
+    if (!title) return yield* Effect.die(new Error(`designation ${designation} was read for the role check and then not found`));
+
+    // OpeningWithoutVacancies: exit 41, JO-001. Capxul's own: an opening hires at least one person.
+    if (vacancies < 1n) {
+      yield* Effect.logInfo("the opening hires nobody");
       return yield* new OpeningWithoutVacancies({});
     }
 
-    // Step insert: database, span job-opening.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span job-opening.create.insert. The opening takes its job title's company.
+    yield* steps.insert(
+      records.insert(JobOpening, { id, company: title["company"] as never, designation, jobTitle, vacancies }),
+    );
 
     // The move create, to open.
     yield* move();

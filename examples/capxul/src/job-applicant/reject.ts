@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/job-applicant/verbs/reject.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/job-applicant/reject.handler.ts";
 
 /**
@@ -41,17 +40,16 @@ import type { Handler } from "../../generated/api/src/job-applicant/reject.handl
  *   once it answers, it writes JobApplicantRejected: jobApplicant from the answer;
  *   the call is the span job-applicant.reject, and its commit job-applicant.reject.commit.
  */
-const reject: Handler = (_payload, { steps, move }) =>
+const reject: Handler = ({ jobApplicant }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span job-applicant.reject.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span job-applicant.reject.update. Turning an applicant down needs no offer
+    // (`decisions/CX-recruitment.md`) and changes no field, only the state, which the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move reject, from open or hold, to rejected.
     yield* move();
 
-    return {
-      jobApplicant: yield* Handlers.blank("jobApplicant, a job-applicant.id"),
-    };
+    return { jobApplicant };
   });
 
 export default reject;

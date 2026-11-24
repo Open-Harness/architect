@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/job-offer/verbs/reject.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/job-offer/reject.handler.ts";
 
 /**
@@ -40,18 +39,18 @@ import type { Handler } from "../../generated/api/src/job-offer/reject.handler.t
  *   once it answers, it writes JobOfferRejected: jobOffer and jobApplicant from the answer;
  *   the call is the span job-offer.reject, and its commit job-offer.reject.commit.
  */
-const reject: Handler = (_payload, { steps, move }) =>
+const reject: Handler = ({ jobOffer }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step update: database, span job-offer.reject.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span job-offer.reject.update. The runtime read the offer for its role and state checks and hands
+    // it in. Only the offer moves: the applicant follows as its own call, job-applicant.accept or reject, until a handler
+    // can move a second thing (#972, `decisions/CX-recruitment.md`). No field changes, only the offer's state.
+    const offer = yield* steps.update(Effect.succeed(subject));
+    if (!offer) return yield* Effect.die(new Error(`job offer ${jobOffer} was checked and then not found`));
 
     // The move reject, from awaiting, to rejected.
     yield* move();
 
-    return {
-      jobOffer: yield* Handlers.blank("jobOffer, a job-offer.id"),
-      jobApplicant: yield* Handlers.blank("jobApplicant, a job-offer.jobApplicant"),
-    };
+    return { jobOffer, jobApplicant: offer["jobApplicant"] as never };
   });
 
 export default reject;

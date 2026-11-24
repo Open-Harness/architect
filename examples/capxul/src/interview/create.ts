@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/interview/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/interview/create.handler.ts";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
+import { Interview } from "../../blueprint/things/interview/thing.ts";
 
 const { ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft } = Errors.declared;
 
@@ -53,43 +55,72 @@ const { ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, Intervie
  *   once it answers, it writes InterviewScheduled: interview from the answer, jobApplicant and interviewRound from the payload;
  *   the call is the span interview.create, and its commit interview.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = (
+  { jobApplicant, interviewRound, scheduledOn, fromTime, toTime, interviewers },
+  { steps, move, refs, id },
+) =>
   Effect.gen(function* () {
-    // Step load: database, span interview.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // ApplicantRejected: exit 41, IV-001.
-    if (yield* Handlers.blank<boolean>("refuse ApplicantRejected when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ApplicantRejected was refused"));
+    // Step load: database, span interview.create.load. The runtime read the applicant and the round and hands them in;
+    // this step reads every interviewer named, in the order given. One that isn't found is undefined.
+    const { applicant, round, found } = yield* steps.load(
+      Effect.gen(function* () {
+        const found = yield* Effect.forEach(interviewers, (employee) => records.find(Employee, employee));
+        return { applicant: refs.jobApplicant, round: refs.interviewRound, found };
+      }),
+    );
+    if (!applicant) return yield* Effect.die(new Error(`job applicant ${jobApplicant} was read for the role check and then not found`));
+    if (!round) return yield* Effect.die(new Error(`interview round ${interviewRound} was read and then not found`));
+    const company = applicant["company"] as string;
+
+    // Refusal order (errors.ts): ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, then the company check
+    // over every interviewer, then the leaver check over every one, wherever each stands in the list.
+    // ApplicantRejected: exit 41, IV-001. Only a turned-down applicant; one on hold may still be interviewed.
+    if (applicant.state === "rejected") {
+      yield* Effect.logInfo("the applicant has been turned down");
       return yield* new ApplicantRejected({});
     }
 
     // RoundNotInCompany: exit 42, IV-002.
-    if (yield* Handlers.blank<boolean>("refuse RoundNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RoundNotInCompany was refused"));
+    if (round["company"] !== company) {
+      yield* Effect.logInfo("the round belongs to another company");
       return yield* new RoundNotInCompany({});
     }
 
-    // InterviewEndsBeforeStart: exit 43, IV-003.
-    if (yield* Handlers.blank<boolean>("refuse InterviewEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why InterviewEndsBeforeStart was refused"));
+    // InterviewEndsBeforeStart: exit 43, IV-003. Times are HH:MM, so they compare as text; ending when it starts is
+    // refused too.
+    if (toTime <= fromTime) {
+      yield* Effect.logInfo("the interview ends before it starts");
       return yield* new InterviewEndsBeforeStart({});
     }
 
-    // InterviewerNotInCompany: exit 44, IV-004.
-    if (yield* Handlers.blank<boolean>("refuse InterviewerNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why InterviewerNotInCompany was refused"));
+    // InterviewerNotInCompany: exit 44, IV-004. An employee that isn't found works for no company here.
+    if (found.some((employee) => employee?.["company"] !== company)) {
+      yield* Effect.logInfo("an interviewer works for another company");
       return yield* new InterviewerNotInCompany({});
     }
 
-    // InterviewerHasLeft: exit 45, IV-005.
-    if (yield* Handlers.blank<boolean>("refuse InterviewerHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why InterviewerHasLeft was refused"));
+    // InterviewerHasLeft: exit 45, IV-005. A leaver isn't put on a new interview (CX-expense-leavers), whatever its day.
+    if (found.some((employee) => employee?.state !== "active")) {
+      yield* Effect.logInfo("an interviewer has left the company");
       return yield* new InterviewerHasLeft({});
     }
 
-    // Step insert: database, span interview.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span interview.create.insert. The interview takes the applicant's company. A second
+    // interview for the applicant at this round, in any state, is the runtime's refusal (oneInterviewPerRound).
+    yield* steps.insert(
+      records.insert(Interview, {
+        id,
+        company: company as never,
+        jobApplicant,
+        interviewRound,
+        scheduledOn,
+        fromTime,
+        toTime,
+        interviewers,
+      }),
+    );
 
     // The move create, to pending.
     yield* move();
