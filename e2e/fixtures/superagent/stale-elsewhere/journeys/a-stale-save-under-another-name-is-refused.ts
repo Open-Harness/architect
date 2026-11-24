@@ -8,16 +8,17 @@ import { PolicyOutOfDate } from "@orthograph/intake/blueprint/things/policy/erro
 import save from "@orthograph/intake/blueprint/things/policy/verbs/save.ts";
 import restore from "@orthograph/intake/blueprint/things/policy/verbs/restore.ts";
 
-const A = "sag_elsewhere1";
 const policy = { mode: "observe", allowed: ["slack:U1"], bots: [] as string[], admission: {}, rules: [] as unknown[] };
 
 export default Blueprint.journey("a stale save under another name is refused", {
   cast: { ada: Blueprint.signedIn },
+  // A real superagent (GOAL17-dead-role-paths): a save for one no world made is refused SuperagentNotFound before any stale check.
+  starts: "an-observing-superagent",
   steps: (s) => [
-    s.step("ada saves the first version", s.ada.run(save, { superagent: A, base: 0n, ...policy }), expect((a) => a.revision).toBe(1n), emits(PolicyChanged, { superagent: A, revision: 1n })),
-    s.step("ada saves a second, made from the first", s.ada.run(save, { superagent: A, base: 1n, ...policy, mode: "auto" }), expect((a) => a.revision).toBe(2n)),
-    s.step("a save made from the first is refused with the app's own error, naming the current version", s.ada.run(save, { superagent: A, base: 1n, ...policy, mode: "off" }), refuses(PolicyOutOfDate, { current: 2n }), noEvents()),
-    s.step("a restore made from the first is refused the same way", s.ada.run(restore, { superagent: A, revision: 1n, base: 1n }), refuses(PolicyOutOfDate, { current: 2n }), noEvents()),
-    s.step("a restore from the current version is saved as a third", s.ada.run(restore, { superagent: A, revision: 1n, base: 2n }), expect((a) => a.revision).toBe(3n)),
+    s.step("ada saves the first version", s.ada.run(save, { superagent: s.world.superagent, base: 0n, ...policy }), expect((a) => a.revision).toBe(1n), emits(PolicyChanged, { superagent: s.world.superagent, revision: 1n })),
+    s.step("ada saves a second, made from the first", s.ada.run(save, { superagent: s.world.superagent, base: 1n, ...policy, mode: "auto" }), expect((a) => a.revision).toBe(2n)),
+    s.step("a save made from the first is refused with the app's own error, naming the current version", s.ada.run(save, { superagent: s.world.superagent, base: 1n, ...policy, mode: "off" }), refuses(PolicyOutOfDate, { current: 2n }), noEvents()),
+    s.step("a restore made from the first is refused the same way", s.ada.run(restore, { superagent: s.world.superagent, revision: 1n, base: 1n }), refuses(PolicyOutOfDate, { current: 2n }), noEvents()),
+    s.step("a restore from the current version is saved as a third", s.ada.run(restore, { superagent: s.world.superagent, revision: 1n, base: 2n }), expect((a) => a.revision).toBe(3n)),
   ],
 });

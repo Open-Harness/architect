@@ -90,6 +90,7 @@ export const applyProject = ({ owner, repo, goals, issues, log, rows, dates }) =
     log("did linkRepository");
   }
   const pid = read.project.id;
+  let skipped = 0;
   const fieldId = (name) => read.project.fields.find((f) => f.name === name)?.id;
   const optionId = (name, value) => read.project.fields.find((f) => f.name === name)?.options.find((o) => o.name === value)?.id;
   const itemId = new Map(read.project.items.map((i) => [i.number, i.id]));
@@ -118,6 +119,8 @@ export const applyProject = ({ owner, repo, goals, issues, log, rows, dates }) =
     if (s.do === "setValue") {
       const kind = read.project.fields.find((f) => f.name === s.field)?.dataType;
       const value = kind === "TEXT" ? { text: s.value } : kind === "DATE" ? { date: s.value } : { singleSelectOptionId: optionId(s.field, s.value) };
+      // A value the field has no option for is skipped with a warning, never sent half-formed (GitHub refuses it and the run stops).
+      if ("singleSelectOptionId" in value && !value.singleSelectOptionId) { skipped++; log(`skip setValue #${s.number} ${s.field} = ${s.value}: the field has no such option`); continue; }
       graphql(`mutation($p: ID!, $i: ID!, $f: ID!, $v: ProjectV2FieldValue!) { updateProjectV2ItemFieldValue(input: { projectId: $p, itemId: $i, fieldId: $f, value: $v }) { clientMutationId } }`,
         { p: pid, i: itemId.get(s.number), f: fieldId(s.field), v: value });
     }
@@ -136,5 +139,5 @@ export const applyProject = ({ owner, repo, goals, issues, log, rows, dates }) =
     log(`did ${s.do} ${s.title ?? s.name ?? ""}`);
     pause(PAUSE_PROJECT_MS);
   }
-  return read.url;
+  return { url: read.url, skipped };
 };

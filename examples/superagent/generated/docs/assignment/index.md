@@ -10,7 +10,7 @@ Lives in the database.
 | field | value |
 |---|---|
 | id | id |
-| superagent | id |
+| superagent | superagent.id |
 | ticket | ticket.id |
 | agent | agent.id |
 | input | input.id |

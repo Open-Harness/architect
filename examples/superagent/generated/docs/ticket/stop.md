@@ -31,6 +31,7 @@ Stop a ticket: its mandate is withdrawn and its executor's turn closed.
 | SeatTaken | 96 | AS-002 | another running or closing assignment holds this superagent and seat; by the rule assignment.oneHolderPerSeat, carrying seat |
 | ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |
 | TicketNotOpen | 90 | TI-900 | the ticket is in a state stop can't start from; carries `state` |
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in, or the itsMain of its superagent; the handler never runs |
 

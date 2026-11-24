@@ -226,4 +226,9 @@ if (gated.action !== "run") {
 show(gated.steps, "do");
 applySteps({ steps: gated.steps, state, repo, rowById: new Map((rows ?? []).map((r) => [r.id, r])), gh, ghAll });
 say(`${gated.steps.length} step(s) written to ${repo}.`);
-if (withProject && !bootstrap) say(`The Project: ${applyProject({ owner, repo, goals: live, issues: readState().issues, log: say, rows: rows ?? undefined, dates: roadmap?.dates })}`);
+if (withProject && !bootstrap) {
+  const { url, skipped } = applyProject({ owner, repo, goals: live, issues: readState().issues, log: say, rows: rows ?? undefined, dates: roadmap?.dates });
+  say(`The Project: ${url}`);
+  // A value the Project had no option for was skipped: the rest is written, but the run ends red until it is fixed.
+  if (skipped) { process.stderr.write(`skipped ${skipped} Project value(s) with no matching option\n`); process.exitCode = 2; }
+}

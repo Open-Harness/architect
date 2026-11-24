@@ -70,7 +70,7 @@ export const Secret = Blueprint.visibility.secret(Blueprint.text({ max: 512 }));
 A value is a schema with a name and a visibility. Orthograph gives you a maker for each common shape, and `Blueprint.value` names
 anything else, such as an Effect `Schema.Literals`:
 
-```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=60-92
+```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=62-108
 export interface ValuesApi {
   /** Name a type: `export const Amount = Blueprint.value(Blueprint.uint(128))`. */
   readonly value: <S extends Schema.Constraint>(schema: S | Value<S>) => Value<S>;
@@ -82,6 +82,8 @@ export interface ValuesApi {
   readonly text: (options?: { readonly max?: number }) => Value<Schema.String>;
   /** A moment: stored as a UTC instant, written on the wire, in answers, events and reads as ISO 8601 with milliseconds (`"2027-01-10T09:00:00.000Z"`). A move made by time anchors on a field of this type (M8-checks, call 1). */
   readonly instant: () => Value<Schema.String>;
+  /** A calendar day with no time and no zone: `YYYY-MM-DD` in code and on the wire, a day the calendar has (`"2024-02-29"`). `Days` does its arithmetic. */
+  readonly day: () => Value<Schema.String>;
   /** A reference carrying a thing’s declaration name and the id of one instance. */
   readonly refAny: () => Value<Schema.Struct<{ readonly declaration: Schema.String; readonly id: Schema.String }>>;
   /**
@@ -93,6 +95,18 @@ export interface ValuesApi {
   readonly account: () => Value<Schema.String>;
   /** An amount that names its asset (M6-money). */
   readonly money: MoneyApi;
+  /**
+   * An exact decimal (#742): a `BigDecimal` in code, so a handler adds and multiplies exactly; plain decimal text on the
+   * wire (`"-12.50"`), with no exponent, no `+` and no `-0`. At most `places` digits after the point (default 9), trailing zeros counted.
+   */
+  readonly decimal: (options?: { readonly places?: number }) => Value<Schema.BigDecimalFromString>;
+  /**
+   * Another thing's field, read only when it is first used (#742): `Blueprint.link(() => SalesInvoice.fields.id)`, so two
+   * things may take each other's ids though their files import each other. Once read it is that field, as if written itself.
+   * In a cycle TypeScript can't infer the two things' types (TS7022), so write the function's type: `(): Field => SalesInvoice.fields.id`.
+   * A thing's field made from a link reads it when used, but reusing that field (in another thing, `described`, a payload) reads it then: do that outside the cycle.
+   */
+  readonly link: <F extends Field>(to: () => F) => F;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
   /** True or false. */
@@ -105,6 +119,11 @@ export interface ValuesApi {
   readonly optional: <S extends Schema.Constraint>(value: Value<S>) => Value<Schema.optionalKey<S>>;
 }
 ```
+
+A day is not a moment. `Blueprint.day()` holds a calendar day as `YYYY-MM-DD`, in code and on the wire, so a due day or
+a birthday never shifts with the zone it is read in. `Days`, imported beside `Blueprint`, does a day's arithmetic
+without a clock: `Days.weekday("2027-01-04")` is `"Monday"`, `Days.add(day, 30)` moves it, and `Days.between(from, to)`
+counts the days from one to the other. A chain store can't hold a day, as it can't hold an instant.
 
 Values are named for three reasons:
 

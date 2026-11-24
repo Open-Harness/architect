@@ -20,6 +20,7 @@ Tell the live tickets the policy changed under them.
 
 | refusal | exit | code | when |
 |---|---|---|---|
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |
 
 ## How to call
