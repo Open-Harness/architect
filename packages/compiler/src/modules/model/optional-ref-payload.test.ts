@@ -59,11 +59,12 @@ export const Attendance = Blueprint.thing({ description: "Someone was there.", c
 });
 
 type Op = { readonly payload: Record<string, { readonly optional?: boolean }>; readonly notFound?: Record<string, string>; readonly refusals: ReadonlyArray<string> };
-const operations = async (): Promise<Record<string, Op>> => {
-  const exit = await Effect.runPromiseExit(Effect.provide(Compiler.model, nodeSource(root())));
+let compiled: Promise<Record<string, Op>> | undefined;
+// Compiled once: every row reads the same model.
+const operations = (): Promise<Record<string, Op>> => (compiled ??= Effect.runPromiseExit(Effect.provide(Compiler.model, nodeSource(root()))).then((exit) => {
   if (Exit.isFailure(exit)) throw new Error(`the blueprint did not load: ${JSON.stringify(exit.cause)}`);
   return (exit.value as unknown as { readonly operations: Record<string, Op> }).operations;
-};
+}));
 
 describe("An optional reference in an operation's payload", () => {
   it("is kept optional, and a miss no role check reads is refused <Thing>NotFound", async () => {
