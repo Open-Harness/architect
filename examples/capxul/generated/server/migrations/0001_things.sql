@@ -14,6 +14,14 @@ CREATE TABLE "bank-account" (
 );
 CREATE UNIQUE INDEX "bank-account_oneAccountPerNumber" ON "bank-account" ("accountNumber");
 CREATE UNIQUE INDEX "bank-account_oneNamePerCompany" ON "bank-account" ("company", "accountName") WHERE "state" IN ('open');
+CREATE TABLE "branch" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "branchName" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "branch_oneNamePerCompany" ON "branch" ("company", "branchName");
 CREATE TABLE "bridge-business" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -80,6 +88,14 @@ CREATE TABLE "employee" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "employee_onePlacePerPerson" ON "employee" ("company", "person") WHERE "state" IN ('active');
+CREATE TABLE "employee-grade" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "gradeName" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "employee-grade_oneNamePerCompany" ON "employee-grade" ("company", "gradeName");
 -- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).
 CREATE TABLE "_journal" (
   "seq" INTEGER PRIMARY KEY AUTOINCREMENT,

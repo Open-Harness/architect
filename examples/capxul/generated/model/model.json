@@ -2,6 +2,8 @@
   "refusals": {
     "BankAccountNameTaken": "BA-002",
     "BankAccountNotOpen": "BA-900",
+    "BranchNameTaken": "BR-001",
+    "BranchNotActive": "BR-900",
     "BridgeBusinessNotFound": "KB-901",
     "BridgeBusinessNotStarted": "KB-900",
     "BridgeIndividualNotFound": "KC-901",
@@ -18,6 +20,8 @@
     "DesignationNotFound": "DS-901",
     "DesignationNotInCompany": "EM-003",
     "EmployeeAlreadyHired": "EM-001",
+    "EmployeeGradeNameTaken": "EG-001",
+    "EmployeeGradeNotActive": "EG-900",
     "EmployeeNotActive": "EM-900",
     "IdempotencyConflict": "AR-002",
     "JoinedBeforeBorn": "EM-004",
@@ -257,6 +261,103 @@
         "kind": "app"
       },
       "hash": "25003fc246749f17"
+    },
+    "branch": {
+      "name": "branch",
+      "identifier": "Branch",
+      "code": "BR",
+      "description": "A place a company works from, such as an office or a site.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "brn"
+          }
+        },
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "company.id"
+        },
+        "branchName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name"
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneNamePerCompany": {
+          "kind": "unique",
+          "fields": [
+            "company",
+            "branchName"
+          ],
+          "refuse": "BranchNameTaken"
+        }
+      },
+      "machine": {
+        "states": [
+          "active"
+        ],
+        "moves": {
+          "create": {
+            "from": [],
+            "to": [
+              "active"
+            ],
+            "emits": "BranchCreated"
+          }
+        },
+        "notFrom": {
+          "error": "BranchNotActive",
+          "exit": 40,
+          "code": "BR-900"
+        }
+      },
+      "events": {
+        "BranchCreated": {
+          "branch": {
+            "value": {
+              "type": "id",
+              "prefix": "brn"
+            },
+            "ref": "branch.id"
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "branch.company"
+          }
+        }
+      },
+      "errors": {
+        "BranchNameTaken": {
+          "fields": {
+            "branchName": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "Name"
+            }
+          },
+          "exit": 41,
+          "code": "BR-001"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "b95916d437b0e7fc"
     },
     "bridge-business": {
       "name": "bridge-business",
@@ -1170,6 +1271,103 @@
         "kind": "app"
       },
       "hash": "a2627df8b7120d80"
+    },
+    "employee-grade": {
+      "name": "employee-grade",
+      "identifier": "EmployeeGrade",
+      "code": "EG",
+      "description": "A level a company places its employees at, such as junior or senior.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "egr"
+          }
+        },
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "company.id"
+        },
+        "gradeName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name"
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneNamePerCompany": {
+          "kind": "unique",
+          "fields": [
+            "company",
+            "gradeName"
+          ],
+          "refuse": "EmployeeGradeNameTaken"
+        }
+      },
+      "machine": {
+        "states": [
+          "active"
+        ],
+        "moves": {
+          "create": {
+            "from": [],
+            "to": [
+              "active"
+            ],
+            "emits": "EmployeeGradeCreated"
+          }
+        },
+        "notFrom": {
+          "error": "EmployeeGradeNotActive",
+          "exit": 40,
+          "code": "EG-900"
+        }
+      },
+      "events": {
+        "EmployeeGradeCreated": {
+          "grade": {
+            "value": {
+              "type": "id",
+              "prefix": "egr"
+            },
+            "ref": "employee-grade.id"
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "employee-grade.company"
+          }
+        }
+      },
+      "errors": {
+        "EmployeeGradeNameTaken": {
+          "fields": {
+            "gradeName": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "Name"
+            }
+          },
+          "exit": 41,
+          "code": "EG-001"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "a09fa37da72df7db"
     }
   },
   "operations": {
@@ -1483,6 +1681,155 @@
         "p95Ms": 800
       },
       "hash": "010a747b50ed2cac"
+    },
+    "branch.create": {
+      "kind": "operation",
+      "name": "branch.create",
+      "thing": "branch",
+      "verb": "create",
+      "identifier": "create",
+      "file": "blueprint/things/branch/verbs/create.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Add a branch to a company.",
+      "payload": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "branch.company"
+        },
+        "branchName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "branch.branchName"
+        }
+      },
+      "answer": {
+        "branch": {
+          "value": {
+            "type": "id",
+            "prefix": "brn"
+          },
+          "ref": "branch.id"
+        }
+      },
+      "move": {
+        "key": "create",
+        "from": [],
+        "to": [
+          "active"
+        ],
+        "emits": "BranchCreated"
+      },
+      "errors": [],
+      "invariants": {
+        "BranchNameTaken": "branch.oneNamePerCompany"
+      },
+      "breaks": [
+        "branch.oneNamePerCompany"
+      ],
+      "refusals": [
+        "BranchNameTaken",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "company": "company"
+      },
+      "mints": "branch",
+      "steps": {
+        "insert": {
+          "name": "branch.create.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "6025f829ff1158b1"
+    },
+    "branch.get": {
+      "kind": "read",
+      "name": "branch.get",
+      "thing": "branch",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/branch/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one branch by its id: company, branchName, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "brn"
+          },
+          "ref": "branch.id"
+        }
+      },
+      "answer": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "branch.company"
+        },
+        "branchName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "branch.branchName"
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "61a4bd948bfd4067"
     },
     "bridge-business.approve": {
       "kind": "operation",
@@ -3039,6 +3386,155 @@
         "p95Ms": 150
       },
       "hash": "7c1133cc15b01f7d"
+    },
+    "employee-grade.create": {
+      "kind": "operation",
+      "name": "employee-grade.create",
+      "thing": "employee-grade",
+      "verb": "create",
+      "identifier": "create",
+      "file": "blueprint/things/employee-grade/verbs/create.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Add a grade to a company.",
+      "payload": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "employee-grade.company"
+        },
+        "gradeName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "employee-grade.gradeName"
+        }
+      },
+      "answer": {
+        "grade": {
+          "value": {
+            "type": "id",
+            "prefix": "egr"
+          },
+          "ref": "employee-grade.id"
+        }
+      },
+      "move": {
+        "key": "create",
+        "from": [],
+        "to": [
+          "active"
+        ],
+        "emits": "EmployeeGradeCreated"
+      },
+      "errors": [],
+      "invariants": {
+        "EmployeeGradeNameTaken": "employee-grade.oneNamePerCompany"
+      },
+      "breaks": [
+        "employee-grade.oneNamePerCompany"
+      ],
+      "refusals": [
+        "EmployeeGradeNameTaken",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "company": "company"
+      },
+      "mints": "grade",
+      "steps": {
+        "insert": {
+          "name": "employee-grade.create.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "c3bfdfa5f0f7387f"
+    },
+    "employee-grade.get": {
+      "kind": "read",
+      "name": "employee-grade.get",
+      "thing": "employee-grade",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/employee-grade/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one employee-grade by its id: company, gradeName, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "egr"
+          },
+          "ref": "employee-grade.id"
+        }
+      },
+      "answer": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "employee-grade.company"
+        },
+        "gradeName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "employee-grade.gradeName"
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "c8d9aa1745af26ee"
     }
   },
   "journeys": {
@@ -3755,6 +4251,201 @@
         }
       ],
       "sourceHash": "4a4ab32fd007147f42b7c3140faeaedb8e860d70577b3001cc4af249f3933e53"
+    },
+    "journeys/branch-names-are-the-companys.ts": {
+      "name": "branch names are the company's",
+      "file": "journeys/branch-names-are-the-companys.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "starts": "a branch",
+      "steps": [
+        {
+          "title": "Ada can't add a second branch of the same name",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Nairobi"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "BranchNameTaken",
+              "fields": {
+                "branchName": "Nairobi"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the branch she had is left as it was",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Nairobi",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada sets up a second company",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Logistics",
+              "abbr": "AL",
+              "country": "Kenya",
+              "defaultCurrency": "KES"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "her second company may have a branch of that name too, because names are unique within a company",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "branchName": "Nairobi"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^brn_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BranchCreated",
+              "fields": {
+                "branch": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "that branch is its own record, not the first company's",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Nairobi",
+                "active"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and the first company's branch still reads back as before",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Nairobi",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "4b8ed4b5e8200d6c689854d04c8a985cd086e729a70e32612d3257cfe44b9645"
     },
     "journeys/bridge-a-bank-account-closes.ts": {
       "name": "bridge: a bank account closes",
@@ -6504,6 +7195,201 @@
       ],
       "sourceHash": "ef131afdf39ece71ee0a0f30111be7d4a39ac55871982f4f876cf49c3be9f525"
     },
+    "journeys/grade-names-are-the-companys.ts": {
+      "name": "grade names are the company's",
+      "file": "journeys/grade-names-are-the-companys.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "starts": "a grade",
+      "steps": [
+        {
+          "title": "Ada can't add a second grade of the same name",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "Senior"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "EmployeeGradeNameTaken",
+              "fields": {
+                "gradeName": "Senior"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the grade she had is left as it was",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Senior",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada sets up a second company",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Logistics",
+              "abbr": "AL",
+              "country": "Kenya",
+              "defaultCurrency": "KES"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "her second company may have a grade of that name too, because names are unique within a company",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "gradeName": "Senior"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^egr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeGradeCreated",
+              "fields": {
+                "grade": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "that grade is its own record, not the first company's",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Senior",
+                "active"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and the first company's grade still reads back as before",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Senior",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "a48a40cbe83048701c7627833d66cce4a6e60da88d6cf212f39fe8b325285fc6"
+    },
     "journeys/hire-an-employee.ts": {
       "name": "hire an employee",
       "file": "journeys/hire-an-employee.ts",
@@ -7243,6 +8129,383 @@
       ],
       "sourceHash": "91b416bbfb8a2428e62fbf99573e390a5534dbe494bf94efc65d364bd17d3842"
     },
+    "journeys/set-up-branches.ts": {
+      "name": "set up branches",
+      "file": "journeys/set-up-branches.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a company",
+      "steps": [
+        {
+          "title": "Ada adds a branch",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Nairobi"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^brn_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BranchCreated",
+              "fields": {
+                "branch": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "branch",
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              },
+              "state": "active"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "branch.create",
+                "branch.create.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's branch",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads the branch back",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Nairobi",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't add a branch to Ada's company",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Mombasa"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "branch.create",
+                "branch.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada adds a second branch",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "branchName": "Kisumu Depot"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^brn_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BranchCreated",
+              "fields": {
+                "branch": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "branch",
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "it reads back under its own name",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Kisumu Depot",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo sets up a company of his own",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Bo Ltd",
+              "abbr": "BL",
+              "country": "Uganda",
+              "defaultCurrency": "UGX"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo adds a branch to his company",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "branchName": "Kampala"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^brn_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "BranchCreated",
+              "fields": {
+                "branch": {
+                  "ref": [
+                    "last",
+                    "branch"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "branch",
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "Ada can't read Bo's branch",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads his branch back, in his own company",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Kampala",
+                "active"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "f3e50f6196451d192e622876168561a10e4be2bf3c3d4a5fe43c9f265c1849eb"
+    },
     "journeys/set-up-departments-and-job-titles.ts": {
       "name": "set up departments and job titles",
       "file": "journeys/set-up-departments-and-job-titles.ts",
@@ -7788,6 +9051,383 @@
         }
       ],
       "sourceHash": "a51f1bf2e205b3a6bccd4100b01da942e61197a6b9c453c024d5e2ad836dd6ee"
+    },
+    "journeys/set-up-grades.ts": {
+      "name": "set up grades",
+      "file": "journeys/set-up-grades.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a company",
+      "steps": [
+        {
+          "title": "Ada adds a grade",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "Junior"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^egr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeGradeCreated",
+              "fields": {
+                "grade": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-grade",
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              },
+              "state": "active"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "employee-grade.create",
+                "employee-grade.create.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's grade",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads the grade back",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Junior",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't add a grade to Ada's company",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "Lead"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "employee-grade.create",
+                "employee-grade.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada adds a second grade",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "gradeName": "Principal Engineer II"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^egr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeGradeCreated",
+              "fields": {
+                "grade": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-grade",
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "it reads back under its own name",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Principal Engineer II",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo sets up a company of his own",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Bo Ltd",
+              "abbr": "BL",
+              "country": "Uganda",
+              "defaultCurrency": "UGX"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo adds a grade to his company",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "gradeName": "Associate"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^egr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeGradeCreated",
+              "fields": {
+                "grade": {
+                  "ref": [
+                    "last",
+                    "grade"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-grade",
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              },
+              "state": "active"
+            }
+          ]
+        },
+        {
+          "title": "Ada can't read Bo's grade",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads his grade back, in his own company",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Associate",
+                "active"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "a61a39be3f3fdfbc6df1f22b709863da39b3d13602292b25cad98e4d137936ce"
     }
   },
   "startingWorlds": {
@@ -7854,6 +9494,47 @@
           "ref": [
             "last",
             "routingNumber"
+          ]
+        }
+      }
+    },
+    "a branch": {
+      "name": "a branch",
+      "file": "blueprint/starting-worlds/a-branch.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "b7b7cadd48e0f99c41c4f4186df1d40e59bb58e08dd60af390a0353b880950cb",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "branch.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "branchName": "Nairobi"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "branch": {
+          "ref": [
+            "last",
+            "branch"
           ]
         }
       }
@@ -7927,6 +9608,47 @@
           "ref": [
             "last",
             "department"
+          ]
+        }
+      }
+    },
+    "a grade": {
+      "name": "a grade",
+      "file": "blueprint/starting-worlds/a-grade.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "c30779acb8bd036cf82d66b1133e717c80eac88bd1f0380be65bf8954e4c1cbf",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-grade.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "gradeName": "Senior"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "grade": {
+          "ref": [
+            "last",
+            "grade"
           ]
         }
       }
@@ -8592,6 +10314,26 @@
       }
     },
     {
+      "id": "anomaly:BR-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BR-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/branch/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:BR-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BR-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
       "id": "anomaly:CO-001",
       "kind": "anomaly",
       "labels": {
@@ -8677,6 +10419,26 @@
       "labels": {
         "environment": "*",
         "code": "DS-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:EG-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "EG-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/employee-grade/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:EG-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "EG-900",
         "severity": "ticket",
         "owner": "orthograph"
       }
@@ -8893,6 +10655,90 @@
         "operation": "bank-account.open",
         "severity": "page",
         "owner": "blueprint/things/bank-account/verbs/open.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:branch.create",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "branch.create",
+        "severity": "page",
+        "owner": "blueprint/things/branch/verbs/create.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:branch.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "branch.get",
+        "severity": "page",
+        "owner": "blueprint/things/branch/verbs/get.ts"
       },
       "target": 0.999,
       "windowDays": 28,
@@ -9516,6 +11362,90 @@
       ]
     },
     {
+      "id": "defect:employee-grade.create",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "employee-grade.create",
+        "severity": "page",
+        "owner": "blueprint/things/employee-grade/verbs/create.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:employee-grade.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "employee-grade.get",
+        "severity": "page",
+        "owner": "blueprint/things/employee-grade/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "defect:employee.get",
       "kind": "defect",
       "labels": {
@@ -9739,6 +11669,92 @@
       "target": 0.95,
       "windowDays": 28,
       "thresholdMs": 800,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:branch.create",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "branch.create",
+        "severity": "page",
+        "owner": "blueprint/things/branch/verbs/create.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:branch.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "branch.get",
+        "severity": "page",
+        "owner": "blueprint/things/branch/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
       "minCalls": 20,
       "alerts": [
         {
@@ -10373,6 +12389,92 @@
       ]
     },
     {
+      "id": "latency:employee-grade.create",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "employee-grade.create",
+        "severity": "page",
+        "owner": "blueprint/things/employee-grade/verbs/create.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:employee-grade.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "employee-grade.get",
+        "severity": "page",
+        "owner": "blueprint/things/employee-grade/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "latency:employee.get",
       "kind": "latency",
       "labels": {
@@ -10532,6 +12634,16 @@
       }
     },
     {
+      "id": "verdict:branch names are the company's:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "branch names are the company's",
+        "severity": "page",
+        "owner": "journeys/branch-names-are-the-companys.ts"
+      }
+    },
+    {
       "id": "verdict:bridge: a bank account closes:local",
       "kind": "verdict",
       "labels": {
@@ -10642,6 +12754,16 @@
       }
     },
     {
+      "id": "verdict:grade names are the company's:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "grade names are the company's",
+        "severity": "page",
+        "owner": "journeys/grade-names-are-the-companys.ts"
+      }
+    },
+    {
       "id": "verdict:hire an employee:local",
       "kind": "verdict",
       "labels": {
@@ -10662,6 +12784,16 @@
       }
     },
     {
+      "id": "verdict:set up branches:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "set up branches",
+        "severity": "page",
+        "owner": "journeys/set-up-branches.ts"
+      }
+    },
+    {
       "id": "verdict:set up departments and job titles:local",
       "kind": "verdict",
       "labels": {
@@ -10669,6 +12801,16 @@
         "journey": "set up departments and job titles",
         "severity": "page",
         "owner": "journeys/set-up-departments-and-job-titles.ts"
+      }
+    },
+    {
+      "id": "verdict:set up grades:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "set up grades",
+        "severity": "page",
+        "owner": "journeys/set-up-grades.ts"
       }
     }
   ]

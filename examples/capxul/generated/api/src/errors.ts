@@ -2,17 +2,20 @@
 import { Schema } from "effect";
 import { ErrorNames, wireStruct } from "orthograph/server";
 import * as BankAccount from "../../../blueprint/things/bank-account/errors.ts";
+import * as Branch from "../../../blueprint/things/branch/errors.ts";
 import * as BridgeBusiness from "../../../blueprint/things/bridge-business/errors.ts";
 import * as BridgeIndividual from "../../../blueprint/things/bridge-individual/errors.ts";
 import * as Company from "../../../blueprint/things/company/errors.ts";
 import * as Department from "../../../blueprint/things/department/errors.ts";
 import * as Designation from "../../../blueprint/things/designation/errors.ts";
 import * as Employee from "../../../blueprint/things/employee/errors.ts";
+import * as EmployeeGrade from "../../../blueprint/things/employee-grade/errors.ts";
 
 /** Every refusal's code, its exit for the CLI and its HTTP status: one row each, read by the CLI, HTTP and MCP. */
 export const refusals = {
   KybNotApproved: { code: "BA-001", exit: 41, status: 422 },
   BankAccountNameTaken: { code: "BA-002", exit: 42, status: 422 },
+  BranchNameTaken: { code: "BR-001", exit: 41, status: 422 },
   KybAlreadyStarted: { code: "KB-001", exit: 41, status: 422 },
   KycAlreadyStarted: { code: "KC-001", exit: 41, status: 422 },
   CompanyNameTaken: { code: "CO-001", exit: 41, status: 422 },
@@ -24,13 +27,16 @@ export const refusals = {
   DesignationNotInCompany: { code: "EM-003", exit: 43, status: 422 },
   JoinedBeforeBorn: { code: "EM-004", exit: 44, status: 422 },
   RelievedBeforeJoined: { code: "EM-005", exit: 45, status: 422 },
+  EmployeeGradeNameTaken: { code: "EG-001", exit: 41, status: 422 },
   BankAccountNotOpen: { code: "BA-900", exit: 40, status: 409 },
+  BranchNotActive: { code: "BR-900", exit: 40, status: 409 },
   BridgeBusinessNotStarted: { code: "KB-900", exit: 40, status: 409 },
   BridgeIndividualNotStarted: { code: "KC-900", exit: 40, status: 409 },
   CompanyNotActive: { code: "CO-900", exit: 40, status: 409 },
   DepartmentNotActive: { code: "DE-900", exit: 40, status: 409 },
   DesignationNotActive: { code: "DS-900", exit: 40, status: 409 },
   EmployeeNotActive: { code: "EM-900", exit: 40, status: 409 },
+  EmployeeGradeNotActive: { code: "EG-900", exit: 40, status: 409 },
   BridgeBusinessNotFound: { code: "KB-901", exit: 4, status: 404 },
   BridgeIndividualNotFound: { code: "KC-901", exit: 4, status: 404 },
   DepartmentNotFound: { code: "DE-901", exit: 4, status: 404 },
@@ -44,6 +50,8 @@ ErrorNames.name(BankAccount.KybNotApproved, "KybNotApproved");
 export class KybNotApproved extends Schema.TaggedError<KybNotApproved>()("KybNotApproved", { code: Schema.Literal(refusals.KybNotApproved.code), ...wireStruct(BankAccount.KybNotApproved.fields).fields }, { httpApiStatus: refusals.KybNotApproved.status }) { static readonly code = refusals.KybNotApproved.code; }
 ErrorNames.name(BankAccount.BankAccountNameTaken, "BankAccountNameTaken");
 export class BankAccountNameTaken extends Schema.TaggedError<BankAccountNameTaken>()("BankAccountNameTaken", { code: Schema.Literal(refusals.BankAccountNameTaken.code), ...wireStruct(BankAccount.BankAccountNameTaken.fields).fields }, { httpApiStatus: refusals.BankAccountNameTaken.status }) { static readonly code = refusals.BankAccountNameTaken.code; }
+ErrorNames.name(Branch.BranchNameTaken, "BranchNameTaken");
+export class BranchNameTaken extends Schema.TaggedError<BranchNameTaken>()("BranchNameTaken", { code: Schema.Literal(refusals.BranchNameTaken.code), ...wireStruct(Branch.BranchNameTaken.fields).fields }, { httpApiStatus: refusals.BranchNameTaken.status }) { static readonly code = refusals.BranchNameTaken.code; }
 ErrorNames.name(BridgeBusiness.KybAlreadyStarted, "KybAlreadyStarted");
 export class KybAlreadyStarted extends Schema.TaggedError<KybAlreadyStarted>()("KybAlreadyStarted", { code: Schema.Literal(refusals.KybAlreadyStarted.code), ...wireStruct(BridgeBusiness.KybAlreadyStarted.fields).fields }, { httpApiStatus: refusals.KybAlreadyStarted.status }) { static readonly code = refusals.KybAlreadyStarted.code; }
 ErrorNames.name(BridgeIndividual.KycAlreadyStarted, "KycAlreadyStarted");
@@ -66,13 +74,17 @@ ErrorNames.name(Employee.JoinedBeforeBorn, "JoinedBeforeBorn");
 export class JoinedBeforeBorn extends Schema.TaggedError<JoinedBeforeBorn>()("JoinedBeforeBorn", { code: Schema.Literal(refusals.JoinedBeforeBorn.code), ...wireStruct(Employee.JoinedBeforeBorn.fields).fields }, { httpApiStatus: refusals.JoinedBeforeBorn.status }) { static readonly code = refusals.JoinedBeforeBorn.code; }
 ErrorNames.name(Employee.RelievedBeforeJoined, "RelievedBeforeJoined");
 export class RelievedBeforeJoined extends Schema.TaggedError<RelievedBeforeJoined>()("RelievedBeforeJoined", { code: Schema.Literal(refusals.RelievedBeforeJoined.code), ...wireStruct(Employee.RelievedBeforeJoined.fields).fields }, { httpApiStatus: refusals.RelievedBeforeJoined.status }) { static readonly code = refusals.RelievedBeforeJoined.code; }
+ErrorNames.name(EmployeeGrade.EmployeeGradeNameTaken, "EmployeeGradeNameTaken");
+export class EmployeeGradeNameTaken extends Schema.TaggedError<EmployeeGradeNameTaken>()("EmployeeGradeNameTaken", { code: Schema.Literal(refusals.EmployeeGradeNameTaken.code), ...wireStruct(EmployeeGrade.EmployeeGradeNameTaken.fields).fields }, { httpApiStatus: refusals.EmployeeGradeNameTaken.status }) { static readonly code = refusals.EmployeeGradeNameTaken.code; }
 export class BankAccountNotOpen extends Schema.TaggedError<BankAccountNotOpen>()("BankAccountNotOpen", { code: Schema.Literal(refusals.BankAccountNotOpen.code), ...{ state: Schema.Literals(["open", "closed"]) } }, { httpApiStatus: refusals.BankAccountNotOpen.status }) { static readonly code = refusals.BankAccountNotOpen.code; }
+export class BranchNotActive extends Schema.TaggedError<BranchNotActive>()("BranchNotActive", { code: Schema.Literal(refusals.BranchNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.BranchNotActive.status }) { static readonly code = refusals.BranchNotActive.code; }
 export class BridgeBusinessNotStarted extends Schema.TaggedError<BridgeBusinessNotStarted>()("BridgeBusinessNotStarted", { code: Schema.Literal(refusals.BridgeBusinessNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeBusinessNotStarted.status }) { static readonly code = refusals.BridgeBusinessNotStarted.code; }
 export class BridgeIndividualNotStarted extends Schema.TaggedError<BridgeIndividualNotStarted>()("BridgeIndividualNotStarted", { code: Schema.Literal(refusals.BridgeIndividualNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeIndividualNotStarted.status }) { static readonly code = refusals.BridgeIndividualNotStarted.code; }
 export class CompanyNotActive extends Schema.TaggedError<CompanyNotActive>()("CompanyNotActive", { code: Schema.Literal(refusals.CompanyNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.CompanyNotActive.status }) { static readonly code = refusals.CompanyNotActive.code; }
 export class DepartmentNotActive extends Schema.TaggedError<DepartmentNotActive>()("DepartmentNotActive", { code: Schema.Literal(refusals.DepartmentNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.DepartmentNotActive.status }) { static readonly code = refusals.DepartmentNotActive.code; }
 export class DesignationNotActive extends Schema.TaggedError<DesignationNotActive>()("DesignationNotActive", { code: Schema.Literal(refusals.DesignationNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.DesignationNotActive.status }) { static readonly code = refusals.DesignationNotActive.code; }
 export class EmployeeNotActive extends Schema.TaggedError<EmployeeNotActive>()("EmployeeNotActive", { code: Schema.Literal(refusals.EmployeeNotActive.code), ...{ state: Schema.Literals(["active", "left"]) } }, { httpApiStatus: refusals.EmployeeNotActive.status }) { static readonly code = refusals.EmployeeNotActive.code; }
+export class EmployeeGradeNotActive extends Schema.TaggedError<EmployeeGradeNotActive>()("EmployeeGradeNotActive", { code: Schema.Literal(refusals.EmployeeGradeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.EmployeeGradeNotActive.status }) { static readonly code = refusals.EmployeeGradeNotActive.code; }
 export class BridgeBusinessNotFound extends Schema.TaggedError<BridgeBusinessNotFound>()("BridgeBusinessNotFound", { code: Schema.Literal(refusals.BridgeBusinessNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeBusinessNotFound.status }) { static readonly code = refusals.BridgeBusinessNotFound.code; }
 export class BridgeIndividualNotFound extends Schema.TaggedError<BridgeIndividualNotFound>()("BridgeIndividualNotFound", { code: Schema.Literal(refusals.BridgeIndividualNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeIndividualNotFound.status }) { static readonly code = refusals.BridgeIndividualNotFound.code; }
 export class DepartmentNotFound extends Schema.TaggedError<DepartmentNotFound>()("DepartmentNotFound", { code: Schema.Literal(refusals.DepartmentNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.DepartmentNotFound.status }) { static readonly code = refusals.DepartmentNotFound.code; }
@@ -90,6 +102,7 @@ export const codes = Object.fromEntries(Object.entries(refusals).map(([k, r]) =>
 export const declared = {
   KybNotApproved: BankAccount.KybNotApproved,
   BankAccountNameTaken: BankAccount.BankAccountNameTaken,
+  BranchNameTaken: Branch.BranchNameTaken,
   KybAlreadyStarted: BridgeBusiness.KybAlreadyStarted,
   KycAlreadyStarted: BridgeIndividual.KycAlreadyStarted,
   CompanyNameTaken: Company.CompanyNameTaken,
@@ -101,7 +114,8 @@ export const declared = {
   DesignationNotInCompany: Employee.DesignationNotInCompany,
   JoinedBeforeBorn: Employee.JoinedBeforeBorn,
   RelievedBeforeJoined: Employee.RelievedBeforeJoined,
+  EmployeeGradeNameTaken: EmployeeGrade.EmployeeGradeNameTaken,
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { KybNotApproved, BankAccountNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, BankAccountNotOpen, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, DepartmentNotFound, DesignationNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { KybNotApproved, BankAccountNameTaken, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, BankAccountNotOpen, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, DepartmentNotFound, DesignationNotFound, NotAllowed, IdempotencyConflict };

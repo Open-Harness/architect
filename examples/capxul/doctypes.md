@@ -341,7 +341,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Appraisal Template | thing |  | 2 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` |  |
 | Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` |  |
 | Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` |  |
-| Branch | thing |  | 1 | `erpnext/erpnext/setup/doctype/branch/branch.json` |  |
+| Branch | thing |  | 1 | `erpnext/erpnext/setup/doctype/branch/branch.json` | a place a company works from, its name unique within the company |
 | Compensatory Leave Request | thing | SUB | 11 | `hrms/hrms/hr/doctype/compensatory_leave_request/compensatory_leave_request.json` |  |
 | Daily Work Summary | thing |  | 3 | `hrms/hrms/hr/doctype/daily_work_summary/daily_work_summary.json` |  |
 | Daily Work Summary Group | thing |  | 5 | `hrms/hrms/hr/doctype/daily_work_summary_group/daily_work_summary_group.json` |  |
@@ -353,7 +353,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Employee Attendance Tool | job |  | 12 | `hrms/hrms/hr/doctype/employee_attendance_tool/employee_attendance_tool.json` |  |
 | Employee Checkin | thing |  | 16 | `hrms/hrms/hr/doctype/employee_checkin/employee_checkin.json` |  |
 | Employee Feedback Criteria | thing |  | 1 | `hrms/hrms/hr/doctype/employee_feedback_criteria/employee_feedback_criteria.json` |  |
-| Employee Grade | thing |  | 3 | `hrms/hrms/hr/doctype/employee_grade/employee_grade.json` |  |
+| Employee Grade | thing |  | 3 | `hrms/hrms/hr/doctype/employee_grade/employee_grade.json` | a level employees are placed at, its name unique within the company; its salary structure, base pay and currency come with payroll |
 | Employee Grievance | thing | SUB | 19 | `hrms/hrms/hr/doctype/employee_grievance/employee_grievance.json` |  |
 | Employee Group | thing |  | 1 | `erpnext/erpnext/setup/doctype/employee_group/employee_group.json` |  |
 | Employee Health Insurance | thing |  | 1 | `hrms/hrms/hr/doctype/employee_health_insurance/employee_health_insurance.json` |  |
