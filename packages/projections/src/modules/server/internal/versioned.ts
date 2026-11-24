@@ -19,5 +19,5 @@ export const rulesByOrigin = (ruled: ReadonlyArray<ThingModel>) => ({
   versionedRules: ruled.filter((t) => Object.values(t.invariants ?? {}).some((r) => r.framework === true)),
 });
 
-/** The refusal a stale save answers with, when the operation declares it. */
-export const staleOf = (o: OperationModel): string => (o.errors.includes("StaleRevision") ? "Errors.declared.StaleRevision" : "undefined");
+/** The refusal a stale save or restore answers with, as the model names it; a get or a history has none. */
+export const staleOf = (o: OperationModel): string => (o.stale === undefined ? "undefined" : `Errors.declared.${o.stale}`);

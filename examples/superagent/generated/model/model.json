@@ -6523,12 +6523,13 @@
         }
       ],
       "agentTool": true,
+      "stale": "StaleRevision",
       "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "d4ace5c00b4f0164"
+      "hash": "7b4bf59640393b8e"
     },
     "policy.save": {
       "kind": "operation",
@@ -6631,12 +6632,13 @@
         }
       ],
       "agentTool": true,
+      "stale": "StaleRevision",
       "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "33c292fd382278c6"
+      "hash": "8a6519b3b07e834e"
     },
     "policy.sync": {
       "kind": "operation",
@@ -6937,12 +6939,13 @@
         }
       ],
       "agentTool": true,
+      "stale": "StaleRevision",
       "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "c383858d3e28f40c"
+      "hash": "183a8f8ca3111599"
     },
     "proposal.approve": {
       "kind": "operation",
