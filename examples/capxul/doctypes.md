@@ -16,8 +16,9 @@ HRMS) and AGPL v3 (CRM): read, never run, and not copied here. Each row names it
   `idx`, as the spike scaffolds it. `settings`: a single, which becomes a company's settings thing. `job`: a tool or a
   background process in Frappe, which becomes an operation or a workflow rather than a thing.
 - **Flags.** `SUB`: submittable, so it gets ERPNext's draft, submitted and cancelled machine. `FX`: it holds an
-  exchange rate or a `base_` amount beside a foreign one, which is a question for Orthograph's money units, not a
-  workaround (`CX-grill.md`, section 3). `WIDE`: more than 97 stored columns, so it hits D1's 100-column limit once id,
+  exchange rate or a `base_` amount beside a foreign one. These are deferred by Aaron's call of 24 November 2026: every
+  amount is in USDC, the one dollar asset, so an `FX` row is taken without its exchange-rate and `base_*` fields
+  (`CX-grill.md`, section 3). `WIDE`: more than 97 stored columns, so it hits D1's 100-column limit once id,
   state and version are added (the spike's gap 4, in #742).
 - **Columns.** The doctype's stored fields: not its layout fields, and not its tables, which become lines. Sales
   Invoice has 133. The spike counted 142 with its 9 tables, kept 130 and dropped 12 that point at record types not
@@ -34,7 +35,7 @@ HRMS) and AGPL v3 (CRM): read, never run, and not copied here. Each row names it
 | The CRM | 40 | 10 | 11 |
 | **All** | **485** | **197** | |
 
-35 carry exchange rates (`FX`), and 5 are wider than D1 allows (`WIDE`: POS Invoice, Purchase Invoice, Purchase Order,
+35 carry exchange rates (`FX`, deferred: amounts are USDC alone), and 5 are wider than D1 allows (`WIDE`: POS Invoice, Purchase Invoice, Purchase Order,
 Sales Invoice, Sales Order).
 
 ## The books
