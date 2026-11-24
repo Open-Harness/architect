@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/expense-claim/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/expense-claim/create.handler.ts";
+import { ExpenseClaim } from "../../blueprint/things/expense-claim/thing.ts";
 
 const { ClaimantNotActive, EmployeeNotInCompany } = Errors.declared;
 
@@ -48,25 +49,33 @@ const { ClaimantNotActive, EmployeeNotInCompany } = Errors.declared;
  *   once it answers, it writes ExpenseClaimCreated: expenseClaim from the answer, company and employee from the payload;
  *   the call is the span expense-claim.create, and its commit expense-claim.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, employee, postingDate }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span expense-claim.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // ClaimantNotActive: exit 41, EC-001.
-    if (yield* Handlers.blank<boolean>("refuse ClaimantNotActive when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ClaimantNotActive was refused"));
-      return yield* new ClaimantNotActive({});
-    }
+    // Step load: database, span expense-claim.create.load. The runtime read the employee for the role check and
+    // hands it in, so this step only takes it; a missing one never reaches here.
+    const claimant = yield* steps.load(Effect.succeed(refs.employee));
+    if (!claimant) return yield* Effect.die(new Error(`employee ${employee} was read for the role check and then not found`));
 
+    // Refusal order (errors.ts): EmployeeNotInCompany before ClaimantNotActive.
     // EmployeeNotInCompany: exit 42, EC-002.
-    if (yield* Handlers.blank<boolean>("refuse EmployeeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why EmployeeNotInCompany was refused"));
+    if (claimant["company"] !== company) {
+      yield* Effect.logInfo("the employee works for another company");
       return yield* new EmployeeNotInCompany({});
     }
 
-    // Step insert: database, span expense-claim.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // ClaimantNotActive: exit 41, EC-001. Judged on create only (CX-expense-leavers): a claim already open when the
+    // employee leaves can still take lines and be approved.
+    if (claimant.state !== "active") {
+      yield* Effect.logInfo(`the employee is ${claimant.state ?? "in no state"}, not active`);
+      return yield* new ClaimantNotActive({});
+    }
+
+    // Step insert: database, span expense-claim.create.insert. A new claim holds no expenses, so both totals are 0.
+    yield* steps.insert(
+      records.insert(ExpenseClaim, { id, company, employee, postingDate, totalClaimedAmount: 0n, totalSanctionedAmount: 0n }),
+    );
 
     // The move create, to draft.
     yield* move();

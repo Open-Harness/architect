@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/expense-claim-type/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/expense-claim-type/create.handler.ts";
+import { ExpenseClaimType } from "../../blueprint/things/expense-claim-type/thing.ts";
 
 /**
  * expense-claim-type.create: Add a kind of expense a company pays back.
@@ -37,10 +38,12 @@ import type { Handler } from "../../generated/api/src/expense-claim-type/create.
  *   once it answers, it writes ExpenseClaimTypeCreated: expenseClaimType from the answer, company from the payload;
  *   the call is the span expense-claim-type.create, and its commit expense-claim-type.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, expenseType }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span expense-claim-type.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span expense-claim-type.create.insert. A name taken in the company is the runtime's refusal.
+    yield* steps.insert(records.insert(ExpenseClaimType, { id, company, expenseType }));
 
     // The move create, to active.
     yield* move();

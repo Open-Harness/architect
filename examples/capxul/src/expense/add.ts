@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/expense/verbs/add.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/expense/add.handler.ts";
+import { Expense } from "../../blueprint/things/expense/thing.ts";
+import { ExpenseClaim } from "../../blueprint/things/expense-claim/thing.ts";
 
 const { SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft } = Errors.declared;
 
@@ -49,33 +51,46 @@ const { SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft } = Errors
  *   once it answers, it writes ExpenseAdded: expense and totalClaimedAmount from the answer, expenseClaim and amount from the payload;
  *   the call is the span expense.add, and its commit expense.add.commit.
  */
-const add: Handler = (_payload, { steps, move, id }) =>
+const add: Handler = (payload, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span expense.add.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    const { expenseClaim, amount, sanctionedAmount } = payload;
 
-    // SanctionedOverClaimed: exit 41, EX-001.
-    if (yield* Handlers.blank<boolean>("refuse SanctionedOverClaimed when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why SanctionedOverClaimed was refused"));
-      return yield* new SanctionedOverClaimed({
-        amount: yield* Handlers.blank("SanctionedOverClaimed.amount, an Amount"),
-      });
-    }
+    // Step load: database, span expense.add.load. The runtime read the claim and the expense type and hands them in;
+    // the claim's read fixes the version its totals' update below is guarded by.
+    const { expenseClaim: claim, expenseType: type } = yield* steps.load(Effect.succeed(refs));
+    if (!claim || !type) return yield* Effect.die(new Error("the claim or expense type was read and then not handed in"));
 
-    // ExpenseTypeNotInCompany: exit 42, EX-002.
-    if (yield* Handlers.blank<boolean>("refuse ExpenseTypeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ExpenseTypeNotInCompany was refused"));
-      return yield* new ExpenseTypeNotInCompany({});
-    }
-
+    // Refusal order (errors.ts): ClaimNotDraft, then ExpenseTypeNotInCompany, then SanctionedOverClaimed.
     // ClaimNotDraft: exit 43, EX-003.
-    if (yield* Handlers.blank<boolean>("refuse ClaimNotDraft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ClaimNotDraft was refused"));
+    if (claim.state !== "draft") {
+      yield* Effect.logInfo(`the claim is ${claim.state ?? "in no state"}, not draft`);
       return yield* new ClaimNotDraft({});
     }
 
-    // Step insert: database, in the store expense, expense-claim, span expense.add.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // ExpenseTypeNotInCompany: exit 42, EX-002.
+    if (type["company"] !== claim["company"]) {
+      yield* Effect.logInfo("the expense type belongs to another company");
+      return yield* new ExpenseTypeNotInCompany({});
+    }
+
+    // SanctionedOverClaimed: exit 41, EX-001. HRMS's validate_sanctioned_amount: the same amount is allowed. The
+    // refusal carries the line's claimed amount, the most it may sanction, to the base unit.
+    if (sanctionedAmount > amount) {
+      yield* Effect.logInfo(`sanctioned ${sanctionedAmount} is more than the ${amount} claimed`);
+      return yield* new SanctionedOverClaimed({ amount });
+    }
+
+    // Step insert: database, in the store expense, expense-claim, span expense.add.insert. The expense, and its
+    // claim's totals, which follow its expenses as HRMS's calculate_total_amount does. Amounts are bigint base units.
+    const totalClaimedAmount = (claim["totalClaimedAmount"] as bigint) + amount;
+    const totalSanctionedAmount = (claim["totalSanctionedAmount"] as bigint) + sanctionedAmount;
+    yield* steps.insert(
+      Effect.andThen(
+        records.insert(Expense, { id, ...payload }),
+        records.update(ExpenseClaim, expenseClaim, { totalClaimedAmount, totalSanctionedAmount }),
+      ),
+    );
 
     // The move add, to active.
     yield* move();
@@ -84,8 +99,8 @@ const add: Handler = (_payload, { steps, move, id }) =>
       // ExpenseAdded needs expense, and only the answer can give it.
       expense: id,
       // ExpenseAdded needs totalClaimedAmount, and only the answer can give it.
-      totalClaimedAmount: yield* Handlers.blank("totalClaimedAmount, an expense-claim.totalClaimedAmount"),
-      totalSanctionedAmount: yield* Handlers.blank("totalSanctionedAmount, an expense-claim.totalSanctionedAmount"),
+      totalClaimedAmount,
+      totalSanctionedAmount,
     };
   });
 
