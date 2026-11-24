@@ -73,14 +73,16 @@ The compiled model records the operation's place, `runs: "server"`, the only one
 2. **The language names what it needs from a host, as services.** The store is one of them. The language declares the
    port and says what a store must do; it never says how:
 
-```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=67-78
+```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=82-95
 /** The host's side. A failing store dies: it is never the caller's refusal. */
 export class Store extends Context.Service<Store, {
   /** The rules this store enforces at commit (G5), as the model carries them; a unit made over it looks through the same ones. Absent when the project declares none. */
   readonly rules?: ReadonlyArray<NamedRule>;
   readonly find: (thing: Thing, id: string) => Effect.Effect<Stored | undefined>;
   /** One page of a thing's instances, in the order they were made (never a clock). A thing that lives as actors has none to list. */
-  readonly list: (query: ListQuery) => Effect.Effect<Listed>;
+  readonly list: (query: ListQuery) => Effect.Effect<Page>;
+  /** Where a row sits in the order rows were made, as `list` gives it; undefined when there is none. */
+  readonly place: (thing: Thing, id: string) => Effect.Effect<number | undefined>;
   /** `conflict` too when another call committed the same request key first: the retry then finds its answer. */
   readonly commit: (commit: Commit) => Effect.Effect<Committed>;
   /** The answer already committed under a request key, as wire JSON, if there is one. */
@@ -94,14 +96,14 @@ export class Store extends Context.Service<Store, {
    (`examples/signup/generated/server/wrangler.jsonc:8-11`).
 4. **`runs` says where an operation runs.** The declaration can say three places. Only one is accepted:
 
-```ts file=packages/orthograph/src/modules/operations/types.ts name=Runs lines=30-31
+```ts file=packages/orthograph/src/modules/operations/types.ts name=Runs lines=32-33
 /** Where an operation runs: `server` (every target today), on the caller's `client`, or on a `chain`. */
 export type Runs = "client" | "server" | "chain";
 ```
 
    The compiler refuses the other two, and says what a project would need to run them:
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=102-103
+```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=127-128
 // On a chain store where it runs is the compiler's word, so a written `runs` is refused in operations.ts.
 if (!chain && op.runs !== "server" && !onDevice) problems.push(`${file}: runs "${op.runs}" is not supported yet: ${RUNS_NEEDS[op.runs] ?? "an unknown place"}`); else if (onDevice) problems.push(...deviceProblems(file, op));
 ```

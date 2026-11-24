@@ -78,9 +78,9 @@ export default Blueprint.thing({ description: "An entry in the ledger.", fields:
 A handler never writes to a store. It writes to `Records`, which holds every write back until the call ends. Then
 the handler wrapper makes one commit and looks at the one thing it returns:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=136-145
-const writes = yield* unit.writes;
-const committed = yield* store.commit({ writes, entries, ...request }).pipe(
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=138-147
+const lists = yield* unit.lists;
+const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}) }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({
     "commit.outcome": outcome,
     // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
@@ -93,27 +93,39 @@ const committed = yield* store.commit({ writes, entries, ...request }).pipe(
 
 What goes in, and what comes back, is the port every store kind implements:
 
-```ts file=packages/language-effect/src/modules/records/types.ts name=Commit,Committed lines=32-41
+```ts file=packages/language-effect/src/modules/records/types.ts name=Commit,Committed lines=32-51
 /** Everything one call changes: its writes and the events its move emitted, committed together or not at all. */
 export interface Commit {
   readonly writes: ReadonlyArray<Write>;
   readonly entries: ReadonlyArray<Entry>;
   /** For an operation declared `idempotent: "request"`: its answer, kept under its request key in the same commit. */
   readonly request?: { readonly key: string; readonly answer: string };
+  /** #764: each list the call read. The store answers `conflict` when the rows matching a list's `thing`, `where` and `state` are not these any more. */
+  readonly lists?: ReadonlyArray<ListRead>;
+}
+
+/** A list one call read (#764): every row then matching its `thing`, `where` and `state`, whatever page the call asked for, at the version the call read it. */
+export interface ListRead {
+  readonly thing: Thing;
+  readonly where: Instance;
+  readonly state: string | undefined;
+  readonly rows: ReadonlyArray<{ readonly id: string; readonly version: number }>;
 }
 
 /** `conflict`: an update's version had moved on, so nothing was written and the call runs again. */
 export type Committed = "committed" | "conflict";
 ```
 
-```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=67-78
+```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=82-95
 /** The host's side. A failing store dies: it is never the caller's refusal. */
 export class Store extends Context.Service<Store, {
   /** The rules this store enforces at commit (G5), as the model carries them; a unit made over it looks through the same ones. Absent when the project declares none. */
   readonly rules?: ReadonlyArray<NamedRule>;
   readonly find: (thing: Thing, id: string) => Effect.Effect<Stored | undefined>;
   /** One page of a thing's instances, in the order they were made (never a clock). A thing that lives as actors has none to list. */
-  readonly list: (query: ListQuery) => Effect.Effect<Listed>;
+  readonly list: (query: ListQuery) => Effect.Effect<Page>;
+  /** Where a row sits in the order rows were made, as `list` gives it; undefined when there is none. */
+  readonly place: (thing: Thing, id: string) => Effect.Effect<number | undefined>;
   /** `conflict` too when another call committed the same request key first: the retry then finds its answer. */
   readonly commit: (commit: Commit) => Effect.Effect<Committed>;
   /** The answer already committed under a request key, as wire JSON, if there is one. */
@@ -122,7 +134,8 @@ export class Store extends Context.Service<Store, {
 ```
 
 There are only two outcomes. `committed` means the writes, the journal entries and the request's answer all landed.
-`conflict` means none of them did, because something else changed one of those things first. A store that fails in
+`conflict` means none of them did, because something else changed one of those things first, or changed which rows match
+a list the call read (#764). A store that fails in
 any other way dies: that is a defect, never the caller's refusal.
 
 <Scene name="handler-lifecycle" caption="The commit is the last thing a call does: every refusal leaves before it, so a refused call writes nothing." />
@@ -133,16 +146,16 @@ Every update carries the version this call read. The commit lands only if the st
 kind enforces it in its own way. The `database` kind turns a stale version into a NULL on a NOT NULL column, which
 fails D1's whole batch:
 
-```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=24-25
+```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=39-40
 // The guard: a stale version becomes NULL on a NOT NULL column, which fails the whole batch (D2 #36).
 const guard = sql`"version" = CASE WHEN "version" = ${w.version} THEN "version" + 1 ELSE NULL END`;
 ```
 
-```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=33-41
-return Effect.gen(function* () {
+```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=49-57
   const keep = request ? [sql`INSERT INTO "_requests" ${sql.insert({ key: request.key, answer: request.answer })}`] : [];
-  const statements = [...(yield* Effect.forEach(writes, statementOf)), ...entries.map(journalOf), ...keep];
-  if (statements.length === 0) return "committed" as const;
+  const changes = [...(yield* Effect.forEach(writes, statementOf)), ...entries.map(journalOf), ...keep];
+  if (changes.length === 0) return "committed" as const;
+  const statements = [...(yield* Effect.forEach(lists, guardOf)), ...changes];
   return yield* d1.batch(statements).pipe(
     Effect.as("committed" as const),
     Effect.catch((e) => (lostGuard(e) || lostUnique(e, writes, tableOf, rules) ? Effect.succeed("conflict" as const) : Effect.die(e))),
@@ -166,7 +179,7 @@ return this.ctx.storage.transactionSync((): Committed => {
 A `conflict` never reaches the caller. The wrapper runs the whole call again from the top, reading fresh, up to 64
 times:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=173-180
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=175-182
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
   attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
@@ -230,7 +243,7 @@ The rule isn't about which software it is. It is about whether a place can take 
 A call's writes all land in its thing's store. The host refuses a commit that writes to more than one store, at run
 time:
 
-```ts file=packages/host-cloudflare/src/modules/store/service.ts name=StoreD1 lines=58-59
+```ts file=packages/host-cloudflare/src/modules/store/service.ts name=StoreD1 lines=64-65
 const owners = new Set(commit.writes.map((w) => ownerOf(w.thing)));
 if (owners.size > 1) return Effect.die(new Error("a call wrote to more than one store: one call commits to one store, and work across stores is a workflow (K3 item 5)"));
 ```
@@ -243,7 +256,7 @@ runs as a workflow: each step commits to one store, and the workflow remembers w
 A kind declares what it can serve, and the compiler refuses a read the kind can't. An actor holds one instance, so it
 has nothing to list, and the compiler already says so:
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=188
+```ts file=packages/compiler/src/modules/model/internal/reads.ts name=readModelOf lines=34
 if (list && t?.thing?.lives === "actor") problems.push(`${file}: a list read needs a thing that lives in the database, and ${thing} lives as actors`);
 ```
 
@@ -252,11 +265,12 @@ To list things that live as actors, or across stores, declare a view.
 ### Migrations
 
 Migrations are generated from the model, one set per store, and never for a source: one file per store, with a
-version column on every table:
+version column on every table. A field that may have no value (optional, or a union with null) is a column that may be NULL, a
+boolean is an INTEGER, and a list, a struct, a union of structs or an unknown value is kept as its JSON:
 
-```ts file=packages/projections/src/modules/server/internal/worker-config.ts name=tablesOf lines=73-83
+```ts file=packages/projections/src/modules/server/internal/worker-config.ts name=tablesOf lines=80-90
 things.map((t) => {
-  const columns = Object.keys(t.fields).map((f) => (f === "id" ? `  "id" TEXT PRIMARY KEY` : `  "${f}" TEXT NOT NULL`));
+  const columns = Object.entries(t.fields).map(([f, field]) => (f === "id" ? `  "id" TEXT PRIMARY KEY` : `  "${f}" ${columnOf(field)}`));
   // Empty until the thing's first move sets it.
   if (t.machine) columns.push(`  "state" TEXT`);
   columns.push(`  "version" INTEGER NOT NULL DEFAULT 0`);
@@ -326,12 +340,13 @@ local-first, Noir on Aztec.
 | What | Where | |
 |---|---|---|
 | Where a thing lives, today a closed list | `packages/orthograph/src/modules/things/types.ts:32` | built |
-| The store port | `packages/language-effect/src/modules/records/types.ts:62` | built |
+| The store port | `packages/language-effect/src/modules/records/types.ts:83` | built |
 | What a commit holds, and its two outcomes | `packages/language-effect/src/modules/records/types.ts:33` | built |
 | The one commit per call, and the rerun on conflict | `packages/language-effect/src/modules/handler/service.ts:71` | built |
 | The `database` kind, on D1 | `packages/host-cloudflare/src/modules/store/service.ts:11` | built |
 | The `actor` kind, a Durable Object per instance | `packages/host-cloudflare/src/modules/actors/service.ts:28` | built |
 | A rule's unique index, and a lost race as a conflict | `packages/host-cloudflare/src/modules/store/internal/unique.ts:11` | built |
+| A list's rows counted as read, guarded at the head of the batch | `packages/host-cloudflare/src/modules/store/internal/commit.ts:22` | built |
 | The compiler refusing a list over actors | `packages/compiler/src/modules/model/internal/describe.ts:139` | built |
 | Migrations from the model | `packages/projections/src/modules/server/internal/worker-config.ts:55` | built, one store |
 | `Blueprint.store.<kind>()`, and `lives` taking a store | `packages/orthograph/src/modules/stores/` | planned, M1.17 |

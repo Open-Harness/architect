@@ -1,0 +1,7 @@
+# #739's done check on Bridge's published description (bridge.test.ts), red until the same build. A builder only deletes lines (G11).
+src/modules/adapter/bridge.test.ts > Bridge's published description > generates an adapter of all 144 operations, each named by the rule, no two alike
+src/modules/adapter/bridge.test.ts > Bridge's published description > sends each call whole: its method, path and query, Api-Key and no Authorization, an Idempotency-Key exactly where declared
+src/modules/adapter/bridge.test.ts > Capxul's first calls against a stand-in answering with Bridge's own examples > a KYC link, a virtual account and an RFI response each carry Api-Key and an Idempotency-Key, the RFI's declared on its path
+src/modules/adapter/bridge.test.ts > Capxul's first calls against a stand-in answering with Bridge's own examples > a customer answered as Bridge publishes it (requirements.missing: null) comes back whole when lenient, and carries no Idempotency-Key
+src/modules/adapter/bridge.test.ts > Capxul's first calls against a stand-in answering with Bridge's own examples > a transfer answered as Bridge publishes it is refused when strict, and returned whole with its misfit reported when lenient
+src/modules/adapter/bridge.test.ts > Capxul's first calls against a stand-in answering with Bridge's own examples > customers.create takes { type, email } for an individual and a business, with a fresh Idempotency-Key each

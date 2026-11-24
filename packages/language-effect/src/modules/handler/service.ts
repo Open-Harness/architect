@@ -132,9 +132,11 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         const request = key === undefined ? {} : { request: { key, answer: JSON.stringify({ payload: sha256(canonical(payload)), answer: wire }) } };
         // Every rule this call's rows could break, after the move and before the commit: the store's own index then catches the race.
         const broken = yield* unit.check;
-        if (broken !== undefined) return yield* settleViolation(name, invariants, logs)(broken);
+        if (broken !== undefined) return yield* settleViolation(name, invariants, logs, () => new Conflict())(broken);
         const writes = yield* unit.writes;
-        const committed = yield* store.commit({ writes, entries, ...request }).pipe(
+        // #764: the lists the handler read, which the store guards like an update's version.
+        const lists = yield* unit.lists;
+        const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}) }).pipe(
           Effect.tap((outcome) => Effect.annotateCurrentSpan({
             "commit.outcome": outcome,
             // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.

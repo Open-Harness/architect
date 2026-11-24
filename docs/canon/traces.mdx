@@ -76,7 +76,7 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    stranger never looks like work (`service.ts:52`).
 3. **The operation's span opens**, named after the operation, with the caller on it and the call's name, `call.id`, which every attempt of one call shares (O3):
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=161
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=163
    spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
    ```
 
@@ -102,7 +102,7 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    `refusal.code` (`AL-001`, or the machine's `AL-900`), and, when the handler logged something just before refusing,
    `refusal.log`:
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=152-160
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=154-162
    Effect.tapCause((cause) => {
      if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
      const refusal = Cause.squash(cause);
@@ -145,7 +145,7 @@ The failure still leaves the span unchanged, so the caller gets its typed refusa
 
 The declaration provides the allowlist. A field must be declared and public. Free text also needs `Blueprint.traced`.
 
-```ts file=packages/language-effect/src/modules/handler/internal/attributes.ts name=canTrace,tracedEntries lines=8-11
+```ts file=packages/language-effect/src/modules/handler/internal/attributes.ts name=canTrace,tracedEntries lines=18-21
 const canTrace = (key: string, fields: FieldsInput): boolean => Object.hasOwn(fields, key) && Visibility.sees(Audience.telemetry, fields[key]!);
 
 const tracedEntries = (values: object, fields: FieldsInput): Array<[string, unknown]> =>
@@ -199,9 +199,9 @@ O2 records the three changes and their proof.
 
 `store.commit(…)` runs inside the `<operation>.commit` span.
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=136-145
-const writes = yield* unit.writes;
-const committed = yield* store.commit({ writes, entries, ...request }).pipe(
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=138-147
+const lists = yield* unit.lists;
+const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}) }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({
     "commit.outcome": outcome,
     // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.

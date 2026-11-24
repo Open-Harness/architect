@@ -19,6 +19,8 @@ export interface Value<S extends Schema.Constraint = Schema.Constraint> {
   readonly traced?: true;
   /** A secret answer value handed to its caller once (`Blueprint.issued`). */
   readonly issued?: true;
+  /** A field that may be left out (`Blueprint.optional`): the model says so as `optional: true`. */
+  readonly optional?: true;
 }
 
 /**
@@ -37,7 +39,8 @@ export type ValueMeta =
   | { readonly type: "day" }
   | { readonly type: "account" }
   | { readonly type: "money"; readonly bits: number; readonly signed: boolean; readonly asset: AssetRef }
-  | { readonly type: "schema"; readonly format?: "ref-any" };
+  | { readonly type: "decimal"; readonly places: number }
+  | { readonly type: "schema"; readonly format?: "ref-any" | "choice" | "list" | "bool"; readonly options?: ReadonlyArray<string>; readonly fields?: ReadonlyArray<string> };
 
 /** The TypeScript type a value holds. */
 export type TypeOf<V extends Value> = V["schema"]["Type"];
@@ -80,8 +83,28 @@ export interface ValuesApi {
   readonly account: () => Value<Schema.String>;
   /** An amount that names its asset (M6-money). */
   readonly money: MoneyApi;
+  /**
+   * An exact decimal (#742): a `BigDecimal` in code, so a handler adds and multiplies exactly; plain decimal text on the
+   * wire (`"-12.50"`), with no exponent, no `+` and no `-0`. At most `places` digits after the point (default 9), trailing zeros counted.
+   */
+  readonly decimal: (options?: { readonly places?: number }) => Value<Schema.BigDecimalFromString>;
+  /**
+   * Another thing's field, read only when it is first used (#742): `Blueprint.link(() => SalesInvoice.fields.id)`, so two
+   * things may take each other's ids though their files import each other. Once read it is that field, as if written itself.
+   * In a cycle TypeScript can't infer the two things' types (TS7022), so write the function's type: `(): Field => SalesInvoice.fields.id`.
+   * A thing's field made from a link reads it when used, but reusing that field (in another thing, `described`, a payload) reads it then: do that outside the cycle.
+   */
+  readonly link: <F extends Field>(to: () => F) => F;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
+  /** True or false. */
+  readonly bool: () => Value<Schema.Boolean>;
+  /** One of the words named: `Blueprint.oneOf(["observing", "live"])`. */
+  readonly oneOf: <const O extends ReadonlyArray<string>>(options: O) => Value<Schema.Literals<O>>;
+  /** Many of one value: a list, written as an array. */
+  readonly list: <S extends Schema.Constraint>(item: Value<S>) => Value<Schema.$Array<S>>;
+  /** A field the record may lack: absent from a payload, an event or a row until it is set. */
+  readonly optional: <S extends Schema.Constraint>(value: Value<S>) => Value<Schema.optionalKey<S>>;
 }
 
 /** A calendar day as `Blueprint.day()` holds it: `YYYY-MM-DD`. */

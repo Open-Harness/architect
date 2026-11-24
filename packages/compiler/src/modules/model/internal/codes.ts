@@ -12,6 +12,13 @@ export const MACHINE_NUMBER = 900;
 export const IDEMPOTENCY_CONFLICT = "IdempotencyConflict";
 
 /**
+ * The runtime's refusal of a read it does not serve yet: one that pins a field (`only`) or works its answer out (`derive`) is served from
+ * slice 7 of Goal 17. Present in a model only when some read is such a read, so a blueprint without one generates what it did.
+ */
+export const READ_NOT_SERVED = "ReadNotServed";
+export const READ_NOT_SERVED_CODE = "AR-008";
+
+/**
  * Refusals the runtime makes, numbered in the order it gained them: who may call (before any handler runs), a request key
  * reused with another payload, and the four a chain adds (M6-chain item 4): a signature past its deadline, a nonce that is
  * not the account's next, a signature that does not check, and a create on an id that holds a row. All six names are
