@@ -1,4 +1,0 @@
-# Records.list (#764) is not built: a handler can't list a thing's rows, with or without this call's own writes. Clears with the records-list build.
-src/modules/records/list.test.ts > Records.list: the store's rows (#764) > lists by where and state, oldest or newest, a page at a time, with each row's fields and state
-src/modules/records/list.test.ts > Records.list: the store's rows (#764) > lists every matching row however many the store holds, and pages through them
-src/modules/records/list.test.ts > Records.list: this call's own writes (#764) > includes the rows it made and moved in, as it left them, drops those it moved out, and orders its own after the store's

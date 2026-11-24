@@ -5,7 +5,8 @@ import { Journal } from "#modules/journal/types.js";
 import { journalOf } from "#modules/journal/service.js";
 import { Records, Store, type Instance, type NamedRule, type UnitApi } from "./types.ts";
 import { makeUnit } from "./internal/unit.ts";
-import { keyOf, rulesOf, uniqueIndex } from "./internal/unique.ts";
+import { rulesOf, uniqueIndex } from "./internal/unique.ts";
+import { matches } from "./internal/list.ts";
 
 export const Unit: UnitApi = { make: makeUnit };
 
@@ -26,16 +27,26 @@ export const storeMemory = (initial: ReadonlyArray<readonly [Thing, Instance]> =
       // A row's place in `rows` is the order it was made in, and its cursor.
       const ordered = rows.flatMap((r, i) => (r.thing === thing ? [{ r, i }] : []));
       const matching = (order === "newest" ? ordered.reverse() : ordered).filter(({ r, i }) =>
-        Object.entries(where).every(([k, v]) => (k in thing.fields ? keyOf(thing, k, r.instance[k]) === keyOf(thing, k, v) : String(r.instance[k]) === String(v)))
-        && (state === undefined || r.instance.state === state)
-        && (after === undefined || (order === "newest" ? i < Number(after) : i > Number(after))));
+        matches(thing, where, state, r.instance) && (after === undefined || (order === "newest" ? i < Number(after) : i > Number(after))));
       const page = matching.slice(0, limit);
-      return { items: page.map(({ r }) => r.instance), next: matching.length > limit ? String(page[page.length - 1]!.i) : null };
+      return {
+        items: page.map(({ r }) => r.instance),
+        rows: page.map(({ r, i }) => ({ version: r.version, place: i })),
+        next: matching.length > limit ? String(page[page.length - 1]!.i) : null,
+      };
     }),
+    place: (thing, id) => Effect.sync(() => (at(thing, id) === -1 ? undefined : at(thing, id))),
     answered: (key) => Effect.sync(() => requests.get(key)),
-    commit: ({ writes, entries: events, request }) =>
+    commit: ({ writes, entries: events, request, lists = [] }) =>
       Effect.sync(() => {
         if (request && requests.has(request.key)) return "conflict" as const;
+        // #764: a list's rows count as read. Before this commit's own writes, the rows matching each list must be the ones it read, at the same versions.
+        const moved = lists.some(({ thing, where, state, rows: read }) => {
+          const now = rows.filter((r) => r.thing === thing && matches(thing, where, state, r.instance));
+          const was = new Map(read.map((r) => [r.id, r.version]));
+          return now.length !== was.size || now.some((r) => was.get(String(r.instance["id"])) !== r.version);
+        });
+        if (moved) return "conflict" as const;
         // One write at a time, checked after each, as D1 checks its index statement by statement: on a copy, so a refusal writes none of it.
         const next = rows.map((r) => ({ ...r }));
         const index = (thing: Thing, id: unknown) => next.findIndex((r) => r.thing === thing && r.instance["id"] === id);

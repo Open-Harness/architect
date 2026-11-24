@@ -14,6 +14,12 @@ Tests: `store.test.ts`, the race test for the database owner.
 `Store.list` (L2.04) runs one SELECT in `internal/list.ts`: `WHERE` the equality filters, `rowid` ordered `ASC` or `DESC`, one row more
 than the page to know whether another follows. The cursor is the last kept row's rowid, so rows made meanwhile never shift a page.
 A thing that lives as actors can't be listed (the compiler refuses a list read of one).
+Each row comes with its version and its rowid, its place; `place(thing, id)` gives one row's rowid.
+
+A commit guards each list the call read (#764) with one statement at the head of its batch, before its writes: when the
+sorted `id:version` text of the rows now matching the list's `where` and `state` isn't what the call read, it sets the
+table's first row's `version` to NULL, and the batch fails as a `conflict` the way a stale update does. Only lists of the
+database the call commits to are guarded (`list-guard.test.ts`).
 
 ## Declared stores (K3, M1.17)
 

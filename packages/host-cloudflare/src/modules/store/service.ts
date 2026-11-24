@@ -40,6 +40,12 @@ export const StoreD1: StoreD1Api = {
           : query.thing.lives === "actor"
             ? Effect.die(new Error("a list read needs a thing that lives in the database; actors keep one instance each"))
             : listRows(dbOf(query.thing).sql, tableOf(query.thing), query),
+        // #764: a row's place in the order rows were made is its rowid, as `list` gives it.
+        place: (thing, id) =>
+          thing === people?.thing || thing.lives === "actor"
+            ? Effect.succeed(undefined)
+            : dbOf(thing).sql<{ place: number }>`SELECT rowid AS "place" FROM ${dbOf(thing).sql(tableOf(thing))} WHERE "id" = ${id}`.pipe(
+                Effect.map((rows) => (rows[0] === undefined ? undefined : Number(rows[0].place))), Effect.orDie),
         find: (thing, id) =>
           thing === people?.thing
             ? Effect.gen(function* () {
@@ -58,7 +64,12 @@ export const StoreD1: StoreD1Api = {
           const owners = new Set(commit.writes.map((w) => ownerOf(w.thing)));
           if (owners.size > 1) return Effect.die(new Error("a call wrote to more than one store: one call commits to one store, and work across stores is a workflow (K3 item 5)"));
           const first = commit.writes[0]?.thing;
-          if (first?.lives !== "actor") return commitD1(first ? dbOf(first) : home, tableOf, commit, rules);
+          if (first?.lives !== "actor") {
+            const db = first ? dbOf(first) : home;
+            // A list is guarded in the database the call commits to; a list of another store's things can't be held in this batch.
+            const lists = (commit.lists ?? []).filter((l) => l.thing.lives !== "actor" && l.thing !== people?.thing && dbOf(l.thing) === db);
+            return commitD1(db, tableOf, { ...commit, lists }, rules);
+          }
           if (commit.request) return Effect.die(new Error("a request key on an actor's operation: idempotent actors arrive with layer four (design/later.md)"));
           return actors ? actorCommit(actors, commit, tableOf) : noActors;
         },
