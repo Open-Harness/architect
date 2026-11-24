@@ -58,6 +58,19 @@ the question is Orthograph's money units, not a workaround in Capxul.
   16's milestone under K42's collision rule, so the money value changes for every app.
 - Getting paid (slice 2) starts with one fixed asset, USDC, so it waits on no money gap.
 
+**Aaron's call, 24 November 2026** (relayed by the conductor from the Space): "for now, can't we just assume dollars?
+It's always going to be tied to some sort of crypto asset, because that's what the thing's in. Can't we just assume that
+for now?" For now every Capxul company keeps its books in one dollar asset.
+
+**The goal's reading:**
+
+- The one asset is USDC, the fixed asset getting paid already starts with. Every Capxul amount is `Blueprint.money` of
+  it, so no amount names a currency of its own row.
+- A company's own currency and exchange rates are deferred by this call. Company currency (#882) is parked and unclaimed
+  (its status row's lane is `none`), and its checks (#923) stay an unmerged draft that can be picked up as they stand. The catalogue's `FX` rows are deferred with
+  it: each is taken in USDC alone, and its exchange-rate and `base_*` fields are left out until a new call from Aaron.
+- Expense claims no longer wait on a company's currency: their amounts are USDC.
+
 ## 4. Paid services (#733): deferred; build everything now
 
 **Aaron's call:** "I don't think any of that kind of matters now. The main thing is just to build everything out and
@@ -94,6 +107,8 @@ would take a new call from Aaron.
 
 ## Supersedes
 
+- `design/goals/16-capxul.md`: "currency (#882), not on listing" → "Expense claims are in USDC, the one dollar asset every Capxul company uses for now"
+- `examples/capxul/doctypes.md`: "which is a question for Orthograph's money units, not a" → "These are deferred by Aaron's call of 24 November 2026"
 - `design/goals/16-capxul.md`: "Bridge and the paid services as board items, each at its stage" → "Bridge as board items, each at its stage, with every record type Capxul takes in one catalogue (CX-grill)"
 - `design/goals/16-capxul.md`: "The books, HR, payroll, the paid services and the CRM, as slice 6 writes them" → "The books, HR, payroll, Bridge's features built in full (their gating comes later, CX-grill) and the CRM, as slice 6 writes them"
 - `design/decisions/K43-capxul-core.md`: "Frappe HRMS's licence is still to be read from its" → "Frappe HRMS is GPL-3.0 (CX-grill)"
