@@ -1,7 +1,7 @@
 // Values: the named types fields are made of. A value carries its schema; later layers add its Solidity type.
 import type { Schema } from "effect";
 import type { Asset } from "#modules/assets/types.js";
-import type { Field } from "#modules/things/types.js";
+import type { Field, FieldsInput } from "#modules/things/types.js";
 import type { Visibility } from "#modules/visibility/types.js";
 
 export interface Value<S extends Schema.Constraint = Schema.Constraint> {
@@ -103,8 +103,14 @@ export interface ValuesApi {
   readonly oneOf: <const O extends ReadonlyArray<string>>(options: O) => Value<Schema.Literals<O>>;
   /** Many of one value: a list, written as an array. */
   readonly list: <S extends Schema.Constraint>(item: Value<S>) => Value<Schema.$Array<S>>;
-  /** A field the record may lack: absent from a payload, an event or a row until it is set. */
-  readonly optional: <S extends Schema.Constraint>(value: Value<S>) => Value<Schema.optionalKey<S>>;
+  /**
+   * A field the record may lack: absent from a payload, an event or a row until it is set. Given another thing's field
+   * (or a link to one), the field it makes keeps its edge to that thing: an optional reference.
+   */
+  readonly optional: {
+    <S extends Schema.Constraint>(value: Value<S>): Value<Schema.optionalKey<S>>;
+    <V extends Value, K extends string, F extends FieldsInput>(field: Field<V, K, F>): Field<Value<Schema.optionalKey<V["schema"]>>, K, F>;
+  };
 }
 
 /** A calendar day as `Blueprint.day()` holds it: `YYYY-MM-DD`. */

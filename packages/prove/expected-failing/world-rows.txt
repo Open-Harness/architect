@@ -1,0 +1,9 @@
+# Goal 16 (found by the 8b leave checks): prove's world reader must decode a row as host-cloudflare's decodeRow does. Remove each line as the build makes it pass.
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a boolean held as 1 or 0 reads back as true or false
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a boolean whose column read back as text, "1" or "0", reads back as true or false
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a nullable boolean held as 1 reads back as true, and as NULL reads back as null
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > an optional field that is NULL is left out, not read as a value
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a list held as its JSON text reads back as the list
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a reference to any thing held as its JSON text reads back as the reference
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > an unknown value held as its JSON text reads back as the value
+src/modules/journeys/world-rows.test.ts > prove reads a world's rows as the server stores them > a nullable list held as its JSON text reads back as the list, and as NULL reads back as null

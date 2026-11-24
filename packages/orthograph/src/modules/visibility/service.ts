@@ -2,6 +2,7 @@ import { Schema } from "effect";
 import type { Role } from "#modules/roles/types.js";
 import type { Field, FieldInput, FieldsInput } from "#modules/things/types.js";
 import type { Value } from "#modules/values/types.js";
+import { wrappedLink } from "#modules/values/service.js";
 import type { Visibility, VisibilityApi } from "./types.ts";
 
 /** `T` with the keys `K` made optional. */
@@ -15,9 +16,12 @@ export type WireType<T, K extends PropertyKey, I extends PropertyKey> =
  */
 export type Wired<S extends Schema.Top, K extends PropertyKey, I extends PropertyKey = never> = Schema.Codec<WireType<S["Type"], K, I>, S["Encoded"]>;
 
-/** A copy of the value or field, marked. The original is untouched, so a value shared elsewhere keeps its own. */
+/**
+ * A copy of the value or field, marked. The original is untouched, so a value shared elsewhere keeps its own. A link's
+ * copy is a link to the marked field, read when used, so its target may be declared later (#742).
+ */
 const marked = <X extends Value | Field>(x: X, mark: { visibility: Visibility } | { traced: true } | { issued: true }): X =>
-  Object.freeze({ ...x, ...mark }) as unknown as X;
+  wrappedLink(x, (f) => marked(f, mark)) ?? (Object.freeze({ ...x, ...mark }) as unknown as X);
 
 export const Visibilities: VisibilityApi = {
   traced: (x) => marked(x, { traced: true }),
