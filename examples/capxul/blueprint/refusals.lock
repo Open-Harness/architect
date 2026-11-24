@@ -330,7 +330,7 @@
       "from": "blueprint/things/employee/errors.ts",
       "fields": {
         "dateOfBirth": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -346,7 +346,7 @@
       "from": "blueprint/things/employee/errors.ts",
       "fields": {
         "dateOfJoining": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -378,7 +378,7 @@
       "from": "blueprint/things/holiday/errors.ts",
       "fields": {
         "holidayDate": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -394,10 +394,10 @@
       "from": "blueprint/things/holiday/errors.ts",
       "fields": {
         "fromDate": {
-          "value": "schema"
+          "value": "day"
         },
         "toDate": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -446,7 +446,7 @@
       "from": "blueprint/things/holiday-list/errors.ts",
       "fields": {
         "fromDate": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {

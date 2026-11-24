@@ -88,6 +88,9 @@ importers:
       '@orthograph/prove':
         specifier: workspace:*
         version: link:../packages/prove
+      orthograph:
+        specifier: workspace:*
+        version: link:../packages/orthograph
     devDependencies:
       '@anthropic-ai/claude-agent-sdk':
         specifier: 0.3.316
@@ -101,12 +104,30 @@ importers:
       '@orthograph/services':
         specifier: workspace:*
         version: link:../packages/services
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
       '@ui-sdk/core':
         specifier: 0.1.0-beta.10
         version: 0.1.0-beta.10
+      '@ui-sdk/react':
+        specifier: 0.1.0-beta.10
+        version: 0.1.0-beta.10(@types/react@19.3.0)(@ui-sdk/core@0.1.0-beta.10)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
       playwright:
         specifier: 1.65.1
         version: 1.65.1
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: 19.3.1
+        version: 19.3.1(react@19.3.1)
       yaml:
         specifier: 2.9.0
         version: 2.9.0
@@ -555,6 +576,49 @@ importers:
       vite:
         specifier: 8.3.5
         version: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)
+
+  packages/portal-next:
+    dependencies:
+      '@orthograph/shell':
+        specifier: workspace:*
+        version: link:../shell
+      '@orthograph/theme':
+        specifier: workspace:*
+        version: link:../theme
+      '@ui-sdk/core':
+        specifier: 0.1.0-beta.10
+        version: 0.1.0-beta.10
+      '@ui-sdk/react':
+        specifier: 0.1.0-beta.10
+        version: 0.1.0-beta.10(@types/react@19.3.0)(@ui-sdk/core@0.1.0-beta.10)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: 19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@orthograph/portal':
+        specifier: workspace:*
+        version: link:../portal
+      '@orthograph/projections':
+        specifier: workspace:*
+        version: link:../projections
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
+      vite:
+        specifier: 8.3.5
+        version: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
 
   packages/portal-ui:
     devDependencies:

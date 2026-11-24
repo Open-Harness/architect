@@ -56,7 +56,7 @@
       "type": "schema"
     },
     "Day": {
-      "type": "schema"
+      "type": "day"
     },
     "DepositDetail": {
       "type": "text",
@@ -1119,13 +1119,13 @@
         },
         "dateOfBirth": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
         "dateOfJoining": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
@@ -1222,7 +1222,7 @@
           },
           "relievingDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day"
           }
@@ -1257,7 +1257,7 @@
           "fields": {
             "dateOfBirth": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1269,7 +1269,7 @@
           "fields": {
             "dateOfJoining": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1287,7 +1287,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "a2627df8b7120d80"
+      "hash": "a8047ea627464d19"
     },
     "employee-grade": {
       "name": "employee-grade",
@@ -1407,7 +1407,7 @@
         },
         "holidayDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
@@ -1467,7 +1467,7 @@
           },
           "holidayDate": {
             "value": {
-              "type": "schema"
+              "type": "day"
             },
             "named": "Day",
             "ref": "holiday.holidayDate"
@@ -1479,7 +1479,7 @@
           "fields": {
             "holidayDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1491,13 +1491,13 @@
           "fields": {
             "fromDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             },
             "toDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1511,7 +1511,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "220935de8c9cf66e"
+      "hash": "01b09fff6edfbe67"
     },
     "holiday-list": {
       "name": "holiday-list",
@@ -1541,13 +1541,13 @@
         },
         "fromDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
         "toDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         },
@@ -1663,7 +1663,7 @@
           "fields": {
             "fromDate": {
               "value": {
-                "type": "schema"
+                "type": "day"
               },
               "named": "Day"
             }
@@ -1677,7 +1677,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "694252bdabf797a0"
+      "hash": "16818aa2c445bbee"
     }
   },
   "operations": {
@@ -3401,14 +3401,14 @@
         },
         "dateOfBirth": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "employee.dateOfBirth"
         },
         "dateOfJoining": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "employee.dateOfJoining"
@@ -3459,7 +3459,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "9ad5dc63bac5d397"
+      "hash": "a8d9cd6cacdea98f"
     },
     "employee.hire": {
       "kind": "operation",
@@ -3506,14 +3506,14 @@
         },
         "dateOfBirth": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "employee.dateOfBirth"
         },
         "dateOfJoining": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "employee.dateOfJoining"
@@ -3605,7 +3605,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "770ffef979712da8"
+      "hash": "8aec44f4e7f54d34"
     },
     "employee.relieve": {
       "kind": "operation",
@@ -3628,7 +3628,7 @@
         },
         "relievingDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         }
@@ -3643,7 +3643,7 @@
         },
         "relievingDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day"
         }
@@ -3695,7 +3695,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "7c1133cc15b01f7d"
+      "hash": "7bf2f33973faef34"
     },
     "employee-grade.create": {
       "kind": "operation",
@@ -3867,7 +3867,7 @@
         },
         "holidayDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday.holidayDate"
@@ -3955,7 +3955,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "98a8336cc841fb81"
+      "hash": "7ed5e2d0c6b320b8"
     },
     "holiday.get": {
       "kind": "read",
@@ -3987,7 +3987,7 @@
         },
         "holidayDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday.holidayDate"
@@ -4028,7 +4028,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "5ed187acb8f1de42"
+      "hash": "c2b4433e9fe1c3e3"
     },
     "holiday-list.add-weekly-off": {
       "kind": "operation",
@@ -4173,14 +4173,14 @@
         },
         "fromDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday-list.fromDate"
         },
         "toDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday-list.toDate"
@@ -4242,7 +4242,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "430cff72738c544e"
+      "hash": "f76dce33cb0c7786"
     },
     "holiday-list.get": {
       "kind": "read",
@@ -4282,14 +4282,14 @@
         },
         "fromDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday-list.fromDate"
         },
         "toDate": {
           "value": {
-            "type": "schema"
+            "type": "day"
           },
           "named": "Day",
           "ref": "holiday-list.toDate"
@@ -4330,7 +4330,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "f90afd729f9c4b70"
+      "hash": "3d273c4ff0dd5602"
     }
   },
   "journeys": {

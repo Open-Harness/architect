@@ -4,7 +4,7 @@ title: Capxul core, rebuilt on Orthograph
 milestone: "Goal 16: Capxul on Orthograph"
 release: "1.0"
 branch: goal/capxul
-base: goal/stage-1     # main once the lander's slice 1 retires goal/stage-1
+base: main
 status: running        # ready | running | landing | done | parked
 lead:
   harness: amp         # claude | codex | opencode | amp, set by the lead when it starts
@@ -132,10 +132,15 @@ Slice 6 has begun: every record type Capxul takes is in `examples/capxul/doctype
 Goal 18 (#749). Slice 8a is built: Capxul's app and its Company (#757) and employees, departments and job
 titles (#763) have their checks, and a builder that wrote none of them made them green (#786, 57d43997). Leave (8b) waits on handlers
 that can list records (#764, case 2 with Goal 17's #758). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
-and bank accounts). Their handlers are built as well (#787, d0f02a2b), and `prove` passes all 17 journeys in `goal/capxul`; the generated Bridge
+and bank accounts). Their handlers are built as well (#787, d0f02a2b). Slice 8c, holiday lists, is built: its checks are #914 (4f5cefaf), and a separate
+builder made them green (#918, 15c79143), so `prove` passes all 22 journeys in `goal/capxul`. Expense claims wait on a company's
+currency (#882), not on listing: every amount on one is Currency in the company's `default_currency`
+(`hrms/hrms/hr/doctype/expense_claim/expense_claim.json`). The generated Bridge
 adapter waits on Goal 17's slice 4 (#739). Goal 16 has claimed two
 framework gaps under K42's case 3: #761's access part, landed in `main` by #768 and merged into `goal/capxul` by #773,
-and #759 (a check on extra writes), which waits on a case-2 split with Goal 17's #758 (the fix needs `language-effect`'s handler or `prove`'s journeys module) and on deciding what an unset `writes` means. Slice 3 is decided
+and #759 (a check on extra writes), which waits on a case-2 split with Goal 17's #758 (the fix needs `language-effect`'s handler or `prove`'s journeys module) and on deciding what an unset `writes` means. It has also claimed Dates (#866) and Company currency (#882) under case 3, both
+chiefly in `packages/orthograph/src/modules/values`. Dates' checks landed in `main` by #915 (bf3c60bf), and its builder is at work;
+#882's checks follow once it lands. Snag #920 (the unique check at commit asks the store once per row) is case 2 with #758. Slice 3 is decided
 (`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
 customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged into
 `goal/capxul` at the restart (#745), so this brief replaced the branch's old one; #773 merged it in again. The lead rewrites this section at
