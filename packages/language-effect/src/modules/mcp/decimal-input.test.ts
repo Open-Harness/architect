@@ -34,7 +34,8 @@ describe("Exact decimals: a tool's input schema says how a decimal travels", () 
   });
 
   it("bounds the digits after the point by the field's places", () => {
-    const two = patternOf(propertyOf({ rate: Blueprint.decimal({ places: 2 }) }, "rate"));
+    // Described, as a scaffolded field is (its label becomes its sentence): the pattern still comes from the decimal.
+    const two = patternOf(propertyOf({ rate: Blueprint.described(Blueprint.decimal({ places: 2 }), "The rate.") }, "rate"));
     expect(two.test("1.23")).toBe(true);
     expect(two.test("1.234")).toBe(false);
     const none = patternOf(propertyOf({ count: Blueprint.decimal({ places: 0 }) }, "count"));
@@ -46,10 +47,13 @@ describe("Exact decimals: a tool's input schema says how a decimal travels", () 
   });
 
   it("agrees with the value: every text the pattern takes, the field decodes, and every one it refuses, the field refuses", () => {
-    const rate = Blueprint.decimal({ places: 2 });
-    const pattern = patternOf(propertyOf({ rate }, "rate"));
-    for (const text of [...GOOD, ...BAD, "1.234", "1.50"]) {
-      expect(pattern.test(text), text).toBe(Schema.decodeUnknownExit(rate.schema as never)(text)._tag === "Success");
+    const twenty = "0.12345678901234567890";
+    for (const places of [0, 2, undefined, 20]) {
+      const rate = Blueprint.decimal(places === undefined ? undefined : { places });
+      const pattern = patternOf(propertyOf({ rate }, "rate"));
+      for (const text of [...GOOD, ...BAD, "-7", "7.5", "1.234", "1.50", "0.123456789", "0.1234567891", twenty, `${twenty}1`]) {
+        expect(pattern.test(text), `${text} at ${String(places)} places`).toBe(Schema.decodeUnknownExit(rate.schema as never)(text)._tag === "Success");
+      }
     }
   });
 

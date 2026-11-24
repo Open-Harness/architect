@@ -9,6 +9,7 @@
 //     text: each decimal in them is that same text.
 //  3. Visibility is unchanged: a secret decimal is still left off the span.
 import { Blueprint } from "orthograph";
+import { listItemFields, structOf } from "orthograph/server";
 import { Schema } from "effect";
 import { describe, expect, it } from "vitest";
 import { answerAttributes, payloadAttributes } from "./attributes.ts";
@@ -28,10 +29,12 @@ describe("Exact decimals: a decimal reads on a span as it travels", () => {
 
   it("writes each decimal of a list's items as its wire text", () => {
     const Rate = Blueprint.thing({ description: "A rate.", fields: { id: Blueprint.id("rt"), value: rate } });
-    const items = [{ id: "rt_1", state: "set", value: decimalOf("1.50") }, { id: "rt_2", state: "set", value: decimalOf("10000000000000000") }];
-    const shown = answerAttributes({ items }, { items: Blueprint.value(Schema.Unknown) }, Rate.fields as never)["answer.items"];
+    const items = [{ id: "rt_1", state: "set", value: decimalOf("1.50") }, { id: "rt_2", state: "set", value: decimalOf("10000000000000000") }, { id: "rt_3", state: "set", value: decimalOf("-0.5") }];
+    // Declared as a list read declares its items (`operations/service.ts`), so a build may encode each through its field's schema.
+    const declared = { items: Blueprint.value(Schema.Array(structOf(listItemFields(Rate)))) };
+    const shown = answerAttributes({ items }, declared, Rate.fields as never)["answer.items"];
     expect(shown).toBeTypeOf("string");
-    expect((JSON.parse(shown as string) as ReadonlyArray<{ readonly value: unknown }>).map((i) => i.value)).toEqual(["1.50", "10000000000000000"]);
+    expect((JSON.parse(shown as string) as ReadonlyArray<{ readonly value: unknown }>).map((i) => i.value)).toEqual(["1.50", "10000000000000000", "-0.5"]);
   });
 
   it("still leaves a secret decimal off the span", () => {
