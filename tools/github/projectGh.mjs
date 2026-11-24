@@ -118,6 +118,8 @@ export const applyProject = ({ owner, repo, goals, issues, log, rows, dates }) =
     if (s.do === "setValue") {
       const kind = read.project.fields.find((f) => f.name === s.field)?.dataType;
       const value = kind === "TEXT" ? { text: s.value } : kind === "DATE" ? { date: s.value } : { singleSelectOptionId: optionId(s.field, s.value) };
+      // A value the field has no option for is skipped with a warning, never sent half-formed (GitHub refuses it and the run stops).
+      if ("singleSelectOptionId" in value && !value.singleSelectOptionId) { log(`skip setValue #${s.number} ${s.field} = ${s.value}: the field has no such option`); continue; }
       graphql(`mutation($p: ID!, $i: ID!, $f: ID!, $v: ProjectV2FieldValue!) { updateProjectV2ItemFieldValue(input: { projectId: $p, itemId: $i, fieldId: $f, value: $v }) { clientMutationId } }`,
         { p: pid, i: itemId.get(s.number), f: fieldId(s.field), v: value });
     }
