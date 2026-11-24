@@ -30,6 +30,7 @@ Record an account an event came from: a new one is seen, a known one keeps its s
 | refusal | exit | code | when |
 |---|---|---|---|
 | AccountExists | 82 | AC-001 | another account holds this superagent, source and external; by the rule account.oneAccountPerExternalId, carrying superagent, source, external |
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |
 
 ## How to call

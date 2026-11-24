@@ -59,6 +59,9 @@ export const fieldsOf = ({ valueNames, schemaNames, thingNames, roleNames, names
     if ((meta.type === "uint" || meta.type === "money") && !(Number.isInteger(meta.bits) && meta.bits >= 1 && meta.bits <= 256)) {
       problems.push(`${where}: a ${meta.type} of ${String(meta.bits)} bits is no width: bits is a whole number from 1 to 256 (a chain store needs 8 to 256, in steps of 8)`);
     }
+    if (meta.type === "decimal" && !(Number.isInteger(meta.places) && meta.places >= 0)) {
+      problems.push(`${where}: a decimal of ${String(meta.places)} places is no decimal: places is a whole number of at least 0`);
+    }
     const solidity = ctx.chain ? chainField(value, meta, input.visibility, where, problems) : undefined;
     return { value: meta, ...(value.optional === true ? { optional: true as const } : {}), ...(ctx.place === "a thing's field" && isNullable(value) ? { nullable: true as const } : {}), ...(solidity === undefined ? {} : { solidity }), ...(named ? { named } : {}), ...(ref ? { ref } : {}), ...(input.description === undefined ? {} : { description: input.description }), ...(visibility ? { visibility } : {}), ...(issued ? { issued: true as const } : {}) };
   };

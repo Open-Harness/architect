@@ -10,7 +10,7 @@ Make a ticket from an accepted trigger: its mandate, subscription, first assignm
 | field | value |
 |---|---|
 | superagent | ticket.superagent |
-| account | id |
+| account | account.id |
 | title | ticket.title |
 | agent | ticket.agent |
 | thread | text |
@@ -37,6 +37,7 @@ Make a ticket from an accepted trigger: its mandate, subscription, first assignm
 | SeatTaken | 96 | AS-002 | another running or closing assignment holds this superagent and seat; by the rule assignment.oneHolderPerSeat, carrying seat |
 | ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |
 | AlreadyFollowing | 93 | SB-001 | another live subscription holds this ticket and thread; by the rule subscription.oneFollowPerThread, carrying ticket, thread |
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the listed of its account; the handler never runs |
 

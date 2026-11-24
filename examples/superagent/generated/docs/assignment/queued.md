@@ -30,6 +30,7 @@ Queue an Assignment for a ticket's executor: an accept, an Input or a resume. It
 | refusal | exit | code | when |
 |---|---|---|---|
 | ExecutorAlreadyQueued | 97 | AS-003 | another pending, running or closing assignment holds this agent; by the rule assignment.oneLivePerExecutor, carrying agent |
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |
 | AgentNotFound | 4 | AG-901 | nothing has the id in agent; the handler never runs; carries `id` |
 | InputNotFound | 4 | IN-901 | nothing has the id in input; the handler never runs; carries `id` |

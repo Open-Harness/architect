@@ -26,6 +26,7 @@ Save a new version of the prompts. A save made from an older version is refused,
 | refusal | exit | code | when |
 |---|---|---|---|
 | StaleRevision | ? | SU-002 | the prompt-set is in a state this can't start from; carries `state` |
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |
 
 ## How to call

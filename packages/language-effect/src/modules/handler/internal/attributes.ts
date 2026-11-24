@@ -1,9 +1,19 @@
 // What a span may say about a call, from the declaration's visibility and text opt-in (O2).
+import { BigDecimal } from "effect";
 import type { FieldsInput, Principal } from "orthograph";
+import { decimalText } from "orthograph/server";
 import { Audience, Visibility } from "#modules/visibility/service.js";
 
+// A bigint reads as its digits and a decimal as its wire text, also inside JSON. The replacer reads a decimal from its
+// holder, since the value it is given is already the BigDecimal's `toJSON` object.
 const text = (v: unknown): string =>
-  typeof v === "string" ? v : typeof v === "bigint" ? v.toString() : JSON.stringify(v, (_, x: unknown) => (typeof x === "bigint" ? x.toString() : x));
+  typeof v === "string" ? v
+  : typeof v === "bigint" ? v.toString()
+  : BigDecimal.isBigDecimal(v) ? decimalText(v)
+  : JSON.stringify(v, function (this: Record<string, unknown>, k: string, x: unknown) {
+    const held = this[k];
+    return BigDecimal.isBigDecimal(held) ? decimalText(held) : typeof x === "bigint" ? x.toString() : x;
+  });
 
 const canTrace = (key: string, fields: FieldsInput): boolean => Object.hasOwn(fields, key) && Visibility.sees(Audience.telemetry, fields[key]!);
 
@@ -41,7 +51,7 @@ export const answerAttributes = (answer: unknown, fields: FieldsInput, items?: F
   return Object.fromEntries(
     tracedEntries(answer, fields).map(([k, v]) => {
       const x = shown(k, v);
-      return [`answer.${k}`, typeof x === "bigint" ? x.toString() : typeof x === "object" ? text(x) : x];
+      return [`answer.${k}`, typeof x === "bigint" || typeof x === "object" ? text(x) : x];
     }),
   );
 };

@@ -1,25 +1,35 @@
 // Reads and writes the "Orthograph" Project through GitHub's GraphQL API (K33). `project.mjs` decides; this does.
 // The Project needs the token's `project` scope; `hasProjectScope` says whether it has it, never the token.
 import { execFileSync } from "node:child_process";
+import { PAUSE_PROJECT_MS, pause, withRetry } from "./pace.mjs";
 import { PROJECT_TITLE, projectPlan } from "./project.mjs";
 
-const graphql = (query, variables = {}) => {
-  const out = execFileSync("gh", ["api", "graphql", "--input", "-"], { input: JSON.stringify({ query, variables }), encoding: "utf8", maxBuffer: 64 << 20 });
-  const json = JSON.parse(out);
-  // A GraphQL error ends the run with its message and exit code 4; the next run picks up from what was written.
-  if (json.errors) {
-    process.stderr.write(`GitHub refused a Project call: ${json.errors.map((e) => e.message).join("; ")}\n`);
-    process.exit(4);
-  }
-  return json.data;
-};
+const graphql = (query, variables = {}) =>
+  withRetry(() => {
+    const out = execFileSync("gh", ["api", "graphql", "--input", "-"], { input: JSON.stringify({ query, variables }), encoding: "utf8", maxBuffer: 64 << 20, stdio: ["pipe", "pipe", "pipe"] });
+    const json = JSON.parse(out);
+    const said = json.errors ? json.errors.map((e) => e.message).join("; ") : "";
+    // A rate-limit refusal is waited out and tried again; any other GraphQL error ends the run with its message and
+    // exit code 4, and the next run picks up from what was written.
+    if (/rate limit|too quickly/i.test(said)) throw new Error(said);
+    if (json.errors) {
+      process.stderr.write(`GitHub refused a Project call: ${said}\n`);
+      process.exit(4);
+    }
+    return json.data;
+  });
 
 /** The signed-in token's scopes, from the scope header only (never the token). Empty for a token without one. */
 export const tokenScopes = () => {
-  const head = execFileSync("gh", ["api", "-i", "user"], { encoding: "utf8" }).split("\r\n\r\n")[0];
-  return new Set((/^x-oauth-scopes:\s*(.*)$/im.exec(head)?.[1] ?? "").split(",").map((s) => s.trim()).filter(Boolean));
+  // Null when they cannot be read at all: an installation token has no `user` to ask about.
+  try {
+    const head = execFileSync("gh", ["api", "-i", "user"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).split("\r\n\r\n")[0];
+    return new Set((/^x-oauth-scopes:\s*(.*)$/im.exec(head)?.[1] ?? "").split(",").map((s) => s.trim()).filter(Boolean));
+  } catch {
+    return null;
+  }
 };
-export const hasProjectScope = () => tokenScopes().has("project");
+export const hasProjectScope = () => tokenScopes()?.has("project") ?? false;
 
 const FIELDS = `fields(first: 50) { nodes {
   ... on ProjectV2FieldCommon { id name dataType }
@@ -67,7 +77,7 @@ export const readProject = (owner, repo) => {
  * Applies the plan. It creates the Project when it is missing, links it to the repository on every run until it is
  * linked (so a failed link is mended next time), and reads it by id between phases.
  */
-export const applyProject = ({ owner, repo, goals, issues, log, rows }) => {
+export const applyProject = ({ owner, repo, goals, issues, log, rows, dates }) => {
   let read = readProject(owner, repo);
   if (!read.project) {
     const { createProjectV2 } = graphql(`mutation($o: ID!, $t: String!) { createProjectV2(input: { ownerId: $o, title: $t }) { projectV2 { id url } } }`, { o: read.ownerId, t: PROJECT_TITLE });
@@ -80,13 +90,14 @@ export const applyProject = ({ owner, repo, goals, issues, log, rows }) => {
     log("did linkRepository");
   }
   const pid = read.project.id;
+  let skipped = 0;
   const fieldId = (name) => read.project.fields.find((f) => f.name === name)?.id;
   const optionId = (name, value) => read.project.fields.find((f) => f.name === name)?.options.find((o) => o.name === value)?.id;
   const itemId = new Map(read.project.items.map((i) => [i.number, i.id]));
   const nodeId = new Map(issues.map((i) => [i.number, i.nodeId]));
 
   // Fields first, then read again, so item values can name the options' ids.
-  const plan = projectPlan({ goals, issues, project: read.project, rows });
+  const plan = projectPlan({ goals, issues, project: read.project, rows, dates });
   for (const s of plan.filter((x) => x.do === "createField" || x.do === "updateField")) {
     const options = s.options.map(({ id, name, color, description }) => ({ ...(id ? { id } : {}), name, color, description: description ?? "" }));
     if (s.do === "createField") {
@@ -100,7 +111,7 @@ export const applyProject = ({ owner, repo, goals, issues, log, rows }) => {
     log(`did ${s.do} ${s.name}`);
   }
   read = { ...read, ...readById(pid, read.url, repo) };
-  for (const s of projectPlan({ goals, issues, project: read.project, rows }).filter((x) => x.do !== "createField" && x.do !== "updateField")) {
+  for (const s of projectPlan({ goals, issues, project: read.project, rows, dates }).filter((x) => x.do !== "createField" && x.do !== "updateField")) {
     if (s.do === "addItem") {
       const { addProjectV2ItemById } = graphql(`mutation($p: ID!, $c: ID!) { addProjectV2ItemById(input: { projectId: $p, contentId: $c }) { item { id } } }`, { p: pid, c: nodeId.get(s.number) });
       itemId.set(s.number, addProjectV2ItemById.item.id);
@@ -108,6 +119,8 @@ export const applyProject = ({ owner, repo, goals, issues, log, rows }) => {
     if (s.do === "setValue") {
       const kind = read.project.fields.find((f) => f.name === s.field)?.dataType;
       const value = kind === "TEXT" ? { text: s.value } : kind === "DATE" ? { date: s.value } : { singleSelectOptionId: optionId(s.field, s.value) };
+      // A value the field has no option for is skipped with a warning, never sent half-formed (GitHub refuses it and the run stops).
+      if ("singleSelectOptionId" in value && !value.singleSelectOptionId) { skipped++; log(`skip setValue #${s.number} ${s.field} = ${s.value}: the field has no such option`); continue; }
       graphql(`mutation($p: ID!, $i: ID!, $f: ID!, $v: ProjectV2FieldValue!) { updateProjectV2ItemFieldValue(input: { projectId: $p, itemId: $i, fieldId: $f, value: $v }) { clientMutationId } }`,
         { p: pid, i: itemId.get(s.number), f: fieldId(s.field), v: value });
     }
@@ -124,6 +137,7 @@ export const applyProject = ({ owner, repo, goals, issues, log, rows }) => {
         { v: s.id, n: s.name, l: s.layout, q: s.filter });
     }
     log(`did ${s.do} ${s.title ?? s.name ?? ""}`);
+    pause(PAUSE_PROJECT_MS);
   }
-  return read.url;
+  return { url: read.url, skipped };
 };

@@ -29,6 +29,7 @@ Queue a reply: by purpose, in order within its conversation. Only the head of a 
 
 | refusal | exit | code | when |
 |---|---|---|---|
+| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |
 | TicketNotFound | 4 | TI-901 | nothing has the id in ticket; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the itsMain of its superagent, or the system; the handler never runs |
 

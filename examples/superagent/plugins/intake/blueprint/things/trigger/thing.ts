@@ -1,10 +1,11 @@
 import { Blueprint, Schema } from "orthograph";
+import { Superagent } from "@orthograph/superagent/blueprint/things/superagent/thing.ts";
 
 export const Trigger = Blueprint.thing({
   description: "One event that came in from a connection. Never changed once stored.",
   fields: {
     id: Blueprint.id("trg"),
-    superagent: Blueprint.id("sag"),
+    superagent: Superagent.fields.id,
     source: Blueprint.text({ max: 60 }),
     event: Blueprint.text({ max: 200 }),
     thread: Blueprint.text({ max: 200 }),
