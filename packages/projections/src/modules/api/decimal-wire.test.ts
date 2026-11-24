@@ -1,4 +1,4 @@
-// Exact decimals through the generated API and SDK (#742, item 5, after #943 and #959): Capxul's books and payroll send
+// Exact decimals through the endpoint shape `renderApi` writes and the SDK's client (#742, item 5, after #943 and #959): Capxul's books and payroll send
 // rates, quantities and percentages through the SDK. A decimal must reach the server and come back exactly: `"1.50"`
 // stays `1.50`, a 17-digit value gets no exponent, and text that is no decimal is refused before it is handled.
 //
@@ -80,7 +80,7 @@ describe("Exact decimals through the API and the SDK", () => {
   it("refuses a payload whose decimal is no plain decimal text, before the handler runs", () =>
     withServer((raw) => Effect.promise(async () => {
       const before = handled;
-      for (const bad of ['"1e3"', '".5"', '"+1"', "1.5", '"0.123456789012345678901"']) {
+      for (const bad of ['"1e3"', '".5"', '"+1"', '"-0"', '"01.5"', "1.5", '"0.123456789012345678901"']) {
         expect((await raw(`{"value":${bad}}`)).status, bad).toBe(400);
       }
       expect(handled).toBe(before);
