@@ -9926,7 +9926,48 @@
           ]
         },
         {
-          "title": "it reads back with nothing claimed yet",
+          "title": "the new claim reads back as Olga's, posted on 21 November",
+          "call": {
+            "actor": "olga",
+            "operation": "expense-claim.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "2026-11-21",
+                "0",
+                "0",
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her first claim reads back with nothing claimed yet",
           "call": {
             "actor": "olga",
             "operation": "expense-claim.get",
@@ -10458,7 +10499,7 @@
           ]
         }
       ],
-      "sourceHash": "930dd9620a7d96d7b0bca17484b9560deb8e553e5bd320087b603ea6e5343ce0"
+      "sourceHash": "7337a9fd9dcd84e90fb6624ff8a9cdeec3ebf1e637afefcdbdd927a22bc40d32"
     },
     "journeys/companies-are-kept-apart.ts": {
       "name": "companies are kept apart",

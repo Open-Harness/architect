@@ -27,7 +27,20 @@ export default Blueprint.journey("claim expenses", {
       spans({ present: ["expense-claim.create", "expense-claim.create.insert"] }),
     ),
     s.step(
-      "it reads back with nothing claimed yet",
+      "the new claim reads back as Olga's, posted on 21 November",
+      s.olga.run(getClaim, { id: s.last.expenseClaim }),
+      expect((a) => [a.company, a.employee, a.postingDate, a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([
+        s.world.company,
+        s.world.employee,
+        "2026-11-21",
+        0n,
+        0n,
+        "draft",
+      ]),
+      noEvents(),
+    ),
+    s.step(
+      "her first claim reads back with nothing claimed yet",
       s.olga.run(getClaim, { id: s.world.expenseClaim }),
       expect((a) => [a.company, a.employee, a.postingDate, a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([
         s.world.company,

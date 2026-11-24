@@ -38,7 +38,8 @@ Read one expense-claim by its id: company, employee, postingDate, totalClaimedAm
 
 Starts from the world `an expense claim`.
 
-- **it reads back with nothing claimed yet.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `0`, `0`, `draft`].
+- **the new claim reads back as Olga's, posted on 21 November.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-21`, `0`, `0`, `draft`].
+- **her first claim reads back with nothing claimed yet.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `0`, `0`, `draft`].
 - **Bo can't read Olga's claim.** `bo` (signed in) calls and sends id the world's expenseClaim, and is refused with NotAllowed, AR-001.
 - **the claim reads back with both totals.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`165500000`, `145000000`, `draft`].
 - **it still reads back with what was approved.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`165500000`, `145000000`, `approved`].
