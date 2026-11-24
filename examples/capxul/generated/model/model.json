@@ -19,6 +19,12 @@
     "DesignationNotInCompany": "EM-003",
     "EmployeeAlreadyHired": "EM-001",
     "EmployeeNotActive": "EM-900",
+    "HolidayDateTaken": "HD-001",
+    "HolidayListEndsBeforeStart": "HL-002",
+    "HolidayListNameTaken": "HL-001",
+    "HolidayListNotActive": "HL-900",
+    "HolidayNotActive": "HD-900",
+    "HolidayOutsideList": "HD-002",
     "IdempotencyConflict": "AR-002",
     "JoinedBeforeBorn": "EM-004",
     "KybAlreadyStarted": "KB-001",
@@ -56,6 +62,14 @@
       "type": "text",
       "max": 60
     },
+    "HolidayCount": {
+      "type": "uint",
+      "bits": 32
+    },
+    "HolidayName": {
+      "type": "text",
+      "max": 140
+    },
     "LegalName": {
       "type": "text",
       "max": 140
@@ -67,6 +81,9 @@
     "RejectionReason": {
       "type": "text",
       "max": 500
+    },
+    "Weekday": {
+      "type": "schema"
     }
   },
   "things": {
@@ -1170,6 +1187,299 @@
         "kind": "app"
       },
       "hash": "a2627df8b7120d80"
+    },
+    "holiday": {
+      "name": "holiday",
+      "identifier": "Holiday",
+      "code": "HD",
+      "description": "One day off in a holiday list.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "hol"
+          }
+        },
+        "holidayList": {
+          "value": {
+            "type": "id",
+            "prefix": "hls"
+          },
+          "ref": "holiday-list.id"
+        },
+        "holidayDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day"
+        },
+        "description": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "HolidayName"
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneHolidayPerDay": {
+          "kind": "unique",
+          "fields": [
+            "holidayList",
+            "holidayDate"
+          ],
+          "refuse": "HolidayDateTaken"
+        }
+      },
+      "machine": {
+        "states": [
+          "active"
+        ],
+        "moves": {
+          "add": {
+            "from": [],
+            "to": [
+              "active"
+            ],
+            "emits": "HolidayAdded"
+          }
+        },
+        "notFrom": {
+          "error": "HolidayNotActive",
+          "exit": 40,
+          "code": "HD-900"
+        }
+      },
+      "events": {
+        "HolidayAdded": {
+          "holiday": {
+            "value": {
+              "type": "id",
+              "prefix": "hol"
+            },
+            "ref": "holiday.id"
+          },
+          "holidayList": {
+            "value": {
+              "type": "id",
+              "prefix": "hls"
+            },
+            "ref": "holiday.holidayList"
+          },
+          "holidayDate": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Day",
+            "ref": "holiday.holidayDate"
+          }
+        }
+      },
+      "errors": {
+        "HolidayDateTaken": {
+          "fields": {
+            "holidayDate": {
+              "value": {
+                "type": "schema"
+              },
+              "named": "Day"
+            }
+          },
+          "exit": 41,
+          "code": "HD-001"
+        },
+        "HolidayOutsideList": {
+          "fields": {
+            "fromDate": {
+              "value": {
+                "type": "schema"
+              },
+              "named": "Day"
+            },
+            "toDate": {
+              "value": {
+                "type": "schema"
+              },
+              "named": "Day"
+            }
+          },
+          "exit": 42,
+          "code": "HD-002"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "220935de8c9cf66e"
+    },
+    "holiday-list": {
+      "name": "holiday-list",
+      "identifier": "HolidayList",
+      "code": "HL",
+      "description": "The days a company doesn't work, between two days.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "hls"
+          }
+        },
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "company.id"
+        },
+        "holidayListName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name"
+        },
+        "fromDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day"
+        },
+        "toDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day"
+        },
+        "totalHolidays": {
+          "value": {
+            "type": "uint",
+            "bits": 32
+          },
+          "named": "HolidayCount"
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneNamePerCompany": {
+          "kind": "unique",
+          "fields": [
+            "company",
+            "holidayListName"
+          ],
+          "refuse": "HolidayListNameTaken"
+        }
+      },
+      "machine": {
+        "states": [
+          "active"
+        ],
+        "moves": {
+          "create": {
+            "from": [],
+            "to": [
+              "active"
+            ],
+            "emits": "HolidayListCreated"
+          },
+          "addWeeklyOff": {
+            "from": [
+              "active"
+            ],
+            "to": [
+              "active"
+            ],
+            "emits": "WeeklyOffAdded"
+          }
+        },
+        "notFrom": {
+          "error": "HolidayListNotActive",
+          "exit": 40,
+          "code": "HL-900"
+        }
+      },
+      "events": {
+        "HolidayListCreated": {
+          "holidayList": {
+            "value": {
+              "type": "id",
+              "prefix": "hls"
+            },
+            "ref": "holiday-list.id"
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "holiday-list.company"
+          }
+        },
+        "WeeklyOffAdded": {
+          "holidayList": {
+            "value": {
+              "type": "id",
+              "prefix": "hls"
+            },
+            "ref": "holiday-list.id"
+          },
+          "weekday": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "Weekday"
+          },
+          "added": {
+            "value": {
+              "type": "uint",
+              "bits": 32
+            },
+            "named": "HolidayCount"
+          },
+          "totalHolidays": {
+            "value": {
+              "type": "uint",
+              "bits": 32
+            },
+            "named": "HolidayCount"
+          }
+        }
+      },
+      "errors": {
+        "HolidayListNameTaken": {
+          "fields": {
+            "holidayListName": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "Name"
+            }
+          },
+          "exit": 43,
+          "code": "HL-001"
+        },
+        "HolidayListEndsBeforeStart": {
+          "fields": {
+            "fromDate": {
+              "value": {
+                "type": "schema"
+              },
+              "named": "Day"
+            }
+          },
+          "exit": 44,
+          "code": "HL-002"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "694252bdabf797a0"
     }
   },
   "operations": {
@@ -3039,9 +3349,1090 @@
         "p95Ms": 150
       },
       "hash": "7c1133cc15b01f7d"
+    },
+    "holiday.add": {
+      "kind": "operation",
+      "name": "holiday.add",
+      "thing": "holiday",
+      "verb": "add",
+      "identifier": "add",
+      "file": "blueprint/things/holiday/verbs/add.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Add one day off to a holiday list.",
+      "payload": {
+        "holidayList": {
+          "value": {
+            "type": "id",
+            "prefix": "hls"
+          },
+          "ref": "holiday.holidayList"
+        },
+        "holidayDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day",
+          "ref": "holiday.holidayDate"
+        },
+        "description": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "HolidayName",
+          "ref": "holiday.description"
+        }
+      },
+      "answer": {
+        "holiday": {
+          "value": {
+            "type": "id",
+            "prefix": "hol"
+          },
+          "ref": "holiday.id"
+        },
+        "totalHolidays": {
+          "value": {
+            "type": "uint",
+            "bits": 32
+          },
+          "named": "HolidayCount"
+        }
+      },
+      "move": {
+        "key": "add",
+        "from": [],
+        "to": [
+          "active"
+        ],
+        "emits": "HolidayAdded"
+      },
+      "errors": [
+        "HolidayOutsideList"
+      ],
+      "invariants": {
+        "HolidayDateTaken": "holiday.oneHolidayPerDay",
+        "HolidayListNameTaken": "holiday-list.oneNamePerCompany"
+      },
+      "breaks": [
+        "holiday.oneHolidayPerDay",
+        "holiday-list.oneNamePerCompany"
+      ],
+      "refusals": [
+        "HolidayOutsideList",
+        "HolidayDateTaken",
+        "HolidayListNameTaken",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "holidayList.company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "holidayList": "holiday-list"
+      },
+      "mints": "holiday",
+      "steps": {
+        "load": {
+          "name": "holiday.add.load",
+          "type": "database"
+        },
+        "insert": {
+          "name": "holiday.add.insert",
+          "type": "database",
+          "writes": [
+            "holiday",
+            "holiday-list"
+          ]
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 200
+      },
+      "hash": "98a8336cc841fb81"
+    },
+    "holiday.get": {
+      "kind": "read",
+      "name": "holiday.get",
+      "thing": "holiday",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/holiday/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one holiday by its id: holidayList, holidayDate, description, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "hol"
+          },
+          "ref": "holiday.id"
+        }
+      },
+      "answer": {
+        "holidayList": {
+          "value": {
+            "type": "id",
+            "prefix": "hls"
+          },
+          "ref": "holiday.holidayList"
+        },
+        "holidayDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day",
+          "ref": "holiday.holidayDate"
+        },
+        "description": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "HolidayName",
+          "ref": "holiday.description"
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "holidayList.company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "5ed187acb8f1de42"
+    },
+    "holiday-list.add-weekly-off": {
+      "kind": "operation",
+      "name": "holiday-list.add-weekly-off",
+      "thing": "holiday-list",
+      "verb": "add-weekly-off",
+      "identifier": "addWeeklyOff",
+      "file": "blueprint/things/holiday-list/verbs/add-weekly-off.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Make every given weekday in a holiday list a day off.",
+      "payload": {
+        "holidayList": {
+          "value": {
+            "type": "id",
+            "prefix": "hls"
+          },
+          "ref": "holiday-list.id"
+        },
+        "weekday": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Weekday"
+        }
+      },
+      "answer": {
+        "holidayList": {
+          "value": {
+            "type": "id",
+            "prefix": "hls"
+          },
+          "ref": "holiday-list.id"
+        },
+        "weekday": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Weekday"
+        },
+        "added": {
+          "value": {
+            "type": "uint",
+            "bits": 32
+          },
+          "named": "HolidayCount"
+        },
+        "totalHolidays": {
+          "value": {
+            "type": "uint",
+            "bits": 32
+          },
+          "named": "HolidayCount"
+        }
+      },
+      "move": {
+        "key": "addWeeklyOff",
+        "from": [
+          "active"
+        ],
+        "to": [
+          "active"
+        ],
+        "emits": "WeeklyOffAdded"
+      },
+      "errors": [],
+      "invariants": {
+        "HolidayDateTaken": "holiday.oneHolidayPerDay",
+        "HolidayListNameTaken": "holiday-list.oneNamePerCompany"
+      },
+      "breaks": [
+        "holiday.oneHolidayPerDay",
+        "holiday-list.oneNamePerCompany"
+      ],
+      "refusals": [
+        "HolidayDateTaken",
+        "HolidayListNameTaken",
+        "HolidayListNotActive",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "holidayList.company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "holidayList": "holiday-list"
+      },
+      "steps": {
+        "load": {
+          "name": "holiday-list.add-weekly-off.load",
+          "type": "database"
+        },
+        "record": {
+          "name": "holiday-list.add-weekly-off.record",
+          "type": "database",
+          "writes": [
+            "holiday-list",
+            "holiday"
+          ]
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 300
+      },
+      "hash": "d3da45d5dc3ea553"
+    },
+    "holiday-list.create": {
+      "kind": "operation",
+      "name": "holiday-list.create",
+      "thing": "holiday-list",
+      "verb": "create",
+      "identifier": "create",
+      "file": "blueprint/things/holiday-list/verbs/create.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Start a company's list of days off, between two days.",
+      "payload": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "holiday-list.company"
+        },
+        "holidayListName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "holiday-list.holidayListName"
+        },
+        "fromDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day",
+          "ref": "holiday-list.fromDate"
+        },
+        "toDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day",
+          "ref": "holiday-list.toDate"
+        }
+      },
+      "answer": {
+        "holidayList": {
+          "value": {
+            "type": "id",
+            "prefix": "hls"
+          },
+          "ref": "holiday-list.id"
+        }
+      },
+      "move": {
+        "key": "create",
+        "from": [],
+        "to": [
+          "active"
+        ],
+        "emits": "HolidayListCreated"
+      },
+      "errors": [
+        "HolidayListEndsBeforeStart"
+      ],
+      "invariants": {
+        "HolidayListNameTaken": "holiday-list.oneNamePerCompany"
+      },
+      "breaks": [
+        "holiday-list.oneNamePerCompany"
+      ],
+      "refusals": [
+        "HolidayListEndsBeforeStart",
+        "HolidayListNameTaken",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "company": "company"
+      },
+      "mints": "holidayList",
+      "steps": {
+        "insert": {
+          "name": "holiday-list.create.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "430cff72738c544e"
+    },
+    "holiday-list.get": {
+      "kind": "read",
+      "name": "holiday-list.get",
+      "thing": "holiday-list",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/holiday-list/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "hls"
+          },
+          "ref": "holiday-list.id"
+        }
+      },
+      "answer": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "holiday-list.company"
+        },
+        "holidayListName": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Name",
+          "ref": "holiday-list.holidayListName"
+        },
+        "fromDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day",
+          "ref": "holiday-list.fromDate"
+        },
+        "toDate": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "Day",
+          "ref": "holiday-list.toDate"
+        },
+        "totalHolidays": {
+          "value": {
+            "type": "uint",
+            "bits": 32
+          },
+          "named": "HolidayCount",
+          "ref": "holiday-list.totalHolidays"
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "f90afd729f9c4b70"
     }
   },
   "journeys": {
+    "journeys/a-one-day-list.ts": {
+      "name": "a one-day list",
+      "file": "journeys/a-one-day-list.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "starts": "a one-day list",
+      "steps": [
+        {
+          "title": "the day before its only day is outside it",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-08-13",
+              "description": "Too early"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayOutsideList",
+              "fields": {
+                "fromDate": "2028-08-14",
+                "toDate": "2028-08-14"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "so is the day after",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-08-15",
+              "description": "Too late"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayOutsideList",
+              "fields": {
+                "fromDate": "2028-08-14",
+                "toDate": "2028-08-14"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a weekday the list doesn't hold adds nothing",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Sunday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Sunday",
+                "added": "0",
+                "totalHolidays": "0"
+              }
+            }
+          ]
+        },
+        {
+          "title": "its own weekday adds its one day",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Monday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "1",
+                "1"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Monday",
+                "added": "1",
+                "totalHolidays": "1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "that day is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-08-14",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-08-14"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the list counts one",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2028-08-14",
+                "2028-08-14",
+                "1"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "69535c1ef56b4af4ca6a8cd30e6cd8c1527fe8241ad9181adb46d85b0f2390a6"
+    },
+    "journeys/add-holidays.ts": {
+      "name": "add holidays",
+      "file": "journeys/add-holidays.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a holiday list",
+      "steps": [
+        {
+          "title": "Ada adds the list's first day",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-01-01",
+              "description": "New Year's Day"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "1"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^hol_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "HolidayAdded",
+              "fields": {
+                "holiday": {
+                  "ref": [
+                    "last",
+                    "holiday"
+                  ]
+                },
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "holidayDate": "2027-01-01"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "holiday",
+              "id": {
+                "ref": [
+                  "last",
+                  "holiday"
+                ]
+              },
+              "state": "active"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "holiday.add",
+                "holiday.add.load",
+                "holiday.add.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read the new holiday",
+          "call": {
+            "actor": "bo",
+            "operation": "holiday.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "holiday"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the holiday reads back as she typed it",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "holiday"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "2027-01-01",
+                "New Year's Day",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the same day can't be added twice",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-01-01",
+              "description": "Again"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2027-01-01"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a day before the list starts is refused",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2026-12-31",
+              "description": "Too early"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayOutsideList",
+              "fields": {
+                "fromDate": "2027-01-01",
+                "toDate": "2027-12-31"
+              }
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "holiday.add.load"
+              ],
+              "absent": [
+                "holiday.add.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "so is a day after it ends",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-01-01",
+              "description": "Too late"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayOutsideList",
+              "fields": {
+                "fromDate": "2027-01-01",
+                "toDate": "2027-12-31"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't add a day to Ada's list",
+          "call": {
+            "actor": "bo",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-05-01",
+              "description": "Bo's day"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "holiday.add",
+                "holiday.add.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the list's last day may be a holiday too",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-12-31",
+              "description": "New Year's Eve"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "HolidayAdded",
+              "fields": {
+                "holiday": {
+                  "ref": [
+                    "last",
+                    "holiday"
+                  ]
+                },
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "holidayDate": "2027-12-31"
+              }
+            }
+          ]
+        },
+        {
+          "title": "that one reads back with its own day and name",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "holiday"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "2027-12-31",
+                "New Year's Eve"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the list now counts two holidays",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Kenya 2027",
+                "2027-01-01",
+                "2027-12-31",
+                "2"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "8532630cfcaa2dd37a8f669c9969d5347b9d69108341cc0d2cdcc2336b535231"
+    },
     "journeys/an-employee-leaves.ts": {
       "name": "an employee leaves",
       "file": "journeys/an-employee-leaves.ts",
@@ -6504,6 +7895,354 @@
       ],
       "sourceHash": "ef131afdf39ece71ee0a0f30111be7d4a39ac55871982f4f876cf49c3be9f525"
     },
+    "journeys/every-weekday.ts": {
+      "name": "every weekday",
+      "file": "journeys/every-weekday.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "starts": "a leap fortnight",
+      "steps": [
+        {
+          "title": "the weekday the list starts and ends on adds three, the leap day among them",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Tuesday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "3",
+                "3"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Tuesday",
+                "added": "3",
+                "totalHolidays": "3"
+              }
+            }
+          ]
+        },
+        {
+          "title": "the leap day is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-02-29",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-02-29"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the day after it adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Wednesday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "5"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the first of March is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-03-01",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-03-01"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the third weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Thursday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "7"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the second of March is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-03-02",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-03-02"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the fourth weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Friday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "9"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the fifth weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Saturday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "11"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the fourth of March is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-03-04",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-03-04"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the sixth weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Sunday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "13"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the last weekday adds two",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Monday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "15"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "every day of the list is now a holiday",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2028-02-22",
+                "2028-03-07",
+                "15"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "b8bffdc92e15a47d8b12ce62de6298b41957fd323af6b5aea0bc19f07fe494a1"
+    },
     "journeys/hire-an-employee.ts": {
       "name": "hire an employee",
       "file": "journeys/hire-an-employee.ts",
@@ -7243,6 +8982,358 @@
       ],
       "sourceHash": "91b416bbfb8a2428e62fbf99573e390a5534dbe494bf94efc65d364bd17d3842"
     },
+    "journeys/set-up-a-holiday-list.ts": {
+      "name": "set up a holiday list",
+      "file": "journeys/set-up-a-holiday-list.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a company",
+      "steps": [
+        {
+          "title": "Ada starts a list for a year",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "holidayListName": "Kenya 2027",
+              "fromDate": "2027-01-01",
+              "toDate": "2027-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^hls_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "HolidayListCreated",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "last",
+                    "holidayList"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "holiday-list",
+              "id": {
+                "ref": [
+                  "last",
+                  "holidayList"
+                ]
+              },
+              "state": "active"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "holiday-list.create",
+                "holiday-list.create.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's list",
+          "call": {
+            "actor": "bo",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the list reads back as she typed it, with no holidays yet",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Kenya 2027",
+                "2027-01-01",
+                "2027-12-31",
+                "0",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a list can't end before it starts",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "holidayListName": "Backwards",
+              "fromDate": "2028-01-01",
+              "toDate": "2027-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayListEndsBeforeStart",
+              "fields": {
+                "fromDate": "2028-01-01"
+              }
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "holiday-list.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nor end a day before it starts, inside one month",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "holidayListName": "Backwards again",
+              "fromDate": "2028-08-15",
+              "toDate": "2028-08-14"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayListEndsBeforeStart",
+              "fields": {
+                "fromDate": "2028-08-15"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a second list can't take the first one's name",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "holidayListName": "Kenya 2027",
+              "fromDate": "2028-01-01",
+              "toDate": "2028-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayListNameTaken",
+              "fields": {
+                "holidayListName": "Kenya 2027"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't start a list in Ada's company",
+          "call": {
+            "actor": "bo",
+            "operation": "holiday-list.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "holidayListName": "Bo's days",
+              "fromDate": "2027-01-01",
+              "toDate": "2027-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "holiday-list.create",
+                "holiday-list.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "a list may start and end on the same day",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "holidayListName": "Shutdown",
+              "fromDate": "2028-08-14",
+              "toDate": "2028-08-14"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^hls_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "HolidayListCreated",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "last",
+                    "holidayList"
+                  ]
+                },
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "that one reads back with its own name and days",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Shutdown",
+                "2028-08-14",
+                "2028-08-14",
+                "0",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "c46835fedab510253b62596fded6bd698fa97a02b8e3abd0a37d7d9f6c1b00ef"
+    },
     "journeys/set-up-departments-and-job-titles.ts": {
       "name": "set up departments and job titles",
       "file": "journeys/set-up-departments-and-job-titles.ts",
@@ -7788,6 +9879,399 @@
         }
       ],
       "sourceHash": "a51f1bf2e205b3a6bccd4100b01da942e61197a6b9c453c024d5e2ad836dd6ee"
+    },
+    "journeys/weekly-offs.ts": {
+      "name": "weekly offs",
+      "file": "journeys/weekly-offs.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a sunday holiday",
+      "steps": [
+        {
+          "title": "Bo can't add a weekly off to Ada's list",
+          "call": {
+            "actor": "bo",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Sunday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "holiday-list.add-weekly-off",
+                "holiday-list.add-weekly-off.record"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada makes a weekday a day off, and the day the list already held is skipped",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Sunday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "Sunday",
+                "51",
+                "52"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Sunday",
+                "added": "51",
+                "totalHolidays": "52"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "holiday-list",
+              "id": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "state": "active"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "holiday-list.add-weekly-off",
+                "holiday-list.add-weekly-off.load",
+                "holiday-list.add-weekly-off.record"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "the day it held keeps its own name",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "holiday"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2027-01-03",
+                "Founders' Day"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a day in the middle of the year is now taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-06-13",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2027-06-13"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so is the last one of the year",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-12-26",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2027-12-26"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a weekday that falls on both the first and the last day counts both",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Friday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Friday",
+                "53",
+                "105"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Friday",
+                "added": "53",
+                "totalHolidays": "105"
+              }
+            }
+          ]
+        },
+        {
+          "title": "the first day is taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-01-01",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2027-01-01"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so is the last",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-12-31",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2027-12-31"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "asking for the same weekday again adds nothing",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Friday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "105"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "added": "0",
+                "totalHolidays": "105"
+              }
+            }
+          ]
+        },
+        {
+          "title": "a day of another weekday may still be added",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2027-01-04",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "106"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the list counts every one of them",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "106",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "b821de9f76043a1f4eb16f9093d6086d8662dc993ad114771769e13c4a31f9c3"
     }
   },
   "startingWorlds": {
@@ -7931,6 +10415,135 @@
         }
       }
     },
+    "a holiday list": {
+      "name": "a holiday list",
+      "file": "blueprint/starting-worlds/a-holiday-list.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "716167952161be49b35f17712e40d819ad600f882211b3e58f7ca519f4254351",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "holiday-list.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "holidayListName": "Kenya 2027",
+            "fromDate": "2027-01-01",
+            "toDate": "2027-12-31"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "holidayList": {
+          "ref": [
+            "last",
+            "holidayList"
+          ]
+        }
+      }
+    },
+    "a leap fortnight": {
+      "name": "a leap fortnight",
+      "file": "blueprint/starting-worlds/a-leap-fortnight.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "21d6e20f14861419f59c41aa49dde4d29a3e6c481ee5dd92c00a1956026193f0",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "holiday-list.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "holidayListName": "Leap fortnight",
+            "fromDate": "2028-02-22",
+            "toDate": "2028-03-07"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "holidayList": {
+          "ref": [
+            "last",
+            "holidayList"
+          ]
+        }
+      }
+    },
+    "a one-day list": {
+      "name": "a one-day list",
+      "file": "blueprint/starting-worlds/a-one-day-list.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "1f23f7cce6b9b9732ff085879090516c49f8cf2f4621947b40efa23ac3272bc3",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "holiday-list.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "holidayListName": "Shutdown",
+            "fromDate": "2028-08-14",
+            "toDate": "2028-08-14"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "holidayList": {
+          "ref": [
+            "last",
+            "holidayList"
+          ]
+        }
+      }
+    },
     "a reopened account": {
       "name": "a reopened account",
       "file": "blueprint/starting-worlds/a-reopened-account.ts",
@@ -8019,6 +10632,54 @@
           "ref": [
             "last",
             "routingNumber"
+          ]
+        }
+      }
+    },
+    "a sunday holiday": {
+      "name": "a sunday holiday",
+      "file": "blueprint/starting-worlds/a-sunday-holiday.ts",
+      "from": "a holiday list",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "7a520210da7c9b6516bf43299090176e8be3b9e35a06992e6cd0e6d9976342c8",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "holiday.add",
+          "payload": {
+            "holidayList": {
+              "ref": [
+                "world",
+                "holidayList"
+              ]
+            },
+            "holidayDate": "2027-01-03",
+            "description": "Founders' Day"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "holidayList": {
+          "ref": [
+            "world",
+            "holidayList"
+          ]
+        },
+        "holiday": {
+          "ref": [
+            "last",
+            "holiday"
           ]
         }
       }
@@ -8737,6 +11398,66 @@
       "labels": {
         "environment": "*",
         "code": "EM-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:HD-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "HD-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/holiday/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:HD-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "HD-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/holiday/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:HD-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "HD-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:HL-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "HL-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/holiday-list/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:HL-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "HL-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/holiday-list/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:HL-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "HL-900",
         "severity": "ticket",
         "owner": "orthograph"
       }
@@ -9642,6 +12363,216 @@
       ]
     },
     {
+      "id": "defect:holiday-list.add-weekly-off",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday-list.add-weekly-off",
+        "severity": "page",
+        "owner": "blueprint/things/holiday-list/verbs/add-weekly-off.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:holiday-list.create",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday-list.create",
+        "severity": "page",
+        "owner": "blueprint/things/holiday-list/verbs/create.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:holiday-list.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday-list.get",
+        "severity": "page",
+        "owner": "blueprint/things/holiday-list/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:holiday.add",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday.add",
+        "severity": "page",
+        "owner": "blueprint/things/holiday/verbs/add.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:holiday.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday.get",
+        "severity": "page",
+        "owner": "blueprint/things/holiday/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "latency:bank-account.close",
       "kind": "latency",
       "labels": {
@@ -10502,6 +13433,241 @@
       ]
     },
     {
+      "id": "latency:holiday-list.add-weekly-off",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday-list.add-weekly-off",
+        "severity": "page",
+        "owner": "blueprint/things/holiday-list/verbs/add-weekly-off.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 300,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:holiday-list.create",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday-list.create",
+        "severity": "page",
+        "owner": "blueprint/things/holiday-list/verbs/create.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:holiday-list.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday-list.get",
+        "severity": "page",
+        "owner": "blueprint/things/holiday-list/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:holiday.add",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday.add",
+        "severity": "page",
+        "owner": "blueprint/things/holiday/verbs/add.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 200,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:holiday.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "holiday.get",
+        "severity": "page",
+        "owner": "blueprint/things/holiday/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "verdict:a one-day list:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "a one-day list",
+        "severity": "page",
+        "owner": "journeys/a-one-day-list.ts"
+      }
+    },
+    {
+      "id": "verdict:add holidays:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "add holidays",
+        "severity": "page",
+        "owner": "journeys/add-holidays.ts"
+      }
+    },
+    {
       "id": "verdict:an employee leaves:local",
       "kind": "verdict",
       "labels": {
@@ -10642,6 +13808,16 @@
       }
     },
     {
+      "id": "verdict:every weekday:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "every weekday",
+        "severity": "page",
+        "owner": "journeys/every-weekday.ts"
+      }
+    },
+    {
       "id": "verdict:hire an employee:local",
       "kind": "verdict",
       "labels": {
@@ -10662,6 +13838,16 @@
       }
     },
     {
+      "id": "verdict:set up a holiday list:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "set up a holiday list",
+        "severity": "page",
+        "owner": "journeys/set-up-a-holiday-list.ts"
+      }
+    },
+    {
       "id": "verdict:set up departments and job titles:local",
       "kind": "verdict",
       "labels": {
@@ -10669,6 +13855,16 @@
         "journey": "set up departments and job titles",
         "severity": "page",
         "owner": "journeys/set-up-departments-and-job-titles.ts"
+      }
+    },
+    {
+      "id": "verdict:weekly offs:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "weekly offs",
+        "severity": "page",
+        "owner": "journeys/weekly-offs.ts"
       }
     }
   ]

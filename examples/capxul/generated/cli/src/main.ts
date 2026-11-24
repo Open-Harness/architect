@@ -26,6 +26,11 @@ import { get as designationGet } from "./designation/get.ts";
 import { get as employeeGet } from "./employee/get.ts";
 import { hire as employeeHire } from "./employee/hire.ts";
 import { relieve as employeeRelieve } from "./employee/relieve.ts";
+import { add as holidayAdd } from "./holiday/add.ts";
+import { get as holidayGet } from "./holiday/get.ts";
+import { addWeeklyOff as holidayListAddWeeklyOff } from "./holiday-list/add-weekly-off.ts";
+import { create as holidayListCreate } from "./holiday-list/create.ts";
+import { get as holidayListGet } from "./holiday-list/get.ts";
 
 // The release version is stamped in when the CLI is published (`ortho publish`); run from source, it says 0.0.0.
 declare const ORTHO_VERSION: string | undefined;
@@ -37,9 +42,11 @@ const company = Command.make("company").pipe(Command.withSubcommands([companyCre
 const department = Command.make("department").pipe(Command.withSubcommands([departmentCreate, departmentGet]));
 const designation = Command.make("designation").pipe(Command.withSubcommands([designationCreate, designationGet]));
 const employee = Command.make("employee").pipe(Command.withSubcommands([employeeGet, employeeHire, employeeRelieve]));
+const holiday = Command.make("holiday").pipe(Command.withSubcommands([holidayAdd, holidayGet]));
+const holidayList = Command.make("holiday-list").pipe(Command.withSubcommands([holidayListAddWeeklyOff, holidayListCreate, holidayListGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([bankAccount, bridgeBusiness, bridgeIndividual, company, department, designation, employee]),
+  Command.withSubcommands([bankAccount, bridgeBusiness, bridgeIndividual, company, department, designation, employee, holiday, holidayList]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),
