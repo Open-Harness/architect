@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/interview/verbs/clear.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/interview/clear.handler.ts";
 
 /**
@@ -39,17 +38,16 @@ import type { Handler } from "../../generated/api/src/interview/clear.handler.ts
  *   once it answers, it writes InterviewCleared: interview from the answer;
  *   the call is the span interview.clear, and its commit interview.clear.commit.
  */
-const clear: Handler = (_payload, { steps, move }) =>
+const clear: Handler = ({ interview }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span interview.clear.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span interview.clear.update. The owner decides the interview; its feedback doesn't
+    // (`decisions/CX-recruitment.md`). No field changes, only the state, which the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move clear, from pending, to cleared.
     yield* move();
 
-    return {
-      interview: yield* Handlers.blank("interview, an interview.id"),
-    };
+    return { interview };
   });
 
 export default clear;

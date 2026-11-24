@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/job-opening/verbs/close.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/job-opening/close.handler.ts";
 
 /**
@@ -37,17 +36,16 @@ import type { Handler } from "../../generated/api/src/job-opening/close.handler.
  *   once it answers, it writes JobOpeningClosed: jobOpening from the answer;
  *   the call is the span job-opening.close, and its commit job-opening.close.commit.
  */
-const close: Handler = (_payload, { steps, move }) =>
+const close: Handler = ({ jobOpening }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span job-opening.close.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span job-opening.close.update. Closing changes no field, only the opening's state, which
+    // the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move close, from open, to closed.
     yield* move();
 
-    return {
-      jobOpening: yield* Handlers.blank("jobOpening, a job-opening.id"),
-    };
+    return { jobOpening };
   });
 
 export default close;

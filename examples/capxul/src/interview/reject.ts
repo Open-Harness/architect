@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/interview/verbs/reject.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/interview/reject.handler.ts";
 
 /**
@@ -39,17 +38,16 @@ import type { Handler } from "../../generated/api/src/interview/reject.handler.t
  *   once it answers, it writes InterviewRejected: interview from the answer;
  *   the call is the span interview.reject, and its commit interview.reject.commit.
  */
-const reject: Handler = (_payload, { steps, move }) =>
+const reject: Handler = ({ interview }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span interview.reject.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span interview.reject.update. The owner decides the interview; its feedback doesn't
+    // (`decisions/CX-recruitment.md`). No field changes, only the state, which the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move reject, from pending, to rejected.
     yield* move();
 
-    return {
-      interview: yield* Handlers.blank("interview, an interview.id"),
-    };
+    return { interview };
   });
 
 export default reject;

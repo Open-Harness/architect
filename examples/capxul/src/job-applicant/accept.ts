@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/job-applicant/verbs/accept.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/job-applicant/accept.handler.ts";
+import { oneOfferPerApplicant } from "../../blueprint/things/job-offer/invariants.ts";
 
 const { OfferNotAccepted } = Errors.declared;
 
@@ -45,26 +46,29 @@ const { OfferNotAccepted } = Errors.declared;
  *   once it answers, it writes JobApplicantAccepted: jobApplicant from the answer;
  *   the call is the span job-applicant.accept, and its commit job-applicant.accept.commit.
  */
-const accept: Handler = (_payload, { steps, move }) =>
+const accept: Handler = ({ jobApplicant }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step load: database, span job-applicant.accept.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // OfferNotAccepted: exit 42, JA-002.
-    if (yield* Handlers.blank<boolean>("refuse OfferNotAccepted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why OfferNotAccepted was refused"));
+    // Step load: database, span job-applicant.accept.load. The applicant has at most one offer, found through the rule
+    // that keeps it one (oneOfferPerApplicant).
+    const offer = yield* steps.load(records.findBy(oneOfferPerApplicant, jobApplicant as never));
+
+    // OfferNotAccepted: exit 42, JA-002. The second call that stands in for HRMS's `update_job_applicant` until a
+    // handler can move a second thing (#972): the applicant is accepted only once their offer is.
+    if (offer?.state !== "accepted") {
+      yield* Effect.logInfo(offer ? `the applicant's offer is ${offer.state ?? "in no state"}, not accepted` : "the applicant has no offer");
       return yield* new OfferNotAccepted({});
     }
 
-    // Step update: database, span job-applicant.accept.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span job-applicant.accept.update. No field changes, only the applicant's state, which
+    // the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move accept, from open or hold, to accepted.
     yield* move();
 
-    return {
-      jobApplicant: yield* Handlers.blank("jobApplicant, a job-applicant.id"),
-    };
+    return { jobApplicant };
   });
 
 export default accept;

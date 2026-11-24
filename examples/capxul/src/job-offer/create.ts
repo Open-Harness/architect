@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/job-offer/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/job-offer/create.handler.ts";
+import { JobOffer } from "../../blueprint/things/job-offer/thing.ts";
 
 const { OfferDesignationNotInCompany } = Errors.declared;
 
@@ -46,19 +47,28 @@ const { OfferDesignationNotInCompany } = Errors.declared;
  *   once it answers, it writes JobOfferMade: jobOffer from the answer, jobApplicant from the payload;
  *   the call is the span job-offer.create, and its commit job-offer.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ jobApplicant, designation, offerDate }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span job-offer.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // OfferDesignationNotInCompany: exit 41, JF-001.
-    if (yield* Handlers.blank<boolean>("refuse OfferDesignationNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why OfferDesignationNotInCompany was refused"));
+    // Step load: database, span job-offer.create.load. The runtime read the applicant and the job title and hands them
+    // in, so this step only takes them.
+    const { applicant, title } = yield* steps.load(Effect.succeed({ applicant: refs.jobApplicant, title: refs.designation }));
+    if (!applicant) return yield* Effect.die(new Error(`job applicant ${jobApplicant} was read for the role check and then not found`));
+    if (!title) return yield* Effect.die(new Error(`designation ${designation} was read and then not found`));
+
+    // OfferDesignationNotInCompany: exit 41, JF-001. The job title offered is the applicant's company's, though not
+    // necessarily the opening's.
+    if (title["company"] !== applicant["company"]) {
+      yield* Effect.logInfo("the job title belongs to another company");
       return yield* new OfferDesignationNotInCompany({});
     }
 
-    // Step insert: database, span job-offer.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span job-offer.create.insert. The offer takes the applicant's company. A second offer for
+    // the applicant, in any state, is the runtime's refusal (oneOfferPerApplicant).
+    yield* steps.insert(
+      records.insert(JobOffer, { id, company: applicant["company"] as never, jobApplicant, designation, offerDate }),
+    );
 
     // The move create, to awaiting.
     yield* move();

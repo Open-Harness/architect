@@ -1,10 +1,14 @@
 // Scaffolded from blueprint/things/interview-feedback/verbs/give.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Clock, Effect } from "effect";
+import { Days } from "orthograph";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/interview-feedback/give.handler.ts";
+import { InterviewFeedback } from "../../blueprint/things/interview-feedback/thing.ts";
 
 const { FeedbackGiverNotInterviewer, FeedbackBeforeInterview } = Errors.declared;
+
+const DAY_MS = 86_400_000;
 
 /**
  * interview-feedback.give: Give an interviewer's feedback on an interview: cleared or rejected.
@@ -45,27 +49,37 @@ const { FeedbackGiverNotInterviewer, FeedbackBeforeInterview } = Errors.declared
  *   once it answers, it writes InterviewFeedbackGiven: interviewFeedback from the answer, interview, interviewer and result from the payload;
  *   the call is the span interview-feedback.give, and its commit interview-feedback.give.commit.
  */
-const give: Handler = (_payload, { steps, move, id }) =>
+const give: Handler = ({ interview, interviewer, result }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span interview-feedback.give.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // FeedbackGiverNotInterviewer: exit 41, IF-001.
-    if (yield* Handlers.blank<boolean>("refuse FeedbackGiverNotInterviewer when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FeedbackGiverNotInterviewer was refused"));
+    // Step load: database, span interview-feedback.give.load. The runtime read the interview and hands it in, so this
+    // step only takes it. The interviewer isn't judged: a leaver may still give feedback on an interview they were
+    // on, in any state, since that finishes an open record (`decisions/CX-recruitment.md`).
+    const held = yield* steps.load(Effect.succeed(refs.interview));
+    if (!held) return yield* Effect.die(new Error(`interview ${interview} was read and then not found`));
+    const scheduledOn = held["scheduledOn"] as string;
+
+    // Refusal order (errors.ts): FeedbackGiverNotInterviewer, then FeedbackBeforeInterview, as HRMS's `validate`.
+    // FeedbackGiverNotInterviewer: exit 41, IF-001. HRMS's `validate_interviewer`.
+    if (!(held["interviewers"] as ReadonlyArray<string>).includes(interviewer)) {
+      yield* Effect.logInfo("the giver isn't one of the interview's interviewers");
       return yield* new FeedbackGiverNotInterviewer({});
     }
 
-    // FeedbackBeforeInterview: exit 42, IF-002.
-    if (yield* Handlers.blank<boolean>("refuse FeedbackBeforeInterview when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FeedbackBeforeInterview was refused"));
-      return yield* new FeedbackBeforeInterview({
-        scheduledOn: yield* Handlers.blank("FeedbackBeforeInterview.scheduledOn, a Day"),
-      });
+    // FeedbackBeforeInterview: exit 42, IF-002. HRMS's `validate_interview_date`, by the world's clock: Effect's Clock
+    // reads it, stepped in the local world. Today is its UTC day; the interview's day itself is allowed.
+    const today = Days.add("1970-01-01", Math.floor((yield* Clock.currentTimeMillis) / DAY_MS));
+    if (today < scheduledOn) {
+      yield* Effect.logInfo("the interview's day hasn't come yet");
+      return yield* new FeedbackBeforeInterview({ scheduledOn });
     }
 
-    // Step insert: database, span interview-feedback.give.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span interview-feedback.give.insert. The feedback takes the interview's company. A
+    // second from this interviewer is the runtime's refusal (oneFeedbackPerInterviewer).
+    yield* steps.insert(
+      records.insert(InterviewFeedback, { id, company: held["company"] as never, interview, interviewer, result }),
+    );
 
     // The move give, to given.
     yield* move();
