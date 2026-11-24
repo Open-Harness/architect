@@ -1,6 +1,0 @@
-# Two-way links (#742, item 5) are not built: there is no `Blueprint.link`. Clears with the value types build.
-src/modules/values/link.test.ts > Two-way links: a thing may link to one declared after it > declares a field on a thing that is not there yet, and it becomes that thing's field once it is
-src/modules/values/link.test.ts > Two-way links: a thing may link to one declared after it > gives the other field's value when read outside a thing, as a payload field would
-src/modules/values/link.test.ts > Two-way links: a thing may link to one declared after it > holds the other thing's ids and no one else's
-src/modules/values/link.test.ts > Two-way links: a thing may link to one declared after it > keeps a sentence said of it before the other thing exists
-src/modules/values/link.test.ts > Two-way links: a thing may link to one declared after it > keeps the other field's visibility, so a link to a secret field is secret
