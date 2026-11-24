@@ -15,7 +15,7 @@ import { RUNS_NEEDS, deviceProblems } from "./device.ts";
 import { Times } from "#modules/time/service.js";
 import { environmentsOf } from "./environments.ts";
 import { secretsOf } from "./secrets.ts";
-import { allowedOf } from "./allowed.ts";
+import { allowedOf, rolePathProblem } from "./allowed.ts";
 import { storiesOf } from "./journeys.ts";
 import { hashOf } from "./hash.ts";
 import { alertRulesOf } from "./rules.ts";
@@ -66,14 +66,20 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const keeperUsed = Times.keeperUsed([...layout.things.values()].flatMap((t) => [...t.verbs.values()].map((v) => v.declaration.allowed)));
   // With a keeper in the blueprint, even an operation open to anyone refuses it NotAllowed (M8-checks call 4).
   const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
+  const pathNames = { role: (r: unknown) => roleNames.get(r as never) ?? "?", thing: (t: Thing) => thingNames.get(t) ?? "?" };
+  /** The problems with an operation's or a read's role paths: each must walk to an instance of its role's thing (#767). */
+  const rolePaths = (d: Operation | Read, file: string) =>
+    d.allowed.flatMap((entry) => rolePathProblem({ entry, payload: d.payload, own: d.thing, names: pathNames, where: file }) ?? []);
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
   const entries = new Map<string, Array<{ readonly file: string; readonly name: string; readonly identifier: string }>>();
   for (const [thing, t] of [...layout.things].sort(([a], [b]) => a.localeCompare(b))) {
     for (const [verb, { file, declaration: op }] of [...t.verbs].sort(([a], [b]) => a.localeCompare(b))) {
+      // A `Blueprint.todo` among `allowed` is a blank too (#742, item 7), named by its place in the list.
+      const allowed = Blanks.isBlank(op.allowed) ? { allowed: op.allowed } : Object.fromEntries(op.allowed.map((a, i) => [`allowed[${i}]`, a]));
       const parts = op.kind === "read"
-        ? { [op.by === "list" ? "where" : "fields"]: op.by === "list" ? op.where : op.fields, allowed: op.allowed }
-        : { description: op.description, payload: op.payload, answer: op.answer, allowed: op.allowed, errors: op.errors, steps: op.steps, move: op.move };
+        ? { [op.by === "list" ? "where" : "fields"]: op.by === "list" ? op.where : op.fields, ...allowed }
+        : { description: op.description, payload: op.payload, answer: op.answer, ...allowed, errors: op.errors, steps: op.steps, move: op.move };
       const name = `${thing}.${verb}`;
       const incomplete = blankIn(name, parts);
       const steps = op.kind === "operation" && !Blanks.isBlank(op.steps) ? Object.entries(op.steps) : [];
@@ -113,6 +119,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
       problems.push(`${file}: ${thing}.${verb}'s errors are a union with two classes tagged ${tag}, so the refusal is ambiguous on the wire: rename one`);
     }
     const allowed = op.allowed.map((a) => allowedModel(a, file));
+    problems.push(...rolePaths(op, file));
     problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "operation", move: op.move, allowed }));
     const found = foundModel(op, (x) => thingNames.get(x), (x) => things[x]?.notFound?.error);
     const steps = Object.fromEntries(Object.entries(op.steps).map(([k, s]) => [k,
@@ -181,6 +188,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   /** A read: answered from the thing's records with no handler, so no move, no steps, no declared errors. */
   function readModel(thing: string, verb: string, file: string, from: OperationModel["from"], read: Read): OperationModel {
     const allowed = read.allowed.map((a) => allowedModel(a, file));
+    problems.push(...rolePaths(read, file));
     problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "read", move: undefined, allowed }));
     const list = read.by === "list";
     const t = layout.things.get(thing);

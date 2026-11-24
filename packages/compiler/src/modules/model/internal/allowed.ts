@@ -1,7 +1,8 @@
 // An `allowed` entry as the model says it: which role or built-in, the ways in it keeps, and the adapter's mount a service role is for.
-import type { Allowed, Role } from "orthograph";
+import type { Allowed, FieldsInput, Role, Thing } from "orthograph";
 import type { AllowedModel } from "../types.ts";
-import type { Layout } from "./layout.ts";
+import { referenced } from "./found.ts";
+import { camel, type Layout } from "./layout.ts";
 
 /** Records a problem and answers the `?` the model shows for a name it could not find. */
 const unknown = (problems: Array<string>, p: string): string => {
@@ -37,4 +38,41 @@ export const allowedOf = (layout: Layout, roleNames: ReadonlyMap<Role<any>, stri
     return { kind: "role-of", role: name(a.role), path: a.path, ...service, ...via };
   };
   return allowedModel;
+};
+
+/**
+ * The problem with a role path that walks to nothing (#767). `owner.of("<path>")` is decided by walking the path field by field to an
+ * instance of the role's thing, as language-effect's access does: from the payload field its first key names, else from the subject.
+ * On a read by id the first key may name the subject's own thing, spelt as its name in camel case (`bankAccount`); the runtime takes
+ * any key that is no field of the subject so, and `check` holds it to that spelling. A service role is decided by its mount, not a path.
+ */
+export const rolePathProblem = (spec: {
+  readonly entry: Allowed;
+  readonly payload: FieldsInput;
+  readonly own: Thing;
+  readonly names: { readonly role: (r: unknown) => string; readonly thing: (t: Thing) => string };
+  readonly where: string;
+}): string | undefined => {
+  const { payload, own, names, where } = spec;
+  const a = spec.entry.kind === "narrowed" ? spec.entry.entry : spec.entry;
+  if (a.kind !== "role-of" || a.role.service !== undefined) return undefined;
+  const role = a.role as Role;
+  const said = `${where}: ${names.role(role)} is decided on "${a.path}"`;
+  const [first = "", ...rest] = a.path.split(".");
+  const subject = Object.keys(payload).find((k) => referenced(payload[k]) === own);
+  const ownName = camel(names.thing(own));
+  let thing = first in payload ? referenced(payload[first]) : subject !== undefined ? own : undefined;
+  if (thing === undefined) {
+    return first in payload
+      ? `${said}, but the payload's ${first} holds no thing's id`
+      : `${said}, but ${first} is no payload field, and the payload names no ${ownName} to start from: its fields are ${Object.keys(payload).join(", ")}`;
+  }
+  const namesSubject = !(first in payload) && subject === "id" && first === ownName && !(first in own.fields);
+  for (const key of first in payload || namesSubject ? rest : [first, ...rest]) {
+    if (!(key in thing.fields)) return `${said}, but ${names.thing(thing)} has no field ${key}: its fields are ${Object.keys(thing.fields).join(", ")}`;
+    const next = referenced(thing.fields[key]);
+    if (next === undefined) return `${said}, but ${names.thing(thing)}.${key} holds no thing's id, so the walk stops there`;
+    thing = next;
+  }
+  return thing === role.thing ? undefined : `${said}, which reaches a ${names.thing(thing)}, but ${names.role(role)} is a role on ${names.thing(role.thing)}`;
 };
