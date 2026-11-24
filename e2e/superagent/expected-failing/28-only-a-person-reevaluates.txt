@@ -1,0 +1,6 @@
+# #953: red until trigger.reevaluate is allowed to a signed-in person only, `[Blueprint.signedIn.notVia(Via.agent)]` (plugins/intake/blueprint/things/trigger/verbs/reevaluate.ts, GOAL17-reevaluate-person).
+superagent/28-only-a-person-reevaluates.test.ts > 28 only a person reevaluates > another superagent's main agent is refused NotAllowed, writes nothing, and the trigger stays covered
+superagent/28-only-a-person-reevaluates.test.ts > 28 only a person reevaluates > in the model > trigger.reevaluate is a person's, by any way a person signs in, and not an agent's tool
+superagent/28-only-a-person-reevaluates.test.ts > 28 only a person reevaluates > the declaration the app serves, once its handler has loaded, admits no agent and lists one entry
+superagent/28-only-a-person-reevaluates.test.ts > 28 only a person reevaluates > this superagent's executor is refused NotAllowed, writes nothing, and the trigger stays covered
+superagent/28-only-a-person-reevaluates.test.ts > 28 only a person reevaluates > this superagent's own main agent is refused NotAllowed, writes nothing, and the trigger stays covered
