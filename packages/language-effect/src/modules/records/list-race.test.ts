@@ -17,6 +17,8 @@ const Leave = Blueprint.thing({
   description: "Days off someone asked for.",
   fields: { id: Blueprint.id("lap"), employee: Blueprint.id("emp"), from: Day, to: Day, note: Blueprint.text({ max: 40 }) },
 });
+// Another thing with an `employee` field: its rows are never in a list of leave.
+const Shift = Blueprint.thing({ description: "Hours someone works.", fields: { id: Blueprint.id("shf"), employee: Blueprint.id("emp") } });
 class LeaveOverlaps extends Blueprint.error({ other: Leave.fields.id }, { exit: 45 }) {}
 ErrorNames.name(LeaveOverlaps, "LeaveOverlaps");
 const apply = Blueprint.operation(Leave, {
@@ -30,20 +32,25 @@ const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 const row = (id: string, employee: string, from: number, to: number, state = "open") =>
   [Leave, { id, employee, from: BigInt(from), to: BigInt(to), note: "", state }] as const;
 
-const listOf = (records: any, where: Record<string, unknown>, state: string): Effect.Effect<Listed> =>
+const listOf = (records: any, where: Record<string, unknown>, state: string, limit = 50): Effect.Effect<Listed> =>
   typeof records.list === "function"
-    ? records.list({ thing: Leave, where, state, order: "oldest", limit: 50, after: undefined })
+    ? records.list({ thing: Leave, where, state, order: "oldest", limit, after: undefined })
     : Effect.die(new Error("Records.list is not built (#764)"));
 
 type Run = { id: string; listed: ReadonlyArray<unknown> };
-/** The handler: list the employee's open leave, wait (`between`), then refuse an overlap or insert. Each attempt is recorded in `runs`. */
-const served = (runs: Array<Run>, between: (id: string, attempt: number) => Effect.Effect<void>) =>
+/**
+ * The handler: list the employee's open leave (`limit` at most), and with `twice` their approved leave too, wait (`between`), then refuse an overlap or
+ * insert. Each attempt is recorded in `runs`.
+ */
+type Shape = { readonly limit?: number; readonly twice?: boolean };
+const served = (runs: Array<Run>, between: (id: string, attempt: number) => Effect.Effect<void>, shape: Shape = {}) =>
   Handlers.serve({
     name: "leave.apply",
     operation: apply,
     handler: (({ id, employee, from, to }: any) => Effect.gen(function* () {
       const records = yield* Records;
-      const { items } = yield* listOf(records, { employee }, "open");
+      const { items } = yield* listOf(records, { employee }, "open", shape.limit);
+      if (shape.twice) yield* listOf(records, { employee }, "approved");
       runs.push({ id, listed: items.map((i) => i["id"]) });
       yield* between(id, runs.filter((r) => r.id === id).length);
       const clash = items.find((i) => (i["from"] as bigint) <= to && from <= (i["to"] as bigint));
@@ -96,14 +103,17 @@ describe("two calls that each list, then insert (#764)", () => {
 
 describe("a change the list didn't read doesn't make the call run again (#764)", () => {
   /** Ada's call lists, then waits while `change` commits, then goes on. Answers how many times ada's call ran and how it ended. */
-  const around = (change: (unit: any) => Effect.Effect<void, any, any>) => {
-    const memory = storeMemory([row("lap_1", "emp_ada", 1, 3), row("lap_2", "emp_bob", 1, 3), row("lap_3", "emp_bob", 40, 41), row("lap_4", "emp_ada", 50, 51, "cancelled")]);
+  const around = (change: (unit: any) => Effect.Effect<void, any, any>, shape: Shape = {}) => {
+    const memory = storeMemory([
+      row("lap_1", "emp_ada", 1, 3), row("lap_2", "emp_bob", 1, 3), row("lap_3", "emp_bob", 40, 41), row("lap_4", "emp_ada", 50, 51, "cancelled"),
+      row("lap_5", "emp_ada", 60, 61), row("lap_6", "emp_ada", 70, 71, "approved"),
+    ]);
     const runs: Array<Run> = [];
     return Effect.runPromise(Effect.gen(function* () {
       const store = yield* Store;
       const listed = yield* Deferred.make<void>();
       const go = yield* Deferred.make<void>();
-      const s = served(runs, (_id, attempt) => (attempt === 1 ? Effect.andThen(Deferred.succeed(listed, undefined), Deferred.await(go)) : Effect.void));
+      const s = served(runs, (_id, attempt) => (attempt === 1 ? Effect.andThen(Deferred.succeed(listed, undefined), Deferred.await(go)) : Effect.void), shape);
       const fiber = yield* Effect.forkChild(s.run(asks("lap_a", 10, 12) as never, ada));
       // A call that ends before it lists (it died) is the failure, not a wait.
       yield* Effect.raceFirst(Deferred.await(listed), Effect.andThen(Fiber.join(fiber), Effect.die(new Error("ada's call ended before it listed"))));
@@ -120,10 +130,14 @@ describe("a change the list didn't read doesn't make the call run again (#764)",
     ["another employee's leave changed", (u) => u.records.update(Leave, "lap_2", { from: 10n, to: 12n, note: "moved" })],
     // In ada's `where` but outside the listed state: the list never held it.
     ["ada's cancelled leave changed", (u) => u.records.update(Leave, "lap_4", { from: 10n, to: 12n, note: "moved" })],
+    // Another thing whose rows carry ada's employee and the listed state's name: not leave, so never listed.
+    ["ada's new open shift", (u) => u.records.insert(Shift, { id: "shf_1", employee: "emp_ada" }, "open")],
   ];
-  for (const [what, change] of outside) {
+  const cases = (list: typeof outside, shape: Shape = {}) => list.map(([what, change]) => [what, change, shape] as const);
+  // A page narrower than the where (one of ada's two open rows): the rows past the page don't make the call conflict for good.
+  for (const [what, change, shape] of [...cases(outside), ...cases(outside.slice(0, 1), { limit: 1 }).map(([w, c, sh]) => [`${w}, the list a page of 1`, c, sh] as const)]) {
     it(`${what}: ada's call commits on its first run`, async () => {
-      const { changed, exit, runs } = await around(change);
+      const { changed, exit, runs } = await around(change, shape);
       expect(changed).toBe("committed");
       expect(Exit.isSuccess(exit) && exit.value).toEqual({ application: "lap_a" });
       expect(runs).toBe(1);
@@ -136,10 +150,18 @@ describe("a change the list didn't read doesn't make the call run again (#764)",
     ["ada's listed leave changed", (u) => u.records.update(Leave, "lap_1", { note: "moved" })],
     ["bob's leave moved to ada, on other days", (u) => u.records.update(Leave, "lap_3", { employee: "emp_ada" })],
     ["ada's cancelled leave reopened, on other days", (u) => u.setState(Leave, "lap_4", "open")],
+    // A listed row that leaves the list changes what the call read, as a new one does.
+    ["ada's listed leave cancelled", (u) => u.setState(Leave, "lap_1", "cancelled")],
+    ["ada's listed leave moved to bob", (u) => u.records.update(Leave, "lap_1", { employee: "emp_bob" })],
   ];
-  for (const [what, change] of inside) {
+  // A call that lists twice: a change in either list makes it run again.
+  const twice: typeof inside = [
+    ["ada's new open leave, the call listing twice", (u) => u.records.insert(Leave, { id: "lap_b", employee: "emp_ada", from: 20n, to: 21n, note: "" }, "open")],
+    ["ada's approved leave changed, the call listing twice", (u) => u.records.update(Leave, "lap_6", { note: "moved" })],
+  ];
+  for (const [what, change, shape] of [...cases(inside), ...cases(twice, { twice: true })]) {
     it(`control, ${what}: ada's call runs again and then commits`, async () => {
-      const { changed, exit, runs } = await around(change);
+      const { changed, exit, runs } = await around(change, shape);
       expect(changed).toBe("committed");
       expect(Exit.isSuccess(exit) && exit.value).toEqual({ application: "lap_a" });
       expect(runs).toBe(2);
