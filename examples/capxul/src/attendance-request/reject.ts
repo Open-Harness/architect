@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/attendance-request/verbs/reject.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/attendance-request/reject.handler.ts";
 
 /**
@@ -38,17 +37,16 @@ import type { Handler } from "../../generated/api/src/attendance-request/reject.
  *   once it answers, it writes AttendanceRequestRejected: attendanceRequest from the answer;
  *   the call is the span attendance-request.reject, and its commit attendance-request.reject.commit.
  */
-const reject: Handler = (_payload, { steps, move }) =>
+const reject: Handler = ({ attendanceRequest }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span attendance-request.reject.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span attendance-request.reject.update. A rejected request marks none of its days and
+    // leaves any already marked as they are; the only change is its state, which the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move reject, from draft, to rejected.
     yield* move();
 
-    return {
-      attendanceRequest: yield* Handlers.blank("attendanceRequest, an attendance-request.id"),
-    };
+    return { attendanceRequest };
   });
 
 export default reject;

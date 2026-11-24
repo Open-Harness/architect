@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/employment-type/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { EmploymentType } from "../../blueprint/things/employment-type/thing.ts";
 import type { Handler } from "../../generated/api/src/employment-type/create.handler.ts";
 
 /**
@@ -37,10 +38,12 @@ import type { Handler } from "../../generated/api/src/employment-type/create.han
  *   once it answers, it writes EmploymentTypeCreated: employmentType from the answer, company from the payload;
  *   the call is the span employment-type.create, and its commit employment-type.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, employmentTypeName }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span employment-type.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span employment-type.create.insert. A name taken in the company is the runtime's refusal.
+    yield* steps.insert(records.insert(EmploymentType, { id, company, employmentTypeName }));
 
     // The move create, to active.
     yield* move();

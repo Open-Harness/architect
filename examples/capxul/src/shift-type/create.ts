@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/shift-type/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { ShiftType } from "../../blueprint/things/shift-type/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/shift-type/create.handler.ts";
 
@@ -43,16 +44,19 @@ const { ShiftStartsWhenItEnds } = Errors.declared;
  *   once it answers, it writes ShiftTypeCreated: shiftType from the answer, company from the payload;
  *   the call is the span shift-type.create, and its commit shift-type.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, shiftTypeName, startTime, endTime }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // ShiftStartsWhenItEnds: exit 42, SH-002.
-    if (yield* Handlers.blank<boolean>("refuse ShiftStartsWhenItEnds when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ShiftStartsWhenItEnds was refused"));
+    const records = yield* Records;
+
+    // ShiftStartsWhenItEnds: exit 42, SH-002. HRMS's validate_same_start_and_end. An end before the start is a shift
+    // that runs past midnight, which is allowed.
+    if (startTime === endTime) {
+      yield* Effect.logInfo("the shift starts at the time it ends");
       return yield* new ShiftStartsWhenItEnds({});
     }
 
-    // Step insert: database, span shift-type.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span shift-type.create.insert. A name taken in the company is the runtime's refusal.
+    yield* steps.insert(records.insert(ShiftType, { id, company, shiftTypeName, startTime, endTime }));
 
     // The move create, to active.
     yield* move();
