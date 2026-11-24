@@ -16,7 +16,8 @@ another, can release any trigger an expired eval holds. The brief gives the main
 ## The call
 
 - **"(person)" on an operation in the brief's spec table means a person principal:** someone signed in by a session, a key or a device,
-  never an agent. "(main)" and "(executor)" name the agents, and "(person, main)" both.
+  never an agent. "(main)" and "(executor)" name the agents, and "(person, main)" both. "(person; main proposes)" is a person's, and a
+  main agent's call records a Proposal instead.
 - **`trigger.reevaluate` is `allowed: [Blueprint.signedIn.notVia(Via.agent)]`,** as acme's `invitation.accept` has it. It is then not an
   agent's tool. Check 28 refuses another superagent's main agent, this superagent's own main agent and its executor `NotAllowed`, with
   nothing written, and lets a person signed in by a session, a key or a device reevaluate, on either of two superagents, writing only
@@ -28,11 +29,14 @@ Why not an owner relation now: it would design slice 15's teams inside a snag.
 
 ## Follow-ups, not fixed here
 
-These "(person)" operations are plain `Blueprint.signedIn` too, so they have the same agent hole:
+Other person operations admit an agent through a plain `Blueprint.signedIn` entry too, so they have the same hole. Among them:
 
 - `source.save`, `source.enable`, `source.disable`;
 - `account.list`, `account.unlist`, `account.sync`;
-- `prompts.save`.
+- `prompts.save`, `prompts.preview`, `prompts.history`;
+- `decision.dismiss`, `policy.save`, `policy.history`, `policy.restore`, `policy.sync`, `settings.save`;
+- the "(person, main)" ones, `ticket.stop`, `ticket.retry`, `ticket.requestStatus` and `thread.unsubscribe`, whose `signedIn` entry admits
+  any agent, an executor or another superagent's main agent among them.
 
-For `account.list`, `account.sync` and `prompts.save` the brief says a main agent's call records a Proposal, so their fix goes with that
+For the "(person; main proposes)" ones (`account.*`, `policy.save` and `sync`, `prompts.save`, `settings.save`) the brief says a main agent's call records a Proposal, so their fix goes with that
 proposal path rather than a plain `notVia`. Each needs its own check first.
