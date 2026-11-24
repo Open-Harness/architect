@@ -1,0 +1,123 @@
+// Check 27 (#901, from #747): a delivery whose event id the inbox already holds, but whose event says something else, is answered `seen` and
+// is never silent: the door's span tree for that request holds `in.mismatch` (M5-reach-out Q2.2, "A `seen` whose fields differ from the kept
+// ones is a defect on the span (`in.mismatch`), never silent"; GOAL17-repeat-mismatch says which fields). The reviewer's live case is first: an
+// edited GitHub review keeps its `submitted_at`, so its id (GOAL17-connections A), and the edit was answered `seen` with nothing said.
+// What is compared is the event's object (the review, the comment, the message), not what GitHub or Slack wrap around it, so the repeats check
+// 63 calls one event (another delivery id, sender, installation or action; a message delivered again as an app mention) say nothing.
+// Spans are read from the world's own Collector, by the trace each request carried. The kept row is never changed by a repeat.
+// CONTROLS (proved by hand on #901's pull request): today's door, which never compares, fails the three mismatches; a door that compares the
+// whole body fails the four repeats that are one event; a door that says `in.mismatch` on every `seen` fails the exact redelivery.
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { randomBytes } from "node:crypto";
+import { Effect, Exit, Scope } from "effect";
+import { afterAll, describe, expect, it } from "vitest";
+import { Collectors, Worlds, type Span } from "@orthograph/prove";
+import { build, lazy, removeCopies } from "./app.ts";
+import { COMMENT_CREATED, COMMENT_EDITED, REVIEW_SUBMITTED, githubPayload, setAt, type Obj } from "./connections.ts";
+import { github, journalOf, slack, trace, type Door } from "./door.ts";
+import { APP_MENTION, USER_MESSAGE } from "./slack-events.ts";
+
+const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
+interface Seen extends Door { readonly spans: (trace: string, mount: string) => Promise<ReadonlyArray<string>> }
+
+/** The app in a world with a Collector, its doors' secrets made here, as check 63 opens it. */
+const open = async (): Promise<Seen> => {
+  const built = build();
+  const secrets = { github: `ghs_${randomBytes(16).toString("hex")}`, slack: `sls_${randomBytes(16).toString("hex")}` };
+  const dir = mkdtempSync(join(tmpdir(), "ortho-s27-"));
+  const scope = Effect.runSync(Scope.make());
+  const made = await Effect.runPromise(Effect.gen(function* () {
+    const collector = yield* Collectors.local(dir, []);
+    const world = yield* Worlds.start({
+      root: built.root, port: 0, name: "superagent-mismatch", otlp: collector.url,
+      secretEnv: { GITHUB_WEBHOOK_SIGNING: secrets.github, SLACK_WEBHOOK_SIGNING: secrets.slack, POSTHOG_WEBHOOK_SIGNING: randomBytes(16).toString("hex") },
+    });
+    return { collector, world };
+  }).pipe(Effect.onError(() => Scope.close(scope, Exit.void)), Scope.provide(scope)));
+  const read = async (t: string): Promise<ReadonlyArray<Span>> => (await Effect.runPromise(made.collector.find(t)))?.spans ?? [];
+  return {
+    url: made.world.url, secrets,
+    close: async () => { await Effect.runPromise(Scope.close(scope, Exit.void)); rmSync(dir, { recursive: true, force: true }); },
+    // The door's spans for one request: wait for its outcome span (`in.<mount>.<outcome>`), then a moment more for the rest.
+    spans: async (t, mount) => {
+      const end = Date.now() + 20_000;
+      while (Date.now() < end) {
+        if ((await read(t)).some((s) => s.name.startsWith(`in.${mount}.`))) { await sleep(500); break; }
+        await sleep(100);
+      }
+      return (await read(t)).map((s) => s.name);
+    },
+  };
+};
+
+const world = lazy(() => open());
+afterAll(async () => { await (await world().catch(() => undefined))?.close(); removeCopies(); });
+
+const said = (a: { status: number; body: unknown }) => [a.status, a.body];
+const ACCEPTED = [200, { accepted: true }];
+const SEEN = [200, { seen: true }];
+
+/** Send `first`, which must be new, then `again`: answered seen, and its spans say `in.mismatch` exactly when `differs`; nothing is written for it. */
+const repeat = async (send: (d: Seen, body: Obj, t?: string) => Promise<{ status: number; body: unknown }>, mount: string, first: Obj, again: Obj, differs: boolean) => {
+  const d = await world();
+  expect(said(await send(d, first)), "the first delivery is new").toEqual(ACCEPTED);
+  const t = trace();
+  expect(said(await send(d, again, t.header)), "the repeat").toEqual(SEEN);
+  const names = await d.spans(t.id, mount);
+  expect(names, "the door's outcome span").toContain(`in.${mount}.seen`);
+  expect(names.includes("in.mismatch"), differs ? "the repeat says something else: in.mismatch" : "the repeat is the same event: no in.mismatch").toBe(differs);
+  expect(await journalOf(d.url, t.id), "a repeat writes nothing").toEqual([]);
+};
+const gh = (event: string) => (d: Seen, body: Obj, t?: string) => github(d, event, body, t === undefined ? {} : { trace: t });
+const sl = (d: Seen, body: Obj, t?: string) => slack(d, body, t === undefined ? {} : { trace: t });
+
+describe("27 a repeat that differs is not silent: github", () => {
+  const review = setAt(REVIEW_SUBMITTED, "review.id", 7701);
+  it("an edited review keeps its submitted_at, so its id: the edit is seen, and says in.mismatch (the reviewer's live case)", async () => {
+    // As GitHub sends the edit: the `edited` webhook, with `changes`, the review's new body and its submitted_at as it was.
+    const edited = githubPayload("pull-request-review-edited", {
+      action: "edited", sender: review["sender"]!, repository: review["repository"]!, pull_request: review["pull_request"]!, changes: { body: { from: "This needs a test." } },
+      review: { ...(review["review"] as Obj), body: "This needs a test, and a changelog line." },
+    });
+    await repeat(gh("pull_request_review"), "github", review, edited, true);
+  });
+
+  it("a comment delivered again with the same id and change time but another body says in.mismatch", async () => {
+    const comment = setAt(COMMENT_CREATED, "comment.id", 9701);
+    await repeat(gh("issue_comment"), "github", comment, setAt(comment, "comment.body", "@agent never mind"), true);
+  });
+
+  it("the same review delivered again, by another delivery id, is the same event: no in.mismatch", async () => {
+    const same = setAt(REVIEW_SUBMITTED, "review.id", 7702);
+    await repeat(gh("pull_request_review"), "github", same, same, false);
+  });
+
+  for (const [what, change] of [
+    ["another sender", (c: Obj) => setAt(c, "sender.id", 7)],
+    ["another installation", (c: Obj) => ({ ...c, installation: { id: 99 } })],
+    // The edit event of the same comment at the same time, as check 63 sends it.
+    ["another action around the same comment", (c: Obj) => setAt(setAt(setAt(COMMENT_EDITED, "comment.id", (c["comment"] as Obj)["id"]!), "comment.updated_at", (c["comment"] as Obj)["updated_at"]!), "comment.body", (c["comment"] as Obj)["body"]!)],
+  ] as const) {
+    it(`the same comment with ${what} is the same event (check 63): no in.mismatch`, async () => {
+      const comment = setAt(COMMENT_CREATED, "comment.id", 9710 + what.length);
+      await repeat(gh("issue_comment"), "github", comment, change(comment), false);
+    });
+  }
+});
+
+describe("27 a repeat that differs is not silent: slack", () => {
+  const ts = (n: number) => `1700000027.0000${n}`;
+  it("a message delivered again for one ts with other text says in.mismatch", async () => {
+    const first = setAt(setAt(USER_MESSAGE, "event.ts", ts(10)), "event_id", "Ev27A");
+    const other = setAt(setAt(first, "event_id", "Ev27B"), "event.text", "Never mind the slug parser.");
+    await repeat(sl, "slack", first, other, true);
+  });
+
+  it("one message delivered as a message and then as an app mention, each as Slack sends it, is one event: no in.mismatch", async () => {
+    const asMessage = setAt(setAt(setAt(setAt(USER_MESSAGE, "event.ts", ts(20)), "event_id", "Ev27C"), "event.user", "U061F7AUR"), "event.text", "<@U0LAN0Z89> is the build green?");
+    const asMention = setAt(setAt(setAt(setAt(setAt(APP_MENTION, "event.channel", "C024BE91L"), "event.ts", ts(20)), "event_id", "Ev27D"), "event.text", "<@U0LAN0Z89> is the build green?"), "event.event_ts", ts(20));
+    await repeat(sl, "slack", asMessage, asMention, false);
+  });
+});
