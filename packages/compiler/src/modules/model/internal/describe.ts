@@ -158,7 +158,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Read
     // alone (K40 fix 2): found by that shape, whatever the app names it, and the server reads it from here.
     const keeps = ["save", "restore"].includes(verb) && isVersioned({ kind: "operation", verb, payload }, layout.things.get(thing)?.thing?.versions);
     const stale = keeps ? errors.filter((_, i) => Object.keys(op.errors[i]!.fields).join() === "current") : [];
-    if (keeps && stale.length !== 1) problems.push(`${file}: ${thing}.${verb} saves a version of ${thing}, so it declares one error whose only field is current, its refusal of a save made from an old version; it declares ${stale.length === 0 ? "none" : stale.join(" and ")}`);
+    if (keeps && stale.length !== 1) problems.push(`${file}: ${thing}.${verb} ${verb}s a version of ${thing}, so it declares one error whose only field is current, its refusal of a save made from an old version; it declares ${stale.length === 0 ? "none" : stale.join(" and ")}`);
     if (chain) problems.push(...chainOperationProblems({ file, name: `${thing}.${verb}`, thing, op, roleNames, payload, answer, event: move ? things[thing]?.events[move.emits] : undefined, emits: move?.emits ?? "?", mints }));
     const entry = {
       kind: "operation" as const,
