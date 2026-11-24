@@ -11,4 +11,10 @@ and one no active source takes are each 200 `{ ignored: true }`; otherwise the d
 event's identity>` (unique, so one change settles once, however many deliveries or polls carry it), `operation` `in:<mount>`, in the
 request's trace: 200 `{ accepted: true }` or `{ seen: true }`.
 
-`internal/verify.ts` (the signature), `read.ts` (the body, the event's name, the handshake), `accept.ts` (the inbox row). Test: `inbound.test.ts`.
+A `seen` is compared with the kept row on the event's object, which the adapter names beside its `id` (`AdapterEvent.object`: GitHub's
+review or comment, Slack's message as a person wrote it), never on the envelope, and as values whatever their key order. One that differs
+is still `seen` and leaves the kept row as it came, and its request's span tree holds `in.mismatch`, an error span whose `defect` names the
+mount and the event's id, never the payload (M5-reach-out Q2.2, GOAL17-repeat-mismatch).
+
+`internal/verify.ts` (the signature), `read.ts` (the body, the event's name, the handshake), `accept.ts` (the inbox row, and the kept one on
+a repeat), `same.ts` (two objects compared as values). Test: `inbound.test.ts`; e2e check 27.

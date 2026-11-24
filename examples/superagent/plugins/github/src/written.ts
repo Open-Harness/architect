@@ -18,21 +18,26 @@ const sender = (p: Payload) => {
   return s === undefined || s === null ? undefined : { id: String(s.id), name: s.login, bot: s.type === "Bot" };
 };
 
-/** An event of the description, named by its object and that object's own version (`at` is where its last-change time is). */
-const named = (event: string, object: (p: Payload) => string | number, at: (p: Payload) => string | null | undefined) =>
+/**
+ * An event of the description, named by its object (`key` is where it is in the payload), that object's own id and its own version (`at`
+ * is where its last-change time is). A repeat is compared on the object alone, never on `action`, `sender`, `installation` or `changes`
+ * (GOAL17-repeat-mismatch).
+ */
+const named = (event: string, key: string, object: (o: Payload) => string | number, at: (o: Payload) => string | null | undefined) =>
   Blueprint.incoming(schemaOf(components, { oneOf: eventPayloads[event] ?? [] }), {
-    id: (raw: unknown) => { const p = raw as Payload; return `${event}:${p["repository"]["full_name"]}:${object(p)}:${at(p) ?? ""}`; },
+    id: (raw: unknown) => { const p = raw as Payload; return `${event}:${p["repository"]["full_name"]}:${object(p[key])}:${at(p[key]) ?? ""}`; },
     actor: (raw: unknown) => sender(raw as Payload),
+    object: (raw: unknown) => (raw as Payload)[key],
   });
 
 /** Optional, so the generated descriptor may list the same names first and have these replace them (a spread of required keys over them is a type error). */
 export const events: Partial<Record<"issueComment" | "issues" | "pullRequest" | "pullRequestReview" | "pullRequestReviewComment" | "checkRun", AdapterEvent<unknown>>> = {
-  issueComment: named("issueComment", (p) => p["comment"]["id"], (p) => p["comment"]["updated_at"]),
-  issues: named("issues", (p) => p["issue"]["number"], (p) => p["issue"]["updated_at"]),
-  pullRequest: named("pullRequest", (p) => p["pull_request"]["number"], (p) => p["pull_request"]["updated_at"]),
-  pullRequestReview: named("pullRequestReview", (p) => p["review"]["id"], (p) => p["review"]["submitted_at"]),
-  pullRequestReviewComment: named("pullRequestReviewComment", (p) => p["comment"]["id"], (p) => p["comment"]["updated_at"]),
-  checkRun: named("checkRun", (p) => p["check_run"]["id"], (p) => p["check_run"]["completed_at"] ?? p["check_run"]["started_at"]),
+  issueComment: named("issueComment", "comment", (o) => o["id"], (o) => o["updated_at"]),
+  issues: named("issues", "issue", (o) => o["number"], (o) => o["updated_at"]),
+  pullRequest: named("pullRequest", "pull_request", (o) => o["number"], (o) => o["updated_at"]),
+  pullRequestReview: named("pullRequestReview", "review", (o) => o["id"], (o) => o["submitted_at"]),
+  pullRequestReviewComment: named("pullRequestReviewComment", "comment", (o) => o["id"], (o) => o["updated_at"]),
+  checkRun: named("checkRun", "check_run", (o) => o["id"], (o) => o["completed_at"] ?? o["started_at"]),
 };
 
 export const standIn = Stand.process("a bare git repository served by git http-backend, with a small server for GitHub's REST API over it");

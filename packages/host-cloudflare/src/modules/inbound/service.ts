@@ -1,7 +1,8 @@
 import { Effect, Option, Schema } from "effect";
 import type { AdapterEvent } from "orthograph";
 import { accept } from "./internal/accept.ts";
-import { challengeOf, eventNameOf, jsonOf } from "./internal/read.ts";
+import { sameValue } from "./internal/same.ts";
+import { camel, challengeOf, eventNameOf, jsonOf } from "./internal/read.ts";
 import { verified } from "./internal/verify.ts";
 import type { Door, InboundApi, InboundOptions } from "./types.ts";
 
@@ -45,6 +46,24 @@ const taken = (door: Door, name: string, payload: unknown): Effect.Effect<boolea
 const judged = (body: unknown, envelope: ReadonlyArray<string> | undefined): unknown =>
   envelope === undefined || typeof body !== "object" || body === null ? body : Object.fromEntries(Object.entries(body).filter(([k]) => !envelope.includes(k)));
 
+/**
+ * A repeat whose object says something other than the kept row's is still `seen` and writes nothing, but never silently (M5-reach-out Q2.2,
+ * GOAL17-repeat-mismatch): a span `in.mismatch` that ends as an error, with its `defect` naming the mount and the event's id, never the payload.
+ */
+const mismatch = (mount: string, id: string) => {
+  const defect = `in.${mount}: a repeat of ${id} says something other than the kept event; the kept one stands`;
+  return Effect.fail(new Error(defect)).pipe(
+    Effect.withSpan("in.mismatch", { attributes: { defect, "error.tag": "RepeatMismatch", "event.id": id } }),
+    Effect.catch(() => Effect.void),
+  );
+};
+
+/** The object each payload names, by its own event's adapter (a Slack message kept as `message` and repeated as `appMention`), or undefined when it names none. */
+const objectOf = (door: Door, name: string, payload: unknown): unknown => {
+  const event = (door.adapter.events as Readonly<Record<string, AdapterEvent<unknown> | undefined>>)[name];
+  return event?.object === undefined ? undefined : Effect.runSync(Effect.try(() => event.object!(payload)).pipe(Effect.orElseSucceed(() => undefined)));
+};
+
 const deliver = (door: Door, options: InboundOptions, request: Request): Effect.Effect<Response> =>
   Effect.gen(function* () {
     const rule = door.adapter.door;
@@ -81,8 +100,13 @@ const deliver = (door: Door, options: InboundOptions, request: Request): Effect.
       return json({ ignored: true });
     }
     const settled = yield* accept(options.db, { id: named.value.id, trace: traceOf(request), mount: door.mount, event: name, fields: parsed, actor: named.value.actor });
-    yield* outcome(door.mount, settled);
-    return json(settled === "accepted" ? { accepted: true } : { seen: true });
+    // A repeat is compared on the event's object, never the envelope; the kept row is left as it came.
+    if (settled.settled === "seen" && settled.kept !== undefined && event.object !== undefined) {
+      const kept = objectOf(door, camel(settled.kept.event), settled.kept.fields);
+      if (!sameValue(kept, objectOf(door, name, parsed))) yield* mismatch(door.mount, named.value.id);
+    }
+    yield* outcome(door.mount, settled.settled);
+    return json(settled.settled === "accepted" ? { accepted: true } : { seen: true });
   }).pipe(Effect.withSpan(`in.${door.mount}`));
 
 export const Inbound: InboundApi = {

@@ -12,11 +12,26 @@ export interface Delivery {
   readonly actor: EventActor | undefined;
 }
 
-/** `accepted` when this id was new, `seen` when the inbox already had it: the unique id decides, in the database, so five deliveries at once are one. */
-export const accept = (db: D1Database, d: Delivery): Effect.Effect<"accepted" | "seen"> =>
+/** The row the inbox kept for an id: the event's name and its payload as it first came. */
+export interface Kept {
+  readonly event: string;
+  readonly fields: unknown;
+}
+
+/**
+ * `accepted` when this id was new, `seen` with the kept row when the inbox already had it: the unique id decides, in the database, so five
+ * deliveries at once are one. The kept row is only read, never changed.
+ */
+export type Settled = { readonly settled: "accepted" } | { readonly settled: "seen"; readonly kept: Kept | undefined };
+
+export const accept = (db: D1Database, d: Delivery): Effect.Effect<Settled> =>
   Effect.promise(() =>
     db.prepare(`INSERT INTO "_journal" ("id", "trace", "operation", "move", "subject", "event", "fields", "actor") VALUES (?, ?, ?, '', ?, ?, ?, ?) ON CONFLICT ("id") DO NOTHING`)
       .bind(d.id, d.trace, `in:${d.mount}`, d.id, d.event, JSON.stringify(d.fields), d.actor === undefined ? null : JSON.stringify(d.actor))
-      .run()
-      .then((result) => (result.meta.changes > 0 ? ("accepted" as const) : ("seen" as const))),
-  );
+      .run(),
+  ).pipe(Effect.flatMap((result): Effect.Effect<Settled> =>
+    result.meta.changes > 0
+      ? Effect.succeed({ settled: "accepted" as const })
+      : Effect.promise(() => db.prepare(`SELECT "event", "fields" FROM "_journal" WHERE "id" = ?`).bind(d.id).first<{ event: string; fields: string }>()).pipe(
+          Effect.map((row) => ({ settled: "seen" as const, kept: row === null ? undefined : { event: row.event, fields: JSON.parse(row.fields) as unknown } })),
+        )));

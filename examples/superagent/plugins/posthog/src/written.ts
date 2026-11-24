@@ -30,6 +30,8 @@ type Alert = { readonly project: { readonly id: string }; readonly issue: { read
 const identity = (kind: string) => ({
   id: (raw: unknown) => { const e = raw as Alert; return `${e.issue.id}:${kind}:${e.timestamp}`; },
   actor: () => undefined,
+  /** The issue the alert is about: a repeat is compared on it (GOAL17-repeat-mismatch). */
+  object: (raw: unknown) => (raw as Alert).issue,
 });
 
 export const events = {
