@@ -50,6 +50,31 @@
     "kind": "refers"
   },
   {
+    "from": "expense.expenseClaim",
+    "to": "expense-claim.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense.expenseType",
+    "to": "expense-claim-type.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense-claim.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense-claim.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense-claim-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "holiday.holidayList",
     "to": "holiday-list.id",
     "kind": "refers"
@@ -346,6 +371,121 @@
   },
   {
     "from": "employee-grade.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense.add",
+    "to": "expense",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense.add",
+    "to": "expense.ExpenseAdded",
+    "kind": "emits"
+  },
+  {
+    "from": "expense.add",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense.get",
+    "to": "expense",
+    "kind": "reads"
+  },
+  {
+    "from": "expense.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.approve",
+    "to": "expense-claim",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense-claim.approve",
+    "to": "expense-claim.ExpenseClaimApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "expense-claim.approve",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.create",
+    "to": "expense-claim",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense-claim.create",
+    "to": "expense-claim.ExpenseClaimCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "expense-claim.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.get",
+    "to": "expense-claim",
+    "kind": "reads"
+  },
+  {
+    "from": "expense-claim.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.reject",
+    "to": "expense-claim",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense-claim.reject",
+    "to": "expense-claim.ExpenseClaimRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "expense-claim.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim-type.create",
+    "to": "expense-claim-type",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense-claim-type.create",
+    "to": "expense-claim-type.ExpenseClaimTypeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "expense-claim-type.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim-type.get",
+    "to": "expense-claim-type",
+    "kind": "reads"
+  },
+  {
+    "from": "expense-claim-type.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
