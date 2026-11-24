@@ -42,8 +42,8 @@ export default Blueprint.journey("set up a holiday list", {
     ),
     s.step(
       "a list can't end before it starts",
-      s.ada.run(create, { company: s.world.company, holidayListName: "Backwards", fromDate: "2027-12-31", toDate: "2027-01-01" }),
-      refuses(HolidayListEndsBeforeStart, { fromDate: "2027-12-31" }),
+      s.ada.run(create, { company: s.world.company, holidayListName: "Backwards", fromDate: "2028-01-01", toDate: "2027-12-31" }),
+      refuses(HolidayListEndsBeforeStart, { fromDate: "2028-01-01" }),
       noEvents(),
       spans({ absent: ["holiday-list.create.insert"] }),
     ),

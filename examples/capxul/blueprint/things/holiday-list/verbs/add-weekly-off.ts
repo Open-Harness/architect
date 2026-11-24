@@ -5,8 +5,8 @@ import { owner } from "../../company/roles.ts";
 import { Holiday } from "../../holiday/thing.ts";
 import { HolidayCount, Weekday } from "../../../values/holidays.ts";
 
-// ERPNext's `get_weekly_off_dates`: every such weekday from the list's first day to its last becomes a holiday named
-// after the weekday. A day the list already holds is skipped, not refused.
+// ERPNext's `get_weekly_off_dates`: every such weekday from the list's first day to its last becomes a holiday (named
+// after the weekday, unchecked until a list's holidays can be listed, #764). A day the list already holds is skipped, not refused.
 export default Blueprint.operation(HolidayList, {
   description: "Make every given weekday in a holiday list a day off.",
   payload: { holidayList: HolidayList.fields.id, weekday: Weekday },

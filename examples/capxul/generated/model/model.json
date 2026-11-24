@@ -3838,6 +3838,217 @@
     }
   },
   "journeys": {
+    "journeys/a-one-day-list.ts": {
+      "name": "a one-day list",
+      "file": "journeys/a-one-day-list.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "starts": "a one-day list",
+      "steps": [
+        {
+          "title": "the day before its only day is outside it",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-08-13",
+              "description": "Too early"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayOutsideList",
+              "fields": {
+                "fromDate": "2028-08-14",
+                "toDate": "2028-08-14"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "so is the day after",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-08-15",
+              "description": "Too late"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayOutsideList",
+              "fields": {
+                "fromDate": "2028-08-14",
+                "toDate": "2028-08-14"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a weekday the list doesn't hold adds nothing",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Sunday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Sunday",
+                "added": "0",
+                "totalHolidays": "0"
+              }
+            }
+          ]
+        },
+        {
+          "title": "its own weekday adds its one day",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.add-weekly-off",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "weekday": "Monday"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "1",
+                "1"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "WeeklyOffAdded",
+              "fields": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Monday",
+                "added": "1",
+                "totalHolidays": "1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "that day is then taken",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday.add",
+            "payload": {
+              "holidayList": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              },
+              "holidayDate": "2028-08-14",
+              "description": "Picnic"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "HolidayDateTaken",
+              "fields": {
+                "holidayDate": "2028-08-14"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the list counts one",
+          "call": {
+            "actor": "ada",
+            "operation": "holiday-list.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "holidayList"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2028-08-14",
+                "2028-08-14",
+                "1"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "69535c1ef56b4af4ca6a8cd30e6cd8c1527fe8241ad9181adb46d85b0f2390a6"
+    },
     "journeys/add-holidays.ts": {
       "name": "add holidays",
       "file": "journeys/add-holidays.ts",
@@ -8573,8 +8784,8 @@
                 ]
               },
               "holidayListName": "Backwards",
-              "fromDate": "2027-12-31",
-              "toDate": "2027-01-01"
+              "fromDate": "2028-01-01",
+              "toDate": "2027-12-31"
             }
           },
           "checks": [
@@ -8582,7 +8793,7 @@
               "kind": "refuses",
               "error": "HolidayListEndsBeforeStart",
               "fields": {
-                "fromDate": "2027-12-31"
+                "fromDate": "2028-01-01"
               }
             },
             {
@@ -8743,7 +8954,7 @@
           ]
         }
       ],
-      "sourceHash": "ce42203c45724615fd73a9264bba209a25146c904fe5d5e339e25f37eda8d867"
+      "sourceHash": "fefaeed7ed39c279ce817c8d3c028941a3c765f6cf159bcef6a674132a7c5bc3"
     },
     "journeys/set-up-departments-and-job-titles.ts": {
       "name": "set up departments and job titles",
@@ -9851,6 +10062,49 @@
             "holidayListName": "Kenya 2027",
             "fromDate": "2027-01-01",
             "toDate": "2027-12-31"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "holidayList": {
+          "ref": [
+            "last",
+            "holidayList"
+          ]
+        }
+      }
+    },
+    "a one-day list": {
+      "name": "a one-day list",
+      "file": "blueprint/starting-worlds/a-one-day-list.ts",
+      "from": "a company",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "1f23f7cce6b9b9732ff085879090516c49f8cf2f4621947b40efa23ac3272bc3",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "holiday-list.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "holidayListName": "Shutdown",
+            "fromDate": "2028-08-14",
+            "toDate": "2028-08-14"
           }
         }
       ],
@@ -12971,6 +13225,16 @@
           "severity": "ticket"
         }
       ]
+    },
+    {
+      "id": "verdict:a one-day list:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "a one-day list",
+        "severity": "page",
+        "owner": "journeys/a-one-day-list.ts"
+      }
     },
     {
       "id": "verdict:add holidays:local",

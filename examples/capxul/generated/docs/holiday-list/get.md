@@ -34,6 +34,12 @@ Read one holiday-list by its id: company, holidayListName, fromDate, toDate, tot
 
 ## Worked examples
 
+### a one-day list
+
+Starts from the world `a one-day list`.
+
+- **the list counts one.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`2028-08-14`, `2028-08-14`, `1`].
+
 ### add holidays
 
 Starts from the world `a holiday list`.

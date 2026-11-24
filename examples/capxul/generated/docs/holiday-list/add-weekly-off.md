@@ -46,6 +46,13 @@ Make every given weekday in a holiday list a day off.
 
 ## Worked examples
 
+### a one-day list
+
+Starts from the world `a one-day list`.
+
+- **a weekday the list doesn't hold adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [`0`, `0`].
+- **its own weekday adds its one day.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Monday`, and gets back [`1`, `1`].
+
 ### weekly offs
 
 Starts from the world `a sunday holiday`.

@@ -27,6 +27,7 @@ record types are listed in `../doctypes.md`.
   and `boTosLink`.
 - `a holiday list`, from `a company`: Ada starts Kenya 2027, from 2027-01-01 to 2027-12-31. It gives `company` and
   `holidayList`.
+- `a one-day list`, from `a company`: Ada starts Shutdown, only Monday 2028-08-14. It gives `company` and `holidayList`.
 - `a sunday holiday`, from `a holiday list`: Ada makes Sunday 2027-01-03 a holiday, Founders' Day. It gives `company`,
   `holidayList` and `holiday`.
 
@@ -54,9 +55,10 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 | `bridge-open-a-bank-account` | `kyb approved` | Ada (owner), Bo (signed in) | Bo can't open an account on Ada's company. `bank-account.open` answers a `bac_` id and the deposit details: for USD an account number and a nine-digit routing number, for EUR an IBAN and a BIC. It emits `BankAccountOpened` with the company, the KYB and the currency, `open`, with the `load` and `insert` spans. Bo can't read it. A second open account by the same name is `BankAccountNameTaken`. The second account reads back as itself |
 | `bridge-a-bank-account-closes` | `two bank accounts` | Ada (owner), Bo (signed in) | The account reads back with every detail `open` answered. Bo can't close it. Ada closes it (`BankAccountClosed`, `closed`, the `update` span), not twice (`notFrom`). Its name is then free for a new account, and the old one stays closed with its details. The euro account reads back with the IBAN and BIC it was opened with |
 | `bridge-a-reopened-account-is-its-own` | `a reopened account` | Ada (owner) | An account opened under a closed one's name reads back with every detail its own opening answered, and the old one stays closed with its own number |
-| `set-up-a-holiday-list` | `a company` | Ada (owner), Bo (signed in) | `holiday-list.create` answers an `hls_` id, emits `HolidayListCreated` with the company, leaves it `active`, with the `insert` span. It reads back as typed with no holidays. An end before its start is `HolidayListEndsBeforeStart` (carrying `fromDate`, before `insert`); a name taken in the company is `HolidayListNameTaken`. Bo can't read it or start one in Ada's company (`NotAllowed`). A one-day list is allowed and reads back as itself |
+| `set-up-a-holiday-list` | `a company` | Ada (owner), Bo (signed in) | `holiday-list.create` answers an `hls_` id, emits `HolidayListCreated` with the company, leaves it `active`, with the `insert` span. It reads back as typed with no holidays. An end before its start, one day back across a year's end, is `HolidayListEndsBeforeStart` (carrying `fromDate`, before `insert`); a name taken in the company is `HolidayListNameTaken`. Bo can't read it or start one in Ada's company (`NotAllowed`). A one-day list is allowed and reads back as itself |
 | `add-holidays` | `a holiday list` | Ada (owner), Bo (signed in) | `holiday.add` answers a `hol_` id and the list's new count, emits `HolidayAdded`, `active`, with the `load` and `insert` spans. The list's first and last days may be holidays; the day before and the day after are `HolidayOutsideList` (carrying both ends, after `load`, before `insert`). A day held already is `HolidayDateTaken`. Bo can't read or add (`NotAllowed`). Each reads back as typed, and the list counts two |
 | `weekly-offs` | `a sunday holiday` | Ada (owner), Bo (signed in) | `holiday-list.add-weekly-off` makes every given weekday between the list's ends a holiday: Sunday adds 51 (2027 has 52, one held already, which keeps its name), Friday 53 (2027 starts and ends on one), and Friday again adds 0, each with `WeeklyOffAdded` and the exact total. The days it added are then taken, first, middle and last; another weekday's day isn't. Bo can't run it (`NotAllowed`) |
+| `a-one-day-list` | `a one-day list` | Ada (owner) | On a list of one day, the day before and the day after are `HolidayOutsideList`; Sunday adds 0 and Monday adds its one day, total 1; that day is then `HolidayDateTaken`, and the list counts one. A check on the year alone, or a walk past `toDate`, fails here |
 
 ## Where the docs were silent
 
@@ -117,8 +119,9 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 - **Holiday lists.** ERPNext's Holiday List names a list by its name, so it is unique per company here. Its child table
   Holiday is its own thing, one row per day, unique within the list (`validate_duplicate_date`); `total_holidays` is
   the count of those rows. `get_weekly_off_dates` adds one weekday's days between the ends and skips days already held.
-  ERPNext's `weekly_off` flag, colours and the country's public holidays wait on optional fields and a holiday source.
-  Deleting a day comes with a move that ends one.
+  ERPNext's `weekly_off` flag waits on booleans that round-trip (#742, item 2); colours and a country's public holidays
+  wait on optional fields and a holiday source. A weekly off's description (its weekday) isn't checked until a list's
+  holidays can be listed (#764). Deleting a day comes with a move that ends one.
 - **Bridge, part two.** Not checked yet, each waiting on the adapter (#739 for its generator gaps): the call to Bridge
   as a step in each operation, Bridge's webhooks as events (deposits landing as Bank Transactions, transfers), Bridge's
   other KYC states, a business's associated persons, transfers out, and help with incorporation. Those checks come with

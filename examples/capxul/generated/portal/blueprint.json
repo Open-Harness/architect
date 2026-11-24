@@ -3842,6 +3842,217 @@
       }
     },
     "journeys": {
+      "journeys/a-one-day-list.ts": {
+        "name": "a one-day list",
+        "file": "journeys/a-one-day-list.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "starts": "a one-day list",
+        "steps": [
+          {
+            "title": "the day before its only day is outside it",
+            "call": {
+              "actor": "ada",
+              "operation": "holiday.add",
+              "payload": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "holidayDate": "2028-08-13",
+                "description": "Too early"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "HolidayOutsideList",
+                "fields": {
+                  "fromDate": "2028-08-14",
+                  "toDate": "2028-08-14"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "so is the day after",
+            "call": {
+              "actor": "ada",
+              "operation": "holiday.add",
+              "payload": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "holidayDate": "2028-08-15",
+                "description": "Too late"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "HolidayOutsideList",
+                "fields": {
+                  "fromDate": "2028-08-14",
+                  "toDate": "2028-08-14"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a weekday the list doesn't hold adds nothing",
+            "call": {
+              "actor": "ada",
+              "operation": "holiday-list.add-weekly-off",
+              "payload": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Sunday"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "0",
+                  "0"
+                ]
+              },
+              {
+                "kind": "emits",
+                "event": "WeeklyOffAdded",
+                "fields": {
+                  "holidayList": {
+                    "ref": [
+                      "world",
+                      "holidayList"
+                    ]
+                  },
+                  "weekday": "Sunday",
+                  "added": "0",
+                  "totalHolidays": "0"
+                }
+              }
+            ]
+          },
+          {
+            "title": "its own weekday adds its one day",
+            "call": {
+              "actor": "ada",
+              "operation": "holiday-list.add-weekly-off",
+              "payload": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "weekday": "Monday"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "1",
+                  "1"
+                ]
+              },
+              {
+                "kind": "emits",
+                "event": "WeeklyOffAdded",
+                "fields": {
+                  "holidayList": {
+                    "ref": [
+                      "world",
+                      "holidayList"
+                    ]
+                  },
+                  "weekday": "Monday",
+                  "added": "1",
+                  "totalHolidays": "1"
+                }
+              }
+            ]
+          },
+          {
+            "title": "that day is then taken",
+            "call": {
+              "actor": "ada",
+              "operation": "holiday.add",
+              "payload": {
+                "holidayList": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                },
+                "holidayDate": "2028-08-14",
+                "description": "Picnic"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "HolidayDateTaken",
+                "fields": {
+                  "holidayDate": "2028-08-14"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "the list counts one",
+            "call": {
+              "actor": "ada",
+              "operation": "holiday-list.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "holidayList"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "2028-08-14",
+                  "2028-08-14",
+                  "1"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "69535c1ef56b4af4ca6a8cd30e6cd8c1527fe8241ad9181adb46d85b0f2390a6"
+      },
       "journeys/add-holidays.ts": {
         "name": "add holidays",
         "file": "journeys/add-holidays.ts",
@@ -8577,8 +8788,8 @@
                   ]
                 },
                 "holidayListName": "Backwards",
-                "fromDate": "2027-12-31",
-                "toDate": "2027-01-01"
+                "fromDate": "2028-01-01",
+                "toDate": "2027-12-31"
               }
             },
             "checks": [
@@ -8586,7 +8797,7 @@
                 "kind": "refuses",
                 "error": "HolidayListEndsBeforeStart",
                 "fields": {
-                  "fromDate": "2027-12-31"
+                  "fromDate": "2028-01-01"
                 }
               },
               {
@@ -8747,7 +8958,7 @@
             ]
           }
         ],
-        "sourceHash": "ce42203c45724615fd73a9264bba209a25146c904fe5d5e339e25f37eda8d867"
+        "sourceHash": "fefaeed7ed39c279ce817c8d3c028941a3c765f6cf159bcef6a674132a7c5bc3"
       },
       "journeys/set-up-departments-and-job-titles.ts": {
         "name": "set up departments and job titles",
@@ -9855,6 +10066,49 @@
               "holidayListName": "Kenya 2027",
               "fromDate": "2027-01-01",
               "toDate": "2027-12-31"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "holidayList": {
+            "ref": [
+              "last",
+              "holidayList"
+            ]
+          }
+        }
+      },
+      "a one-day list": {
+        "name": "a one-day list",
+        "file": "blueprint/starting-worlds/a-one-day-list.ts",
+        "from": "a company",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "1f23f7cce6b9b9732ff085879090516c49f8cf2f4621947b40efa23ac3272bc3",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "holiday-list.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "holidayListName": "Shutdown",
+              "fromDate": "2028-08-14",
+              "toDate": "2028-08-14"
             }
           }
         ],
@@ -12977,6 +13231,16 @@
         ]
       },
       {
+        "id": "verdict:a one-day list:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "a one-day list",
+          "severity": "page",
+          "owner": "journeys/a-one-day-list.ts"
+        }
+      },
+      {
         "id": "verdict:add holidays:local",
         "kind": "verdict",
         "labels": {
@@ -13338,11 +13602,11 @@
     "employee/hire.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.hire\n\nHire a person into a company, placed in one of its departments under one of its job titles.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n\n## Move\n\n`hire`: from nothing (it creates) to active, emitting EmployeeHired.\n\n## Steps\n\n- `employee.hire.load` (database)\n- `employee.hire.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNotInCompany | 42 | EM-002 | declared in errors.ts |\n| DesignationNotInCompany | 43 | EM-003 | declared in errors.ts |\n| JoinedBeforeBorn | 44 | EM-004 | declared in errors.ts, carrying dateOfBirth |\n| EmployeeAlreadyHired | 41 | EM-001 | another active employee holds this company and person; by the rule employee.onePlacePerPerson, carrying person |\n| DepartmentNotFound | 4 | DE-901 | nothing has the id in department; the handler never runs; carries `id` |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in designation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Ada may hire her again, as a new employee.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2027-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Ada can't place Olga in Bo's department.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the last call's department, designation the world's designation, and is refused with DepartmentNotInCompany, EM-002.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Ada can't give Olga Bo's job title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Ada hires Olga into her team.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n- **Ada can't hire Olga again while she works there.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and is refused with EmployeeAlreadyHired, EM-001, carrying person the cast's olga person.\n- **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.\n- **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.\n- **Ada may hire Bo on the day he was born, which ERPNext allows.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-06-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul employee hire --company <company> --person <person> --firstName <firstName> --gender <gender> --dateOfBirth <dateOfBirth> --dateOfJoining <dateOfJoining> --department <department> --designation <designation>\n```\n\nHTTP: `POST /employee/hire` with the payload as JSON. SDK: `Sdk.employee.hire(payload)`.\n",
     "employee/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee\n\nA person a company employs.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| person | id | The person employed, who signs in as themselves. |\n| firstName | Name |  |\n| gender | Gender |  |\n| dateOfBirth | Day |  |\n| dateOfJoining | Day |  |\n| department | department.id |  |\n| designation | designation.id |  |\n\n## Machine\n\nStates: active, left. A move from the wrong state is refused EmployeeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| hire | (creates) | active | EmployeeHired |\n| relieve | active | left | EmployeeRelieved |\n\n## Invariants\n\n- `employee.onePlacePerPerson`: another active employee holds this company and person. Unique on company, person, while active; refused EmployeeAlreadyHired.\n\n## Events\n\n- `EmployeeHired`: carries employee (employee.id), company (employee.company), person (employee.person: The person employed, who signs in as themselves.); emitted by the move hire\n- `EmployeeRelieved`: carries employee (employee.id), relievingDate (Day); emitted by the move relieve\n\n## Roles\n\n- self\n\n## Operations\n\n- [employee.get](get.md): Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n- [employee.hire](hire.md): Hire a person into a company, placed in one of its departments under one of its job titles.\n- [employee.relieve](relieve.md): Record that an employee has left the company, on the day they were relieved.\n",
     "employee/relieve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.relieve\n\nRecord that an employee has left the company, on the day they were relieved.\n\n**Who may call:** the owner of its employee.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Move\n\n`relieve`: from active to left, emitting EmployeeRelieved.\n\n## Steps\n\n- `employee.relieve.load` (database)\n- `employee.relieve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RelievedBeforeJoined | 45 | EM-005 | declared in errors.ts, carrying dateOfJoining |\n| EmployeeNotActive | 40 | EM-900 | the employee is in a state relieve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its employee.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga can't relieve herself.** `olga` (signed in) calls and sends employee the world's employee, relievingDate `2026-11-30`, and is refused with NotAllowed, AR-001.\n- **Ada can't relieve her the day before she joined.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-01-04`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2026-01-05`.\n- **Ada relieves her on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back [the world's employee, `2026-11-30`].\n- **she can't be relieved twice.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-12-01`, and is refused with EmployeeNotActive, EM-900, carrying state `left`.\n- **the new employee can't be relieved the day before rejoining.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-01-31`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2027-02-01`.\n- **but may be relieved on the day of rejoining itself.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-02-01`, and gets back `2027-02-01`.\n\n## How to call\n\n```sh\ncapxul employee relieve --employee <employee> --relievingDate <relievingDate>\n```\n\nHTTP: `POST /employee/relieve` with the payload as JSON. SDK: `Sdk.employee.relieve(payload)`.\n",
-    "holiday-list/add-weekly-off.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.add-weekly-off\n\nMake every given weekday in a holiday list a day off.\n\n**Who may call:** the owner of its holidayList.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n| added | HolidayCount |\n| totalHolidays | HolidayCount |\n\n## Move\n\n`addWeeklyOff`: from active to active, emitting WeeklyOffAdded.\n\n## Steps\n\n- `holiday-list.add-weekly-off.load` (database)\n- `holiday-list.add-weekly-off.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayDateTaken | 41 | HD-001 | another holiday holds this holiday list and holiday date; by the rule holiday.oneHolidayPerDay, carrying holidayDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| HolidayListNotActive | 40 | HL-900 | the holiday-list is in a state addWeeklyOff can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **Bo can't add a weekly off to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, weekday `Sunday`, and is refused with NotAllowed, AR-001.\n- **Ada makes a weekday a day off, and the day the list already held is skipped.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [the world's holidayList, `Sunday`, `51`, `52`].\n- **a weekday that falls on both the first and the last day counts both.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`Friday`, `53`, `105`].\n- **asking for the same weekday again adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`0`, `105`].\n\n## How to call\n\n```sh\ncapxul holiday-list add-weekly-off --holidayList <holidayList> --weekday <weekday>\n```\n\nHTTP: `POST /holiday-list/add-weekly-off` with the payload as JSON. SDK: `Sdk.holiday-list.add-weekly-off(payload)`.\n",
-    "holiday-list/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.create\n\nStart a company's list of days off, between two days.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | holiday-list.company |\n| holidayListName | holiday-list.holidayListName |\n| fromDate | holiday-list.fromDate |\n| toDate | holiday-list.toDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting HolidayListCreated.\n\n## Steps\n\n- `holiday-list.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayListEndsBeforeStart | 44 | HL-002 | declared in errors.ts, carrying fromDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up a holiday list\n\nStarts from the world `a company`.\n\n- **Ada starts a list for a year.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2027-01-01`, toDate `2027-12-31`, and gets back an answer matching `^hls_[0-9a-z]+$`.\n- **a list can't end before it starts.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Backwards`, fromDate `2027-12-31`, toDate `2027-01-01`, and is refused with HolidayListEndsBeforeStart, HL-002, carrying fromDate `2027-12-31`.\n- **a second list can't take the first one's name.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2028-01-01`, toDate `2028-12-31`, and is refused with HolidayListNameTaken, HL-001, carrying holidayListName `Kenya 2027`.\n- **Bo can't start a list in Ada's company.** `bo` (signed in) calls and sends company the world's company, holidayListName `Bo's days`, fromDate `2027-01-01`, toDate `2027-12-31`, and is refused with NotAllowed, AR-001.\n- **a list may start and end on the same day.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Shutdown`, fromDate `2028-08-14`, toDate `2028-08-14`, and gets back an answer matching `^hls_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul holiday-list create --company <company> --holidayListName <holidayListName> --fromDate <fromDate> --toDate <toDate>\n```\n\nHTTP: `POST /holiday-list/create` with the payload as JSON. SDK: `Sdk.holiday-list.create(payload)`.\n",
-    "holiday-list/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.get\n\nRead one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | holiday-list.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | holiday-list.company |\n| holidayListName | holiday-list.holidayListName |\n| fromDate | holiday-list.fromDate |\n| toDate | holiday-list.toDate |\n| totalHolidays | holiday-list.totalHolidays |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **the list now counts two holidays.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`Kenya 2027`, `2027-01-01`, `2027-12-31`, `2`].\n\n### set up a holiday list\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's list.** `bo` (signed in) calls and sends id the last call's holidayList, and is refused with NotAllowed, AR-001.\n- **the list reads back as she typed it, with no holidays yet.** `ada` (role company.owner) calls and sends id the last call's holidayList, and gets back [the world's company, `Kenya 2027`, `2027-01-01`, `2027-12-31`, `0`, `active`].\n- **that one reads back with its own name and days.** `ada` (role company.owner) calls and sends id the last call's holidayList, and gets back [the world's company, `Shutdown`, `2028-08-14`, `2028-08-14`, `0`, `active`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **the list counts every one of them.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`106`, `active`].\n\n## How to call\n\n```sh\ncapxul holiday-list get --id <id>\n```\n\nHTTP: `POST /holiday-list/get` with the payload as JSON. SDK: `Sdk.holiday-list.get(payload)`.\n",
+    "holiday-list/add-weekly-off.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.add-weekly-off\n\nMake every given weekday in a holiday list a day off.\n\n**Who may call:** the owner of its holidayList.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n| added | HolidayCount |\n| totalHolidays | HolidayCount |\n\n## Move\n\n`addWeeklyOff`: from active to active, emitting WeeklyOffAdded.\n\n## Steps\n\n- `holiday-list.add-weekly-off.load` (database)\n- `holiday-list.add-weekly-off.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayDateTaken | 41 | HD-001 | another holiday holds this holiday list and holiday date; by the rule holiday.oneHolidayPerDay, carrying holidayDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| HolidayListNotActive | 40 | HL-900 | the holiday-list is in a state addWeeklyOff can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### a one-day list\n\nStarts from the world `a one-day list`.\n\n- **a weekday the list doesn't hold adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [`0`, `0`].\n- **its own weekday adds its one day.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Monday`, and gets back [`1`, `1`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **Bo can't add a weekly off to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, weekday `Sunday`, and is refused with NotAllowed, AR-001.\n- **Ada makes a weekday a day off, and the day the list already held is skipped.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [the world's holidayList, `Sunday`, `51`, `52`].\n- **a weekday that falls on both the first and the last day counts both.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`Friday`, `53`, `105`].\n- **asking for the same weekday again adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`0`, `105`].\n\n## How to call\n\n```sh\ncapxul holiday-list add-weekly-off --holidayList <holidayList> --weekday <weekday>\n```\n\nHTTP: `POST /holiday-list/add-weekly-off` with the payload as JSON. SDK: `Sdk.holiday-list.add-weekly-off(payload)`.\n",
+    "holiday-list/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.create\n\nStart a company's list of days off, between two days.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | holiday-list.company |\n| holidayListName | holiday-list.holidayListName |\n| fromDate | holiday-list.fromDate |\n| toDate | holiday-list.toDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting HolidayListCreated.\n\n## Steps\n\n- `holiday-list.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayListEndsBeforeStart | 44 | HL-002 | declared in errors.ts, carrying fromDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up a holiday list\n\nStarts from the world `a company`.\n\n- **Ada starts a list for a year.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2027-01-01`, toDate `2027-12-31`, and gets back an answer matching `^hls_[0-9a-z]+$`.\n- **a list can't end before it starts.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Backwards`, fromDate `2028-01-01`, toDate `2027-12-31`, and is refused with HolidayListEndsBeforeStart, HL-002, carrying fromDate `2028-01-01`.\n- **a second list can't take the first one's name.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2028-01-01`, toDate `2028-12-31`, and is refused with HolidayListNameTaken, HL-001, carrying holidayListName `Kenya 2027`.\n- **Bo can't start a list in Ada's company.** `bo` (signed in) calls and sends company the world's company, holidayListName `Bo's days`, fromDate `2027-01-01`, toDate `2027-12-31`, and is refused with NotAllowed, AR-001.\n- **a list may start and end on the same day.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Shutdown`, fromDate `2028-08-14`, toDate `2028-08-14`, and gets back an answer matching `^hls_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul holiday-list create --company <company> --holidayListName <holidayListName> --fromDate <fromDate> --toDate <toDate>\n```\n\nHTTP: `POST /holiday-list/create` with the payload as JSON. SDK: `Sdk.holiday-list.create(payload)`.\n",
+    "holiday-list/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.get\n\nRead one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | holiday-list.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | holiday-list.company |\n| holidayListName | holiday-list.holidayListName |\n| fromDate | holiday-list.fromDate |\n| toDate | holiday-list.toDate |\n| totalHolidays | holiday-list.totalHolidays |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### a one-day list\n\nStarts from the world `a one-day list`.\n\n- **the list counts one.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`2028-08-14`, `2028-08-14`, `1`].\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **the list now counts two holidays.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`Kenya 2027`, `2027-01-01`, `2027-12-31`, `2`].\n\n### set up a holiday list\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's list.** `bo` (signed in) calls and sends id the last call's holidayList, and is refused with NotAllowed, AR-001.\n- **the list reads back as she typed it, with no holidays yet.** `ada` (role company.owner) calls and sends id the last call's holidayList, and gets back [the world's company, `Kenya 2027`, `2027-01-01`, `2027-12-31`, `0`, `active`].\n- **that one reads back with its own name and days.** `ada` (role company.owner) calls and sends id the last call's holidayList, and gets back [the world's company, `Shutdown`, `2028-08-14`, `2028-08-14`, `0`, `active`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **the list counts every one of them.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`106`, `active`].\n\n## How to call\n\n```sh\ncapxul holiday-list get --id <id>\n```\n\nHTTP: `POST /holiday-list/get` with the payload as JSON. SDK: `Sdk.holiday-list.get(payload)`.\n",
     "holiday-list/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list\n\nThe days a company doesn't work, between two days.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| holidayListName | Name |\n| fromDate | Day |\n| toDate | Day |\n| totalHolidays | HolidayCount |\n\n## Machine\n\nStates: active. A move from the wrong state is refused HolidayListNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | HolidayListCreated |\n| addWeeklyOff | active | active | WeeklyOffAdded |\n\n## Invariants\n\n- `holiday-list.oneNamePerCompany`: another holiday list holds this company and holiday list name. Unique on company, holidayListName, in every state; refused HolidayListNameTaken.\n\n## Events\n\n- `HolidayListCreated`: carries holidayList (holiday-list.id), company (holiday-list.company); emitted by the move create\n- `WeeklyOffAdded`: carries holidayList (holiday-list.id), weekday (Weekday), added (HolidayCount), totalHolidays (HolidayCount); emitted by the move addWeeklyOff\n\n## Operations\n\n- [holiday-list.add-weekly-off](add-weekly-off.md): Make every given weekday in a holiday list a day off.\n- [holiday-list.create](create.md): Start a company's list of days off, between two days.\n- [holiday-list.get](get.md): Read one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.\n",
-    "holiday/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday.add\n\nAdd one day off to a holiday list.\n\n**Who may call:** the owner of its holidayList.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| holidayList | holiday.holidayList |\n| holidayDate | holiday.holidayDate |\n| description | holiday.description |\n\n## Answer\n\n| field | value |\n|---|---|\n| holiday | holiday.id |\n| totalHolidays | HolidayCount |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting HolidayAdded.\n\n## Steps\n\n- `holiday.add.load` (database)\n- `holiday.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayOutsideList | 42 | HD-002 | declared in errors.ts, carrying fromDate, toDate |\n| HolidayDateTaken | 41 | HD-001 | another holiday holds this holiday list and holiday date; by the rule holiday.oneHolidayPerDay, carrying holidayDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **Ada adds the list's first day.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `New Year's Day`, and gets back [`1`] and gets back an answer matching `^hol_[0-9a-z]+$`.\n- **the same day can't be added twice.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `Again`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-01-01`.\n- **a day before the list starts is refused.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2026-12-31`, description `Too early`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2027-01-01`, toDate `2027-12-31`.\n- **so is a day after it ends.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-01-01`, description `Too late`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2027-01-01`, toDate `2027-12-31`.\n- **Bo can't add a day to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, holidayDate `2027-05-01`, description `Bo's day`, and is refused with NotAllowed, AR-001.\n- **the list's last day may be a holiday too.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-31`, description `New Year's Eve`, and gets back [`2`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **a day in the middle of the year is now taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-06-13`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-06-13`.\n- **and so is the last one of the year.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-26`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-12-26`.\n- **the first day is taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-01-01`.\n- **and so is the last.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-31`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-12-31`.\n- **a day of another weekday may still be added.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-04`, description `Picnic`, and gets back [`106`].\n\n## How to call\n\n```sh\ncapxul holiday add --holidayList <holidayList> --holidayDate <holidayDate> --description <description>\n```\n\nHTTP: `POST /holiday/add` with the payload as JSON. SDK: `Sdk.holiday.add(payload)`.\n",
+    "holiday/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday.add\n\nAdd one day off to a holiday list.\n\n**Who may call:** the owner of its holidayList.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| holidayList | holiday.holidayList |\n| holidayDate | holiday.holidayDate |\n| description | holiday.description |\n\n## Answer\n\n| field | value |\n|---|---|\n| holiday | holiday.id |\n| totalHolidays | HolidayCount |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting HolidayAdded.\n\n## Steps\n\n- `holiday.add.load` (database)\n- `holiday.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayOutsideList | 42 | HD-002 | declared in errors.ts, carrying fromDate, toDate |\n| HolidayDateTaken | 41 | HD-001 | another holiday holds this holiday list and holiday date; by the rule holiday.oneHolidayPerDay, carrying holidayDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### a one-day list\n\nStarts from the world `a one-day list`.\n\n- **the day before its only day is outside it.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-13`, description `Too early`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2028-08-14`, toDate `2028-08-14`.\n- **so is the day after.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-15`, description `Too late`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2028-08-14`, toDate `2028-08-14`.\n- **that day is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-14`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-08-14`.\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **Ada adds the list's first day.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `New Year's Day`, and gets back [`1`] and gets back an answer matching `^hol_[0-9a-z]+$`.\n- **the same day can't be added twice.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `Again`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-01-01`.\n- **a day before the list starts is refused.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2026-12-31`, description `Too early`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2027-01-01`, toDate `2027-12-31`.\n- **so is a day after it ends.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-01-01`, description `Too late`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2027-01-01`, toDate `2027-12-31`.\n- **Bo can't add a day to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, holidayDate `2027-05-01`, description `Bo's day`, and is refused with NotAllowed, AR-001.\n- **the list's last day may be a holiday too.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-31`, description `New Year's Eve`, and gets back [`2`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **a day in the middle of the year is now taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-06-13`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-06-13`.\n- **and so is the last one of the year.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-26`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-12-26`.\n- **the first day is taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-01-01`.\n- **and so is the last.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-31`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-12-31`.\n- **a day of another weekday may still be added.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-04`, description `Picnic`, and gets back [`106`].\n\n## How to call\n\n```sh\ncapxul holiday add --holidayList <holidayList> --holidayDate <holidayDate> --description <description>\n```\n\nHTTP: `POST /holiday/add` with the payload as JSON. SDK: `Sdk.holiday.add(payload)`.\n",
     "holiday/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday.get\n\nRead one holiday by its id: holidayList, holidayDate, description, state.\n\n**Who may call:** the owner of its holidayList.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | holiday.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday.holidayList |\n| holidayDate | holiday.holidayDate |\n| description | holiday.description |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n\n## Worked examples\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **Bo can't read the new holiday.** `bo` (signed in) calls and sends id the last call's holiday, and is refused with NotAllowed, AR-001.\n- **the holiday reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's holiday, and gets back [the world's holidayList, `2027-01-01`, `New Year's Day`, `active`].\n- **that one reads back with its own day and name.** `ada` (role company.owner) calls and sends id the last call's holiday, and gets back [the world's holidayList, `2027-12-31`, `New Year's Eve`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **the day it held keeps its own name.** `ada` (role company.owner) calls and sends id the world's holiday, and gets back [`2027-01-03`, `Founders' Day`].\n\n## How to call\n\n```sh\ncapxul holiday get --id <id>\n```\n\nHTTP: `POST /holiday/get` with the payload as JSON. SDK: `Sdk.holiday.get(payload)`.\n",
     "holiday/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday\n\nOne day off in a holiday list.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| holidayList | holiday-list.id |\n| holidayDate | Day |\n| description | HolidayName |\n\n## Machine\n\nStates: active. A move from the wrong state is refused HolidayNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| add | (creates) | active | HolidayAdded |\n\n## Invariants\n\n- `holiday.oneHolidayPerDay`: another holiday holds this holiday list and holiday date. Unique on holidayList, holidayDate, in every state; refused HolidayDateTaken.\n\n## Events\n\n- `HolidayAdded`: carries holiday (holiday.id), holidayList (holiday.holidayList), holidayDate (holiday.holidayDate); emitted by the move add\n\n## Operations\n\n- [holiday.add](add.md): Add one day off to a holiday list.\n- [holiday.get](get.md): Read one holiday by its id: holidayList, holidayDate, description, state.\n"
   },
@@ -13360,5 +13624,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "5c1d184db285641dcced8bf71815292e9f039909c1e2522bd50ac7b1e7e54383"
+  "digest": "d3c560012dba9ca50f7902de0688c9eb0476129d008bb4584555952ee41ba225"
 }

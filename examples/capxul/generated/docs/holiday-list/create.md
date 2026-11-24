@@ -48,7 +48,7 @@ Start a company's list of days off, between two days.
 Starts from the world `a company`.
 
 - **Ada starts a list for a year.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2027-01-01`, toDate `2027-12-31`, and gets back an answer matching `^hls_[0-9a-z]+$`.
-- **a list can't end before it starts.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Backwards`, fromDate `2027-12-31`, toDate `2027-01-01`, and is refused with HolidayListEndsBeforeStart, HL-002, carrying fromDate `2027-12-31`.
+- **a list can't end before it starts.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Backwards`, fromDate `2028-01-01`, toDate `2027-12-31`, and is refused with HolidayListEndsBeforeStart, HL-002, carrying fromDate `2028-01-01`.
 - **a second list can't take the first one's name.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2028-01-01`, toDate `2028-12-31`, and is refused with HolidayListNameTaken, HL-001, carrying holidayListName `Kenya 2027`.
 - **Bo can't start a list in Ada's company.** `bo` (signed in) calls and sends company the world's company, holidayListName `Bo's days`, fromDate `2027-01-01`, toDate `2027-12-31`, and is refused with NotAllowed, AR-001.
 - **a list may start and end on the same day.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Shutdown`, fromDate `2028-08-14`, toDate `2028-08-14`, and gets back an answer matching `^hls_[0-9a-z]+$`.

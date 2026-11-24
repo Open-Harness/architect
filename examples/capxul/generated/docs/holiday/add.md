@@ -45,6 +45,14 @@ Add one day off to a holiday list.
 
 ## Worked examples
 
+### a one-day list
+
+Starts from the world `a one-day list`.
+
+- **the day before its only day is outside it.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-13`, description `Too early`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2028-08-14`, toDate `2028-08-14`.
+- **so is the day after.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-15`, description `Too late`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2028-08-14`, toDate `2028-08-14`.
+- **that day is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-14`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-08-14`.
+
 ### add holidays
 
 Starts from the world `a holiday list`.
