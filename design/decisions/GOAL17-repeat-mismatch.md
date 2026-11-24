@@ -22,7 +22,7 @@ A repeat is compared on the event's **object**, never on what the service wraps 
 
 Slack's other event fields (`blocks`, `client_msg_id` and the like) are not compared: the same message delivered as a `message` and as an
 `app_mention` may carry them differently. A catch-up poll, when one lands, reads a service's REST copy of an object, which carries other
-fields than the webhook's: a repeat that comes by a poll is compared only on the fields both copies carry, so a poll and a webhook of one
+fields than the webhook's: a repeat that comes by a poll is compared only on the fields both copies carry, compared as values whatever their key order, so a poll and a webhook of one
 unchanged object say nothing.
 
 A repeat whose object differs is still answered `seen`, writes nothing and keeps the first row, and its request's span tree holds a
