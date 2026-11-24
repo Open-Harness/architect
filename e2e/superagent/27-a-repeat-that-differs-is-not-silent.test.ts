@@ -158,6 +158,19 @@ describe("27 a repeat that differs is not silent: every field of a github object
   }
 });
 
+// What is around the object is a snapshot taken at delivery, never compared (the 🔍's fifth pass: a door that compares the whole payload).
+describe("27 a repeat that differs is not silent: only the object is compared", () => {
+  for (const [what, change] of [
+    ["the repository's pushed_at and stars", (c: Obj) => setAt(setAt(c, "repository.pushed_at", "2026-11-24T09:00:00Z"), "repository.stargazers_count", 4242)],
+    ["the surrounding issue's title", (c: Obj) => setAt(c, "issue.title", "Renamed since the comment was made")],
+  ] as const) {
+    it(`the same comment with only ${what} changed is the same event: no in.mismatch`, async () => {
+      const comment = setAt(COMMENT_CREATED, "comment.id", 9900 + what.length);
+      await repeat(gh("issue_comment"), "github", comment, change(comment), false);
+    });
+  }
+});
+
 // Each other event the app takes compares its own object too (the 🔍's fourth pass: a door that finds the object of reviews and comments only).
 describe("27 a repeat that differs is not silent: every other github event", () => {
   for (const [what, event, base, key, idPath, id, field] of [
@@ -195,7 +208,8 @@ describe("27 a repeat that differs is not silent: slack", () => {
 
   it("one message delivered as a message and then as an app mention, each as Slack sends it, is one event: no in.mismatch", async () => {
     const asMessage = setAt(setAt(setAt(setAt(USER_MESSAGE, "event.ts", ts(20)), "event_id", "Ev27C"), "event.user", "U061F7AUR"), "event.text", "<@U0LAN0Z89> is the build green?");
-    const asMention = setAt(setAt(setAt(setAt(setAt(APP_MENTION, "event.channel", "C024BE91L"), "event.ts", ts(20)), "event_id", "Ev27D"), "event.text", "<@U0LAN0Z89> is the build green?"), "event.event_ts", ts(20));
+    // Slack's other fields (here `client_msg_id`) may differ between the two deliveries of one message, and are not compared.
+    const asMention = setAt(setAt(setAt(setAt(setAt(setAt(APP_MENTION, "event.channel", "C024BE91L"), "event.ts", ts(20)), "event_id", "Ev27D"), "event.text", "<@U0LAN0Z89> is the build green?"), "event.event_ts", ts(20)), "event.client_msg_id", "b0b0b0b0-0000-4000-8000-000000000027");
     await repeat(sl, "slack", asMessage, asMention, false);
   });
 });
