@@ -22607,6 +22607,45 @@
           ]
         },
         {
+          "title": "Sam's offer reads back in Acme Trading, Lead Engineer, rejected",
+          "call": {
+            "actor": "ada",
+            "operation": "job-offer.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "jobOffer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "otherDesignation"
+                  ]
+                },
+                "2026-12-02",
+                "rejected"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Ada can't accept Sam on a rejected offer",
           "call": {
             "actor": "ada",
@@ -22797,7 +22836,7 @@
           ]
         }
       ],
-      "sourceHash": "eabd8d15262a8a0997f82b16306cb267abb889ba120cac9b63abb52d50529b8e"
+      "sourceHash": "cba5f22cc8c4db822cfe58fd913b1661458867df7dc2fe8078f2b12e321bf681"
     },
     "journeys/mark-attendance.ts": {
       "name": "mark attendance",
@@ -24708,6 +24747,17 @@
                   "jobApplicant"
                 ]
               }
+            },
+            {
+              "kind": "is-in",
+              "thing": "job-offer",
+              "id": {
+                "ref": [
+                  "last",
+                  "jobOffer"
+                ]
+              },
+              "state": "accepted"
             }
           ]
         },
@@ -24761,7 +24811,7 @@
           ]
         }
       ],
-      "sourceHash": "96ba8d23aac0bef537c7d2e9d462779afaa3c6f707ad3a1d5f7428e06351242e"
+      "sourceHash": "6cf2bbf83df53ee696541819099e98f0f79a32497d07d00c839ab85a9189cddc"
     },
     "journeys/reject-an-attendance-request.ts": {
       "name": "reject an attendance request",
@@ -27911,7 +27961,7 @@
           ]
         },
         {
-          "title": "Olga can't interview Lee at the technical round, though that round lists her: she has left",
+          "title": "Ada can't put Olga on Lee's interview at the technical round, though that round lists her: she has left",
           "call": {
             "actor": "ada",
             "operation": "interview.create",
@@ -28263,7 +28313,7 @@
           ]
         }
       ],
-      "sourceHash": "04bdb53b776443d1edc0fd80921a91d0d04bb775bd64002e020a3074c78fd71b"
+      "sourceHash": "bd407f718f9c435969d6cb6a2d938ca3b4d85438695cefa3b6009a5e1da20a52"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",

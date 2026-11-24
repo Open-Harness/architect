@@ -39,6 +39,7 @@ Starts from the world `a second job title`.
 
 - **Bo can't read it.** `bo` (signed in) calls and sends id the last call's jobOffer, and is refused with NotAllowed, AR-001.
 - **the offer reads back in Acme Trading, accepted.** `ada` (role company.owner) calls and sends id the last call's jobOffer, and gets back [the world's company, the world's jobApplicant, the world's designation, `2026-12-01`, `accepted`].
+- **Sam's offer reads back in Acme Trading, Lead Engineer, rejected.** `ada` (role company.owner) calls and sends id the last call's jobOffer, and gets back [the world's company, the world's otherDesignation, `2026-12-02`, `rejected`].
 
 ## How to call
 

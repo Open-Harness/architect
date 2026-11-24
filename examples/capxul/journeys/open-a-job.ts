@@ -16,6 +16,7 @@ import readApplicant from "../blueprint/things/job-applicant/verbs/get.ts";
 import accept from "../blueprint/things/job-applicant/verbs/accept.ts";
 import offer from "../blueprint/things/job-offer/verbs/create.ts";
 import acceptOffer from "../blueprint/things/job-offer/verbs/accept.ts";
+import { machine as offers } from "../blueprint/things/job-offer/machine.ts";
 
 export default Blueprint.journey("open a job", {
   // Ada runs Acme Trading and has opened Backend Engineer for two, where Pat has applied; Olga works there; Bo runs
@@ -163,6 +164,7 @@ export default Blueprint.journey("open a job", {
       "Pat accepts it",
       s.ada.run(acceptOffer, { jobOffer: s.last.jobOffer }),
       expect((a) => a.jobApplicant).toBe(s.world.jobApplicant),
+      offers.isIn(s.last.jobOffer, "accepted"),
     ),
     s.step(
       "Ada accepts Pat, though the opening Pat applied for has closed",

@@ -266,7 +266,7 @@ export default Blueprint.journey("schedule an interview", {
       expect((a) => a.jobApplicant).toMatch(/^jap_[0-9a-z]+$/),
     ),
     s.step(
-      "Olga can't interview Lee at the technical round, though that round lists her: she has left",
+      "Ada can't put Olga on Lee's interview at the technical round, though that round lists her: she has left",
       s.ada.run(schedule, { jobApplicant: s.last.jobApplicant, interviewRound: s.world.interviewRound, ...at("2026-12-08", "09:00", "10:00"), interviewers: [s.world.employee] }),
       refuses(InterviewerHasLeft),
       noEvents(),

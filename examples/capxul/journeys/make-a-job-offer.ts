@@ -237,6 +237,12 @@ export default Blueprint.journey("make a job offer", {
       noEvents(),
     ),
     s.step(
+      "Sam's offer reads back in Acme Trading, Lead Engineer, rejected",
+      s.ada.run(getOffer, { id: s.last.jobOffer }),
+      expect((a) => [a.company, a.designation, a.offerDate, a.state]).toEqual([s.world.company, s.world.otherDesignation, "2026-12-02", "rejected"]),
+      noEvents(),
+    ),
+    s.step(
       "Ada can't accept Sam on a rejected offer",
       s.ada.run(accept, { jobApplicant: s.last.jobApplicant }),
       refuses(OfferNotAccepted),
