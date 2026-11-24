@@ -1,0 +1,4 @@
+# A decimal in a tool's result (#742, item 5, after #959) is not built: the output schema gives a decimal answer field no pattern and drops its sentence. Clears with the decimal output build.
+src/modules/mcp/decimal-output.test.ts > Exact decimals: a tool's output schema says how a decimal is shown > gives a decimal answer field the decimal's pattern, the same as its input's
+src/modules/mcp/decimal-output.test.ts > Exact decimals: a tool's output schema says how a decimal is shown > gives each decimal in a list read's items its pattern and sentence, and no other item field a decimal's pattern
+src/modules/mcp/decimal-output.test.ts > Exact decimals: a tool's output schema says how a decimal is shown > keeps the type and sentence of a decimal taken from a thing's field

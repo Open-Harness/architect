@@ -53,3 +53,54 @@ describe("a row's columns (STO-23)", () => {
     expect(stored).toEqual({ tags: '["c"]', owner: '{"name":"Ada","age":36}', label: "[draft]" });
   });
 });
+
+describe("a row's values (Goal 17 slice 7: an optional field, a boolean and an unknown value keep their values)", () => {
+  const Gadget = Blueprint.thing({
+    description: "A gadget.",
+    fields: {
+      id: Blueprint.id("gad"),
+      on: Blueprint.bool(),
+      note: Blueprint.optional(Blueprint.text({ max: 40 })),
+      payload: Blueprint.value(Schema.Unknown),
+      either: Blueprint.value(Schema.Union([Schema.Struct({ a: Schema.Number }), Schema.String])),
+      maybe: Blueprint.value(Schema.NullOr(Schema.String)),
+      count: Blueprint.uint(32),
+    },
+  });
+  const store = StoreD1.layer({ tables: [[Gadget, "gadget"]] }).pipe(Layer.provide(Database.d1(env.DB)));
+  const insert = (fields: Record<string, unknown>) =>
+    Effect.flatMap(Store, (records) => records.commit({ writes: [{ kind: "insert", thing: Gadget, fields, state: undefined }], entries: [] }));
+  const find = (id: string) => Effect.flatMap(Store, (records) => records.find(Gadget, id));
+  const run = <A>(program: Effect.Effect<A, never, Store>) => Effect.runPromise(program.pipe(Effect.provide(store)));
+
+  it("encodes a boolean as 1 or 0, an unknown and a union of structs as JSON, and a null as NULL", async () => {
+    const row = await Effect.runPromise(encodeFields(Gadget, { id: "gad_1", on: true, payload: {}, either: { a: 1 }, maybe: null, count: 3n }, false));
+    expect(row).toEqual({ id: "gad_1", on: 1, payload: "{}", either: '{"a":1}', maybe: null, count: "3" });
+  });
+
+  it("stores a row with no optional value and a null one, and reads it back without the optional key", async () => {
+    const fields = { id: "gad_2", on: false, payload: { nested: [1, { two: 2 }] }, either: "plain", maybe: null, count: 7n };
+    expect(await run(insert(fields))).toBe("committed");
+    const found = await run(find("gad_2"));
+    expect(found?.instance).toEqual(fields);
+    expect(found?.instance).not.toHaveProperty("note");
+    const stored = await env.DB.prepare(`SELECT "note", "maybe", "on" FROM "gadget" WHERE "id" = ?`).bind("gad_2").first();
+    expect(stored).toEqual({ note: null, maybe: null, on: 0 });
+  });
+
+  it("round-trips a set optional value, true and false, an empty object, and an update that changes a boolean and an unknown", async () => {
+    const fields = { id: "gad_3", on: true, note: "hello", payload: {}, either: { a: 2 }, maybe: "yes", count: 0n };
+    await run(insert(fields));
+    expect((await run(find("gad_3")))?.instance).toEqual(fields);
+    const moved = await run(Effect.flatMap(Store, (records) =>
+      records.commit({ writes: [{ kind: "update", thing: Gadget, id: "gad_3", version: 0, changes: { on: false, payload: { x: null } }, state: undefined }], entries: [] })));
+    expect(moved).toBe("committed");
+    expect((await run(find("gad_3")))?.instance).toEqual({ ...fields, on: false, payload: { x: null } });
+  });
+
+  it("lists the rows that match a boolean", async () => {
+    await run(insert({ id: "gad_4", on: true, payload: [], either: "x", maybe: null, count: 1n }));
+    const listed = await run(Effect.flatMap(Store, (records) => records.list({ thing: Gadget, where: { on: true }, state: undefined, order: "oldest", limit: 10, after: undefined })));
+    expect(listed.items.map((i) => i["id"])).toEqual(["gad_4"]);
+  });
+});

@@ -1,0 +1,4 @@
+# Slice 8's check (GOAL17-check-harness), red until slice 9 builds the agents, the sandbox, slots, pause and the harness's instruments; the surface (a builder's first pull request) comes before it.
+superagent/43-kills-and-retries.test.ts > a kill and a restart > the journey "a failed send is retried after a restart" passes whole
+superagent/43-kills-and-retries.test.ts > a kill and a restart > the journey "a kill mid-push leaves one branch update and one pull request" passes whole
+superagent/43-kills-and-retries.test.ts > a kill and a restart > the journey "a kill mid-turn resumes with no second committed model call" passes whole

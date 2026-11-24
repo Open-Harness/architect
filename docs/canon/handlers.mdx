@@ -71,7 +71,7 @@ Three kinds of line carry the declaration: the declared steps (`steps.load`, `st
 
 The frame is one type, made from the operation:
 
-```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=65-66
+```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=67-68
 /** What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out. */
 export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O>, R>;
 ```
@@ -80,7 +80,7 @@ export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: Han
 - **The context**: the caller as a `principal`, one runner per declared step, `move`, and what the runtime read or
   made before the handler ran (K16): the `subject`, each thing the payload names in `refs`, and a creating move's `id`:
 
-  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=25-45
+  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=27-47
   export interface HandlerContext<O, C = {}> {
     readonly principal: Principal;
     readonly steps: StepRunners<StepsOf<O>, C>;
@@ -251,7 +251,7 @@ roles a `roles.ts` exports (F5). Signup has no blank left, so this example is wo
 **A blank in a handler** is `Handlers.blank("…")`, what every fresh scaffold holds. It type-checks as anything, and
 reaching it at run time is a defect that names what is missing:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=197-200
+```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=199-202
 export const Handlers: HandlerApi = {
   serve: serve as unknown as HandlerApi["serve"],
   blank: ((what: string, kind?: "failure") => (kind === "failure" ? () => new BlankReached({ what }) : Effect.die(new BlankReached({ what })))) as unknown as HandlerApi["blank"],

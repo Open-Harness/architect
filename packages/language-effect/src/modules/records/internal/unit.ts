@@ -4,6 +4,7 @@ import { Effect } from "effect";
 import type { Thing, Unique } from "orthograph";
 import { orderSteps, type Step } from "./order.ts";
 import { holderOf, indexHeld } from "./holder.ts";
+import { listerOf } from "./list.ts";
 import { inScope, rowOf, ruleKey, rulesOf } from "./unique.ts";
 import type { Instance, NamedRule, Store, Unit, Violation, Write } from "../types.ts";
 
@@ -38,6 +39,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
         const base = h.kind === "insert" ? {} : (stored?.instance ?? {});
         return { ...base, ...h.fields, ...(h.state !== undefined ? { state: h.state } : {}) } as Instance;
       });
+    const lister = listerOf(store, find, seen, (thing) => held.filter((h) => h.thing === thing));
     const holder = holderOf(store, find, (thing) => held.filter((h) => h.thing === thing).map((h) => h.id));
 
     /** `findBy(rule, value)` (G5): the holder of a key, as this call's own writes left it, else the store's. */
@@ -97,7 +99,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
           const id = String(after["id"]);
           const other = yield* holder(rule, after, id, index);
           if (other !== undefined) {
-            return { rule: rule.name, refuse: rule.declared?.refuse, row: after, own: heldFor(rule.thing, String(other["id"])) !== undefined } satisfies Violation;
+            return { rule: rule.name, refuse: rule.declared?.refuse, row: after, own: heldFor(rule.thing, String(other["id"])) !== undefined, retry: rule.declared?.retry === true } satisfies Violation;
           }
         }
       }
@@ -108,16 +110,18 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
       records: {
         find,
         findBy: findBy as Unit["records"]["findBy"],
+        list: lister.list,
         insert: (thing, fields, state) =>
           Effect.sync(() => {
             const id = String((fields as Record<string, unknown>)["id"]);
             hold({ thing, id, kind: "insert", version: 0, fields: { ...(fields as Record<string, unknown>) }, state });
           }),
-        update: (thing, id, changes) => change(thing, id, changes as Record<string, unknown>, undefined),
+        update: (thing, id, changes, state) => change(thing, id, changes as Record<string, unknown>, state),
       },
       read: find,
       setState: (thing, id, state) => change(thing, id, {}, state),
       check,
+      lists: lister.lists,
       writes: Effect.suspend(() => {
         const ordered = orderSteps(stepsOf(), rules);
         if (!Array.isArray(ordered)) {
