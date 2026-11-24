@@ -25,8 +25,9 @@
     "./src/*": "./src/*"
   },
   "dependencies": {
+    "@earendil-works/pi-durable": "1.5.0",
+    "@orthograph/language-effect": "workspace:*",
     "effect": "4.1.4",
-    "orthograph": "workspace:*",
-    "@orthograph/language-effect": "workspace:*"
+    "orthograph": "workspace:*"
   }
 }
