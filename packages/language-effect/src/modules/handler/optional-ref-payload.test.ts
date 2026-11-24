@@ -17,7 +17,7 @@ import { BusyLive } from "#modules/work/service.js";
 import { Handlers } from "./service.ts";
 
 const Shift = Blueprint.thing({ description: "A shift.", fields: { id: Blueprint.id("shf"), lead: Blueprint.id("per") } });
-const Attendance = Blueprint.thing({ description: "Someone was there.", fields: { id: Blueprint.id("att"), shift: Blueprint.optional(Shift.fields.id), who: Blueprint.text() } });
+const Attendance = Blueprint.thing({ description: "Someone was there.", fields: { id: Blueprint.id("att"), shift: Blueprint.optional(Shift.fields.id), backup: Shift.fields.id, who: Blueprint.text() } });
 const Marked = Blueprint.event({ attendance: Attendance.fields.id });
 EventNames.name(Marked, "Marked");
 const machine = Blueprint.machine(Attendance, {
@@ -40,8 +40,12 @@ const editing = Blueprint.operation(Attendance, {
 const OPS = {
   mark: [marking([Blueprint.signedIn]), { shift: "ShiftNotFound" }],
   at: [marking([Blueprint.signedIn], { at: Attendance.fields.shift, who: Attendance.fields.who }), { at: "ShiftNotFound" }],
+  whoFirst: [marking([Blueprint.signedIn], { who: Attendance.fields.who, shift: Attendance.fields.shift }), { shift: "ShiftNotFound" }],
   lead: [marking([lead]), {}],
   notLead: [marking([notLead]), {}],
+  via: [marking([lead.via("session")]), {}],
+  // A second field naming a shift: the role reads `shift`, the first, so a given `backup` never stands in for it.
+  backup: [marking([lead], { shift: Attendance.fields.shift, backup: Attendance.fields.backup, who: Attendance.fields.who }), { backup: "ShiftNotFound" }],
   edit: [editing, {}],
 } as const;
 
@@ -67,7 +71,7 @@ const called = async (op: keyof typeof OPS, payload: Readonly<Record<string, unk
 };
 
 describe("An optional reference in the payload, where no role check reads it", () => {
-  for (const [op, key] of [["mark", "shift"], ["at", "at"]] as const) {
+  for (const [op, key] of [["mark", "shift"], ["at", "at"], ["whoFirst", "shift"]] as const) {
     describe(`under the payload key ${key}`, () => {
       it("left out: the handler runs, refs has no key for it, and no shift is read", async () => {
         const r = await called(op, { who: "bo" });
@@ -106,10 +110,12 @@ describe("An optional reference in the payload, where a role check reads it", ()
     }
   });
 
-  it("a role true of an empty shift, left out: NotAllowed; given a shift it holds of, the call runs (the control)", async () => {
-    const out = await called("notLead", { who: "bo" });
-    expect(out.ended).toMatchObject({ _tag: "NotAllowed" });
-    expect(out.refs).toEqual([]);
+  it("a role true of an empty shift, left out or naming nothing: NotAllowed; given a shift it holds of, the call runs (the control)", async () => {
+    for (const payload of [{ who: "bo" }, { who: "bo", shift: "shf_gone" }]) {
+      const out = await called("notLead", payload);
+      expect(out.ended, JSON.stringify(payload)).toMatchObject({ _tag: "NotAllowed" });
+      expect(out.refs).toEqual([]);
+    }
     expect((await called("notLead", { who: "bo", shift: "shf_2" })).ended).toBe("answered");
   });
 
@@ -119,5 +125,21 @@ describe("An optional reference in the payload, where a role check reads it", ()
     expect(out.refs).toEqual([]);
     expect((await called("edit", { id: "att_1", shift: "shf_1" })).ended, "given the lead's shift (the control)").toBe("answered");
     expect((await called("edit", { id: "att_1", shift: "shf_2" })).ended, "given another's shift").toMatchObject({ _tag: "NotAllowed" });
+  });
+
+  it("lead.via(\"session\"), left out or another's shift: NotAllowed; the lead's shift, by session, runs (the control)", async () => {
+    for (const payload of [{ who: "bo" }, { who: "bo", shift: "shf_2" }]) {
+      const r = await called("via", payload);
+      expect(r.ended, JSON.stringify(payload)).toMatchObject({ _tag: "NotAllowed" });
+      expect(r.refs).toEqual([]);
+    }
+    expect((await called("via", { who: "bo", shift: "shf_1" })).ended).toBe("answered");
+  });
+
+  it("another field naming a shift never stands in for the one left out: NotAllowed", async () => {
+    const out = await called("backup", { who: "bo", backup: "shf_1" });
+    expect(out.ended).toMatchObject({ _tag: "NotAllowed" });
+    expect(out.refs).toEqual([]);
+    expect((await called("backup", { who: "bo", backup: "shf_2", shift: "shf_1" })).ended, "the lead's shift given (the control)").toBe("answered");
   });
 });

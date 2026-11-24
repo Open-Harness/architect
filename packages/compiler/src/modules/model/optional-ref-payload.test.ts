@@ -50,9 +50,12 @@ export const Attendance = Blueprint.thing({ description: "Someone was there.", c
   "blueprint/things/attendance/verbs/note.ts": verb("Blueprint.signedIn"),
   "blueprint/things/attendance/verbs/lead-note.ts": verb("lead"),
   "blueprint/things/attendance/verbs/mixed-note.ts": verb("Blueprint.signedIn, lead"),
+  "blueprint/things/attendance/verbs/lead-first-note.ts": verb("lead, Blueprint.signedIn"),
+  "blueprint/things/attendance/verbs/via-open-note.ts": verb(`lead, Blueprint.signedIn.via("session")`),
   "blueprint/things/attendance/verbs/of-note.ts": verb(`lead.of("shift")`),
   "blueprint/things/attendance/verbs/via-note.ts": verb(`lead.via("session")`),
   "blueprint/things/attendance/verbs/at-note.ts": verb("Blueprint.signedIn", "at"),
+  "blueprint/things/attendance/verbs/at-lead-note.ts": verb("lead", "at"),
 });
 
 type Op = { readonly payload: Record<string, { readonly optional?: boolean }>; readonly notFound?: Record<string, string>; readonly refusals: ReadonlyArray<string> };
@@ -82,14 +85,21 @@ describe("An optional reference in an operation's payload", () => {
   });
 
   it("a miss that some way in reads without a role check is still refused <Thing>NotFound", async () => {
-    const mixed = (await operations())["attendance.mixed-note"]!;
-    expect(mixed.notFound).toEqual({ shift: "ShiftNotFound" });
-    expect([...mixed.refusals].sort()).toEqual(["NotAllowed", "ShiftNotFound"]);
+    const ops = await operations();
+    // The open way in first, last, and narrowed: a narrowed way in is still a way in.
+    for (const name of ["attendance.mixed-note", "attendance.lead-first-note", "attendance.via-open-note"]) {
+      const op = ops[name]!;
+      expect(op.notFound, name).toEqual({ shift: "ShiftNotFound" });
+      expect([...op.refusals].sort(), name).toEqual(["NotAllowed", "ShiftNotFound"]);
+    }
   });
 
   it("is keyed by the payload's own name for the field, not the thing's", async () => {
     const at = (await operations())["attendance.at-note"]!;
     expect(at.payload["at"]?.optional).toBe(true);
     expect(at.notFound).toEqual({ at: "ShiftNotFound" });
+    const atLead = (await operations())["attendance.at-lead-note"]!;
+    expect(atLead.notFound ?? {}, "the role reads it under that name too").toEqual({});
+    expect(atLead.refusals).toEqual(["NotAllowed"]);
   });
 });
