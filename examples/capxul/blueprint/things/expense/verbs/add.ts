@@ -5,6 +5,7 @@ import { ClaimNotDraft, ExpenseTypeNotInCompany, SanctionedOverClaimed } from ".
 import { owner } from "../../company/roles.ts";
 import { ExpenseClaim } from "../../expense-claim/thing.ts";
 
+// Refusal order (errors.ts): ClaimNotDraft, then ExpenseTypeNotInCompany, then SanctionedOverClaimed.
 // HRMS's `calculate_total_amount`: a claim's totals are its expenses' amounts and sanctioned amounts, so adding an
 // expense raises both.
 export default Blueprint.operation(Expense, {

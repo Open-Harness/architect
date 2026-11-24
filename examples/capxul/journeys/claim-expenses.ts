@@ -76,7 +76,7 @@ export default Blueprint.journey("claim expenses", {
       }),
       refuses(SanctionedOverClaimed, { amount: 45000000n }),
       noEvents(),
-      spans({ absent: ["expense-claim.create.insert"] }),
+      spans({ absent: ["expense.add.insert"] }),
     ),
     s.step(
       "Ada adds a 45 USDC taxi, sanctioned in full",

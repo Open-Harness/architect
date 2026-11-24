@@ -10110,7 +10110,7 @@
               "kind": "spans",
               "present": [],
               "absent": [
-                "expense-claim.create.insert"
+                "expense.add.insert"
               ]
             }
           ]
@@ -10694,7 +10694,7 @@
           ]
         }
       ],
-      "sourceHash": "8ce47fe7986d4ebcf30d336c6244a460fa1e6d700da83344c18edab5c2d87d2d"
+      "sourceHash": "31be4d07c1111ca5a0ad1d0f5cce9c87de4d93fa31984a568bc5d668b94089e2"
     },
     "journeys/companies-are-kept-apart.ts": {
       "name": "companies are kept apart",

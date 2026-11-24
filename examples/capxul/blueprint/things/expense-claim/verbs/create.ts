@@ -5,6 +5,7 @@ import { ClaimantNotActive, EmployeeNotInCompany } from "../errors.ts";
 import { owner } from "../../company/roles.ts";
 import { self } from "../../employee/roles.ts";
 
+// Refusal order (errors.ts): EmployeeNotInCompany before ClaimantNotActive. ClaimantNotActive is judged on create only.
 // A new claim holds no expenses, so both its totals are 0.
 export default Blueprint.operation(ExpenseClaim, {
   description: "Start an employee's claim for expenses the company pays back.",

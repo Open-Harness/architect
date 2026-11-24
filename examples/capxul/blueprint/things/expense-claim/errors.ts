@@ -2,7 +2,11 @@ import { Blueprint } from "orthograph";
 
 // Refusals that depend on data. The machine's own refusal is generated and never written here.
 // When both apply, `expense-claim.create` refuses EmployeeNotInCompany before ClaimantNotActive.
-/** HRMS's `validate_active_employee`: a claim is only for an employee still at work. */
+/**
+ * Capxul's own rule, not HRMS's: a new claim is only for an employee still at work (`decisions/CX-expense-leavers.md`).
+ * HRMS's `validate_active_employee` refuses only an Inactive employee, on every save. Here it is judged on create alone,
+ * so a claim already open when the employee leaves can still take lines and be approved, as a final settlement does.
+ */
 export class ClaimantNotActive extends Blueprint.error({}, { exit: 41 }) {}
 /** The employee named works for another company. */
 export class EmployeeNotInCompany extends Blueprint.error({}, { exit: 42 }) {}

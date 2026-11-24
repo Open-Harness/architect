@@ -10114,7 +10114,7 @@
                 "kind": "spans",
                 "present": [],
                 "absent": [
-                  "expense-claim.create.insert"
+                  "expense.add.insert"
                 ]
               }
             ]
@@ -10698,7 +10698,7 @@
             ]
           }
         ],
-        "sourceHash": "8ce47fe7986d4ebcf30d336c6244a460fa1e6d700da83344c18edab5c2d87d2d"
+        "sourceHash": "31be4d07c1111ca5a0ad1d0f5cce9c87de4d93fa31984a568bc5d668b94089e2"
       },
       "journeys/companies-are-kept-apart.ts": {
         "name": "companies are kept apart",
@@ -21390,5 +21390,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "94ebd0df835b2f731a5225e3c684880a39e740c6efdf6fc60818abe924606cb9"
+  "digest": "55a0184b83705a540b8a49effc970cd40640c90414d19eb72aea781186101bf4"
 }
