@@ -1,7 +1,7 @@
 <!-- Generated from the blueprint. Do not edit. -->
 # eval.expire
 
-Give up on an eval that ran out of time: it is unavailable, and its triggers wait for another.
+Give up on an eval that ran out of time: it is unavailable, and keeps its triggers until a person reevaluates one.
 
 **Who may call:** the system.
 

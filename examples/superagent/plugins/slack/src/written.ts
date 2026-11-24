@@ -34,7 +34,7 @@ const message: JsonSchema = {
   ],
 };
 
-type Envelope = { readonly event: { readonly channel: string; readonly ts: string; readonly user?: string; readonly bot_id?: string } };
+type Envelope = { readonly event: { readonly channel: string; readonly ts: string; readonly user?: string; readonly bot_id?: string; readonly text?: string; readonly thread_ts?: string } };
 
 /** One message is one event (GOAL17-connections B): its channel and `ts`, whatever the envelope's id or time, a retry, or the event's kind. */
 const identity = {
@@ -44,6 +44,14 @@ const identity = {
     const { user, bot_id } = (raw as Envelope).event;
     if (bot_id !== undefined) return { id: bot_id, name: bot_id, bot: true };
     return user === undefined ? undefined : { id: user, name: user, bot: false };
+  },
+  /**
+   * The message as a person wrote it, which a repeat is compared on (GOAL17-repeat-mismatch): not the envelope, the event's `type` or its
+   * kind-only fields, nor Slack's other fields, which one message delivered as a `message` and as an `app_mention` may carry differently.
+   */
+  object: (raw: unknown) => {
+    const { user, bot_id, channel, text, ts, thread_ts } = (raw as Envelope).event;
+    return { user, bot_id, channel, text, ts, thread_ts };
   },
 };
 

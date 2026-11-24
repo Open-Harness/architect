@@ -1,4 +1,0 @@
-# #935 (from #756): red until eval.due counts an unavailable eval's triggers as covered (plugins/intake/src/eval/due.ts) and trigger.reevaluate releases them for one new eval (plugins/intake/src/trigger/reevaluate.ts, blank today).
-superagent/26-an-unavailable-eval-waits-for-a-person.test.ts > 26 an unavailable eval waits for a person > the pass after the timeout gives the eval up, and neither it nor the next makes a new eval for its triggers
-superagent/26-an-unavailable-eval-waits-for-a-person.test.ts > 26 an unavailable eval waits for a person > a trigger that arrives afterwards on the same thread is new: the next pass makes one eval for it alone
-superagent/26-an-unavailable-eval-waits-for-a-person.test.ts > 26 an unavailable eval waits for a person > after a person reevaluates the trigger, a pass leaves one live eval covering it, and the pass after makes no second

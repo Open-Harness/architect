@@ -17,7 +17,7 @@ A repeat is compared on the event's **object**, never on what the service wraps 
 
 - **GitHub:** the object the identity names: the review, the comment, the issue, the pull request, the check run. `action`, `sender`,
   `installation`, `changes` and the delivery are not compared.
-- **Slack:** the message as a person wrote it: its user, channel, text, `ts` and thread. The envelope (`event_id`, `event_time`, a retry)
+- **Slack:** the message as a person wrote it: its user (or `bot_id` for a bot's message), channel, text, `ts` and thread. The envelope (`event_id`, `event_time`, a retry)
   and the event's `type` and kind-only fields (`channel_type`, `event_ts`) are not.
 
 Slack's other event fields (`blocks`, `client_msg_id` and the like) are not compared: the same message delivered as a `message` and as an
