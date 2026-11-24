@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/holiday-list/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/holiday-list/create.handler.ts";
+import { HolidayList } from "../../blueprint/things/holiday-list/thing.ts";
 
 const { HolidayListEndsBeforeStart } = Errors.declared;
 
@@ -44,18 +45,19 @@ const { HolidayListEndsBeforeStart } = Errors.declared;
  *   once it answers, it writes HolidayListCreated: holidayList from the answer, company from the payload;
  *   the call is the span holiday-list.create, and its commit holiday-list.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, holidayListName, fromDate, toDate }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // HolidayListEndsBeforeStart: exit 44, HL-002.
-    if (yield* Handlers.blank<boolean>("refuse HolidayListEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why HolidayListEndsBeforeStart was refused"));
-      return yield* new HolidayListEndsBeforeStart({
-        fromDate: yield* Handlers.blank("HolidayListEndsBeforeStart.fromDate, a Day"),
-      });
+    const records = yield* Records;
+
+    // HolidayListEndsBeforeStart: exit 44, HL-002. Days are YYYY-MM-DD, so they compare as text; the same day is allowed.
+    if (toDate < fromDate) {
+      yield* Effect.logInfo("the list's last day is before its first");
+      return yield* new HolidayListEndsBeforeStart({ fromDate });
     }
 
-    // Step insert: database, span holiday-list.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span holiday-list.create.insert. A new list holds no holidays; a name taken in the company
+    // is the runtime's refusal.
+    yield* steps.insert(records.insert(HolidayList, { id, company, holidayListName, fromDate, toDate, totalHolidays: 0n }));
 
     // The move create, to active.
     yield* move();
