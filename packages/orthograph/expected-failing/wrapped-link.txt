@@ -1,0 +1,11 @@
+# #742 item 5, part two: an optional reference, a wrapped link, the lock's optional refusal field, a decimal in a message. Remove each line as the build makes it pass.
+src/modules/values/wrapped-link.test.ts > A wrapped link stays a link > optional: a thing's field declared before the thing it links to keeps the edge and the mark
+src/modules/values/wrapped-link.test.ts > A wrapped link stays a link > optional: read outside a thing, as a payload field is, it keeps the edge and the mark
+src/modules/values/wrapped-link.test.ts > A wrapped link stays a link > traced: a thing's field declared before the thing it links to keeps the edge and the mark
+src/modules/values/wrapped-link.test.ts > A wrapped link stays a link > traced: read outside a thing, as a payload field is, it keeps the edge and the mark
+src/modules/values/wrapped-link.test.ts > A wrapped link stays a link > visibility.private: a thing's field declared before the thing it links to keeps the edge and the mark
+src/modules/values/wrapped-link.test.ts > A wrapped link stays a link > visibility.private: read outside a thing, as a payload field is, it keeps the edge and the mark
+src/modules/values/wrapped-link.test.ts > A wrapped link stays a link > visibility.secret: a thing's field declared before the thing it links to keeps the edge and the mark
+src/modules/values/wrapped-link.test.ts > A wrapped link stays a link > visibility.secret: read outside a thing, as a payload field is, it keeps the edge and the mark
+src/modules/values/wrapped-link.test.ts > An optional reference keeps its edge > lets a payload leave the field out, and holds only the other thing's ids when it is there
+src/modules/values/wrapped-link.test.ts > An optional reference keeps its edge > makes a thing's field that keeps the edge to the other thing and may be left out
