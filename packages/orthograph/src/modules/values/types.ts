@@ -37,6 +37,7 @@ export type ValueMeta =
   | { readonly type: "day" }
   | { readonly type: "account" }
   | { readonly type: "money"; readonly bits: number; readonly signed: boolean; readonly asset: AssetRef }
+  | { readonly type: "decimal"; readonly places: number }
   | { readonly type: "schema"; readonly format?: "ref-any" };
 
 /** The TypeScript type a value holds. */
@@ -80,6 +81,17 @@ export interface ValuesApi {
   readonly account: () => Value<Schema.String>;
   /** An amount that names its asset (M6-money). */
   readonly money: MoneyApi;
+  /**
+   * An exact decimal (#742): a `BigDecimal` in code, so a handler adds and multiplies exactly; plain decimal text on the
+   * wire (`"-12.50"`), with no exponent, no `+` and no `-0`. At most `places` digits after the point (default 9), trailing zeros counted.
+   */
+  readonly decimal: (options?: { readonly places?: number }) => Value<Schema.BigDecimalFromString>;
+  /**
+   * Another thing's field, read only when it is first used (#742): `Blueprint.link(() => SalesInvoice.fields.id)`, so two
+   * things may take each other's ids though their files import each other. Once read it is that field, as if written itself.
+   * In a cycle TypeScript can't infer the two things' types (TS7022), so write the function's type: `(): Field => SalesInvoice.fields.id`.
+   */
+  readonly link: <F extends Field>(to: () => F) => F;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
 }
