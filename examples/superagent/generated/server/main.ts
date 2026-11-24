@@ -524,6 +524,7 @@ export const steps = {
   "ticket.ack": ["ticket.ack.write"],
   "ticket.report": ["ticket.report.write"],
   "ticket.stop": ["ticket.stop.write"],
+  "trigger.reevaluate": ["trigger.reevaluate.release"],
 } as const;
 
 // Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the
