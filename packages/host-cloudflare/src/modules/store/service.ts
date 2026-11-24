@@ -64,12 +64,13 @@ export const StoreD1: StoreD1Api = {
           const owners = new Set(commit.writes.map((w) => ownerOf(w.thing)));
           if (owners.size > 1) return Effect.die(new Error("a call wrote to more than one store: one call commits to one store, and work across stores is a workflow (K3 item 5)"));
           const first = commit.writes[0]?.thing;
-          if (first?.lives !== "actor") {
-            const db = first ? dbOf(first) : home;
-            // A list is guarded in the database the call commits to; a list of another store's things can't be held in this batch.
-            const lists = (commit.lists ?? []).filter((l) => l.thing.lives !== "actor" && l.thing !== people?.thing && dbOf(l.thing) === db);
-            return commitD1(db, tableOf, { ...commit, lists }, rules);
+          const db = first?.lives === "actor" ? undefined : first ? dbOf(first) : home;
+          // A list is guarded in the batch that commits the call (#764): a list it can't join would let its rows go unread.
+          const changes = commit.writes.length > 0 || commit.entries.length > 0 || commit.request !== undefined;
+          if (changes && (commit.lists ?? []).some((l) => dbOf(l.thing) !== db)) {
+            return Effect.die(new Error("a call listed things in one store and committed to another: a list is guarded only in the database the call commits to (#764)"));
           }
+          if (db !== undefined) return commitD1(db, tableOf, commit, rules);
           if (commit.request) return Effect.die(new Error("a request key on an actor's operation: idempotent actors arrive with layer four (design/later.md)"));
           return actors ? actorCommit(actors, commit, tableOf) : noActors;
         },

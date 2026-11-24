@@ -25,7 +25,7 @@ export const commitD1 = ({ sql, d1 }: Db, tableOf: (thing: Write["thing"]) => st
       const conditions = yield* filtersOf(sql, { thing, where, state });
       const filter = conditions.length > 0 ? sql` WHERE ${sql.and(conditions)}` : sql``;
       const read = [...rows].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)).map((r) => `${r.id}:${r.version}`).join(",");
-      const now = sql`COALESCE((SELECT group_concat("row", ',') FROM (SELECT "id" || ':' || "version" AS "row" FROM ${table}${filter} ORDER BY "id")), '')`;
+      const now = sql`COALESCE((SELECT group_concat("id" || ':' || "version", ',' ORDER BY "id") FROM ${table}${filter}), '')`;
       return sql`UPDATE ${table} SET "version" = NULL WHERE rowid = (SELECT min(rowid) FROM ${table}) AND ${now} <> ${read}`;
     });
   const statementOf = (w: Write) =>

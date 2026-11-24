@@ -40,6 +40,8 @@ export const storeMemory = (initial: ReadonlyArray<readonly [Thing, Instance]> =
     commit: ({ writes, entries: events, request, lists = [] }) =>
       Effect.sync(() => {
         if (request && requests.has(request.key)) return "conflict" as const;
+        // A commit that changes nothing commits, guarding nothing, as D1's does.
+        if (writes.length === 0 && events.length === 0 && request === undefined) return "committed" as const;
         // #764: a list's rows count as read. Before this commit's own writes, the rows matching each list must be the ones it read, at the same versions.
         const moved = lists.some(({ thing, where, state, rows: read }) => {
           const now = rows.filter((r) => r.thing === thing && matches(thing, where, state, r.instance));

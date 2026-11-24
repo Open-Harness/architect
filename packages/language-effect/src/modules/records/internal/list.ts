@@ -6,7 +6,7 @@ import { keyOf } from "./unique.ts";
 import type { Instance, ListQuery, ListRead, Listed, Store, Stored } from "../types.ts";
 
 /** How many rows one store page asks for while the list pages to the end. */
-const PAGE = 100;
+const PAGE = 1000;
 
 /** Does `instance` match `where` and `state`? A field compares by what the store writes; a key the thing has no field for, as text. */
 export const matches = (thing: Thing, where: Instance, state: string | undefined, instance: Instance): boolean =>
@@ -33,6 +33,7 @@ export const listerOf = (
 
   const list = ({ thing, where, state, order, limit, after }: ListQuery): Effect.Effect<Listed> =>
     Effect.gen(function* () {
+      if (!Number.isInteger(limit) || limit < 1) return yield* Effect.die(new Error(`a list's limit is a whole number of rows, at least 1: not ${limit}`));
       // Every stored row the list matches, oldest first; a row read before keeps the version it was read at.
       const cache = seen(thing);
       const stored: Array<{ readonly id: string; readonly place: number }> = [];

@@ -18,8 +18,8 @@ Each row comes with its version and its rowid, its place; `place(thing, id)` giv
 
 A commit guards each list the call read (#764) with one statement at the head of its batch, before its writes: when the
 sorted `id:version` text of the rows now matching the list's `where` and `state` isn't what the call read, it sets the
-table's first row's `version` to NULL, and the batch fails as a `conflict` the way a stale update does. Only lists of the
-database the call commits to are guarded (`list-guard.test.ts`).
+table's first row's `version` to NULL, and the batch fails as a `conflict` the way a stale update does. A call that lists
+things outside the database it commits to (another declared store, or a commit to an actor) dies (`list-guard.test.ts`).
 
 ## Declared stores (K3, M1.17)
 
