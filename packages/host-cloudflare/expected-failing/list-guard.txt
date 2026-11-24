@@ -1,0 +1,20 @@
+# Records.list (#764) is not built, and D1 doesn't count a list's rows as read, so two calls that each checked "no overlap" can both commit. Clears with the records-list build.
+src/modules/store/list-guard.test.ts > two calls that each list, then insert, in D1 (#764) > can't both commit overlapping leave: one runs again, sees the other's row, and is refused
+src/modules/store/list-guard.test.ts > two calls that each list, then insert, in D1 (#764) > control: two calls whose leave doesn't overlap both commit
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > another employee's new leave: ada's call commits on its first run
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > another employee's leave changed: ada's call commits on its first run
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > ada's cancelled leave changed: ada's call commits on its first run
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > another employee's new leave, the list naming no state: ada's call commits on its first run
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > ada's new leave with another note, the list on employee and note: ada's call commits on its first run
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's new leave on other days: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's listed leave changed: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, bob's leave moved to ada, on other days: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's cancelled leave reopened, on other days: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's listed leave cancelled: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, all of ada's listed leave cancelled: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's listed leave cancelled and a new one opened, in one commit: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's cancelled leave changed, the list naming no state: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's new leave on other days, bob's listed first: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, bob's new leave, bob's listed first: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's new leave on other days, the call writing an ask: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's 43rd listed leave changed, deep in a page of 50: ada's call runs again and then commits
