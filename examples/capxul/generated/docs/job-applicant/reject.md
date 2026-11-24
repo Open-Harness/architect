@@ -41,9 +41,10 @@ Turn an applicant down.
 
 ### make a job offer
 
-Starts from the world `an outside employee`.
+Starts from the world `a second job title`.
 
 - **an accepted applicant can't be turned down.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `accepted`.
+- **Bo can't turn Sam down.** `bo` (signed in) calls and sends jobApplicant the last call's jobApplicant, and is refused with NotAllowed, AR-001.
 - **Ada turns Sam down, from hold.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.
 - **nor turned down again.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `rejected`.
 
@@ -52,6 +53,7 @@ Starts from the world `an outside employee`.
 Starts from the world `an outside employee`.
 
 - **and Ada turns Sam down at once.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.
+- **Ada turns Pat down.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.
 
 ## How to call
 

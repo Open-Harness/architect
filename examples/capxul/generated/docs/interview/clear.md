@@ -40,6 +40,12 @@ Mark an interview cleared.
 
 ## Worked examples
 
+### give interview feedback
+
+Starts from the world `an interview`.
+
+- **Ada marks Pat's final interview cleared before any feedback.** `ada` (role company.owner) calls and sends interview the last call's interview, and gets back an answer matching `^ivw_[0-9a-z]+$`.
+
 ### hire from a job opening
 
 Starts from the world `a technical round`.
@@ -51,7 +57,9 @@ Starts from the world `a technical round`.
 Starts from the world `an outside employee`.
 
 - **it can't then be cleared.** `ada` (role company.owner) calls and sends interview the last call's interview, and is refused with InterviewNotPending, IV-900, carrying state `rejected`.
+- **Bo can't clear it.** `bo` (signed in) calls and sends interview the last call's interview, and is refused with NotAllowed, AR-001.
 - **Ada marks it cleared.** `ada` (role company.owner) calls and sends interview the last call's interview, and gets back an answer matching `^ivw_[0-9a-z]+$`.
+- **nor cleared again.** `ada` (role company.owner) calls and sends interview the last call's interview, and is refused with InterviewNotPending, IV-900, carrying state `cleared`.
 
 ## How to call
 

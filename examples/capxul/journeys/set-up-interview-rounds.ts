@@ -140,7 +140,7 @@ export default Blueprint.journey("set up interview rounds", {
       noEvents(),
     ),
     s.step(
-      "the final round, with Cy alone, is taken",
+      "Ada adds the final round, with Cy alone",
       s.ada.run(create, { company: s.world.company, roundName: "Final", interviewers: [s.world.secondEmployee] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
       emits(InterviewRoundCreated, { interviewRound: s.last.interviewRound, company: s.world.company }),

@@ -19,6 +19,7 @@ import relieve from "../blueprint/things/employee/verbs/relieve.ts";
 import createRound from "../blueprint/things/interview-round/verbs/create.ts";
 import apply from "../blueprint/things/job-applicant/verbs/create.ts";
 import rejectApplicant from "../blueprint/things/job-applicant/verbs/reject.ts";
+import holdApplicant from "../blueprint/things/job-applicant/verbs/hold.ts";
 import schedule from "../blueprint/things/interview/verbs/create.ts";
 import clear from "../blueprint/things/interview/verbs/clear.ts";
 import reject from "../blueprint/things/interview/verbs/reject.ts";
@@ -180,6 +181,13 @@ export default Blueprint.journey("schedule an interview", {
       emits(InterviewScheduled, { interview: s.last.interview, jobApplicant: s.world.jobApplicant }),
     ),
     s.step(
+      "Bo can't clear it",
+      s.bo.run(clear, { interview: s.last.interview }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+      spans({ absent: ["interview.clear", "interview.clear.update"] }),
+    ),
+    s.step(
       "Ada marks it cleared",
       s.ada.run(clear, { interview: s.last.interview }),
       expect((a) => a.interview).toMatch(/^ivw_[0-9a-z]+$/),
@@ -190,6 +198,12 @@ export default Blueprint.journey("schedule an interview", {
     s.step(
       "it can't then be rejected",
       s.ada.run(reject, { interview: s.last.interview }),
+      refuses(interviews.notFrom, { state: "cleared" }),
+      noEvents(),
+    ),
+    s.step(
+      "nor cleared again",
+      s.ada.run(clear, { interview: s.last.interview }),
       refuses(interviews.notFrom, { state: "cleared" }),
       noEvents(),
     ),
@@ -217,6 +231,12 @@ export default Blueprint.journey("schedule an interview", {
       spans({ absent: ["interview.create.insert"] }),
     ),
     s.step(
+      "nor on a day already past, before she left",
+      s.ada.run(schedule, { jobApplicant: s.world.jobApplicant, interviewRound: s.last.interviewRound, ...at("2026-11-20", "09:00", "10:00"), interviewers: [s.world.employee] }),
+      refuses(InterviewerHasLeft),
+      noEvents(),
+    ),
+    s.step(
       "nor after Cy",
       s.ada.run(schedule, { jobApplicant: s.world.jobApplicant, interviewRound: s.last.interviewRound, ...at("2026-12-07", "09:00", "10:00"), interviewers: [s.world.secondEmployee, s.world.employee] }),
       refuses(InterviewerHasLeft),
@@ -233,6 +253,29 @@ export default Blueprint.journey("schedule an interview", {
       s.ada.run(schedule, { jobApplicant: s.world.jobApplicant, interviewRound: s.last.interviewRound, ...at("2027-01-11", "09:00", "17:00"), interviewers: [s.world.secondEmployee] }),
       expect((a) => a.interview).toMatch(/^ivw_[0-9a-z]+$/),
       emits(InterviewScheduled, { interview: s.last.interview, jobApplicant: s.world.jobApplicant }),
+      interviews.isIn(s.last.interview, "pending"),
+    ),
+    s.step(
+      "Lee applies for the same job",
+      s.ada.run(apply, { jobOpening: s.world.jobOpening, applicantName: "Lee Wanjiru", email: "lee@example.com" }),
+      expect((a) => a.jobApplicant).toMatch(/^jap_[0-9a-z]+$/),
+    ),
+    s.step(
+      "Ada puts Lee on hold",
+      s.ada.run(holdApplicant, { jobApplicant: s.last.jobApplicant }),
+      expect((a) => a.jobApplicant).toMatch(/^jap_[0-9a-z]+$/),
+    ),
+    s.step(
+      "Olga can't interview Lee at the technical round, though that round lists her: she has left",
+      s.ada.run(schedule, { jobApplicant: s.last.jobApplicant, interviewRound: s.world.interviewRound, ...at("2026-12-08", "09:00", "10:00"), interviewers: [s.world.employee] }),
+      refuses(InterviewerHasLeft),
+      noEvents(),
+    ),
+    s.step(
+      "Lee, on hold, may be interviewed at the technical round with Cy",
+      s.ada.run(schedule, { jobApplicant: s.last.jobApplicant, interviewRound: s.world.interviewRound, ...at("2026-12-08", "09:00", "10:00"), interviewers: [s.world.secondEmployee] }),
+      expect((a) => a.interview).toMatch(/^ivw_[0-9a-z]+$/),
+      emits(InterviewScheduled, { interview: s.last.interview, interviewRound: s.world.interviewRound }),
       interviews.isIn(s.last.interview, "pending"),
     ),
     s.step(
@@ -255,6 +298,22 @@ export default Blueprint.journey("schedule an interview", {
     s.step(
       "a rejected applicant is judged first, before the times and the interviewers",
       s.ada.run(schedule, { jobApplicant: s.last.jobApplicant, interviewRound: s.world.interviewRound, ...at("2026-12-07", "10:00", "09:00"), interviewers: [s.world.employee, s.world.outsider] }),
+      refuses(ApplicantRejected),
+      noEvents(),
+    ),
+    s.step(
+      "Ada turns Pat down",
+      s.ada.run(rejectApplicant, { jobApplicant: s.world.jobApplicant }),
+      expect((a) => a.jobApplicant).toBe(s.world.jobApplicant),
+    ),
+    s.step(
+      "and adds a panel round to Acme Logistics",
+      s.ada.run(createRound, { company: s.world.otherCompany, roundName: "Panel", interviewers: [s.world.outsider] }),
+      expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
+    ),
+    s.step(
+      "Pat, now rejected, is refused for that first, before the other company's round, the times and the interviewers",
+      s.ada.run(schedule, { jobApplicant: s.world.jobApplicant, interviewRound: s.last.interviewRound, ...at("2026-12-09", "10:00", "09:00"), interviewers: [s.world.outsider] }),
       refuses(ApplicantRejected),
       noEvents(),
     ),

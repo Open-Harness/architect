@@ -43,9 +43,10 @@ Record that the applicant rejected the offer.
 
 ### make a job offer
 
-Starts from the world `an outside employee`.
+Starts from the world `a second job title`.
 
 - **it can't then be rejected.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `accepted`.
+- **Bo can't record Sam's answer.** `bo` (signed in) calls and sends jobOffer the last call's jobOffer, and is refused with NotAllowed, AR-001.
 - **Sam rejects the offer, which names Sam.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back [true, true].
 
 ## How to call

@@ -50,7 +50,7 @@ Starts from the world `a technical round`.
 
 ### make a job offer
 
-Starts from the world `an outside employee`.
+Starts from the world `a second job title`.
 
 - **Sam applies for the same job.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Sam Otieno`, email `sam@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.
 
@@ -58,13 +58,16 @@ Starts from the world `an outside employee`.
 
 Starts from the world `a job applicant`.
 
+- **nor add an applicant to it.** `bo` (signed in) calls and sends jobOpening the last call's jobOpening, applicantName `Lee Wanjiru`, email `lee@example.com`, and is refused with NotAllowed, AR-001.
 - **Sam applies for it, with the same email as Pat's: an email may apply again.** `ada` (role company.owner) calls and sends jobOpening the last call's jobOpening, applicantName `Sam Otieno`, email `pat@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.
+- **Pat applies for the engineering job again, with the same email.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Pat Mwangi`, email `pat@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.
 - **nobody new may apply for it.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Lee Wanjiru`, email `lee@example.com`, and is refused with OpeningClosed, JA-001.
 
 ### schedule an interview
 
 Starts from the world `an outside employee`.
 
+- **Lee applies for the same job.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Lee Wanjiru`, email `lee@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.
 - **Sam applies for the same job.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Sam Otieno`, email `sam@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.
 
 ## How to call

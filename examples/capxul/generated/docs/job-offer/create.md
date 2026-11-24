@@ -52,7 +52,7 @@ Starts from the world `a technical round`.
 
 ### make a job offer
 
-Starts from the world `an outside employee`.
+Starts from the world `a second job title`.
 
 - **Bo can't offer Pat a job.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and is refused with NotAllowed, AR-001.
 - **nor can Olga.** `olga` (signed in) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and is refused with NotAllowed, AR-001.
@@ -60,8 +60,14 @@ Starts from the world `an outside employee`.
 - **Ada offers Pat the job of engineer.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and gets back an answer matching `^jof_[0-9a-z]+$`.
 - **Ada can't make Pat a second offer while the first awaits.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-02`, and is refused with OfferAlreadyMade, JF-002.
 - **Ada can't make Pat another offer now one is accepted.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-04`, and is refused with OfferAlreadyMade, JF-002.
-- **and offers Sam the job too, two people being wanted.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's designation, offerDate `2026-12-02`, and gets back an answer matching `^jof_[0-9a-z]+$`.
+- **and offers Sam Lead Engineer, another of Acme Trading's job titles.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's otherDesignation, offerDate `2026-12-02`, and gets back an answer matching `^jof_[0-9a-z]+$`.
 - **nor make Sam a second offer: HRMS keeps one per applicant, rejected or not.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's designation, offerDate `2026-12-03`, and is refused with OfferAlreadyMade, JF-002.
+
+### open a job
+
+Starts from the world `a job applicant`.
+
+- **Ada offers Pat the job of engineer, after the opening closed.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and gets back an answer matching `^jof_[0-9a-z]+$`.
 
 ## How to call
 

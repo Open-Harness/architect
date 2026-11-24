@@ -49,15 +49,21 @@ Starts from the world `a technical round`.
 
 ### make a job offer
 
-Starts from the world `an outside employee`.
+Starts from the world `a second job title`.
 
 - **Ada can't accept Pat before any offer.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with OfferNotAccepted, JA-002.
 - **nor accept Pat while the offer awaits.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with OfferNotAccepted, JA-002.
 - **Bo can't accept Pat.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, and is refused with NotAllowed, AR-001.
-- **Ada accepts Pat, whose offer is accepted.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.
-- **Ada can't accept Sam on Pat's accepted offer.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with OfferNotAccepted, JA-002.
+- **Ada accepts Pat, from hold, now the offer is accepted.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.
+- **Sam, with no offer, can't be accepted while Pat's is.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with OfferNotAccepted, JA-002.
 - **Ada can't accept Sam on a rejected offer.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with OfferNotAccepted, JA-002.
 - **a rejected applicant can't be accepted.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `rejected`.
+
+### open a job
+
+Starts from the world `a job applicant`.
+
+- **Ada accepts Pat, though the opening Pat applied for has closed.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.
 
 ## How to call
 

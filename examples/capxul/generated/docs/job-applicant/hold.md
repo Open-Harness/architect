@@ -41,10 +41,18 @@ Put an applicant on hold.
 
 ### make a job offer
 
-Starts from the world `an outside employee`.
+Starts from the world `a second job title`.
 
+- **Bo can't put Pat on hold.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, and is refused with NotAllowed, AR-001.
+- **Ada puts Pat on hold while she decides.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.
 - **nor put on hold.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `accepted`.
 - **Ada puts Sam on hold.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.
+
+### schedule an interview
+
+Starts from the world `an outside employee`.
+
+- **Ada puts Lee on hold.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.
 
 ## How to call
 

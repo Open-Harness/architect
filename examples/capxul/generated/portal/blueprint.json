@@ -19471,7 +19471,40 @@
             ]
           },
           {
-            "title": "Olga, who gave feedback on the technical round, may give it on the final round too",
+            "title": "Ada marks Pat's final interview cleared before any feedback",
+            "call": {
+              "actor": "ada",
+              "operation": "interview.clear",
+              "payload": {
+                "interview": {
+                  "ref": [
+                    "last",
+                    "interview"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^ivw_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "is-in",
+                "thing": "interview",
+                "id": {
+                  "ref": [
+                    "last",
+                    "interview"
+                  ]
+                },
+                "state": "cleared"
+              }
+            ]
+          },
+          {
+            "title": "Olga, who gave feedback on the technical interview, may still give it on the cleared final one",
             "call": {
               "actor": "olga",
               "operation": "interview-feedback.give",
@@ -19557,43 +19590,6 @@
             ]
           },
           {
-            "title": "Ada marks the technical interview rejected, though Olga cleared Pat",
-            "call": {
-              "actor": "ada",
-              "operation": "interview.reject",
-              "payload": {
-                "interview": {
-                  "ref": [
-                    "world",
-                    "interview"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": {
-                  "ref": [
-                    "world",
-                    "interview"
-                  ]
-                }
-              },
-              {
-                "kind": "is-in",
-                "thing": "interview",
-                "id": {
-                  "ref": [
-                    "world",
-                    "interview"
-                  ]
-                },
-                "state": "rejected"
-              }
-            ]
-          },
-          {
             "title": "Ada relieves Cy on 3 December",
             "call": {
               "actor": "ada",
@@ -19616,7 +19612,7 @@
             ]
           },
           {
-            "title": "Cy, who has left, still gives her feedback on the technical interview she was on, now decided",
+            "title": "Cy, who has left, still gives her feedback on the technical interview she was on, still pending",
             "call": {
               "actor": "cy",
               "operation": "interview-feedback.give",
@@ -19756,9 +19752,46 @@
                 "kind": "no-events"
               }
             ]
+          },
+          {
+            "title": "Ada marks the technical interview rejected, though Olga cleared Pat",
+            "call": {
+              "actor": "ada",
+              "operation": "interview.reject",
+              "payload": {
+                "interview": {
+                  "ref": [
+                    "world",
+                    "interview"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "interview"
+                  ]
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "interview",
+                "id": {
+                  "ref": [
+                    "world",
+                    "interview"
+                  ]
+                },
+                "state": "rejected"
+              }
+            ]
           }
         ],
-        "sourceHash": "ed7d946a96ccbbabf97a1c9e23b521c4d94878bad23b3232e44b41923a3f6c69"
+        "sourceHash": "afd05f0ef3e5a21ebe9997cb421a95b01f5812d06ec0fd8c075c26fccf999dbd"
       },
       "journeys/grade-names-are-the-companys.ts": {
         "name": "grade names are the company's",
@@ -21458,7 +21491,7 @@
             "kind": "signed-in"
           }
         },
-        "starts": "an outside employee",
+        "starts": "a second job title",
         "steps": [
           {
             "title": "Ada can't accept Pat before any offer",
@@ -21489,6 +21522,88 @@
                 "absent": [
                   "job-applicant.accept.update"
                 ]
+              }
+            ]
+          },
+          {
+            "title": "Bo can't put Pat on hold",
+            "call": {
+              "actor": "bo",
+              "operation": "job-applicant.hold",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada puts Pat on hold while she decides",
+            "call": {
+              "actor": "ada",
+              "operation": "job-applicant.hold",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              },
+              {
+                "kind": "emits",
+                "event": "JobApplicantHeld",
+                "fields": {
+                  "jobApplicant": {
+                    "ref": [
+                      "world",
+                      "jobApplicant"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "job-applicant",
+                "id": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                },
+                "state": "hold"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "job-applicant.hold",
+                  "job-applicant.hold.update"
+                ],
+                "absent": []
               }
             ]
           },
@@ -21809,7 +21924,7 @@
             ]
           },
           {
-            "title": "Pat accepts the offer",
+            "title": "Pat, on hold, accepts the offer",
             "call": {
               "actor": "ada",
               "operation": "job-offer.accept",
@@ -21825,20 +21940,12 @@
             "checks": [
               {
                 "kind": "expect-equal",
-                "value": [
-                  {
-                    "ref": [
-                      "last",
-                      "jobOffer"
-                    ]
-                  },
-                  {
-                    "ref": [
-                      "world",
-                      "jobApplicant"
-                    ]
-                  }
-                ]
+                "value": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
               },
               {
                 "kind": "emits",
@@ -22036,7 +22143,7 @@
             ]
           },
           {
-            "title": "Ada accepts Pat, whose offer is accepted",
+            "title": "Ada accepts Pat, from hold, now the offer is accepted",
             "call": {
               "actor": "ada",
               "operation": "job-applicant.accept",
@@ -22236,7 +22343,40 @@
             ]
           },
           {
-            "title": "Ada can't accept Sam on Pat's accepted offer",
+            "title": "Bo can't turn Sam down",
+            "call": {
+              "actor": "bo",
+              "operation": "job-applicant.reject",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "last",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "job-applicant.reject",
+                  "job-applicant.reject.update"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Sam, with no offer, can't be accepted while Pat's is",
             "call": {
               "actor": "ada",
               "operation": "job-applicant.accept",
@@ -22306,7 +22446,7 @@
             ]
           },
           {
-            "title": "and offers Sam the job too, two people being wanted",
+            "title": "and offers Sam Lead Engineer, another of Acme Trading's job titles",
             "call": {
               "actor": "ada",
               "operation": "job-offer.create",
@@ -22320,7 +22460,7 @@
                 "designation": {
                   "ref": [
                     "world",
-                    "designation"
+                    "otherDesignation"
                   ]
                 },
                 "offerDate": "2026-12-02"
@@ -22354,6 +22494,39 @@
                   ]
                 },
                 "state": "awaiting"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't record Sam's answer",
+            "call": {
+              "actor": "bo",
+              "operation": "job-offer.reject",
+              "payload": {
+                "jobOffer": {
+                  "ref": [
+                    "last",
+                    "jobOffer"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "job-offer.reject",
+                  "job-offer.reject.update"
+                ]
               }
             ]
           },
@@ -22628,7 +22801,7 @@
             ]
           }
         ],
-        "sourceHash": "caaa5053e19a9cb14cd33338092f19b8c44440edd9a2beafa68303ea4375806e"
+        "sourceHash": "eabd8d15262a8a0997f82b16306cb267abb889ba120cac9b63abb52d50529b8e"
       },
       "journeys/mark-attendance.ts": {
         "name": "mark attendance",
@@ -23989,6 +24162,41 @@
             ]
           },
           {
+            "title": "nor add an applicant to it",
+            "call": {
+              "actor": "bo",
+              "operation": "job-applicant.create",
+              "payload": {
+                "jobOpening": {
+                  "ref": [
+                    "last",
+                    "jobOpening"
+                  ]
+                },
+                "applicantName": "Lee Wanjiru",
+                "email": "lee@example.com"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "job-applicant.create",
+                  "job-applicant.create.insert"
+                ]
+              }
+            ]
+          },
+          {
             "title": "Sam applies for it, with the same email as Pat's: an email may apply again",
             "call": {
               "actor": "ada",
@@ -24140,6 +24348,65 @@
               },
               {
                 "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Pat applies for the engineering job again, with the same email",
+            "call": {
+              "actor": "ada",
+              "operation": "job-applicant.create",
+              "payload": {
+                "jobOpening": {
+                  "ref": [
+                    "world",
+                    "jobOpening"
+                  ]
+                },
+                "applicantName": "Pat Mwangi",
+                "email": "pat@example.com"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^jap_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "JobApplicantCreated",
+                "fields": {
+                  "jobApplicant": {
+                    "ref": [
+                      "last",
+                      "jobApplicant"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "jobOpening": {
+                    "ref": [
+                      "world",
+                      "jobOpening"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "job-applicant",
+                "id": {
+                  "ref": [
+                    "last",
+                    "jobApplicant"
+                  ]
+                },
+                "state": "open"
               }
             ]
           },
@@ -24367,9 +24634,138 @@
                 "kind": "no-events"
               }
             ]
+          },
+          {
+            "title": "Bo can't read Pat",
+            "call": {
+              "actor": "bo",
+              "operation": "job-applicant.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada offers Pat the job of engineer, after the opening closed",
+            "call": {
+              "actor": "ada",
+              "operation": "job-offer.create",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                },
+                "offerDate": "2026-12-01"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^jof_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Pat accepts it",
+            "call": {
+              "actor": "ada",
+              "operation": "job-offer.accept",
+              "payload": {
+                "jobOffer": {
+                  "ref": [
+                    "last",
+                    "jobOffer"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "title": "Ada accepts Pat, though the opening Pat applied for has closed",
+            "call": {
+              "actor": "ada",
+              "operation": "job-applicant.accept",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              },
+              {
+                "kind": "emits",
+                "event": "JobApplicantAccepted",
+                "fields": {
+                  "jobApplicant": {
+                    "ref": [
+                      "world",
+                      "jobApplicant"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "job-applicant",
+                "id": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                },
+                "state": "accepted"
+              }
+            ]
           }
         ],
-        "sourceHash": "b854ab08ecffc38a0e7ff28dd409efbcd7e8c3eeef7d1c680c1a6cb09b4fae82"
+        "sourceHash": "96ba8d23aac0bef537c7d2e9d462779afaa3c6f707ad3a1d5f7428e06351242e"
       },
       "journeys/reject-an-attendance-request.ts": {
         "name": "reject an attendance request",
@@ -26988,6 +27384,39 @@
             ]
           },
           {
+            "title": "Bo can't clear it",
+            "call": {
+              "actor": "bo",
+              "operation": "interview.clear",
+              "payload": {
+                "interview": {
+                  "ref": [
+                    "last",
+                    "interview"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "interview.clear",
+                  "interview.clear.update"
+                ]
+              }
+            ]
+          },
+          {
             "title": "Ada marks it cleared",
             "call": {
               "actor": "ada",
@@ -27045,6 +27474,33 @@
             "call": {
               "actor": "ada",
               "operation": "interview.reject",
+              "payload": {
+                "interview": {
+                  "ref": [
+                    "last",
+                    "interview"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "interview.notFrom",
+                "fields": {
+                  "state": "cleared"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor cleared again",
+            "call": {
+              "actor": "ada",
+              "operation": "interview.clear",
               "payload": {
                 "interview": {
                   "ref": [
@@ -27203,6 +27659,48 @@
                 "absent": [
                   "interview.create.insert"
                 ]
+              }
+            ]
+          },
+          {
+            "title": "nor on a day already past, before she left",
+            "call": {
+              "actor": "ada",
+              "operation": "interview.create",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                },
+                "interviewRound": {
+                  "ref": [
+                    "last",
+                    "interviewRound"
+                  ]
+                },
+                "scheduledOn": "2026-11-20",
+                "fromTime": "09:00",
+                "toTime": "10:00",
+                "interviewers": [
+                  {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  }
+                ]
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "InterviewerHasLeft",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
               }
             ]
           },
@@ -27371,6 +27869,162 @@
             ]
           },
           {
+            "title": "Lee applies for the same job",
+            "call": {
+              "actor": "ada",
+              "operation": "job-applicant.create",
+              "payload": {
+                "jobOpening": {
+                  "ref": [
+                    "world",
+                    "jobOpening"
+                  ]
+                },
+                "applicantName": "Lee Wanjiru",
+                "email": "lee@example.com"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^jap_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Ada puts Lee on hold",
+            "call": {
+              "actor": "ada",
+              "operation": "job-applicant.hold",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "last",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^jap_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Olga can't interview Lee at the technical round, though that round lists her: she has left",
+            "call": {
+              "actor": "ada",
+              "operation": "interview.create",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "last",
+                    "jobApplicant"
+                  ]
+                },
+                "interviewRound": {
+                  "ref": [
+                    "world",
+                    "interviewRound"
+                  ]
+                },
+                "scheduledOn": "2026-12-08",
+                "fromTime": "09:00",
+                "toTime": "10:00",
+                "interviewers": [
+                  {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  }
+                ]
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "InterviewerHasLeft",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Lee, on hold, may be interviewed at the technical round with Cy",
+            "call": {
+              "actor": "ada",
+              "operation": "interview.create",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "last",
+                    "jobApplicant"
+                  ]
+                },
+                "interviewRound": {
+                  "ref": [
+                    "world",
+                    "interviewRound"
+                  ]
+                },
+                "scheduledOn": "2026-12-08",
+                "fromTime": "09:00",
+                "toTime": "10:00",
+                "interviewers": [
+                  {
+                    "ref": [
+                      "world",
+                      "secondEmployee"
+                    ]
+                  }
+                ]
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^ivw_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "InterviewScheduled",
+                "fields": {
+                  "interview": {
+                    "ref": [
+                      "last",
+                      "interview"
+                    ]
+                  },
+                  "interviewRound": {
+                    "ref": [
+                      "world",
+                      "interviewRound"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "interview",
+                "id": {
+                  "ref": [
+                    "last",
+                    "interview"
+                  ]
+                },
+                "state": "pending"
+              }
+            ]
+          },
+          {
             "title": "Sam applies for the same job",
             "call": {
               "actor": "ada",
@@ -27512,9 +28166,108 @@
                 "kind": "no-events"
               }
             ]
+          },
+          {
+            "title": "Ada turns Pat down",
+            "call": {
+              "actor": "ada",
+              "operation": "job-applicant.reject",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "title": "and adds a panel round to Acme Logistics",
+            "call": {
+              "actor": "ada",
+              "operation": "interview-round.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "roundName": "Panel",
+                "interviewers": [
+                  {
+                    "ref": [
+                      "world",
+                      "outsider"
+                    ]
+                  }
+                ]
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^irn_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Pat, now rejected, is refused for that first, before the other company's round, the times and the interviewers",
+            "call": {
+              "actor": "ada",
+              "operation": "interview.create",
+              "payload": {
+                "jobApplicant": {
+                  "ref": [
+                    "world",
+                    "jobApplicant"
+                  ]
+                },
+                "interviewRound": {
+                  "ref": [
+                    "last",
+                    "interviewRound"
+                  ]
+                },
+                "scheduledOn": "2026-12-09",
+                "fromTime": "10:00",
+                "toTime": "09:00",
+                "interviewers": [
+                  {
+                    "ref": [
+                      "world",
+                      "outsider"
+                    ]
+                  }
+                ]
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "ApplicantRejected",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
           }
         ],
-        "sourceHash": "0138b3772b31040da7d7ffa9c824bf14d6a9a7b2bd96161976f2f4f6e807345d"
+        "sourceHash": "04bdb53b776443d1edc0fd80921a91d0d04bb775bd64002e020a3074c78fd71b"
       },
       "journeys/set-up-a-company.ts": {
         "name": "set up a company",
@@ -30513,7 +31266,7 @@
             ]
           },
           {
-            "title": "the final round, with Cy alone, is taken",
+            "title": "Ada adds the final round, with Cy alone",
             "call": {
               "actor": "ada",
               "operation": "interview-round.create",
@@ -30596,7 +31349,7 @@
             ]
           }
         ],
-        "sourceHash": "7184788a9391e1786b679de1db9e1f55998d5fa2d92aca4f96330618a12cb2c8"
+        "sourceHash": "752a836dfe78dac76e2372d883565f7e4fd88920806d8d61f09379b97798d6a6"
       },
       "journeys/set-up-shift-types.ts": {
         "name": "set up shift types",
@@ -32488,6 +33241,41 @@
             "ref": [
               "last",
               "employee"
+            ]
+          }
+        }
+      },
+      "a second job title": {
+        "name": "a second job title",
+        "file": "blueprint/starting-worlds/a-second-job-title.ts",
+        "from": "an outside employee",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "2d62a40c6ed3b0be8daea8936bbf9995de133e60697f72b22e1c950a7f9ea28d",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "designation.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "designationName": "Lead Engineer"
+            }
+          }
+        ],
+        "gives": {
+          "otherDesignation": {
+            "ref": [
+              "last",
+              "designation"
             ]
           }
         }
@@ -41641,7 +42429,7 @@
     "department/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.create\n\nAdd a department to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n\n## Answer\n\n| field | value |\n|---|---|\n| department | department.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DepartmentCreated.\n\n## Steps\n\n- `department.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNameTaken | 41 | DE-001 | another department holds this company and department name; by the rule department.oneNamePerCompany, carrying departmentName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo adds a department to it.** `bo` (signed in) calls and sends company the last call's company, departmentName `Sales`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds a department.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Ada can't add a second department of the same name.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and is refused with DepartmentNameTaken, DE-001, carrying departmentName `Engineering`.\n- **Bo can't add a department to Ada's company.** `bo` (signed in) calls and sends company the world's company, departmentName `Sales`, and is refused with NotAllowed, AR-001.\n- **Ada adds a second department.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Finance and Accounts`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Bo's company may have a department of that name too, because names are unique within a company.** `bo` (signed in) calls and sends company the last call's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul department create --company <company> --departmentName <departmentName>\n```\n\nHTTP: `POST /department/create` with the payload as JSON. SDK: `Sdk.department.create(payload)`.\n",
     "department/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.get\n\nRead one department by its id: company, departmentName, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | department.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's department.** `bo` (signed in) calls and sends id the last call's department, and is refused with NotAllowed, AR-001.\n- **Ada reads the department back.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Engineering`, `active`].\n- **it reads back under its own name.** `ada` (role company.owner) calls and sends id the last call's department, and gets back [the world's company, `Finance and Accounts`, `active`].\n\n## How to call\n\n```sh\ncapxul department get --id <id>\n```\n\nHTTP: `POST /department/get` with the payload as JSON. SDK: `Sdk.department.get(payload)`.\n",
     "department/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department\n\nA part of a company that its employees work in.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| departmentName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused DepartmentNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | DepartmentCreated |\n\n## Invariants\n\n- `department.oneNamePerCompany`: another department holds this company and department name. Unique on company, departmentName, in every state; refused DepartmentNameTaken.\n\n## Events\n\n- `DepartmentCreated`: carries department (department.id), company (department.company); emitted by the move create\n\n## Operations\n\n- [department.create](create.md): Add a department to a company.\n- [department.get](get.md): Read one department by its id: company, departmentName, state.\n",
-    "designation/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.create\n\nAdd a job title to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n\n## Answer\n\n| field | value |\n|---|---|\n| designation | designation.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DesignationCreated.\n\n## Steps\n\n- `designation.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DesignationNameTaken | 41 | DS-001 | another designation holds this company and designation name; by the rule designation.oneNamePerCompany, carrying designationName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo adds a job title to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **Ada adds a dispatcher's job title to Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, designationName `Dispatcher`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds a job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n- **Ada can't add the same job title twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.\n- **Ada adds a second job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Senior Accountant`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul designation create --company <company> --designationName <designationName>\n```\n\nHTTP: `POST /designation/create` with the payload as JSON. SDK: `Sdk.designation.create(payload)`.\n",
+    "designation/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.create\n\nAdd a job title to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n\n## Answer\n\n| field | value |\n|---|---|\n| designation | designation.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DesignationCreated.\n\n## Steps\n\n- `designation.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DesignationNameTaken | 41 | DS-001 | another designation holds this company and designation name; by the rule designation.oneNamePerCompany, carrying designationName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo adds a job title to it.** `bo` (signed in) calls and sends company the last call's company, designationName `Clerk`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **Ada adds a dispatcher's job title to Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, designationName `Dispatcher`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds a job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n- **Ada can't add the same job title twice.** `ada` (role company.owner) calls and sends company the world's company, designationName `Engineer`, and is refused with DesignationNameTaken, DS-001, carrying designationName `Engineer`.\n- **Ada adds a second job title.** `ada` (role company.owner) calls and sends company the world's company, designationName `Senior Accountant`, and gets back an answer matching `^dsg_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul designation create --company <company> --designationName <designationName>\n```\n\nHTTP: `POST /designation/create` with the payload as JSON. SDK: `Sdk.designation.create(payload)`.\n",
     "designation/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation.get\n\nRead one designation by its id: company, designationName, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | designation.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | designation.company |\n| designationName | designation.designationName |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's job title.** `bo` (signed in) calls and sends id the last call's designation, and is refused with NotAllowed, AR-001.\n- **Ada reads the job title back.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Engineer`, `active`].\n- **that reads back under its own name too.** `ada` (role company.owner) calls and sends id the last call's designation, and gets back [the world's company, `Senior Accountant`, `active`].\n\n## How to call\n\n```sh\ncapxul designation get --id <id>\n```\n\nHTTP: `POST /designation/get` with the payload as JSON. SDK: `Sdk.designation.get(payload)`.\n",
     "designation/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# designation\n\nA job title a company gives its employees.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| designationName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused DesignationNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | DesignationCreated |\n\n## Invariants\n\n- `designation.oneNamePerCompany`: another designation holds this company and designation name. Unique on company, designationName, in every state; refused DesignationNameTaken.\n\n## Events\n\n- `DesignationCreated`: carries designation (designation.id), company (designation.company); emitted by the move create\n\n## Operations\n\n- [designation.create](create.md): Add a job title to a company.\n- [designation.get](get.md): Read one designation by its id: company, designationName, state.\n",
     "employee-grade/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-grade.create\n\nAdd a grade to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | employee-grade.company |\n| gradeName | employee-grade.gradeName |\n\n## Answer\n\n| field | value |\n|---|---|\n| grade | employee-grade.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting EmployeeGradeCreated.\n\n## Steps\n\n- `employee-grade.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EmployeeGradeNameTaken | 41 | EG-001 | another employee grade holds this company and grade name; by the rule employee-grade.oneNamePerCompany, carrying gradeName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### grade names are the company's\n\nStarts from the world `four grades`.\n\n- **Ada can't add a second grade of the same name.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Senior`, and is refused with EmployeeGradeNameTaken, EG-001, carrying gradeName `Senior`.\n- **nor reuse a name her second company holds there.** `ada` (role company.owner) calls and sends company the world's otherCompany, gradeName `cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ`, and is refused with EmployeeGradeNameTaken, EG-001, carrying gradeName `cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ`.\n- **Bo can't add a grade to Ada's company.** `bo` (signed in) calls and sends company the world's company, gradeName `007`, and is refused with NotAllowed, AR-001.\n- **Bo adds his company's first grade, named with digits alone.** `bo` (signed in) calls and sends company the world's boCompany, gradeName `007`, and gets back an answer matching `^egr_[0-9a-z]+$`.\n\n### set up grades\n\nStarts from the world `a company`.\n\n- **Ada adds a grade.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Junior`, and gets back an answer matching `^egr_[0-9a-z]+$`.\n- **Bo can't add a grade to Ada's company.** `bo` (signed in) calls and sends company the world's company, gradeName `Lead`, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul employee-grade create --company <company> --gradeName <gradeName>\n```\n\nHTTP: `POST /employee-grade/create` with the payload as JSON. SDK: `Sdk.employee-grade.create(payload)`.\n",
@@ -41673,27 +42461,27 @@
     "holiday/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday.get\n\nRead one holiday by its id: holidayList, holidayDate, description, state.\n\n**Who may call:** the owner of its holidayList.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | holiday.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday.holidayList |\n| holidayDate | holiday.holidayDate |\n| description | holiday.description |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n\n## Worked examples\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **Bo can't read the new holiday.** `bo` (signed in) calls and sends id the last call's holiday, and is refused with NotAllowed, AR-001.\n- **the holiday reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's holiday, and gets back [the world's holidayList, `2027-01-01`, `New Year's Day`, `active`].\n- **that one reads back with its own day and name.** `ada` (role company.owner) calls and sends id the last call's holiday, and gets back [the world's holidayList, `2027-12-31`, `New Year's Eve`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **the day it held keeps its own name.** `ada` (role company.owner) calls and sends id the world's holiday, and gets back [`2027-01-03`, `Founders' Day`].\n\n## How to call\n\n```sh\ncapxul holiday get --id <id>\n```\n\nHTTP: `POST /holiday/get` with the payload as JSON. SDK: `Sdk.holiday.get(payload)`.\n",
     "holiday/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday\n\nOne day off in a holiday list.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| holidayList | holiday-list.id |\n| holidayDate | Day |\n| description | HolidayName |\n\n## Machine\n\nStates: active. A move from the wrong state is refused HolidayNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| add | (creates) | active | HolidayAdded |\n\n## Invariants\n\n- `holiday.oneHolidayPerDay`: another holiday holds this holiday list and holiday date. Unique on holidayList, holidayDate, in every state; refused HolidayDateTaken.\n\n## Events\n\n- `HolidayAdded`: carries holiday (holiday.id), holidayList (holiday.holidayList), holidayDate (holiday.holidayDate); emitted by the move add\n\n## Operations\n\n- [holiday.add](add.md): Add one day off to a holiday list.\n- [holiday.get](get.md): Read one holiday by its id: holidayList, holidayDate, description, state.\n",
     "interview-feedback/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview-feedback.get\n\nRead one interview-feedback by its id: company, interview, interviewer, result, state.\n\n**Who may call:** the self of its interviewer, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | interview-feedback.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | interview-feedback.company |\n| interview | interview-feedback.interview |\n| interviewer | interview-feedback.interviewer |\n| result | interview-feedback.result |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its interviewer, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **Cy can't read Olga's.** `cy` (signed in) calls and sends id the last call's interviewFeedback, and is refused with NotAllowed, AR-001.\n- **it reads back in Acme Trading, as she gave it.** `olga` (signed in) calls and sends id the last call's interviewFeedback, and gets back [the world's company, the world's interview, the world's employee, `Cleared`, `given`].\n- **Ada reads it back rejected.** `ada` (role company.owner) calls and sends id the last call's interviewFeedback, and gets back [the world's company, the world's employee, `Rejected`].\n- **it reads back as hers.** `cy` (signed in) calls and sends id the last call's interviewFeedback, and gets back [the world's company, the world's interview, the world's secondEmployee, `Rejected`, `given`].\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada reads Olga's feedback.** `ada` (role company.owner) calls and sends id the last call's interviewFeedback, and gets back [the world's company, the world's employee, `Cleared`, `given`].\n\n## How to call\n\n```sh\ncapxul interview-feedback get --id <id>\n```\n\nHTTP: `POST /interview-feedback/get` with the payload as JSON. SDK: `Sdk.interview-feedback.get(payload)`.\n",
-    "interview-feedback/give.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview-feedback.give\n\nGive an interviewer's feedback on an interview: cleared or rejected.\n\n**Who may call:** the self of its interviewer.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| interview | interview-feedback.interview |\n| interviewer | interview-feedback.interviewer |\n| result | interview-feedback.result |\n\n## Answer\n\n| field | value |\n|---|---|\n| interviewFeedback | interview-feedback.id |\n\n## Move\n\n`give`: from nothing (it creates) to given, emitting InterviewFeedbackGiven.\n\n## Steps\n\n- `interview-feedback.give.load` (database)\n- `interview-feedback.give.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| FeedbackGiverNotInterviewer | 41 | IF-001 | declared in errors.ts |\n| FeedbackBeforeInterview | 42 | IF-002 | declared in errors.ts, carrying scheduledOn |\n| FeedbackAlreadyGiven | 43 | IF-003 | another interview feedback holds this interview and interviewer; by the rule interview-feedback.oneFeedbackPerInterviewer |\n| InterviewNotFound | 4 | IV-901 | nothing has the id in interview; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its interviewer; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **Olga can't give feedback two days before the interview.** `olga` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-03`.\n- **Ada can't give it for her.** `ada` (role company.owner) calls and sends interview the world's interview, interviewer the world's employee, result `Cleared`, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Rejected`, and is refused with NotAllowed, AR-001.\n- **Bo can't give his own: he isn't one of its interviewers, which is judged before the day.** `bo` (signed in) calls and sends interview the world's interview, interviewer the world's outsider, result `Rejected`, and is refused with FeedbackGiverNotInterviewer, IF-001.\n- **Olga still can't give it.** `olga` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-03`.\n- **nor can Cy.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Rejected`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-03`.\n- **Bo still can't give his own.** `bo` (signed in) calls and sends interview the world's interview, interviewer the world's outsider, result `Cleared`, and is refused with FeedbackGiverNotInterviewer, IF-001.\n- **Olga clears Pat, on the day itself.** `olga` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Cleared`, and gets back an answer matching `^ifb_[0-9a-z]+$`.\n- **Olga can't give a second, even another result.** `olga` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Rejected`, and is refused with FeedbackAlreadyGiven, IF-003.\n- **Olga can't give feedback on that one yet: its own day is judged.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-05`.\n- **nor Cy.** `cy` (signed in) calls and sends interview the last call's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-05`.\n- **Cy can't give feedback on it: she isn't one of its interviewers.** `cy` (signed in) calls and sends interview the last call's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackGiverNotInterviewer, IF-001.\n- **Olga, who gave feedback on the technical round, may give it on the final round too.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Rejected`, and gets back an answer matching `^ifb_[0-9a-z]+$`.\n- **Cy, who has left, still gives her feedback on the technical interview she was on, now decided.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Rejected`, and gets back an answer matching `^ifb_[0-9a-z]+$`.\n- **Cy can't give a second.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackAlreadyGiven, IF-003.\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Olga clears Pat the same day.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Cleared`, and gets back an answer matching `^ifb_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul interview-feedback give --interview <interview> --interviewer <interviewer> --result <result>\n```\n\nHTTP: `POST /interview-feedback/give` with the payload as JSON. SDK: `Sdk.interview-feedback.give(payload)`.\n",
+    "interview-feedback/give.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview-feedback.give\n\nGive an interviewer's feedback on an interview: cleared or rejected.\n\n**Who may call:** the self of its interviewer.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| interview | interview-feedback.interview |\n| interviewer | interview-feedback.interviewer |\n| result | interview-feedback.result |\n\n## Answer\n\n| field | value |\n|---|---|\n| interviewFeedback | interview-feedback.id |\n\n## Move\n\n`give`: from nothing (it creates) to given, emitting InterviewFeedbackGiven.\n\n## Steps\n\n- `interview-feedback.give.load` (database)\n- `interview-feedback.give.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| FeedbackGiverNotInterviewer | 41 | IF-001 | declared in errors.ts |\n| FeedbackBeforeInterview | 42 | IF-002 | declared in errors.ts, carrying scheduledOn |\n| FeedbackAlreadyGiven | 43 | IF-003 | another interview feedback holds this interview and interviewer; by the rule interview-feedback.oneFeedbackPerInterviewer |\n| InterviewNotFound | 4 | IV-901 | nothing has the id in interview; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its interviewer; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **Olga can't give feedback two days before the interview.** `olga` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-03`.\n- **Ada can't give it for her.** `ada` (role company.owner) calls and sends interview the world's interview, interviewer the world's employee, result `Cleared`, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Rejected`, and is refused with NotAllowed, AR-001.\n- **Bo can't give his own: he isn't one of its interviewers, which is judged before the day.** `bo` (signed in) calls and sends interview the world's interview, interviewer the world's outsider, result `Rejected`, and is refused with FeedbackGiverNotInterviewer, IF-001.\n- **Olga still can't give it.** `olga` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-03`.\n- **nor can Cy.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Rejected`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-03`.\n- **Bo still can't give his own.** `bo` (signed in) calls and sends interview the world's interview, interviewer the world's outsider, result `Cleared`, and is refused with FeedbackGiverNotInterviewer, IF-001.\n- **Olga clears Pat, on the day itself.** `olga` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Cleared`, and gets back an answer matching `^ifb_[0-9a-z]+$`.\n- **Olga can't give a second, even another result.** `olga` (signed in) calls and sends interview the world's interview, interviewer the world's employee, result `Rejected`, and is refused with FeedbackAlreadyGiven, IF-003.\n- **Olga can't give feedback on that one yet: its own day is judged.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-05`.\n- **nor Cy.** `cy` (signed in) calls and sends interview the last call's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-05`.\n- **Cy can't give feedback on it: she isn't one of its interviewers.** `cy` (signed in) calls and sends interview the last call's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackGiverNotInterviewer, IF-001.\n- **Olga, who gave feedback on the technical interview, may still give it on the cleared final one.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Rejected`, and gets back an answer matching `^ifb_[0-9a-z]+$`.\n- **Cy, who has left, still gives her feedback on the technical interview she was on, still pending.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Rejected`, and gets back an answer matching `^ifb_[0-9a-z]+$`.\n- **Cy can't give a second.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackAlreadyGiven, IF-003.\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Olga clears Pat the same day.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Cleared`, and gets back an answer matching `^ifb_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul interview-feedback give --interview <interview> --interviewer <interviewer> --result <result>\n```\n\nHTTP: `POST /interview-feedback/give` with the payload as JSON. SDK: `Sdk.interview-feedback.give(payload)`.\n",
     "interview-feedback/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview-feedback\n\nWhat one interviewer found at an interview.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| interview | interview.id |\n| interviewer | employee.id |\n| result | InterviewResult |\n\n## Machine\n\nStates: given. A move from the wrong state is refused InterviewFeedbackNotGiven (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| give | (creates) | given | InterviewFeedbackGiven |\n\n## Invariants\n\n- `interview-feedback.oneFeedbackPerInterviewer`: another interview feedback holds this interview and interviewer. Unique on interview, interviewer, in every state; refused FeedbackAlreadyGiven.\n\n## Events\n\n- `InterviewFeedbackGiven`: carries interviewFeedback (interview-feedback.id), interview (interview-feedback.interview), interviewer (interview-feedback.interviewer), result (interview-feedback.result); emitted by the move give\n\n## Operations\n\n- [interview-feedback.get](get.md): Read one interview-feedback by its id: company, interview, interviewer, result, state.\n- [interview-feedback.give](give.md): Give an interviewer's feedback on an interview: cleared or rejected.\n",
-    "interview-round/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview-round.create\n\nAdd a stage of hiring to a company, with the employees who interview at it.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | interview-round.company |\n| roundName | interview-round.roundName |\n| interviewers | interview-round.interviewers |\n\n## Answer\n\n| field | value |\n|---|---|\n| interviewRound | interview-round.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting InterviewRoundCreated.\n\n## Steps\n\n- `interview-round.create.load` (database)\n- `interview-round.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RoundInterviewerNotInCompany | 42 | IR-002 | declared in errors.ts |\n| RoundInterviewerHasLeft | 43 | IR-003 | declared in errors.ts |\n| RoundNameTaken | 41 | IR-001 | another interview round holds this company and round name; by the rule interview-round.oneNamePerCompany, carrying roundName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **Ada adds a culture round.** `ada` (role company.owner) calls and sends company the world's company, roundName `Culture`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada adds the final round.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Ada adds a technical round to Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Technical`, interviewers [the world's outsider], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada adds a culture round, with nobody.** `ada` (role company.owner) calls and sends company the world's company, roundName `Culture`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada adds the final round, with Cy.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee], and gets back an answer matching `^irn_[0-9a-z]+$`.\n\n### set up interview rounds\n\nStarts from the world `an outside employee`.\n\n- **Bo can't add a round to Acme Trading.** `bo` (signed in) calls and sends company the world's company, roundName `Culture`, interviewers [], and is refused with NotAllowed, AR-001.\n- **Ada can't add a second technical round.** `ada` (role company.owner) calls and sends company the world's company, roundName `Technical`, interviewers [the world's secondEmployee], and is refused with RoundNameTaken, IR-001, carrying roundName `Technical`.\n- **Ada adds a panel round, with Cy then Olga.** `ada` (role company.owner) calls and sends company the world's company, roundName `Panel`, interviewers [the world's secondEmployee, the world's employee], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada adds a culture round, in lower case, with nobody yet.** `ada` (role company.owner) calls and sends company the world's company, roundName `culture`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Acme Logistics may have its own technical round, with Bo.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Technical`, interviewers [the world's outsider], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Dee's company may have its own technical round too.** `dee` (signed in) calls and sends company the last call's company, roundName `Technical`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada can't put Bo on an Acme Trading round: he works for Acme Logistics, though she runs both.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's outsider], and is refused with RoundInterviewerNotInCompany, IR-002.\n- **nor after Olga.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's employee, the world's outsider], and is refused with RoundInterviewerNotInCompany, IR-002.\n- **nor put Olga on an Acme Logistics round.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Final`, interviewers [the world's outsider, the world's employee], and is refused with RoundInterviewerNotInCompany, IR-002.\n- **Ada can't put Olga on a new round now she has left.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's employee], and is refused with RoundInterviewerHasLeft, IR-003.\n- **nor after Cy.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee, the world's employee], and is refused with RoundInterviewerHasLeft, IR-003.\n- **Olga gone and Bo from another company is refused for Bo first, though Olga comes first.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's employee, the world's outsider], and is refused with RoundInterviewerNotInCompany, IR-002.\n- **the final round, with Cy alone, is taken.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee], and gets back an answer matching `^irn_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul interview-round create --company <company> --roundName <roundName> --interviewers <interviewers>\n```\n\nHTTP: `POST /interview-round/create` with the payload as JSON. SDK: `Sdk.interview-round.create(payload)`.\n",
+    "interview-round/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview-round.create\n\nAdd a stage of hiring to a company, with the employees who interview at it.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | interview-round.company |\n| roundName | interview-round.roundName |\n| interviewers | interview-round.interviewers |\n\n## Answer\n\n| field | value |\n|---|---|\n| interviewRound | interview-round.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting InterviewRoundCreated.\n\n## Steps\n\n- `interview-round.create.load` (database)\n- `interview-round.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RoundInterviewerNotInCompany | 42 | IR-002 | declared in errors.ts |\n| RoundInterviewerHasLeft | 43 | IR-003 | declared in errors.ts |\n| RoundNameTaken | 41 | IR-001 | another interview round holds this company and round name; by the rule interview-round.oneNamePerCompany, carrying roundName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **Ada adds a culture round.** `ada` (role company.owner) calls and sends company the world's company, roundName `Culture`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada adds the final round.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Ada adds a technical round to Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Technical`, interviewers [the world's outsider], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada adds a culture round, with nobody.** `ada` (role company.owner) calls and sends company the world's company, roundName `Culture`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada adds the final round, with Cy.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **and adds a panel round to Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Panel`, interviewers [the world's outsider], and gets back an answer matching `^irn_[0-9a-z]+$`.\n\n### set up interview rounds\n\nStarts from the world `an outside employee`.\n\n- **Bo can't add a round to Acme Trading.** `bo` (signed in) calls and sends company the world's company, roundName `Culture`, interviewers [], and is refused with NotAllowed, AR-001.\n- **Ada can't add a second technical round.** `ada` (role company.owner) calls and sends company the world's company, roundName `Technical`, interviewers [the world's secondEmployee], and is refused with RoundNameTaken, IR-001, carrying roundName `Technical`.\n- **Ada adds a panel round, with Cy then Olga.** `ada` (role company.owner) calls and sends company the world's company, roundName `Panel`, interviewers [the world's secondEmployee, the world's employee], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada adds a culture round, in lower case, with nobody yet.** `ada` (role company.owner) calls and sends company the world's company, roundName `culture`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Acme Logistics may have its own technical round, with Bo.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Technical`, interviewers [the world's outsider], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Dee's company may have its own technical round too.** `dee` (signed in) calls and sends company the last call's company, roundName `Technical`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.\n- **Ada can't put Bo on an Acme Trading round: he works for Acme Logistics, though she runs both.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's outsider], and is refused with RoundInterviewerNotInCompany, IR-002.\n- **nor after Olga.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's employee, the world's outsider], and is refused with RoundInterviewerNotInCompany, IR-002.\n- **nor put Olga on an Acme Logistics round.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Final`, interviewers [the world's outsider, the world's employee], and is refused with RoundInterviewerNotInCompany, IR-002.\n- **Ada can't put Olga on a new round now she has left.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's employee], and is refused with RoundInterviewerHasLeft, IR-003.\n- **nor after Cy.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee, the world's employee], and is refused with RoundInterviewerHasLeft, IR-003.\n- **Olga gone and Bo from another company is refused for Bo first, though Olga comes first.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's employee, the world's outsider], and is refused with RoundInterviewerNotInCompany, IR-002.\n- **Ada adds the final round, with Cy alone.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee], and gets back an answer matching `^irn_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul interview-round create --company <company> --roundName <roundName> --interviewers <interviewers>\n```\n\nHTTP: `POST /interview-round/create` with the payload as JSON. SDK: `Sdk.interview-round.create(payload)`.\n",
     "interview-round/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview-round.get\n\nRead one interview-round by its id: company, roundName, interviewers, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | interview-round.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | interview-round.company |\n| roundName | interview-round.roundName |\n| interviewers | interview-round.interviewers |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up interview rounds\n\nStarts from the world `an outside employee`.\n\n- **the technical round reads back with Olga.** `ada` (role company.owner) calls and sends id the world's interviewRound, and gets back [the world's company, `Technical`, [the world's employee], `active`].\n- **Olga can't read it.** `olga` (signed in) calls and sends id the world's interviewRound, and is refused with NotAllowed, AR-001.\n- **it reads back with both, in the order given.** `ada` (role company.owner) calls and sends id the last call's interviewRound, and gets back [the world's company, `Panel`, [the world's secondEmployee, the world's employee], `active`].\n- **it reads back as she typed it, with nobody.** `ada` (role company.owner) calls and sends id the last call's interviewRound, and gets back [`culture`, []].\n- **it reads back in Acme Logistics.** `ada` (role company.owner) calls and sends id the last call's interviewRound, and gets back [the world's otherCompany, `Technical`, [the world's outsider]].\n- **the technical round still reads back with Olga, who was on it before she left.** `ada` (role company.owner) calls and sends id the world's interviewRound, and gets back [`Technical`, [the world's employee]].\n\n## How to call\n\n```sh\ncapxul interview-round get --id <id>\n```\n\nHTTP: `POST /interview-round/get` with the payload as JSON. SDK: `Sdk.interview-round.get(payload)`.\n",
     "interview-round/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview-round\n\nA stage of a company's hiring, and the employees who usually interview at it.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| roundName | Name |\n| interviewers | Interviewers |\n\n## Machine\n\nStates: active. A move from the wrong state is refused InterviewRoundNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | InterviewRoundCreated |\n\n## Invariants\n\n- `interview-round.oneNamePerCompany`: another interview round holds this company and round name. Unique on company, roundName, in every state; refused RoundNameTaken.\n\n## Events\n\n- `InterviewRoundCreated`: carries interviewRound (interview-round.id), company (interview-round.company); emitted by the move create\n\n## Operations\n\n- [interview-round.create](create.md): Add a stage of hiring to a company, with the employees who interview at it.\n- [interview-round.get](get.md): Read one interview-round by its id: company, roundName, interviewers, state.\n",
-    "interview/clear.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview.clear\n\nMark an interview cleared.\n\n**Who may call:** the owner of its interview.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| interview | interview.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| interview | interview.id |\n\n## Move\n\n`clear`: from pending to cleared, emitting InterviewCleared.\n\n## Steps\n\n- `interview.clear.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InterviewAlreadyScheduled | 46 | IV-006 | another interview holds this job applicant and interview round; by the rule interview.oneInterviewPerRound |\n| InterviewNotPending | 40 | IV-900 | the interview is in a state clear can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its interview.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **and marks the interview it was on cleared.** `ada` (role company.owner) calls and sends interview the last call's interview, and gets back an answer matching `^ivw_[0-9a-z]+$`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **it can't then be cleared.** `ada` (role company.owner) calls and sends interview the last call's interview, and is refused with InterviewNotPending, IV-900, carrying state `rejected`.\n- **Ada marks it cleared.** `ada` (role company.owner) calls and sends interview the last call's interview, and gets back an answer matching `^ivw_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul interview clear --interview <interview>\n```\n\nHTTP: `POST /interview/clear` with the payload as JSON. SDK: `Sdk.interview.clear(payload)`.\n",
-    "interview/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview.create\n\nSchedule an applicant's interview at a round, on a day, with the employees who interview.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | interview.jobApplicant |\n| interviewRound | interview.interviewRound |\n| scheduledOn | interview.scheduledOn |\n| fromTime | interview.fromTime |\n| toTime | interview.toTime |\n| interviewers | interview.interviewers |\n\n## Answer\n\n| field | value |\n|---|---|\n| interview | interview.id |\n\n## Move\n\n`create`: from nothing (it creates) to pending, emitting InterviewScheduled.\n\n## Steps\n\n- `interview.create.load` (database)\n- `interview.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ApplicantRejected | 41 | IV-001 | declared in errors.ts |\n| RoundNotInCompany | 42 | IV-002 | declared in errors.ts |\n| InterviewEndsBeforeStart | 43 | IV-003 | declared in errors.ts |\n| InterviewerNotInCompany | 44 | IV-004 | declared in errors.ts |\n| InterviewerHasLeft | 45 | IV-005 | declared in errors.ts |\n| InterviewAlreadyScheduled | 46 | IV-006 | another interview holds this job applicant and interview round; by the rule interview.oneInterviewPerRound |\n| InterviewRoundNotFound | 4 | IR-901 | nothing has the id in interviewRound; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **and schedules Pat's culture interview for Saturday 5 December, with Olga and Cy.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-05`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee, the world's secondEmployee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **and schedules Pat's final interview for today, with Olga alone.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-03`, fromTime `15:00`, toTime `16:00`, interviewers [the world's employee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada schedules Pat's technical interview with Olga, this afternoon from two to three.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-01`, fromTime `14:00`, toTime `15:00`, interviewers [the world's employee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Bo can't schedule Pat.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee], and is refused with NotAllowed, AR-001.\n- **nor can Olga.** `olga` (signed in) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee], and is refused with NotAllowed, AR-001.\n- **Ada can't schedule one that ends when it starts.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `10:00`, interviewers [the world's employee], and is refused with InterviewEndsBeforeStart, IV-003.\n- **nor one that ends a quarter of an hour before it starts, in the same hour.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:30`, toTime `10:15`, interviewers [the world's employee], and is refused with InterviewEndsBeforeStart, IV-003.\n- **nor one that runs past midnight.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `23:30`, toTime `00:30`, interviewers [the world's employee], and is refused with InterviewEndsBeforeStart, IV-003.\n- **nor put Bo on it: he works for Acme Logistics, though she runs both.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's outsider], and is refused with InterviewerNotInCompany, IV-004.\n- **nor after Olga.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee, the world's outsider], and is refused with InterviewerNotInCompany, IV-004.\n- **times are judged before interviewers.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `11:00`, toTime `10:00`, interviewers [the world's outsider], and is refused with InterviewEndsBeforeStart, IV-003.\n- **she can't interview Pat at it: Pat applied to Acme Trading.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee], and is refused with RoundNotInCompany, IV-002.\n- **the round is judged before the times.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-03`, fromTime `11:00`, toTime `10:00`, interviewers [the world's outsider], and is refused with RoundNotInCompany, IV-002.\n- **Ada schedules Pat's technical interview with Cy and Olga, ten to half past.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `10:30`, interviewers [the world's secondEmployee, the world's employee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **Ada can't schedule Pat's technical interview twice.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-04`, fromTime `14:00`, toTime `15:00`, interviewers [the world's secondEmployee], and is refused with InterviewAlreadyScheduled, IV-006.\n- **Pat's technical interview still can't be scheduled again, now the first is rejected.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-04`, fromTime `14:00`, toTime `15:00`, interviewers [the world's secondEmployee], and is refused with InterviewAlreadyScheduled, IV-006.\n- **Pat may be interviewed at another round, a minute long, late on a day already past.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-11-20`, fromTime `23:58`, toTime `23:59`, interviewers [the world's employee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **she can't put Olga on a new interview now she has left.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-07`, fromTime `09:00`, toTime `10:00`, interviewers [the world's employee], and is refused with InterviewerHasLeft, IV-005.\n- **nor after Cy.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-07`, fromTime `09:00`, toTime `10:00`, interviewers [the world's secondEmployee, the world's employee], and is refused with InterviewerHasLeft, IV-005.\n- **Olga gone and Bo from another company is refused for Bo, though Olga comes first.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-07`, fromTime `09:00`, toTime `10:00`, interviewers [the world's employee, the world's outsider], and is refused with InterviewerNotInCompany, IV-004.\n- **Cy alone may interview Pat at the final round, on a day still to come.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2027-01-11`, fromTime `09:00`, toTime `17:00`, interviewers [the world's secondEmployee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **she can't then interview Sam.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-07`, fromTime `09:00`, toTime `10:00`, interviewers [the world's secondEmployee], and is refused with ApplicantRejected, IV-001.\n- **a rejected applicant is judged first, before the times and the interviewers.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-07`, fromTime `10:00`, toTime `09:00`, interviewers [the world's employee, the world's outsider], and is refused with ApplicantRejected, IV-001.\n\n## How to call\n\n```sh\ncapxul interview create --jobApplicant <jobApplicant> --interviewRound <interviewRound> --scheduledOn <scheduledOn> --fromTime <fromTime> --toTime <toTime> --interviewers <interviewers>\n```\n\nHTTP: `POST /interview/create` with the payload as JSON. SDK: `Sdk.interview.create(payload)`.\n",
+    "interview/clear.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview.clear\n\nMark an interview cleared.\n\n**Who may call:** the owner of its interview.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| interview | interview.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| interview | interview.id |\n\n## Move\n\n`clear`: from pending to cleared, emitting InterviewCleared.\n\n## Steps\n\n- `interview.clear.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InterviewAlreadyScheduled | 46 | IV-006 | another interview holds this job applicant and interview round; by the rule interview.oneInterviewPerRound |\n| InterviewNotPending | 40 | IV-900 | the interview is in a state clear can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its interview.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **Ada marks Pat's final interview cleared before any feedback.** `ada` (role company.owner) calls and sends interview the last call's interview, and gets back an answer matching `^ivw_[0-9a-z]+$`.\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **and marks the interview it was on cleared.** `ada` (role company.owner) calls and sends interview the last call's interview, and gets back an answer matching `^ivw_[0-9a-z]+$`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **it can't then be cleared.** `ada` (role company.owner) calls and sends interview the last call's interview, and is refused with InterviewNotPending, IV-900, carrying state `rejected`.\n- **Bo can't clear it.** `bo` (signed in) calls and sends interview the last call's interview, and is refused with NotAllowed, AR-001.\n- **Ada marks it cleared.** `ada` (role company.owner) calls and sends interview the last call's interview, and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **nor cleared again.** `ada` (role company.owner) calls and sends interview the last call's interview, and is refused with InterviewNotPending, IV-900, carrying state `cleared`.\n\n## How to call\n\n```sh\ncapxul interview clear --interview <interview>\n```\n\nHTTP: `POST /interview/clear` with the payload as JSON. SDK: `Sdk.interview.clear(payload)`.\n",
+    "interview/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview.create\n\nSchedule an applicant's interview at a round, on a day, with the employees who interview.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | interview.jobApplicant |\n| interviewRound | interview.interviewRound |\n| scheduledOn | interview.scheduledOn |\n| fromTime | interview.fromTime |\n| toTime | interview.toTime |\n| interviewers | interview.interviewers |\n\n## Answer\n\n| field | value |\n|---|---|\n| interview | interview.id |\n\n## Move\n\n`create`: from nothing (it creates) to pending, emitting InterviewScheduled.\n\n## Steps\n\n- `interview.create.load` (database)\n- `interview.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ApplicantRejected | 41 | IV-001 | declared in errors.ts |\n| RoundNotInCompany | 42 | IV-002 | declared in errors.ts |\n| InterviewEndsBeforeStart | 43 | IV-003 | declared in errors.ts |\n| InterviewerNotInCompany | 44 | IV-004 | declared in errors.ts |\n| InterviewerHasLeft | 45 | IV-005 | declared in errors.ts |\n| InterviewAlreadyScheduled | 46 | IV-006 | another interview holds this job applicant and interview round; by the rule interview.oneInterviewPerRound |\n| InterviewRoundNotFound | 4 | IR-901 | nothing has the id in interviewRound; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **and schedules Pat's culture interview for Saturday 5 December, with Olga and Cy.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-05`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee, the world's secondEmployee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **and schedules Pat's final interview for today, with Olga alone.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-03`, fromTime `15:00`, toTime `16:00`, interviewers [the world's employee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada schedules Pat's technical interview with Olga, this afternoon from two to three.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-01`, fromTime `14:00`, toTime `15:00`, interviewers [the world's employee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Bo can't schedule Pat.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee], and is refused with NotAllowed, AR-001.\n- **nor can Olga.** `olga` (signed in) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee], and is refused with NotAllowed, AR-001.\n- **Ada can't schedule one that ends when it starts.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `10:00`, interviewers [the world's employee], and is refused with InterviewEndsBeforeStart, IV-003.\n- **nor one that ends a quarter of an hour before it starts, in the same hour.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:30`, toTime `10:15`, interviewers [the world's employee], and is refused with InterviewEndsBeforeStart, IV-003.\n- **nor one that runs past midnight.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `23:30`, toTime `00:30`, interviewers [the world's employee], and is refused with InterviewEndsBeforeStart, IV-003.\n- **nor put Bo on it: he works for Acme Logistics, though she runs both.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's outsider], and is refused with InterviewerNotInCompany, IV-004.\n- **nor after Olga.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee, the world's outsider], and is refused with InterviewerNotInCompany, IV-004.\n- **times are judged before interviewers.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `11:00`, toTime `10:00`, interviewers [the world's outsider], and is refused with InterviewEndsBeforeStart, IV-003.\n- **she can't interview Pat at it: Pat applied to Acme Trading.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `11:00`, interviewers [the world's employee], and is refused with RoundNotInCompany, IV-002.\n- **the round is judged before the times.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-03`, fromTime `11:00`, toTime `10:00`, interviewers [the world's outsider], and is refused with RoundNotInCompany, IV-002.\n- **Ada schedules Pat's technical interview with Cy and Olga, ten to half past.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-03`, fromTime `10:00`, toTime `10:30`, interviewers [the world's secondEmployee, the world's employee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **Ada can't schedule Pat's technical interview twice.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-04`, fromTime `14:00`, toTime `15:00`, interviewers [the world's secondEmployee], and is refused with InterviewAlreadyScheduled, IV-006.\n- **Pat's technical interview still can't be scheduled again, now the first is rejected.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-04`, fromTime `14:00`, toTime `15:00`, interviewers [the world's secondEmployee], and is refused with InterviewAlreadyScheduled, IV-006.\n- **Pat may be interviewed at another round, a minute long, late on a day already past.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-11-20`, fromTime `23:58`, toTime `23:59`, interviewers [the world's employee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **she can't put Olga on a new interview now she has left.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-07`, fromTime `09:00`, toTime `10:00`, interviewers [the world's employee], and is refused with InterviewerHasLeft, IV-005.\n- **nor on a day already past, before she left.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-11-20`, fromTime `09:00`, toTime `10:00`, interviewers [the world's employee], and is refused with InterviewerHasLeft, IV-005.\n- **nor after Cy.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-07`, fromTime `09:00`, toTime `10:00`, interviewers [the world's secondEmployee, the world's employee], and is refused with InterviewerHasLeft, IV-005.\n- **Olga gone and Bo from another company is refused for Bo, though Olga comes first.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-07`, fromTime `09:00`, toTime `10:00`, interviewers [the world's employee, the world's outsider], and is refused with InterviewerNotInCompany, IV-004.\n- **Cy alone may interview Pat at the final round, on a day still to come.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2027-01-11`, fromTime `09:00`, toTime `17:00`, interviewers [the world's secondEmployee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **Olga can't interview Lee at the technical round, though that round lists her: she has left.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-08`, fromTime `09:00`, toTime `10:00`, interviewers [the world's employee], and is refused with InterviewerHasLeft, IV-005.\n- **Lee, on hold, may be interviewed at the technical round with Cy.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-08`, fromTime `09:00`, toTime `10:00`, interviewers [the world's secondEmployee], and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **she can't then interview Sam.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-07`, fromTime `09:00`, toTime `10:00`, interviewers [the world's secondEmployee], and is refused with ApplicantRejected, IV-001.\n- **a rejected applicant is judged first, before the times and the interviewers.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, interviewRound the world's interviewRound, scheduledOn `2026-12-07`, fromTime `10:00`, toTime `09:00`, interviewers [the world's employee, the world's outsider], and is refused with ApplicantRejected, IV-001.\n- **Pat, now rejected, is refused for that first, before the other company's round, the times and the interviewers.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, interviewRound the last call's interviewRound, scheduledOn `2026-12-09`, fromTime `10:00`, toTime `09:00`, interviewers [the world's outsider], and is refused with ApplicantRejected, IV-001.\n\n## How to call\n\n```sh\ncapxul interview create --jobApplicant <jobApplicant> --interviewRound <interviewRound> --scheduledOn <scheduledOn> --fromTime <fromTime> --toTime <toTime> --interviewers <interviewers>\n```\n\nHTTP: `POST /interview/create` with the payload as JSON. SDK: `Sdk.interview.create(payload)`.\n",
     "interview/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview.get\n\nRead one interview by its id: company, jobApplicant, interviewRound, scheduledOn, fromTime, toTime, interviewers, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | interview.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | interview.company |\n| jobApplicant | interview.jobApplicant |\n| interviewRound | interview.interviewRound |\n| scheduledOn | interview.scheduledOn |\n| fromTime | interview.fromTime |\n| toTime | interview.toTime |\n| interviewers | interview.interviewers |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **the interview is still pending: feedback doesn't decide it.** `ada` (role company.owner) calls and sends id the world's interview, and gets back `pending`.\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **the interview reads back cleared, Pat's, at the technical round.** `ada` (role company.owner) calls and sends id the last call's interview, and gets back [the world's company, the world's interviewRound, `2026-12-01`, `14:00`, `15:00`, [the world's employee], `cleared`].\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Olga can't read it.** `olga` (signed in) calls and sends id the last call's interview, and is refused with NotAllowed, AR-001.\n- **it reads back in Acme Trading, as she set it, rejected.** `ada` (role company.owner) calls and sends id the last call's interview, and gets back [the world's company, the world's jobApplicant, the world's interviewRound, `2026-12-03`, `10:00`, `10:30`, [the world's secondEmployee, the world's employee], `rejected`].\n- **it reads back with Olga alone, cleared.** `ada` (role company.owner) calls and sends id the last call's interview, and gets back [`2026-11-20`, `23:58`, `23:59`, [the world's employee], `cleared`].\n\n## How to call\n\n```sh\ncapxul interview get --id <id>\n```\n\nHTTP: `POST /interview/get` with the payload as JSON. SDK: `Sdk.interview.get(payload)`.\n",
     "interview/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview\n\nAn applicant's interview at one round of hiring, on a day, between two times.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| jobApplicant | job-applicant.id |\n| interviewRound | interview-round.id |\n| scheduledOn | Day |\n| fromTime | TimeOfDay |\n| toTime | TimeOfDay |\n| interviewers | Interviewers |\n\n## Machine\n\nStates: pending, cleared, rejected. A move from the wrong state is refused InterviewNotPending (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | pending | InterviewScheduled |\n| clear | pending | cleared | InterviewCleared |\n| reject | pending | rejected | InterviewRejected |\n\n## Invariants\n\n- `interview.oneInterviewPerRound`: another interview holds this job applicant and interview round. Unique on jobApplicant, interviewRound, in every state; refused InterviewAlreadyScheduled.\n\n## Events\n\n- `InterviewCleared`: carries interview (interview.id); emitted by the move clear\n- `InterviewRejected`: carries interview (interview.id); emitted by the move reject\n- `InterviewScheduled`: carries interview (interview.id), jobApplicant (interview.jobApplicant), interviewRound (interview.interviewRound); emitted by the move create\n\n## Operations\n\n- [interview.clear](clear.md): Mark an interview cleared.\n- [interview.create](create.md): Schedule an applicant's interview at a round, on a day, with the employees who interview.\n- [interview.get](get.md): Read one interview by its id: company, jobApplicant, interviewRound, scheduledOn, fromTime, toTime, interviewers, state.\n- [interview.reject](reject.md): Mark an interview rejected.\n",
     "interview/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# interview.reject\n\nMark an interview rejected.\n\n**Who may call:** the owner of its interview.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| interview | interview.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| interview | interview.id |\n\n## Move\n\n`reject`: from pending to rejected, emitting InterviewRejected.\n\n## Steps\n\n- `interview.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InterviewAlreadyScheduled | 46 | IV-006 | another interview holds this job applicant and interview round; by the rule interview.oneInterviewPerRound |\n| InterviewNotPending | 40 | IV-900 | the interview is in a state reject can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its interview.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### give interview feedback\n\nStarts from the world `an interview`.\n\n- **Ada marks the technical interview rejected, though Olga cleared Pat.** `ada` (role company.owner) calls and sends interview the world's interview, and gets back the world's interview.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Bo can't reject it.** `bo` (signed in) calls and sends interview the last call's interview, and is refused with NotAllowed, AR-001.\n- **Ada marks it rejected.** `ada` (role company.owner) calls and sends interview the last call's interview, and gets back an answer matching `^ivw_[0-9a-z]+$`.\n- **nor rejected again.** `ada` (role company.owner) calls and sends interview the last call's interview, and is refused with InterviewNotPending, IV-900, carrying state `rejected`.\n- **it can't then be rejected.** `ada` (role company.owner) calls and sends interview the last call's interview, and is refused with InterviewNotPending, IV-900, carrying state `cleared`.\n\n## How to call\n\n```sh\ncapxul interview reject --interview <interview>\n```\n\nHTTP: `POST /interview/reject` with the payload as JSON. SDK: `Sdk.interview.reject(payload)`.\n",
-    "job-applicant/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.accept\n\nMark an applicant accepted, once they have accepted their job offer.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Move\n\n`accept`: from open or hold to accepted, emitting JobApplicantAccepted.\n\n## Steps\n\n- `job-applicant.accept.load` (database)\n- `job-applicant.accept.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OfferNotAccepted | 42 | JA-002 | declared in errors.ts |\n| JobApplicantNotOpen | 40 | JA-900 | the job-applicant is in a state accept can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada accepts Pat, the offer's applicant.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **Ada can't accept Pat before any offer.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with OfferNotAccepted, JA-002.\n- **nor accept Pat while the offer awaits.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with OfferNotAccepted, JA-002.\n- **Bo can't accept Pat.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, and is refused with NotAllowed, AR-001.\n- **Ada accepts Pat, whose offer is accepted.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.\n- **Ada can't accept Sam on Pat's accepted offer.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with OfferNotAccepted, JA-002.\n- **Ada can't accept Sam on a rejected offer.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with OfferNotAccepted, JA-002.\n- **a rejected applicant can't be accepted.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul job-applicant accept --jobApplicant <jobApplicant>\n```\n\nHTTP: `POST /job-applicant/accept` with the payload as JSON. SDK: `Sdk.job-applicant.accept(payload)`.\n",
-    "job-applicant/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.create\n\nAdd a person who applied for a job opening.\n\n**Who may call:** the owner of its jobOpening.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobOpening | job-applicant.jobOpening |\n| applicantName | job-applicant.applicantName |\n| email | job-applicant.email |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Move\n\n`create`: from nothing (it creates) to open, emitting JobApplicantCreated.\n\n## Steps\n\n- `job-applicant.create.load` (database)\n- `job-applicant.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OpeningClosed | 41 | JA-001 | declared in errors.ts |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobOpening.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Pat applies for it.** `ada` (role company.owner) calls and sends jobOpening the last call's jobOpening, applicantName `Pat Mwangi`, email `pat@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **Sam applies for the same job.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Sam Otieno`, email `sam@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Sam applies for it, with the same email as Pat's: an email may apply again.** `ada` (role company.owner) calls and sends jobOpening the last call's jobOpening, applicantName `Sam Otieno`, email `pat@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n- **nobody new may apply for it.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Lee Wanjiru`, email `lee@example.com`, and is refused with OpeningClosed, JA-001.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Sam applies for the same job.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Sam Otieno`, email `sam@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul job-applicant create --jobOpening <jobOpening> --applicantName <applicantName> --email <email>\n```\n\nHTTP: `POST /job-applicant/create` with the payload as JSON. SDK: `Sdk.job-applicant.create(payload)`.\n",
-    "job-applicant/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.get\n\nRead one job-applicant by its id: company, jobOpening, applicantName, email, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | job-applicant.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | job-applicant.company |\n| jobOpening | job-applicant.jobOpening |\n| applicantName | job-applicant.applicantName |\n| email | job-applicant.email |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Pat reads back accepted, for the opening.** `ada` (role company.owner) calls and sends id the last call's jobApplicant, and gets back [the world's company, `Pat Mwangi`, `pat@example.com`, `accepted`].\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **Pat reads back accepted.** `ada` (role company.owner) calls and sends id the world's jobApplicant, and gets back [the world's company, the world's jobOpening, `Pat Mwangi`, `pat@example.com`, `accepted`].\n- **Sam reads back rejected.** `ada` (role company.owner) calls and sends id the last call's jobApplicant, and gets back [the world's company, `Sam Otieno`, `sam@example.com`, `rejected`].\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Sam reads back in Acme Trading, the opening's company.** `ada` (role company.owner) calls and sends id the last call's jobApplicant, and gets back [the world's company, `Sam Otieno`, `pat@example.com`, `open`].\n- **Pat, who applied before it closed, is still open.** `ada` (role company.owner) calls and sends id the world's jobApplicant, and gets back [the world's company, the world's jobOpening, `Pat Mwangi`, `pat@example.com`, `open`].\n\n## How to call\n\n```sh\ncapxul job-applicant get --id <id>\n```\n\nHTTP: `POST /job-applicant/get` with the payload as JSON. SDK: `Sdk.job-applicant.get(payload)`.\n",
-    "job-applicant/hold.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.hold\n\nPut an applicant on hold.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Move\n\n`hold`: from open to hold, emitting JobApplicantHeld.\n\n## Steps\n\n- `job-applicant.hold.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| JobApplicantNotOpen | 40 | JA-900 | the job-applicant is in a state hold can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **nor put on hold.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `accepted`.\n- **Ada puts Sam on hold.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul job-applicant hold --jobApplicant <jobApplicant>\n```\n\nHTTP: `POST /job-applicant/hold` with the payload as JSON. SDK: `Sdk.job-applicant.hold(payload)`.\n",
+    "job-applicant/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.accept\n\nMark an applicant accepted, once they have accepted their job offer.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Move\n\n`accept`: from open or hold to accepted, emitting JobApplicantAccepted.\n\n## Steps\n\n- `job-applicant.accept.load` (database)\n- `job-applicant.accept.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OfferNotAccepted | 42 | JA-002 | declared in errors.ts |\n| JobApplicantNotOpen | 40 | JA-900 | the job-applicant is in a state accept can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada accepts Pat, the offer's applicant.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **Ada can't accept Pat before any offer.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with OfferNotAccepted, JA-002.\n- **nor accept Pat while the offer awaits.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with OfferNotAccepted, JA-002.\n- **Bo can't accept Pat.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, and is refused with NotAllowed, AR-001.\n- **Ada accepts Pat, from hold, now the offer is accepted.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.\n- **Sam, with no offer, can't be accepted while Pat's is.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with OfferNotAccepted, JA-002.\n- **Ada can't accept Sam on a rejected offer.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with OfferNotAccepted, JA-002.\n- **a rejected applicant can't be accepted.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `rejected`.\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Ada accepts Pat, though the opening Pat applied for has closed.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.\n\n## How to call\n\n```sh\ncapxul job-applicant accept --jobApplicant <jobApplicant>\n```\n\nHTTP: `POST /job-applicant/accept` with the payload as JSON. SDK: `Sdk.job-applicant.accept(payload)`.\n",
+    "job-applicant/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.create\n\nAdd a person who applied for a job opening.\n\n**Who may call:** the owner of its jobOpening.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobOpening | job-applicant.jobOpening |\n| applicantName | job-applicant.applicantName |\n| email | job-applicant.email |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Move\n\n`create`: from nothing (it creates) to open, emitting JobApplicantCreated.\n\n## Steps\n\n- `job-applicant.create.load` (database)\n- `job-applicant.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OpeningClosed | 41 | JA-001 | declared in errors.ts |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobOpening.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Pat applies for it.** `ada` (role company.owner) calls and sends jobOpening the last call's jobOpening, applicantName `Pat Mwangi`, email `pat@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **Sam applies for the same job.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Sam Otieno`, email `sam@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **nor add an applicant to it.** `bo` (signed in) calls and sends jobOpening the last call's jobOpening, applicantName `Lee Wanjiru`, email `lee@example.com`, and is refused with NotAllowed, AR-001.\n- **Sam applies for it, with the same email as Pat's: an email may apply again.** `ada` (role company.owner) calls and sends jobOpening the last call's jobOpening, applicantName `Sam Otieno`, email `pat@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n- **Pat applies for the engineering job again, with the same email.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Pat Mwangi`, email `pat@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n- **nobody new may apply for it.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Lee Wanjiru`, email `lee@example.com`, and is refused with OpeningClosed, JA-001.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Lee applies for the same job.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Lee Wanjiru`, email `lee@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n- **Sam applies for the same job.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, applicantName `Sam Otieno`, email `sam@example.com`, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul job-applicant create --jobOpening <jobOpening> --applicantName <applicantName> --email <email>\n```\n\nHTTP: `POST /job-applicant/create` with the payload as JSON. SDK: `Sdk.job-applicant.create(payload)`.\n",
+    "job-applicant/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.get\n\nRead one job-applicant by its id: company, jobOpening, applicantName, email, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | job-applicant.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | job-applicant.company |\n| jobOpening | job-applicant.jobOpening |\n| applicantName | job-applicant.applicantName |\n| email | job-applicant.email |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Pat reads back accepted, for the opening.** `ada` (role company.owner) calls and sends id the last call's jobApplicant, and gets back [the world's company, `Pat Mwangi`, `pat@example.com`, `accepted`].\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **Pat reads back accepted.** `ada` (role company.owner) calls and sends id the world's jobApplicant, and gets back [the world's company, the world's jobOpening, `Pat Mwangi`, `pat@example.com`, `accepted`].\n- **Sam reads back rejected.** `ada` (role company.owner) calls and sends id the last call's jobApplicant, and gets back [the world's company, `Sam Otieno`, `sam@example.com`, `rejected`].\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Sam reads back in Acme Trading, the opening's company.** `ada` (role company.owner) calls and sends id the last call's jobApplicant, and gets back [the world's company, `Sam Otieno`, `pat@example.com`, `open`].\n- **Pat, who applied before it closed, is still open.** `ada` (role company.owner) calls and sends id the world's jobApplicant, and gets back [the world's company, the world's jobOpening, `Pat Mwangi`, `pat@example.com`, `open`].\n- **Bo can't read Pat.** `bo` (signed in) calls and sends id the world's jobApplicant, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul job-applicant get --id <id>\n```\n\nHTTP: `POST /job-applicant/get` with the payload as JSON. SDK: `Sdk.job-applicant.get(payload)`.\n",
+    "job-applicant/hold.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.hold\n\nPut an applicant on hold.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Move\n\n`hold`: from open to hold, emitting JobApplicantHeld.\n\n## Steps\n\n- `job-applicant.hold.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| JobApplicantNotOpen | 40 | JA-900 | the job-applicant is in a state hold can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **Bo can't put Pat on hold.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, and is refused with NotAllowed, AR-001.\n- **Ada puts Pat on hold while she decides.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.\n- **nor put on hold.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `accepted`.\n- **Ada puts Sam on hold.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **Ada puts Lee on hold.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul job-applicant hold --jobApplicant <jobApplicant>\n```\n\nHTTP: `POST /job-applicant/hold` with the payload as JSON. SDK: `Sdk.job-applicant.hold(payload)`.\n",
     "job-applicant/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant\n\nA person who applied for a job opening.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| jobOpening | job-opening.id |\n| applicantName | Name |\n| email | ApplicantEmail |\n\n## Machine\n\nStates: open, hold, rejected, accepted. A move from the wrong state is refused JobApplicantNotOpen (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | open | JobApplicantCreated |\n| hold | open | hold | JobApplicantHeld |\n| reject | open, hold | rejected | JobApplicantRejected |\n| accept | open, hold | accepted | JobApplicantAccepted |\n\n## Events\n\n- `JobApplicantAccepted`: carries jobApplicant (job-applicant.id); emitted by the move accept\n- `JobApplicantCreated`: carries jobApplicant (job-applicant.id), company (job-applicant.company), jobOpening (job-applicant.jobOpening); emitted by the move create\n- `JobApplicantHeld`: carries jobApplicant (job-applicant.id); emitted by the move hold\n- `JobApplicantRejected`: carries jobApplicant (job-applicant.id); emitted by the move reject\n\n## Operations\n\n- [job-applicant.accept](accept.md): Mark an applicant accepted, once they have accepted their job offer.\n- [job-applicant.create](create.md): Add a person who applied for a job opening.\n- [job-applicant.get](get.md): Read one job-applicant by its id: company, jobOpening, applicantName, email, state.\n- [job-applicant.hold](hold.md): Put an applicant on hold.\n- [job-applicant.reject](reject.md): Turn an applicant down.\n",
-    "job-applicant/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.reject\n\nTurn an applicant down.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Move\n\n`reject`: from open or hold to rejected, emitting JobApplicantRejected.\n\n## Steps\n\n- `job-applicant.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| JobApplicantNotOpen | 40 | JA-900 | the job-applicant is in a state reject can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **an accepted applicant can't be turned down.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `accepted`.\n- **Ada turns Sam down, from hold.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n- **nor turned down again.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `rejected`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **and Ada turns Sam down at once.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul job-applicant reject --jobApplicant <jobApplicant>\n```\n\nHTTP: `POST /job-applicant/reject` with the payload as JSON. SDK: `Sdk.job-applicant.reject(payload)`.\n",
-    "job-offer/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer.accept\n\nRecord that the applicant accepted the offer.\n\n**Who may call:** the owner of its jobOffer.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n| jobApplicant | job-offer.jobApplicant |\n\n## Move\n\n`accept`: from awaiting to accepted, emitting JobOfferAccepted.\n\n## Steps\n\n- `job-offer.accept.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OfferAlreadyMade | 42 | JF-002 | another job offer holds this job applicant; by the rule job-offer.oneOfferPerApplicant |\n| JobOfferNotAwaiting | 40 | JF-900 | the job-offer is in a state accept can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobOffer.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Pat accepts the offer.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back [true, true].\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **Bo can't record Pat's answer.** `bo` (signed in) calls and sends jobOffer the last call's jobOffer, and is refused with NotAllowed, AR-001.\n- **Pat accepts the offer.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back [the last call's jobOffer, the world's jobApplicant].\n- **nor accepted again.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `accepted`.\n- **it can't then be accepted.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul job-offer accept --jobOffer <jobOffer>\n```\n\nHTTP: `POST /job-offer/accept` with the payload as JSON. SDK: `Sdk.job-offer.accept(payload)`.\n",
-    "job-offer/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer.create\n\nOffer an applicant a job, under one of the company's job titles.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | job-offer.jobApplicant |\n| designation | job-offer.designation |\n| offerDate | job-offer.offerDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n\n## Move\n\n`create`: from nothing (it creates) to awaiting, emitting JobOfferMade.\n\n## Steps\n\n- `job-offer.create.load` (database)\n- `job-offer.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OfferDesignationNotInCompany | 41 | JF-001 | declared in errors.ts |\n| OfferAlreadyMade | 42 | JF-002 | another job offer holds this job applicant; by the rule job-offer.oneOfferPerApplicant |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in designation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada offers its applicant the job of engineer.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and gets back an answer matching `^jof_[0-9a-z]+$`.\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **Bo can't offer Pat a job.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and is refused with NotAllowed, AR-001.\n- **nor can Olga.** `olga` (signed in) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and is refused with NotAllowed, AR-001.\n- **she can't offer it to Pat, who applied to Acme Trading, though she runs both.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the last call's designation, offerDate `2026-12-01`, and is refused with OfferDesignationNotInCompany, JF-001.\n- **Ada offers Pat the job of engineer.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and gets back an answer matching `^jof_[0-9a-z]+$`.\n- **Ada can't make Pat a second offer while the first awaits.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-02`, and is refused with OfferAlreadyMade, JF-002.\n- **Ada can't make Pat another offer now one is accepted.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-04`, and is refused with OfferAlreadyMade, JF-002.\n- **and offers Sam the job too, two people being wanted.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's designation, offerDate `2026-12-02`, and gets back an answer matching `^jof_[0-9a-z]+$`.\n- **nor make Sam a second offer: HRMS keeps one per applicant, rejected or not.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's designation, offerDate `2026-12-03`, and is refused with OfferAlreadyMade, JF-002.\n\n## How to call\n\n```sh\ncapxul job-offer create --jobApplicant <jobApplicant> --designation <designation> --offerDate <offerDate>\n```\n\nHTTP: `POST /job-offer/create` with the payload as JSON. SDK: `Sdk.job-offer.create(payload)`.\n",
-    "job-offer/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer.get\n\nRead one job-offer by its id: company, jobApplicant, designation, offerDate, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | job-offer.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | job-offer.company |\n| jobApplicant | job-offer.jobApplicant |\n| designation | job-offer.designation |\n| offerDate | job-offer.offerDate |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's jobOffer, and is refused with NotAllowed, AR-001.\n- **the offer reads back in Acme Trading, accepted.** `ada` (role company.owner) calls and sends id the last call's jobOffer, and gets back [the world's company, the world's jobApplicant, the world's designation, `2026-12-01`, `accepted`].\n\n## How to call\n\n```sh\ncapxul job-offer get --id <id>\n```\n\nHTTP: `POST /job-offer/get` with the payload as JSON. SDK: `Sdk.job-offer.get(payload)`.\n",
+    "job-applicant/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-applicant.reject\n\nTurn an applicant down.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobApplicant | job-applicant.id |\n\n## Move\n\n`reject`: from open or hold to rejected, emitting JobApplicantRejected.\n\n## Steps\n\n- `job-applicant.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| JobApplicantNotOpen | 40 | JA-900 | the job-applicant is in a state reject can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **an accepted applicant can't be turned down.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `accepted`.\n- **Bo can't turn Sam down.** `bo` (signed in) calls and sends jobApplicant the last call's jobApplicant, and is refused with NotAllowed, AR-001.\n- **Ada turns Sam down, from hold.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n- **nor turned down again.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and is refused with JobApplicantNotOpen, JA-900, carrying state `rejected`.\n\n### schedule an interview\n\nStarts from the world `an outside employee`.\n\n- **and Ada turns Sam down at once.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, and gets back an answer matching `^jap_[0-9a-z]+$`.\n- **Ada turns Pat down.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, and gets back the world's jobApplicant.\n\n## How to call\n\n```sh\ncapxul job-applicant reject --jobApplicant <jobApplicant>\n```\n\nHTTP: `POST /job-applicant/reject` with the payload as JSON. SDK: `Sdk.job-applicant.reject(payload)`.\n",
+    "job-offer/accept.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer.accept\n\nRecord that the applicant accepted the offer.\n\n**Who may call:** the owner of its jobOffer.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n| jobApplicant | job-offer.jobApplicant |\n\n## Move\n\n`accept`: from awaiting to accepted, emitting JobOfferAccepted.\n\n## Steps\n\n- `job-offer.accept.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OfferAlreadyMade | 42 | JF-002 | another job offer holds this job applicant; by the rule job-offer.oneOfferPerApplicant |\n| JobOfferNotAwaiting | 40 | JF-900 | the job-offer is in a state accept can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobOffer.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Pat accepts the offer.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back [true, true].\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **Bo can't record Pat's answer.** `bo` (signed in) calls and sends jobOffer the last call's jobOffer, and is refused with NotAllowed, AR-001.\n- **Pat, on hold, accepts the offer.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back the world's jobApplicant.\n- **nor accepted again.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `accepted`.\n- **it can't then be accepted.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `rejected`.\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Pat accepts it.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back the world's jobApplicant.\n\n## How to call\n\n```sh\ncapxul job-offer accept --jobOffer <jobOffer>\n```\n\nHTTP: `POST /job-offer/accept` with the payload as JSON. SDK: `Sdk.job-offer.accept(payload)`.\n",
+    "job-offer/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer.create\n\nOffer an applicant a job, under one of the company's job titles.\n\n**Who may call:** the owner of its jobApplicant.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobApplicant | job-offer.jobApplicant |\n| designation | job-offer.designation |\n| offerDate | job-offer.offerDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n\n## Move\n\n`create`: from nothing (it creates) to awaiting, emitting JobOfferMade.\n\n## Steps\n\n- `job-offer.create.load` (database)\n- `job-offer.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OfferDesignationNotInCompany | 41 | JF-001 | declared in errors.ts |\n| OfferAlreadyMade | 42 | JF-002 | another job offer holds this job applicant; by the rule job-offer.oneOfferPerApplicant |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in designation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobApplicant.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada offers its applicant the job of engineer.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and gets back an answer matching `^jof_[0-9a-z]+$`.\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **Bo can't offer Pat a job.** `bo` (signed in) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and is refused with NotAllowed, AR-001.\n- **nor can Olga.** `olga` (signed in) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and is refused with NotAllowed, AR-001.\n- **she can't offer it to Pat, who applied to Acme Trading, though she runs both.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the last call's designation, offerDate `2026-12-01`, and is refused with OfferDesignationNotInCompany, JF-001.\n- **Ada offers Pat the job of engineer.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and gets back an answer matching `^jof_[0-9a-z]+$`.\n- **Ada can't make Pat a second offer while the first awaits.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-02`, and is refused with OfferAlreadyMade, JF-002.\n- **Ada can't make Pat another offer now one is accepted.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-04`, and is refused with OfferAlreadyMade, JF-002.\n- **and offers Sam Lead Engineer, another of Acme Trading's job titles.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's otherDesignation, offerDate `2026-12-02`, and gets back an answer matching `^jof_[0-9a-z]+$`.\n- **nor make Sam a second offer: HRMS keeps one per applicant, rejected or not.** `ada` (role company.owner) calls and sends jobApplicant the last call's jobApplicant, designation the world's designation, offerDate `2026-12-03`, and is refused with OfferAlreadyMade, JF-002.\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Ada offers Pat the job of engineer, after the opening closed.** `ada` (role company.owner) calls and sends jobApplicant the world's jobApplicant, designation the world's designation, offerDate `2026-12-01`, and gets back an answer matching `^jof_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul job-offer create --jobApplicant <jobApplicant> --designation <designation> --offerDate <offerDate>\n```\n\nHTTP: `POST /job-offer/create` with the payload as JSON. SDK: `Sdk.job-offer.create(payload)`.\n",
+    "job-offer/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer.get\n\nRead one job-offer by its id: company, jobApplicant, designation, offerDate, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | job-offer.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | job-offer.company |\n| jobApplicant | job-offer.jobApplicant |\n| designation | job-offer.designation |\n| offerDate | job-offer.offerDate |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's jobOffer, and is refused with NotAllowed, AR-001.\n- **the offer reads back in Acme Trading, accepted.** `ada` (role company.owner) calls and sends id the last call's jobOffer, and gets back [the world's company, the world's jobApplicant, the world's designation, `2026-12-01`, `accepted`].\n\n## How to call\n\n```sh\ncapxul job-offer get --id <id>\n```\n\nHTTP: `POST /job-offer/get` with the payload as JSON. SDK: `Sdk.job-offer.get(payload)`.\n",
     "job-offer/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer\n\nA job offered to an applicant, under one of the company's job titles.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| jobApplicant | job-applicant.id |\n| designation | designation.id |\n| offerDate | Day |\n\n## Machine\n\nStates: awaiting, accepted, rejected. A move from the wrong state is refused JobOfferNotAwaiting (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | awaiting | JobOfferMade |\n| accept | awaiting | accepted | JobOfferAccepted |\n| reject | awaiting | rejected | JobOfferRejected |\n\n## Invariants\n\n- `job-offer.oneOfferPerApplicant`: another job offer holds this job applicant. Unique on jobApplicant, in every state; refused OfferAlreadyMade.\n\n## Events\n\n- `JobOfferAccepted`: carries jobOffer (job-offer.id), jobApplicant (job-offer.jobApplicant); emitted by the move accept\n- `JobOfferMade`: carries jobOffer (job-offer.id), jobApplicant (job-offer.jobApplicant); emitted by the move create\n- `JobOfferRejected`: carries jobOffer (job-offer.id), jobApplicant (job-offer.jobApplicant); emitted by the move reject\n\n## Operations\n\n- [job-offer.accept](accept.md): Record that the applicant accepted the offer.\n- [job-offer.create](create.md): Offer an applicant a job, under one of the company's job titles.\n- [job-offer.get](get.md): Read one job-offer by its id: company, jobApplicant, designation, offerDate, state.\n- [job-offer.reject](reject.md): Record that the applicant rejected the offer.\n",
-    "job-offer/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer.reject\n\nRecord that the applicant rejected the offer.\n\n**Who may call:** the owner of its jobOffer.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n| jobApplicant | job-offer.jobApplicant |\n\n## Move\n\n`reject`: from awaiting to rejected, emitting JobOfferRejected.\n\n## Steps\n\n- `job-offer.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OfferAlreadyMade | 42 | JF-002 | another job offer holds this job applicant; by the rule job-offer.oneOfferPerApplicant |\n| JobOfferNotAwaiting | 40 | JF-900 | the job-offer is in a state reject can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobOffer.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### make a job offer\n\nStarts from the world `an outside employee`.\n\n- **it can't then be rejected.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `accepted`.\n- **Sam rejects the offer, which names Sam.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back [true, true].\n\n## How to call\n\n```sh\ncapxul job-offer reject --jobOffer <jobOffer>\n```\n\nHTTP: `POST /job-offer/reject` with the payload as JSON. SDK: `Sdk.job-offer.reject(payload)`.\n",
+    "job-offer/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-offer.reject\n\nRecord that the applicant rejected the offer.\n\n**Who may call:** the owner of its jobOffer.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobOffer | job-offer.id |\n| jobApplicant | job-offer.jobApplicant |\n\n## Move\n\n`reject`: from awaiting to rejected, emitting JobOfferRejected.\n\n## Steps\n\n- `job-offer.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OfferAlreadyMade | 42 | JF-002 | another job offer holds this job applicant; by the rule job-offer.oneOfferPerApplicant |\n| JobOfferNotAwaiting | 40 | JF-900 | the job-offer is in a state reject can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobOffer.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### make a job offer\n\nStarts from the world `a second job title`.\n\n- **it can't then be rejected.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `accepted`.\n- **Bo can't record Sam's answer.** `bo` (signed in) calls and sends jobOffer the last call's jobOffer, and is refused with NotAllowed, AR-001.\n- **Sam rejects the offer, which names Sam.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back [true, true].\n\n## How to call\n\n```sh\ncapxul job-offer reject --jobOffer <jobOffer>\n```\n\nHTTP: `POST /job-offer/reject` with the payload as JSON. SDK: `Sdk.job-offer.reject(payload)`.\n",
     "job-opening/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-opening.close\n\nClose a job opening to new applicants.\n\n**Who may call:** the owner of its jobOpening.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| jobOpening | job-opening.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobOpening | job-opening.id |\n\n## Move\n\n`close`: from open to closed, emitting JobOpeningClosed.\n\n## Steps\n\n- `job-opening.close.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| JobOpeningNotOpen | 40 | JO-900 | the job-opening is in a state close can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its jobOpening.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada closes the opening Pat applied for, now it is filled.** `ada` (role company.owner) calls and sends jobOpening the last call's jobOpening, and gets back an answer matching `^jop_[0-9a-z]+$`.\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Olga can't close it.** `olga` (signed in) calls and sends jobOpening the world's jobOpening, and is refused with NotAllowed, AR-001.\n- **Ada closes it, though it hasn't filled.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, and gets back the world's jobOpening.\n- **it can't be closed again.** `ada` (role company.owner) calls and sends jobOpening the world's jobOpening, and is refused with JobOpeningNotOpen, JO-900, carrying state `closed`.\n\n## How to call\n\n```sh\ncapxul job-opening close --jobOpening <jobOpening>\n```\n\nHTTP: `POST /job-opening/close` with the payload as JSON. SDK: `Sdk.job-opening.close(payload)`.\n",
     "job-opening/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-opening.create\n\nOpen a job under one of a company's job titles, for some number of people.\n\n**Who may call:** the owner of its designation.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| designation | job-opening.designation |\n| jobTitle | job-opening.jobTitle |\n| vacancies | job-opening.vacancies |\n\n## Answer\n\n| field | value |\n|---|---|\n| jobOpening | job-opening.id |\n\n## Move\n\n`create`: from nothing (it creates) to open, emitting JobOpeningCreated.\n\n## Steps\n\n- `job-opening.create.load` (database)\n- `job-opening.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| OpeningWithoutVacancies | 41 | JO-001 | declared in errors.ts |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its designation.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **Ada opens the engineering job for one person.** `ada` (role company.owner) calls and sends designation the world's designation, jobTitle `Backend Engineer`, vacancies `1`, and gets back an answer matching `^jop_[0-9a-z]+$`.\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Bo can't open a job under Ada's job title.** `bo` (signed in) calls and sends designation the world's designation, jobTitle `Data Analyst`, vacancies `1`, and is refused with NotAllowed, AR-001.\n- **nor can Olga, who works there.** `olga` (signed in) calls and sends designation the world's designation, jobTitle `Data Analyst`, vacancies `1`, and is refused with NotAllowed, AR-001.\n- **Ada can't open a job for nobody.** `ada` (role company.owner) calls and sends designation the world's designation, jobTitle `Data Analyst`, vacancies `0`, and is refused with OpeningWithoutVacancies, JO-001.\n- **Ada opens an analyst's job, in lower case, for one person.** `ada` (role company.owner) calls and sends designation the world's designation, jobTitle `data analyst`, vacancies `1`, and gets back an answer matching `^jop_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul job-opening create --designation <designation> --jobTitle <jobTitle> --vacancies <vacancies>\n```\n\nHTTP: `POST /job-opening/create` with the payload as JSON. SDK: `Sdk.job-opening.create(payload)`.\n",
     "job-opening/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# job-opening.get\n\nRead one job-opening by its id: company, designation, jobTitle, vacancies, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | job-opening.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | job-opening.company |\n| designation | job-opening.designation |\n| jobTitle | job-opening.jobTitle |\n| vacancies | job-opening.vacancies |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### hire from a job opening\n\nStarts from the world `a technical round`.\n\n- **it reads back closed.** `ada` (role company.owner) calls and sends id the last call's jobOpening, and gets back [the world's company, the world's designation, `Backend Engineer`, `1`, `closed`].\n\n### open a job\n\nStarts from the world `a job applicant`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's jobOpening, and is refused with NotAllowed, AR-001.\n- **the opening Sam applied for reads back in Acme Trading, the job title's company, as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's jobOpening, and gets back [the world's company, the world's designation, `data analyst`, `1`, `open`].\n- **the engineering job reads back for two.** `ada` (role company.owner) calls and sends id the world's jobOpening, and gets back [`Backend Engineer`, `2`, `open`].\n- **it reads back closed.** `ada` (role company.owner) calls and sends id the world's jobOpening, and gets back [the world's company, `Backend Engineer`, `2`, `closed`].\n\n## How to call\n\n```sh\ncapxul job-opening get --id <id>\n```\n\nHTTP: `POST /job-opening/get` with the payload as JSON. SDK: `Sdk.job-opening.get(payload)`.\n",
@@ -41716,5 +42504,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "ff3bee399dc4b3916762be04ba28fa3577eaf39ae2ed2a6230e9d711255b1a9a"
+  "digest": "cd4cfa79f8056c563e330e1ad13083031bee7d5fb291ff813ab8d4bf180fa5c6"
 }

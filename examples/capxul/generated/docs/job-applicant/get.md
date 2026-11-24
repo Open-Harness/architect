@@ -41,7 +41,7 @@ Starts from the world `a technical round`.
 
 ### make a job offer
 
-Starts from the world `an outside employee`.
+Starts from the world `a second job title`.
 
 - **Pat reads back accepted.** `ada` (role company.owner) calls and sends id the world's jobApplicant, and gets back [the world's company, the world's jobOpening, `Pat Mwangi`, `pat@example.com`, `accepted`].
 - **Sam reads back rejected.** `ada` (role company.owner) calls and sends id the last call's jobApplicant, and gets back [the world's company, `Sam Otieno`, `sam@example.com`, `rejected`].
@@ -52,6 +52,7 @@ Starts from the world `a job applicant`.
 
 - **Sam reads back in Acme Trading, the opening's company.** `ada` (role company.owner) calls and sends id the last call's jobApplicant, and gets back [the world's company, `Sam Otieno`, `pat@example.com`, `open`].
 - **Pat, who applied before it closed, is still open.** `ada` (role company.owner) calls and sends id the world's jobApplicant, and gets back [the world's company, the world's jobOpening, `Pat Mwangi`, `pat@example.com`, `open`].
+- **Bo can't read Pat.** `bo` (signed in) calls and sends id the world's jobApplicant, and is refused with NotAllowed, AR-001.
 
 ## How to call
 

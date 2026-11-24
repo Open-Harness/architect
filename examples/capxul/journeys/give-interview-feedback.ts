@@ -14,6 +14,7 @@ import relieve from "../blueprint/things/employee/verbs/relieve.ts";
 import createRound from "../blueprint/things/interview-round/verbs/create.ts";
 import schedule from "../blueprint/things/interview/verbs/create.ts";
 import rejectInterview from "../blueprint/things/interview/verbs/reject.ts";
+import clearInterview from "../blueprint/things/interview/verbs/clear.ts";
 import getInterview from "../blueprint/things/interview/verbs/get.ts";
 import give from "../blueprint/things/interview-feedback/verbs/give.ts";
 import get from "../blueprint/things/interview-feedback/verbs/get.ts";
@@ -170,7 +171,13 @@ export default Blueprint.journey("give interview feedback", {
       noEvents(),
     ),
     s.step(
-      "Olga, who gave feedback on the technical round, may give it on the final round too",
+      "Ada marks Pat's final interview cleared before any feedback",
+      s.ada.run(clearInterview, { interview: s.last.interview }),
+      expect((a) => a.interview).toMatch(/^ivw_[0-9a-z]+$/),
+      interviews.isIn(s.last.interview, "cleared"),
+    ),
+    s.step(
+      "Olga, who gave feedback on the technical interview, may still give it on the cleared final one",
       s.olga.run(give, { interview: s.last.interview, interviewer: s.world.employee, result: "Rejected" }),
       expect((a) => a.interviewFeedback).toMatch(/^ifb_[0-9a-z]+$/),
       emits(InterviewFeedbackGiven, { interviewFeedback: s.last.interviewFeedback, interviewer: s.world.employee, result: "Rejected" }),
@@ -182,18 +189,12 @@ export default Blueprint.journey("give interview feedback", {
       noEvents(),
     ),
     s.step(
-      "Ada marks the technical interview rejected, though Olga cleared Pat",
-      s.ada.run(rejectInterview, { interview: s.world.interview }),
-      expect((a) => a.interview).toBe(s.world.interview),
-      interviews.isIn(s.world.interview, "rejected"),
-    ),
-    s.step(
       "Ada relieves Cy on 3 December",
       s.ada.run(relieve, { employee: s.world.secondEmployee, relievingDate: "2026-12-03" }),
       expect((a) => a.relievingDate).toBe("2026-12-03"),
     ),
     s.step(
-      "Cy, who has left, still gives her feedback on the technical interview she was on, now decided",
+      "Cy, who has left, still gives her feedback on the technical interview she was on, still pending",
       s.cy.run(give, { interview: s.world.interview, interviewer: s.world.secondEmployee, result: "Rejected" }),
       expect((a) => a.interviewFeedback).toMatch(/^ifb_[0-9a-z]+$/),
       emits(InterviewFeedbackGiven, { interviewFeedback: s.last.interviewFeedback, interview: s.world.interview, interviewer: s.world.secondEmployee, result: "Rejected" }),
@@ -216,6 +217,12 @@ export default Blueprint.journey("give interview feedback", {
       s.cy.run(give, { interview: s.world.interview, interviewer: s.world.secondEmployee, result: "Cleared" }),
       refuses(FeedbackAlreadyGiven),
       noEvents(),
+    ),
+    s.step(
+      "Ada marks the technical interview rejected, though Olga cleared Pat",
+      s.ada.run(rejectInterview, { interview: s.world.interview }),
+      expect((a) => a.interview).toBe(s.world.interview),
+      interviews.isIn(s.world.interview, "rejected"),
     ),
   ],
 });

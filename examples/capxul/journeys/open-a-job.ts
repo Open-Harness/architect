@@ -6,13 +6,16 @@ import { JobOpeningClosed, JobOpeningCreated } from "../blueprint/things/job-ope
 import { OpeningWithoutVacancies } from "../blueprint/things/job-opening/errors.ts";
 import { machine as openings } from "../blueprint/things/job-opening/machine.ts";
 import { OpeningClosed } from "../blueprint/things/job-applicant/errors.ts";
-import { JobApplicantCreated } from "../blueprint/things/job-applicant/events.ts";
+import { JobApplicantAccepted, JobApplicantCreated } from "../blueprint/things/job-applicant/events.ts";
 import { machine as applicants } from "../blueprint/things/job-applicant/machine.ts";
 import create from "../blueprint/things/job-opening/verbs/create.ts";
 import close from "../blueprint/things/job-opening/verbs/close.ts";
 import get from "../blueprint/things/job-opening/verbs/get.ts";
 import apply from "../blueprint/things/job-applicant/verbs/create.ts";
 import readApplicant from "../blueprint/things/job-applicant/verbs/get.ts";
+import accept from "../blueprint/things/job-applicant/verbs/accept.ts";
+import offer from "../blueprint/things/job-offer/verbs/create.ts";
+import acceptOffer from "../blueprint/things/job-offer/verbs/accept.ts";
 
 export default Blueprint.journey("open a job", {
   // Ada runs Acme Trading and has opened Backend Engineer for two, where Pat has applied; Olga works there; Bo runs
@@ -55,6 +58,13 @@ export default Blueprint.journey("open a job", {
       noEvents(),
     ),
     s.step(
+      "nor add an applicant to it",
+      s.bo.run(apply, { jobOpening: s.last.jobOpening, applicantName: "Lee Wanjiru", email: "lee@example.com" }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+      spans({ absent: ["job-applicant.create", "job-applicant.create.insert"] }),
+    ),
+    s.step(
       "Sam applies for it, with the same email as Pat's: an email may apply again",
       s.ada.run(apply, { jobOpening: s.last.jobOpening, applicantName: "Sam Otieno", email: "pat@example.com" }),
       expect((a) => a.jobApplicant).toMatch(/^jap_[0-9a-z]+$/),
@@ -84,6 +94,13 @@ export default Blueprint.journey("open a job", {
       s.ada.run(get, { id: s.world.jobOpening }),
       expect((a) => [a.jobTitle, a.vacancies, a.state]).toEqual(["Backend Engineer", 2n, "open"]),
       noEvents(),
+    ),
+    s.step(
+      "Pat applies for the engineering job again, with the same email",
+      s.ada.run(apply, { jobOpening: s.world.jobOpening, applicantName: "Pat Mwangi", email: "pat@example.com" }),
+      expect((a) => a.jobApplicant).toMatch(/^jap_[0-9a-z]+$/),
+      emits(JobApplicantCreated, { jobApplicant: s.last.jobApplicant, company: s.world.company, jobOpening: s.world.jobOpening }),
+      applicants.isIn(s.last.jobApplicant, "open"),
     ),
     s.step(
       "Olga can't close it",
@@ -130,6 +147,29 @@ export default Blueprint.journey("open a job", {
         "open",
       ]),
       noEvents(),
+    ),
+    s.step(
+      "Bo can't read Pat",
+      s.bo.run(readApplicant, { id: s.world.jobApplicant }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+    ),
+    s.step(
+      "Ada offers Pat the job of engineer, after the opening closed",
+      s.ada.run(offer, { jobApplicant: s.world.jobApplicant, designation: s.world.designation, offerDate: "2026-12-01" }),
+      expect((a) => a.jobOffer).toMatch(/^jof_[0-9a-z]+$/),
+    ),
+    s.step(
+      "Pat accepts it",
+      s.ada.run(acceptOffer, { jobOffer: s.last.jobOffer }),
+      expect((a) => a.jobApplicant).toBe(s.world.jobApplicant),
+    ),
+    s.step(
+      "Ada accepts Pat, though the opening Pat applied for has closed",
+      s.ada.run(accept, { jobApplicant: s.world.jobApplicant }),
+      expect((a) => a.jobApplicant).toBe(s.world.jobApplicant),
+      emits(JobApplicantAccepted, { jobApplicant: s.world.jobApplicant }),
+      applicants.isIn(s.world.jobApplicant, "accepted"),
     ),
   ],
 });

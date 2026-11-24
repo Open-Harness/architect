@@ -49,12 +49,18 @@ Starts from the world `a technical round`.
 
 ### make a job offer
 
-Starts from the world `an outside employee`.
+Starts from the world `a second job title`.
 
 - **Bo can't record Pat's answer.** `bo` (signed in) calls and sends jobOffer the last call's jobOffer, and is refused with NotAllowed, AR-001.
-- **Pat accepts the offer.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back [the last call's jobOffer, the world's jobApplicant].
+- **Pat, on hold, accepts the offer.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back the world's jobApplicant.
 - **nor accepted again.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `accepted`.
 - **it can't then be accepted.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and is refused with JobOfferNotAwaiting, JF-900, carrying state `rejected`.
+
+### open a job
+
+Starts from the world `a job applicant`.
+
+- **Pat accepts it.** `ada` (role company.owner) calls and sends jobOffer the last call's jobOffer, and gets back the world's jobApplicant.
 
 ## How to call
 

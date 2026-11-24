@@ -23,9 +23,9 @@ import getApplicant from "../blueprint/things/job-applicant/verbs/get.ts";
 
 export default Blueprint.journey("make a job offer", {
   // Pat applied for Backend Engineer at Acme Trading; Ada runs Acme Trading and Acme Logistics; Bo drives for Acme
-  // Logistics; Olga is an engineer at Acme Trading.
+  // Logistics; Olga is an engineer at Acme Trading, which has the job titles Engineer and Lead Engineer.
   cast: { ada: owner, bo: Blueprint.signedIn, olga: Blueprint.signedIn },
-  starts: "an outside employee",
+  starts: "a second job title",
   steps: (s) => [
     s.step(
       "Ada can't accept Pat before any offer",
@@ -33,6 +33,20 @@ export default Blueprint.journey("make a job offer", {
       refuses(OfferNotAccepted),
       noEvents(),
       spans({ absent: ["job-applicant.accept.update"] }),
+    ),
+    s.step(
+      "Bo can't put Pat on hold",
+      s.bo.run(hold, { jobApplicant: s.world.jobApplicant }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+    ),
+    s.step(
+      "Ada puts Pat on hold while she decides",
+      s.ada.run(hold, { jobApplicant: s.world.jobApplicant }),
+      expect((a) => a.jobApplicant).toBe(s.world.jobApplicant),
+      emits(JobApplicantHeld, { jobApplicant: s.world.jobApplicant }),
+      applicants.isIn(s.world.jobApplicant, "hold"),
+      spans({ present: ["job-applicant.hold", "job-applicant.hold.update"] }),
     ),
     s.step(
       "Bo can't offer Pat a job",
@@ -93,9 +107,9 @@ export default Blueprint.journey("make a job offer", {
       spans({ absent: ["job-offer.accept", "job-offer.accept.update"] }),
     ),
     s.step(
-      "Pat accepts the offer",
+      "Pat, on hold, accepts the offer",
       s.ada.run(acceptOffer, { jobOffer: s.last.jobOffer }),
-      expect((a) => [a.jobOffer, a.jobApplicant]).toEqual([s.last.jobOffer, s.world.jobApplicant]),
+      expect((a) => a.jobApplicant).toBe(s.world.jobApplicant),
       emits(JobOfferAccepted, { jobOffer: s.last.jobOffer, jobApplicant: s.world.jobApplicant }),
       offers.isIn(s.last.jobOffer, "accepted"),
       spans({ present: ["job-offer.accept", "job-offer.accept.update"] }),
@@ -137,7 +151,7 @@ export default Blueprint.journey("make a job offer", {
       noEvents(),
     ),
     s.step(
-      "Ada accepts Pat, whose offer is accepted",
+      "Ada accepts Pat, from hold, now the offer is accepted",
       s.ada.run(accept, { jobApplicant: s.world.jobApplicant }),
       expect((a) => a.jobApplicant).toBe(s.world.jobApplicant),
       emits(JobApplicantAccepted, { jobApplicant: s.world.jobApplicant }),
@@ -175,7 +189,14 @@ export default Blueprint.journey("make a job offer", {
       emits(JobApplicantCreated, { jobApplicant: s.last.jobApplicant, company: s.world.company, jobOpening: s.world.jobOpening }),
     ),
     s.step(
-      "Ada can't accept Sam on Pat's accepted offer",
+      "Bo can't turn Sam down",
+      s.bo.run(reject, { jobApplicant: s.last.jobApplicant }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+      spans({ absent: ["job-applicant.reject", "job-applicant.reject.update"] }),
+    ),
+    s.step(
+      "Sam, with no offer, can't be accepted while Pat's is",
       s.ada.run(accept, { jobApplicant: s.last.jobApplicant }),
       refuses(OfferNotAccepted),
       noEvents(),
@@ -188,11 +209,18 @@ export default Blueprint.journey("make a job offer", {
       applicants.isIn(s.last.jobApplicant, "hold"),
     ),
     s.step(
-      "and offers Sam the job too, two people being wanted",
-      s.ada.run(offer, { jobApplicant: s.last.jobApplicant, designation: s.world.designation, offerDate: "2026-12-02" }),
+      "and offers Sam Lead Engineer, another of Acme Trading's job titles",
+      s.ada.run(offer, { jobApplicant: s.last.jobApplicant, designation: s.world.otherDesignation, offerDate: "2026-12-02" }),
       expect((a) => a.jobOffer).toMatch(/^jof_[0-9a-z]+$/),
       emits(JobOfferMade, { jobOffer: s.last.jobOffer }),
       offers.isIn(s.last.jobOffer, "awaiting"),
+    ),
+    s.step(
+      "Bo can't record Sam's answer",
+      s.bo.run(rejectOffer, { jobOffer: s.last.jobOffer }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+      spans({ absent: ["job-offer.reject", "job-offer.reject.update"] }),
     ),
     s.step(
       "Sam rejects the offer, which names Sam",

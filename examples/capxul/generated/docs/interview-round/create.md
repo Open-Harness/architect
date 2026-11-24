@@ -58,6 +58,7 @@ Starts from the world `an outside employee`.
 - **Ada adds a technical round to Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Technical`, interviewers [the world's outsider], and gets back an answer matching `^irn_[0-9a-z]+$`.
 - **Ada adds a culture round, with nobody.** `ada` (role company.owner) calls and sends company the world's company, roundName `Culture`, interviewers [], and gets back an answer matching `^irn_[0-9a-z]+$`.
 - **Ada adds the final round, with Cy.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee], and gets back an answer matching `^irn_[0-9a-z]+$`.
+- **and adds a panel round to Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, roundName `Panel`, interviewers [the world's outsider], and gets back an answer matching `^irn_[0-9a-z]+$`.
 
 ### set up interview rounds
 
@@ -75,7 +76,7 @@ Starts from the world `an outside employee`.
 - **Ada can't put Olga on a new round now she has left.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's employee], and is refused with RoundInterviewerHasLeft, IR-003.
 - **nor after Cy.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee, the world's employee], and is refused with RoundInterviewerHasLeft, IR-003.
 - **Olga gone and Bo from another company is refused for Bo first, though Olga comes first.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's employee, the world's outsider], and is refused with RoundInterviewerNotInCompany, IR-002.
-- **the final round, with Cy alone, is taken.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee], and gets back an answer matching `^irn_[0-9a-z]+$`.
+- **Ada adds the final round, with Cy alone.** `ada` (role company.owner) calls and sends company the world's company, roundName `Final`, interviewers [the world's secondEmployee], and gets back an answer matching `^irn_[0-9a-z]+$`.
 
 ## How to call
 

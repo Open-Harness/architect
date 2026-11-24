@@ -7,7 +7,7 @@ each change.
 
 ## What 8e holds
 
-Six things, each per company: **Job Opening** (`open → closed`), **Job Applicant** (`open → hold → rejected | accepted`),
+Six things, each per company: **Job Opening** (`open → closed`), **Job Applicant** (`open → hold`; `open | hold → rejected | accepted`),
 **Interview Round**, **Interview** (`pending → cleared | rejected`), **Interview Feedback** (`given`) and **Job Offer**
 (`awaiting → accepted | rejected`). The company's owner runs all of them. An interviewer gives feedback signed in as
 themselves (`self.of("interviewer")`). No amount appears; an offer's pay, when it comes, is USDC base units (CX-grill,
@@ -31,7 +31,8 @@ section 3).
 | Interviewers are employees of the company (`RoundInterviewerNotInCompany`, `InterviewerNotInCompany`) | Capxul's own; HRMS's interviewers are any User | `interview-round.create`, `interview.create` |
 | A leaver isn't put on a new round or interview (`RoundInterviewerHasLeft`, `InterviewerHasLeft`) | Capxul's own, following CX-expense-leavers | `interview-round.create`, `interview.create` |
 | An offer's job title is the applicant's company's (`OfferDesignationNotInCompany`) | Capxul's own; HRMS's designations are site-wide | `job-offer.create` |
-| An applicant is accepted only once their offer is accepted (`OfferNotAccepted`) | Capxul's, standing in for HRMS's `update_job_applicant` (below) | `job-applicant.accept` |
+| An applicant is accepted only once their offer is accepted (`OfferNotAccepted`) | Capxul's, standing in for HRMS's `update_job_applicant` (below). Stricter than HRMS, which can also mark an applicant Accepted from a cleared interview (`update_job_applicant_status`) | `job-applicant.accept` |
+| Two openings may share a title in a company | Capxul's own. HRMS's `route` (`jobs/<company>/<title>`) is unique and filled in by default, so HRMS refuses a second opening of one title unless someone edits the route; Capxul has no web route, and a title is not a rule of the business | none |
 
 When several apply, the company check over every interviewer comes before the leaver check, wherever each interviewer
 stands in the list. The refusal orders are in each thing's `errors.ts`, and journeys pin them.
@@ -79,3 +80,5 @@ Feedback's day rule reads the world's clock, so Capxul's local environment is st
 - Overlapping interviewer schedules, a closing day and closing openings when they fill, and the interview's designation
   check (`validate_designation`): the first needs a list (#764), and the others wait on optional fields (#742, item 5).
 - Cancelling and amending offers, interviews and feedback.
+- An interviewer listed twice on a round or an interview: HRMS's tables allow it, and no rule here settles it.
+- Whether an applicant already turned down may still be made an offer: HRMS doesn't refuse it, and no journey settles it.
