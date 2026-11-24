@@ -2,7 +2,9 @@
 // names its shift). The model keeps the field optional, and still lists the referenced thing's `<Thing>NotFound` for the
 // field where no role check reads it: a caller who gives an id that names nothing is refused that way, and one who leaves
 // the field out is not (the runtime's half is language-effect's `handler/optional-ref-payload.test.ts`). Where a role
-// check reads the field, a miss stays `NotAllowed`, as for a required reference. Green when written, after #974: a guard.
+// check reads the field on every way in (the role, `.of` it, `.via` it), a miss stays `NotAllowed`, as for a required
+// reference; where any way in reads it without one, it is `<Thing>NotFound`. Each is keyed by the payload's name for it.
+// Green when written, on main with #974: a guard. Its rows come from a hostile pass as well as the issue.
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { Effect, Exit } from "effect";
@@ -23,12 +25,12 @@ const project = (files: Record<string, string>): string => {
   }
   return root;
 };
-const verb = (allowed: string) => `import { Blueprint } from "orthograph";
+const verb = (allowed: string, key = "shift") => `import { Blueprint } from "orthograph";
 import { Attendance } from "../thing.ts";
 import { lead } from "../../shift/roles.ts";
 export default Blueprint.operation(Attendance, {
   description: "Note who was there.",
-  payload: { shift: Attendance.fields.shift, who: Attendance.fields.who },
+  payload: { ${key}: Attendance.fields.shift, who: Attendance.fields.who },
   answer: { who: Attendance.fields.who },
   allowed: [${allowed}],
 });
@@ -47,6 +49,10 @@ export const Attendance = Blueprint.thing({ description: "Someone was there.", c
 `,
   "blueprint/things/attendance/verbs/note.ts": verb("Blueprint.signedIn"),
   "blueprint/things/attendance/verbs/lead-note.ts": verb("lead"),
+  "blueprint/things/attendance/verbs/mixed-note.ts": verb("Blueprint.signedIn, lead"),
+  "blueprint/things/attendance/verbs/of-note.ts": verb(`lead.of("shift")`),
+  "blueprint/things/attendance/verbs/via-note.ts": verb(`lead.via("session")`),
+  "blueprint/things/attendance/verbs/at-note.ts": verb("Blueprint.signedIn", "at"),
 });
 
 type Op = { readonly payload: Record<string, { readonly optional?: boolean }>; readonly notFound?: Record<string, string>; readonly refusals: ReadonlyArray<string> };
@@ -65,10 +71,25 @@ describe("An optional reference in an operation's payload", () => {
     expect([...note.refusals].sort()).toEqual(["NotAllowed", "ShiftNotFound"]);
   });
 
-  it("a miss a role check reads stays NotAllowed, as for a required reference", async () => {
-    const leadNote = (await operations())["attendance.lead-note"]!;
-    expect(leadNote.payload["shift"]?.optional).toBe(true);
-    expect(leadNote.notFound ?? {}).toEqual({});
-    expect(leadNote.refusals).toEqual(["NotAllowed"]);
+  it("a miss a role check reads stays NotAllowed, as for a required reference: the role, .of it and .via it", async () => {
+    const ops = await operations();
+    for (const name of ["attendance.lead-note", "attendance.of-note", "attendance.via-note"]) {
+      const op = ops[name]!;
+      expect(op.payload["shift"]?.optional, name).toBe(true);
+      expect(op.notFound ?? {}, name).toEqual({});
+      expect(op.refusals, name).toEqual(["NotAllowed"]);
+    }
+  });
+
+  it("a miss that some way in reads without a role check is still refused <Thing>NotFound", async () => {
+    const mixed = (await operations())["attendance.mixed-note"]!;
+    expect(mixed.notFound).toEqual({ shift: "ShiftNotFound" });
+    expect([...mixed.refusals].sort()).toEqual(["NotAllowed", "ShiftNotFound"]);
+  });
+
+  it("is keyed by the payload's own name for the field, not the thing's", async () => {
+    const at = (await operations())["attendance.at-note"]!;
+    expect(at.payload["at"]?.optional).toBe(true);
+    expect(at.notFound).toEqual({ at: "ShiftNotFound" });
   });
 });
