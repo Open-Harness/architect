@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/bridge-business/verbs/approve.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/bridge-business/approve.handler.ts";
 
 /**
@@ -40,17 +39,14 @@ import type { Handler } from "../../generated/api/src/bridge-business/approve.ha
  *   once it answers, it writes KybApproved: business from the answer;
  *   the call is the span bridge-business.approve, and its commit bridge-business.approve.commit.
  */
-const approve: Handler = (_payload, { steps, move }) =>
+const approve: Handler = ({ business }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bridge-business.approve.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
+    // Step update: database, span bridge-business.approve.update. Bridge's decision changes the state and nothing else; the
+    // reason travels in the event alone.
     // The move approve, from started, to approved.
-    yield* move();
+    yield* steps.update(move());
 
-    return {
-      business: yield* Handlers.blank("business, a bridge-business.id"),
-    };
+    return { business };
   });
 
 export default approve;

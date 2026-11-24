@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/bridge-business/verbs/start.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { BridgeBusiness } from "../../blueprint/things/bridge-business/thing.ts";
 import type { Handler } from "../../generated/api/src/bridge-business/start.handler.ts";
 
 /**
@@ -40,10 +41,16 @@ import type { Handler } from "../../generated/api/src/bridge-business/start.hand
  *   once it answers, it writes KybStarted: business from the answer, company from the payload;
  *   the call is the span bridge-business.start, and its commit bridge-business.start.commit.
  */
-const start: Handler = (_payload, { steps, move, id }) =>
+const start: Handler = ({ company, legalName, email }, { steps, move, id }) =>
   Effect.gen(function* () {
+    const records = yield* Records;
+    // Bridge makes the form and the terms (`POST /v0/kyc_links`, `type: "business"`). Until Capxul mounts the Bridge
+    // adapter they are the stand-in's, one pair per KYB, named by its id, so no two KYBs share a form.
+    const kybLink = `https://bridge.capxul.test/kyb/${id}`;
+    const tosLink = `https://bridge.capxul.test/terms/${id}`;
+
     // Step insert: database, span bridge-business.start.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    yield* steps.insert(records.insert(BridgeBusiness, { id, company, legalName, email, kybLink, tosLink }));
 
     // The move start, to started.
     yield* move();
@@ -51,8 +58,8 @@ const start: Handler = (_payload, { steps, move, id }) =>
     return {
       // KybStarted needs business, and only the answer can give it.
       business: id,
-      kybLink: yield* Handlers.blank("kybLink, a bridge-business.kybLink"),
-      tosLink: yield* Handlers.blank("tosLink, a bridge-business.tosLink"),
+      kybLink,
+      tosLink,
     };
   });
 
