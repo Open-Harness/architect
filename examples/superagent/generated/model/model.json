@@ -14397,7 +14397,7 @@
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-CAUnDeUqjBpnYub4fXTsDFmVCSblbezu1as5rGcQwC8=",
+      "integrity": "sha256-avoLugTweK7BqobqMag/Lct/AHFitGucGB8SBDeXG6U=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -14425,7 +14425,7 @@
       "door": {
         "secret": "GITHUB_WEBHOOK_SIGNING"
       },
-      "hash": "e8baeb91fc9464a7"
+      "hash": "01bddde185e0942b"
     },
     "intake": {
       "kind": "feature",
@@ -14441,7 +14441,7 @@
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-f4GWwLntJhjpCWQOE37qqkVNMQM3BXVbJeErsxyVOoA=",
+      "integrity": "sha256-+AXQyW0NBkBjRx1yDhYK+KXEgXb7aKNcXceaaHnLuJg=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
@@ -14456,7 +14456,7 @@
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "f0d93648359426f7"
+      "hash": "bf82ea95529f783a"
     },
     "prompts": {
       "kind": "feature",
@@ -14472,7 +14472,7 @@
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-A81tsrSDlCfTfvb1eoiw4qh6jHWvCskP67AfhTtQtQA=",
+      "integrity": "sha256-znZ/ZEin6uv/edBwlPRBYM9rq+OlrWA/Ts8B89hUrhY=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
@@ -14490,7 +14490,7 @@
       "door": {
         "secret": "SLACK_WEBHOOK_SIGNING"
       },
-      "hash": "e30078e58778c834"
+      "hash": "c8ba2e613cf7f4ff"
     },
     "superagent": {
       "kind": "feature",

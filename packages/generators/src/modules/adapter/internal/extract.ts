@@ -1,5 +1,5 @@
-// What a description says, read out of it: its operations (each with the fields a caller supplies and its success
-// schema), its webhook events, and the schemas they refer to.
+// What a description says, read out of it: its operations (each with the fields a caller supplies, how its token is sent
+// and its success schema), its webhook events, and the schemas they refer to.
 import { camel, nameParts } from "./names.ts";
 
 // A node of the description, as its author spelled it.
@@ -10,13 +10,19 @@ export interface Description {
   readonly swagger: boolean;
 }
 
-export interface Param { readonly name: string; readonly in: "path" | "query" | "body"; readonly required: boolean; readonly schema: Node }
+export interface Param { readonly name: string; readonly in: "path" | "query" | "header" | "body"; readonly required: boolean; readonly schema: Node }
+/** How a call sends the client's token: as `Authorization: Bearer`, in the header an `apiKey` scheme names, or not at all (`security: []`). */
+export type Auth = "bearer" | "none" | { readonly header: string };
+/** A request body of alternatives (`oneOf` / `anyOf`): its fields are any alternative's, and the input's body is judged against it whole. */
+export interface Body { readonly schema: Node; readonly required: boolean }
 export interface Op {
   readonly id: string;
   readonly parts: ReadonlyArray<string>;
   readonly method: "get" | "post" | "put" | "patch" | "delete";
   readonly path: string;
   readonly params: ReadonlyArray<Param>;
+  readonly body: Body | null;
+  readonly auth: Auth;
   /** One per documented 2xx status; a null schema is a status with no body (204). */
   readonly successes: ReadonlyArray<{ readonly status: number; readonly schema: Node | null }>;
 }
@@ -46,26 +52,46 @@ const fieldsOf = (d: Description, schema: Node, seen = 0): { readonly properties
   };
 };
 
-const paramsOf = (d: Description, item: Node, op: Node): ReadonlyArray<Param> => {
+/** The header a call's caller may give, else the client makes a fresh one: so it is never required. */
+const IDEMPOTENCY_KEY = /^idempotency-key$/i;
+
+/**
+ * A body schema's fields. Of alternatives (`oneOf` / `anyOf`), every field any of them has, none required and each
+ * judged only with the whole body (one alternative's `type: individual` is another's misfit); otherwise its properties.
+ */
+const bodyOf = (d: Description, schema: Node, required: boolean): { readonly fields: ReadonlyArray<Param>; readonly body: Body | null } => {
+  const node = deref(d, schema);
+  const alternatives = (node["oneOf"] ?? node["anyOf"]) as ReadonlyArray<Node> | undefined;
+  if (Array.isArray(alternatives)) {
+    const names = [...new Set(alternatives.flatMap((a) => Object.keys(fieldsOf(d, a).properties)))];
+    return { fields: names.map((name) => ({ name, in: "body", required: false, schema: {} })), body: { schema, required } };
+  }
+  const { properties, required: needed } = fieldsOf(d, schema);
+  return { fields: Object.entries<Node>(properties).map(([name, s]) => ({ name, in: "body", required: needed.includes(name), schema: s })), body: null };
+};
+
+const paramsOf = (d: Description, item: Node, op: Node, auth: Auth): { readonly params: ReadonlyArray<Param>; readonly body: Body | null } => {
   const found: Array<Param> = [];
+  let body: Body | null = null;
+  const take = (b: ReturnType<typeof bodyOf>) => { found.push(...b.fields); body = b.body ?? body; };
+  const credential = auth === "none" ? undefined : auth === "bearer" ? "authorization" : auth.header.toLowerCase();
   for (const p of [...(item["parameters"] ?? []), ...(op["parameters"] ?? [])].map((x: Node) => deref(d, x))) {
-    // the token is the client's, sent as a bearer and never as a field
+    // the token is the client's credential, never a field (Slack declares it as a header)
     // (a path parameter that happens to be called `token` is a field like any other)
-    if (p["in"] === "header" || (p["name"] === "token" && p["in"] !== "path")) continue;
-    if (p["in"] === "body") {
-      const { properties, required } = fieldsOf(d, p["schema"] ?? {});
-      for (const [name, schema] of Object.entries<Node>(properties)) found.push({ name, in: "body", required: required.includes(name), schema });
-    } else {
+    // and so is a header the spec also declares where the credential goes (`Authorization`, an apiKey's own)
+    if ((p["name"] === "token" && p["in"] !== "path") || p["in"] === "cookie" || (p["in"] === "header" && String(p["name"]).toLowerCase() === credential)) continue;
+    if (p["in"] === "body") take(bodyOf(d, p["schema"] ?? {}, p["required"] === true));
+    else {
       const where = p["in"] === "formData" ? "body" : p["in"] as Param["in"];
       const schema = p["schema"] ?? Object.fromEntries(Object.entries(p).filter(([k]) => !ABOUT_THE_PARAMETER.has(k)));
-      found.push({ name: String(p["name"]), in: where, required: p["required"] === true || where === "path", schema });
+      const name = String(p["name"]);
+      const required = (p["required"] === true || where === "path") && !(where === "header" && IDEMPOTENCY_KEY.test(name));
+      found.push({ name, in: where, required, schema });
     }
   }
-  const body = op["requestBody"] === undefined ? undefined : deref(d, op["requestBody"])["content"]?.["application/json"]?.["schema"];
-  if (body !== undefined) {
-    const { properties, required } = fieldsOf(d, body);
-    for (const [name, schema] of Object.entries<Node>(properties)) found.push({ name, in: "body", required: required.includes(name), schema });
-  }
+  const requestBody = op["requestBody"] === undefined ? undefined : deref(d, op["requestBody"]);
+  const schema = requestBody?.["content"]?.["application/json"]?.["schema"] as Node | undefined;
+  if (schema !== undefined) take(bodyOf(d, schema, requestBody?.["required"] === true));
   // an operation's own parameter overrides the path item's of the same name and place
   const merged: Array<Param> = [];
   for (const p of found) {
@@ -73,26 +99,56 @@ const paramsOf = (d: Description, item: Node, op: Node): ReadonlyArray<Param> =>
     if (at >= 0) merged[at] = p;
     else merged.push(p);
   }
-  return merged;
+  return { params: merged, body };
 };
 
-/** Every operation that has an `operationId`, in the description's order. */
+/**
+ * The operation's security, else the document's. An `apiKey` scheme `in: header` (OpenAPI's `securitySchemes`, Swagger's
+ * `securityDefinitions`) names the header; `[]` sends no credential; any other scheme, or none declared, is a bearer.
+ */
+const authOf = (d: Description, op: Node): Auth => {
+  const security = op["security"] ?? d.raw["security"];
+  if (!Array.isArray(security)) return "bearer";
+  const first = (security as ReadonlyArray<Node>).find((r) => typeof r === "object" && r !== null && Object.keys(r).length > 0);
+  if (first === undefined) return "none";
+  const schemes: Node = (d.swagger ? d.raw["securityDefinitions"] : d.raw["components"]?.["securitySchemes"]) ?? {};
+  const scheme = deref(d, schemes[Object.keys(first)[0]!]);
+  return scheme["type"] === "apiKey" && scheme["in"] === "header" && typeof scheme["name"] === "string" ? { header: scheme["name"] } : "bearer";
+};
+
+/** The method's word on a collection (the path ends in a fixed part) and on an item (it ends in a `{parameter}`). */
+const WORDS = {
+  collection: { get: "list", post: "create", put: "update", patch: "update", delete: "delete" },
+  item: { get: "get", post: "create", put: "update", patch: "update", delete: "delete" },
+} as const;
+
+/** A call with no `operationId`: its path's fixed parts, camel-cased, then its method's word (`GET /widgets/{id}/spare_parts` is `widgets.spareParts.list`). */
+const pathName = (method: Op["method"], path: string): ReadonlyArray<string> => {
+  const parts = path.split("/").filter((p) => p !== "");
+  const onItem = (parts[parts.length - 1] ?? "").includes("{");
+  return [...parts.filter((p) => !p.includes("{")).map(camel), WORDS[onItem ? "item" : "collection"][method]];
+};
+
+/** Every operation, in the description's order, named by its `operationId` or else by its method and path. */
 export const operationsOf = (d: Description): ReadonlyArray<Op> => {
   const base = d.swagger ? String(d.raw["basePath"] ?? "").replace(/\/$/, "") : "";
   const found: Array<Op> = [];
   for (const [path, item] of Object.entries<Node>(d.raw["paths"] ?? {})) {
     for (const method of METHODS) {
       const op = item[method] as Node | undefined;
-      if (op === undefined || typeof op["operationId"] !== "string") continue;
+      if (op === undefined) continue;
       const statuses = Object.keys(op["responses"] ?? {}).map(Number).filter((s) => s >= 200 && s < 300).sort((a, b) => a - b);
       const successes = statuses.map((status) => {
         const response = deref(d, op["responses"][String(status)]);
         const schema: Node | undefined = d.swagger ? response["schema"] : response["content"]?.["application/json"]?.["schema"];
         return { status, schema: schema ?? null };
       });
+      const id = op["operationId"];
+      const auth = authOf(d, op);
       found.push({
-        id: op["operationId"], parts: nameParts(op["operationId"]), method, path: base + path, params: paramsOf(d, item, op),
-        successes,
+        id: typeof id === "string" ? id : `${method.toUpperCase()} ${path}`,
+        parts: typeof id === "string" ? nameParts(id) : pathName(method, path),
+        method, path: base + path, ...paramsOf(d, item, op, auth), auth, successes,
       });
     }
   }
