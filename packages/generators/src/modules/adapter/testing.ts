@@ -78,6 +78,14 @@ export interface StandIn {
   readonly seen: Array<Seen>;
   readonly close: () => void;
 }
+/** What fetch itself adds to every request: the rest of the headers are the client's choice, and a check judges them whole. */
+const TRANSPORT = new Set(["host", "connection", "accept", "accept-language", "accept-encoding", "sec-fetch-mode", "user-agent", "content-type", "content-length"]);
+/** A request as the check judges it: method, path, query, the client's own headers (sorted) and the body. */
+export const wire = (x: Seen) => ({
+  method: x.method, path: x.path, query: x.query, body: x.body,
+  headers: Object.fromEntries(Object.entries(x.headers).filter(([k]) => !TRANSPORT.has(k)).sort(([a], [b]) => (a < b ? -1 : 1))),
+});
+
 /** A server on a free port that records each request and answers what `answer` says. */
 export const standIn = (answer: (seen: Seen) => { readonly status: number; readonly body: unknown }): Promise<StandIn> =>
   new Promise((ready) => {

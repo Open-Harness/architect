@@ -1,18 +1,12 @@
-# #739's checks (gaps.test.ts), red until a -build pull request closes the five gaps in ortho new adapter --from-openapi. A builder only deletes lines (G11).
-src/modules/adapter/gaps.test.ts > 1. a call with no operationId is named from its method and path > generates a call for every operation, an operationId's name kept
-src/modules/adapter/gaps.test.ts > 1. a call with no operationId is named from its method and path > names each call by the rule, and each name sends its own method and path
-src/modules/adapter/gaps.test.ts > 2. the token goes in the header the apiKey scheme names > keeps Authorization: Bearer for an http bearer scheme
-src/modules/adapter/gaps.test.ts > 2. the token goes in the header the apiKey scheme names > sends no key header when no token is given
-src/modules/adapter/gaps.test.ts > 2. the token goes in the header the apiKey scheme names > sends the token as Api-Key on every call, and no Authorization
-src/modules/adapter/gaps.test.ts > 2. the token goes in the header the apiKey scheme names > sends the token as X-Partner-Key on every call, and no Authorization
-src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > sends a fresh key on each call the operation declares it on, and never in the body or query
-src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > sends another header parameter from the input under its name, and refuses a required one missing or wrong before sending
+# #739's gaps 1 to 3 (gaps.test.ts), red until a -build pull request closes them in ortho new adapter --from-openapi. A builder only deletes lines (G11).
+src/modules/adapter/gaps.test.ts > 1. a call with no operationId is named from its method and path > generates a call for every operation of a description without clashes, an operationId's name kept
+src/modules/adapter/gaps.test.ts > 1. a call with no operationId is named from its method and path > names each call by the rule, and each name sends its own method and path, and nothing else
+src/modules/adapter/gaps.test.ts > 1. a call with no operationId is named from its method and path > refuses a description whose operations come to one name, naming it
+src/modules/adapter/gaps.test.ts > 2. the token goes in the header the apiKey scheme names > reads Swagger 2.0's securityDefinitions, under its basePath
+src/modules/adapter/gaps.test.ts > 2. the token goes in the header the apiKey scheme names > sends no credential at all when no token is given
+src/modules/adapter/gaps.test.ts > 2. the token goes in the header the apiKey scheme names > sends the token as the scheme names it on each call: the document's, the operation's own, none for [], Bearer for anything else
+src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > refuses before sending a header missing, a header that doesn't fit, and a header and a body field of one name
+src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > sends a fresh key on each call, even of the same input, and only as a header
+src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > sends a header field as a header under its name, a query field only in the query, a body field only in the body
 src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > sends none on a call that doesn't declare it
-src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > sends one on a call whose path declares it
-src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > sends the caller's own key as given, so a retry is the same request
-src/modules/adapter/gaps.test.ts > 4. a oneOf or anyOf request body takes the fields of its alternatives > refuses before sending an input that fits none, and a field no alternative has
-src/modules/adapter/gaps.test.ts > 4. a oneOf or anyOf request body takes the fields of its alternatives > sends an input that fits any one alternative, as given
-src/modules/adapter/gaps.test.ts > 5. a lenient client reports an answer that misfits its schema and still returns it > lenient judges inputs and failures as before
-src/modules/adapter/gaps.test.ts > 5. a lenient client reports an answer that misfits its schema and still returns it > lenient without onMisfit still returns the answer
-src/modules/adapter/gaps.test.ts > 5. a lenient client reports an answer that misfits its schema and still returns it > lenient: the misfit comes back whole and is reported once; a fitting answer is not reported
-src/modules/adapter/gaps.test.ts > 5. a lenient client reports an answer that misfits its schema and still returns it > strict by default: the misfit is AnswerRefused
+src/modules/adapter/gaps.test.ts > 3. header parameters are kept, and Idempotency-Key is sent on each call that declares it > sends the caller's own key as given, on the operation's declaration and on its path's, so a retry is the same request

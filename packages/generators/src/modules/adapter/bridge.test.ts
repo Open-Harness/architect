@@ -5,7 +5,7 @@
 // (G11). Every expectation is read from the description here, never from what the generator made. The naming rule is
 // gaps.test.ts's.
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { BRIDGE, bridge, bridgeSha, callAt, callNames, generate, plugin, removePlugins, settle, standIn, type Calls, type Made, type Node, type StandIn } from "./testing.ts";
+import { BRIDGE, bridge, bridgeSha, callAt, callNames, generate, plugin, removePlugins, settle, standIn, wire, type Calls, type Made, type Node, type StandIn } from "./testing.ts";
 
 const spec = bridge();
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
@@ -18,7 +18,7 @@ const nameOf = (method: string, path: string) => {
   return [...parts.filter((p) => !p.includes("{")).map(camel), word].join(".");
 };
 const ref = (node: Node): Node => (typeof node?.["$ref"] === "string" ? ref(String(node["$ref"]).replace(/^#\//, "").split("/").reduce<Node>((at, k) => at?.[k], spec)) : node);
-interface Operation { readonly name: string; readonly method: string; readonly path: string; readonly idempotent: boolean; readonly bodyFree: boolean; readonly given: Node }
+interface Operation { readonly name: string; readonly method: string; readonly path: string; readonly idempotent: boolean; readonly bodyFree: boolean; readonly given: Node; readonly sent: { readonly path: string; readonly query: string } }
 const operations: ReadonlyArray<Operation> = Object.entries<Node>(spec["paths"]).flatMap(([path, item]) => METHODS.filter((m) => item[m] !== undefined).map((method) => ({
   name: nameOf(method, path), method, path,
   idempotent: [...(item["parameters"] ?? []), ...(item[method]["parameters"] ?? [])].map(ref).some((p: Node) => p["in"] === "header" && p["name"] === "Idempotency-Key"),
@@ -27,7 +27,12 @@ const operations: ReadonlyArray<Operation> = Object.entries<Node>(spec["paths"])
   given: Object.fromEntries([...(item["parameters"] ?? []), ...(item[method]["parameters"] ?? [])].map(ref)
     .filter((p: Node) => (p["in"] === "path" || (p["in"] === "query" && p["required"] === true)))
     .map((p: Node) => [p["name"], ref(p["schema"] ?? {})["enum"]?.[0] ?? p["example"] ?? ref(p["schema"] ?? {})["example"] ?? (ref(p["schema"] ?? {})["format"] === "uuid" ? "00000000-0000-4000-8000-000000000001" : "a1")])),
-})));
+})).map((o) => {
+  // where those fields go: each path parameter into the path, the rest into the query, in the description's order
+  const inPath = [...o.path.matchAll(/\{([^}]+)\}/g)].map(([, k]) => k!);
+  const query = new URLSearchParams(Object.entries(o.given).filter(([k]) => !inPath.includes(k)).map(([k, v]): [string, string] => [k, String(v)])).toString();
+  return { ...o, sent: { path: `/v0${o.path.replace(/\{([^}]+)\}/g, (_, k: string) => encodeURIComponent(String(o.given[k])))}`, query: query === "" ? "" : `?${query}` } };
+}));
 /** One of the examples Bridge publishes for an answer, its `$ref` followed. */
 const example = (path: string, method: string, status: string, name: string): Node => structuredClone(ref(spec["paths"][path][method]["responses"][status]["content"]["application/json"]["examples"][name])["value"]) as Node;
 
@@ -70,7 +75,7 @@ describe("Bridge's published description", () => {
     expect([...callNames(client())].sort()).toEqual(operations.map((o) => o.name).sort());
   });
 
-  it("sends Api-Key and no Authorization on every call, and an Idempotency-Key on exactly the calls that declare one", async () => {
+  it("sends each call whole: its method, path and query, Api-Key and no Authorization, an Idempotency-Key exactly where declared", async () => {
     const calls = client({ answers: "lenient" });
     const reached: Array<Operation> = [];
     for (const o of operations) {
@@ -80,8 +85,9 @@ describe("Bridge's published description", () => {
       expect(sent.length, o.name).toBeLessThanOrEqual(1);
       if (sent[0] === undefined) continue;
       reached.push(o);
-      expect([sent[0].method, sent[0].headers["api-key"], sent[0].headers["authorization"], typeof sent[0].headers["idempotency-key"]], o.name)
-        .toEqual([o.method.toUpperCase(), TOKEN, undefined, o.idempotent ? "string" : "undefined"]);
+      // the whole request: no field was given for the body, so none is sent, and no header but the key and the Idempotency-Key
+      expect(wire(sent[0]), o.name).toEqual({ method: o.method.toUpperCase(), ...o.sent, body: undefined,
+        headers: { "api-key": TOKEN, ...(o.idempotent ? { "idempotency-key": expect.stringMatching(/\S/) } : {}) } });
     }
     // a call with no required body field reaches the stand-in from its path and query alone: every GET and DELETE among them
     expect(reached.filter((o) => o.method === "get" || o.method === "delete").length).toBe(operations.filter((o) => o.method === "get" || o.method === "delete").length);
