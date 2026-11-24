@@ -1,0 +1,8 @@
+# Exact decimals (#742, item 5) are not built: there is no `Blueprint.decimal`. Clears with the value types build.
+src/modules/values/decimal.test.ts > Exact decimals: a decimal is a value > describes itself for the model as a decimal with its places, 9 when unset, and keeps that when named
+src/modules/values/decimal.test.ts > Exact decimals: a decimal is a value > holds trailing zeros as written by ERPNext, as the same number
+src/modules/values/decimal.test.ts > Exact decimals: a decimal is a value > holds up to its places after the point and refuses one more
+src/modules/values/decimal.test.ts > Exact decimals: a decimal is a value > is an exact BigDecimal in code, so 0.1 is 1/10 and not a binary float
+src/modules/values/decimal.test.ts > Exact decimals: a decimal is a value > refuses a JSON number, since a number on the wire is already a binary float
+src/modules/values/decimal.test.ts > Exact decimals: a decimal is a value > refuses text that is no plain decimal: exponents, signs, stray points, spaces, separators and words
+src/modules/values/decimal.test.ts > Exact decimals: a decimal is a value > round-trips decimal text exactly, past what a float can hold, negatives included
