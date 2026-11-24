@@ -1,6 +1,8 @@
 // Generated from the blueprint. Do not edit.
 import { Schema } from "effect";
 import { ErrorNames, wireStruct } from "orthograph/server";
+import * as Attendance from "../../../blueprint/things/attendance/errors.ts";
+import * as AttendanceRequest from "../../../blueprint/things/attendance-request/errors.ts";
 import * as BankAccount from "../../../blueprint/things/bank-account/errors.ts";
 import * as Branch from "../../../blueprint/things/branch/errors.ts";
 import * as BridgeBusiness from "../../../blueprint/things/bridge-business/errors.ts";
@@ -10,14 +12,24 @@ import * as Department from "../../../blueprint/things/department/errors.ts";
 import * as Designation from "../../../blueprint/things/designation/errors.ts";
 import * as Employee from "../../../blueprint/things/employee/errors.ts";
 import * as EmployeeGrade from "../../../blueprint/things/employee-grade/errors.ts";
+import * as EmploymentType from "../../../blueprint/things/employment-type/errors.ts";
 import * as Expense from "../../../blueprint/things/expense/errors.ts";
 import * as ExpenseClaim from "../../../blueprint/things/expense-claim/errors.ts";
 import * as ExpenseClaimType from "../../../blueprint/things/expense-claim-type/errors.ts";
 import * as Holiday from "../../../blueprint/things/holiday/errors.ts";
 import * as HolidayList from "../../../blueprint/things/holiday-list/errors.ts";
+import * as ShiftType from "../../../blueprint/things/shift-type/errors.ts";
 
 /** Every refusal's code, its exit for the CLI and its HTTP status: one row each, read by the CLI, HTTP and MCP. */
 export const refusals = {
+  AttendeeNotInCompany: { code: "AN-001", exit: 41, status: 422 },
+  AttendeeHasLeft: { code: "AN-002", exit: 42, status: 422 },
+  AttendanceBeforeJoining: { code: "AN-003", exit: 43, status: 422 },
+  AttendanceAlreadyMarked: { code: "AN-004", exit: 44, status: 422 },
+  RequesterNotInCompany: { code: "AQ-001", exit: 41, status: 422 },
+  RequesterHasLeft: { code: "AQ-002", exit: 42, status: 422 },
+  RequestEndsBeforeStart: { code: "AQ-003", exit: 43, status: 422 },
+  RequestBeforeJoining: { code: "AQ-004", exit: 44, status: 422 },
   KybNotApproved: { code: "BA-001", exit: 41, status: 422 },
   BankAccountNameTaken: { code: "BA-002", exit: 42, status: 422 },
   BranchNameTaken: { code: "BR-001", exit: 41, status: 422 },
@@ -33,6 +45,7 @@ export const refusals = {
   JoinedBeforeBorn: { code: "EM-004", exit: 44, status: 422 },
   RelievedBeforeJoined: { code: "EM-005", exit: 45, status: 422 },
   EmployeeGradeNameTaken: { code: "EG-001", exit: 41, status: 422 },
+  EmploymentTypeNameTaken: { code: "TY-001", exit: 41, status: 422 },
   SanctionedOverClaimed: { code: "EX-001", exit: 41, status: 422 },
   ExpenseTypeNotInCompany: { code: "EX-002", exit: 42, status: 422 },
   ClaimNotDraft: { code: "EX-003", exit: 43, status: 422 },
@@ -44,6 +57,10 @@ export const refusals = {
   HolidayOutsideList: { code: "HD-002", exit: 42, status: 422 },
   HolidayListNameTaken: { code: "HL-001", exit: 43, status: 422 },
   HolidayListEndsBeforeStart: { code: "HL-002", exit: 44, status: 422 },
+  ShiftTypeNameTaken: { code: "SH-001", exit: 41, status: 422 },
+  ShiftStartsWhenItEnds: { code: "SH-002", exit: 42, status: 422 },
+  AttendanceNotMarked: { code: "AN-900", exit: 40, status: 409 },
+  AttendanceRequestNotDraft: { code: "AQ-900", exit: 40, status: 409 },
   BankAccountNotOpen: { code: "BA-900", exit: 40, status: 409 },
   BranchNotActive: { code: "BR-900", exit: 40, status: 409 },
   BridgeBusinessNotStarted: { code: "KB-900", exit: 40, status: 409 },
@@ -53,11 +70,13 @@ export const refusals = {
   DesignationNotActive: { code: "DS-900", exit: 40, status: 409 },
   EmployeeNotActive: { code: "EM-900", exit: 40, status: 409 },
   EmployeeGradeNotActive: { code: "EG-900", exit: 40, status: 409 },
+  EmploymentTypeNotActive: { code: "TY-900", exit: 40, status: 409 },
   ExpenseNotActive: { code: "EX-900", exit: 40, status: 409 },
   ExpenseClaimNotDraft: { code: "EC-900", exit: 40, status: 409 },
   ExpenseClaimTypeNotActive: { code: "ET-900", exit: 40, status: 409 },
   HolidayNotActive: { code: "HD-900", exit: 40, status: 409 },
   HolidayListNotActive: { code: "HL-900", exit: 40, status: 409 },
+  ShiftTypeNotActive: { code: "SH-900", exit: 40, status: 409 },
   BridgeBusinessNotFound: { code: "KB-901", exit: 4, status: 404 },
   BridgeIndividualNotFound: { code: "KC-901", exit: 4, status: 404 },
   CompanyNotFound: { code: "CO-901", exit: 4, status: 404 },
@@ -70,6 +89,22 @@ export const refusals = {
 } as const;
 type Refusal = keyof typeof refusals;
 
+ErrorNames.name(Attendance.AttendeeNotInCompany, "AttendeeNotInCompany");
+export class AttendeeNotInCompany extends Schema.TaggedError<AttendeeNotInCompany>()("AttendeeNotInCompany", { code: Schema.Literal(refusals.AttendeeNotInCompany.code), ...wireStruct(Attendance.AttendeeNotInCompany.fields).fields }, { httpApiStatus: refusals.AttendeeNotInCompany.status }) { static readonly code = refusals.AttendeeNotInCompany.code; }
+ErrorNames.name(Attendance.AttendeeHasLeft, "AttendeeHasLeft");
+export class AttendeeHasLeft extends Schema.TaggedError<AttendeeHasLeft>()("AttendeeHasLeft", { code: Schema.Literal(refusals.AttendeeHasLeft.code), ...wireStruct(Attendance.AttendeeHasLeft.fields).fields }, { httpApiStatus: refusals.AttendeeHasLeft.status }) { static readonly code = refusals.AttendeeHasLeft.code; }
+ErrorNames.name(Attendance.AttendanceBeforeJoining, "AttendanceBeforeJoining");
+export class AttendanceBeforeJoining extends Schema.TaggedError<AttendanceBeforeJoining>()("AttendanceBeforeJoining", { code: Schema.Literal(refusals.AttendanceBeforeJoining.code), ...wireStruct(Attendance.AttendanceBeforeJoining.fields).fields }, { httpApiStatus: refusals.AttendanceBeforeJoining.status }) { static readonly code = refusals.AttendanceBeforeJoining.code; }
+ErrorNames.name(Attendance.AttendanceAlreadyMarked, "AttendanceAlreadyMarked");
+export class AttendanceAlreadyMarked extends Schema.TaggedError<AttendanceAlreadyMarked>()("AttendanceAlreadyMarked", { code: Schema.Literal(refusals.AttendanceAlreadyMarked.code), ...wireStruct(Attendance.AttendanceAlreadyMarked.fields).fields }, { httpApiStatus: refusals.AttendanceAlreadyMarked.status }) { static readonly code = refusals.AttendanceAlreadyMarked.code; }
+ErrorNames.name(AttendanceRequest.RequesterNotInCompany, "RequesterNotInCompany");
+export class RequesterNotInCompany extends Schema.TaggedError<RequesterNotInCompany>()("RequesterNotInCompany", { code: Schema.Literal(refusals.RequesterNotInCompany.code), ...wireStruct(AttendanceRequest.RequesterNotInCompany.fields).fields }, { httpApiStatus: refusals.RequesterNotInCompany.status }) { static readonly code = refusals.RequesterNotInCompany.code; }
+ErrorNames.name(AttendanceRequest.RequesterHasLeft, "RequesterHasLeft");
+export class RequesterHasLeft extends Schema.TaggedError<RequesterHasLeft>()("RequesterHasLeft", { code: Schema.Literal(refusals.RequesterHasLeft.code), ...wireStruct(AttendanceRequest.RequesterHasLeft.fields).fields }, { httpApiStatus: refusals.RequesterHasLeft.status }) { static readonly code = refusals.RequesterHasLeft.code; }
+ErrorNames.name(AttendanceRequest.RequestEndsBeforeStart, "RequestEndsBeforeStart");
+export class RequestEndsBeforeStart extends Schema.TaggedError<RequestEndsBeforeStart>()("RequestEndsBeforeStart", { code: Schema.Literal(refusals.RequestEndsBeforeStart.code), ...wireStruct(AttendanceRequest.RequestEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.RequestEndsBeforeStart.status }) { static readonly code = refusals.RequestEndsBeforeStart.code; }
+ErrorNames.name(AttendanceRequest.RequestBeforeJoining, "RequestBeforeJoining");
+export class RequestBeforeJoining extends Schema.TaggedError<RequestBeforeJoining>()("RequestBeforeJoining", { code: Schema.Literal(refusals.RequestBeforeJoining.code), ...wireStruct(AttendanceRequest.RequestBeforeJoining.fields).fields }, { httpApiStatus: refusals.RequestBeforeJoining.status }) { static readonly code = refusals.RequestBeforeJoining.code; }
 ErrorNames.name(BankAccount.KybNotApproved, "KybNotApproved");
 export class KybNotApproved extends Schema.TaggedError<KybNotApproved>()("KybNotApproved", { code: Schema.Literal(refusals.KybNotApproved.code), ...wireStruct(BankAccount.KybNotApproved.fields).fields }, { httpApiStatus: refusals.KybNotApproved.status }) { static readonly code = refusals.KybNotApproved.code; }
 ErrorNames.name(BankAccount.BankAccountNameTaken, "BankAccountNameTaken");
@@ -100,6 +135,8 @@ ErrorNames.name(Employee.RelievedBeforeJoined, "RelievedBeforeJoined");
 export class RelievedBeforeJoined extends Schema.TaggedError<RelievedBeforeJoined>()("RelievedBeforeJoined", { code: Schema.Literal(refusals.RelievedBeforeJoined.code), ...wireStruct(Employee.RelievedBeforeJoined.fields).fields }, { httpApiStatus: refusals.RelievedBeforeJoined.status }) { static readonly code = refusals.RelievedBeforeJoined.code; }
 ErrorNames.name(EmployeeGrade.EmployeeGradeNameTaken, "EmployeeGradeNameTaken");
 export class EmployeeGradeNameTaken extends Schema.TaggedError<EmployeeGradeNameTaken>()("EmployeeGradeNameTaken", { code: Schema.Literal(refusals.EmployeeGradeNameTaken.code), ...wireStruct(EmployeeGrade.EmployeeGradeNameTaken.fields).fields }, { httpApiStatus: refusals.EmployeeGradeNameTaken.status }) { static readonly code = refusals.EmployeeGradeNameTaken.code; }
+ErrorNames.name(EmploymentType.EmploymentTypeNameTaken, "EmploymentTypeNameTaken");
+export class EmploymentTypeNameTaken extends Schema.TaggedError<EmploymentTypeNameTaken>()("EmploymentTypeNameTaken", { code: Schema.Literal(refusals.EmploymentTypeNameTaken.code), ...wireStruct(EmploymentType.EmploymentTypeNameTaken.fields).fields }, { httpApiStatus: refusals.EmploymentTypeNameTaken.status }) { static readonly code = refusals.EmploymentTypeNameTaken.code; }
 ErrorNames.name(Expense.SanctionedOverClaimed, "SanctionedOverClaimed");
 export class SanctionedOverClaimed extends Schema.TaggedError<SanctionedOverClaimed>()("SanctionedOverClaimed", { code: Schema.Literal(refusals.SanctionedOverClaimed.code), ...wireStruct(Expense.SanctionedOverClaimed.fields).fields }, { httpApiStatus: refusals.SanctionedOverClaimed.status }) { static readonly code = refusals.SanctionedOverClaimed.code; }
 ErrorNames.name(Expense.ExpenseTypeNotInCompany, "ExpenseTypeNotInCompany");
@@ -122,6 +159,12 @@ ErrorNames.name(HolidayList.HolidayListNameTaken, "HolidayListNameTaken");
 export class HolidayListNameTaken extends Schema.TaggedError<HolidayListNameTaken>()("HolidayListNameTaken", { code: Schema.Literal(refusals.HolidayListNameTaken.code), ...wireStruct(HolidayList.HolidayListNameTaken.fields).fields }, { httpApiStatus: refusals.HolidayListNameTaken.status }) { static readonly code = refusals.HolidayListNameTaken.code; }
 ErrorNames.name(HolidayList.HolidayListEndsBeforeStart, "HolidayListEndsBeforeStart");
 export class HolidayListEndsBeforeStart extends Schema.TaggedError<HolidayListEndsBeforeStart>()("HolidayListEndsBeforeStart", { code: Schema.Literal(refusals.HolidayListEndsBeforeStart.code), ...wireStruct(HolidayList.HolidayListEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.HolidayListEndsBeforeStart.status }) { static readonly code = refusals.HolidayListEndsBeforeStart.code; }
+ErrorNames.name(ShiftType.ShiftTypeNameTaken, "ShiftTypeNameTaken");
+export class ShiftTypeNameTaken extends Schema.TaggedError<ShiftTypeNameTaken>()("ShiftTypeNameTaken", { code: Schema.Literal(refusals.ShiftTypeNameTaken.code), ...wireStruct(ShiftType.ShiftTypeNameTaken.fields).fields }, { httpApiStatus: refusals.ShiftTypeNameTaken.status }) { static readonly code = refusals.ShiftTypeNameTaken.code; }
+ErrorNames.name(ShiftType.ShiftStartsWhenItEnds, "ShiftStartsWhenItEnds");
+export class ShiftStartsWhenItEnds extends Schema.TaggedError<ShiftStartsWhenItEnds>()("ShiftStartsWhenItEnds", { code: Schema.Literal(refusals.ShiftStartsWhenItEnds.code), ...wireStruct(ShiftType.ShiftStartsWhenItEnds.fields).fields }, { httpApiStatus: refusals.ShiftStartsWhenItEnds.status }) { static readonly code = refusals.ShiftStartsWhenItEnds.code; }
+export class AttendanceNotMarked extends Schema.TaggedError<AttendanceNotMarked>()("AttendanceNotMarked", { code: Schema.Literal(refusals.AttendanceNotMarked.code), ...{ state: Schema.Literals(["marked"]) } }, { httpApiStatus: refusals.AttendanceNotMarked.status }) { static readonly code = refusals.AttendanceNotMarked.code; }
+export class AttendanceRequestNotDraft extends Schema.TaggedError<AttendanceRequestNotDraft>()("AttendanceRequestNotDraft", { code: Schema.Literal(refusals.AttendanceRequestNotDraft.code), ...{ state: Schema.Literals(["draft", "approved", "rejected"]) } }, { httpApiStatus: refusals.AttendanceRequestNotDraft.status }) { static readonly code = refusals.AttendanceRequestNotDraft.code; }
 export class BankAccountNotOpen extends Schema.TaggedError<BankAccountNotOpen>()("BankAccountNotOpen", { code: Schema.Literal(refusals.BankAccountNotOpen.code), ...{ state: Schema.Literals(["open", "closed"]) } }, { httpApiStatus: refusals.BankAccountNotOpen.status }) { static readonly code = refusals.BankAccountNotOpen.code; }
 export class BranchNotActive extends Schema.TaggedError<BranchNotActive>()("BranchNotActive", { code: Schema.Literal(refusals.BranchNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.BranchNotActive.status }) { static readonly code = refusals.BranchNotActive.code; }
 export class BridgeBusinessNotStarted extends Schema.TaggedError<BridgeBusinessNotStarted>()("BridgeBusinessNotStarted", { code: Schema.Literal(refusals.BridgeBusinessNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeBusinessNotStarted.status }) { static readonly code = refusals.BridgeBusinessNotStarted.code; }
@@ -131,11 +174,13 @@ export class DepartmentNotActive extends Schema.TaggedError<DepartmentNotActive>
 export class DesignationNotActive extends Schema.TaggedError<DesignationNotActive>()("DesignationNotActive", { code: Schema.Literal(refusals.DesignationNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.DesignationNotActive.status }) { static readonly code = refusals.DesignationNotActive.code; }
 export class EmployeeNotActive extends Schema.TaggedError<EmployeeNotActive>()("EmployeeNotActive", { code: Schema.Literal(refusals.EmployeeNotActive.code), ...{ state: Schema.Literals(["active", "left"]) } }, { httpApiStatus: refusals.EmployeeNotActive.status }) { static readonly code = refusals.EmployeeNotActive.code; }
 export class EmployeeGradeNotActive extends Schema.TaggedError<EmployeeGradeNotActive>()("EmployeeGradeNotActive", { code: Schema.Literal(refusals.EmployeeGradeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.EmployeeGradeNotActive.status }) { static readonly code = refusals.EmployeeGradeNotActive.code; }
+export class EmploymentTypeNotActive extends Schema.TaggedError<EmploymentTypeNotActive>()("EmploymentTypeNotActive", { code: Schema.Literal(refusals.EmploymentTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.EmploymentTypeNotActive.status }) { static readonly code = refusals.EmploymentTypeNotActive.code; }
 export class ExpenseNotActive extends Schema.TaggedError<ExpenseNotActive>()("ExpenseNotActive", { code: Schema.Literal(refusals.ExpenseNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.ExpenseNotActive.status }) { static readonly code = refusals.ExpenseNotActive.code; }
 export class ExpenseClaimNotDraft extends Schema.TaggedError<ExpenseClaimNotDraft>()("ExpenseClaimNotDraft", { code: Schema.Literal(refusals.ExpenseClaimNotDraft.code), ...{ state: Schema.Literals(["draft", "approved", "rejected"]) } }, { httpApiStatus: refusals.ExpenseClaimNotDraft.status }) { static readonly code = refusals.ExpenseClaimNotDraft.code; }
 export class ExpenseClaimTypeNotActive extends Schema.TaggedError<ExpenseClaimTypeNotActive>()("ExpenseClaimTypeNotActive", { code: Schema.Literal(refusals.ExpenseClaimTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.ExpenseClaimTypeNotActive.status }) { static readonly code = refusals.ExpenseClaimTypeNotActive.code; }
 export class HolidayNotActive extends Schema.TaggedError<HolidayNotActive>()("HolidayNotActive", { code: Schema.Literal(refusals.HolidayNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.HolidayNotActive.status }) { static readonly code = refusals.HolidayNotActive.code; }
 export class HolidayListNotActive extends Schema.TaggedError<HolidayListNotActive>()("HolidayListNotActive", { code: Schema.Literal(refusals.HolidayListNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.HolidayListNotActive.status }) { static readonly code = refusals.HolidayListNotActive.code; }
+export class ShiftTypeNotActive extends Schema.TaggedError<ShiftTypeNotActive>()("ShiftTypeNotActive", { code: Schema.Literal(refusals.ShiftTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.ShiftTypeNotActive.status }) { static readonly code = refusals.ShiftTypeNotActive.code; }
 export class BridgeBusinessNotFound extends Schema.TaggedError<BridgeBusinessNotFound>()("BridgeBusinessNotFound", { code: Schema.Literal(refusals.BridgeBusinessNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeBusinessNotFound.status }) { static readonly code = refusals.BridgeBusinessNotFound.code; }
 export class BridgeIndividualNotFound extends Schema.TaggedError<BridgeIndividualNotFound>()("BridgeIndividualNotFound", { code: Schema.Literal(refusals.BridgeIndividualNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeIndividualNotFound.status }) { static readonly code = refusals.BridgeIndividualNotFound.code; }
 export class CompanyNotFound extends Schema.TaggedError<CompanyNotFound>()("CompanyNotFound", { code: Schema.Literal(refusals.CompanyNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.CompanyNotFound.status }) { static readonly code = refusals.CompanyNotFound.code; }
@@ -154,6 +199,14 @@ export const codes = Object.fromEntries(Object.entries(refusals).map(([k, r]) =>
 
 /** The declared errors themselves, by name: their fields say who may see a value (the visibility rule cuts a refusal by them). */
 export const declared = {
+  AttendeeNotInCompany: Attendance.AttendeeNotInCompany,
+  AttendeeHasLeft: Attendance.AttendeeHasLeft,
+  AttendanceBeforeJoining: Attendance.AttendanceBeforeJoining,
+  AttendanceAlreadyMarked: Attendance.AttendanceAlreadyMarked,
+  RequesterNotInCompany: AttendanceRequest.RequesterNotInCompany,
+  RequesterHasLeft: AttendanceRequest.RequesterHasLeft,
+  RequestEndsBeforeStart: AttendanceRequest.RequestEndsBeforeStart,
+  RequestBeforeJoining: AttendanceRequest.RequestBeforeJoining,
   KybNotApproved: BankAccount.KybNotApproved,
   BankAccountNameTaken: BankAccount.BankAccountNameTaken,
   BranchNameTaken: Branch.BranchNameTaken,
@@ -169,6 +222,7 @@ export const declared = {
   JoinedBeforeBorn: Employee.JoinedBeforeBorn,
   RelievedBeforeJoined: Employee.RelievedBeforeJoined,
   EmployeeGradeNameTaken: EmployeeGrade.EmployeeGradeNameTaken,
+  EmploymentTypeNameTaken: EmploymentType.EmploymentTypeNameTaken,
   SanctionedOverClaimed: Expense.SanctionedOverClaimed,
   ExpenseTypeNotInCompany: Expense.ExpenseTypeNotInCompany,
   ClaimNotDraft: Expense.ClaimNotDraft,
@@ -180,7 +234,9 @@ export const declared = {
   HolidayOutsideList: Holiday.HolidayOutsideList,
   HolidayListNameTaken: HolidayList.HolidayListNameTaken,
   HolidayListEndsBeforeStart: HolidayList.HolidayListEndsBeforeStart,
+  ShiftTypeNameTaken: ShiftType.ShiftTypeNameTaken,
+  ShiftStartsWhenItEnds: ShiftType.ShiftStartsWhenItEnds,
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { KybNotApproved, BankAccountNameTaken, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, BankAccountNotOpen, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, HolidayNotActive, HolidayListNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, KybNotApproved, BankAccountNameTaken, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, HolidayNotActive, HolidayListNotActive, ShiftTypeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, NotAllowed, IdempotencyConflict };
