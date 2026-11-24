@@ -21,6 +21,12 @@ const reschemed = (field: FieldsInput[string], schema: Schema.Top): FieldsInput[
   return { kind: "value", schema, meta: value.meta, visibility: field.visibility, ...(field.issued === true ? { issued: true as const } : {}) } as unknown as FieldsInput[string];
 };
 
+/** A decimal as the text it travels as, with its input's pattern; an optional one stays an optional key. */
+const decimalShown = (places: number, optional: boolean): Schema.Top => {
+  const text = Schema.String.check(Schema.isPattern(new RegExp(decimalPattern(places), "u")));
+  return optional ? (Schema.optionalKey(text) as unknown as Schema.Top) : text;
+};
+
 /**
  * A field's sentence and, for `state`, the machine's own states as the only values it can hold (M1.37, M1.42). A decimal is shown as
  * the text it travels as, with its input's pattern (#742): its own schema's sentence and pattern sit where JSON Schema doesn't show them.
@@ -30,7 +36,7 @@ const told = (fields: FieldsInput, states: ReadonlyArray<string> | undefined): F
     const value = field.kind === "field" ? field.value : field;
     const base =
       key === "state" && states !== undefined && states.length > 0 ? (Schema.Literals(states) as unknown as Schema.Top)
-      : value.meta?.type === "decimal" ? Schema.String.check(Schema.isPattern(new RegExp(decimalPattern(value.meta.places), "u")))
+      : value.meta?.type === "decimal" ? decimalShown(value.meta.places, value.optional === true)
       : (value.schema as Schema.Top);
     const schema = field.description === undefined ? base : base.annotate({ description: field.description });
     return [key, schema === value.schema ? field : reschemed(field, schema)] as const;
