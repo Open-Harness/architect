@@ -5262,7 +5262,7 @@
           "version": "0.0.0",
           "thing": "eval"
         },
-        "description": "Give up on an eval that ran out of time: it is unavailable, and its triggers wait for another.",
+        "description": "Give up on an eval that ran out of time: it is unavailable, and keeps its triggers until a person reevaluates one.",
         "payload": {
           "eval": {
             "value": {
@@ -5307,7 +5307,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "34fb4eb71fe4941c"
+        "hash": "fbc92212ea424307"
       },
       "eval.read": {
         "kind": "operation",
@@ -6527,12 +6527,13 @@
           }
         ],
         "agentTool": true,
+        "stale": "StaleRevision",
         "steps": {},
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "d4ace5c00b4f0164"
+        "hash": "7b4bf59640393b8e"
       },
       "policy.save": {
         "kind": "operation",
@@ -6635,12 +6636,13 @@
           }
         ],
         "agentTool": true,
+        "stale": "StaleRevision",
         "steps": {},
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "33c292fd382278c6"
+        "hash": "8a6519b3b07e834e"
       },
       "policy.sync": {
         "kind": "operation",
@@ -6941,12 +6943,13 @@
           }
         ],
         "agentTool": true,
+        "stale": "StaleRevision",
         "steps": {},
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "c383858d3e28f40c"
+        "hash": "183a8f8ca3111599"
       },
       "proposal.approve": {
         "kind": "operation",
@@ -10161,7 +10164,9 @@
         "answer": {},
         "move": null,
         "errors": [],
-        "breaks": [],
+        "breaks": [
+          "eval.oneLiveEvalPerThread"
+        ],
         "refusals": [
           "TriggerNotFound",
           "NotAllowed"
@@ -10178,12 +10183,20 @@
         "notFound": {
           "trigger": "TriggerNotFound"
         },
-        "steps": {},
+        "steps": {
+          "release": {
+            "name": "trigger.reevaluate.release",
+            "type": "database",
+            "writes": [
+              "eval"
+            ]
+          }
+        },
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "a077bd7019d7759b"
+        "hash": "781e162cc5f46135"
       },
       "trigger.requeue": {
         "kind": "operation",
@@ -14401,7 +14414,7 @@
         "file": "blueprint/adapters/github.ts",
         "package": "@orthograph/github",
         "version": "0.0.0",
-        "integrity": "sha256-CAUnDeUqjBpnYub4fXTsDFmVCSblbezu1as5rGcQwC8=",
+        "integrity": "sha256-hqTITl+czRSM8D2Njc+q/M/326YiOpfjdUwaF97i2kU=",
         "chosen": {},
         "calls": [
           "issues.createComment",
@@ -14429,23 +14442,23 @@
         "door": {
           "secret": "GITHUB_WEBHOOK_SIGNING"
         },
-        "hash": "e8baeb91fc9464a7"
+        "hash": "9ad0c365d45be62e"
       },
       "intake": {
         "kind": "feature",
         "file": "blueprint/features/intake.ts",
         "package": "@orthograph/intake",
         "version": "0.0.0",
-        "integrity": "sha256-ZIAhRWmfb75mbi+6xBAAJtf4qRPVlNsywVCvKuqO1Lc=",
+        "integrity": "sha256-50XlvRmF1GW2EDpSZT+5Hixs0MrpNX+4UyjDTGEb4Ak=",
         "chosen": {},
-        "hash": "6cd4dbc0883d6532"
+        "hash": "ef29f74ace12494e"
       },
       "posthog": {
         "kind": "adapter",
         "file": "blueprint/adapters/posthog.ts",
         "package": "@orthograph/posthog",
         "version": "0.0.0",
-        "integrity": "sha256-f4GWwLntJhjpCWQOE37qqkVNMQM3BXVbJeErsxyVOoA=",
+        "integrity": "sha256-SKfuUXLhVKjLyOnECuQ8753/X3hBIvK0LfqtuZlMI8E=",
         "chosen": {},
         "calls": [
           "errorTrackingIssuesList",
@@ -14460,7 +14473,7 @@
           "how": "process",
           "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
         },
-        "hash": "f0d93648359426f7"
+        "hash": "3b65a99f14bd7710"
       },
       "prompts": {
         "kind": "feature",
@@ -14476,7 +14489,7 @@
         "file": "blueprint/adapters/slack.ts",
         "package": "@orthograph/slack",
         "version": "0.0.0",
-        "integrity": "sha256-A81tsrSDlCfTfvb1eoiw4qh6jHWvCskP67AfhTtQtQA=",
+        "integrity": "sha256-iiGuKADBPcIp2uFz3oISjXmxgN8p1uLGSAycnFUciIA=",
         "chosen": {},
         "calls": [
           "chatPostMessage",
@@ -14494,7 +14507,7 @@
         "door": {
           "secret": "SLACK_WEBHOOK_SIGNING"
         },
-        "hash": "e30078e58778c834"
+        "hash": "98ca38dacd83b3d9"
       },
       "superagent": {
         "kind": "feature",
@@ -14622,7 +14635,7 @@
       "thing:eval": "07cccbf8098cb160"
     },
     "eval.expire": {
-      "operation:eval.expire": "34fb4eb71fe4941c",
+      "operation:eval.expire": "fbc92212ea424307",
       "thing:eval": "07cccbf8098cb160"
     },
     "eval.read": {
@@ -14701,11 +14714,11 @@
       "thing:policy": "cb2866374f37c419"
     },
     "policy.restore": {
-      "operation:policy.restore": "d4ace5c00b4f0164",
+      "operation:policy.restore": "7b4bf59640393b8e",
       "thing:policy": "cb2866374f37c419"
     },
     "policy.save": {
-      "operation:policy.save": "33c292fd382278c6",
+      "operation:policy.save": "8a6519b3b07e834e",
       "thing:policy": "cb2866374f37c419"
     },
     "policy.sync": {
@@ -14725,7 +14738,7 @@
       "thing:prompt-set": "1a9041cb1424418f"
     },
     "prompt-set.save": {
-      "operation:prompt-set.save": "c383858d3e28f40c",
+      "operation:prompt-set.save": "183a8f8ca3111599",
       "thing:prompt-set": "1a9041cb1424418f"
     },
     "proposal.approve": {
@@ -14928,7 +14941,7 @@
       "thing:trigger": "11d0bc1aa3c79f78"
     },
     "trigger.reevaluate": {
-      "operation:trigger.reevaluate": "a077bd7019d7759b",
+      "operation:trigger.reevaluate": "781e162cc5f46135",
       "thing:trigger": "11d0bc1aa3c79f78"
     },
     "trigger.requeue": {
@@ -14964,8 +14977,8 @@
     "eval/decide.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.decide\n\nRecord one judgement per enabled rule.\n\n**Who may call:** the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | eval.superagent |\n| eval | eval.id |\n| judgements | schema |\n\n## Answer\n\n(none)\n\n## Move\n\n`decided`: from delivered to decided, emitting EvalDecided.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EvalNotQueued | 85 | EV-900 | the eval is in a state decided can't start from; carries `state` |\n| EvalNotFound | 4 | EV-901 | nothing has the id in eval; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval decide --superagent <superagent> --eval <eval> --judgements <judgements>\n```\n\nHTTP: `POST /eval/decide` with the payload as JSON. SDK: `Sdk.eval.decide(payload)`.\n",
     "eval/delivered.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.delivered\n\nStart an eval's clock when it is told to the main agent: a held hop, so a pause never starts it.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| eval | eval.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`delivered`: from queued to delivered, emitting EvalDelivered.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EvalNotQueued | 85 | EV-900 | the eval is in a state delivered can't start from; carries `state` |\n| EvalNotFound | 4 | EV-901 | nothing has the id in eval; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval delivered --eval <eval>\n```\n\nHTTP: `POST /eval/delivered` with the payload as JSON. SDK: `Sdk.eval.delivered(payload)`.\n",
     "eval/due.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.due\n\nOne pass of the eval clock: batch each thread's waiting triggers into an eval, and expire the ones that ran out of time. Not armed again while paused.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | eval.superagent |\n\n## Answer\n\n| field | value |\n|---|---|\n| started | uint |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval due --superagent <superagent>\n```\n\nHTTP: `POST /eval/due` with the payload as JSON. SDK: `Sdk.eval.due(payload)`.\n",
-    "eval/expire.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.expire\n\nGive up on an eval that ran out of time: it is unavailable, and its triggers wait for another.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| eval | eval.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`expired`: from delivered to unavailable, emitting EvalExpired.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EvalNotQueued | 85 | EV-900 | the eval is in a state expired can't start from; carries `state` |\n| EvalNotFound | 4 | EV-901 | nothing has the id in eval; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval expire --eval <eval>\n```\n\nHTTP: `POST /eval/expire` with the payload as JSON. SDK: `Sdk.eval.expire(payload)`.\n",
-    "eval/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval\n\nOne judgement the main agent is asked for: a thread's waiting triggers, batched.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| thread | id |\n| triggers | schema |\n| activeAtStart | uint |\n| timeoutMs | uint |\n| deliveredAt (optional) | uint |\n\n## Machine\n\nStates: queued, delivered, decided, unavailable. A move from the wrong state is refused EvalNotQueued (exit 85).\n\n| move | from | to | emits |\n|---|---|---|---|\n| started | (creates) | queued | EvalStarted |\n| delivered | queued | delivered | EvalDelivered |\n| decided | delivered | decided | EvalDecided |\n| expired | delivered | unavailable | EvalExpired |\n\n## Invariants\n\n- `eval.oneLiveEvalPerThread`: another queued or delivered eval holds this thread. Unique on thread, while queued or delivered; refuses nothing, a break is a defect.\n\n## Events\n\n- `EvalDecided`: carries eval (eval.id); emitted by the move decided\n- `EvalDelivered`: carries superagent (eval.superagent), eval (eval.id); emitted by the move delivered\n- `EvalExpired`: carries eval (eval.id); emitted by the move expired\n- `EvalStarted`: carries superagent (eval.superagent), eval (eval.id), thread (eval.thread); emitted by the move started\n\n## Operations\n\n- [eval.context](context.md): Read what a judgement needs: the thread's history and what else it touches.\n- [eval.decide](decide.md): Record one judgement per enabled rule.\n- [eval.delivered](delivered.md): Start an eval's clock when it is told to the main agent: a held hop, so a pause never starts it.\n- [eval.due](due.md): One pass of the eval clock: batch each thread's waiting triggers into an eval, and expire the ones that ran out of time. Not armed again while paused.\n- [eval.expire](expire.md): Give up on an eval that ran out of time: it is unavailable, and its triggers wait for another.\n- [eval.read](read.md): Read one page of a thread, through its connection.\n- [eval.start](start.md): Make an eval for one thread's waiting triggers.\n",
+    "eval/expire.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.expire\n\nGive up on an eval that ran out of time: it is unavailable, and keeps its triggers until a person reevaluates one.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| eval | eval.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`expired`: from delivered to unavailable, emitting EvalExpired.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EvalNotQueued | 85 | EV-900 | the eval is in a state expired can't start from; carries `state` |\n| EvalNotFound | 4 | EV-901 | nothing has the id in eval; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval expire --eval <eval>\n```\n\nHTTP: `POST /eval/expire` with the payload as JSON. SDK: `Sdk.eval.expire(payload)`.\n",
+    "eval/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval\n\nOne judgement the main agent is asked for: a thread's waiting triggers, batched.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| thread | id |\n| triggers | schema |\n| activeAtStart | uint |\n| timeoutMs | uint |\n| deliveredAt (optional) | uint |\n\n## Machine\n\nStates: queued, delivered, decided, unavailable. A move from the wrong state is refused EvalNotQueued (exit 85).\n\n| move | from | to | emits |\n|---|---|---|---|\n| started | (creates) | queued | EvalStarted |\n| delivered | queued | delivered | EvalDelivered |\n| decided | delivered | decided | EvalDecided |\n| expired | delivered | unavailable | EvalExpired |\n\n## Invariants\n\n- `eval.oneLiveEvalPerThread`: another queued or delivered eval holds this thread. Unique on thread, while queued or delivered; refuses nothing, a break is a defect.\n\n## Events\n\n- `EvalDecided`: carries eval (eval.id); emitted by the move decided\n- `EvalDelivered`: carries superagent (eval.superagent), eval (eval.id); emitted by the move delivered\n- `EvalExpired`: carries eval (eval.id); emitted by the move expired\n- `EvalStarted`: carries superagent (eval.superagent), eval (eval.id), thread (eval.thread); emitted by the move started\n\n## Operations\n\n- [eval.context](context.md): Read what a judgement needs: the thread's history and what else it touches.\n- [eval.decide](decide.md): Record one judgement per enabled rule.\n- [eval.delivered](delivered.md): Start an eval's clock when it is told to the main agent: a held hop, so a pause never starts it.\n- [eval.due](due.md): One pass of the eval clock: batch each thread's waiting triggers into an eval, and expire the ones that ran out of time. Not armed again while paused.\n- [eval.expire](expire.md): Give up on an eval that ran out of time: it is unavailable, and keeps its triggers until a person reevaluates one.\n- [eval.read](read.md): Read one page of a thread, through its connection.\n- [eval.start](start.md): Make an eval for one thread's waiting triggers.\n",
     "eval/read.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.read\n\nRead one page of a thread, through its connection.\n\n**Who may call:** the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | eval.superagent |\n| eval | eval.id |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| text | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EvalNotFound | 4 | EV-901 | nothing has the id in eval; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval read --superagent <superagent> --eval <eval> [--cursor <cursor>]\n```\n\nHTTP: `POST /eval/read` with the payload as JSON. SDK: `Sdk.eval.read(payload)`.\n",
     "eval/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.start\n\nMake an eval for one thread's waiting triggers.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | eval.superagent |\n| thread | eval.thread |\n| triggers | eval.triggers |\n| timeoutMs | eval.timeoutMs |\n\n## Answer\n\n| field | value |\n|---|---|\n| eval | eval.id |\n\n## Move\n\n`started`: from nothing (it creates) to queued, emitting EvalStarted.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval start --superagent <superagent> --thread <thread> --triggers <triggers> --timeoutMs <timeoutMs>\n```\n\nHTTP: `POST /eval/start` with the payload as JSON. SDK: `Sdk.eval.start(payload)`.\n",
     "input/delivered.md": "<!-- Generated from the blueprint. Do not edit. -->\n# input.delivered\n\nThe executor took the Input.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| input | input.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`delivered`: from routed to delivered, emitting InputDelivered.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InputNotWaiting | 98 | IN-900 | the input is in a state delivered can't start from; carries `state` |\n| InputNotFound | 4 | IN-901 | nothing has the id in input; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent input delivered --input <input>\n```\n\nHTTP: `POST /input/delivered` with the payload as JSON. SDK: `Sdk.input.delivered(payload)`.\n",
@@ -15042,7 +15055,7 @@
     "trigger/handback.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.handback\n\nThe executor hands a trigger back: it was not its to answer.\n\n**Who may call:** the itsAgent of its ticket.\n\n## Payload\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsAgent of its ticket; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger handback --ticket <ticket> --trigger <trigger>\n```\n\nHTTP: `POST /trigger/handback` with the payload as JSON. SDK: `Sdk.trigger.handback(payload)`.\n",
     "trigger/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger\n\nOne event that came in from a connection. Never changed once stored.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| source | text |\n| event | text |\n| thread | text |\n| kind | text |\n| text | text |\n| url (optional) | text |\n| author (optional) | text |\n| channel | schema |\n\n## Machine\n\nStates: stored. A move from the wrong state is refused TriggerNotStored (exit 83).\n\n| move | from | to | emits |\n|---|---|---|---|\n| receive | (creates) | stored | TriggerReceived |\n| requeue | stored | stored | TriggerRequeued |\n\n## Invariants\n\n- `trigger.oneTriggerPerEvent`: another trigger holds this superagent, source and event. Unique on superagent, source, event, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `TriggerReceived`: carries superagent (trigger.superagent), trigger (trigger.id), thread (trigger.thread), text (trigger.text); emitted by the move receive\n- `TriggerRequeued`: carries superagent (trigger.superagent), trigger (trigger.id); emitted by the move requeue\n\n## Operations\n\n- [trigger.handback](handback.md): The executor hands a trigger back: it was not its to answer.\n- [trigger.receive](receive.md): Store one event a connection brought, once: a second delivery of the same event is a duplicate, and one the policy filters is not kept.\n- [trigger.reevaluate](reevaluate.md): Ask the main agent to judge a trigger again.\n- [trigger.requeue](requeue.md): Put a trigger back for evaluation.\n",
     "trigger/receive.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.receive\n\nStore one event a connection brought, once: a second delivery of the same event is a duplicate, and one the policy filters is not kept.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | trigger.superagent |\n| source | trigger.source |\n| event | trigger.event |\n| thread | trigger.thread |\n| kind | trigger.kind |\n| text | trigger.text |\n| url (optional) | trigger.url |\n| addressed (optional) | schema |\n| actor (optional) | schema |\n| channel | trigger.channel |\n\n## Answer\n\n| field | value |\n|---|---|\n| trigger (optional) | id |\n| outcome | schema |\n\n## Move\n\n`receive`: from nothing (it creates) to stored, emitting TriggerReceived.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger receive --superagent <superagent> --source <source> --event <event> --thread <thread> --kind <kind> --text <text> [--url <url>] [--addressed <addressed>] [--actor <actor>] --channel <channel>\n```\n\nHTTP: `POST /trigger/receive` with the payload as JSON. SDK: `Sdk.trigger.receive(payload)`.\n",
-    "trigger/reevaluate.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.reevaluate\n\nAsk the main agent to judge a trigger again.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger reevaluate --trigger <trigger>\n```\n\nHTTP: `POST /trigger/reevaluate` with the payload as JSON. SDK: `Sdk.trigger.reevaluate(payload)`.\n",
+    "trigger/reevaluate.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.reevaluate\n\nAsk the main agent to judge a trigger again.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Steps\n\n- `trigger.reevaluate.release` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger reevaluate --trigger <trigger>\n```\n\nHTTP: `POST /trigger/reevaluate` with the payload as JSON. SDK: `Sdk.trigger.reevaluate(payload)`.\n",
     "trigger/requeue.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.requeue\n\nPut a trigger back for evaluation.\n\n**Who may call:** the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | trigger.superagent |\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`requeue`: from stored to stored, emitting TriggerRequeued.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotStored | 83 | TR-900 | the trigger is in a state requeue can't start from; carries `state` |\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger requeue --superagent <superagent> --trigger <trigger>\n```\n\nHTTP: `POST /trigger/requeue` with the payload as JSON. SDK: `Sdk.trigger.requeue(payload)`.\n"
   },
   "extensions": {
@@ -15059,5 +15072,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "e2957b06c66cd18e9fd738832e8f807df7e08f680bbff5b28c73f5ca09a40b26"
+  "digest": "a84b2c9e02a52d8b96c1a7ca910fa4ba030e34b2761901058bfcbe77282b997f"
 }

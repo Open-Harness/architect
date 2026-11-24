@@ -79,6 +79,7 @@ export interface TapeRun {
   readonly plants: ReadonlyArray<{ name: string; step: string; failedAt: ReadonlyArray<string> }>;
   readonly mutantRuns: ReadonlyArray<{ step: string; path: string; kind: string; read: boolean; failed: boolean }>;
   readonly eventRuns: ReadonlyArray<{ step: string; what: string; failed: boolean }>;
+  readonly extraRuns: ReadonlyArray<{ step: string; atStep: boolean; followers: ReadonlyArray<string> }>;
 }
 
 /** One journey judged against its tape, in a subprocess whose resolver points the three unbuilt packages at throwaway descriptors. */

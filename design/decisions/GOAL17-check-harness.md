@@ -227,7 +227,7 @@ The GitHub stand-in's own commands, which slice 11 builds and slices 8 and 10 re
 export const github = {
   ...Stand.common("github"),
   comment: Stand.command<{ repo: string; issue: number; as: string; body: string }, { id: number; url: string }>("github", "comment"),   // makes a comment in the stand-in; sends nothing
-  deliver: Stand.command<{ event: "issue_comment" | "issues" | "pull_request" | "pull_request_review"; of: Json; again?: boolean; signed?: "wrongly" | "late" }, { delivery: string; status: number }>("github", "deliver"),   // POSTs the signed webhook to the world's door (signed with the adapter's test secret); `again` re-sends the same delivery; `signed` is M5-checks call 6's pair (`"wrongly"`: another secret; `"late"`: the right secret, ten minutes before the world's now), so the door must answer 401 and store nothing
+  deliver: Stand.command<{ event: "issue_comment" | "issues" | "pull_request" | "pull_request_review"; of: Json; again?: boolean; signed?: "wrongly" | "late" }, { delivery: string; status: number }>("github", "deliver"),   // POSTs the signed webhook to the world's door (signed with the adapter's test secret); `again` re-sends the same delivery (Superseded by GOAL17-deliver-last, 24 November 2026: `of` may be left out, to send the event of what the stand-in made last, and `again` re-sends its last delivery as it was, with no `of`); `signed` is M5-checks call 6's pair (`"wrongly"`: another secret; `"late"`: the right secret, ten minutes before the world's now), so the door must answer 401 and store nothing
   refs:    Stand.command<{ branch?: string }, { updates: ReadonlyArray<{ branch: string; from: string; to: string }> }>("github", "refs"),     // every ref update the bare repository took
   pulls:   Stand.command<{}, { pulls: ReadonlyArray<{ number: number; head: string; state: string }> }>("github", "pulls"),
   /** The reply-shaped read: what the agent posted on one issue or pull request, in the order the stand-in took it. `key` is the request's natural key (the trigger it answers). */
@@ -286,10 +286,17 @@ s.clock.advance("5 seconds")        // fired: [] unless a declared move made by 
 s.clock.settle()                    // new: advance("0 seconds"): move nothing, fire only what is already due now (usually nothing: `fired` is []), and answer once the world is quiet
 ```
 
-- **Every Goal 17 environment that runs journeys is stepped:** `examples/superagent/blueprint/environments/test.ts` declares
+- **Every Goal 17 environment that runs journeys is stepped:** `examples/superagent/blueprint/environments/local.ts`, the one `ortho prove --env local` runs, declares
   `Blueprint.clock.stepped({ starts: "2026-12-01T09:00:00.000Z" })` (`packages/orthograph/src/modules/environments/types.ts:20`).
   Its waits are 2 s, 5 s doubling to 300 s, 30 s and two weeks (GOAL17-pause, -derived-reads): a real clock cannot check them.
   M5's stopgap, `ORTHO_OUTBOX_LEASE` and `ORTHO_OUTBOX_BACKOFF` (M5-reach-out Q1.6), is not used here and is not built here.
+
+  **A delivery that stands in for Slack is signed at the world's time** (the lead's call, 23 November 2026, after check 63 failed seven tests as stale
+  on a stepped `local.ts`). `door.ts` reads the instant from the world's clock door (`GET /_world/clock`, `worldSeconds`) for the default stamp and for each
+  test's offsets, as every stand-in reads the world's time (M8.11). The door judges Slack's five minutes against the world's `Clock`
+  (`packages/host-cloudflare/src/modules/inbound/internal/verify.ts`), which is right: in a real world, world time is real time. So check 63, not the door, was
+  wrong, and `local.ts` stays stepped from the fixed instant. A stepped clock started at "now" was rejected: it stands still, so a test that runs more than five
+  wall minutes after boot would go stale, and flake on a loaded machine. On a real clock the world's instant is the wall's, so the check reads the same either way.
 - **`settle` is the one addition to Goal 9's step,** and it is sugar, not a second clock: it asks Goal 9's controller for a move of
   zero, which waits for quiet and fires only timers already due now (Goal 9's controller fires a timer "due at or before the target", so a zero move fires one due exactly at this instant, and none later). What it delivers is only what is due **now** and already running as counted work:
   the post-commit kick delivers each row due at the current instant, so a quiet world has delivered them. A row due later (a
@@ -583,8 +590,8 @@ export default Blueprint.journey("a webhook and a catch-up poll of one comment m
       spans({ present: ["account.seen"] }), emits(TriggerReceived, { thread: "issue/12" })),
     s.step("the poll finds the same comment five minutes later", s.clock.advance("5 minutes"), noEvents()),   // no second TriggerReceived
     s.step("still one", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
-    s.step("the same webhook again changes nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, again: true }), expect((a) => a.status).toBe(200)),
-    s.step("a webhook signed with another secret is refused and stores nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, signed: "wrongly" }), expect((a) => a.status).toBe(401)),
+    s.step("the same webhook again changes nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, again: true }), expect((a) => a.status).toBe(200)),   // Superseded by GOAL17-deliver-last, 24 November 2026: no world gives `comment`; the step leaves out `of`
+    s.step("a webhook signed with another secret is refused and stores nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, signed: "wrongly" }), expect((a) => a.status).toBe(401)),   // Superseded by GOAL17-deliver-last, 24 November 2026: no world gives `comment`; the step leaves out `of`
     s.step("nothing was written for it", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
   ],
 });
@@ -690,3 +697,4 @@ not use it, and each lane would write its own.
 - `design/goals/17-superagent.md`: "thing with versions, the app; execution variables, blocked commands" → "thing with versions, the app; `variables` (each a name, value and description, never a credential) and `blocked` (command names), GOAL17-check-harness"
 - `design/goals/17-superagent.md`: "| 8 | Checks for the agents and the sandbox: " → "| 8 | The harness's surface (a builder's pull request first, GOAL17-check-harness), then checks for the agents and the sandbox: "
 - `design/goals/17-superagent.md`: "`lend` (fix 6), slots and pause | 4, 7, 8 |" → "`lend` (fix 6), slots and pause, and the harness's instruments (GOAL17-check-harness) | 4, 7, 8 |"
+- `design/decisions/GOAL17-check-harness.md`: "`examples/superagent/blueprint/environments/test.ts` declares" → "`examples/superagent/blueprint/environments/local.ts`, the one `ortho prove --env local` runs, declares"

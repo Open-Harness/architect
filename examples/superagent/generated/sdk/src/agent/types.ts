@@ -14,7 +14,7 @@ export type Agent = {
   readonly "id": Of<Declared["id"]>;
   readonly "kind": Of<Declared["kind"]>;
   readonly "about": Of<Declared["about"]>;
-  readonly "current": Of<Declared["current"]>;
+  readonly "current"?: Of<Declared["current"]>;
   readonly "state": AgentState;
 };
 
@@ -28,7 +28,7 @@ export type AgentClosed = {
 export type AgentIdled = {
   readonly "agent": Of<(typeof Events)["AgentIdled"]["fields"]["agent"]>;
   readonly "about": Of<(typeof Events)["AgentIdled"]["fields"]["about"]>;
-  readonly "assignment": Of<(typeof Events)["AgentIdled"]["fields"]["assignment"]>;
+  readonly "assignment"?: Of<(typeof Events)["AgentIdled"]["fields"]["assignment"]>;
 };
 
 /** The event AgentOpened: what it carries when an agent moves. */

@@ -26,7 +26,7 @@ export interface VersionsApi {
   readonly rulesOf: (name: string, thing: Thing) => ReadonlyArray<NamedRule>;
   /**
    * The handler of one verb for a thing with `versions`. `stale` is the refusal a save or restore made from an old version
-   * answers with (its one field is `current`): the operation's own error class, `StaleRevision` in the superagent.
+   * answers with (its one field is `current`): the operation's own error class, which the compiler finds by that shape.
    */
   readonly handler: (verb: VersionVerb, thing: Thing, stale?: AnyErrorClass, moves?: boolean) => VersionHandler;
   /** Is this operation one of the four of a thing with versions: its verb is one of them, and the thing's key is a field of its payload? */

@@ -31,7 +31,7 @@ export const Plugins: PluginsApi = {
     return Object.freeze(choice) as never;
   },
   need: (plugin, spec) => Object.freeze({ kind: "need", plugin, ...(spec?.when ? { when: spec.when } : {}) }),
-  incoming: (schema, identity) => Object.freeze({ kind: "event", schema, ...(identity ? { id: identity.id, actor: identity.actor } : {}) }),
+  incoming: (schema, identity) => Object.freeze({ kind: "event", schema, ...(identity ? { id: identity.id, actor: identity.actor, ...(identity.object ? { object: identity.object } : {}) } : {}) }),
   call: (spec) => Object.freeze({ kind: "call", mode: (spec?.mode ?? "promise") as never, errors: spec?.errors ?? [] }),
   setting: {
     one: (value) => Object.freeze({ kind: "setting", shape: "one", value }),

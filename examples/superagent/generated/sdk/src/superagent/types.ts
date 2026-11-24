@@ -18,11 +18,11 @@ export type Superagent = {
   readonly "playbook": Of<Declared["playbook"]>;
   readonly "slots": Of<Declared["slots"]>;
   readonly "main": Of<Declared["main"]>;
-  readonly "pausedFrom": Of<Declared["pausedFrom"]>;
-  readonly "pausedAt": Of<Declared["pausedAt"]>;
+  readonly "pausedFrom"?: Of<Declared["pausedFrom"]>;
+  readonly "pausedAt"?: Of<Declared["pausedAt"]>;
   readonly "pausedFor": Of<Declared["pausedFor"]>;
   readonly "passGen": Of<Declared["passGen"]>;
-  readonly "saved": Of<Declared["saved"]>;
+  readonly "saved"?: Of<Declared["saved"]>;
   readonly "state": SuperagentState;
 };
 

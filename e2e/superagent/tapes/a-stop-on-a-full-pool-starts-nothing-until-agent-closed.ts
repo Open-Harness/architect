@@ -22,6 +22,6 @@ export default {
     { name: "the freed seat was not refilled", step: "#13", with: () => ({ events: [[AssignmentEnded, { seat: 1n }]] }) },
     { name: "the freed seat went to the stopped ticket's executor", step: "#13", with: () => ({ events: [[AssignmentEnded, { seat: 1n }], [AssignmentStarted, { agent: "agt_one", seat: 1n }]] }) },
     { name: "fill looped after the seat was refilled", step: "#16", with: () => ({ answer: rows("AssignmentQueued", "op:superagent.fill", 9) }) },
-    { name: "the second ticket was seated twice", step: "#17", with: () => ({ answer: rows("AssignmentStarted", "op:agent.tell", 3) }) },
+    { name: "the second ticket was seated twice", step: "#17", follows: "#13", with: () => ({ answer: rows("AssignmentStarted", "op:agent.tell", 3) }) },
   ],
 };
