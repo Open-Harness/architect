@@ -85,9 +85,9 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-24 November 2026, about 13:40 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
-every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
-agreed on #707. The Goal 16 conductor reports that Aaron has said no Claude-led goal is running now.
+24 November 2026, about 13:40 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
+minutes for Aaron. A Claude Code lead started the goal and took slice 1; the Goal 16 conductor reports that Aaron has
+said no Claude-led goal is running now.
 
 - **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`, with all ten required checks green.
   `goal/stage-1` is retired: it is locked read-only with its protections kept, and not deleted. `main` requires all ten
@@ -118,9 +118,9 @@ agreed on #707. The Goal 16 conductor reports that Aaron has said no Claude-led 
   11 pass, and 7 block. Three block on the fixes the lander's 🔍 found in the builds that change framework code: Snags
   #899 (#670: the generated SDK types optional fields as required), #900 (#756: `versioned.ts` writes "StaleRevision"
   as a string) and #901 (#747: the door answers a same-id, different-payload delivery `seen`, not `in.mismatch`). Four
-  block on new checks-side Snags: #932 (#686), #933 (#687 and #740) and #934 (#703). Goal 16 writes checks for all six
-  on `goal/superagent`, and a builder fixes them. `goal/superagent` has also merged #903, which #887 takes when it is
-  refreshed; #781 and #905 are still open there.
+  block on new checks-side Snags: #932 (#686), #933 (#687 and #740) and #934 (#703). For #899 to #901, Goal 16
+  writes checks on `goal/superagent` and a builder fixes them; #932 to #934 are fixed by the checks author alone.
+  `goal/superagent` has also merged #903, which #887 takes when it is refreshed; #781 and #905 are still open there.
 - **Snags filed for Goal 18:** #762 (a flaky port check in `portal.test.ts`), #788 (`examples/budgets` imports
   `receipts`, which `orthograph` does not export), #898 (the board sync takes over closed Asks)
   and #908 (`e2e-layer1` check 4 fails at random; it turned `main` red at `06877509` and #919 red at `3822d439`,
