@@ -1,46 +1,19 @@
 // Scaffolded from blueprint/things/holiday-list/verbs/add-weekly-off.ts. Yours from now on.
 import { Effect } from "effect";
+import { Days } from "orthograph";
 import { Ids, Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/holiday-list/add-weekly-off.handler.ts";
 import { HolidayList } from "../../blueprint/things/holiday-list/thing.ts";
 import { Holiday } from "../../blueprint/things/holiday/thing.ts";
 import { oneHolidayPerDay } from "../../blueprint/things/holiday/invariants.ts";
 
-// Days as whole numbers, counted from 1970-01-01 in the proleptic Gregorian calendar, with no clock and no Date: Howard
-// Hinnant's days_from_civil and civil_from_days (https://howardhinnant.github.io/date_algorithms.html). A 400-year era
-// holds 146097 days, and each year is counted from 1 March so that a leap day falls at its end.
 const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
 
-const dayNumber = (day: string): number => {
-  const [y, m, d] = day.split("-").map(Number) as [number, number, number];
-  const year = m <= 2 ? y - 1 : y;
-  const era = Math.floor(year / 400);
-  const yearOfEra = year - era * 400;
-  const dayOfYear = Math.floor((153 * (m > 2 ? m - 3 : m + 9) + 2) / 5) + d - 1;
-  const dayOfEra = yearOfEra * 365 + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100) + dayOfYear;
-  return era * 146097 + dayOfEra - 719468;
-};
-
-const dayOf = (n: number): string => {
-  const z = n + 719468;
-  const era = Math.floor(z / 146097);
-  const dayOfEra = z - era * 146097;
-  const yearOfEra = Math.floor((dayOfEra - Math.floor(dayOfEra / 1460) + Math.floor(dayOfEra / 36524) - Math.floor(dayOfEra / 146096)) / 365);
-  const dayOfYear = dayOfEra - (365 * yearOfEra + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100));
-  const mp = Math.floor((5 * dayOfYear + 2) / 153);
-  const d = dayOfYear - Math.floor((153 * mp + 2) / 5) + 1;
-  const m = mp < 10 ? mp + 3 : mp - 9;
-  const y = yearOfEra + era * 400 + (m <= 2 ? 1 : 0);
-  return `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-};
-
-/** Every day from `from` to `to`, both ends inside, that falls on `weekday`. 1970-01-01 was a Thursday. */
+/** Every day from `from` to `to`, both ends inside, that falls on `weekday`: the first such day, then each a week on. */
 const daysFalling = (weekday: (typeof weekdays)[number], from: string, to: string): ReadonlyArray<string> => {
-  const first = dayNumber(from);
-  const last = dayNumber(to);
-  const start = first + ((((weekdays.indexOf(weekday) - (first + 4)) % 7) + 7) % 7);
   const days: Array<string> = [];
-  for (let n = start; n <= last; n += 7) days.push(dayOf(n));
+  const ahead = (weekdays.indexOf(weekday) - weekdays.indexOf(Days.weekday(from)) + 7) % 7;
+  for (let day = Days.add(from, ahead); Days.between(day, to) >= 0; day = Days.add(day, 7)) days.push(day);
   return days;
 };
 
