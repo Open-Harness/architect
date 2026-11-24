@@ -10157,7 +10157,9 @@
       "answer": {},
       "move": null,
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "eval.oneLiveEvalPerThread"
+      ],
       "refusals": [
         "TriggerNotFound",
         "NotAllowed"
@@ -10174,12 +10176,20 @@
       "notFound": {
         "trigger": "TriggerNotFound"
       },
-      "steps": {},
+      "steps": {
+        "release": {
+          "name": "trigger.reevaluate.release",
+          "type": "database",
+          "writes": [
+            "eval"
+          ]
+        }
+      },
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "a077bd7019d7759b"
+      "hash": "781e162cc5f46135"
     },
     "trigger.requeue": {
       "kind": "operation",
@@ -14432,9 +14442,9 @@
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-ZIAhRWmfb75mbi+6xBAAJtf4qRPVlNsywVCvKuqO1Lc=",
+      "integrity": "sha256-FvLKUQ5w521yoIGkNVZjY1aNKSrDrEw5nbFgUDI6sfk=",
       "chosen": {},
-      "hash": "6cd4dbc0883d6532"
+      "hash": "dd1d9924a3a3e185"
     },
     "posthog": {
       "kind": "adapter",

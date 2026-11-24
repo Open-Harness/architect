@@ -10161,7 +10161,9 @@
         "answer": {},
         "move": null,
         "errors": [],
-        "breaks": [],
+        "breaks": [
+          "eval.oneLiveEvalPerThread"
+        ],
         "refusals": [
           "TriggerNotFound",
           "NotAllowed"
@@ -10178,12 +10180,20 @@
         "notFound": {
           "trigger": "TriggerNotFound"
         },
-        "steps": {},
+        "steps": {
+          "release": {
+            "name": "trigger.reevaluate.release",
+            "type": "database",
+            "writes": [
+              "eval"
+            ]
+          }
+        },
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "a077bd7019d7759b"
+        "hash": "781e162cc5f46135"
       },
       "trigger.requeue": {
         "kind": "operation",
@@ -14436,9 +14446,9 @@
         "file": "blueprint/features/intake.ts",
         "package": "@orthograph/intake",
         "version": "0.0.0",
-        "integrity": "sha256-ZIAhRWmfb75mbi+6xBAAJtf4qRPVlNsywVCvKuqO1Lc=",
+        "integrity": "sha256-FvLKUQ5w521yoIGkNVZjY1aNKSrDrEw5nbFgUDI6sfk=",
         "chosen": {},
-        "hash": "6cd4dbc0883d6532"
+        "hash": "dd1d9924a3a3e185"
       },
       "posthog": {
         "kind": "adapter",
@@ -14928,7 +14938,7 @@
       "thing:trigger": "11d0bc1aa3c79f78"
     },
     "trigger.reevaluate": {
-      "operation:trigger.reevaluate": "a077bd7019d7759b",
+      "operation:trigger.reevaluate": "781e162cc5f46135",
       "thing:trigger": "11d0bc1aa3c79f78"
     },
     "trigger.requeue": {
@@ -15042,7 +15052,7 @@
     "trigger/handback.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.handback\n\nThe executor hands a trigger back: it was not its to answer.\n\n**Who may call:** the itsAgent of its ticket.\n\n## Payload\n\n| field | value |\n|---|---|\n| ticket | ticket.id |\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsAgent of its ticket; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger handback --ticket <ticket> --trigger <trigger>\n```\n\nHTTP: `POST /trigger/handback` with the payload as JSON. SDK: `Sdk.trigger.handback(payload)`.\n",
     "trigger/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger\n\nOne event that came in from a connection. Never changed once stored.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | id |\n| source | text |\n| event | text |\n| thread | text |\n| kind | text |\n| text | text |\n| url (optional) | text |\n| author (optional) | text |\n| channel | schema |\n\n## Machine\n\nStates: stored. A move from the wrong state is refused TriggerNotStored (exit 83).\n\n| move | from | to | emits |\n|---|---|---|---|\n| receive | (creates) | stored | TriggerReceived |\n| requeue | stored | stored | TriggerRequeued |\n\n## Invariants\n\n- `trigger.oneTriggerPerEvent`: another trigger holds this superagent, source and event. Unique on superagent, source, event, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `TriggerReceived`: carries superagent (trigger.superagent), trigger (trigger.id), thread (trigger.thread), text (trigger.text); emitted by the move receive\n- `TriggerRequeued`: carries superagent (trigger.superagent), trigger (trigger.id); emitted by the move requeue\n\n## Operations\n\n- [trigger.handback](handback.md): The executor hands a trigger back: it was not its to answer.\n- [trigger.receive](receive.md): Store one event a connection brought, once: a second delivery of the same event is a duplicate, and one the policy filters is not kept.\n- [trigger.reevaluate](reevaluate.md): Ask the main agent to judge a trigger again.\n- [trigger.requeue](requeue.md): Put a trigger back for evaluation.\n",
     "trigger/receive.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.receive\n\nStore one event a connection brought, once: a second delivery of the same event is a duplicate, and one the policy filters is not kept.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | trigger.superagent |\n| source | trigger.source |\n| event | trigger.event |\n| thread | trigger.thread |\n| kind | trigger.kind |\n| text | trigger.text |\n| url (optional) | trigger.url |\n| addressed (optional) | schema |\n| actor (optional) | schema |\n| channel | trigger.channel |\n\n## Answer\n\n| field | value |\n|---|---|\n| trigger (optional) | id |\n| outcome | schema |\n\n## Move\n\n`receive`: from nothing (it creates) to stored, emitting TriggerReceived.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger receive --superagent <superagent> --source <source> --event <event> --thread <thread> --kind <kind> --text <text> [--url <url>] [--addressed <addressed>] [--actor <actor>] --channel <channel>\n```\n\nHTTP: `POST /trigger/receive` with the payload as JSON. SDK: `Sdk.trigger.receive(payload)`.\n",
-    "trigger/reevaluate.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.reevaluate\n\nAsk the main agent to judge a trigger again.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger reevaluate --trigger <trigger>\n```\n\nHTTP: `POST /trigger/reevaluate` with the payload as JSON. SDK: `Sdk.trigger.reevaluate(payload)`.\n",
+    "trigger/reevaluate.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.reevaluate\n\nAsk the main agent to judge a trigger again.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Steps\n\n- `trigger.reevaluate.release` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger reevaluate --trigger <trigger>\n```\n\nHTTP: `POST /trigger/reevaluate` with the payload as JSON. SDK: `Sdk.trigger.reevaluate(payload)`.\n",
     "trigger/requeue.md": "<!-- Generated from the blueprint. Do not edit. -->\n# trigger.requeue\n\nPut a trigger back for evaluation.\n\n**Who may call:** the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | trigger.superagent |\n| trigger | trigger.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`requeue`: from stored to stored, emitting TriggerRequeued.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TriggerNotStored | 83 | TR-900 | the trigger is in a state requeue can't start from; carries `state` |\n| TriggerNotFound | 4 | TR-901 | nothing has the id in trigger; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent trigger requeue --superagent <superagent> --trigger <trigger>\n```\n\nHTTP: `POST /trigger/requeue` with the payload as JSON. SDK: `Sdk.trigger.requeue(payload)`.\n"
   },
   "extensions": {
@@ -15059,5 +15069,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "e2957b06c66cd18e9fd738832e8f807df7e08f680bbff5b28c73f5ca09a40b26"
+  "digest": "fff35df8a012f31f5f93377bc8f6561853b179d8e65b4af4deb7fc3408035aa3"
 }
