@@ -110,6 +110,41 @@
     "kind": "refers"
   },
   {
+    "from": "leave-allocation.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-allocation.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-allocation.leaveType",
+    "to": "leave-type.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-application.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-application.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-application.leaveType",
+    "to": "leave-type.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "shift-type.company",
     "to": "company.id",
     "kind": "refers"
@@ -716,6 +751,156 @@
   },
   {
     "from": "holiday-list.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-allocation.create",
+    "to": "leave-allocation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-allocation.create",
+    "to": "leave-allocation.LeaveAllocationCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-allocation.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-allocation.get",
+    "to": "leave-allocation",
+    "kind": "reads"
+  },
+  {
+    "from": "leave-allocation.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-allocation.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-allocation.submit",
+    "to": "leave-allocation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-allocation.submit",
+    "to": "leave-allocation.LeaveAllocationSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-allocation.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.approve",
+    "to": "leave-application",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-application.approve",
+    "to": "leave-application.LeaveApplicationApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-application.approve",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.cancel",
+    "to": "leave-application",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-application.cancel",
+    "to": "leave-application.LeaveApplicationCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-application.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.create",
+    "to": "leave-application",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-application.create",
+    "to": "leave-application.LeaveApplied",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-application.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.get",
+    "to": "leave-application",
+    "kind": "reads"
+  },
+  {
+    "from": "leave-application.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.reject",
+    "to": "leave-application",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-application.reject",
+    "to": "leave-application.LeaveApplicationRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-application.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-type.create",
+    "to": "leave-type",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-type.create",
+    "to": "leave-type.LeaveTypeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-type.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-type.get",
+    "to": "leave-type",
+    "kind": "reads"
+  },
+  {
+    "from": "leave-type.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },

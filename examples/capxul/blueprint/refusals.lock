@@ -58,6 +58,23 @@
       },
       "earlier": []
     },
+    "AN-005": {
+      "name": "AttendanceOnLeave",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {
+        "leaveApplication": {
+          "value": "id",
+          "prefix": "lap"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceOnLeave"
+        }
+      },
+      "earlier": []
+    },
     "AN-900": {
       "name": "AttendanceNotMarked",
       "owner": "attendance",
@@ -126,6 +143,18 @@
       "wire": {
         "effect": {
           "tag": "RequestBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-005": {
+      "name": "AttendanceRequestOverlaps",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AttendanceRequestOverlaps"
         }
       },
       "earlier": []
@@ -904,6 +933,336 @@
       "wire": {
         "effect": {
           "tag": "BridgeIndividualNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "LL-001": {
+      "name": "AllocateeNotInCompany",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocateeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LL-002": {
+      "name": "AllocateeHasLeft",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocateeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "LL-003": {
+      "name": "AllocationTypeNotInCompany",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LL-004": {
+      "name": "AllocationEndsBeforeStart",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AllocationEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "LL-005": {
+      "name": "AllocationOverlaps",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "LL-006": {
+      "name": "LeaveWithoutPayNotAllocated",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveWithoutPayNotAllocated"
+        }
+      },
+      "earlier": []
+    },
+    "LL-007": {
+      "name": "NoLeavesAllocated",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoLeavesAllocated"
+        }
+      },
+      "earlier": []
+    },
+    "LL-008": {
+      "name": "AllocationExceedsPeriod",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationExceedsPeriod"
+        }
+      },
+      "earlier": []
+    },
+    "LL-900": {
+      "name": "LeaveAllocationNotDraft",
+      "owner": "leave-allocation",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveAllocationNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "LP-001": {
+      "name": "ApplicantNotInCompany",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicantNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LP-002": {
+      "name": "ApplicantHasLeft",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicantHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "LP-003": {
+      "name": "ApplicationTypeNotInCompany",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicationTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LP-004": {
+      "name": "LeaveEndsBeforeStart",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "LP-005": {
+      "name": "LeaveBeforeJoining",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "LP-006": {
+      "name": "NoAllocationCovers",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoAllocationCovers"
+        }
+      },
+      "earlier": []
+    },
+    "LP-007": {
+      "name": "LeaveAllHolidays",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveAllHolidays"
+        }
+      },
+      "earlier": []
+    },
+    "LP-008": {
+      "name": "InsufficientLeaveBalance",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InsufficientLeaveBalance"
+        }
+      },
+      "earlier": []
+    },
+    "LP-009": {
+      "name": "LeaveOverlaps",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "LP-010": {
+      "name": "LeaveTooLong",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "maxContinuousDaysAllowed": {
+          "value": "uint",
+          "bits": 32
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTooLong"
+        }
+      },
+      "earlier": []
+    },
+    "LP-011": {
+      "name": "LeaveDayAttended",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "attendanceDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveDayAttended"
+        }
+      },
+      "earlier": []
+    },
+    "LP-900": {
+      "name": "LeaveApplicationNotOpen",
+      "owner": "leave-application",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveApplicationNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "LT-001": {
+      "name": "LeaveTypeNameTaken",
+      "owner": "leave-type",
+      "from": "blueprint/things/leave-type/errors.ts",
+      "fields": {
+        "leaveTypeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "LT-900": {
+      "name": "LeaveTypeNotActive",
+      "owner": "leave-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "LT-901": {
+      "name": "LeaveTypeNotFound",
+      "owner": "leave-type",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "lty"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNotFound"
         }
       },
       "earlier": []

@@ -58,6 +58,16 @@ import * as holidayGet from "../api/src/holiday/get.ts";
 import * as holidayListAddWeeklyOff from "../api/src/holiday-list/add-weekly-off.ts";
 import * as holidayListCreate from "../api/src/holiday-list/create.ts";
 import * as holidayListGet from "../api/src/holiday-list/get.ts";
+import * as leaveAllocationCreate from "../api/src/leave-allocation/create.ts";
+import * as leaveAllocationGet from "../api/src/leave-allocation/get.ts";
+import * as leaveAllocationSubmit from "../api/src/leave-allocation/submit.ts";
+import * as leaveApplicationApprove from "../api/src/leave-application/approve.ts";
+import * as leaveApplicationCancel from "../api/src/leave-application/cancel.ts";
+import * as leaveApplicationCreate from "../api/src/leave-application/create.ts";
+import * as leaveApplicationGet from "../api/src/leave-application/get.ts";
+import * as leaveApplicationReject from "../api/src/leave-application/reject.ts";
+import * as leaveTypeCreate from "../api/src/leave-type/create.ts";
+import * as leaveTypeGet from "../api/src/leave-type/get.ts";
 import * as shiftTypeCreate from "../api/src/shift-type/create.ts";
 import * as shiftTypeGet from "../api/src/shift-type/get.ts";
 import attendanceMarkHandler from "../../src/attendance/mark.ts";
@@ -88,6 +98,13 @@ import expenseClaimTypeCreateHandler from "../../src/expense-claim-type/create.t
 import holidayAddHandler from "../../src/holiday/add.ts";
 import holidayListAddWeeklyOffHandler from "../../src/holiday-list/add-weekly-off.ts";
 import holidayListCreateHandler from "../../src/holiday-list/create.ts";
+import leaveAllocationCreateHandler from "../../src/leave-allocation/create.ts";
+import leaveAllocationSubmitHandler from "../../src/leave-allocation/submit.ts";
+import leaveApplicationApproveHandler from "../../src/leave-application/approve.ts";
+import leaveApplicationCancelHandler from "../../src/leave-application/cancel.ts";
+import leaveApplicationCreateHandler from "../../src/leave-application/create.ts";
+import leaveApplicationRejectHandler from "../../src/leave-application/reject.ts";
+import leaveTypeCreateHandler from "../../src/leave-type/create.ts";
 import shiftTypeCreateHandler from "../../src/shift-type/create.ts";
 import * as attendanceThing from "../../blueprint/things/attendance/thing.ts";
 import * as attendanceRequestThing from "../../blueprint/things/attendance-request/thing.ts";
@@ -106,6 +123,9 @@ import * as expenseClaimThing from "../../blueprint/things/expense-claim/thing.t
 import * as expenseClaimTypeThing from "../../blueprint/things/expense-claim-type/thing.ts";
 import * as holidayThing from "../../blueprint/things/holiday/thing.ts";
 import * as holidayListThing from "../../blueprint/things/holiday-list/thing.ts";
+import * as leaveAllocationThing from "../../blueprint/things/leave-allocation/thing.ts";
+import * as leaveApplicationThing from "../../blueprint/things/leave-application/thing.ts";
+import * as leaveTypeThing from "../../blueprint/things/leave-type/thing.ts";
 import * as shiftTypeThing from "../../blueprint/things/shift-type/thing.ts";
 import * as attendanceInvariants from "../../blueprint/things/attendance/invariants.ts";
 import * as bankAccountInvariants from "../../blueprint/things/bank-account/invariants.ts";
@@ -121,6 +141,7 @@ import * as employmentTypeInvariants from "../../blueprint/things/employment-typ
 import * as expenseClaimTypeInvariants from "../../blueprint/things/expense-claim-type/invariants.ts";
 import * as holidayInvariants from "../../blueprint/things/holiday/invariants.ts";
 import * as holidayListInvariants from "../../blueprint/things/holiday-list/invariants.ts";
+import * as leaveTypeInvariants from "../../blueprint/things/leave-type/invariants.ts";
 import * as shiftTypeInvariants from "../../blueprint/things/shift-type/invariants.ts";
 
 export { World } from "@orthograph/host-cloudflare";
@@ -171,14 +192,24 @@ const holidayGetServed = Reads.serve({ name: "holiday.get", read: holidayGet.dec
 const holidayListAddWeeklyOffServed = Handlers.serve({ name: "holiday-list.add-weekly-off", operation: holidayListAddWeeklyOff.declaration, handler: holidayListAddWeeklyOffHandler, notFrom: "HolidayListNotActive", invariants: { HolidayDateTaken: "holiday.oneHolidayPerDay", HolidayListNameTaken: "holiday-list.oneNamePerCompany" }, codes: Errors.codes });
 const holidayListCreateServed = Handlers.serve({ name: "holiday-list.create", operation: holidayListCreate.declaration, handler: holidayListCreateHandler, invariants: { HolidayListNameTaken: "holiday-list.oneNamePerCompany" }, codes: Errors.codes });
 const holidayListGetServed = Reads.serve({ name: "holiday-list.get", read: holidayListGet.declaration });
+const leaveAllocationCreateServed = Handlers.serve({ name: "leave-allocation.create", operation: leaveAllocationCreate.declaration, handler: leaveAllocationCreateHandler, notFound: { employee: "EmployeeNotFound", leaveType: "LeaveTypeNotFound" }, codes: Errors.codes });
+const leaveAllocationGetServed = Reads.serve({ name: "leave-allocation.get", read: leaveAllocationGet.declaration });
+const leaveAllocationSubmitServed = Handlers.serve({ name: "leave-allocation.submit", operation: leaveAllocationSubmit.declaration, handler: leaveAllocationSubmitHandler, notFrom: "LeaveAllocationNotDraft", codes: Errors.codes });
+const leaveApplicationApproveServed = Handlers.serve({ name: "leave-application.approve", operation: leaveApplicationApprove.declaration, handler: leaveApplicationApproveHandler, notFrom: "LeaveApplicationNotOpen", invariants: { AttendanceAlreadyMarked: "attendance.oneAttendancePerDay" }, codes: Errors.codes });
+const leaveApplicationCancelServed = Handlers.serve({ name: "leave-application.cancel", operation: leaveApplicationCancel.declaration, handler: leaveApplicationCancelHandler, notFrom: "LeaveApplicationNotOpen", codes: Errors.codes });
+const leaveApplicationCreateServed = Handlers.serve({ name: "leave-application.create", operation: leaveApplicationCreate.declaration, handler: leaveApplicationCreateHandler, notFound: { company: "CompanyNotFound", employee: "EmployeeNotFound", leaveType: "LeaveTypeNotFound" }, codes: Errors.codes });
+const leaveApplicationGetServed = Reads.serve({ name: "leave-application.get", read: leaveApplicationGet.declaration });
+const leaveApplicationRejectServed = Handlers.serve({ name: "leave-application.reject", operation: leaveApplicationReject.declaration, handler: leaveApplicationRejectHandler, notFrom: "LeaveApplicationNotOpen", codes: Errors.codes });
+const leaveTypeCreateServed = Handlers.serve({ name: "leave-type.create", operation: leaveTypeCreate.declaration, handler: leaveTypeCreateHandler, invariants: { LeaveTypeNameTaken: "leave-type.oneNamePerCompany" }, codes: Errors.codes });
+const leaveTypeGetServed = Reads.serve({ name: "leave-type.get", read: leaveTypeGet.declaration });
 const shiftTypeCreateServed = Handlers.serve({ name: "shift-type.create", operation: shiftTypeCreate.declaration, handler: shiftTypeCreateHandler, invariants: { ShiftTypeNameTaken: "shift-type.oneNamePerCompany" }, codes: Errors.codes });
 const shiftTypeGetServed = Reads.serve({ name: "shift-type.get", read: shiftTypeGet.declaration });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(shiftTypeThing), "shift-type"]] as const;
+const tables = [[thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(leaveAllocationThing), "leave-allocation"], [thingIn(leaveApplicationThing), "leave-application"], [thingIn(leaveTypeThing), "leave-type"], [thingIn(shiftTypeThing), "shift-type"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
+const rules = [...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("leave-type", leaveTypeInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
@@ -327,6 +358,31 @@ const HolidayListLive = HttpApiBuilder.group(CallApi, "holiday-list", Effect.fn(
       .handle("create", ({ payload, request }) => call(holidayListCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(holidayListGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
+const LeaveAllocationLive = HttpApiBuilder.group(CallApi, "leave-allocation", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(leaveAllocationCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(leaveAllocationGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("submit", ({ payload, request }) => call(leaveAllocationSubmitServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const LeaveApplicationLive = HttpApiBuilder.group(CallApi, "leave-application", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("approve", ({ payload, request }) => call(leaveApplicationApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("cancel", ({ payload, request }) => call(leaveApplicationCancelServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(leaveApplicationCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(leaveApplicationGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reject", ({ payload, request }) => call(leaveApplicationRejectServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const LeaveTypeLive = HttpApiBuilder.group(CallApi, "leave-type", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(leaveTypeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(leaveTypeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
 const ShiftTypeLive = HttpApiBuilder.group(CallApi, "shift-type", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
   const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
@@ -384,6 +440,13 @@ export const steps = {
   "holiday.add": ["holiday.add.load", "holiday.add.insert"],
   "holiday-list.add-weekly-off": ["holiday-list.add-weekly-off.load", "holiday-list.add-weekly-off.record"],
   "holiday-list.create": ["holiday-list.create.insert"],
+  "leave-allocation.create": ["leave-allocation.create.load", "leave-allocation.create.insert"],
+  "leave-allocation.submit": ["leave-allocation.submit.load", "leave-allocation.submit.update"],
+  "leave-application.approve": ["leave-application.approve.load", "leave-application.approve.mark"],
+  "leave-application.cancel": ["leave-application.cancel.update"],
+  "leave-application.create": ["leave-application.create.load", "leave-application.create.insert"],
+  "leave-application.reject": ["leave-application.reject.update"],
+  "leave-type.create": ["leave-type.create.insert"],
   "shift-type.create": ["shift-type.create.insert"],
 } as const;
 
@@ -395,7 +458,7 @@ const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
-      Layer.provide([AttendanceLive, AttendanceRequestLive, BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive, ShiftTypeLive]),
+      Layer.provide([AttendanceLive, AttendanceRequestLive, BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive, LeaveAllocationLive, LeaveApplicationLive, LeaveTypeLive, ShiftTypeLive]),
       Layer.provideMerge(CallTelemetry.layer),
       Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
       Layer.provideMerge(Database.d1(env.DB)),
@@ -420,7 +483,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
+  served: { "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "leave-allocation.create": leaveAllocationCreateServed, "leave-allocation.get": leaveAllocationGetServed, "leave-allocation.submit": leaveAllocationSubmitServed, "leave-application.approve": leaveApplicationApproveServed, "leave-application.cancel": leaveApplicationCancelServed, "leave-application.create": leaveApplicationCreateServed, "leave-application.get": leaveApplicationGetServed, "leave-application.reject": leaveApplicationRejectServed, "leave-type.create": leaveTypeCreateServed, "leave-type.get": leaveTypeGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 

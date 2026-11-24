@@ -340,8 +340,8 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Appraisal | thing | SUB | 20 | `hrms/hrms/hr/doctype/appraisal/appraisal.json` |  |
 | Appraisal Cycle | thing |  | 12 | `hrms/hrms/hr/doctype/appraisal_cycle/appraisal_cycle.json` |  |
 | Appraisal Template | thing |  | 2 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` |  |
-| Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` | one per employee per day (a unique rule), in the employee's company, not before joining, not for a leaver; Present, Absent, Half Day or Work From Home. On Leave and the check against leave come with leave (8b, #764); its shift waits on optional references (#742, item 5). HRMS has no future-day check at `46b38904` |
-| Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` | a draft, then approved or rejected; approving marks every day from its first to its last in one call (found through the attendance rule with `findBy`), changing a day marked with another status. Half days, shift, holidays and the overlap check wait on optional fields, holiday lists per employee and #764 |
+| Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` | one per employee per day (a unique rule), in the employee's company, not before joining, not for a leaver; Present, Absent, Half Day or Work From Home by `mark`; On Leave only by a leave's approval, and `mark` refuses a day an approved leave covers (`decisions/CX-leave.md`); its shift, leave type and application wait on optional references (#967). HRMS has no future-day check at `46b38904` |
+| Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` | a draft, then approved or rejected; approving marks every day from its first to its last in one call (found through the attendance rule with `findBy`), changing a day marked with another status. It refuses a draft or approved request of the employee sharing a day (`validate_request_overlap`, by list) and skips the days an approved leave covers (`decisions/CX-leave.md`). Half days, shift and holidays wait on optional fields and holiday lists per employee |
 | Branch | thing |  | 1 | `erpnext/erpnext/setup/doctype/branch/branch.json` | a place a company works from, its name unique within the company |
 | Compensatory Leave Request | thing | SUB | 11 | `hrms/hrms/hr/doctype/compensatory_leave_request/compensatory_leave_request.json` |  |
 | Daily Work Summary | thing |  | 3 | `hrms/hrms/hr/doctype/daily_work_summary/daily_work_summary.json` |  |
@@ -390,16 +390,16 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Job Opening Template | thing |  | 5 | `hrms/hrms/hr/doctype/job_opening_template/job_opening_template.json` |  |
 | Job Requisition | thing |  | 17 | `hrms/hrms/hr/doctype/job_requisition/job_requisition.json` |  |
 | KRA | thing |  | 2 | `hrms/hrms/hr/doctype/kra/kra.json` |  |
-| Leave Allocation | thing | SUB | 21 | `hrms/hrms/hr/doctype/leave_allocation/leave_allocation.json` |  |
-| Leave Application | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_application/leave_application.json` |  |
+| Leave Allocation | thing | SUB | 21 | `hrms/hrms/hr/doctype/leave_allocation/leave_allocation.json` | 8b: draft then submitted; leaves allocated an exact decimal; no overlap with a submitted one of the same employee and type, judged by list (`decisions/CX-leave.md`). Carry-forward, policy and period are out of scope |
+| Leave Application | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_application/leave_application.json` | 8b: open, then approved, rejected or cancelled; the balance, overlap, days in a row and covering allocation judged by list, approve marks its days On Leave (`decisions/CX-leave.md`). Half days are out of scope |
 | Leave Block List | thing |  | 4 | `hrms/hrms/hr/doctype/leave_block_list/leave_block_list.json` |  |
 | Leave Control Panel | job |  | 15 | `hrms/hrms/hr/doctype/leave_control_panel/leave_control_panel.json` |  |
 | Leave Encashment | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_encashment/leave_encashment.json` |  |
-| Leave Ledger Entry | thing | SUB | 14 | `hrms/hrms/hr/doctype/leave_ledger_entry/leave_ledger_entry.json` |  |
+| Leave Ledger Entry | thing | SUB | 14 | `hrms/hrms/hr/doctype/leave_ledger_entry/leave_ledger_entry.json` | not taken in 8b: the balance is computed from lists of allocations and approved applications (`decisions/CX-leave.md`) |
 | Leave Period | thing |  | 5 | `hrms/hrms/hr/doctype/leave_period/leave_period.json` |  |
 | Leave Policy | thing | SUB | 2 | `hrms/hrms/hr/doctype/leave_policy/leave_policy.json` |  |
 | Leave Policy Assignment | thing | SUB | 11 | `hrms/hrms/hr/doctype/leave_policy_assignment/leave_policy_assignment.json` |  |
-| Leave Type | thing |  | 23 | `hrms/hrms/hr/doctype/leave_type/leave_type.json` |  |
+| Leave Type | thing |  | 23 | `hrms/hrms/hr/doctype/leave_type/leave_type.json` | 8b: per company, its name unique there; days in a row (0 for no limit), leave without pay, holidays counted (`decisions/CX-leave.md`) |
 | Offer Term | thing |  | 1 | `hrms/hrms/hr/doctype/offer_term/offer_term.json` |  |
 | Purpose of Travel | thing |  | 1 | `hrms/hrms/hr/doctype/purpose_of_travel/purpose_of_travel.json` |  |
 | Shift Assignment | thing | SUB | 12 | `hrms/hrms/hr/doctype/shift_assignment/shift_assignment.json` |  |

@@ -17,6 +17,9 @@ import * as ExpenseClaim from "../../../blueprint/things/expense-claim/events.ts
 import * as ExpenseClaimType from "../../../blueprint/things/expense-claim-type/events.ts";
 import * as Holiday from "../../../blueprint/things/holiday/events.ts";
 import * as HolidayList from "../../../blueprint/things/holiday-list/events.ts";
+import * as LeaveAllocation from "../../../blueprint/things/leave-allocation/events.ts";
+import * as LeaveApplication from "../../../blueprint/things/leave-application/events.ts";
+import * as LeaveType from "../../../blueprint/things/leave-type/events.ts";
 import * as ShiftType from "../../../blueprint/things/shift-type/events.ts";
 
 EventNames.name(Attendance.AttendanceMarked, "AttendanceMarked");
@@ -47,6 +50,13 @@ EventNames.name(ExpenseClaimType.ExpenseClaimTypeCreated, "ExpenseClaimTypeCreat
 EventNames.name(Holiday.HolidayAdded, "HolidayAdded");
 EventNames.name(HolidayList.HolidayListCreated, "HolidayListCreated");
 EventNames.name(HolidayList.WeeklyOffAdded, "WeeklyOffAdded");
+EventNames.name(LeaveAllocation.LeaveAllocationCreated, "LeaveAllocationCreated");
+EventNames.name(LeaveAllocation.LeaveAllocationSubmitted, "LeaveAllocationSubmitted");
+EventNames.name(LeaveApplication.LeaveApplicationApproved, "LeaveApplicationApproved");
+EventNames.name(LeaveApplication.LeaveApplicationCancelled, "LeaveApplicationCancelled");
+EventNames.name(LeaveApplication.LeaveApplicationRejected, "LeaveApplicationRejected");
+EventNames.name(LeaveApplication.LeaveApplied, "LeaveApplied");
+EventNames.name(LeaveType.LeaveTypeCreated, "LeaveTypeCreated");
 EventNames.name(ShiftType.ShiftTypeCreated, "ShiftTypeCreated");
 
-export const names = ["AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "ShiftTypeCreated"] as const;
+export const names = ["AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "LeaveAllocationCreated", "LeaveAllocationSubmitted", "LeaveApplicationApproved", "LeaveApplicationCancelled", "LeaveApplicationRejected", "LeaveApplied", "LeaveTypeCreated", "ShiftTypeCreated"] as const;

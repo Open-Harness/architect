@@ -172,6 +172,40 @@ CREATE TABLE "holiday-list" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "holiday-list_oneNamePerCompany" ON "holiday-list" ("company", "holidayListName");
+CREATE TABLE "leave-allocation" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "leaveType" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "newLeavesAllocated" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "leave-application" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "leaveType" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "reason" TEXT NOT NULL,
+  "totalLeaveDays" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "leave-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "leaveTypeName" TEXT NOT NULL,
+  "maxContinuousDaysAllowed" TEXT NOT NULL,
+  "isLwp" INTEGER NOT NULL,
+  "includeHoliday" INTEGER NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "leave-type_oneNamePerCompany" ON "leave-type" ("company", "leaveTypeName");
 CREATE TABLE "shift-type" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,

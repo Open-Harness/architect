@@ -60,6 +60,14 @@ Starts from the world `an attendance request`.
 - **approved, it marks all forty.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`40`, `0`].
 - **approved, it marks all three, the weekend too.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].
 
+### attendance requests and leave
+
+Starts from the world `a leave application`.
+
+- **Ada approves it.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and is answered.
+- **Ada approves the request: it marks the four days around the leave and leaves the leave's days On Leave.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`4`, `0`].
+- **Ada approves it: the open leave doesn't stop it.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`1`, `0`].
+
 ### attendance stays in its company
 
 Starts from the world `an attendance request`.

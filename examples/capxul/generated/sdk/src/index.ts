@@ -19,6 +19,9 @@ export * as expenseClaim from "./expense-claim/index.ts";
 export * as expenseClaimType from "./expense-claim-type/index.ts";
 export * as holiday from "./holiday/index.ts";
 export * as holidayList from "./holiday-list/index.ts";
+export * as leaveAllocation from "./leave-allocation/index.ts";
+export * as leaveApplication from "./leave-application/index.ts";
+export * as leaveType from "./leave-type/index.ts";
 export * as shiftType from "./shift-type/index.ts";
 export type { Attendance, AttendanceState, AttendanceMarked } from "./attendance/types.ts";
 export type { AttendanceRequest, AttendanceRequestState, AttendanceRequestApproved, AttendanceRequestRejected, AttendanceRequested } from "./attendance-request/types.ts";
@@ -37,4 +40,7 @@ export type { ExpenseClaim, ExpenseClaimState, ExpenseClaimApproved, ExpenseClai
 export type { ExpenseClaimType, ExpenseClaimTypeState, ExpenseClaimTypeCreated } from "./expense-claim-type/types.ts";
 export type { Holiday, HolidayState, HolidayAdded } from "./holiday/types.ts";
 export type { HolidayList, HolidayListState, HolidayListCreated, WeeklyOffAdded } from "./holiday-list/types.ts";
+export type { LeaveAllocation, LeaveAllocationState, LeaveAllocationCreated, LeaveAllocationSubmitted } from "./leave-allocation/types.ts";
+export type { LeaveApplication, LeaveApplicationState, LeaveApplicationApproved, LeaveApplicationCancelled, LeaveApplicationRejected, LeaveApplied } from "./leave-application/types.ts";
+export type { LeaveType, LeaveTypeState, LeaveTypeCreated } from "./leave-type/types.ts";
 export type { ShiftType, ShiftTypeState, ShiftTypeCreated } from "./shift-type/types.ts";

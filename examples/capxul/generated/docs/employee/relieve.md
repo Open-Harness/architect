@@ -66,6 +66,12 @@ Starts from the world `an expense claim`.
 
 - **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
 
+### leave stays in its company
+
+Starts from the world `a leave application`.
+
+- **Olga leaves on 31 March 2027.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2027-03-31`, and gets back `2027-03-31`.
+
 ## How to call
 
 ```sh
