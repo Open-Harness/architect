@@ -6003,7 +6003,7 @@
           ]
         },
         {
-          "title": "her first company is unchanged by its branchs",
+          "title": "her first company is unchanged by its branches",
           "call": {
             "actor": "ada",
             "operation": "company.get",
@@ -6114,7 +6114,7 @@
           ]
         }
       ],
-      "sourceHash": "8f19dc16b7da65e628bf133aacbcdf535d0c1a13a5b2d533e3ebdd857de66d51"
+      "sourceHash": "4c6009afbd089e2c381ea718487c3f1812cd10ab67495c5aa51534be978d396c"
     },
     "journeys/bridge-a-bank-account-closes.ts": {
       "name": "bridge: a bank account closes",

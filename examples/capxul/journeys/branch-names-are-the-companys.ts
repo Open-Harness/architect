@@ -1,6 +1,6 @@
 // Journey-author file. The builder never edits it (AGENTS.md, "Journeys and checks come first").
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone. A journey can hand on only
-// the latest answer, so the branchs read back at the end are made by the starting worlds, and this journey's one create,
+// the latest answer, so the branches read back at the end are made by the starting worlds, and this journey's one create,
 // Bo's, comes after all of them: a create that changes any earlier record or company is caught by the reads after it.
 import { Blueprint, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
@@ -85,7 +85,7 @@ export default Blueprint.journey("branch names are the company's", {
       noEvents(),
     ),
     s.step(
-      "her first company is unchanged by its branchs",
+      "her first company is unchanged by its branches",
       s.ada.run(getCompany, { id: s.world.company }),
       expect((a) => [a.companyName, a.abbr, a.country, a.defaultCurrency, a.owner, a.state]).toEqual([
         "Acme Trading",

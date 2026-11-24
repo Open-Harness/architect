@@ -38,7 +38,7 @@ Read one company by its id: companyName, abbr, country, defaultCurrency, owner, 
 
 Starts from the world `four branches`.
 
-- **her first company is unchanged by its branchs.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].
+- **her first company is unchanged by its branches.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].
 - **and so is her second.** `ada` (role company.owner) calls and sends id the world's otherCompany, and gets back [`Acme Logistics`, `AL`, `Uganda`, `UGX`, the cast's ada person, `active`].
 - **and Bo's.** `bo` (signed in) calls and sends id the world's boCompany, and gets back [`Bo Ltd`, `BL`, `Tanzania`, `TZS`, the cast's bo person, `active`].
 
