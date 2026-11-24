@@ -21,12 +21,12 @@ const clientOf: ServerConfigApi["clientOf"] = (root) =>
     ),
   );
 
-const derive: ServerConfigApi["derive"] = (root, baseText, client) => {
+const derive: ServerConfigApi["derive"] = (root, baseText, client, main) => {
   const base = parseJsonc(baseText) as Base;
   const folder = resolve(root, "generated/server");
   const config = {
     ...base,
-    main: resolve(folder, base.main ?? "main.ts"),
+    main: resolve(folder, main ?? base.main ?? "main.ts"),
     d1_databases: (base.d1_databases ?? []).map((db) => ({ ...db, migrations_dir: resolve(folder, String(db["migrations_dir"] ?? "migrations")) })),
     ...(client === undefined ? {} : { assets: assets(client) }),
   };

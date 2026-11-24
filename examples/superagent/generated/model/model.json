@@ -560,8 +560,20 @@
         },
         "current": {
           "value": {
-            "type": "id",
-            "prefix": "asg"
+            "type": "schema"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        "closed": {
+          "value": {
+            "type": "schema"
+          },
+          "optional": true
+        },
+        "told": {
+          "value": {
+            "type": "schema"
           },
           "optional": true
         }
@@ -724,7 +736,7 @@
         "version": "0.0.0",
         "thing": "agent"
       },
-      "hash": "a369aaa882ce59e7"
+      "hash": "9dc5653265f36599"
     },
     "assignment": {
       "name": "assignment",
@@ -10330,6 +10342,10 @@
       "file": "blueprint/environments/local.ts",
       "runs": "on this machine",
       "identity": "test-principals",
+      "clock": {
+        "kind": "stepped",
+        "starts": "2026-12-01T09:00:00.000Z"
+      },
       "lifetimeMs": null,
       "cloud": null,
       "database": "d1-local",
@@ -10342,7 +10358,7 @@
       ],
       "deploy": {},
       "publish": {},
-      "hash": "0f14705e03d3bc97"
+      "hash": "3203bdcf48498b69"
     },
     "test": {
       "name": "test",
@@ -14456,9 +14472,9 @@
       "file": "blueprint/features/agents.ts",
       "package": "@orthograph/agents",
       "version": "0.0.0",
-      "integrity": "sha256-wvH1Vkiv+njXb9ewuCUx02zGODJNH3NvAAhvHo8OfZs=",
+      "integrity": "sha256-NzJtD+rxImSQMBIyOUTU1YCFJMqjfH7D8WXEixy/Cv8=",
       "chosen": {},
-      "hash": "a6583fab3899a955"
+      "hash": "5f800a061be0f4ec"
     },
     "github": {
       "kind": "adapter",

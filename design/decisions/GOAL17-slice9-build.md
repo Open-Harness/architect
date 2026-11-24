@@ -149,3 +149,21 @@ With main's world clock merged (#790), a world on a stepped clock tells time fro
 ### 12. Finding: no event is ever delivered, because the outbox for `on:` hops is not built
 
 A scratch run of slice 8's `one executor per ticket` (stepped clock, the surface, the stand-in, the caller) accepts the ticket, journals `AssignmentQueued`, and then nothing calls `superagent.fill`: the world's log has no `POST /superagent/fill` and `GET /_world/outbox` answers 404. `Blueprint.on(...)` is declared on `fill`, `agent.tell`, `input.route`, `assignment.turnEnded` and the rest, and the compiler records each, but **no host drains them**. The outbox for every move is Goal 11's slice 4 (#390, "nothing written", parked under K42; its design is `design/decisions/M5-reach-out.md` on `goal/events`); what main brought is Timers and the world clock, and the chain follower's own outbox (Goal 12's), which is a different thing. Nothing in slices 6 to 9's journeys can pass past an `emits` of a hop's event until it exists: the seat, the tell, `input.route`, `agent.idled`, the replies and pause's held rows are all hops. **The outbox (a row per declared hop written in the commit that journals its event, a drain on `Timers`, `system` calls, `onRefused`, holds, `/_world/outbox` rows) is the next piece, and it is Goal 11's, taken under K42 section 7.**
+
+## Sixth stretch: what needs no hop
+
+### 13. The Agent actor's shape, `agent.tell` and `agent.close`
+
+The Agent row (in its own actor) gains `closed` (the Assignments it was told to stop, the last 300) and `told` (what it was told, the last 300: `requestId`, the text, the Assignment, `submitted` or `steered`), and `current` is `string | null` (null once cleared: an update that leaves a key out leaves it as it was). `agent.tell` refuses an opening tell for a closed Assignment and a steer for one that is not `current` (`StaleAssignment`, nothing told), sets `current` on an opening tell, and does nothing for a request id it already holds. `agent.close` records the id, clears `current` when it matches, and acknowledges (`AgentClosed`) whether the agent was working, idle or never told. Evidence: `packages/agents/src/agent/agent.test.ts` (six cases on an in-memory actor store). `told` is the delivery record beside Pi's own conversation, not a copy of it.
+
+### 14. The probes and the world's own entry
+
+`@orthograph/agents/testing` answers `probe/agent/told` from the agent's actor; `probe/agent/calls` answers `501 NotBuilt` until Pi Durable runs in the actor (an agent's committed model steps are Pi's, and a probe that invented them would pass a check hollow). `WorldHost.probes` is the registry the world's door looks in (`/_world/<route>`). The generator writes `generated/server/world.ts`, which imports each mounted package's `testing.ts` and registers it with `main.ts`'s `registerProbes`; `main.ts` imports none, so the production Worker reaches no probe handler. `prove` runs a world on `world.ts` (the derived wrangler config's `main`). `harness-01` passes whole, so its expected-failing file is deleted. The outbox's probe handlers (`/_world/outbox*`) register the same way when the outbox lands.
+
+### 15. Pi Durable 1.5.0 is a dependency of `@orthograph/agents`
+
+Pinned exactly, published 2 November 2026 (older than R1's three days; 1.6.0 of 20 November is newer than the 1.5.0 the records and spikes read, so it waits for a reason). Nothing imports it yet: the next step puts a Pi conversation in the Agent's actor, on `agent.tell` and the model stand-in.
+
+### 10 (settled). `local.ts` steps again
+
+The coordinator decided (24 November 2026): `local.ts` is the stepped environment, from `2026-12-01T09:00:00.000Z`, and check 63 was the side that was wrong (a stand-in delivery is signed at the world's instant, M8.11). The author's change (#903) landed in `goal/superagent` at `2bec09b4`; the clock is back in `local.ts`.

@@ -48,6 +48,11 @@ export interface WorldHost {
   readonly actorTables?: ReadonlyArray<string>;
   /** The databases the event outbox lives in, when the blueprint declares a hop: the outbox door answers from their `_outbox` rows. */
   readonly outbox?: ReadonlyArray<OutboxDb>;
+  /**
+   * The probes this world answers beyond its own doors, by the route under `/_world/` (`probe/agent/told`): each a handler a package's `testing.ts` exports
+   * (GOAL17-check-harness, call 5). Only the world's own entry registers them; the production Worker's entry holds none, so a probe route is a 404 there.
+   */
+  readonly probes?: Readonly<Record<string, (request: Request, world: { readonly actors?: DurableObjectNamespace; readonly actorTables?: ReadonlyArray<string> }) => Promise<Response>>>;
   /** This environment hosts worlds with lifetimes (a test environment): `/_world/worlds` is open, and each world is its own Durable Object. */
   readonly leases?: boolean;
 }

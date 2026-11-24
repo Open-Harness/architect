@@ -1,2 +1,0 @@
-# Slice 8's check, red until slice 9 generates the world's own entry (generated/server/world.ts), which registers the agents' probes.
-superagent/harness-01-no-probe-in-production.test.ts > harness 01: a probe is reachable only where worlds are hosted > the world's own entry imports the agents' testing.ts, which registers their probes (slice 9)

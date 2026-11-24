@@ -21,8 +21,10 @@ export const Worlds: WorldsApi = {
       mkdirSync(state, { recursive: true });
       // With the portal's built client in reach, the world runs a config derived from the generated one that serves it (K19).
       const client = ServerConfig.clientOf(root);
-      const config = client === undefined ? generated : join(state, "wrangler.jsonc");
-      if (client !== undefined) writeFileSync(config, ServerConfig.derive(root, readFileSync(generated, "utf8"), client));
+      // A world runs the world's own entry when the project has one: the Worker with its packages' probes registered (GOAL17-check-harness, call 5).
+      const entry = existsSync(resolve(root, "generated/server/world.ts")) ? "world.ts" : undefined;
+      const config = client === undefined && entry === undefined ? generated : join(state, "wrangler.jsonc");
+      if (client !== undefined || entry !== undefined) writeFileSync(config, ServerConfig.derive(root, readFileSync(generated, "utf8"), client, entry));
       yield* applyMigrations(config, state);
       // The chain is acquired first, so it is released last: the Worker never outlives the chain it talks to.
       const stood = chain === undefined ? undefined : yield* chain;

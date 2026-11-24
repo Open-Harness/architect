@@ -9,10 +9,12 @@ import { emptyPath, groupOf, notFromOf, peopleOf, worldExports } from "./helpers
 import { clocksOf, hasHops, renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 import { outboxOf } from "./outbox.ts";
 import { doorsOf } from "./doors.ts";
+import { probingOf, renderWorldEntry } from "./world-entry.ts";
 import { actorOptionOf } from "./actors.ts";
 import { rulesByOrigin, staleOf, versioned } from "./versioned.ts";
 
 const main = (model: Model, name: string, empty: boolean): RenderedFile => {
+  const probed = !empty && probingOf(model).length > 0;
   const ops = Object.values(model.operations);
   // A blueprint with hops needs the world's timers too: the drain is woken by a durable timer, on a real clock as well as a stepped one.
   const timed = Object.keys(clocksOf(model)).length > 0 || hasHops(model);
@@ -212,12 +214,13 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "  });",
       "",
       // An environment with a stepped or scaled clock (K23): the entry reads its world's instant and runs each request in it (M8.06).
+      probed ? ["let probes: Parameters<typeof toWorld>[0][\"probes\"];", "/** The world's own entry (world.ts) registers its packages' probes here; this file imports none, so a deployed Worker answers no probe. */", "export const registerProbes = (found: typeof probes): void => { probes = found; };", ""] : [],
       timed ? ["/** Each request runs in its world's time: `Date` and Effect's `Clock` read the instant its world keeps (stepped and scaled worlds only). */", "export default WorldEntry.entry<Env>({"] : "export default {",
       "  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {",
       "    // Closed before anything reads it: outside worlds there is no door to cast, to read facts, or to register a world.",
       "    if (new URL(request.url).pathname.startsWith(\"/_world/\") && !hostsWorlds(env)) return Promise.resolve(Response.json({ error: \"not found\" }, { status: 404 }));",
       "    if (new URL(request.url).pathname.startsWith(\"/_world/\")) {",
-      `      return toWorld({ worlds: env.WORLD, db: env.DB, ${world}${outbox.world}, leases: env.ORTHO_WORLDS === "1" }, request);`,
+      `      return toWorld({ worlds: env.WORLD, db: env.DB, ${world}${outbox.world}, leases: env.ORTHO_WORLDS === "1"${probed ? ", ...(probes === undefined ? {} : { probes })" : ""} }, request);`,
       "    }",
       "    if (new URL(request.url).pathname === \"/_ortho/bundle\") {",
       "      return env.ORTHO_REVISION && env.ORTHO_BUNDLE_SHA256",
@@ -246,6 +249,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
 
 export const renderServer = (model: Model, name: string, empty = false): ReadonlyArray<RenderedFile> => [
   main(model, name, empty),
+  ...renderWorldEntry(model, empty),
   renderWrangler(name, Object.values(model.things).some((t) => t.lives === "actor"), databaseStores(model), clocksOf(model)),
   renderMigration(model),
   ...renderStoreMigrations(model),

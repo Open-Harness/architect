@@ -662,13 +662,17 @@ const mcp = (env: Env, request: Request, context: Context.Context<never> | undef
     return Mcp.handle({ name: "superagent", version: env.ORTHO_REVISION ?? "0.0.0", tools, principal: who.principal, run }, request);
   });
 
+let probes: Parameters<typeof toWorld>[0]["probes"];
+/** The world's own entry (world.ts) registers its packages' probes here; this file imports none, so a deployed Worker answers no probe. */
+export const registerProbes = (found: typeof probes): void => { probes = found; };
+
 /** Each request runs in its world's time: `Date` and Effect's `Clock` read the instant its world keeps (stepped and scaled worlds only). */
 export default WorldEntry.entry<Env>({
   fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     // Closed before anything reads it: outside worlds there is no door to cast, to read facts, or to register a world.
     if (new URL(request.url).pathname.startsWith("/_world/") && !hostsWorlds(env)) return Promise.resolve(Response.json({ error: "not found" }, { status: 404 }));
     if (new URL(request.url).pathname.startsWith("/_world/")) {
-      return toWorld({ worlds: env.WORLD, db: env.DB, tables: tables.map(([, table]) => table), actors: env.ACTORS, actorTables: ["agent"], outbox: [{ db: WorldEntry.fenced(env, env.DB), prefix: "evt_" }], leases: env.ORTHO_WORLDS === "1" }, request);
+      return toWorld({ worlds: env.WORLD, db: env.DB, tables: tables.map(([, table]) => table), actors: env.ACTORS, actorTables: ["agent"], outbox: [{ db: WorldEntry.fenced(env, env.DB), prefix: "evt_" }], leases: env.ORTHO_WORLDS === "1", ...(probes === undefined ? {} : { probes }) }, request);
     }
     if (new URL(request.url).pathname === "/_ortho/bundle") {
       return env.ORTHO_REVISION && env.ORTHO_BUNDLE_SHA256

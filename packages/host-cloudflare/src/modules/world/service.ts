@@ -194,6 +194,9 @@ export const toWorld = (world: WorldHost, request: Request): Promise<Response> =
   if (pathname.startsWith("/_world/facts/")) return Effect.runPromise(facts(world, request));
   // The outbox's rows, read and parked straight from the databases, as the facts are; an app without a hop has no such door.
   if (pathname.startsWith("/_world/outbox")) return (world.outbox === undefined ? undefined : Outbox.door(world.outbox, request)) ?? Promise.resolve(json({ error: "not a door the world has" }, 404));
+  // A probe a package's `testing.ts` answers, where the world's own entry registered it.
+  const probe = world.probes?.[pathname.slice("/_world/".length)];
+  if (probe !== undefined) return probe(request, { ...(world.actors === undefined ? {} : { actors: world.actors }), ...(world.actorTables === undefined ? {} : { actorTables: world.actorTables }) });
   // A warm world is emptied between runs (ST1.24); a world with leases ends by its own lease instead. The header makes the
   // request one a browser page cannot send cross-origin without a preflight; the world checks its value against its own.
   if (pathname === "/_world/reset" && request.method === "POST") {
