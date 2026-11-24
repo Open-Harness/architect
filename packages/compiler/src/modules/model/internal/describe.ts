@@ -68,8 +68,12 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
   const pathNames = { role: (r: unknown) => roleNames.get(r as never) ?? "?", thing: (t: Thing) => thingNames.get(t) ?? "?" };
   /** The problems with an operation's or a read's role paths: each must walk to an instance of its role's thing (#767). */
-  const rolePaths = (d: Operation | Read, file: string) =>
-    d.allowed.flatMap((entry) => rolePathProblem({ entry, payload: d.payload, own: d.thing, names: pathNames, where: file }) ?? []);
+  const rolePaths = (thing: string, d: Operation | Read, file: string) => {
+    // The thing's own name, before a mount prefixed it: what a plugin's blueprint wrote its paths against.
+    const from = layout.things.get(thing)?.from;
+    const ownName = from === undefined || from.kind === "app" ? thing : from.thing;
+    return d.allowed.flatMap((entry) => rolePathProblem({ entry, payload: d.payload, own: d.thing, ownName, names: pathNames, where: file }) ?? []);
+  };
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
   const entries = new Map<string, Array<{ readonly file: string; readonly name: string; readonly identifier: string }>>();
@@ -119,7 +123,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
       problems.push(`${file}: ${thing}.${verb}'s errors are a union with two classes tagged ${tag}, so the refusal is ambiguous on the wire: rename one`);
     }
     const allowed = op.allowed.map((a) => allowedModel(a, file));
-    problems.push(...rolePaths(op, file));
+    problems.push(...rolePaths(thing, op, file));
     problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "operation", move: op.move, allowed }));
     const found = foundModel(op, (x) => thingNames.get(x), (x) => things[x]?.notFound?.error);
     const steps = Object.fromEntries(Object.entries(op.steps).map(([k, s]) => [k,
@@ -188,7 +192,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   /** A read: answered from the thing's records with no handler, so no move, no steps, no declared errors. */
   function readModel(thing: string, verb: string, file: string, from: OperationModel["from"], read: Read): OperationModel {
     const allowed = read.allowed.map((a) => allowedModel(a, file));
-    problems.push(...rolePaths(read, file));
+    problems.push(...rolePaths(thing, read, file));
     problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "read", move: undefined, allowed }));
     const list = read.by === "list";
     const t = layout.things.get(thing);
