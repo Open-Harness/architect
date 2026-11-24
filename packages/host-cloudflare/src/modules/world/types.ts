@@ -42,6 +42,9 @@ export interface WorldHost {
   readonly tables: ReadonlyArray<string>;
   /** The declared database stores (K3): each its own binding, with the tables of the things that live in it. */
   readonly stores?: ReadonlyArray<{ readonly db: D1Database; readonly tables: ReadonlyArray<string> }>;
+  /** The Durable Objects things that live as actors are kept in, and the tables they go by: their facts are read from the actor, never from D1. */
+  readonly actors?: DurableObjectNamespace;
+  readonly actorTables?: ReadonlyArray<string>;
   /** This environment hosts worlds with lifetimes (a test environment): `/_world/worlds` is open, and each world is its own Durable Object. */
   readonly leases?: boolean;
 }

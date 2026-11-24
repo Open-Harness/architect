@@ -19,6 +19,8 @@ export interface Value<S extends Schema.Constraint = Schema.Constraint> {
   readonly traced?: true;
   /** A secret answer value handed to its caller once (`Blueprint.issued`). */
   readonly issued?: true;
+  /** A field that may be left out (`Blueprint.optional`): the model says so as `optional: true`. */
+  readonly optional?: true;
 }
 
 /**
@@ -38,7 +40,7 @@ export type ValueMeta =
   | { readonly type: "account" }
   | { readonly type: "money"; readonly bits: number; readonly signed: boolean; readonly asset: AssetRef }
   | { readonly type: "decimal"; readonly places: number }
-  | { readonly type: "schema"; readonly format?: "ref-any" };
+  | { readonly type: "schema"; readonly format?: "ref-any" | "choice" | "list" | "bool"; readonly options?: ReadonlyArray<string>; readonly fields?: ReadonlyArray<string> };
 
 /** The TypeScript type a value holds. */
 export type TypeOf<V extends Value> = V["schema"]["Type"];
@@ -95,6 +97,14 @@ export interface ValuesApi {
   readonly link: <F extends Field>(to: () => F) => F;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
+  /** True or false. */
+  readonly bool: () => Value<Schema.Boolean>;
+  /** One of the words named: `Blueprint.oneOf(["observing", "live"])`. */
+  readonly oneOf: <const O extends ReadonlyArray<string>>(options: O) => Value<Schema.Literals<O>>;
+  /** Many of one value: a list, written as an array. */
+  readonly list: <S extends Schema.Constraint>(item: Value<S>) => Value<Schema.$Array<S>>;
+  /** A field the record may lack: absent from a payload, an event or a row until it is set. */
+  readonly optional: <S extends Schema.Constraint>(value: Value<S>) => Value<Schema.optionalKey<S>>;
 }
 
 /** A calendar day as `Blueprint.day()` holds it: `YYYY-MM-DD`. */

@@ -50,9 +50,12 @@ export const integrityOf = (dir: string, only?: ReadonlyArray<string>): string =
   return `sha256-${hash.digest("base64")}`;
 };
 
-/** The `.js` files under a plugin's blueprint folder, relative to it, sorted. */
-export const blueprintFilesOf = (folder: string): ReadonlyArray<string> =>
-  walk(folder, (f) => f.endsWith(".js")).map((f) => slashed(relative(folder, f))).sort();
+/** The `.js` files under a plugin's blueprint folder, or its `.ts` files when it ships as source (no build), relative to it, sorted. */
+export const blueprintFilesOf = (folder: string): ReadonlyArray<string> => {
+  const found = walk(folder, (f) => f.endsWith(".js") || (f.endsWith(".ts") && !f.endsWith(".d.ts"))).map((f) => slashed(relative(folder, f))).sort();
+  // A plugin that ships both for one file is built: the `.js` is the one loaded, never the `.ts` beside it.
+  return found.filter((f) => !(f.endsWith(".ts") && found.includes(`${f.slice(0, -3)}.js`)));
+};
 
 /** A plugin's declared blueprint folder, as installed for the project, when it has one. */
 export const pluginFolder = (root: string, name: string): string | undefined => {

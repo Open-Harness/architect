@@ -1,5 +1,5 @@
 // What a descriptor and a mount keep, and what a mount picked. `@ts-expect-error` lines are checked by tsc.
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 import { describe, expect, it } from "vitest";
 import { Things } from "#modules/things/service.js";
 import { Values } from "#modules/values/service.js";
@@ -52,6 +52,23 @@ describe("plugins", () => {
     const missing = Plugins.use(pricing, (p) => [p.include(p.calls.refund)]).verbs[0];
     expect(missing).toMatchObject({ items: [{ kind: "missing-call", name: "refund" }] });
     expect(Plugins.use(echo).calls).toEqual({});
+  });
+
+  it("an adapter's calls nest in groups, its events are schemas, and a name it hasn't answers with its dotted name", () => {
+    const create = Plugins.call();
+    const comment = Plugins.incoming(Schema.Struct({ action: Schema.String }));
+    const github = Plugins.adapter({ description: "Issues.", calls: { issues: { createComment: create }, chatPostMessage: Plugins.call() }, events: { issueComment: comment } });
+    const mount = Plugins.use(github, (g) => [g.include(g.calls.issues.createComment, g.events.issueComment)]);
+    expect(mount.verbs[0]).toMatchObject({ verb: "include", items: [create, comment] });
+    expect(mount.calls.issues.createComment).toBe(create);
+    expect(comment).toMatchObject({ kind: "event" });
+    // @ts-expect-error the group has no such call
+    const call = Plugins.use(github, (g) => [g.include(g.calls.issues.createComent)]).verbs[0];
+    expect(call).toMatchObject({ items: [{ kind: "missing-call", name: "issues.createComent" }] });
+    // @ts-expect-error the adapter has no such event
+    const event = Plugins.use(github, (g) => [g.include(g.events.issueComent)]).verbs[0];
+    expect(event).toMatchObject({ items: [{ kind: "missing-event", name: "issueComent" }] });
+    expect(Plugins.adapter({ description: "None." }).events).toEqual({});
   });
 
   it("a need may apply only when an option is picked", () => {

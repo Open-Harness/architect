@@ -12,6 +12,7 @@
     "orthograph": "workspace:*",
     "@effect/platform-node": "4.1.4",
     "effect": "4.1.4",
+    "yaml": "2.9.0",
     "nx": "24.0.3",
     "wrangler": "4.156.1",
     "alchemy": "2.0.0-beta.87",

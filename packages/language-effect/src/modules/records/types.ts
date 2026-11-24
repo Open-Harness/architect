@@ -89,7 +89,8 @@ export class Records extends Context.Service<Records, {
   /** A new instance, in `state` when the thing has a machine (a move sets it otherwise). */
   readonly insert: <T extends Thing>(thing: T, fields: FieldsOf<T>, state?: string) => Effect.Effect<void>;
   /** Change some fields of an instance. Guarded by the version this call read it at. */
-  readonly update: <T extends Thing>(thing: T, id: string, changes: Partial<FieldsOf<T>>) => Effect.Effect<void>;
+  /** `state` moves the instance with no event of its own: only for work a sweep does on instances other than the one its move is about (it journals nothing). */
+  readonly update: <T extends Thing>(thing: T, id: string, changes: Partial<FieldsOf<T>>, state?: string) => Effect.Effect<void>;
 }>()("@orthograph/language-effect/Records") {}
 
 export interface UnitApi {
@@ -105,6 +106,8 @@ export interface Violation {
   readonly row: Instance;
   /** The other holder is a row this call wrote too: the handler's own bug, never a refusal or a race. */
   readonly own: boolean;
+  /** The rule says breaking it is a lost race: the call runs again and meets what the winner made. */
+  readonly retry?: boolean;
 }
 
 export interface Unit {

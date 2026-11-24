@@ -94,14 +94,14 @@ export class Store extends Context.Service<Store, {
    (`examples/signup/generated/server/wrangler.jsonc:8-11`).
 4. **`runs` says where an operation runs.** The declaration can say three places. Only one is accepted:
 
-```ts file=packages/orthograph/src/modules/operations/types.ts name=Runs lines=30-31
+```ts file=packages/orthograph/src/modules/operations/types.ts name=Runs lines=32-33
 /** Where an operation runs: `server` (every target today), on the caller's `client`, or on a `chain`. */
 export type Runs = "client" | "server" | "chain";
 ```
 
    The compiler refuses the other two, and says what a project would need to run them:
 
-```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=112-113
+```ts file=packages/compiler/src/modules/model/internal/describe.ts name=describe lines=127-128
 // On a chain store where it runs is the compiler's word, so a written `runs` is refused in operations.ts.
 if (!chain && op.runs !== "server" && !onDevice) problems.push(`${file}: runs "${op.runs}" is not supported yet: ${RUNS_NEEDS[op.runs] ?? "an unknown place"}`); else if (onDevice) problems.push(...deviceProblems(file, op));
 ```

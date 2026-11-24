@@ -1,6 +1,7 @@
 // orthograph/server: what generated code, the compiler and the framework's own packages use, never project code.
 export { ErrorNames } from "#modules/errors/service.js";
 export { Blanks } from "#modules/blanks/service.js";
+export { VERSION_RULE, versionRule } from "#modules/invariants/internal/version-rule.js";
 export { structOf } from "#modules/things/service.js";
 export { decimalText, isValue } from "#modules/values/service.js";
 export { placesOf } from "#modules/assets/service.js";
