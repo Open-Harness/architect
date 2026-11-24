@@ -1,10 +1,11 @@
 import { Blueprint } from "orthograph";
+import { Superagent } from "@orthograph/superagent/blueprint/things/superagent/thing.ts";
 
 export const Eval = Blueprint.thing({
   description: "One judgement the main agent is asked for: a thread's waiting triggers, batched.",
   fields: {
     id: Blueprint.id("evl"),
-    superagent: Blueprint.id("sag"),
+    superagent: Superagent.fields.id,
     thread: Blueprint.id("thr"),
     triggers: Blueprint.list(Blueprint.text({ max: 120 })),
     activeAtStart: Blueprint.uint(64),
