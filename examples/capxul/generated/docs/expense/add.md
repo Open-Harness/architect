@@ -63,8 +63,9 @@ Starts from the world `an expense claim with two types`.
 
 Starts from the world `an expense claim`.
 
-- **Ada can't put Bo's expense type on Olga's claim.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `5000000`, sanctionedAmount `5000000`, and is refused with ExpenseTypeNotInCompany, EX-002.
+- **Ada can't put Bo's expense type on Olga's claim, even over-sanctioned.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `5000000`, sanctionedAmount `6000000`, and is refused with ExpenseTypeNotInCompany, EX-002.
 - **Ada adds 5 USDC Olga spent before leaving, sanctioning none of it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `5000000`, sanctionedAmount `0`, and gets back [`5000000`, `0`].
+- **the approved claim takes no line, not even one with Bo's type, over-sanctioned.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `1000000`, sanctionedAmount `2000000`, and is refused with ClaimNotDraft, EX-003.
 
 ### reject an expense claim
 
@@ -72,6 +73,7 @@ Starts from the world `an expense claim`.
 
 - **Ada adds 30 USDC of lunches.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `30000000`, sanctionedAmount `30000000`, and gets back [`30000000`, `30000000`].
 - **a rejected claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `1000000`, and is refused with ClaimNotDraft, EX-003.
+- **Ada adds 4 USDC of lunches to it, all sanctioned.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-12-03`, expenseType the world's expenseClaimType, amount `4000000`, sanctionedAmount `4000000`, and gets back [`4000000`, `4000000`].
 
 ## How to call
 

@@ -45,6 +45,7 @@ Add a kind of expense a company pays back.
 Starts from the world `an expense claim`.
 
 - **Bo adds an expense type to it.** `bo` (signed in) calls and sends company the last call's company, expenseType `Travel`, and gets back an answer matching `^ect_[0-9a-z]+$`.
+- **Bo adds Lunches to it.** `bo` (signed in) calls and sends company the last call's company, expenseType `Lunches`, and gets back an answer matching `^ect_[0-9a-z]+$`.
 
 ### set up expense types
 

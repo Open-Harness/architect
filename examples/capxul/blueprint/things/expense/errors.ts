@@ -2,6 +2,7 @@ import { Blueprint } from "orthograph";
 import { Amount } from "../../values/expenses.ts";
 
 // Refusals that depend on data. The machine's own refusal is generated and never written here.
+// When more than one applies, `expense.add` refuses the first of: ClaimNotDraft, ExpenseTypeNotInCompany, SanctionedOverClaimed.
 /** HRMS: "Sanctioned Amount cannot be greater than Claim Amount". The same amount is allowed. */
 export class SanctionedOverClaimed extends Blueprint.error({ amount: Amount }, { exit: 41 }) {}
 /** The expense type named belongs to another company. */

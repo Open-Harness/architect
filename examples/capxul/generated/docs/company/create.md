@@ -69,6 +69,8 @@ Starts from the world `a company`.
 Starts from the world `an expense claim`.
 
 - **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Bo sets up a second company.** `bo` (signed in) calls and sends companyName `Bo Ventures`, abbr `BV`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Bo sets up a third company.** `bo` (signed in) calls and sends companyName `Bo Holdings`, abbr `BH`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
 ### set up a company
 

@@ -95,7 +95,8 @@ export default Blueprint.journey("claim expenses", {
     s.step(
       "the taxi reads back as Ada typed it",
       s.ada.run(getExpense, { id: s.last.expense }),
-      expect((a) => [a.expenseDate, a.expenseType, a.amount, a.sanctionedAmount, a.state]).toEqual([
+      expect((a) => [a.expenseClaim, a.expenseDate, a.expenseType, a.amount, a.sanctionedAmount, a.state]).toEqual([
+        s.world.expenseClaim,
         "2026-11-18",
         s.world.expenseClaimType,
         45000000n,

@@ -10200,6 +10200,12 @@
             {
               "kind": "expect-equal",
               "value": [
+                {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
                 "2026-11-18",
                 {
                   "ref": [
@@ -10554,7 +10560,7 @@
           ]
         }
       ],
-      "sourceHash": "78790490a24c905d175516071ad1bafee72fbedb3ce67e6e6af2680c6b43b587"
+      "sourceHash": "952b22c1c28e88e28bd4b69561984335a11d4a3ea28e3a3bc5e6bf29724f6f84"
     },
     "journeys/companies-are-kept-apart.ts": {
       "name": "companies are kept apart",
@@ -11188,6 +11194,65 @@
       "starts": "an expense claim",
       "steps": [
         {
+          "title": "Bo sets up a company of his own",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Bo Ltd",
+              "abbr": "BL",
+              "country": "Kenya",
+              "defaultCurrency": "KES"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo can't file a claim in his company for Olga, who works for Ada",
+          "call": {
+            "actor": "bo",
+            "operation": "expense-claim.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "postingDate": "2026-11-20"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "EmployeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "expense-claim.create.insert"
+              ]
+            }
+          ]
+        },
+        {
           "title": "Ada relieves Olga on 30 November",
           "call": {
             "actor": "ada",
@@ -11210,13 +11275,13 @@
           ]
         },
         {
-          "title": "Bo sets up a company of his own",
+          "title": "Bo sets up a second company",
           "call": {
             "actor": "bo",
             "operation": "company.create",
             "payload": {
-              "companyName": "Bo Ltd",
-              "abbr": "BL",
+              "companyName": "Bo Ventures",
+              "abbr": "BV",
               "country": "Kenya",
               "defaultCurrency": "KES"
             }
@@ -11230,7 +11295,7 @@
           ]
         },
         {
-          "title": "Bo can't file a claim in his company for Olga, who worked for Ada and has left",
+          "title": "nor in that one for Olga now she has left",
           "call": {
             "actor": "bo",
             "operation": "expense-claim.create",
@@ -11258,13 +11323,6 @@
             },
             {
               "kind": "no-events"
-            },
-            {
-              "kind": "spans",
-              "present": [],
-              "absent": [
-                "expense-claim.create.insert"
-              ]
             }
           ]
         },
@@ -11292,7 +11350,7 @@
           ]
         },
         {
-          "title": "Ada can't put Bo's expense type on Olga's claim",
+          "title": "Ada can't put Bo's expense type on Olga's claim, even over-sanctioned",
           "call": {
             "actor": "ada",
             "operation": "expense.add",
@@ -11311,7 +11369,7 @@
                 ]
               },
               "amount": "5000000",
-              "sanctionedAmount": "5000000"
+              "sanctionedAmount": "6000000"
             }
           },
           "checks": [
@@ -11405,6 +11463,47 @@
           ]
         },
         {
+          "title": "that line reads back on Olga's claim, sanctioned at nothing",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "expense"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "2026-11-19",
+                {
+                  "ref": [
+                    "world",
+                    "expenseClaimType"
+                  ]
+                },
+                "5000000",
+                "0",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "a claim with something claimed may be approved for nothing",
           "call": {
             "actor": "ada",
@@ -11456,9 +11555,127 @@
               "state": "approved"
             }
           ]
+        },
+        {
+          "title": "it reads back approved, owing nothing",
+          "call": {
+            "actor": "olga",
+            "operation": "expense-claim.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "expenseClaim"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "2026-11-20",
+                "5000000",
+                "0",
+                "approved"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo sets up a third company",
+          "call": {
+            "actor": "bo",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Bo Holdings",
+              "abbr": "BH",
+              "country": "Kenya",
+              "defaultCurrency": "KES"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo adds Lunches to it",
+          "call": {
+            "actor": "bo",
+            "operation": "expense-claim-type.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "expenseType": "Lunches"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^ect_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "the approved claim takes no line, not even one with Bo's type, over-sanctioned",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.add",
+            "payload": {
+              "expenseClaim": {
+                "ref": [
+                  "world",
+                  "expenseClaim"
+                ]
+              },
+              "expenseDate": "2026-11-19",
+              "expenseType": {
+                "ref": [
+                  "last",
+                  "expenseClaimType"
+                ]
+              },
+              "amount": "1000000",
+              "sanctionedAmount": "2000000"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ClaimNotDraft",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "a51d65772c4a2daf03901ff6671e742cb0d409e6c7863b9efc003cd234c18456"
+      "sourceHash": "7ff178e56d3f1251ebc77de0a81ac899a896d76611d52f58825740e514959f8b"
     },
     "journeys/grade-names-are-the-companys.ts": {
       "name": "grade names are the company's",
@@ -12512,6 +12729,47 @@
           ]
         },
         {
+          "title": "the lunches read back on Olga's claim",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "expense"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "2026-11-19",
+                {
+                  "ref": [
+                    "world",
+                    "expenseClaimType"
+                  ]
+                },
+                "30000000",
+                "30000000",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Olga can't reject her own claim",
           "call": {
             "actor": "olga",
@@ -12686,9 +12944,296 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Olga starts a second claim, on 2 December",
+          "call": {
+            "actor": "olga",
+            "operation": "expense-claim.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "postingDate": "2026-12-02"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^ecl_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada rejects that one too, with nothing on it",
+          "call": {
+            "actor": "ada",
+            "operation": "expense-claim.reject",
+            "payload": {
+              "expenseClaim": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              }
+            },
+            {
+              "kind": "emits",
+              "event": "ExpenseClaimRejected",
+              "fields": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "expense-claim",
+              "id": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              },
+              "state": "rejected"
+            }
+          ]
+        },
+        {
+          "title": "the second claim reads back rejected, on its own day",
+          "call": {
+            "actor": "olga",
+            "operation": "expense-claim.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "2026-12-02",
+                "0",
+                "0",
+                "rejected"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga starts a third claim, on 3 December",
+          "call": {
+            "actor": "olga",
+            "operation": "expense-claim.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "postingDate": "2026-12-03"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^ecl_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada adds 4 USDC of lunches to it, all sanctioned",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.add",
+            "payload": {
+              "expenseClaim": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              },
+              "expenseDate": "2026-12-03",
+              "expenseType": {
+                "ref": [
+                  "world",
+                  "expenseClaimType"
+                ]
+              },
+              "amount": "4000000",
+              "sanctionedAmount": "4000000"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "4000000",
+                "4000000"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the 4 USDC line reads back on the third claim",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "expense"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2026-12-03",
+                "4000000",
+                "4000000"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada rejects the third claim",
+          "call": {
+            "actor": "ada",
+            "operation": "expense-claim.reject",
+            "payload": {
+              "expenseClaim": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              }
+            },
+            {
+              "kind": "emits",
+              "event": "ExpenseClaimRejected",
+              "fields": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "expense-claim",
+              "id": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              },
+              "state": "rejected"
+            }
+          ]
+        },
+        {
+          "title": "the third claim reads back rejected: it keeps its 4 USDC claimed and sanctions nothing",
+          "call": {
+            "actor": "olga",
+            "operation": "expense-claim.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "expenseClaim"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2026-12-03",
+                "4000000",
+                "0",
+                "rejected"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "8fdcf44f26763d8e08f70a09934f8a2a0650ce69608b0a06659cf6dd3e38fc89"
+      "sourceHash": "f4c3f3b9c4ec8658069b38d1503fce7a2c4959d337687f52889c07b34fa24472"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
