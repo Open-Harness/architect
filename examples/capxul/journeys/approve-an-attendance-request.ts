@@ -25,7 +25,7 @@ const WFH = "Work From Home";
 
 export default Blueprint.journey("approve an attendance request", {
   // Olga works at Acme Trading, was marked absent on Tuesday 24 November, and has asked to work from home from Monday
-  // 23 to Friday 27 November. Ada runs Acme Trading; Bo is signed in and runs nothing of hers.
+  // 23 to Friday 27 November. Ada runs Acme Trading; Bo is signed in and runs nothing of hers; Ada hires him partway, as Olga's coworker.
   cast: { ada: owner, olga: Blueprint.signedIn, bo: Blueprint.signedIn },
   starts: "an attendance request",
   steps: (s) => {
@@ -283,6 +283,22 @@ export default Blueprint.journey("approve an attendance request", {
       "its last day, 10 May, is marked working from home",
       s.ada.run(list, { employee: s.world.employee, attendanceDate: "2027-05-10" }),
       expect((p) => p.items.map((i: Item) => [i.attendanceDate, i.status, i.state])).toEqual([["2027-05-10", WFH, "marked"]]),
+      noEvents(),
+    ),
+    s.step(
+      "Olga asks to be on duty from Friday 11 to Sunday 13 December, across a weekend",
+      s.olga.run(create, { company: s.world.company, employee: s.world.employee, fromDate: "2026-12-11", toDate: "2026-12-13", reason: "On Duty" }),
+      expect((a) => a.attendanceRequest).toMatch(/^arq_[0-9a-z]+$/),
+    ),
+    s.step(
+      "approved, it marks all three, the weekend too",
+      s.ada.run(approve, { attendanceRequest: s.last.attendanceRequest }),
+      expect((a) => [a.marked, a.changed]).toEqual([3n, 0n]),
+    ),
+    s.step(
+      "Saturday 12 December is marked present",
+      s.ada.run(list, { employee: s.world.employee, attendanceDate: "2026-12-12" }),
+      expect((p) => p.items.map((i: Item) => [i.attendanceDate, i.status, i.state])).toEqual([["2026-12-12", "Present", "marked"]]),
       noEvents(),
     ),
   ];

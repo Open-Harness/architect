@@ -23,6 +23,11 @@ export default Blueprint.journey("reject an attendance request", {
       expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/),
     ),
     s.step(
+      "and working from home on the Thursday, as the request asks",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-11-26", status: "Work From Home" }),
+      expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/),
+    ),
+    s.step(
       "Olga can't reject her own request",
       s.olga.run(reject, { attendanceRequest: s.world.attendanceRequest }),
       refuses(Blueprint.NotAllowed),
@@ -70,18 +75,19 @@ export default Blueprint.journey("reject an attendance request", {
       noEvents(),
     ),
     s.step(
-      "it marked nothing, and left the absent Tuesday absent and the Wednesday present",
+      "it marked nothing, and left each day in its range as it was",
       s.olga.run(list, { employee: s.world.employee }),
       expect((p) => [...p.items].sort((a: Item, b: Item) => (a.attendanceDate < b.attendanceDate ? -1 : 1)).map((i: Item) => [i.attendanceDate, i.status])).toEqual([
         ["2026-11-24", "Absent"],
         ["2026-11-25", "Present"],
+        ["2026-11-26", "Work From Home"],
       ]),
       expect((p) => p.items.filter((i: Item) => i.attendanceDate === "2026-11-24").map((i: Item) => i.id)).toEqual([s.world.attendance]),
       noEvents(),
     ),
     s.step(
-      "so Ada may mark the Thursday present",
-      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-11-26", status: "Present" }),
+      "so Ada may mark the Friday present",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-11-27", status: "Present" }),
       expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/),
     ),
   ],

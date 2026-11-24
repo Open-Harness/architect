@@ -46,6 +46,17 @@ export default Blueprint.journey("set up employment types", {
       noEvents(),
     ),
     s.step(
+      "a name in lower case is kept as typed",
+      s.ada.run(create, { company: s.world.company, employmentTypeName: "apprentice" }),
+      expect((a) => a.employmentType).toMatch(/^ety_[0-9a-z]+$/),
+    ),
+    s.step(
+      "it reads back in lower case",
+      s.ada.run(get, { id: s.last.employmentType }),
+      expect((a) => [a.company, a.employmentTypeName, a.state]).toEqual([s.world.company, "apprentice", "active"]),
+      noEvents(),
+    ),
+    s.step(
       "the first name can't be added to Acme Trading twice",
       s.ada.run(create, { company: s.world.company, employmentTypeName: "Full-time" }),
       refuses(EmploymentTypeNameTaken, { employmentTypeName: "Full-time" }),

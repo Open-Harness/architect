@@ -107,7 +107,8 @@ Starts from the world `an employee`.
 Starts from the world `an attendance request`.
 
 - **Ada marks Olga present on the Wednesday, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
-- **so Ada may mark the Thursday present.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-26`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
+- **and working from home on the Thursday, as the request asks.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-26`, status `Work From Home`, and gets back an answer matching `^att_[0-9a-z]+$`.
+- **so Ada may mark the Friday present.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-27`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
 
 ## How to call
 

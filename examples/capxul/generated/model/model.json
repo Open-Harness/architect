@@ -10123,9 +10123,95 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Olga asks to be on duty from Friday 11 to Sunday 13 December, across a weekend",
+          "call": {
+            "actor": "olga",
+            "operation": "attendance-request.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "fromDate": "2026-12-11",
+              "toDate": "2026-12-13",
+              "reason": "On Duty"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^arq_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "approved, it marks all three, the weekend too",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance-request.approve",
+            "payload": {
+              "attendanceRequest": {
+                "ref": [
+                  "last",
+                  "attendanceRequest"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "3",
+                "0"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Saturday 12 December is marked present",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.list",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-12-12"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "2026-12-12",
+                  "Present",
+                  "marked"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "d2a3dc9368509ad7544f2226df37dff080ce3feac3e06dc7acea08b8ef6e9885"
+      "sourceHash": "5a85caa470f158c983e749dfb4a091204c77f7d23a20474fc27c11375d70dc90"
     },
     "journeys/attendance-stays-in-its-company.ts": {
       "name": "attendance stays in its company",
@@ -18177,6 +18263,36 @@
           ]
         },
         {
+          "title": "and working from home on the Thursday, as the request asks",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-26",
+              "status": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^att_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
           "title": "Olga can't reject her own request",
           "call": {
             "actor": "olga",
@@ -18394,7 +18510,7 @@
           ]
         },
         {
-          "title": "it marked nothing, and left the absent Tuesday absent and the Wednesday present",
+          "title": "it marked nothing, and left each day in its range as it was",
           "call": {
             "actor": "olga",
             "operation": "attendance.list",
@@ -18418,6 +18534,10 @@
                 [
                   "2026-11-25",
                   "Present"
+                ],
+                [
+                  "2026-11-26",
+                  "Work From Home"
                 ]
               ]
             },
@@ -18438,7 +18558,7 @@
           ]
         },
         {
-          "title": "so Ada may mark the Thursday present",
+          "title": "so Ada may mark the Friday present",
           "call": {
             "actor": "ada",
             "operation": "attendance.mark",
@@ -18455,7 +18575,7 @@
                   "employee"
                 ]
               },
-              "attendanceDate": "2026-11-26",
+              "attendanceDate": "2026-11-27",
               "status": "Present"
             }
           },
@@ -18468,7 +18588,7 @@
           ]
         }
       ],
-      "sourceHash": "59c56e26825c4e0011c08bc236cc8b8ea8d5fd981ded6b70c83f016705094532"
+      "sourceHash": "dc280fc8bc46f37075faa499eb71f64b4bbb235e43f50a5fbeba14711717af9c"
     },
     "journeys/reject-an-expense-claim.ts": {
       "name": "reject an expense claim",
@@ -21253,6 +21373,62 @@
           ]
         },
         {
+          "title": "a name in lower case is kept as typed",
+          "call": {
+            "actor": "ada",
+            "operation": "employment-type.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employmentTypeName": "apprentice"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^ety_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "it reads back in lower case",
+          "call": {
+            "actor": "ada",
+            "operation": "employment-type.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "employmentType"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "apprentice",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "the first name can't be added to Acme Trading twice",
           "call": {
             "actor": "ada",
@@ -21488,7 +21664,7 @@
           ]
         }
       ],
-      "sourceHash": "a7be6622f656612ab9998df767723be1053968c60c71c1961b64c193adae4420"
+      "sourceHash": "c1a620503d383ac36e84336711312421e4cf1f59617e2588cec68d8d8e3a88d8"
     },
     "journeys/set-up-expense-types.ts": {
       "name": "set up expense types",
@@ -22554,6 +22730,59 @@
           ]
         },
         {
+          "title": "a name in lower case is kept as typed",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "shiftTypeName": "late",
+              "startTime": "14:00",
+              "endTime": "22:00"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^sht_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "it reads back in lower case",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "shiftType"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "late",
+                "14:00",
+                "22:00"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Day can't be added to Acme Trading twice",
           "call": {
             "actor": "ada",
@@ -22775,7 +23004,7 @@
           ]
         }
       ],
-      "sourceHash": "ee82fc18d934a16938d823b11649ea82287b23a9736bc3b78af62514a5d1de2e"
+      "sourceHash": "b3439a4ca93d75e41d87c9da13336b5f38d1b2133987fa8c4b5d8a07af61828c"
     },
     "journeys/weekly-offs.ts": {
       "name": "weekly offs",

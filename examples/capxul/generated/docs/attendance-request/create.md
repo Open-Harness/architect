@@ -60,6 +60,7 @@ Starts from the world `an attendance request`.
 - **Olga asks to work from home from 27 February to 1 March 2027, a year with no leap day.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-02-27`, toDate `2027-03-01`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.
 - **Olga asks to be on duty from 28 February to 1 March 2028, a leap year.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2028-02-28`, toDate `2028-03-01`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.
 - **Olga asks to work from home for forty days, 1 April to 10 May 2027.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-04-01`, toDate `2027-05-10`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.
+- **Olga asks to be on duty from Friday 11 to Sunday 13 December, across a weekend.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-11`, toDate `2026-12-13`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.
 
 ### attendance stays in its company
 

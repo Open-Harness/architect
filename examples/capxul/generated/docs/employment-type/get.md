@@ -38,6 +38,7 @@ Starts from the world `three companies`.
 - **Bo can't read it.** `bo` (signed in) calls and sends id the last call's employmentType, and is refused with NotAllowed, AR-001.
 - **it reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's employmentType, and gets back [the world's company, `Full-time`, `active`].
 - **the second reads back under its own name.** `ada` (role company.owner) calls and sends id the last call's employmentType, and gets back [the world's company, `Contract`, `active`].
+- **it reads back in lower case.** `ada` (role company.owner) calls and sends id the last call's employmentType, and gets back [the world's company, `apprentice`, `active`].
 - **it reads back in Acme Logistics.** `ada` (role company.owner) calls and sends id the last call's employmentType, and gets back [the world's otherCompany, `Full-time`, `active`].
 - **Ada can't read Bo's.** `ada` (role company.owner) calls and sends id the last call's employmentType, and is refused with NotAllowed, AR-001.
 - **Bo reads his back, in Bo Ltd.** `bo` (signed in) calls and sends id the last call's employmentType, and gets back [the world's boCompany, `Full-time`, `active`].
