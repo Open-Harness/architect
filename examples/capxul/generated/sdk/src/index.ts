@@ -11,6 +11,9 @@ export * as department from "./department/index.ts";
 export * as designation from "./designation/index.ts";
 export * as employee from "./employee/index.ts";
 export * as employeeGrade from "./employee-grade/index.ts";
+export * as expense from "./expense/index.ts";
+export * as expenseClaim from "./expense-claim/index.ts";
+export * as expenseClaimType from "./expense-claim-type/index.ts";
 export * as holiday from "./holiday/index.ts";
 export * as holidayList from "./holiday-list/index.ts";
 export type { BankAccount, BankAccountState, BankAccountClosed, BankAccountOpened } from "./bank-account/types.ts";
@@ -22,5 +25,8 @@ export type { Department, DepartmentState, DepartmentCreated } from "./departmen
 export type { Designation, DesignationState, DesignationCreated } from "./designation/types.ts";
 export type { Employee, EmployeeState, EmployeeHired, EmployeeRelieved } from "./employee/types.ts";
 export type { EmployeeGrade, EmployeeGradeState, EmployeeGradeCreated } from "./employee-grade/types.ts";
+export type { Expense, ExpenseState, ExpenseAdded } from "./expense/types.ts";
+export type { ExpenseClaim, ExpenseClaimState, ExpenseClaimApproved, ExpenseClaimCreated, ExpenseClaimRejected } from "./expense-claim/types.ts";
+export type { ExpenseClaimType, ExpenseClaimTypeState, ExpenseClaimTypeCreated } from "./expense-claim-type/types.ts";
 export type { Holiday, HolidayState, HolidayAdded } from "./holiday/types.ts";
 export type { HolidayList, HolidayListState, HolidayListCreated, WeeklyOffAdded } from "./holiday-list/types.ts";

@@ -1,0 +1,49 @@
+<!-- Generated from the blueprint. Do not edit. -->
+# expense.get
+
+Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.
+
+**Who may call:** the owner of its expenseClaim.company.
+
+**A read:** answered from the records, with no handler.
+
+**Budget:** p95 50ms.
+
+## Payload
+
+| field | value |
+|---|---|
+| id | expense.id |
+
+## Answer
+
+| field | value |
+|---|---|
+| expenseClaim | expense.expenseClaim |
+| expenseDate | expense.expenseDate |
+| expenseType | expense.expenseType |
+| amount | expense.amount |
+| sanctionedAmount | expense.sanctionedAmount |
+| state | text |
+
+## Refusals
+
+| refusal | exit | code | when |
+|---|---|---|---|
+| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |
+
+## Worked examples
+
+### claim expenses
+
+Starts from the world `an expense type`.
+
+- **the taxi reads back as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`2026-11-18`, the world's expenseClaimType, `45000000`, `45000000`, `active`].
+
+## How to call
+
+```sh
+capxul expense get --id <id>
+```
+
+HTTP: `POST /expense/get` with the payload as JSON. SDK: `Sdk.expense.get(payload)`.

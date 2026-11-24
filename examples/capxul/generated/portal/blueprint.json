@@ -12,9 +12,13 @@
       "BridgeBusinessNotStarted": "KB-900",
       "BridgeIndividualNotFound": "KC-901",
       "BridgeIndividualNotStarted": "KC-900",
+      "ClaimHasNoExpenses": "EC-003",
+      "ClaimNotDraft": "EX-003",
+      "ClaimantNotActive": "EC-001",
       "CompanyAbbrTaken": "CO-002",
       "CompanyNameTaken": "CO-001",
       "CompanyNotActive": "CO-900",
+      "CompanyNotFound": "CO-901",
       "DepartmentNameTaken": "DE-001",
       "DepartmentNotActive": "DE-900",
       "DepartmentNotFound": "DE-901",
@@ -27,6 +31,14 @@
       "EmployeeGradeNameTaken": "EG-001",
       "EmployeeGradeNotActive": "EG-900",
       "EmployeeNotActive": "EM-900",
+      "EmployeeNotFound": "EM-901",
+      "EmployeeNotInCompany": "EC-002",
+      "ExpenseClaimNotDraft": "EC-900",
+      "ExpenseClaimTypeNotActive": "ET-900",
+      "ExpenseClaimTypeNotFound": "ET-901",
+      "ExpenseNotActive": "EX-900",
+      "ExpenseTypeNotInCompany": "EX-002",
+      "ExpenseTypeTaken": "ET-001",
       "HolidayDateTaken": "HD-001",
       "HolidayListEndsBeforeStart": "HL-002",
       "HolidayListNameTaken": "HL-001",
@@ -39,7 +51,8 @@
       "KybNotApproved": "BA-001",
       "KycAlreadyStarted": "KC-001",
       "NotAllowed": "AR-001",
-      "RelievedBeforeJoined": "EM-005"
+      "RelievedBeforeJoined": "EM-005",
+      "SanctionedOverClaimed": "EX-001"
     },
     "values": {
       "Abbr": {
@@ -48,6 +61,14 @@
       },
       "AccountCurrency": {
         "type": "schema"
+      },
+      "Amount": {
+        "type": "money",
+        "bits": 128,
+        "signed": false,
+        "asset": {
+          "token": "usdc"
+        }
       },
       "BridgeLink": {
         "type": "schema"
@@ -63,6 +84,10 @@
         "type": "day"
       },
       "DepositDetail": {
+        "type": "text",
+        "max": 140
+      },
+      "ExpenseTypeName": {
         "type": "text",
         "max": 140
       },
@@ -92,6 +117,15 @@
       },
       "Weekday": {
         "type": "schema"
+      }
+    },
+    "assets": {
+      "usdc": {
+        "name": "usdc",
+        "file": "blueprint/assets/usdc.ts",
+        "kind": "token",
+        "symbol": "USDC",
+        "decimals": 6
       }
     },
     "things": {
@@ -866,6 +900,11 @@
             "code": "CO-002"
           }
         },
+        "notFound": {
+          "error": "CompanyNotFound",
+          "exit": 4,
+          "code": "CO-901"
+        },
         "roles": [
           "owner"
         ],
@@ -875,7 +914,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "7e7c8934b44c2510"
+        "hash": "bf9b5c8f8591f130"
       },
       "department": {
         "name": "department",
@@ -1282,6 +1321,11 @@
             "code": "EM-005"
           }
         },
+        "notFound": {
+          "error": "EmployeeNotFound",
+          "exit": 4,
+          "code": "EM-901"
+        },
         "roles": [
           "self"
         ],
@@ -1291,7 +1335,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "a8047ea627464d19"
+        "hash": "a123a6ad8b10e9b8"
       },
       "employee-grade": {
         "name": "employee-grade",
@@ -1389,6 +1433,435 @@
           "kind": "app"
         },
         "hash": "a09fa37da72df7db"
+      },
+      "expense": {
+        "name": "expense",
+        "identifier": "Expense",
+        "code": "EX",
+        "description": "One expense in a claim.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "exp"
+            }
+          },
+          "expenseClaim": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense-claim.id"
+          },
+          "expenseDate": {
+            "value": {
+              "type": "day"
+            },
+            "named": "Day"
+          },
+          "expenseType": {
+            "value": {
+              "type": "id",
+              "prefix": "ect"
+            },
+            "ref": "expense-claim-type.id"
+          },
+          "amount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount"
+          },
+          "sanctionedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount"
+          }
+        },
+        "lives": "database",
+        "machine": {
+          "states": [
+            "active"
+          ],
+          "moves": {
+            "add": {
+              "from": [],
+              "to": [
+                "active"
+              ],
+              "emits": "ExpenseAdded"
+            }
+          },
+          "notFrom": {
+            "error": "ExpenseNotActive",
+            "exit": 40,
+            "code": "EX-900"
+          }
+        },
+        "events": {
+          "ExpenseAdded": {
+            "expense": {
+              "value": {
+                "type": "id",
+                "prefix": "exp"
+              },
+              "ref": "expense.id"
+            },
+            "expenseClaim": {
+              "value": {
+                "type": "id",
+                "prefix": "ecl"
+              },
+              "ref": "expense.expenseClaim"
+            },
+            "amount": {
+              "value": {
+                "type": "money",
+                "bits": 128,
+                "signed": false,
+                "asset": {
+                  "token": "usdc"
+                }
+              },
+              "named": "Amount",
+              "ref": "expense.amount"
+            },
+            "totalClaimedAmount": {
+              "value": {
+                "type": "money",
+                "bits": 128,
+                "signed": false,
+                "asset": {
+                  "token": "usdc"
+                }
+              },
+              "named": "Amount",
+              "ref": "expense-claim.totalClaimedAmount"
+            }
+          }
+        },
+        "errors": {
+          "SanctionedOverClaimed": {
+            "fields": {
+              "amount": {
+                "value": {
+                  "type": "money",
+                  "bits": 128,
+                  "signed": false,
+                  "asset": {
+                    "token": "usdc"
+                  }
+                },
+                "named": "Amount"
+              }
+            },
+            "exit": 41,
+            "code": "EX-001"
+          },
+          "ExpenseTypeNotInCompany": {
+            "fields": {},
+            "exit": 42,
+            "code": "EX-002"
+          },
+          "ClaimNotDraft": {
+            "fields": {},
+            "exit": 43,
+            "code": "EX-003"
+          }
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "929e19426275910d"
+      },
+      "expense-claim": {
+        "name": "expense-claim",
+        "identifier": "ExpenseClaim",
+        "code": "EC",
+        "description": "What an employee asks the company to pay back.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            }
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "company.id"
+          },
+          "employee": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            },
+            "ref": "employee.id"
+          },
+          "postingDate": {
+            "value": {
+              "type": "day"
+            },
+            "named": "Day"
+          },
+          "totalClaimedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount"
+          },
+          "totalSanctionedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount"
+          }
+        },
+        "lives": "database",
+        "machine": {
+          "states": [
+            "draft",
+            "approved",
+            "rejected"
+          ],
+          "moves": {
+            "create": {
+              "from": [],
+              "to": [
+                "draft"
+              ],
+              "emits": "ExpenseClaimCreated"
+            },
+            "approve": {
+              "from": [
+                "draft"
+              ],
+              "to": [
+                "approved"
+              ],
+              "emits": "ExpenseClaimApproved"
+            },
+            "reject": {
+              "from": [
+                "draft"
+              ],
+              "to": [
+                "rejected"
+              ],
+              "emits": "ExpenseClaimRejected"
+            }
+          },
+          "notFrom": {
+            "error": "ExpenseClaimNotDraft",
+            "exit": 40,
+            "code": "EC-900"
+          }
+        },
+        "events": {
+          "ExpenseClaimApproved": {
+            "expenseClaim": {
+              "value": {
+                "type": "id",
+                "prefix": "ecl"
+              },
+              "ref": "expense-claim.id"
+            },
+            "totalSanctionedAmount": {
+              "value": {
+                "type": "money",
+                "bits": 128,
+                "signed": false,
+                "asset": {
+                  "token": "usdc"
+                }
+              },
+              "named": "Amount",
+              "ref": "expense-claim.totalSanctionedAmount"
+            }
+          },
+          "ExpenseClaimCreated": {
+            "expenseClaim": {
+              "value": {
+                "type": "id",
+                "prefix": "ecl"
+              },
+              "ref": "expense-claim.id"
+            },
+            "company": {
+              "value": {
+                "type": "id",
+                "prefix": "com"
+              },
+              "ref": "expense-claim.company"
+            },
+            "employee": {
+              "value": {
+                "type": "id",
+                "prefix": "emp"
+              },
+              "ref": "expense-claim.employee"
+            }
+          },
+          "ExpenseClaimRejected": {
+            "expenseClaim": {
+              "value": {
+                "type": "id",
+                "prefix": "ecl"
+              },
+              "ref": "expense-claim.id"
+            }
+          }
+        },
+        "errors": {
+          "ClaimantNotActive": {
+            "fields": {},
+            "exit": 41,
+            "code": "EC-001"
+          },
+          "EmployeeNotInCompany": {
+            "fields": {},
+            "exit": 42,
+            "code": "EC-002"
+          },
+          "ClaimHasNoExpenses": {
+            "fields": {},
+            "exit": 43,
+            "code": "EC-003"
+          }
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "28d13c742bda8bfe"
+      },
+      "expense-claim-type": {
+        "name": "expense-claim-type",
+        "identifier": "ExpenseClaimType",
+        "code": "ET",
+        "description": "A kind of expense a company pays back, such as travel.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "ect"
+            }
+          },
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "company.id"
+          },
+          "expenseType": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "ExpenseTypeName"
+          }
+        },
+        "lives": "database",
+        "invariants": {
+          "oneNamePerCompany": {
+            "kind": "unique",
+            "fields": [
+              "company",
+              "expenseType"
+            ],
+            "refuse": "ExpenseTypeTaken"
+          }
+        },
+        "machine": {
+          "states": [
+            "active"
+          ],
+          "moves": {
+            "create": {
+              "from": [],
+              "to": [
+                "active"
+              ],
+              "emits": "ExpenseClaimTypeCreated"
+            }
+          },
+          "notFrom": {
+            "error": "ExpenseClaimTypeNotActive",
+            "exit": 40,
+            "code": "ET-900"
+          }
+        },
+        "events": {
+          "ExpenseClaimTypeCreated": {
+            "expenseClaimType": {
+              "value": {
+                "type": "id",
+                "prefix": "ect"
+              },
+              "ref": "expense-claim-type.id"
+            },
+            "company": {
+              "value": {
+                "type": "id",
+                "prefix": "com"
+              },
+              "ref": "expense-claim-type.company"
+            }
+          }
+        },
+        "errors": {
+          "ExpenseTypeTaken": {
+            "fields": {
+              "expenseType": {
+                "value": {
+                  "type": "text",
+                  "max": 140
+                },
+                "named": "ExpenseTypeName"
+              }
+            },
+            "exit": 41,
+            "code": "ET-001"
+          }
+        },
+        "notFound": {
+          "error": "ExpenseClaimTypeNotFound",
+          "exit": 4,
+          "code": "ET-901"
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "app"
+        },
+        "hash": "616b010967dc334d"
       },
       "holiday": {
         "name": "holiday",
@@ -3849,6 +4322,771 @@
           "p95Ms": 50
         },
         "hash": "c8d9aa1745af26ee"
+      },
+      "expense.add": {
+        "kind": "operation",
+        "name": "expense.add",
+        "thing": "expense",
+        "verb": "add",
+        "identifier": "add",
+        "file": "blueprint/things/expense/verbs/add.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Add one expense to a claim still in draft.",
+        "payload": {
+          "expenseClaim": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense.expenseClaim"
+          },
+          "expenseDate": {
+            "value": {
+              "type": "day"
+            },
+            "named": "Day",
+            "ref": "expense.expenseDate"
+          },
+          "expenseType": {
+            "value": {
+              "type": "id",
+              "prefix": "ect"
+            },
+            "ref": "expense.expenseType"
+          },
+          "amount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense.amount"
+          },
+          "sanctionedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense.sanctionedAmount"
+          }
+        },
+        "answer": {
+          "expense": {
+            "value": {
+              "type": "id",
+              "prefix": "exp"
+            },
+            "ref": "expense.id"
+          },
+          "totalClaimedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense-claim.totalClaimedAmount"
+          },
+          "totalSanctionedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense-claim.totalSanctionedAmount"
+          }
+        },
+        "move": {
+          "key": "add",
+          "from": [],
+          "to": [
+            "active"
+          ],
+          "emits": "ExpenseAdded"
+        },
+        "errors": [
+          "SanctionedOverClaimed",
+          "ExpenseTypeNotInCompany",
+          "ClaimNotDraft"
+        ],
+        "breaks": [],
+        "refusals": [
+          "SanctionedOverClaimed",
+          "ExpenseTypeNotInCompany",
+          "ClaimNotDraft",
+          "ExpenseClaimTypeNotFound",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "expenseClaim.company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "expenseClaim": "expense-claim",
+          "expenseType": "expense-claim-type"
+        },
+        "notFound": {
+          "expenseType": "ExpenseClaimTypeNotFound"
+        },
+        "mints": "expense",
+        "steps": {
+          "load": {
+            "name": "expense.add.load",
+            "type": "database",
+            "writes": []
+          },
+          "insert": {
+            "name": "expense.add.insert",
+            "type": "database",
+            "writes": [
+              "expense",
+              "expense-claim"
+            ]
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 200
+        },
+        "hash": "1aa3ae7627ca5a4a"
+      },
+      "expense.get": {
+        "kind": "read",
+        "name": "expense.get",
+        "thing": "expense",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/expense/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.",
+        "payload": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "exp"
+            },
+            "ref": "expense.id"
+          }
+        },
+        "answer": {
+          "expenseClaim": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense.expenseClaim"
+          },
+          "expenseDate": {
+            "value": {
+              "type": "day"
+            },
+            "named": "Day",
+            "ref": "expense.expenseDate"
+          },
+          "expenseType": {
+            "value": {
+              "type": "id",
+              "prefix": "ect"
+            },
+            "ref": "expense.expenseType"
+          },
+          "amount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense.amount"
+          },
+          "sanctionedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense.sanctionedAmount"
+          },
+          "state": {
+            "value": {
+              "type": "text",
+              "max": 64
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "expenseClaim.company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 50
+        },
+        "hash": "ce114bac4e945401"
+      },
+      "expense-claim.approve": {
+        "kind": "operation",
+        "name": "expense-claim.approve",
+        "thing": "expense-claim",
+        "verb": "approve",
+        "identifier": "approve",
+        "file": "blueprint/things/expense-claim/verbs/approve.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Approve a claim, owing the employee what was sanctioned.",
+        "payload": {
+          "expenseClaim": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense-claim.id"
+          }
+        },
+        "answer": {
+          "expenseClaim": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense-claim.id"
+          },
+          "totalSanctionedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense-claim.totalSanctionedAmount"
+          }
+        },
+        "move": {
+          "key": "approve",
+          "from": [
+            "draft"
+          ],
+          "to": [
+            "approved"
+          ],
+          "emits": "ExpenseClaimApproved"
+        },
+        "errors": [
+          "ClaimHasNoExpenses"
+        ],
+        "breaks": [],
+        "refusals": [
+          "ClaimHasNoExpenses",
+          "ExpenseClaimNotDraft",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "expenseClaim.company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "expenseClaim": "expense-claim"
+        },
+        "steps": {
+          "load": {
+            "name": "expense-claim.approve.load",
+            "type": "database",
+            "writes": []
+          },
+          "update": {
+            "name": "expense-claim.approve.update",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "e4339381355d467a"
+      },
+      "expense-claim.create": {
+        "kind": "operation",
+        "name": "expense-claim.create",
+        "thing": "expense-claim",
+        "verb": "create",
+        "identifier": "create",
+        "file": "blueprint/things/expense-claim/verbs/create.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Start an employee's claim for expenses the company pays back.",
+        "payload": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "expense-claim.company"
+          },
+          "employee": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            },
+            "ref": "expense-claim.employee"
+          },
+          "postingDate": {
+            "value": {
+              "type": "day"
+            },
+            "named": "Day",
+            "ref": "expense-claim.postingDate"
+          }
+        },
+        "answer": {
+          "expenseClaim": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense-claim.id"
+          }
+        },
+        "move": {
+          "key": "create",
+          "from": [],
+          "to": [
+            "draft"
+          ],
+          "emits": "ExpenseClaimCreated"
+        },
+        "errors": [
+          "ClaimantNotActive",
+          "EmployeeNotInCompany"
+        ],
+        "breaks": [],
+        "refusals": [
+          "ClaimantNotActive",
+          "EmployeeNotInCompany",
+          "CompanyNotFound",
+          "EmployeeNotFound",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "employee.self",
+            "path": "employee"
+          },
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "company": "company",
+          "employee": "employee"
+        },
+        "notFound": {
+          "company": "CompanyNotFound",
+          "employee": "EmployeeNotFound"
+        },
+        "mints": "expenseClaim",
+        "steps": {
+          "load": {
+            "name": "expense-claim.create.load",
+            "type": "database",
+            "writes": []
+          },
+          "insert": {
+            "name": "expense-claim.create.insert",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "9ab66b749f996268"
+      },
+      "expense-claim.get": {
+        "kind": "read",
+        "name": "expense-claim.get",
+        "thing": "expense-claim",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/expense-claim/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one expense-claim by its id: company, employee, postingDate, totalClaimedAmount, totalSanctionedAmount, state.",
+        "payload": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense-claim.id"
+          }
+        },
+        "answer": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "expense-claim.company"
+          },
+          "employee": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            },
+            "ref": "expense-claim.employee"
+          },
+          "postingDate": {
+            "value": {
+              "type": "day"
+            },
+            "named": "Day",
+            "ref": "expense-claim.postingDate"
+          },
+          "totalClaimedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense-claim.totalClaimedAmount"
+          },
+          "totalSanctionedAmount": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "expense-claim.totalSanctionedAmount"
+          },
+          "state": {
+            "value": {
+              "type": "text",
+              "max": 64
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "employee.self",
+            "path": "employee"
+          },
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 50
+        },
+        "hash": "bbf845f3e79125e2"
+      },
+      "expense-claim.reject": {
+        "kind": "operation",
+        "name": "expense-claim.reject",
+        "thing": "expense-claim",
+        "verb": "reject",
+        "identifier": "reject",
+        "file": "blueprint/things/expense-claim/verbs/reject.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Reject a claim, so nothing of it is paid back.",
+        "payload": {
+          "expenseClaim": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense-claim.id"
+          }
+        },
+        "answer": {
+          "expenseClaim": {
+            "value": {
+              "type": "id",
+              "prefix": "ecl"
+            },
+            "ref": "expense-claim.id"
+          }
+        },
+        "move": {
+          "key": "reject",
+          "from": [
+            "draft"
+          ],
+          "to": [
+            "rejected"
+          ],
+          "emits": "ExpenseClaimRejected"
+        },
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "ExpenseClaimNotDraft",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "expenseClaim.company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "expenseClaim": "expense-claim"
+        },
+        "steps": {
+          "update": {
+            "name": "expense-claim.reject.update",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "d3cc8533aecef6cd"
+      },
+      "expense-claim-type.create": {
+        "kind": "operation",
+        "name": "expense-claim-type.create",
+        "thing": "expense-claim-type",
+        "verb": "create",
+        "identifier": "create",
+        "file": "blueprint/things/expense-claim-type/verbs/create.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Add a kind of expense a company pays back.",
+        "payload": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "expense-claim-type.company"
+          },
+          "expenseType": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "ExpenseTypeName",
+            "ref": "expense-claim-type.expenseType"
+          }
+        },
+        "answer": {
+          "expenseClaimType": {
+            "value": {
+              "type": "id",
+              "prefix": "ect"
+            },
+            "ref": "expense-claim-type.id"
+          }
+        },
+        "move": {
+          "key": "create",
+          "from": [],
+          "to": [
+            "active"
+          ],
+          "emits": "ExpenseClaimTypeCreated"
+        },
+        "errors": [],
+        "invariants": {
+          "ExpenseTypeTaken": "expense-claim-type.oneNamePerCompany"
+        },
+        "breaks": [
+          "expense-claim-type.oneNamePerCompany"
+        ],
+        "refusals": [
+          "ExpenseTypeTaken",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "company": "company"
+        },
+        "mints": "expenseClaimType",
+        "steps": {
+          "insert": {
+            "name": "expense-claim-type.create.insert",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "7ca89ff98cf63024"
+      },
+      "expense-claim-type.get": {
+        "kind": "read",
+        "name": "expense-claim-type.get",
+        "thing": "expense-claim-type",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/expense-claim-type/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one expense-claim-type by its id: company, expenseType, state.",
+        "payload": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "ect"
+            },
+            "ref": "expense-claim-type.id"
+          }
+        },
+        "answer": {
+          "company": {
+            "value": {
+              "type": "id",
+              "prefix": "com"
+            },
+            "ref": "expense-claim-type.company"
+          },
+          "expenseType": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "ExpenseTypeName",
+            "ref": "expense-claim-type.expenseType"
+          },
+          "state": {
+            "value": {
+              "type": "text",
+              "max": 64
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 50
+        },
+        "hash": "7b57450ddffe5c45"
       },
       "holiday.add": {
         "kind": "operation",
@@ -8602,6 +9840,596 @@
         ],
         "sourceHash": "be670c1fc7e4aa9c9a24c9df510c487a953051efe7c8f9264dcb99bd067c8dfe"
       },
+      "journeys/claim-expenses.ts": {
+        "name": "claim expenses",
+        "file": "journeys/claim-expenses.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "an expense type",
+        "steps": [
+          {
+            "title": "Olga starts a claim of her own",
+            "call": {
+              "actor": "olga",
+              "operation": "expense-claim.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "postingDate": "2026-11-20"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^ecl_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "ExpenseClaimCreated",
+                "fields": {
+                  "expenseClaim": {
+                    "ref": [
+                      "last",
+                      "expenseClaim"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "expense-claim",
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                },
+                "state": "draft"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "expense-claim.create",
+                  "expense-claim.create.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "it reads back with nothing claimed yet",
+            "call": {
+              "actor": "olga",
+              "operation": "expense-claim.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "2026-11-20",
+                  "0",
+                  "0",
+                  "draft"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't start a claim for Olga",
+            "call": {
+              "actor": "bo",
+              "operation": "expense-claim.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "postingDate": "2026-11-20"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "expense-claim.create",
+                  "expense-claim.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Olga's claim",
+            "call": {
+              "actor": "bo",
+              "operation": "expense-claim.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada can't sanction more than was spent",
+            "call": {
+              "actor": "ada",
+              "operation": "expense.add",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                },
+                "expenseDate": "2026-11-18",
+                "expenseType": {
+                  "ref": [
+                    "world",
+                    "expenseClaimType"
+                  ]
+                },
+                "amount": "45000000",
+                "sanctionedAmount": "45000001"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "SanctionedOverClaimed",
+                "fields": {
+                  "amount": "45000000"
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "expense-claim.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Ada adds a 45 USDC taxi, sanctioned in full",
+            "call": {
+              "actor": "ada",
+              "operation": "expense.add",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                },
+                "expenseDate": "2026-11-18",
+                "expenseType": {
+                  "ref": [
+                    "world",
+                    "expenseClaimType"
+                  ]
+                },
+                "amount": "45000000",
+                "sanctionedAmount": "45000000"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "45000000",
+                  "45000000"
+                ]
+              },
+              {
+                "kind": "expect",
+                "match": "^exp_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "ExpenseAdded",
+                "fields": {
+                  "expense": {
+                    "ref": [
+                      "last",
+                      "expense"
+                    ]
+                  },
+                  "expenseClaim": {
+                    "ref": [
+                      "last",
+                      "expenseClaim"
+                    ]
+                  },
+                  "amount": "45000000",
+                  "totalClaimedAmount": "45000000"
+                }
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "expense.add",
+                  "expense.add.load",
+                  "expense.add.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "the taxi reads back as Ada typed it",
+            "call": {
+              "actor": "ada",
+              "operation": "expense.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expense"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "2026-11-18",
+                  {
+                    "ref": [
+                      "world",
+                      "expenseClaimType"
+                    ]
+                  },
+                  "45000000",
+                  "45000000",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it",
+            "call": {
+              "actor": "ada",
+              "operation": "expense.add",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                },
+                "expenseDate": "2026-11-19",
+                "expenseType": {
+                  "ref": [
+                    "world",
+                    "expenseClaimType"
+                  ]
+                },
+                "amount": "120500000",
+                "sanctionedAmount": "100000000"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "165500000",
+                  "145000000"
+                ]
+              },
+              {
+                "kind": "emits",
+                "event": "ExpenseAdded",
+                "fields": {
+                  "amount": "120500000",
+                  "totalClaimedAmount": "165500000"
+                }
+              }
+            ]
+          },
+          {
+            "title": "the claim reads back with both totals",
+            "call": {
+              "actor": "olga",
+              "operation": "expense-claim.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "165500000",
+                  "145000000",
+                  "draft"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Olga can't approve her own claim",
+            "call": {
+              "actor": "olga",
+              "operation": "expense-claim.approve",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "is-in",
+                "thing": "expense-claim",
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                },
+                "state": "draft"
+              }
+            ]
+          },
+          {
+            "title": "Ada approves it, owing Olga 145 USDC",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim.approve",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "last",
+                      "expenseClaim"
+                    ]
+                  },
+                  "145000000"
+                ]
+              },
+              {
+                "kind": "emits",
+                "event": "ExpenseClaimApproved",
+                "fields": {
+                  "expenseClaim": {
+                    "ref": [
+                      "last",
+                      "expenseClaim"
+                    ]
+                  },
+                  "totalSanctionedAmount": "145000000"
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "expense-claim",
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                },
+                "state": "approved"
+              }
+            ]
+          },
+          {
+            "title": "an approved claim takes no more expenses",
+            "call": {
+              "actor": "ada",
+              "operation": "expense.add",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                },
+                "expenseDate": "2026-11-19",
+                "expenseType": {
+                  "ref": [
+                    "world",
+                    "expenseClaimType"
+                  ]
+                },
+                "amount": "1000000",
+                "sanctionedAmount": "1000000"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "ClaimNotDraft",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor is it approved twice",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim.approve",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "expense-claim.notFrom",
+                "fields": {
+                  "state": "approved"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "it still reads back with what was approved",
+            "call": {
+              "actor": "olga",
+              "operation": "expense-claim.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "165500000",
+                  "145000000",
+                  "approved"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "4767857e316eba6707e5c0bdf1177306404e326f87dde3e01ece1f4f98d61b3a"
+      },
       "journeys/companies-are-kept-apart.ts": {
         "name": "companies are kept apart",
         "file": "journeys/companies-are-kept-apart.ts",
@@ -9215,6 +11043,210 @@
           }
         ],
         "sourceHash": "b8bffdc92e15a47d8b12ce62de6298b41957fd323af6b5aea0bc19f07fe494a1"
+      },
+      "journeys/expense-claims-stay-in-their-company.ts": {
+        "name": "expense claims stay in their company",
+        "file": "journeys/expense-claims-stay-in-their-company.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "an expense claim",
+        "steps": [
+          {
+            "title": "Bo sets up a company of his own",
+            "call": {
+              "actor": "bo",
+              "operation": "company.create",
+              "payload": {
+                "companyName": "Bo Ltd",
+                "abbr": "BL",
+                "country": "Kenya",
+                "defaultCurrency": "KES"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^com_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Bo adds an expense type to it",
+            "call": {
+              "actor": "bo",
+              "operation": "expense-claim-type.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "expenseType": "Travel"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^ect_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "Ada can't put Bo's expense type on Olga's claim",
+            "call": {
+              "actor": "ada",
+              "operation": "expense.add",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "expenseDate": "2026-11-19",
+                "expenseType": {
+                  "ref": [
+                    "last",
+                    "expenseClaimType"
+                  ]
+                },
+                "amount": "5000000",
+                "sanctionedAmount": "5000000"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "ExpenseTypeNotInCompany",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "expense.add.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Bo can't file a claim in his company for Olga, who works for Ada",
+            "call": {
+              "actor": "bo",
+              "operation": "expense-claim.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "postingDate": "2026-11-20"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "EmployeeNotInCompany",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "expense-claim.create.insert"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Ada relieves Olga on 30 November",
+            "call": {
+              "actor": "ada",
+              "operation": "employee.relieve",
+              "payload": {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "relievingDate": "2026-11-30"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "2026-11-30"
+              }
+            ]
+          },
+          {
+            "title": "a claim can't be started for an employee who has left",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "postingDate": "2026-12-01"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "ClaimantNotActive",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "expense-claim.create.insert"
+                ]
+              }
+            ]
+          }
+        ],
+        "sourceHash": "691ebc1fc1b5569d9edc9e77da7cebe85999fc355c83613d7cedb909c89d3cb4"
       },
       "journeys/grade-names-are-the-companys.ts": {
         "name": "grade names are the company's",
@@ -10183,6 +12215,221 @@
           }
         ],
         "sourceHash": "6e2023de8208f08c539a7456df6f07aa29b34d6aaa29b8face5841376fb4b3ba"
+      },
+      "journeys/reject-an-expense-claim.ts": {
+        "name": "reject an expense claim",
+        "file": "journeys/reject-an-expense-claim.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "olga": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "an expense claim",
+        "steps": [
+          {
+            "title": "a claim with no expenses can't be approved",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim.approve",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "ClaimHasNoExpenses",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "is-in",
+                "thing": "expense-claim",
+                "id": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "state": "draft"
+              }
+            ]
+          },
+          {
+            "title": "Ada adds 30 USDC of lunches",
+            "call": {
+              "actor": "ada",
+              "operation": "expense.add",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "expenseDate": "2026-11-19",
+                "expenseType": {
+                  "ref": [
+                    "world",
+                    "expenseClaimType"
+                  ]
+                },
+                "amount": "30000000",
+                "sanctionedAmount": "30000000"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "30000000",
+                  "30000000"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Olga can't reject her own claim",
+            "call": {
+              "actor": "olga",
+              "operation": "expense-claim.reject",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada rejects it",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim.reject",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                }
+              },
+              {
+                "kind": "emits",
+                "event": "ExpenseClaimRejected",
+                "fields": {
+                  "expenseClaim": {
+                    "ref": [
+                      "world",
+                      "expenseClaim"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "expense-claim",
+                "id": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "state": "rejected"
+              }
+            ]
+          },
+          {
+            "title": "a rejected claim sanctions nothing, and keeps what was claimed",
+            "call": {
+              "actor": "olga",
+              "operation": "expense-claim.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "30000000",
+                  "0",
+                  "rejected"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor can it then be approved",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim.approve",
+              "payload": {
+                "expenseClaim": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "expense-claim.notFrom",
+                "fields": {
+                  "state": "rejected"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "4d974823348baecd22cd3323919659b44a6048e079b06a9d04ad5dfe675609b9"
       },
       "journeys/set-up-a-company.ts": {
         "name": "set up a company",
@@ -11495,6 +13742,277 @@
         ],
         "sourceHash": "a51f1bf2e205b3a6bccd4100b01da942e61197a6b9c453c024d5e2ad836dd6ee"
       },
+      "journeys/set-up-expense-types.ts": {
+        "name": "set up expense types",
+        "file": "journeys/set-up-expense-types.ts",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          },
+          "bo": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "a company",
+        "steps": [
+          {
+            "title": "Ada adds Travel",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim-type.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "expenseType": "Travel"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^ect_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "ExpenseClaimTypeCreated",
+                "fields": {
+                  "expenseClaimType": {
+                    "ref": [
+                      "last",
+                      "expenseClaimType"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "expense-claim-type",
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaimType"
+                  ]
+                },
+                "state": "active"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "expense-claim-type.create",
+                  "expense-claim-type.create.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "it reads back as she typed it",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim-type.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaimType"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Travel",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a second type can't take its name",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim-type.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "expenseType": "Travel"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "ExpenseTypeTaken",
+                "fields": {
+                  "expenseType": "Travel"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada adds Calls, which is its own type",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim-type.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "expenseType": "Calls"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^ect_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "ExpenseClaimTypeCreated",
+                "fields": {
+                  "expenseClaimType": {
+                    "ref": [
+                      "last",
+                      "expenseClaimType"
+                    ]
+                  },
+                  "company": {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "title": "Calls reads back as Calls",
+            "call": {
+              "actor": "ada",
+              "operation": "expense-claim-type.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaimType"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  "Calls",
+                  "active"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't read Ada's type",
+            "call": {
+              "actor": "bo",
+              "operation": "expense-claim-type.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaimType"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo can't add a type to Ada's company",
+            "call": {
+              "actor": "bo",
+              "operation": "expense-claim-type.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "expenseType": "Bo's lunches"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "expense-claim-type.create",
+                  "expense-claim-type.create.insert"
+                ]
+              }
+            ]
+          }
+        ],
+        "sourceHash": "52858d87f729e6af18ad8d9c6aef1c1e24c5456a62148d8e410637506299c8ff"
+      },
       "journeys/set-up-grades.ts": {
         "name": "set up grades",
         "file": "journeys/set-up-grades.ts",
@@ -12699,6 +15217,111 @@
           }
         }
       },
+      "an expense claim": {
+        "name": "an expense claim",
+        "file": "blueprint/starting-worlds/an-expense-claim.ts",
+        "from": "an expense type",
+        "cast": {
+          "olga": {
+            "kind": "signed-in"
+          }
+        },
+        "sourceHash": "4c797636c402b0b36b6e9d023e491a0d592e808bf19ed7ffc83b93870c71616e",
+        "makes": [
+          {
+            "actor": "olga",
+            "operation": "expense-claim.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "postingDate": "2026-11-20"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "employee": {
+            "ref": [
+              "world",
+              "employee"
+            ]
+          },
+          "expenseClaimType": {
+            "ref": [
+              "world",
+              "expenseClaimType"
+            ]
+          },
+          "expenseClaim": {
+            "ref": [
+              "last",
+              "expenseClaim"
+            ]
+          }
+        }
+      },
+      "an expense type": {
+        "name": "an expense type",
+        "file": "blueprint/starting-worlds/an-expense-type.ts",
+        "from": "an employee",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "66b62ed6df4deb90400778add5d9721bcb5cd5598ab7bd82dbb4e75d07ff352b",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "expense-claim-type.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "expenseType": "Travel"
+            }
+          }
+        ],
+        "gives": {
+          "company": {
+            "ref": [
+              "world",
+              "company"
+            ]
+          },
+          "employee": {
+            "ref": [
+              "world",
+              "employee"
+            ]
+          },
+          "expenseClaimType": {
+            "ref": [
+              "last",
+              "expenseClaimType"
+            ]
+          }
+        }
+      },
       "four branches": {
         "name": "four branches",
         "file": "blueprint/starting-worlds/four-branches.ts",
@@ -13663,6 +16286,16 @@
         }
       },
       {
+        "id": "anomaly:CO-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "CO-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
         "id": "anomaly:DE-001",
         "kind": "anomaly",
         "labels": {
@@ -13718,6 +16351,46 @@
         "labels": {
           "environment": "*",
           "code": "DS-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:EC-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EC-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/expense-claim/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EC-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EC-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/expense-claim/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EC-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EC-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/expense-claim/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EC-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EC-900",
           "severity": "ticket",
           "owner": "orthograph"
         }
@@ -13798,6 +16471,86 @@
         "labels": {
           "environment": "*",
           "code": "EM-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:EM-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EM-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:ET-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "ET-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/expense-claim-type/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:ET-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "ET-900",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:ET-901",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "ET-901",
+          "severity": "ticket",
+          "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:EX-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EX-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/expense/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EX-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EX-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/expense/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EX-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EX-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/expense/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:EX-900",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "EX-900",
           "severity": "ticket",
           "owner": "orthograph"
         }
@@ -14896,6 +17649,342 @@
           "operation": "employee.relieve",
           "severity": "page",
           "owner": "blueprint/things/employee/verbs/relieve.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:expense-claim-type.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim-type.create",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim-type/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:expense-claim-type.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim-type.get",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim-type/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:expense-claim.approve",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim.approve",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim/verbs/approve.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:expense-claim.create",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim.create",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim/verbs/create.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:expense-claim.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim.get",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:expense-claim.reject",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim.reject",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim/verbs/reject.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:expense.add",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "expense.add",
+          "severity": "page",
+          "owner": "blueprint/things/expense/verbs/add.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:expense.get",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "expense.get",
+          "severity": "page",
+          "owner": "blueprint/things/expense/verbs/get.ts"
         },
         "target": 0.999,
         "windowDays": 28,
@@ -16173,6 +19262,350 @@
         ]
       },
       {
+        "id": "latency:expense-claim-type.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim-type.create",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim-type/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:expense-claim-type.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim-type.get",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim-type/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:expense-claim.approve",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim.approve",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim/verbs/approve.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:expense-claim.create",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim.create",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim/verbs/create.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:expense-claim.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim.get",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:expense-claim.reject",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "expense-claim.reject",
+          "severity": "page",
+          "owner": "blueprint/things/expense-claim/verbs/reject.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 150,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:expense.add",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "expense.add",
+          "severity": "page",
+          "owner": "blueprint/things/expense/verbs/add.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:expense.get",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "expense.get",
+          "severity": "page",
+          "owner": "blueprint/things/expense/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
         "id": "latency:holiday-list.add-weekly-off",
         "kind": "latency",
         "labels": {
@@ -16548,6 +19981,16 @@
         }
       },
       {
+        "id": "verdict:claim expenses:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "claim expenses",
+          "severity": "page",
+          "owner": "journeys/claim-expenses.ts"
+        }
+      },
+      {
         "id": "verdict:companies are kept apart:local",
         "kind": "verdict",
         "labels": {
@@ -16568,6 +20011,16 @@
         }
       },
       {
+        "id": "verdict:expense claims stay in their company:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "expense claims stay in their company",
+          "severity": "page",
+          "owner": "journeys/expense-claims-stay-in-their-company.ts"
+        }
+      },
+      {
         "id": "verdict:grade names are the company's:local",
         "kind": "verdict",
         "labels": {
@@ -16585,6 +20038,16 @@
           "journey": "hire an employee",
           "severity": "page",
           "owner": "journeys/hire-an-employee.ts"
+        }
+      },
+      {
+        "id": "verdict:reject an expense claim:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "reject an expense claim",
+          "severity": "page",
+          "owner": "journeys/reject-an-expense-claim.ts"
         }
       },
       {
@@ -16628,6 +20091,16 @@
         }
       },
       {
+        "id": "verdict:set up expense types:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "set up expense types",
+          "severity": "page",
+          "owner": "journeys/set-up-expense-types.ts"
+        }
+      },
+      {
         "id": "verdict:set up grades:local",
         "kind": "verdict",
         "labels": {
@@ -16654,49 +20127,49 @@
       "operation:bank-account.close": "22fa1486e5caa162",
       "thing:bank-account": "25003fc246749f17",
       "thing:bridge-business": "246b83887f7efa44",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "bank-account.get": {
       "operation:bank-account.get": "eccdba12eb056468",
       "thing:bank-account": "25003fc246749f17",
       "thing:bridge-business": "246b83887f7efa44",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "bank-account.open": {
       "operation:bank-account.open": "010a747b50ed2cac",
       "thing:bank-account": "25003fc246749f17",
       "thing:bridge-business": "246b83887f7efa44",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "branch.create": {
       "operation:branch.create": "6025f829ff1158b1",
       "thing:branch": "b95916d437b0e7fc",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "branch.get": {
       "operation:branch.get": "61a4bd948bfd4067",
       "thing:branch": "b95916d437b0e7fc",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "bridge-business.approve": {
       "operation:bridge-business.approve": "e199be25f6d7e84f",
       "thing:bridge-business": "246b83887f7efa44",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "bridge-business.get": {
       "operation:bridge-business.get": "17b8ddc451dc491f",
       "thing:bridge-business": "246b83887f7efa44",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "bridge-business.reject": {
       "operation:bridge-business.reject": "19c775ffd22d2f71",
       "thing:bridge-business": "246b83887f7efa44",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "bridge-business.start": {
       "operation:bridge-business.start": "4c14c19740d29697",
       "thing:bridge-business": "246b83887f7efa44",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "bridge-individual.approve": {
       "operation:bridge-individual.approve": "39e48d0fcdbc0e3d",
@@ -16716,87 +20189,135 @@
     },
     "company.create": {
       "operation:company.create": "9c2724f9ccd72ac5",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "company.get": {
       "operation:company.get": "b640ec48ed59bbd8",
-      "thing:company": "7e7c8934b44c2510"
+      "thing:company": "bf9b5c8f8591f130"
     },
     "department.create": {
       "operation:department.create": "2ab7b702f6cd5ae7",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:department": "70a62d157ea92c81"
     },
     "department.get": {
       "operation:department.get": "49a7441f7c20907a",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:department": "70a62d157ea92c81"
     },
     "designation.create": {
       "operation:designation.create": "19ee2766a84f1c65",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:designation": "e8e38d92bb6471e1"
     },
     "designation.get": {
       "operation:designation.get": "93934f240bcf1da3",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:designation": "e8e38d92bb6471e1"
     },
     "employee-grade.create": {
       "operation:employee-grade.create": "c3bfdfa5f0f7387f",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:employee-grade": "a09fa37da72df7db"
     },
     "employee-grade.get": {
       "operation:employee-grade.get": "c8d9aa1745af26ee",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:employee-grade": "a09fa37da72df7db"
     },
     "employee.get": {
       "operation:employee.get": "a8d9cd6cacdea98f",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
-      "thing:employee": "a8047ea627464d19"
+      "thing:employee": "a123a6ad8b10e9b8"
     },
     "employee.hire": {
       "operation:employee.hire": "8aec44f4e7f54d34",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
-      "thing:employee": "a8047ea627464d19"
+      "thing:employee": "a123a6ad8b10e9b8"
     },
     "employee.relieve": {
       "operation:employee.relieve": "7bf2f33973faef34",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:department": "70a62d157ea92c81",
       "thing:designation": "e8e38d92bb6471e1",
-      "thing:employee": "a8047ea627464d19"
+      "thing:employee": "a123a6ad8b10e9b8"
+    },
+    "expense-claim-type.create": {
+      "operation:expense-claim-type.create": "7ca89ff98cf63024",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:expense-claim-type": "616b010967dc334d"
+    },
+    "expense-claim-type.get": {
+      "operation:expense-claim-type.get": "7b57450ddffe5c45",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:expense-claim-type": "616b010967dc334d"
+    },
+    "expense-claim.approve": {
+      "operation:expense-claim.approve": "e4339381355d467a",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:employee": "a123a6ad8b10e9b8",
+      "thing:expense-claim": "28d13c742bda8bfe"
+    },
+    "expense-claim.create": {
+      "operation:expense-claim.create": "9ab66b749f996268",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:employee": "a123a6ad8b10e9b8",
+      "thing:expense-claim": "28d13c742bda8bfe"
+    },
+    "expense-claim.get": {
+      "operation:expense-claim.get": "bbf845f3e79125e2",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:employee": "a123a6ad8b10e9b8",
+      "thing:expense-claim": "28d13c742bda8bfe"
+    },
+    "expense-claim.reject": {
+      "operation:expense-claim.reject": "d3cc8533aecef6cd",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:employee": "a123a6ad8b10e9b8",
+      "thing:expense-claim": "28d13c742bda8bfe"
+    },
+    "expense.add": {
+      "operation:expense.add": "1aa3ae7627ca5a4a",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:expense": "929e19426275910d",
+      "thing:expense-claim": "28d13c742bda8bfe",
+      "thing:expense-claim-type": "616b010967dc334d"
+    },
+    "expense.get": {
+      "operation:expense.get": "ce114bac4e945401",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:expense": "929e19426275910d",
+      "thing:expense-claim": "28d13c742bda8bfe",
+      "thing:expense-claim-type": "616b010967dc334d"
     },
     "holiday-list.add-weekly-off": {
       "operation:holiday-list.add-weekly-off": "d3da45d5dc3ea553",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:holiday-list": "16818aa2c445bbee"
     },
     "holiday-list.create": {
       "operation:holiday-list.create": "f76dce33cb0c7786",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:holiday-list": "16818aa2c445bbee"
     },
     "holiday-list.get": {
       "operation:holiday-list.get": "3d273c4ff0dd5602",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:holiday-list": "16818aa2c445bbee"
     },
     "holiday.add": {
       "operation:holiday.add": "7ed5e2d0c6b320b8",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:holiday": "01b09fff6edfbe67",
       "thing:holiday-list": "16818aa2c445bbee"
     },
     "holiday.get": {
       "operation:holiday.get": "c2b4433e9fe1c3e3",
-      "thing:company": "7e7c8934b44c2510",
+      "thing:company": "bf9b5c8f8591f130",
       "thing:holiday": "01b09fff6edfbe67",
       "thing:holiday-list": "16818aa2c445bbee"
     }
@@ -16819,7 +20340,7 @@
     "bridge-individual/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual\n\nA person's KYC with Bridge: the check of who they are.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| person | id | The person checked, who started it. |\n| fullName | LegalName | The person's name as their documents give it, which Bridge checks. |\n| email | text | Where Bridge writes to the person about their KYC. |\n| kycLink | BridgeLink | Bridge's hosted KYC form for this person. |\n| tosLink | BridgeLink | Bridge's terms of service, which the person accepts before they are approved. |\n\n## Machine\n\nStates: started, approved, rejected. A move from the wrong state is refused BridgeIndividualNotStarted (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| start | (creates) | started | KycStarted |\n| approve | started | approved | KycApproved |\n| reject | started | rejected | KycRejected |\n\n## Invariants\n\n- `bridge-individual.oneKycPerForm`: another bridge individual holds this kyc link. Unique on kycLink, in every state; refuses nothing, a break is a defect.\n- `bridge-individual.oneKycPerPerson`: another bridge individual holds this person. Unique on person, in every state; refused KycAlreadyStarted.\n\n## Events\n\n- `KycApproved`: carries individual (bridge-individual.id); emitted by the move approve\n- `KycRejected`: carries individual (bridge-individual.id), reason (RejectionReason); emitted by the move reject\n- `KycStarted`: carries individual (bridge-individual.id), person (bridge-individual.person: The person checked, who started it.); emitted by the move start\n\n## Roles\n\n- self\n\n## Operations\n\n- [bridge-individual.approve](approve.md): Record that Bridge approved a person's KYC.\n- [bridge-individual.get](get.md): Read one bridge-individual by its id: person, fullName, email, kycLink, tosLink, state.\n- [bridge-individual.reject](reject.md): Record that Bridge turned down a person's KYC, and why.\n- [bridge-individual.start](start.md): Start your own KYC with Bridge: answers the form you fill in, and Bridge's terms.\n",
     "bridge-individual/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.reject\n\nRecord that Bridge turned down a person's KYC, and why.\n\n**Who may call:** the system.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n| reason | RejectionReason |\n\n## Answer\n\n| field | value |\n|---|---|\n| individual | bridge-individual.id |\n\n## Move\n\n`reject`: from started to rejected, emitting KycRejected.\n\n## Steps\n\n- `bridge-individual.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KycAlreadyStarted | 41 | KC-001 | another bridge individual holds this person; by the rule bridge-individual.oneKycPerPerson, carrying person |\n| BridgeIndividualNotStarted | 40 | KC-900 | the bridge-individual is in a state reject can't start from; carries `state` |\n| BridgeIndividualNotFound | 4 | KC-901 | nothing has the id in individual; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a kyc keeps what bridge gave\n\nStarts from the world `kyc started`.\n\n- **Bridge turns her down.** `bridge` (system) calls and sends individual the world's individual, reason `document photo too dark`, and is answered.\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **Bridge turns Bo down, with its reason.** `bridge` (system) calls and sends individual the last call's individual, reason `selfie does not match the passport`, and gets back an answer matching `^kyc_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul bridge-individual reject --individual <individual> --reason <reason>\n```\n\nHTTP: `POST /bridge-individual/reject` with the payload as JSON. SDK: `Sdk.bridge-individual.reject(payload)`.\n",
     "bridge-individual/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bridge-individual.start\n\nStart your own KYC with Bridge: answers the form you fill in, and Bridge's terms.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 800ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| fullName | bridge-individual.fullName | The person's name as their documents give it, which Bridge checks. |\n| email | bridge-individual.email | Where Bridge writes to the person about their KYC. |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| individual | bridge-individual.id |  |\n| kycLink | bridge-individual.kycLink | Bridge's hosted KYC form for this person. |\n| tosLink | bridge-individual.tosLink | Bridge's terms of service, which the person accepts before they are approved. |\n\n## Move\n\n`start`: from nothing (it creates) to started, emitting KycStarted.\n\n## Steps\n\n- `bridge-individual.start.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| KycAlreadyStarted | 41 | KC-001 | another bridge individual holds this person; by the rule bridge-individual.oneKycPerPerson, carrying person |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a person is checked\n\nStarts from an empty world.\n\n- **the system can't start a KYC: it is nobody.** `bridge` (system) calls and sends fullName `Nobody At All`, email `nobody@capxul.test`, and is refused with NotAllowed, AR-001.\n- **Ada starts her own KYC and gets Bridge's form and terms.** `ada` (signed in) calls and sends fullName `Ada Wanjiru Kamau`, email `ada@acme-trading.test`, with the request key `ada-kyc`, and gets back an answer matching `^kyc_[0-9a-z]+$` and gets back an answer matching `^https:\\/\\/\\S+$` and gets back an answer matching `^https:\\/\\/\\S+$`.\n- **a person has one KYC, so a second start is refused.** `ada` (signed in) calls and sends fullName `Ada W. Kamau`, email `ada.k@acme-trading.test`, and is refused with KycAlreadyStarted, KC-001, carrying person the cast's ada person.\n- **Bo starts his own, which Ada's doesn't block.** `bo` (signed in) calls and sends fullName `Bo Otieno`, email `bo@bo-ltd.test`, and gets back an answer matching `^kyc_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul bridge-individual start --fullName <fullName> --email <email>\n```\n\nHTTP: `POST /bridge-individual/start` with the payload as JSON. SDK: `Sdk.bridge-individual.start(payload)`.\n",
-    "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| CompanyAbbrTaken | 42 | CO-002 | another company holds this owner and abbr; by the rule company.oneAbbrPerOwner, carrying abbr |\n| CompanyNameTaken | 41 | CO-001 | another company holds this owner and company name; by the rule company.oneNamePerOwner, carrying companyName |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### companies are kept apart\n\nStarts from the world `a company`.\n\n- **Ada can't give a second company of hers the same name.** `ada` (role company.owner) calls and sends companyName `Acme Trading`, abbr `AT2`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyNameTaken, CO-001, carrying companyName `Acme Trading`.\n- **nor the same abbreviation.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyAbbrTaken, CO-002, carrying abbr `AT`.\n- **Bo may use both for his own company, because her names don't bind him.** `bo` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.\n- **Ada sets up a second company under other names, which she runs too.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AH`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n- **Bo sets up a company of his own, which he runs.** `bo` (signed in) calls and sends companyName `Kilimanjaro Coffee Exporters`, abbr `KCE`, country `Tanzania`, defaultCurrency `TZS`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
+    "company/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.create\n\nSet up a company; the person who sets it up runs it.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| companyName | company.companyName |\n| abbr | company.abbr |\n| country | company.country |\n| defaultCurrency | company.defaultCurrency |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | company.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting CompanyCreated.\n\n## Steps\n\n- `company.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| CompanyAbbrTaken | 42 | CO-002 | another company holds this owner and abbr; by the rule company.oneAbbrPerOwner, carrying abbr |\n| CompanyNameTaken | 41 | CO-001 | another company holds this owner and company name; by the rule company.oneNamePerOwner, carrying companyName |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### companies are kept apart\n\nStarts from the world `a company`.\n\n- **Ada can't give a second company of hers the same name.** `ada` (role company.owner) calls and sends companyName `Acme Trading`, abbr `AT2`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyNameTaken, CO-001, carrying companyName `Acme Trading`.\n- **nor the same abbreviation.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyAbbrTaken, CO-002, carrying abbr `AT`.\n- **Bo may use both for his own company, because her names don't bind him.** `bo` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.\n- **Ada sets up a second company under other names, which she runs too.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AH`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up a company\n\nStarts from an empty world.\n\n- **Ada sets up a company and runs it.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and is answered.\n- **Bo sets up a company of his own, which he runs.** `bo` (signed in) calls and sends companyName `Kilimanjaro Coffee Exporters`, abbr `KCE`, country `Tanzania`, defaultCurrency `TZS`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul company create --companyName <companyName> --abbr <abbr> --country <country> --defaultCurrency <defaultCurrency>\n```\n\nHTTP: `POST /company/create` with the payload as JSON. SDK: `Sdk.company.create(payload)`.\n",
     "company/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company.get\n\nRead one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n\n**Who may call:** the owner of the company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | company.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| companyName | company.companyName |  |\n| abbr | company.abbr |  |\n| country | company.country |  |\n| defaultCurrency | company.defaultCurrency |  |\n| owner | company.owner | The person who set the company up, and runs it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of the company; the handler never runs |\n\n## Worked examples\n\n### branch names are the company's\n\nStarts from the world `four branches`.\n\n- **her first company is unchanged by its branches.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n- **and so is her second.** `ada` (role company.owner) calls and sends id the world's otherCompany, and gets back [`Acme Logistics`, `AL`, `Uganda`, `UGX`, the cast's ada person, `active`].\n- **and Bo's.** `bo` (signed in) calls and sends id the world's boCompany, and gets back [`Bo Ltd`, `BL`, `Tanzania`, `TZS`, the cast's bo person, `active`].\n\n### companies are kept apart\n\nStarts from the world `a company`.\n\n- **her second company reads back as she typed it, not as her first.** `ada` (role company.owner) calls and sends id the last call's company, and gets back [`Acme Holdings`, `AH`, `Uganda`, `UGX`, the cast's ada person, `active`].\n- **Bo still can't read Ada's.** `bo` (signed in) calls and sends id the world's company, and is refused with NotAllowed, AR-001.\n- **Ada's company is untouched and still hers.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n\n### grade names are the company's\n\nStarts from the world `four grades`.\n\n- **her first company is unchanged by its grades.** `ada` (role company.owner) calls and sends id the world's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n- **and so is her second.** `ada` (role company.owner) calls and sends id the world's otherCompany, and gets back [`Acme Logistics`, `AL`, `Uganda`, `UGX`, the cast's ada person, `active`].\n- **and Bo's.** `bo` (signed in) calls and sends id the world's boCompany, and gets back [`Bo Ltd`, `BL`, `Tanzania`, `TZS`, the cast's bo person, `active`].\n\n### set up a company\n\nStarts from an empty world.\n\n- **Bo can't read a company he doesn't run.** `bo` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **reading it back shows what she typed, with her as its owner.** `ada` (signed in) calls and sends id the last call's company, and gets back [`Acme Trading`, `AT`, `Kenya`, `USD`, the cast's ada person, `active`].\n- **Ada can't read Bo's company.** `ada` (signed in) calls and sends id the last call's company, and is refused with NotAllowed, AR-001.\n- **Bo reads his back, exactly as he typed it.** `bo` (signed in) calls and sends id the last call's company, and gets back [`Kilimanjaro Coffee Exporters`, `KCE`, `Tanzania`, `TZS`, the cast's bo person, `active`].\n\n## How to call\n\n```sh\ncapxul company get --id <id>\n```\n\nHTTP: `POST /company/get` with the payload as JSON. SDK: `Sdk.company.get(payload)`.\n",
     "company/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# company\n\nA business that keeps its books, people and payroll in Capxul.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| companyName | Name |  |\n| abbr | Abbr |  |\n| country | Country |  |\n| defaultCurrency | CurrencyCode |  |\n| owner | id | The person who set the company up, and runs it. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused CompanyNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | CompanyCreated |\n\n## Invariants\n\n- `company.oneAbbrPerOwner`: another company holds this owner and abbr. Unique on owner, abbr, in every state; refused CompanyAbbrTaken.\n- `company.oneNamePerOwner`: another company holds this owner and company name. Unique on owner, companyName, in every state; refused CompanyNameTaken.\n\n## Events\n\n- `CompanyCreated`: carries company (company.id), owner (company.owner: The person who set the company up, and runs it.); emitted by the move create\n\n## Roles\n\n- owner\n\n## Operations\n\n- [company.create](create.md): Set up a company; the person who sets it up runs it.\n- [company.get](get.md): Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.\n",
     "department/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# department.create\n\nAdd a department to a company.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | department.company |\n| departmentName | department.departmentName |\n\n## Answer\n\n| field | value |\n|---|---|\n| department | department.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting DepartmentCreated.\n\n## Steps\n\n- `department.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNameTaken | 41 | DE-001 | another department holds this company and department name; by the rule department.oneNamePerCompany, carrying departmentName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Bo adds a department to it.** `bo` (signed in) calls and sends company the last call's company, departmentName `Sales`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n### set up departments and job titles\n\nStarts from the world `a company`.\n\n- **Ada adds a department.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Ada can't add a second department of the same name.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Engineering`, and is refused with DepartmentNameTaken, DE-001, carrying departmentName `Engineering`.\n- **Bo can't add a department to Ada's company.** `bo` (signed in) calls and sends company the world's company, departmentName `Sales`, and is refused with NotAllowed, AR-001.\n- **Ada adds a second department.** `ada` (role company.owner) calls and sends company the world's company, departmentName `Finance and Accounts`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n- **Bo's company may have a department of that name too, because names are unique within a company.** `bo` (signed in) calls and sends company the last call's company, departmentName `Engineering`, and gets back an answer matching `^dep_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul department create --company <company> --departmentName <departmentName>\n```\n\nHTTP: `POST /department/create` with the payload as JSON. SDK: `Sdk.department.create(payload)`.\n",
@@ -16834,7 +20355,18 @@
     "employee/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.get\n\nRead one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n\n**Who may call:** the self of the employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | employee.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of the employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Ada reads Olga's record, as the company's owner.** `ada` (role company.owner) calls and sends id the world's employee, and gets back [the world's company, the cast's olga person, `2026-01-05`, `active`].\n- **Olga still reads her old record, unchanged but for showing she has left.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the cast's olga person, `Olga Petrova`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `left`].\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Bo can't read Olga's record.** `bo` (signed in) calls and sends id the last call's employee, and is refused with NotAllowed, AR-001.\n- **Olga reads her own record, with every field Ada typed.** `olga` (signed in) calls and sends id the last call's employee, and gets back [the world's company, the cast's olga person, `Olga Petrova`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `active`].\n- **Ada reads Bo's record back with every field she typed for him.** `ada` (role company.owner) calls and sends id the last call's employee, and gets back [the world's company, the cast's bo person, `Bo Mensah`, `Male`, `1990-06-01`, `1990-06-01`, the world's department, the world's designation, `active`].\n\n## How to call\n\n```sh\ncapxul employee get --id <id>\n```\n\nHTTP: `POST /employee/get` with the payload as JSON. SDK: `Sdk.employee.get(payload)`.\n",
     "employee/hire.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.hire\n\nHire a person into a company, placed in one of its departments under one of its job titles.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | employee.company |  |\n| person | employee.person | The person employed, who signs in as themselves. |\n| firstName | employee.firstName |  |\n| gender | employee.gender |  |\n| dateOfBirth | employee.dateOfBirth |  |\n| dateOfJoining | employee.dateOfJoining |  |\n| department | employee.department |  |\n| designation | employee.designation |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n\n## Move\n\n`hire`: from nothing (it creates) to active, emitting EmployeeHired.\n\n## Steps\n\n- `employee.hire.load` (database)\n- `employee.hire.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| DepartmentNotInCompany | 42 | EM-002 | declared in errors.ts |\n| DesignationNotInCompany | 43 | EM-003 | declared in errors.ts |\n| JoinedBeforeBorn | 44 | EM-004 | declared in errors.ts, carrying dateOfBirth |\n| EmployeeAlreadyHired | 41 | EM-001 | another active employee holds this company and person; by the rule employee.onePlacePerPerson, carrying person |\n| DepartmentNotFound | 4 | DE-901 | nothing has the id in department; the handler never runs; carries `id` |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in designation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Ada may hire her again, as a new employee.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2027-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n### another company's department is refused\n\nStarts from the world `a team`.\n\n- **Ada can't place Olga in Bo's department.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the last call's department, designation the world's designation, and is refused with DepartmentNotInCompany, EM-002.\n\n### another company's job title is refused\n\nStarts from the world `a team`.\n\n- **Ada can't give Olga Bo's job title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.\n\n### hire an employee\n\nStarts from the world `a team`.\n\n- **Ada hires Olga into her team.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n- **Ada can't hire Olga again while she works there.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and is refused with EmployeeAlreadyHired, EM-001, carrying person the cast's olga person.\n- **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.\n- **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.\n- **Ada may hire Bo on the day he was born, which ERPNext allows.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-06-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul employee hire --company <company> --person <person> --firstName <firstName> --gender <gender> --dateOfBirth <dateOfBirth> --dateOfJoining <dateOfJoining> --department <department> --designation <designation>\n```\n\nHTTP: `POST /employee/hire` with the payload as JSON. SDK: `Sdk.employee.hire(payload)`.\n",
     "employee/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee\n\nA person a company employs.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| person | id | The person employed, who signs in as themselves. |\n| firstName | Name |  |\n| gender | Gender |  |\n| dateOfBirth | Day |  |\n| dateOfJoining | Day |  |\n| department | department.id |  |\n| designation | designation.id |  |\n\n## Machine\n\nStates: active, left. A move from the wrong state is refused EmployeeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| hire | (creates) | active | EmployeeHired |\n| relieve | active | left | EmployeeRelieved |\n\n## Invariants\n\n- `employee.onePlacePerPerson`: another active employee holds this company and person. Unique on company, person, while active; refused EmployeeAlreadyHired.\n\n## Events\n\n- `EmployeeHired`: carries employee (employee.id), company (employee.company), person (employee.person: The person employed, who signs in as themselves.); emitted by the move hire\n- `EmployeeRelieved`: carries employee (employee.id), relievingDate (Day); emitted by the move relieve\n\n## Roles\n\n- self\n\n## Operations\n\n- [employee.get](get.md): Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n- [employee.hire](hire.md): Hire a person into a company, placed in one of its departments under one of its job titles.\n- [employee.relieve](relieve.md): Record that an employee has left the company, on the day they were relieved.\n",
-    "employee/relieve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.relieve\n\nRecord that an employee has left the company, on the day they were relieved.\n\n**Who may call:** the owner of its employee.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Move\n\n`relieve`: from active to left, emitting EmployeeRelieved.\n\n## Steps\n\n- `employee.relieve.load` (database)\n- `employee.relieve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RelievedBeforeJoined | 45 | EM-005 | declared in errors.ts, carrying dateOfJoining |\n| EmployeeNotActive | 40 | EM-900 | the employee is in a state relieve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its employee.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga can't relieve herself.** `olga` (signed in) calls and sends employee the world's employee, relievingDate `2026-11-30`, and is refused with NotAllowed, AR-001.\n- **Ada can't relieve her the day before she joined.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-01-04`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2026-01-05`.\n- **Ada relieves her on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back [the world's employee, `2026-11-30`].\n- **she can't be relieved twice.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-12-01`, and is refused with EmployeeNotActive, EM-900, carrying state `left`.\n- **the new employee can't be relieved the day before rejoining.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-01-31`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2027-02-01`.\n- **but may be relieved on the day of rejoining itself.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-02-01`, and gets back `2027-02-01`.\n\n## How to call\n\n```sh\ncapxul employee relieve --employee <employee> --relievingDate <relievingDate>\n```\n\nHTTP: `POST /employee/relieve` with the payload as JSON. SDK: `Sdk.employee.relieve(payload)`.\n",
+    "employee/relieve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.relieve\n\nRecord that an employee has left the company, on the day they were relieved.\n\n**Who may call:** the owner of its employee.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Move\n\n`relieve`: from active to left, emitting EmployeeRelieved.\n\n## Steps\n\n- `employee.relieve.load` (database)\n- `employee.relieve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RelievedBeforeJoined | 45 | EM-005 | declared in errors.ts, carrying dateOfJoining |\n| EmployeeNotActive | 40 | EM-900 | the employee is in a state relieve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its employee.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga can't relieve herself.** `olga` (signed in) calls and sends employee the world's employee, relievingDate `2026-11-30`, and is refused with NotAllowed, AR-001.\n- **Ada can't relieve her the day before she joined.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-01-04`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2026-01-05`.\n- **Ada relieves her on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back [the world's employee, `2026-11-30`].\n- **she can't be relieved twice.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-12-01`, and is refused with EmployeeNotActive, EM-900, carrying state `left`.\n- **the new employee can't be relieved the day before rejoining.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-01-31`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2027-02-01`.\n- **but may be relieved on the day of rejoining itself.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-02-01`, and gets back `2027-02-01`.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.\n\n## How to call\n\n```sh\ncapxul employee relieve --employee <employee> --relievingDate <relievingDate>\n```\n\nHTTP: `POST /employee/relieve` with the payload as JSON. SDK: `Sdk.employee.relieve(payload)`.\n",
+    "expense-claim-type/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim-type.create\n\nAdd a kind of expense a company pays back.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | expense-claim-type.company |\n| expenseType | expense-claim-type.expenseType |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaimType | expense-claim-type.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting ExpenseClaimTypeCreated.\n\n## Steps\n\n- `expense-claim-type.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ExpenseTypeTaken | 41 | ET-001 | another expense claim type holds this company and expense type; by the rule expense-claim-type.oneNamePerCompany, carrying expenseType |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Bo adds an expense type to it.** `bo` (signed in) calls and sends company the last call's company, expenseType `Travel`, and gets back an answer matching `^ect_[0-9a-z]+$`.\n\n### set up expense types\n\nStarts from the world `a company`.\n\n- **Ada adds Travel.** `ada` (role company.owner) calls and sends company the world's company, expenseType `Travel`, and gets back an answer matching `^ect_[0-9a-z]+$`.\n- **a second type can't take its name.** `ada` (role company.owner) calls and sends company the world's company, expenseType `Travel`, and is refused with ExpenseTypeTaken, ET-001, carrying expenseType `Travel`.\n- **Ada adds Calls, which is its own type.** `ada` (role company.owner) calls and sends company the world's company, expenseType `Calls`, and gets back an answer matching `^ect_[0-9a-z]+$`.\n- **Bo can't add a type to Ada's company.** `bo` (signed in) calls and sends company the world's company, expenseType `Bo's lunches`, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul expense-claim-type create --company <company> --expenseType <expenseType>\n```\n\nHTTP: `POST /expense-claim-type/create` with the payload as JSON. SDK: `Sdk.expense-claim-type.create(payload)`.\n",
+    "expense-claim-type/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim-type.get\n\nRead one expense-claim-type by its id: company, expenseType, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense-claim-type.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | expense-claim-type.company |\n| expenseType | expense-claim-type.expenseType |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up expense types\n\nStarts from the world `a company`.\n\n- **it reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's expenseClaimType, and gets back [the world's company, `Travel`, `active`].\n- **Calls reads back as Calls.** `ada` (role company.owner) calls and sends id the last call's expenseClaimType, and gets back [the world's company, `Calls`, `active`].\n- **Bo can't read Ada's type.** `bo` (signed in) calls and sends id the last call's expenseClaimType, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul expense-claim-type get --id <id>\n```\n\nHTTP: `POST /expense-claim-type/get` with the payload as JSON. SDK: `Sdk.expense-claim-type.get(payload)`.\n",
+    "expense-claim-type/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim-type\n\nA kind of expense a company pays back, such as travel.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| expenseType | ExpenseTypeName |\n\n## Machine\n\nStates: active. A move from the wrong state is refused ExpenseClaimTypeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | ExpenseClaimTypeCreated |\n\n## Invariants\n\n- `expense-claim-type.oneNamePerCompany`: another expense claim type holds this company and expense type. Unique on company, expenseType, in every state; refused ExpenseTypeTaken.\n\n## Events\n\n- `ExpenseClaimTypeCreated`: carries expenseClaimType (expense-claim-type.id), company (expense-claim-type.company); emitted by the move create\n\n## Operations\n\n- [expense-claim-type.create](create.md): Add a kind of expense a company pays back.\n- [expense-claim-type.get](get.md): Read one expense-claim-type by its id: company, expenseType, state.\n",
+    "expense-claim/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.approve\n\nApprove a claim, owing the employee what was sanctioned.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n\n## Move\n\n`approve`: from draft to approved, emitting ExpenseClaimApproved.\n\n## Steps\n\n- `expense-claim.approve.load` (database)\n- `expense-claim.approve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ClaimHasNoExpenses | 43 | EC-003 | declared in errors.ts |\n| ExpenseClaimNotDraft | 40 | EC-900 | the expense-claim is in a state approve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **Olga can't approve her own claim.** `olga` (signed in) calls and sends expenseClaim the last call's expenseClaim, and is refused with NotAllowed, AR-001.\n- **Ada approves it, owing Olga 145 USDC.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, and gets back [the last call's expenseClaim, `145000000`].\n- **nor is it approved twice.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, and is refused with ExpenseClaimNotDraft, EC-900, carrying state `approved`.\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **a claim with no expenses can't be approved.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and is refused with ClaimHasNoExpenses, EC-003.\n- **nor can it then be approved.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and is refused with ExpenseClaimNotDraft, EC-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul expense-claim approve --expenseClaim <expenseClaim>\n```\n\nHTTP: `POST /expense-claim/approve` with the payload as JSON. SDK: `Sdk.expense-claim.approve(payload)`.\n",
+    "expense-claim/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.create\n\nStart an employee's claim for expenses the company pays back.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | expense-claim.company |\n| employee | expense-claim.employee |\n| postingDate | expense-claim.postingDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting ExpenseClaimCreated.\n\n## Steps\n\n- `expense-claim.create.load` (database)\n- `expense-claim.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ClaimantNotActive | 41 | EC-001 | declared in errors.ts |\n| EmployeeNotInCompany | 42 | EC-002 | declared in errors.ts |\n| CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **Olga starts a claim of her own.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-20`, and gets back an answer matching `^ecl_[0-9a-z]+$`.\n- **Bo can't start a claim for Olga.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-20`, and is refused with NotAllowed, AR-001.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Bo can't file a claim in his company for Olga, who works for Ada.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, postingDate `2026-11-20`, and is refused with EmployeeNotInCompany, EC-002.\n- **a claim can't be started for an employee who has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, postingDate `2026-12-01`, and is refused with ClaimantNotActive, EC-001.\n\n## How to call\n\n```sh\ncapxul expense-claim create --company <company> --employee <employee> --postingDate <postingDate>\n```\n\nHTTP: `POST /expense-claim/create` with the payload as JSON. SDK: `Sdk.expense-claim.create(payload)`.\n",
+    "expense-claim/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.get\n\nRead one expense-claim by its id: company, employee, postingDate, totalClaimedAmount, totalSanctionedAmount, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense-claim.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | expense-claim.company |\n| employee | expense-claim.employee |\n| postingDate | expense-claim.postingDate |\n| totalClaimedAmount | expense-claim.totalClaimedAmount |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **it reads back with nothing claimed yet.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `0`, `0`, `draft`].\n- **Bo can't read Olga's claim.** `bo` (signed in) calls and sends id the last call's expenseClaim, and is refused with NotAllowed, AR-001.\n- **the claim reads back with both totals.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [`165500000`, `145000000`, `draft`].\n- **it still reads back with what was approved.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [`165500000`, `145000000`, `approved`].\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **a rejected claim sanctions nothing, and keeps what was claimed.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`30000000`, `0`, `rejected`].\n\n## How to call\n\n```sh\ncapxul expense-claim get --id <id>\n```\n\nHTTP: `POST /expense-claim/get` with the payload as JSON. SDK: `Sdk.expense-claim.get(payload)`.\n",
+    "expense-claim/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim\n\nWhat an employee asks the company to pay back.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| employee | employee.id |\n| postingDate | Day |\n| totalClaimedAmount | Amount |\n| totalSanctionedAmount | Amount |\n\n## Machine\n\nStates: draft, approved, rejected. A move from the wrong state is refused ExpenseClaimNotDraft (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | draft | ExpenseClaimCreated |\n| approve | draft | approved | ExpenseClaimApproved |\n| reject | draft | rejected | ExpenseClaimRejected |\n\n## Events\n\n- `ExpenseClaimApproved`: carries expenseClaim (expense-claim.id), totalSanctionedAmount (expense-claim.totalSanctionedAmount); emitted by the move approve\n- `ExpenseClaimCreated`: carries expenseClaim (expense-claim.id), company (expense-claim.company), employee (expense-claim.employee); emitted by the move create\n- `ExpenseClaimRejected`: carries expenseClaim (expense-claim.id); emitted by the move reject\n\n## Operations\n\n- [expense-claim.approve](approve.md): Approve a claim, owing the employee what was sanctioned.\n- [expense-claim.create](create.md): Start an employee's claim for expenses the company pays back.\n- [expense-claim.get](get.md): Read one expense-claim by its id: company, employee, postingDate, totalClaimedAmount, totalSanctionedAmount, state.\n- [expense-claim.reject](reject.md): Reject a claim, so nothing of it is paid back.\n",
+    "expense-claim/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.reject\n\nReject a claim, so nothing of it is paid back.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Move\n\n`reject`: from draft to rejected, emitting ExpenseClaimRejected.\n\n## Steps\n\n- `expense-claim.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ExpenseClaimNotDraft | 40 | EC-900 | the expense-claim is in a state reject can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **Olga can't reject her own claim.** `olga` (signed in) calls and sends expenseClaim the world's expenseClaim, and is refused with NotAllowed, AR-001.\n- **Ada rejects it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and gets back the world's expenseClaim.\n\n## How to call\n\n```sh\ncapxul expense-claim reject --expenseClaim <expenseClaim>\n```\n\nHTTP: `POST /expense-claim/reject` with the payload as JSON. SDK: `Sdk.expense-claim.reject(payload)`.\n",
+    "expense/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense.add\n\nAdd one expense to a claim still in draft.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense.expenseClaim |\n| expenseDate | expense.expenseDate |\n| expenseType | expense.expenseType |\n| amount | expense.amount |\n| sanctionedAmount | expense.sanctionedAmount |\n\n## Answer\n\n| field | value |\n|---|---|\n| expense | expense.id |\n| totalClaimedAmount | expense-claim.totalClaimedAmount |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting ExpenseAdded.\n\n## Steps\n\n- `expense.add.load` (database)\n- `expense.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SanctionedOverClaimed | 41 | EX-001 | declared in errors.ts, carrying amount |\n| ExpenseTypeNotInCompany | 42 | EX-002 | declared in errors.ts |\n| ClaimNotDraft | 43 | EX-003 | declared in errors.ts |\n| ExpenseClaimTypeNotFound | 4 | ET-901 | nothing has the id in expenseType; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **Ada can't sanction more than was spent.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000001`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `45000000`.\n- **Ada adds a 45 USDC taxi, sanctioned in full.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000000`, and gets back [`45000000`, `45000000`] and gets back an answer matching `^exp_[0-9a-z]+$`.\n- **Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `120500000`, sanctionedAmount `100000000`, and gets back [`165500000`, `145000000`].\n- **an approved claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `1000000`, and is refused with ClaimNotDraft, EX-003.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Ada can't put Bo's expense type on Olga's claim.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `5000000`, sanctionedAmount `5000000`, and is refused with ExpenseTypeNotInCompany, EX-002.\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **Ada adds 30 USDC of lunches.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `30000000`, sanctionedAmount `30000000`, and gets back [`30000000`, `30000000`].\n\n## How to call\n\n```sh\ncapxul expense add --expenseClaim <expenseClaim> --expenseDate <expenseDate> --expenseType <expenseType> --amount <amount> --sanctionedAmount <sanctionedAmount>\n```\n\nHTTP: `POST /expense/add` with the payload as JSON. SDK: `Sdk.expense.add(payload)`.\n",
+    "expense/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense.get\n\nRead one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense.expenseClaim |\n| expenseDate | expense.expenseDate |\n| expenseType | expense.expenseType |\n| amount | expense.amount |\n| sanctionedAmount | expense.sanctionedAmount |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **the taxi reads back as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`2026-11-18`, the world's expenseClaimType, `45000000`, `45000000`, `active`].\n\n## How to call\n\n```sh\ncapxul expense get --id <id>\n```\n\nHTTP: `POST /expense/get` with the payload as JSON. SDK: `Sdk.expense.get(payload)`.\n",
+    "expense/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense\n\nOne expense in a claim.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| expenseClaim | expense-claim.id |\n| expenseDate | Day |\n| expenseType | expense-claim-type.id |\n| amount | Amount |\n| sanctionedAmount | Amount |\n\n## Machine\n\nStates: active. A move from the wrong state is refused ExpenseNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| add | (creates) | active | ExpenseAdded |\n\n## Events\n\n- `ExpenseAdded`: carries expense (expense.id), expenseClaim (expense.expenseClaim), amount (expense.amount), totalClaimedAmount (expense-claim.totalClaimedAmount); emitted by the move add\n\n## Operations\n\n- [expense.add](add.md): Add one expense to a claim still in draft.\n- [expense.get](get.md): Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.\n",
     "holiday-list/add-weekly-off.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.add-weekly-off\n\nMake every given weekday in a holiday list a day off.\n\n**Who may call:** the owner of its holidayList.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n| added | HolidayCount |\n| totalHolidays | HolidayCount |\n\n## Move\n\n`addWeeklyOff`: from active to active, emitting WeeklyOffAdded.\n\n## Steps\n\n- `holiday-list.add-weekly-off.load` (database)\n- `holiday-list.add-weekly-off.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayDateTaken | 41 | HD-001 | another holiday holds this holiday list and holiday date; by the rule holiday.oneHolidayPerDay, carrying holidayDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| HolidayListNotActive | 40 | HL-900 | the holiday-list is in a state addWeeklyOff can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### a one-day list\n\nStarts from the world `a one-day list`.\n\n- **a weekday the list doesn't hold adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [`0`, `0`].\n- **its own weekday adds its one day.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Monday`, and gets back [`1`, `1`].\n\n### every weekday\n\nStarts from the world `a leap fortnight`.\n\n- **the weekday the list starts and ends on adds three, the leap day among them.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Tuesday`, and gets back [`3`, `3`].\n- **the day after it adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Wednesday`, and gets back [`2`, `5`].\n- **the third weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Thursday`, and gets back [`2`, `7`].\n- **the fourth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`2`, `9`].\n- **the fifth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Saturday`, and gets back [`2`, `11`].\n- **the sixth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [`2`, `13`].\n- **the last weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Monday`, and gets back [`2`, `15`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **Bo can't add a weekly off to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, weekday `Sunday`, and is refused with NotAllowed, AR-001.\n- **Ada makes a weekday a day off, and the day the list already held is skipped.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [the world's holidayList, `Sunday`, `51`, `52`].\n- **a weekday that falls on both the first and the last day counts both.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`Friday`, `53`, `105`].\n- **asking for the same weekday again adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`0`, `105`].\n\n## How to call\n\n```sh\ncapxul holiday-list add-weekly-off --holidayList <holidayList> --weekday <weekday>\n```\n\nHTTP: `POST /holiday-list/add-weekly-off` with the payload as JSON. SDK: `Sdk.holiday-list.add-weekly-off(payload)`.\n",
     "holiday-list/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.create\n\nStart a company's list of days off, between two days.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | holiday-list.company |\n| holidayListName | holiday-list.holidayListName |\n| fromDate | holiday-list.fromDate |\n| toDate | holiday-list.toDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting HolidayListCreated.\n\n## Steps\n\n- `holiday-list.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayListEndsBeforeStart | 44 | HL-002 | declared in errors.ts, carrying fromDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up a holiday list\n\nStarts from the world `a company`.\n\n- **Ada starts a list for a year.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2027-01-01`, toDate `2027-12-31`, and gets back an answer matching `^hls_[0-9a-z]+$`.\n- **a list can't end before it starts.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Backwards`, fromDate `2028-01-01`, toDate `2027-12-31`, and is refused with HolidayListEndsBeforeStart, HL-002, carrying fromDate `2028-01-01`.\n- **nor end a day before it starts, inside one month.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Backwards again`, fromDate `2028-08-15`, toDate `2028-08-14`, and is refused with HolidayListEndsBeforeStart, HL-002, carrying fromDate `2028-08-15`.\n- **a second list can't take the first one's name.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2028-01-01`, toDate `2028-12-31`, and is refused with HolidayListNameTaken, HL-001, carrying holidayListName `Kenya 2027`.\n- **Bo can't start a list in Ada's company.** `bo` (signed in) calls and sends company the world's company, holidayListName `Bo's days`, fromDate `2027-01-01`, toDate `2027-12-31`, and is refused with NotAllowed, AR-001.\n- **a list may start and end on the same day.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Shutdown`, fromDate `2028-08-14`, toDate `2028-08-14`, and gets back an answer matching `^hls_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul holiday-list create --company <company> --holidayListName <holidayListName> --fromDate <fromDate> --toDate <toDate>\n```\n\nHTTP: `POST /holiday-list/create` with the payload as JSON. SDK: `Sdk.holiday-list.create(payload)`.\n",
     "holiday-list/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.get\n\nRead one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | holiday-list.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | holiday-list.company |\n| holidayListName | holiday-list.holidayListName |\n| fromDate | holiday-list.fromDate |\n| toDate | holiday-list.toDate |\n| totalHolidays | holiday-list.totalHolidays |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### a one-day list\n\nStarts from the world `a one-day list`.\n\n- **the list counts one.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`2028-08-14`, `2028-08-14`, `1`].\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **the list now counts two holidays.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`Kenya 2027`, `2027-01-01`, `2027-12-31`, `2`].\n\n### every weekday\n\nStarts from the world `a leap fortnight`.\n\n- **every day of the list is now a holiday.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`2028-02-22`, `2028-03-07`, `15`].\n\n### set up a holiday list\n\nStarts from the world `a company`.\n\n- **Bo can't read Ada's list.** `bo` (signed in) calls and sends id the last call's holidayList, and is refused with NotAllowed, AR-001.\n- **the list reads back as she typed it, with no holidays yet.** `ada` (role company.owner) calls and sends id the last call's holidayList, and gets back [the world's company, `Kenya 2027`, `2027-01-01`, `2027-12-31`, `0`, `active`].\n- **that one reads back with its own name and days.** `ada` (role company.owner) calls and sends id the last call's holidayList, and gets back [the world's company, `Shutdown`, `2028-08-14`, `2028-08-14`, `0`, `active`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **the list counts every one of them.** `ada` (role company.owner) calls and sends id the world's holidayList, and gets back [`106`, `active`].\n\n## How to call\n\n```sh\ncapxul holiday-list get --id <id>\n```\n\nHTTP: `POST /holiday-list/get` with the payload as JSON. SDK: `Sdk.holiday-list.get(payload)`.\n",
@@ -16857,5 +20389,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "82095f1bc6fcb1cd4b4faea980bd205532d67810fe5873398815d34cb5921b1a"
+  "digest": "dc8af4dbbddf342180c1e293c38eafdc3569883d881b1412ab9ac2b40f05dff2"
 }

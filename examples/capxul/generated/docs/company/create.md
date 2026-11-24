@@ -64,6 +64,12 @@ Starts from the world `a company`.
 - **Bo may use both for his own company, because her names don't bind him.** `bo` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.
 - **Ada sets up a second company under other names, which she runs too.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AH`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
+### expense claims stay in their company
+
+Starts from the world `an expense claim`.
+
+- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
 ### set up a company
 
 Starts from an empty world.

@@ -24,6 +24,14 @@ import * as employeeHire from "./employee/hire.ts";
 import * as employeeRelieve from "./employee/relieve.ts";
 import * as employeeGradeCreate from "./employee-grade/create.ts";
 import * as employeeGradeGet from "./employee-grade/get.ts";
+import * as expenseAdd from "./expense/add.ts";
+import * as expenseGet from "./expense/get.ts";
+import * as expenseClaimApprove from "./expense-claim/approve.ts";
+import * as expenseClaimCreate from "./expense-claim/create.ts";
+import * as expenseClaimGet from "./expense-claim/get.ts";
+import * as expenseClaimReject from "./expense-claim/reject.ts";
+import * as expenseClaimTypeCreate from "./expense-claim-type/create.ts";
+import * as expenseClaimTypeGet from "./expense-claim-type/get.ts";
 import * as holidayAdd from "./holiday/add.ts";
 import * as holidayGet from "./holiday/get.ts";
 import * as holidayListAddWeeklyOff from "./holiday-list/add-weekly-off.ts";
@@ -39,10 +47,13 @@ export class Department extends HttpApiGroup.make("department").add(departmentCr
 export class Designation extends HttpApiGroup.make("designation").add(designationCreate.endpoint).add(designationGet.endpoint) {}
 export class Employee extends HttpApiGroup.make("employee").add(employeeGet.endpoint).add(employeeHire.endpoint).add(employeeRelieve.endpoint) {}
 export class EmployeeGrade extends HttpApiGroup.make("employee-grade").add(employeeGradeCreate.endpoint).add(employeeGradeGet.endpoint) {}
+export class Expense extends HttpApiGroup.make("expense").add(expenseAdd.endpoint).add(expenseGet.endpoint) {}
+export class ExpenseClaim extends HttpApiGroup.make("expense-claim").add(expenseClaimApprove.endpoint).add(expenseClaimCreate.endpoint).add(expenseClaimGet.endpoint).add(expenseClaimReject.endpoint) {}
+export class ExpenseClaimType extends HttpApiGroup.make("expense-claim-type").add(expenseClaimTypeCreate.endpoint).add(expenseClaimTypeGet.endpoint) {}
 export class Holiday extends HttpApiGroup.make("holiday").add(holidayAdd.endpoint).add(holidayGet.endpoint) {}
 export class HolidayList extends HttpApiGroup.make("holiday-list").add(holidayListAddWeeklyOff.endpoint).add(holidayListCreate.endpoint).add(holidayListGet.endpoint) {}
-export class Api extends HttpApi.make("capxul").add(BankAccount).add(Branch).add(BridgeBusiness).add(BridgeIndividual).add(Company).add(Department).add(Designation).add(Employee).add(EmployeeGrade).add(Holiday).add(HolidayList) {}
+export class Api extends HttpApi.make("capxul").add(BankAccount).add(Branch).add(BridgeBusiness).add(BridgeIndividual).add(Company).add(Department).add(Designation).add(Employee).add(EmployeeGrade).add(Expense).add(ExpenseClaim).add(ExpenseClaimType).add(Holiday).add(HolidayList) {}
 
 export * as Errors from "./errors.ts";
 export * as Events from "./events.ts";
-export const operations = { "bank-account.close": bankAccountClose, "bank-account.get": bankAccountGet, "bank-account.open": bankAccountOpen, "branch.create": branchCreate, "branch.get": branchGet, "bridge-business.approve": bridgeBusinessApprove, "bridge-business.get": bridgeBusinessGet, "bridge-business.reject": bridgeBusinessReject, "bridge-business.start": bridgeBusinessStart, "bridge-individual.approve": bridgeIndividualApprove, "bridge-individual.get": bridgeIndividualGet, "bridge-individual.reject": bridgeIndividualReject, "bridge-individual.start": bridgeIndividualStart, "company.create": companyCreate, "company.get": companyGet, "department.create": departmentCreate, "department.get": departmentGet, "designation.create": designationCreate, "designation.get": designationGet, "employee.get": employeeGet, "employee.hire": employeeHire, "employee.relieve": employeeRelieve, "employee-grade.create": employeeGradeCreate, "employee-grade.get": employeeGradeGet, "holiday.add": holidayAdd, "holiday.get": holidayGet, "holiday-list.add-weekly-off": holidayListAddWeeklyOff, "holiday-list.create": holidayListCreate, "holiday-list.get": holidayListGet } as const;
+export const operations = { "bank-account.close": bankAccountClose, "bank-account.get": bankAccountGet, "bank-account.open": bankAccountOpen, "branch.create": branchCreate, "branch.get": branchGet, "bridge-business.approve": bridgeBusinessApprove, "bridge-business.get": bridgeBusinessGet, "bridge-business.reject": bridgeBusinessReject, "bridge-business.start": bridgeBusinessStart, "bridge-individual.approve": bridgeIndividualApprove, "bridge-individual.get": bridgeIndividualGet, "bridge-individual.reject": bridgeIndividualReject, "bridge-individual.start": bridgeIndividualStart, "company.create": companyCreate, "company.get": companyGet, "department.create": departmentCreate, "department.get": departmentGet, "designation.create": designationCreate, "designation.get": designationGet, "employee.get": employeeGet, "employee.hire": employeeHire, "employee.relieve": employeeRelieve, "employee-grade.create": employeeGradeCreate, "employee-grade.get": employeeGradeGet, "expense.add": expenseAdd, "expense.get": expenseGet, "expense-claim.approve": expenseClaimApprove, "expense-claim.create": expenseClaimCreate, "expense-claim.get": expenseClaimGet, "expense-claim.reject": expenseClaimReject, "expense-claim-type.create": expenseClaimTypeCreate, "expense-claim-type.get": expenseClaimTypeGet, "holiday.add": holidayAdd, "holiday.get": holidayGet, "holiday-list.add-weekly-off": holidayListAddWeeklyOff, "holiday-list.create": holidayListCreate, "holiday-list.get": holidayListGet } as const;

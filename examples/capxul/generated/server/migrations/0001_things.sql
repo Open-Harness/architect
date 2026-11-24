@@ -96,6 +96,34 @@ CREATE TABLE "employee-grade" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "employee-grade_oneNamePerCompany" ON "employee-grade" ("company", "gradeName");
+CREATE TABLE "expense" (
+  "id" TEXT PRIMARY KEY,
+  "expenseClaim" TEXT NOT NULL,
+  "expenseDate" TEXT NOT NULL,
+  "expenseType" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "sanctionedAmount" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "expense-claim" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "totalClaimedAmount" TEXT NOT NULL,
+  "totalSanctionedAmount" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "expense-claim-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "expenseType" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "expense-claim-type_oneNamePerCompany" ON "expense-claim-type" ("company", "expenseType");
 CREATE TABLE "holiday" (
   "id" TEXT PRIMARY KEY,
   "holidayList" TEXT NOT NULL,
