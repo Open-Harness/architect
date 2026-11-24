@@ -90,6 +90,7 @@ export interface ValuesApi {
    * Another thing's field, read only when it is first used (#742): `Blueprint.link(() => SalesInvoice.fields.id)`, so two
    * things may take each other's ids though their files import each other. Once read it is that field, as if written itself.
    * In a cycle TypeScript can't infer the two things' types (TS7022), so write the function's type: `(): Field => SalesInvoice.fields.id`.
+   * A thing's field made from a link reads it when used, but reusing that field (in another thing, `described`, a payload) reads it then: do that outside the cycle.
    */
   readonly link: <F extends Field>(to: () => F) => F;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
