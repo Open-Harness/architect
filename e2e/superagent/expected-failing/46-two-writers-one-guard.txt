@@ -1,0 +1,9 @@
+# Slice 8's check (GOAL17-check-harness), red until slice 9 builds the agents, the sandbox, slots, pause and the harness's instruments; the surface (a builder's first pull request) comes before it.
+superagent/46-two-writers-one-guard.test.ts > two writers, one guard > the journey "a close is resent only for a closing row older than a sweep" passes whole
+superagent/46-two-writers-one-guard.test.ts > two writers, one guard > the journey "a reap before the opening tell arrives never frees a seat the executor then uses" passes whole
+superagent/46-two-writers-one-guard.test.ts > two writers, one guard > the journey "a refusal cycle writes at most six rows in 30 seconds" passes whole
+superagent/46-two-writers-one-guard.test.ts > two writers, one guard > the journey "a stop on a full pool starts nothing until AgentClosed" passes whole
+superagent/46-two-writers-one-guard.test.ts > two writers, one guard > the journey "a stopped ticket's opening tell is refused" passes whole
+superagent/46-two-writers-one-guard.test.ts > two writers, one guard > the journey "reap closes an idle assignment only after a whole sweep" passes whole
+superagent/46-two-writers-one-guard.test.ts > two writers, one guard > the journey "reap, restart and redeliver leave a late idle for one Assignment unable to end the next" passes whole
+superagent/46-two-writers-one-guard.test.ts > two writers, one guard > the journey "two fills at once start an Assignment once" passes whole

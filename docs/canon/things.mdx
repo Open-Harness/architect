@@ -67,10 +67,10 @@ export const Secret = Blueprint.visibility.secret(Blueprint.text({ max: 512 }));
 
 ### A value is a named type
 
-A value is a schema with a name and a visibility. Orthograph gives you five makers, and `Blueprint.value` names
+A value is a schema with a name and a visibility. Orthograph gives you a maker for each common shape, and `Blueprint.value` names
 anything else, such as an Effect `Schema.Literals`:
 
-```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=60-98
+```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=62-108
 export interface ValuesApi {
   /** Name a type: `export const Amount = Blueprint.value(Blueprint.uint(128))`. */
   readonly value: <S extends Schema.Constraint>(schema: S | Value<S>) => Value<S>;
@@ -109,6 +109,14 @@ export interface ValuesApi {
   readonly link: <F extends Field>(to: () => F) => F;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
+  /** True or false. */
+  readonly bool: () => Value<Schema.Boolean>;
+  /** One of the words named: `Blueprint.oneOf(["observing", "live"])`. */
+  readonly oneOf: <const O extends ReadonlyArray<string>>(options: O) => Value<Schema.Literals<O>>;
+  /** Many of one value: a list, written as an array. */
+  readonly list: <S extends Schema.Constraint>(item: Value<S>) => Value<Schema.$Array<S>>;
+  /** A field the record may lack: absent from a payload, an event or a row until it is set. */
+  readonly optional: <S extends Schema.Constraint>(value: Value<S>) => Value<Schema.optionalKey<S>>;
 }
 ```
 
@@ -148,7 +156,7 @@ yield* steps.insert(records.insert(Sheet, { id: sheet, title, places, taken: 0n 
 
 A field is a value that belongs to a thing, under a key. It knows its thing, its key and what it was made from:
 
-```ts file=packages/orthograph/src/modules/things/types.ts name=Field lines=6-25
+```ts file=packages/orthograph/src/modules/things/types.ts name=Field lines=7-26
 /** A field of one thing, which another thing or a payload can reuse: `Organization.fields.id`. */
 export interface Field<V extends Value = Value, K extends string = string, F extends FieldsInput = FieldsInput> {
   readonly kind: "field";

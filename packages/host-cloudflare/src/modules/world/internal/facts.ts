@@ -8,14 +8,22 @@ import type { WorldHost } from "../types.ts";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
-type Where = Pick<WorldHost, "db" | "tables" | "stores">;
+type Where = Pick<WorldHost, "db" | "tables" | "stores" | "actors" | "actorTables">;
 
-export const facts = ({ db, tables, stores = [] }: Where, request: Request): Effect.Effect<Response> =>
+/** A thing that lives as an actor has no table: its row is what its Durable Object keeps, shown as a table's row is (fields in wire form, `state`, `version`). */
+const actorRecord = (actors: DurableObjectNamespace, table: string, id: string) =>
+  Effect.promise(() => {
+    const stub = actors.get(actors.idFromName(`${table}:${id}`)) as unknown as { find(): Promise<{ row: Record<string, unknown>; state: string | null; version: number } | null> };
+    return stub.find();
+  }).pipe(Effect.map((found) => (found === null ? null : { ...found.row, state: found.state, version: found.version })));
+
+export const facts = ({ db, tables, stores = [], actors, actorTables = [] }: Where, request: Request): Effect.Effect<Response> =>
   Effect.gen(function* () {
     const url = new URL(request.url);
     const q = (k: string) => url.searchParams.get(k) ?? "";
     if (url.pathname === "/_world/facts/record") {
       const table = q("table");
+      if (actorTables.includes(table)) return actors ? json(yield* actorRecord(actors, table, q("id"))) : json({ error: `${table} lives as actors, and this Worker has no ACTORS binding` }, 404);
       const holder = tables.includes(table) ? db : stores.find((s) => s.tables.includes(table))?.db;
       if (!holder) return json({ error: `no table ${table}` }, 404);
       const row = yield* Effect.promise(() => holder.prepare(`SELECT * FROM "${table}" WHERE "id" = ?`).bind(q("id")).first());

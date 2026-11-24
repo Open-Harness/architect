@@ -5,8 +5,11 @@ import type { Model, OperationModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
 import { callImports, renderHandlerScaffold, wired } from "#modules/handlers/service.js";
 import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, pascal, storeFileAt, thingFileAt, toRoot } from "#modules/names/service.js";
-import { emptyPath, notFromOf, peopleOf, worldExports } from "./helpers.ts";
+import { emptyPath, groupOf, notFromOf, peopleOf, worldExports } from "./helpers.ts";
 import { clocksOf, renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
+import { doorsOf } from "./doors.ts";
+import { actorOptionOf } from "./actors.ts";
+import { rulesByOrigin, staleOf, versioned } from "./versioned.ts";
 
 const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const ops = Object.values(model.operations);
@@ -18,13 +21,19 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   // The things with rules (G5): their `invariants.ts` is imported, and the store and the runtime are handed each rule under its full name.
   const ruled = things.filter((t) => Object.keys(t.invariants ?? {}).length > 0);
   const rulesOption = ruled.length > 0 ? ", rules" : "";
+  const { declaredRules, versionedRules } = rulesByOrigin(ruled);
   // Each mount a served operation came from, imported once: its plugin's handlers run under it (Mount.serving).
   const mounted = [...new Set(handled.flatMap((o) => (o.from.kind !== "app" ? [o.from.mount] : [])))].filter((m) => model.mounts?.[m]);
   const mountVar = (mount: string) => `${camel(mount)}Mount`;
   // Each adapter a `service` role names (M2-auth, fork 3): the runtime reads the role against the mount's name, so the server hands it each mount by name.
   const serviced = [...new Set(ops.flatMap((o) => o.allowed.flatMap((a) => ("service" in a && a.service !== undefined ? [a.service] : []))))].filter((m) => model.mounts?.[m]).sort();
+  const doors = doorsOf(model, name, mountVar, [...mounted, ...serviced]);
   const mountsOption = serviced.length > 0 ? ", mounts" : "";
-  const served = (o: OperationModel) => (o.from.kind !== "app" && mounted.includes(o.from.mount) ? `Mount.serving(${mountVar(o.from.mount)}, ${opVar(o)}Handler)` : `${opVar(o)}Handler`);
+  // The four operations of a thing with versions are the framework's (see versioned.ts): no handler file.
+  const framework = (o: OperationModel) => versioned(model, o);
+  const served = (o: OperationModel) =>
+    framework(o) ? `Versions.handler("${o.verb}", thingIn(${camel(o.thing)}Thing), ${staleOf(o)}${o.move === null ? ", false" : ""})`
+    : o.from.kind !== "app" && mounted.includes(o.from.mount) ? `Mount.serving(${mountVar(o.from.mount)}, ${opVar(o)}Handler)` : `${opVar(o)}Handler`;
   // Each declared database store (K3) has a D1 binding of its own, and its own journal and request keys.
   const stores = databaseStores(model);
   const storeOption = stores.length > 0 ? `, stores: [${stores.map((s) => `[${camel(s.name)}Store, env.${bindingOf(s)}]`).join(", ")}]` : "";
@@ -34,27 +43,11 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
   const db = timed ? "WorldEntry.fenced(env, env.DB)" : "env.DB";
   const journal = stores.length > 0 ? `JournalD1.across([${stores.map((s) => `env.${bindingOf(s)}`).join(", ")}])` : "JournalD1.layer";
   const apart = new Set(Object.values(model.things).filter((t) => t.store !== undefined && stores.some((s) => s.name === t.store)).map((t) => t.name));
-  const world = stores.length > 0
+  const actorOption = actorOptionOf(model);
+  const world = (stores.length > 0
     ? `tables: [${Object.values(model.things).filter((t) => !apart.has(t.name)).map((t) => `"${t.name}"`).join(", ")}], stores: [${stores.map((s) => `{ db: env.${bindingOf(s)}, tables: [${Object.values(model.things).filter((t) => t.store === s.name).map((t) => `"${t.name}"`).join(", ")}] }`).join(", ")}]`
-    : "tables: tables.map(([, table]) => table)";
-  const group = (t: string) => {
-    const handles = ops
-      .filter((o) => o.thing === t)
-      .map((o) => {
-        const serve = empty && o.kind === "operation"
-          ? `request.headers["x-ortho-starting-world"] === "1" ? ${opVar(o)}Served : ${opVar(o)}Scaffolded`
-          : `${opVar(o)}Served`;
-        return `      .handle("${o.verb}", ({ payload, request }) => call(${serve}, payload, request.headers).pipe(Effect.provideContext(services)))`;
-      });
-    return [
-      `const ${pascal(t)}Live = HttpApiBuilder.group(CallApi, "${t}", Effect.fn(function* (handlers) {`,
-      "  // The services are taken once, when the routes are built; each request keeps its own tracer and span.",
-      `  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth${timed ? ", Timers, DurableTimers" : ""})(yield* Effect.context<Services>());`,
-      "  return handlers",
-      ...handles.map((h, i) => (i === handles.length - 1 ? `${h};` : h)),
-      "}));",
-    ];
-  };
+    : "tables: tables.map(([, table]) => table)") + actorOption;
+  const group = groupOf(ops, empty, timed);
   return {
     path: "generated/server/main.ts",
     scaffold: false,
@@ -67,20 +60,21 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       `import { HttpApiBuilder } from "effect/http-api";`,
       `import { SqlClient } from "effect/sql";`,
       `import type { Principal } from "${Names.frontDoor}";`,
-      `import { AuthD1, Database, JournalD1, StoreD1, Telemetry, ${timed ? "WorldEntry, " : ""}toWorld } from "${Names.pkg("host-cloudflare")}";`,
-      `import { Auth, Busy, ${timed ? "" : "BusyLive, "}CallTelemetry, ${timed ? "DurableTimers, " : ""}Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, ${timed ? "Timers, " : ""}Wire, ${ruled.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
+      `import { AuthD1, Database, ${doors.any ? "Inbound, " : ""}JournalD1, StoreD1, Telemetry, ${timed ? "WorldEntry, " : ""}toWorld } from "${Names.pkg("host-cloudflare")}";`,
+      `import { Auth, Busy, ${timed ? "" : "BusyLive, "}CallTelemetry, ${timed ? "DurableTimers, " : ""}Environment, Handlers, Journal, ${mounted.length > 0 ? "Mount, " : ""}Principals, Reads, Store, ${timed ? "Timers, " : ""}${handled.some(framework) || versionedRules.length > 0 ? "Versions, " : ""}Wire, ${declaredRules.length > 0 ? "invariantsIn, " : ""}thingIn } from "${Names.pkg("language-effect")}";`,
       `import { Mcp, type McpResult, type ShownOperation } from "${Names.pkg("language-effect")}";`,
       `import { Api, Errors } from "../api/src/index.ts";`,
       `import * as portal from "../portal/main.ts";`,
       `import { catalog } from "../mcp/src/index.ts";`,
       ops.map((o) => `import * as ${opVar(o)} from "../api/src/${o.thing}/${o.verb}.ts";`),
-      handled.map((o) => `import ${opVar(o)}Handler from "${handlerAt("generated/server/main.ts", o)}";`),
+      handled.filter((o) => !framework(o)).map((o) => `import ${opVar(o)}Handler from "${handlerAt("generated/server/main.ts", o)}";`),
       empty ? handled.map((o) => `import ${opVar(o)}Blank from "./${emptyPath(o)}";`) : [],
       callImports(model),
       mounted.map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
       serviced.filter((m) => !mounted.includes(m)).map((m) => `import ${mountVar(m)} from "${toRoot("generated/server/main.ts")}${model.mounts![m]!.file}";`),
+      doors.imports,
       things.map((t) => `import * as ${camel(t.name)}Thing from "${thingFileAt("generated/server/main.ts", t, "thing")}";`),
-      ruled.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
+      declaredRules.map((t) => `import * as ${camel(t.name)}Invariants from "${thingFileAt("generated/server/main.ts", t, "invariants")}";`),
       stores.map((s) => `import ${camel(s.name)}Store from "${storeFileAt("generated/server/main.ts", s)}";`),
       "",
       worldExports(timed, actors),
@@ -94,8 +88,9 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "",
       "/** Each thing and its table: a D1 table, or the name its actors go by. */",
       `const tables = [${things.map((t) => `[thingIn(${camel(t.name)}Thing), "${t.name}"]`).join(", ")}] as const;`,
-      ruled.length > 0 ? ["", "/** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */", `const rules = [${ruled.map((t) => `...invariantsIn("${t.name}", ${camel(t.name)}Invariants)`).join(", ")}] as const;`] : [],
+      ruled.length > 0 ? ["", "/** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */", `const rules = [${[...declaredRules.map((t) => `...invariantsIn("${t.name}", ${camel(t.name)}Invariants)`), ...versionedRules.map((t) => `...Versions.rulesOf("${t.name}", thingIn(${camel(t.name)}Thing))`)].join(", ")}] as const;`] : [],
       "",
+      doors.table,
       "const refusals = Wire.refusals(Errors.wire);",
       "const CallApi = Api.middleware(CallTelemetry);",
       `type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth${timed ? " | Timers | DurableTimers" : ""};`,
@@ -121,6 +116,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       actors ? "  readonly ACTORS: DurableObjectNamespace;" : [],
       "  /** Better Auth's secret, at least 32 characters: fresh per local world, a named secret per environment. */",
       "  readonly AUTH_SECRET: string;",
+      doors.env,
       "  readonly OTLP_URL?: string;",
       "  /** The environment's telemetry sinks beside the collector, as JSON: each one's OTLP endpoints and headers. A secret. */",
       "  readonly OTLP_SINKS?: string;",
@@ -223,6 +219,7 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       "        ? Promise.resolve(Response.json({ revision: env.ORTHO_REVISION, sha256: env.ORTHO_BUNDLE_SHA256 }))",
       "        : Promise.resolve(Response.json({ _tag: \"NotAnEnvironment\" }, { status: 404 }));",
       "    }",
+      doors.route,
       "    if (portal.owns(new URL(request.url).pathname)) return portal.serve(request, env);",
       timed
         ? "    if (new URL(request.url).pathname.startsWith(\"/api/auth/\")) return WorldEntry.section(env, () => Effect.runPromise(AuthD1.handle(routesOf(env), request)));"

@@ -50,6 +50,19 @@ describe("the world Durable Object, in workerd", () => {
     expect(journal).toEqual([expect.objectContaining({ event: "Granted", fields: { allowance: "alw_f1" } })]);
     expect((await toWorld(world, new Request("http://world/_world/facts/record?table=secrets&id=x"))).status).toBe(404);
   });
+
+  it("reads the facts of a thing that lives as an actor from its Durable Object, as a row of a table would read; none yet is null", async () => {
+    const actorWorld = { ...world, tables: ["allowance", "purse"], actors: env.ACTORS, actorTables: ["purse"] };
+    const stub = env.ACTORS.get(env.ACTORS.idFromName("purse:prs_f1")) as unknown as { commit(w: unknown, e: unknown): Promise<string> };
+    expect(await stub.commit([{ kind: "insert", row: { id: "prs_f1", owner: "per_o" }, state: "active" }], [])).toBe("committed");
+    const row = await (await toWorld(actorWorld, new Request("http://world/_world/facts/record?table=purse&id=prs_f1"))).json();
+    expect(row).toEqual({ id: "prs_f1", owner: "per_o", state: "active", version: 0 });
+    const none = await toWorld(actorWorld, new Request("http://world/_world/facts/record?table=purse&id=prs_nothing"));
+    expect(none.status).toBe(200);
+    expect(await none.json()).toBeNull();
+    // Without the namespace the Worker cannot read one: a plain refusal, not a database error.
+    expect((await toWorld({ ...world, tables: ["purse"], actorTables: ["purse"] }, new Request("http://world/_world/facts/record?table=purse&id=prs_f1"))).status).toBe(404);
+  });
 });
 
 

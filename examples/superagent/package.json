@@ -1,0 +1,30 @@
+{
+  "name": "@superagent/source",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "orthograph": "workspace:*",
+    "@orthograph/host-cloudflare": "workspace:*",
+    "@orthograph/portal": "workspace:*",
+    "@orthograph/projections": "workspace:*",
+    "@orthograph/language-effect": "workspace:*",
+    "@orthograph/agents": "workspace:*",
+    "@orthograph/superagent": "workspace:*",
+    "@orthograph/intake": "workspace:*",
+    "@orthograph/tickets": "workspace:*",
+    "@orthograph/prompts": "workspace:*",
+    "@orthograph/github": "workspace:*",
+    "@orthograph/slack": "workspace:*",
+    "@orthograph/posthog": "workspace:*",
+    "@effect/platform-node": "4.1.4",
+    "@effect/sql-d1": "4.1.4",
+    "effect": "4.1.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261101.1"
+  },
+  "bin": {
+    "superagent": "./generated/cli/src/main.ts"
+  }
+}

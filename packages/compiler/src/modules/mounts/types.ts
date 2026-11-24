@@ -1,6 +1,7 @@
 // Mounts: a project's `blueprint/{features,adapters,projections}/<name>.ts`, each matched to the installed plugin it
 // imports, its choices checked, and a feature's things folded in under the mount's name (M1-plugins sections 4 to 7).
 import type { Effect } from "effect";
+import type { Agent, SourceKind } from "orthograph";
 import type { BlueprintSource } from "#modules/source/types.js";
 import type { Layout, MountSecret, StoreFile, ThingFiles } from "#modules/model/internal/layout.js";
 
@@ -19,6 +20,10 @@ export interface MountModel {
   readonly needs?: ReadonlyArray<string>;
   /** An adapter's calls this mount includes, by the adapter's name for each: the only ones an operation may call. */
   readonly calls?: ReadonlyArray<string>;
+  /** An adapter's events this mount includes, by the adapter's name for each: the only ones its door accepts. */
+  readonly events?: ReadonlyArray<string>;
+  /** An adapter whose door receives events this mount includes: the name of its signing secret in an environment, `<MOUNT>_WEBHOOK_SIGNING`. The Worker serves `/_in/<mount>` for it. */
+  readonly door?: { readonly secret: string };
   /** An adapter that ships a `layer.js`: the services its calls need, provided to its calls and to nothing else. */
   readonly layer?: true;
   /** What stands in for an adapter's outside system in a world, as the adapter declared it. */
@@ -35,6 +40,20 @@ export interface CallReach {
   readonly included: boolean;
 }
 
+export interface BroughtAgent {
+  /** Relative to the plugin: `blueprint/agents/<name>.ts`. */
+  readonly file: string;
+  readonly declaration: Agent;
+  readonly mount: string;
+}
+export interface BroughtSource {
+  readonly file: string;
+  readonly declaration: SourceKind<any>;
+  readonly exportName: string;
+  readonly mount: string;
+  readonly package: string;
+}
+
 export interface Folded {
   /** The plugins' things, under their final names, each with `from`. */
   readonly things: ReadonlyMap<string, ThingFiles>;
@@ -44,6 +63,10 @@ export interface Folded {
   readonly mounts: Readonly<Record<string, MountModel>>;
   /** Every call of every mounted adapter, by the call object an operation's step holds. */
   readonly calls: ReadonlyMap<unknown, CallReach>;
+  /** The agent kinds the features bring, by the file's name, each with the mount that brought it. */
+  readonly agents: ReadonlyMap<string, BroughtAgent>;
+  /** The source kinds the features bring, by the file's name. */
+  readonly sources: ReadonlyMap<string, BroughtSource>;
   /** Every mounted plugin's secrets, from its `secrets.ts`, each with the mount that brought it. */
   readonly secrets: ReadonlyArray<MountSecret>;
   readonly problems: ReadonlyArray<string>;
