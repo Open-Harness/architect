@@ -128,14 +128,14 @@ two apps (K42, section 3); organisations are separate, and Capxul's companies ar
 
 24 November 2026 (rewritten under K43 on 23 November). Slice 1 is done: the first map landed by #487. Slice 5 is done: the Bridge spike
 landed in `main` by #744 (727bc47a). Slice 4 is done: the ERPNext doctype spike landed in `main` by #743 (26c3ce32).
-Slice 6 has begun: every record type Capxul takes is in `examples/capxul/doctypes.md` (485), and its board rows wait on
-Goal 18 (#749). Slice 8a is built: Capxul's app and its Company (#757) and employees, departments and job
+Slice 6 has begun: every record type Capxul takes is in `examples/capxul/doctypes.md` (485), and Goal 16 keeps its board rows
+(#749, closed by #791). Slice 8a is built: Capxul's app and its Company (#757) and employees, departments and job
 titles (#763) have their checks, and a builder that wrote none of them made them green (#786, 57d43997). Leave (8b) waits on handlers
-that can list records (#764, case 2 with Goal 17's #758). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
+that can list records (#764), which Goal 16 now builds (`decisions/CX-takeover.md`). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
 and bank accounts). Their handlers are built as well (#787, d0f02a2b), and `prove` passes all 17 journeys in `goal/capxul`; the generated Bridge
-adapter waits on Goal 17's slice 4 (#739). Goal 16 has claimed two
+adapter waits on the five generator gaps in #739, which Goal 16 builds on `goal/superagent`. Goal 16 has claimed two
 framework gaps under K42's case 3: #761's access part, landed in `main` by #768 and merged into `goal/capxul` by #773,
-and #759 (a check on extra writes), which waits on a case-2 split with Goal 17's #758 (the fix needs `language-effect`'s handler or `prove`'s journeys module) and on deciding what an unset `writes` means. Slice 3 is decided
+and #759 (a check on extra writes), which Goal 16 builds after #764 and #920, now that an unset `writes` means the operation's own thing only (`decisions/CX-takeover.md`). Slice 3 is decided
 (`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
 customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged into
 `goal/capxul` at the restart (#745), so this brief replaced the branch's old one; #773 merged it in again. The lead rewrites this section at

@@ -79,5 +79,9 @@ model, so it lands as a G12 pair, with #759's checks.
 ## Supersedes
 
 - `docs/canon/status.md`: "the five generator gaps in #739, which Goal 17 builds" → "the five generator gaps in #739, which Goal 16 now builds"
+- `design/goals/16-capxul.md`: "and its board rows wait on" → "and Goal 16 keeps its board rows"
+- `design/goals/16-capxul.md`: "that can list records (#764, case 2 with Goal 17's #758)" → "that can list records (#764), which Goal 16 now builds"
+- `design/goals/16-capxul.md`: "adapter waits on Goal 17's slice 4 (#739)" → "adapter waits on the five generator gaps in #739, which Goal 16 builds on `goal/superagent`"
+- `design/goals/16-capxul.md`: "which waits on a case-2 split with Goal 17's #758" → "which Goal 16 builds after #764 and #920"
 
 `invariants.ts`'s comment and #759's eval change with the build.
