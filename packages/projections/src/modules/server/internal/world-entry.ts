@@ -9,8 +9,11 @@ import { GENERATED, lines } from "#modules/names/service.js";
 /** The packages mounted in this app that ship a `testing.ts` of probe handlers: today the agents'. */
 const PROBING = ["agents"] as const;
 
+/** The probing packages this app mounts. An app with none is generated as it was: no registry, no world entry. */
+export const probingOf = (model: Model) => PROBING.filter((p) => Object.values(model.mounts ?? {}).some((m) => m.package === Names.pkg(p)));
+
 export const renderWorldEntry = (model: Model, empty: boolean): ReadonlyArray<RenderedFile> => {
-  const probing = PROBING.filter((p) => Object.values(model.mounts ?? {}).some((m) => m.package === Names.pkg(p)));
+  const probing = probingOf(model);
   if (probing.length === 0 || empty) return [];
   return [{
     path: "generated/server/world.ts",
