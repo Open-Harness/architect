@@ -85,7 +85,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-24 November 2026, about 09:50 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
+24 November 2026, about 12:00 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
 every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
 agreed on #707.
 
@@ -100,17 +100,26 @@ agreed on #707.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Two Capxul rounds have landed: #832 (`goal/capxul` through #786) at
-  `1770ffad`, and #913 (#787, slice 10's Bridge build, and #911, Goal 16's brief) at `5027d6a8`. `goal/capxul` is 0
-  commits ahead of `main`. #887 lands `goal/superagent` through #790 and stays a draft, with `main` merged in at
-  `dfcd6760`. Its merge, ratchet and checks hold, but two things block it. 18 of its 26 pull requests have no 🔍 pass
-  recorded on GitHub, and Goal 17 is asked on #563 to link them. The 🔍's review of the three builds that change
-  framework code found three fixes, filed for Goal 17 as Snags #899 (#670: the generated SDK types optional fields as
+- **Slice 3, the landing loop, is running.** Three Capxul rounds have landed. #832 brought `goal/capxul` through #786,
+  at `1770ffad`. #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`. #919 brought
+  slice 8c whole, at `de09a851`: #914, the holiday checks, and #918, the holiday handlers. A 🔍 failed #919 while it
+  carried only #914, because capxul `prove` was ✘ with 17 failing and no CI ratchet covers capxul. So #919 stayed a
+  draft until #918 merged and `prove` passed, as #832 did for slice 8a. `goal/capxul` is now ahead of `main` by #921
+  (docs) and #922 (Day becomes `Blueprint.day()`), and both wait for the next round. Goal 16 also lands its
+  framework slices in `main` itself: #915 (the Dates checks) turned `main` red at `bf3c60bf`, and #917 (the Dates build)
+  made it green again at `9afb7efd`.
+
+  #887 lands `goal/superagent` through #790 and stays a draft, with `main` merged in at `dfcd6760`. Its merge, ratchet
+  and checks hold, but two things block it. 18 of its 26 pull requests have no 🔍 pass recorded on GitHub, and Goal
+  17 is asked on #563 to link them. The 🔍's review of the three builds that change framework code found
+  three fixes, filed for Goal 17 as Snags #899 (#670: the generated SDK types optional fields as
   required), #900 (#756: `versioned.ts` writes "StaleRevision" as a string) and #901 (#747: the door answers a same-id,
-  different-payload delivery `seen`, not `in.mismatch`). Goal 17 had not answered by 09:50; Goal 18 is asked on #718 to
-  rank them. #781 (the superagent's agents build) is still open on its branch.
+  different-payload delivery `seen`, not `in.mismatch`). Goal 17 had not answered by 12:00; Goal 18 is asked on #718 to
+  rank them. `goal/superagent` has since merged #903, which #887 takes when it is refreshed. #781 (the superagent's
+  agents build) and #905 are still open on that branch.
 - **Snags filed for Goal 18:** #762 (a flaky port check in `portal.test.ts`), #788 (`examples/budgets` imports
   `receipts`, which `orthograph` does not export), #898 (the board sync takes over closed Asks)
-  and #908 (`e2e-layer1` check 4 fails at random; it turned `main` red once at `06877509`, and a rerun passed).
+  and #908 (`e2e-layer1` check 4 fails at random; it turned `main` red at `06877509` and #919 red at `3822d439`,
+  and a rerun passed each time).
 - **Next:** land #887 once Goal 17 has fixed #899, #900 and #901 and every slice in it has a 🔍 pass. Each round
   lands what the app branches have merged since, and tells every running goal after each landing.
