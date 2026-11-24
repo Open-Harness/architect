@@ -45,7 +45,10 @@ Add a grade to a company.
 Starts from the world `a grade`.
 
 - **Ada can't add a second grade of the same name.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Senior`, and is refused with EmployeeGradeNameTaken, EG-001, carrying gradeName `Senior`.
-- **her second company may have a grade of that name too, because names are unique within a company.** `ada` (role company.owner) calls and sends company the last call's company, gradeName `Senior`, and gets back an answer matching `^egr_[0-9a-z]+$`.
+- **Ada adds a grade with the longest name allowed.** `ada` (role company.owner) calls and sends company the world's company, gradeName `L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027.`, and gets back an answer matching `^egr_[0-9a-z]+$`.
+- **Ada adds a third grade.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Grade-2 Associate Analyst`, and gets back an answer matching `^egr_[0-9a-z]+$`.
+- **her second company may reuse the first grade's name, because names are unique within a company.** `ada` (role company.owner) calls and sends company the world's otherCompany, gradeName `Senior`, and gets back an answer matching `^egr_[0-9a-z]+$`.
+- **Ada adds a grade to her second company under a name the first doesn't use.** `ada` (role company.owner) calls and sends company the world's otherCompany, gradeName `Band 7 Lead`, and gets back an answer matching `^egr_[0-9a-z]+$`.
 
 ### set up grades
 

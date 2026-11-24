@@ -36,8 +36,12 @@ Read one employee-grade by its id: company, gradeName, state.
 Starts from the world `a grade`.
 
 - **the grade she had is left as it was.** `ada` (role company.owner) calls and sends id the world's grade, and gets back [the world's company, `Senior`, `active`].
-- **that grade is its own record, not the first company's.** `ada` (role company.owner) calls and sends id the last call's grade, and gets back [`Senior`, `active`] and gets back an answer matching `^com_[0-9a-z]+$`.
-- **and the first company's grade still reads back as before.** `ada` (role company.owner) calls and sends id the world's grade, and gets back [the world's company, `Senior`, `active`].
+- **it reads back whole.** `ada` (role company.owner) calls and sends id the last call's grade, and gets back [the world's company, `L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027.`, `active`].
+- **the third reads back as typed.** `ada` (role company.owner) calls and sends id the last call's grade, and gets back [the world's company, `Grade-2 Associate Analyst`, `active`].
+- **her first grade is unchanged by the two after it.** `ada` (role company.owner) calls and sends id the world's grade, and gets back [the world's company, `Senior`, `active`].
+- **that grade is the second company's own record.** `ada` (role company.owner) calls and sends id the last call's grade, and gets back [the world's otherCompany, `Senior`, `active`].
+- **it is filed under the second company.** `ada` (role company.owner) calls and sends id the last call's grade, and gets back [the world's otherCompany, `Band 7 Lead`, `active`].
+- **and the first company's first grade still reads back as before.** `ada` (role company.owner) calls and sends id the world's grade, and gets back [the world's company, `Senior`, `active`].
 
 ### set up grades
 

@@ -36,8 +36,12 @@ Read one branch by its id: company, branchName, state.
 Starts from the world `a branch`.
 
 - **the branch she had is left as it was.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].
-- **that branch is its own record, not the first company's.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [`Nairobi`, `active`] and gets back an answer matching `^com_[0-9a-z]+$`.
-- **and the first company's branch still reads back as before.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].
+- **it reads back whole.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's company, `Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019`, `active`].
+- **the third reads back as typed.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's company, `Kisumu-West Site 2`, `active`].
+- **her first branch is unchanged by the two after it.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].
+- **that branch is the second company's own record.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's otherCompany, `Nairobi`, `active`].
+- **it is filed under the second company.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's otherCompany, `Eldoret Depot 3`, `active`].
+- **and the first company's first branch still reads back as before.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].
 
 ### set up branches
 
