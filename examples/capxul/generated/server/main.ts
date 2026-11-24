@@ -36,6 +36,14 @@ import * as employeeHire from "../api/src/employee/hire.ts";
 import * as employeeRelieve from "../api/src/employee/relieve.ts";
 import * as employeeGradeCreate from "../api/src/employee-grade/create.ts";
 import * as employeeGradeGet from "../api/src/employee-grade/get.ts";
+import * as expenseAdd from "../api/src/expense/add.ts";
+import * as expenseGet from "../api/src/expense/get.ts";
+import * as expenseClaimApprove from "../api/src/expense-claim/approve.ts";
+import * as expenseClaimCreate from "../api/src/expense-claim/create.ts";
+import * as expenseClaimGet from "../api/src/expense-claim/get.ts";
+import * as expenseClaimReject from "../api/src/expense-claim/reject.ts";
+import * as expenseClaimTypeCreate from "../api/src/expense-claim-type/create.ts";
+import * as expenseClaimTypeGet from "../api/src/expense-claim-type/get.ts";
 import * as holidayAdd from "../api/src/holiday/add.ts";
 import * as holidayGet from "../api/src/holiday/get.ts";
 import * as holidayListAddWeeklyOff from "../api/src/holiday-list/add-weekly-off.ts";
@@ -56,6 +64,11 @@ import designationCreateHandler from "../../src/designation/create.ts";
 import employeeHireHandler from "../../src/employee/hire.ts";
 import employeeRelieveHandler from "../../src/employee/relieve.ts";
 import employeeGradeCreateHandler from "../../src/employee-grade/create.ts";
+import expenseAddHandler from "../../src/expense/add.ts";
+import expenseClaimApproveHandler from "../../src/expense-claim/approve.ts";
+import expenseClaimCreateHandler from "../../src/expense-claim/create.ts";
+import expenseClaimRejectHandler from "../../src/expense-claim/reject.ts";
+import expenseClaimTypeCreateHandler from "../../src/expense-claim-type/create.ts";
 import holidayAddHandler from "../../src/holiday/add.ts";
 import holidayListAddWeeklyOffHandler from "../../src/holiday-list/add-weekly-off.ts";
 import holidayListCreateHandler from "../../src/holiday-list/create.ts";
@@ -68,6 +81,9 @@ import * as departmentThing from "../../blueprint/things/department/thing.ts";
 import * as designationThing from "../../blueprint/things/designation/thing.ts";
 import * as employeeThing from "../../blueprint/things/employee/thing.ts";
 import * as employeeGradeThing from "../../blueprint/things/employee-grade/thing.ts";
+import * as expenseThing from "../../blueprint/things/expense/thing.ts";
+import * as expenseClaimThing from "../../blueprint/things/expense-claim/thing.ts";
+import * as expenseClaimTypeThing from "../../blueprint/things/expense-claim-type/thing.ts";
 import * as holidayThing from "../../blueprint/things/holiday/thing.ts";
 import * as holidayListThing from "../../blueprint/things/holiday-list/thing.ts";
 import * as bankAccountInvariants from "../../blueprint/things/bank-account/invariants.ts";
@@ -79,6 +95,7 @@ import * as departmentInvariants from "../../blueprint/things/department/invaria
 import * as designationInvariants from "../../blueprint/things/designation/invariants.ts";
 import * as employeeInvariants from "../../blueprint/things/employee/invariants.ts";
 import * as employeeGradeInvariants from "../../blueprint/things/employee-grade/invariants.ts";
+import * as expenseClaimTypeInvariants from "../../blueprint/things/expense-claim-type/invariants.ts";
 import * as holidayInvariants from "../../blueprint/things/holiday/invariants.ts";
 import * as holidayListInvariants from "../../blueprint/things/holiday-list/invariants.ts";
 
@@ -108,6 +125,14 @@ const employeeHireServed = Handlers.serve({ name: "employee.hire", operation: em
 const employeeRelieveServed = Handlers.serve({ name: "employee.relieve", operation: employeeRelieve.declaration, handler: employeeRelieveHandler, notFrom: "EmployeeNotActive", codes: Errors.codes });
 const employeeGradeCreateServed = Handlers.serve({ name: "employee-grade.create", operation: employeeGradeCreate.declaration, handler: employeeGradeCreateHandler, invariants: { EmployeeGradeNameTaken: "employee-grade.oneNamePerCompany" }, codes: Errors.codes });
 const employeeGradeGetServed = Reads.serve({ name: "employee-grade.get", read: employeeGradeGet.declaration });
+const expenseAddServed = Handlers.serve({ name: "expense.add", operation: expenseAdd.declaration, handler: expenseAddHandler, notFound: { expenseType: "ExpenseClaimTypeNotFound" }, codes: Errors.codes });
+const expenseGetServed = Reads.serve({ name: "expense.get", read: expenseGet.declaration });
+const expenseClaimApproveServed = Handlers.serve({ name: "expense-claim.approve", operation: expenseClaimApprove.declaration, handler: expenseClaimApproveHandler, notFrom: "ExpenseClaimNotDraft", codes: Errors.codes });
+const expenseClaimCreateServed = Handlers.serve({ name: "expense-claim.create", operation: expenseClaimCreate.declaration, handler: expenseClaimCreateHandler, notFound: { company: "CompanyNotFound", employee: "EmployeeNotFound" }, codes: Errors.codes });
+const expenseClaimGetServed = Reads.serve({ name: "expense-claim.get", read: expenseClaimGet.declaration });
+const expenseClaimRejectServed = Handlers.serve({ name: "expense-claim.reject", operation: expenseClaimReject.declaration, handler: expenseClaimRejectHandler, notFrom: "ExpenseClaimNotDraft", codes: Errors.codes });
+const expenseClaimTypeCreateServed = Handlers.serve({ name: "expense-claim-type.create", operation: expenseClaimTypeCreate.declaration, handler: expenseClaimTypeCreateHandler, invariants: { ExpenseTypeTaken: "expense-claim-type.oneNamePerCompany" }, codes: Errors.codes });
+const expenseClaimTypeGetServed = Reads.serve({ name: "expense-claim-type.get", read: expenseClaimTypeGet.declaration });
 const holidayAddServed = Handlers.serve({ name: "holiday.add", operation: holidayAdd.declaration, handler: holidayAddHandler, invariants: { HolidayDateTaken: "holiday.oneHolidayPerDay", HolidayListNameTaken: "holiday-list.oneNamePerCompany" }, codes: Errors.codes });
 const holidayGetServed = Reads.serve({ name: "holiday.get", read: holidayGet.declaration });
 const holidayListAddWeeklyOffServed = Handlers.serve({ name: "holiday-list.add-weekly-off", operation: holidayListAddWeeklyOff.declaration, handler: holidayListAddWeeklyOffHandler, notFrom: "HolidayListNotActive", invariants: { HolidayDateTaken: "holiday.oneHolidayPerDay", HolidayListNameTaken: "holiday-list.oneNamePerCompany" }, codes: Errors.codes });
@@ -115,10 +140,10 @@ const holidayListCreateServed = Handlers.serve({ name: "holiday-list.create", op
 const holidayListGetServed = Reads.serve({ name: "holiday-list.get", read: holidayListGet.declaration });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"]] as const;
+const tables = [[thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants)] as const;
+const rules = [...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
@@ -205,6 +230,29 @@ const EmployeeGradeLive = HttpApiBuilder.group(CallApi, "employee-grade", Effect
       .handle("create", ({ payload, request }) => call(employeeGradeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(employeeGradeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
+const ExpenseLive = HttpApiBuilder.group(CallApi, "expense", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("add", ({ payload, request }) => call(expenseAddServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(expenseGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const ExpenseClaimLive = HttpApiBuilder.group(CallApi, "expense-claim", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("approve", ({ payload, request }) => call(expenseClaimApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(expenseClaimCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(expenseClaimGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reject", ({ payload, request }) => call(expenseClaimRejectServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const ExpenseClaimTypeLive = HttpApiBuilder.group(CallApi, "expense-claim-type", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(expenseClaimTypeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(expenseClaimTypeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
 const HolidayLive = HttpApiBuilder.group(CallApi, "holiday", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
   const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
@@ -257,6 +305,11 @@ export const steps = {
   "employee.hire": ["employee.hire.load", "employee.hire.insert"],
   "employee.relieve": ["employee.relieve.load", "employee.relieve.update"],
   "employee-grade.create": ["employee-grade.create.insert"],
+  "expense.add": ["expense.add.load", "expense.add.insert"],
+  "expense-claim.approve": ["expense-claim.approve.load", "expense-claim.approve.update"],
+  "expense-claim.create": ["expense-claim.create.load", "expense-claim.create.insert"],
+  "expense-claim.reject": ["expense-claim.reject.update"],
+  "expense-claim-type.create": ["expense-claim-type.create.insert"],
   "holiday.add": ["holiday.add.load", "holiday.add.insert"],
   "holiday-list.add-weekly-off": ["holiday-list.add-weekly-off.load", "holiday-list.add-weekly-off.record"],
   "holiday-list.create": ["holiday-list.create.insert"],
@@ -270,7 +323,7 @@ const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
-      Layer.provide([BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, HolidayLive, HolidayListLive]),
+      Layer.provide([BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive]),
       Layer.provideMerge(CallTelemetry.layer),
       Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
       Layer.provideMerge(Database.d1(env.DB)),
@@ -295,7 +348,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed },
+  served: { "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 

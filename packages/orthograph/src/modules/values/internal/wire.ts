@@ -20,7 +20,7 @@ export const whole = (signed: boolean, given: number): Schema.BigIntFromString =
 const plainDecimal = (places: number): RegExp => new RegExp(`^(?!-0(\\.0*)?$)-?(0|[1-9][0-9]*)${places > 0 ? `(\\.[0-9]{1,${places}})?` : ""}$`);
 
 /** The text of a BigDecimal with its own scale and no exponent at any size, so `1.50` writes back as `1.50` (`BigDecimal.format` writes an exponent from 16 digits of scale). */
-const plainText = (n: BigDecimal.BigDecimal): string => {
+export const decimalText = (n: BigDecimal.BigDecimal): string => {
   if (n.scale <= 0) return n.value === 0n ? "0" : `${n.value}${"0".repeat(-n.scale)}`;
   const digits = (n.value < 0n ? -n.value : n.value).toString().padStart(n.scale + 1, "0");
   return `${n.value < 0n ? "-" : ""}${digits.slice(0, -n.scale)}.${digits.slice(-n.scale)}`;
@@ -31,6 +31,6 @@ export const decimal = (given: number): Schema.BigDecimalFromString => {
   // Places that are no whole number of at least 0 would make no pattern: it gets one that holds no text, and the compiler refuses the field, naming it.
   const pattern = Number.isInteger(given) && given >= 0 ? plainDecimal(given) : /$^/;
   return Schema.String.check(Schema.isPattern(pattern)).pipe(
-    Schema.decodeTo(Schema.BigDecimal, SchemaTransformation.transform({ decode: BigDecimal.fromStringUnsafe, encode: plainText })),
+    Schema.decodeTo(Schema.BigDecimal, SchemaTransformation.transform({ decode: BigDecimal.fromStringUnsafe, encode: decimalText })),
   ) as unknown as Schema.BigDecimalFromString;
 };
