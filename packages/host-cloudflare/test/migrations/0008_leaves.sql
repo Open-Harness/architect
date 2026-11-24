@@ -9,3 +9,10 @@ CREATE TABLE "leave" (
   "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+-- Another thing a call may write after listing leave (list-guard.test.ts): a list's guard holds whatever the call writes.
+CREATE TABLE "ask" (
+  "id" TEXT PRIMARY KEY,
+  "employee" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);

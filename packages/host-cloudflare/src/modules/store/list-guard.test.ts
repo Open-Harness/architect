@@ -18,6 +18,8 @@ const Leave = Blueprint.thing({
   description: "Days off someone asked for.",
   fields: { id: Blueprint.id("lap"), employee: Blueprint.id("emp"), starts: Day, ends: Day, note: Blueprint.text({ max: 40 }) },
 });
+// Another thing a call may write instead of leave, after it lists leave.
+const Ask = Blueprint.thing({ description: "Something someone asked for.", fields: { id: Blueprint.id("ask"), employee: Blueprint.id("emp") } });
 class LeaveOverlaps extends Blueprint.error({ other: Leave.fields.id }, { exit: 45 }) {}
 ErrorNames.name(LeaveOverlaps, "LeaveOverlaps");
 const apply = Blueprint.operation(Leave, {
@@ -28,7 +30,7 @@ const apply = Blueprint.operation(Leave, {
   allowed: [Blueprint.signedIn],
 });
 const ada = { kind: "person", person: "per_ada", via: "session" } as const;
-const layer = Layer.mergeAll(BusyLive, StoreD1.layer({ tables: [[Leave, "leave"]] }).pipe(Layer.provide(Database.d1(env.DB))));
+const layer = Layer.mergeAll(BusyLive, StoreD1.layer({ tables: [[Leave, "leave"], [Ask, "ask"]] }).pipe(Layer.provide(Database.d1(env.DB))));
 
 // Each test has employees of its own, so rows another test left never meet its lists.
 let made = 0;
@@ -42,25 +44,32 @@ const seed = (...rows: ReadonlyArray<readonly [string, string, number, number, s
 const idsOf = (employee: string) => env.DB.prepare(`SELECT "id" FROM "leave" WHERE "employee" = ? ORDER BY rowid`).bind(employee).all<{ id: string }>()
   .then((r) => r.results.map((x) => x.id));
 
-const listOf = (records: any, where: Record<string, unknown>, state: string): Effect.Effect<Listed> =>
+const listOf = (records: any, where: Record<string, unknown>, state: string | undefined): Effect.Effect<Listed> =>
   typeof records.list === "function"
     ? records.list({ thing: Leave, where, state, order: "oldest", limit: 50, after: undefined })
     : Effect.die(new Error("Records.list is not built (#764)"));
 
 type Run = { id: string; listed: ReadonlyArray<unknown> };
+/**
+ * How the handler lists and writes: `every` lists every state, not only open; `note` adds a second `where` field; `before` lists that employee's open
+ * leave first, a second list in one call; `ask` writes an `Ask` instead of the leave; `many` seeds 60 more open leave (in `around`).
+ */
+type Shape = { readonly every?: boolean; readonly note?: string; readonly before?: string; readonly ask?: boolean; readonly many?: boolean };
 /** The handler: list the employee's open leave, wait (`between`), then refuse an overlap or insert. Each attempt is recorded in `runs`. */
-const served = (runs: Array<Run>, between: (id: string, attempt: number) => Effect.Effect<void>) =>
+const served = (runs: Array<Run>, between: (id: string, attempt: number) => Effect.Effect<void>, shape: Shape = {}) =>
   Handlers.serve({
     name: "leave.apply",
     operation: apply,
     handler: (({ id, employee, starts, ends }: any) => Effect.gen(function* () {
       const records = yield* Records;
-      const { items } = yield* listOf(records, { employee }, "open");
+      if (shape.before !== undefined) yield* listOf(records, { employee: shape.before }, "open");
+      const { items } = yield* listOf(records, { employee, ...(shape.note === undefined ? {} : { note: shape.note }) }, shape.every ? undefined : "open");
       runs.push({ id, listed: items.map((i) => i["id"]) });
       yield* between(id, runs.filter((r) => r.id === id).length);
       const clash = items.find((i) => (i["starts"] as bigint) <= ends && starts <= (i["ends"] as bigint));
       if (clash) return yield* Effect.fail(new LeaveOverlaps({ other: clash["id"] as never }));
-      yield* records.insert(Leave, { id, employee, starts, ends, note: "new" }, "open");
+      if (shape.ask) yield* records.insert(Ask, { id: `ask_${String(id).slice(4)}` as never, employee });
+      else yield* records.insert(Leave, { id, employee, starts, ends, note: "new" }, "open");
       return { application: id };
     })) as never,
   });
@@ -109,18 +118,23 @@ describe("two calls that each list, then insert, in D1 (#764)", () => {
 });
 
 describe("in D1, a change the list didn't read doesn't make the call run again (#764)", () => {
-  type Change = (unit: any, ids: { ada: string; bob: string }) => Effect.Effect<void, any, any>;
+  type Ids = { ada: string; bob: string };
+  type Change = (unit: any, ids: Ids) => Effect.Effect<void, any, any>;
+  type Case = readonly [string, Change, ((ids: Ids) => Shape)?];
   /** Ada's call lists, then waits while `change` commits, then goes on. Answers how the change committed, how ada's call ended, and how many times it ran. */
-  const around = async (change: Change) => {
+  const around = async (change: Change, shapeOf: (ids: Ids) => Shape = () => ({})) => {
     const ids = { ada: fresh("ada"), bob: fresh("bob") };
-    // Ada: one open (lap_1), one cancelled (lap_4), one approved (lap_6). Bob: one open (lap_2).
-    await seed([lap(ids.ada, "1"), ids.ada, 1, 3, "open"], [lap(ids.bob, "2"), ids.bob, 1, 3, "open"], [lap(ids.ada, "4"), ids.ada, 50, 51, "cancelled"]);
+    const shape = shapeOf(ids);
+    // Ada: two open (lap_1, then lap_0: made in another order than their ids sort), one cancelled (lap_4). Bob: one open (lap_2).
+    await seed([lap(ids.ada, "1"), ids.ada, 1, 3, "open"], [lap(ids.ada, "0"), ids.ada, 5, 6, "open"], [lap(ids.bob, "2"), ids.bob, 1, 3, "open"], [lap(ids.ada, "4"), ids.ada, 50, 51, "cancelled"]);
+    // More open leave than a page of 50, far from the days ada asks for.
+    if (shape.many) await seed(...Array.from({ length: 60 }, (_, n) => [lap(ids.ada, `p${n}`), ids.ada, 100 + n, 100 + n, "open"] as const));
     const runs: Array<Run> = [];
     const out = await Effect.runPromise(Effect.gen(function* () {
       const store = yield* Store;
       const listed = yield* Deferred.make<void>();
       const go = yield* Deferred.make<void>();
-      const s = served(runs, (_id, attempt) => (attempt === 1 ? Effect.andThen(Deferred.succeed(listed, undefined), Deferred.await(go)) : Effect.void));
+      const s = served(runs, (_id, attempt) => (attempt === 1 ? Effect.andThen(Deferred.succeed(listed, undefined), Deferred.await(go)) : Effect.void), shape);
       const fiber = yield* Effect.forkChild(s.run(asks(lap(ids.ada, "a"), ids.ada, 10, 12) as never, ada));
       // A call that ends before it lists (it died) is the failure, not a wait.
       yield* Effect.raceFirst(Deferred.await(listed), Effect.andThen(Fiber.join(fiber), Effect.die(new Error("ada's call ended before it listed"))));
@@ -134,15 +148,19 @@ describe("in D1, a change the list didn't read doesn't make the call run again (
   };
   const leave = (id: string, employee: string, starts: bigint, ends: bigint) => ({ id, employee, starts, ends, note: "new" });
 
-  const outside: ReadonlyArray<readonly [string, Change]> = [
+  const adaNew: Change = (u, { ada: a }) => u.records.insert(Leave, leave(lap(a, "b"), a, 20n, 21n), "open");
+  const outside: ReadonlyArray<Case> = [
     ["another employee's new leave", (u, { bob }) => u.records.insert(Leave, leave(lap(bob, "b"), bob, 10n, 12n), "open")],
     ["another employee's leave changed", (u, { bob }) => u.records.update(Leave, lap(bob, "2"), { starts: 10n, ends: 12n, note: "moved" })],
     // In ada's `where` but outside the listed state: the list never held it.
     ["ada's cancelled leave changed", (u, { ada: a }) => u.records.update(Leave, lap(a, "4"), { starts: 10n, ends: 12n, note: "moved" })],
+    ["another employee's new leave, the list naming no state", (u, { bob }) => u.records.insert(Leave, leave(lap(bob, "b"), bob, 10n, 12n), "open"), () => ({ every: true })],
+    // In ada's employee but not the list's note: a guard on the first `where` field alone would read it.
+    ["ada's new leave with another note, the list on employee and note", (u, { ada: a }) => u.records.insert(Leave, { ...leave(lap(a, "c"), a, 20n, 21n), note: "other" }, "open"), () => ({ note: "new" })],
   ];
-  for (const [what, change] of outside) {
+  for (const [what, change, shapeOf] of outside) {
     it(`${what}: ada's call commits on its first run`, { timeout: 60_000 }, async () => {
-      const { changed, exit, runs, application } = await around(change);
+      const { changed, exit, runs, application } = await around(change, shapeOf);
       expect(changed).toBe("committed");
       expect(Exit.isSuccess(exit) ? exit.value : String(Cause.squash(exit.cause))).toEqual({ application });
       expect(runs).toBe(1);
@@ -150,16 +168,27 @@ describe("in D1, a change the list didn't read doesn't make the call run again (
   }
 
   // Controls: a change inside the listed `where` and `state` does make it run again, even one that leaves no overlap.
-  const inside: ReadonlyArray<readonly [string, Change]> = [
-    ["ada's new leave on other days", (u, { ada: a }) => u.records.insert(Leave, leave(lap(a, "b"), a, 20n, 21n), "open")],
+  const inside: ReadonlyArray<Case> = [
+    ["ada's new leave on other days", adaNew],
     ["ada's listed leave changed", (u, { ada: a }) => u.records.update(Leave, lap(a, "1"), { note: "moved" })],
     ["bob's leave moved to ada, on other days", (u, { ada: a, bob }) => u.records.update(Leave, lap(bob, "2"), { employee: a })],
     ["ada's cancelled leave reopened, on other days", (u, { ada: a }) => u.setState(Leave, lap(a, "4"), "open")],
     ["ada's listed leave cancelled", (u, { ada: a }) => u.setState(Leave, lap(a, "1"), "cancelled")],
+    // Every listed row leaves: the list is empty now, and the guard must still fail the commit.
+    ["all of ada's listed leave cancelled", (u, { ada: a }) => Effect.andThen(u.setState(Leave, lap(a, "1"), "cancelled"), u.setState(Leave, lap(a, "0"), "cancelled"))],
+    // One row leaves and another comes, both at version 0: the same count and versions, other ids.
+    ["ada's listed leave cancelled and a new one opened, in one commit", (u, ids) => Effect.andThen(u.setState(Leave, lap(ids.ada, "1"), "cancelled"), adaNew(u, ids))],
+    ["ada's cancelled leave changed, the list naming no state", (u, { ada: a }) => u.records.update(Leave, lap(a, "4"), { note: "moved" }), () => ({ every: true })],
+    // A call that lists twice: a change in either list makes it run again.
+    ["ada's new leave on other days, bob's listed first", adaNew, ({ bob }) => ({ before: bob })],
+    ["bob's new leave, bob's listed first", (u, { bob }) => u.records.insert(Leave, leave(lap(bob, "b"), bob, 10n, 12n), "open"), ({ bob }) => ({ before: bob })],
+    // The call writes no leave, only an ask: the list still guards its commit.
+    ["ada's new leave on other days, the call writing an ask", adaNew, () => ({ ask: true })],
+    ["ada's 60th more leave changed, past a page of 50", (u, { ada: a }) => u.records.update(Leave, lap(a, "p59"), { note: "moved" }), () => ({ many: true })],
   ];
-  for (const [what, change] of inside) {
+  for (const [what, change, shapeOf] of inside) {
     it(`control, ${what}: ada's call runs again and then commits`, { timeout: 60_000 }, async () => {
-      const { changed, exit, runs, application } = await around(change);
+      const { changed, exit, runs, application } = await around(change, shapeOf);
       expect(changed).toBe("committed");
       expect(Exit.isSuccess(exit) ? exit.value : String(Cause.squash(exit.cause))).toEqual({ application });
       expect(runs).toBe(2);
