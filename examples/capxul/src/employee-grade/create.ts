@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/employee-grade/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/employee-grade/create.handler.ts";
+import { EmployeeGrade } from "../../blueprint/things/employee-grade/thing.ts";
 
 /**
  * employee-grade.create: Add a grade to a company.
@@ -37,10 +38,12 @@ import type { Handler } from "../../generated/api/src/employee-grade/create.hand
  *   once it answers, it writes EmployeeGradeCreated: grade from the answer, company from the payload;
  *   the call is the span employee-grade.create, and its commit employee-grade.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, gradeName }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span employee-grade.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span employee-grade.create.insert. A name taken in the company is the runtime's refusal.
+    yield* steps.insert(records.insert(EmployeeGrade, { id, company, gradeName }));
 
     // The move create, to active.
     yield* move();

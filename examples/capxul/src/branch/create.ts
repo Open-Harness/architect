@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/branch/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/branch/create.handler.ts";
+import { Branch } from "../../blueprint/things/branch/thing.ts";
 
 /**
  * branch.create: Add a branch to a company.
@@ -37,10 +38,12 @@ import type { Handler } from "../../generated/api/src/branch/create.handler.ts";
  *   once it answers, it writes BranchCreated: branch from the answer, company from the payload;
  *   the call is the span branch.create, and its commit branch.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, branchName }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span branch.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span branch.create.insert. A name taken in the company is the runtime's refusal.
+    yield* steps.insert(records.insert(Branch, { id, company, branchName }));
 
     // The move create, to active.
     yield* move();
