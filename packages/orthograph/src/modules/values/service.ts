@@ -1,7 +1,8 @@
 import { DateTime, Option, Schema } from "effect";
 import type { Field } from "#modules/things/types.js";
 import type { MoneyApi, MoneyOptions, Value, ValueMeta, ValuesApi } from "./types.ts";
-import { whole } from "./internal/wire.ts";
+import { decimal, whole } from "./internal/wire.ts";
+import { lazy, link, linkTo } from "./internal/link.ts";
 import { Days, isRealDay } from "./internal/days.ts";
 
 const isValue = (x: unknown): x is Value =>
@@ -41,10 +42,18 @@ const money: MoneyApi = Object.assign(
   { of: (holder: Field | Value, options?: MoneyOptions) => amount({ kind: "of", of: holder }, options) },
 );
 
+/** ERPNext's largest float precision. */
+const DEFAULT_PLACES = 9;
+
+/** A copy, so a value shared elsewhere keeps its own words; a link's copy is a link to the described field, read when used. */
+const describedAs = <const X extends Value | Field>(x: X, description: string): X => {
+  const to = linkTo(x);
+  return (to === undefined ? Object.freeze({ ...x, description }) : link(to, description, describedAs)) as X;
+};
+
 export const Values: ValuesApi = {
   value,
-  // A copy, so a value shared elsewhere keeps its own words.
-  described: (x, description) => Object.freeze({ ...x, description }) as unknown as typeof x,
+  described: describedAs,
   id,
   uint: (bits) => described(whole(false, bits), { type: "uint", bits }),
   text: (options) => {
@@ -55,6 +64,11 @@ export const Values: ValuesApi = {
   day: () => described(Schema.String.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}$/), Schema.makeFilter(isRealDay, { description: "a day the calendar has, YYYY-MM-DD" })), { type: "day" }),
   account: () => described(Schema.String.check(Schema.isPattern(CAIP10)), { type: "account" }),
   money,
+  decimal: (options) => {
+    const places = options?.places ?? DEFAULT_PLACES;
+    return described(decimal(places), { type: "decimal", places });
+  },
+  link: (to) => link(to, undefined, describedAs),
   refAny: () =>
     described(Schema.Struct({
       declaration: Schema.String.check(Schema.isPattern(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/)),
@@ -63,4 +77,4 @@ export const Values: ValuesApi = {
   email: () => Object.freeze({ ...described(Schema.String.check(Schema.isMaxLength(254), Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)), { type: "text", max: 254 }), format: "email" as const }),
 };
 
-export { isValue, Days };
+export { isValue, Days, lazy, linkTo };

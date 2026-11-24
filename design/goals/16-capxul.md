@@ -133,12 +133,15 @@ Slice 6 has begun: every record type Capxul takes is in `examples/capxul/doctype
 titles (#763) have their checks, and a builder that wrote none of them made them green (#786, 57d43997). Leave (8b) waits on handlers
 that can list records (#764), which Goal 16 now builds (`decisions/CX-takeover.md`). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
 and bank accounts). Their handlers are built as well (#787, d0f02a2b). Slice 8c, holiday lists, is built: its checks are #914 (4f5cefaf), and a separate
-builder made them green (#918, 15c79143), so `prove` passes all 22 journeys in `goal/capxul`. Every Capxul amount is USDC for now (Aaron, 24 November
-2026; `decisions/CX-grill.md`, section 3, #926), so expense claims no longer wait on a company's currency (#882, parked). The generated Bridge
+builder made them green (#918, 15c79143). Branch and Employee Grade's checks are in (#924, 19c24f88), and a separate builder made them green (#927, 64492ea4), so `prove` passes all 26 journeys in `goal/capxul`. Expense claims are in USDC, the one
+dollar asset every Capxul company uses for now (Aaron, 24 November 2026; `CX-grill.md`, section 3), so they wait on
+nothing; their checks are Goal 16's next slice (draft #937). The generated Bridge
 adapter waits on the five generator gaps in #739, which Goal 16 builds on `goal/superagent`. Goal 16 has claimed two
 framework gaps under K42's case 3: #761's access part, landed in `main` by #768 and merged into `goal/capxul` by #773,
-and #759 (a check on extra writes), which Goal 16 builds after #764 and #920, now that an unset `writes` means the operation's own thing only (`decisions/CX-takeover.md`).
-It has also claimed Dates (#866) under case 3, chiefly in `packages/orthograph/src/modules/values`; Dates' checks landed in `main` by #915 (bf3c60bf). Slice 3 is decided
+and #759 (a check on extra writes), which Goal 16 builds after #764 and #920, now that an unset `writes` means the operation's own thing only (`decisions/CX-takeover.md`). It has also claimed Dates (#866) under case 3, and held Company currency (#882) until Aaron's call parked it, both
+chiefly in `packages/orthograph/src/modules/values`. Dates' checks landed in `main` by #915 (bf3c60bf);
+Dates is built in `main` by #917 (9afb7efd), and Capxul's `Day` runs on it (#922, 8939289b). Company currency (#882) is
+parked by Aaron's one-dollar-asset call and unclaimed while parked; its checks (#923) stay an unmerged draft. Snag #920 (the unique check at commit asks the store once per row) is Goal 16's too. Slice 3 is decided
 (`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
 customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged into
 `goal/capxul` at the restart (#745), so this brief replaced the branch's old one; #773 merged it in again. The lead rewrites this section at
