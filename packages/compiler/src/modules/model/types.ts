@@ -148,6 +148,8 @@ export interface OperationModel {
   readonly notFound?: Readonly<Record<string, string>>;
   /** A creating move's field (the answer's, else the payload's) that carries the id the runtime mints and hands in as `id`. */
   readonly mints?: string;
+  /** A save or restore of a thing with versions: the declared error whose only field is `current`, its refusal of a save made from an old version (K40 fix 2). */
+  readonly stale?: string;
   readonly allowed: ReadonlyArray<AllowedModel>;
   /**
    * Whether the MCP door lists it as a tool: some `allowed` entry admits an agent, the mount's narrowing (`via`) keeps `agent`, and it does

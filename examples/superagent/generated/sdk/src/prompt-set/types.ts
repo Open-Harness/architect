@@ -13,5 +13,5 @@ export type PromptSet = {
   readonly "sections": Of<Declared["sections"]>;
   readonly "skills": Of<Declared["skills"]>;
   readonly "overrides": Of<Declared["overrides"]>;
-  readonly "saved": Of<Declared["saved"]>;
+  readonly "saved"?: Of<Declared["saved"]>;
 };
