@@ -43,7 +43,27 @@ export const prove = (root: string, ...args: ReadonlyArray<string>): Promise<Pro
 /** The same, for a prove against `ortho dev`: what the world was asked is read from dev's collector folder. */
 export const proveWarm = (root: string, ...args: ReadonlyArray<string>): Promise<Proved> => proveWatching(root, DEV_FOLDER, args);
 
+/**
+ * How many proves of one test file run at once. Check 29's rows each prove in a copy and a world of their own, so they run together, but
+ * a prove starts a workerd world and a Node process: this keeps the load on a runner to what it can carry. Check 30 times its runs and
+ * never overlaps them, so it is never held up by this.
+ */
+export const PROVE_AT_ONCE = 3;
+let running = 0;
+const waiting: Array<() => void> = [];
+// A finished prove hands its place straight to the next one waiting, so the count never dips below what is running.
+const turn = async () => {
+  if (running < PROVE_AT_ONCE) { running += 1; return; }
+  await new Promise<void>((resolve) => waiting.push(resolve));
+};
+const release = () => { const next = waiting.shift(); if (next === undefined) running -= 1; else next(); };
+
 const proveWatching = async (root: string, folder: string, args: ReadonlyArray<string>): Promise<Proved> => {
+  await turn();
+  try { return await proveWatchingNow(root, folder, args); } finally { release(); }
+};
+
+const proveWatchingNow = async (root: string, folder: string, args: ReadonlyArray<string>): Promise<Proved> => {
   const file = join(dirname(root), `report-${Math.random().toString(36).slice(2)}.json`);
   const child = spawn(process.execPath, [cli, "prove", ...args, "--root", root, "--report", file], { cwd: root });
   let out = "";

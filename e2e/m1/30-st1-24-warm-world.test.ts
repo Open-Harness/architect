@@ -45,12 +45,12 @@
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { cli, copyOf, nothingRunning, acme } from "../layer1/support.ts";
 import { freePorts } from "../ports.ts";
 import { edit, prove, proveWarm, worldProcesses, worldProcessesUnder, DEV_FOLDER, type Proved, type Report } from "./prove-speed.ts";
 
-const PORTS = freePorts("dev", "control");
+const PORTS = freePorts("dev", "control", "leak", "stopped", "killed", "edited");
 const SPEND = "src/allowance/spend.ts";
 const FIXTURE = `// Check 30's fixture. A person signs up with one fixed email: a world that still holds the last run's person refuses it.
 import { Blueprint, expect, spans } from "orthograph";
@@ -110,7 +110,8 @@ const fastEnough = (warmSeconds: ReadonlyArray<number>, coldSeconds: number) => 
 
 const copies: Array<ReturnType<typeof project>> = [];
 const fresh = () => { const copy = project(); copies.push(copy); return copy; };
-afterEach(() => { for (const copy of copies.splice(0)) copy.remove(); });
+// The controls and the guards run together (each on a dev port of its own), so a copy goes when the file is done, never by one row's hook.
+afterAll(() => { for (const copy of copies.splice(0)) copy.remove(); });
 
 let cold: Proved;
 let reference: ReturnType<typeof project>;
@@ -120,7 +121,7 @@ beforeAll(async () => {
 }, 600_000);
 afterAll(() => reference?.remove());
 
-describe("30 controls: the reference, and the instruments", () => {
+describe.concurrent("30 controls: the reference, and the instruments", () => {
   it("a cold prove of the project, with the fixture, passes all 16 journeys and starts a world of its own (the poll sees it), saying nothing of reusing one", () => {
     expect(cold.status, why(cold)).toBe(0);
     expect(cold.report?.journeys).toHaveLength(16);
@@ -142,7 +143,7 @@ describe("30 controls: the reference, and the instruments", () => {
 
   it("a world that lives past a run keeps the fixture's record: the same email is refused the second time (there is a leak to catch)", async () => {
     const copy = fresh();
-    const dev = await startDev(copy.root, PORTS.control);
+    const dev = await startDev(copy.root, PORTS.leak);
     try {
       const acmeCli = (...args: ReadonlyArray<string>) => spawnSync(process.execPath, [join(copy.root, "generated/cli/src/main.ts"), ...args], { encoding: "utf8", env: { ...process.env, ACME_URL: dev.url } });
       const signUp = () => acmeCli("person", "sign-up", "--email", "left-behind@example.test", "--password", "a-long-enough-password-1", "--name", "Left Behind", "--json");
@@ -188,21 +189,30 @@ describe("30 ST1.24: a warm world", () => {
     warm.copy?.remove();
   }, 120_000);
 
+  // Three runs in a row against one fresh warm world, made once and read by the next two rows: the second is "a second prove in a row",
+  // and the three together are the isolation row. (Each used to make its own runs, five full proves in all.)
+  let threeRuns: Promise<ReadonlyArray<Proved>> | undefined;
+  const threeWarmRuns = () => (threeRuns ??= (async () => {
+    const runs: Array<Proved> = [];
+    for (let run = 1; run <= 3; run++) runs.push(await proveWarm(warm.root));
+    return runs;
+  })());
+
   it("a second prove in a row against ortho dev starts no world of its own, says it is reusing dev's, and gives the cold run's verdict", async () => {
-    const first = await proveWarm(warm.root);
-    expect(reused(first, warm.url), `the first prove did not say it was reusing the world\n${why(first)}`).toBe(true);
-    const second = await proveWarm(warm.root);
-    console.log(`30: against ortho dev, the second prove took ${second.seconds.toFixed(1)} s (a cold one took ${cold.seconds.toFixed(1)} s)`);
-    expect(reused(second, warm.url), `the second prove did not say it was reusing the world\n${why(second)}`).toBe(true);
-    expect([...second.worlds], `prove started wrangler or workerd processes of its own\n${why(second)}`).toEqual([]);
-    expect(second.status, why(second)).toBe(0);
-    expect([...second.called].sort(), `dev's collector (${DEV_FOLDER}) did not hear what a cold run's did`).toEqual([...cold.called].sort());
-    expect(verdictOf(second.report)).toBe(verdictOf(cold.report));
+    const [first, second] = await threeWarmRuns();
+    expect(reused(first!, warm.url), `the first prove did not say it was reusing the world\n${why(first!)}`).toBe(true);
+    console.log(`30: against ortho dev, the second prove took ${second!.seconds.toFixed(1)} s (a cold one took ${cold.seconds.toFixed(1)} s)`);
+    expect(reused(second!, warm.url), `the second prove did not say it was reusing the world\n${why(second!)}`).toBe(true);
+    expect([...second!.worlds], `prove started wrangler or workerd processes of its own\n${why(second!)}`).toEqual([]);
+    expect(second!.status, why(second!)).toBe(0);
+    expect([...second!.called].sort(), `dev's collector (${DEV_FOLDER}) did not hear what a cold run's did`).toEqual([...cold.called].sort());
+    expect(verdictOf(second!.report)).toBe(verdictOf(cold.report));
   });
 
   it("a record one run plants is not in the next run's way: a fixed email signs up in each of three runs in a row", async () => {
-    for (let run = 1; run <= 3; run++) {
-      const proved = await proveWarm(warm.root);
+    const runs = await threeWarmRuns();
+    for (const [i, proved] of runs.entries()) {
+      const run = i + 1;
       expect(reused(proved, warm.url), `run ${run} did not reuse the world: the test would prove nothing\n${why(proved)}`).toBe(true);
       expect([...proved.worlds], `run ${run} started a world of its own\n${why(proved)}`).toEqual([]);
       const left = proved.report?.journeys.find((j) => j.name === "a run leaves a record");
@@ -233,7 +243,7 @@ describe("30 ST1.24: a warm world", () => {
   });
 });
 
-describe("30 guards: true today, and the warm path must keep them true", () => {
+describe.concurrent("30 guards: true today, and the warm path must keep them true", () => {
   it("a handler edited between two warm runs is what the next run judges: its verdict is the cold run's on the same edit, and the edit's removal brings the passing one back", async () => {
     const broken = fresh();
     const warmCopy = fresh();
@@ -241,7 +251,7 @@ describe("30 guards: true today, and the warm path must keep them true", () => {
     breakSpend(broken.root);
     const coldBroken = await prove(broken.root);
     expect(coldBroken.status, "the planted break must fail a cold prove").toBe(1);
-    const dev = await startDev(warmCopy.root, PORTS.control);
+    const dev = await startDev(warmCopy.root, PORTS.edited);
     try {
       expect(verdictOf((await prove(warmCopy.root)).report)).toBe(verdictOf(cold.report));
       breakSpend(warmCopy.root);
@@ -256,7 +266,7 @@ describe("30 guards: true today, and the warm path must keep them true", () => {
 
   it("after ortho dev was killed, leaving its record behind, prove starts a world of its own and says nothing of reusing one", async () => {
     const copy = fresh();
-    const dev = await startDev(copy.root, PORTS.control);
+    const dev = await startDev(copy.root, PORTS.killed);
     process.kill(dev.child.pid!, "SIGKILL");
     // Its wrangler and workerd are left running: stop each by pid (they name this project's temporary folder, and nothing else's).
     for (const line of [...worldProcesses(copy.root), ...worldProcessesUnder(dev.child.pid!)]) {
@@ -273,7 +283,7 @@ describe("30 guards: true today, and the warm path must keep them true", () => {
 
   it("after ortho dev has stopped, prove starts a world of its own, says nothing of reusing one, and passes", async () => {
     const copy = fresh();
-    const dev = await startDev(copy.root, PORTS.control);
+    const dev = await startDev(copy.root, PORTS.stopped);
     await stopDev(dev.child);
     const proved = await prove(copy.root);
     expect(proved.status, why(proved)).toBe(0);

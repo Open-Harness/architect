@@ -61,7 +61,7 @@
 // map cannot place, not seen by it. No Docker. Each row starts workerd worlds of its own through prove, on ports from the OS.
 import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { acme, copyOf, echoJourneyTitle, mountEcho, nothingRunning, project, run, succeeds, type Copy } from "./support.ts";
 import { append, calling, edit, journeyNames, modelOf, perfect, problems, prove, standingOn, stepsShortfall, worldCallsOf, type Expected, type JourneyMap, type Proved } from "./prove-speed.ts";
 
@@ -90,7 +90,8 @@ const FAILING = ["spend twice with one request", "spend within an allowance"];
 const GRANT_JOURNEYS = ["grant an allowance", "an outsider cannot revoke", "read an allowance", "revoke then spend", "spend twice with one request", "spend within an allowance"];
 
 const copies: Array<ReturnType<typeof copyOf>> = [];
-afterEach(() => { for (const copy of copies.splice(0)) copy.remove(); });
+// Rows run together, so a copy is removed when the file is done, never by one row's hook (it would remove another row's folder).
+afterAll(() => { for (const copy of copies.splice(0)) copy.remove(); });
 let baseline: ReturnType<typeof copyOf>;
 let map: JourneyMap;
 let all: ReadonlyArray<string>;
@@ -124,7 +125,7 @@ const breakSpend = (root: string) => edit(root, SPEND, (t) => t.replace("return 
 const expecting = (ran: ReadonlyArray<string>, over: Partial<Expected> = {}): Expected => ({ ran, fellBackOn: null, all, map, passes: true, ...over });
 const judged = (proved: Proved, want: Expected) => expect(problems(proved, want), `${proved.out.slice(-300)}`).toEqual([]);
 
-beforeAll(async () => {
+const setupAcme = async () => {
   baseline = copyOf(acme);
   writeFileSync(join(baseline.root, MONEY), MONEY_SOURCE);
   for (const [file, text] of Object.entries(OTHER_FILES)) writeFileSync(join(baseline.root, file), text);
@@ -132,9 +133,16 @@ beforeAll(async () => {
   map = modelOf(baseline.root);
   all = journeyNames(map);
   record = existsSync(join(baseline.root, RECORD)) ? readFileSync(join(baseline.root, RECORD), "utf8") : "";
-}, 600_000);
+};
+// The four baselines (acme here; the plugin project, the twin project and the importer project in the describes below, which add
+// theirs to `setups` as they are read) are each a full prove in a copy of their own and share nothing, so they are made together;
+// `prove` lets at most PROVE_AT_ONCE run at a time (prove-speed.ts). Every row below starts from its own copy and its own world, so
+// the rows of a describe run together too (`describe.concurrent`), under the same limit; a row's own proves still run one after
+// another, in the order it asserts them.
+const setups: Array<() => Promise<void>> = [];
+beforeAll(async () => { await Promise.all([setupAcme(), ...setups.map((setup) => setup())]); }, 900_000);
 
-describe("29 controls: the instruments, and what today's prove already does", () => {
+describe.concurrent("29 controls: the instruments, and what today's prove already does", () => {
   it("the full prove passes on acme's 15 journeys and leaves the record every row starts from", () => {
     expect(first.status, first.out.slice(-800)).toBe(0);
     expect(first.report?.journeys.map((j) => j.name).sort()).toEqual([...all]);
@@ -264,7 +272,7 @@ describe("29 controls: the instruments, and what today's prove already does", ()
   });
 });
 
-describe("29 ST1.23: ortho prove --changed proves what a change touches, names what it skipped, and falls back to everything when it cannot tell", () => {
+describe.concurrent("29 ST1.23: ortho prove --changed proves what a change touches, names what it skipped, and falls back to everything when it cannot tell", () => {
   it("with no record of an earlier proof it proves all 15 journeys and says there is no record", async () => {
     const root = seeded(false);
     const proved = await prove(root, "--changed");
@@ -441,12 +449,12 @@ describe("29 ST1.23: ortho prove --changed proves what a change touches, names w
   });
 });
 
-describe("29 ST1.23, two more false greens Codex found in the build: a mounted dependency, and two journeys of one name", () => {
+describe.concurrent("29 ST1.23, two more false greens Codex found in the build: a mounted dependency, and two journeys of one name", () => {
   // (a) A plugin mounted from node_modules: a file of it that its handlers import, which is not a handler, is a change to something an
   // operation's steps reach. `ortho impact` places it on the mount's operations; `--changed` must place it on the journeys that call them.
   const DEPENDENCY = "node_modules/@fixture/echo/dist/blueprint/choices.js";
   const rowCopies: Array<{ readonly remove: () => void }> = [];
-  afterEach(() => { for (const copy of rowCopies.splice(0)) copy.remove(); });
+  afterAll(() => { for (const copy of rowCopies.splice(0)) copy.remove(); });
   let echoBase: Copy;
   let echoRecord = "";
   let echoMap: JourneyMap;
@@ -492,20 +500,22 @@ describe("29 ST1.23, two more false greens Codex found in the build: a mounted d
     return expecting([SAME], { all: twinAll, map: twinMap, skipped: twinAll.filter((_, i) => i !== once), titles: { [SAME]: [step] } });
   };
 
-  beforeAll(async () => {
+  setups.push(async () => {
     echoBase = echoProject();
     const echoFull = await prove(echoBase.root);
     expect(echoFull.status, echoFull.out.slice(-600)).toBe(0);
     echoRecord = readFileSync(join(echoBase.root, RECORD), "utf8");
     echoMap = modelOf(echoBase.root);
     echoAll = journeyNames(echoMap);
+  });
+  setups.push(async () => {
     twinBase = twinProject();
     const twinFull = await prove(twinBase.root);
     expect(twinFull.status, twinFull.out.slice(-600)).toBe(0);
     twinRecord = readFileSync(join(twinBase.root, RECORD), "utf8");
     twinMap = JSON.parse(succeeds(twinBase.root, "model", "--json").stdout) as JourneyMap;
     twinAll = journeyNames(twinMap);
-  }, 900_000);
+  });
   afterAll(() => { echoBase?.remove(); twinBase?.remove(); });
 
   it("controls: the plugin's journey is the only one that calls its operations (1 of 16), and an edit to a file of the package is seen by `ortho impact` as stale on that mount's operations", () => {
@@ -554,9 +564,9 @@ describe("29 ST1.23, two more false greens Codex found in the build: a mounted d
   });
 });
 
-describe("29 ST1.23, two more false greens the review found: a generated file, and a handler that imports another's", () => {
+describe.concurrent("29 ST1.23, two more false greens the review found: a generated file, and a handler that imports another's", () => {
   const rowCopies: Array<{ readonly remove: () => void }> = [];
-  afterEach(() => { for (const copy of rowCopies.splice(0)) copy.remove(); });
+  afterAll(() => { for (const copy of rowCopies.splice(0)) copy.remove(); });
 
   // (1) generated/ is hashed (header), so a change there cannot be placed: everything, naming the file, and never a green with 0 journeys.
   const GENERATED = "generated/server/main.ts";
@@ -576,13 +586,13 @@ describe("29 ST1.23, two more false greens the review found: a generated file, a
   };
   const wantImporter = (over: Partial<Expected> = {}) =>
     expecting([...new Set([...calling(importMap, "allowance.grant"), "health is up"])], { map: importMap, passes: false, fails: ["health is up"], ...over });
-  beforeAll(async () => {
+  setups.push(async () => {
     importBase = importerProject();
     const full = await prove(importBase.root);
     expect(full.status, full.out.slice(-600)).toBe(0);
     importRecord = readFileSync(join(importBase.root, RECORD), "utf8");
     importMap = modelOf(importBase.root);
-  }, 600_000);
+  });
   afterAll(() => importBase?.remove());
 
   it("control: a full prove cannot run the world once a throw is appended to the generated server, and passes before it", async () => {
