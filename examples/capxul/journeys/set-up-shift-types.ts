@@ -89,17 +89,6 @@ export default Blueprint.journey("set up shift types", {
       noEvents(),
     ),
     s.step(
-      "and one a minute short of a whole day",
-      s.ada.run(create, { company: s.world.company, shiftTypeName: "Long", startTime: "08:01", endTime: "08:00" }),
-      expect((a) => a.shiftType).toMatch(/^sht_[0-9a-z]+$/),
-    ),
-    s.step(
-      "it reads back with its end a minute before its start",
-      s.ada.run(get, { id: s.last.shiftType }),
-      expect((a) => [a.shiftTypeName, a.startTime, a.endTime]).toEqual(["Long", "08:01", "08:00"]),
-      noEvents(),
-    ),
-    s.step(
       "a shift exactly twelve hours long is allowed, eight in the morning to eight at night",
       s.ada.run(create, { company: s.world.company, shiftTypeName: "Twelve", startTime: "08:00", endTime: "20:00" }),
       expect((a) => a.shiftType).toMatch(/^sht_[0-9a-z]+$/),

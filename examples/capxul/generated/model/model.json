@@ -18823,7 +18823,7 @@
           ]
         },
         {
-          "title": "nor a year before, later in its month",
+          "title": "nor a year before, later in its year",
           "call": {
             "actor": "olga",
             "operation": "attendance-request.create",
@@ -19052,7 +19052,7 @@
           ]
         }
       ],
-      "sourceHash": "64e1ba056946a044bf50913ddb7da1c281293550ac6302eb2e06d346e0e481de"
+      "sourceHash": "09ae4cd06f76077f1709a12b2b147a96aa08405a7fc6b6cdd228593a24078c9b"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
@@ -21608,59 +21608,6 @@
           ]
         },
         {
-          "title": "and one a minute short of a whole day",
-          "call": {
-            "actor": "ada",
-            "operation": "shift-type.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "company"
-                ]
-              },
-              "shiftTypeName": "Long",
-              "startTime": "08:01",
-              "endTime": "08:00"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^sht_[0-9a-z]+$",
-              "flags": ""
-            }
-          ]
-        },
-        {
-          "title": "it reads back with its end a minute before its start",
-          "call": {
-            "actor": "ada",
-            "operation": "shift-type.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "shiftType"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                "Long",
-                "08:01",
-                "08:00"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
           "title": "a shift exactly twelve hours long is allowed, eight in the morning to eight at night",
           "call": {
             "actor": "ada",
@@ -21935,7 +21882,7 @@
           ]
         }
       ],
-      "sourceHash": "929621bff07315774ae171a4f55febcf5ad6052538740025bf59d80916f5dd38"
+      "sourceHash": "38a8782845d32d38c5c120abfbc71fe5fa28947bb6100a665487d20819db776b"
     },
     "journeys/weekly-offs.ts": {
       "name": "weekly offs",

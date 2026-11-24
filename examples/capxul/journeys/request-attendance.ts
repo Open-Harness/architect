@@ -88,7 +88,7 @@ export default Blueprint.journey("request attendance", {
       spans({ absent: ["attendance-request.create.insert"] }),
     ),
     s.step(
-      "nor a year before, later in its month",
+      "nor a year before, later in its year",
       s.olga.run(create, { company: s.world.company, employee: s.world.employee, fromDate: "2025-03-01", toDate: "2026-01-06", reason: "On Duty" }),
       refuses(RequestBeforeJoining, { dateOfJoining: "2026-01-05" }),
       noEvents(),

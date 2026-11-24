@@ -408,7 +408,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Shift Request | thing | SUB | 10 | `hrms/hrms/hr/doctype/shift_request/shift_request.json` |  |
 | Shift Schedule | thing | SUB | 3 | `hrms/hrms/hr/doctype/shift_schedule/shift_schedule.json` |  |
 | Shift Schedule Assignment | thing |  | 8 | `hrms/hrms/hr/doctype/shift_schedule_assignment/shift_schedule_assignment.json` |  |
-| Shift Type | thing |  | 19 | `hrms/hrms/hr/doctype/shift_type/shift_type.json` | its name unique within the company, a start and an end time (`HH:MM`) that differ; an end before the start runs past midnight. Check-in rules and auto attendance come with check-ins |
+| Shift Type | thing |  | 19 | `hrms/hrms/hr/doctype/shift_type/shift_type.json` | its name unique within the company, a start and an end time (`HH:MM`) that differ; an end before the start runs past midnight. HRMS's 22-hour limit (its default check-in buffers), check-in rules and auto attendance come with check-ins |
 | Skill | thing |  | 2 | `hrms/hrms/hr/doctype/skill/skill.json` |  |
 | Staffing Plan | thing | SUB | 6 | `hrms/hrms/hr/doctype/staffing_plan/staffing_plan.json` |  |
 | Training Event | thing | SUB | 18 | `hrms/hrms/hr/doctype/training_event/training_event.json` |  |

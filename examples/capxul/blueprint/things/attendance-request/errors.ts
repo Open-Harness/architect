@@ -4,7 +4,7 @@ import { Day } from "../../values/employee.ts";
 // Refusals that depend on data. The machine's own refusal is generated and never written here.
 // When several apply, `attendance-request.create` refuses RequesterNotInCompany, then RequesterHasLeft, then
 // RequestEndsBeforeStart, then RequestBeforeJoining, in the order of HRMS's `validate` and `validate_dates`.
-/** The employee named works for another company. */
+/** The employee named works for another company. Capxul's own refusal: HRMS copies `company` from the employee (`fetch_from`). */
 export class RequesterNotInCompany extends Blueprint.error({}, { exit: 41 }) {}
 /**
  * Capxul's own rule, as for attendance and expense claims (`decisions/CX-expense-leavers.md`): a new request is only for
