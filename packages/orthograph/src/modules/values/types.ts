@@ -34,6 +34,7 @@ export type ValueMeta =
   | { readonly type: "uint"; readonly bits: number }
   | { readonly type: "text"; readonly max: number }
   | { readonly type: "instant" }
+  | { readonly type: "day" }
   | { readonly type: "account" }
   | { readonly type: "money"; readonly bits: number; readonly signed: boolean; readonly asset: AssetRef }
   | { readonly type: "schema"; readonly format?: "ref-any" };
@@ -66,6 +67,8 @@ export interface ValuesApi {
   readonly text: (options?: { readonly max?: number }) => Value<Schema.String>;
   /** A moment: stored as a UTC instant, written on the wire, in answers, events and reads as ISO 8601 with milliseconds (`"2027-01-10T09:00:00.000Z"`). A move made by time anchors on a field of this type (M8-checks, call 1). */
   readonly instant: () => Value<Schema.String>;
+  /** A calendar day with no time and no zone: `YYYY-MM-DD` in code and on the wire, a day the calendar has (`"2024-02-29"`). `Days` does its arithmetic. */
+  readonly day: () => Value<Schema.String>;
   /** A reference carrying a thing’s declaration name and the id of one instance. */
   readonly refAny: () => Value<Schema.Struct<{ readonly declaration: Schema.String; readonly id: Schema.String }>>;
   /**
@@ -79,4 +82,17 @@ export interface ValuesApi {
   readonly money: MoneyApi;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
+}
+
+/** A calendar day as `Blueprint.day()` holds it: `YYYY-MM-DD`. */
+export type Day = string;
+
+/** A day's arithmetic with no clock, the same in every time zone: `import { Days } from "orthograph"`. */
+export interface DaysApi {
+  /** Its weekday as ERPNext names it: `"Monday"` to `"Sunday"`. */
+  readonly weekday: (day: Day) => "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+  /** The day `days` whole days later, or earlier when `days` is negative. */
+  readonly add: (day: Day, days: number) => Day;
+  /** How many days `to` is after `from`: negative when `to` comes first. */
+  readonly between: (from: Day, to: Day) => number;
 }
