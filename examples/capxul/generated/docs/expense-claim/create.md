@@ -47,7 +47,7 @@ Start an employee's claim for expenses the company pays back.
 
 ### claim expenses
 
-Starts from the world `an expense claim`.
+Starts from the world `an expense claim with two types`.
 
 - **Olga can start another claim of her own.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-21`, and gets back an answer matching `^ecl_[0-9a-z]+$`.
 - **Bo can't start a claim for Olga.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-20`, and is refused with NotAllowed, AR-001.
@@ -56,7 +56,7 @@ Starts from the world `an expense claim`.
 
 Starts from the world `an expense claim`.
 
-- **Bo can't file a claim in his company for Olga, who works for Ada.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, postingDate `2026-11-20`, and is refused with EmployeeNotInCompany, EC-002.
+- **Bo can't file a claim in his company for Olga, who worked for Ada and has left.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, postingDate `2026-12-01`, and is refused with EmployeeNotInCompany, EC-002.
 - **a claim can't be started for an employee who has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, postingDate `2026-12-01`, and is refused with ClaimantNotActive, EC-001.
 
 ## How to call

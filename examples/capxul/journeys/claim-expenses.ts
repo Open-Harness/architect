@@ -16,7 +16,7 @@ import getExpense from "../blueprint/things/expense/verbs/get.ts";
 export default Blueprint.journey("claim expenses", {
   // Olga works at Acme Trading and has started a claim; Ada runs it; Bo is signed in and has nothing to do with either.
   cast: { ada: owner, olga: Blueprint.signedIn, bo: Blueprint.signedIn },
-  starts: "an expense claim",
+  starts: "an expense claim with two types",
   steps: (s) => [
     s.step(
       "Olga can start another claim of her own",
@@ -105,11 +105,11 @@ export default Blueprint.journey("claim expenses", {
       noEvents(),
     ),
     s.step(
-      "Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it",
+      "Ada adds a 120.50 USDC hotel as Lodging, sanctioning 100 USDC of it",
       s.ada.run(add, {
         expenseClaim: s.world.expenseClaim,
         expenseDate: "2026-11-19",
-        expenseType: s.world.expenseClaimType,
+        expenseType: s.world.lodging,
         amount: 120500000n,
         sanctionedAmount: 100000000n,
       }),
@@ -119,12 +119,25 @@ export default Blueprint.journey("claim expenses", {
     s.step(
       "the hotel reads back with what was spent and what was sanctioned",
       s.ada.run(getExpense, { id: s.last.expense }),
-      expect((a) => [a.expenseClaim, a.expenseDate, a.amount, a.sanctionedAmount]).toEqual([
+      expect((a) => [a.expenseClaim, a.expenseDate, a.expenseType, a.amount, a.sanctionedAmount]).toEqual([
         s.world.expenseClaim,
         "2026-11-19",
+        s.world.lodging,
         120500000n,
         100000000n,
       ]),
+      noEvents(),
+    ),
+    s.step(
+      "a line is judged on its own amounts, not the claim's: 12 USDC can't be sanctioned on a 10 USDC lunch",
+      s.ada.run(add, {
+        expenseClaim: s.world.expenseClaim,
+        expenseDate: "2026-11-19",
+        expenseType: s.world.expenseClaimType,
+        amount: 10000000n,
+        sanctionedAmount: 12000000n,
+      }),
+      refuses(SanctionedOverClaimed, { amount: 10000000n }),
       noEvents(),
     ),
     s.step(
@@ -154,8 +167,9 @@ export default Blueprint.journey("claim expenses", {
         expenseDate: "2026-11-19",
         expenseType: s.world.expenseClaimType,
         amount: 1000000n,
-        sanctionedAmount: 1000000n,
+        sanctionedAmount: 2000000n,
       }),
+      // A claim that isn't a draft is refused before its line is judged: ClaimNotDraft, not SanctionedOverClaimed.
       refuses(ClaimNotDraft),
       noEvents(),
     ),
@@ -168,7 +182,14 @@ export default Blueprint.journey("claim expenses", {
     s.step(
       "it still reads back with what was approved",
       s.olga.run(getClaim, { id: s.world.expenseClaim }),
-      expect((a) => [a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([165500000n, 145000000n, "approved"]),
+      expect((a) => [a.company, a.employee, a.postingDate, a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([
+        s.world.company,
+        s.world.employee,
+        "2026-11-20",
+        165500000n,
+        145000000n,
+        "approved",
+      ]),
       noEvents(),
     ),
   ],

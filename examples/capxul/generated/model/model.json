@@ -9851,7 +9851,7 @@
           "kind": "signed-in"
         }
       },
-      "starts": "an expense claim",
+      "starts": "an expense claim with two types",
       "steps": [
         {
           "title": "Olga can start another claim of her own",
@@ -10218,7 +10218,7 @@
           ]
         },
         {
-          "title": "Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it",
+          "title": "Ada adds a 120.50 USDC hotel as Lodging, sanctioning 100 USDC of it",
           "call": {
             "actor": "ada",
             "operation": "expense.add",
@@ -10233,7 +10233,7 @@
               "expenseType": {
                 "ref": [
                   "world",
-                  "expenseClaimType"
+                  "lodging"
                 ]
               },
               "amount": "120500000",
@@ -10283,9 +10283,51 @@
                   ]
                 },
                 "2026-11-19",
+                {
+                  "ref": [
+                    "world",
+                    "lodging"
+                  ]
+                },
                 "120500000",
                 "100000000"
               ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a line is judged on its own amounts, not the claim's: 12 USDC can't be sanctioned on a 10 USDC lunch",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.add",
+            "payload": {
+              "expenseClaim": {
+                "ref": [
+                  "world",
+                  "expenseClaim"
+                ]
+              },
+              "expenseDate": "2026-11-19",
+              "expenseType": {
+                "ref": [
+                  "world",
+                  "expenseClaimType"
+                ]
+              },
+              "amount": "10000000",
+              "sanctionedAmount": "12000000"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "SanctionedOverClaimed",
+              "fields": {
+                "amount": "10000000"
+              }
             },
             {
               "kind": "no-events"
@@ -10429,7 +10471,7 @@
                 ]
               },
               "amount": "1000000",
-              "sanctionedAmount": "1000000"
+              "sanctionedAmount": "2000000"
             }
           },
           "checks": [
@@ -10488,6 +10530,19 @@
             {
               "kind": "expect-equal",
               "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "2026-11-20",
                 "165500000",
                 "145000000",
                 "approved"
@@ -10499,7 +10554,7 @@
           ]
         }
       ],
-      "sourceHash": "7337a9fd9dcd84e90fb6624ff8a9cdeec3ebf1e637afefcdbdd927a22bc40d32"
+      "sourceHash": "78790490a24c905d175516071ad1bafee72fbedb3ce67e6e6af2680c6b43b587"
     },
     "journeys/companies-are-kept-apart.ts": {
       "name": "companies are kept apart",
@@ -11133,6 +11188,28 @@
       "starts": "an expense claim",
       "steps": [
         {
+          "title": "Ada relieves Olga on 30 November",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "relievingDate": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "2026-11-30"
+            }
+          ]
+        },
+        {
           "title": "Bo sets up a company of his own",
           "call": {
             "actor": "bo",
@@ -11153,7 +11230,7 @@
           ]
         },
         {
-          "title": "Bo can't file a claim in his company for Olga, who works for Ada",
+          "title": "Bo can't file a claim in his company for Olga, who worked for Ada and has left",
           "call": {
             "actor": "bo",
             "operation": "expense-claim.create",
@@ -11170,7 +11247,7 @@
                   "employee"
                 ]
               },
-              "postingDate": "2026-11-20"
+              "postingDate": "2026-12-01"
             }
           },
           "checks": [
@@ -11256,28 +11333,6 @@
           ]
         },
         {
-          "title": "Ada relieves Olga on 30 November",
-          "call": {
-            "actor": "ada",
-            "operation": "employee.relieve",
-            "payload": {
-              "employee": {
-                "ref": [
-                  "world",
-                  "employee"
-                ]
-              },
-              "relievingDate": "2026-11-30"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": "2026-11-30"
-            }
-          ]
-        },
-        {
           "title": "a claim can't be started for an employee who has left",
           "call": {
             "actor": "ada",
@@ -11315,9 +11370,95 @@
               ]
             }
           ]
+        },
+        {
+          "title": "Ada adds 5 USDC Olga spent before leaving, sanctioning none of it",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.add",
+            "payload": {
+              "expenseClaim": {
+                "ref": [
+                  "world",
+                  "expenseClaim"
+                ]
+              },
+              "expenseDate": "2026-11-19",
+              "expenseType": {
+                "ref": [
+                  "world",
+                  "expenseClaimType"
+                ]
+              },
+              "amount": "5000000",
+              "sanctionedAmount": "0"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "5000000",
+                "0"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "a claim with something claimed may be approved for nothing",
+          "call": {
+            "actor": "ada",
+            "operation": "expense-claim.approve",
+            "payload": {
+              "expenseClaim": {
+                "ref": [
+                  "world",
+                  "expenseClaim"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "0"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "ExpenseClaimApproved",
+              "fields": {
+                "expenseClaim": {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "totalSanctionedAmount": "0"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "expense-claim",
+              "id": {
+                "ref": [
+                  "world",
+                  "expenseClaim"
+                ]
+              },
+              "state": "approved"
+            }
+          ]
         }
       ],
-      "sourceHash": "f277eaab20cbf69488ae4edcc724f2a36b3a7721dd526d359a1ccc96adee7316"
+      "sourceHash": "a51d65772c4a2daf03901ff6671e742cb0d409e6c7863b9efc003cd234c18456"
     },
     "journeys/grade-names-are-the-companys.ts": {
       "name": "grade names are the company's",
@@ -12445,6 +12586,40 @@
           ]
         },
         {
+          "title": "a rejected claim takes no more expenses",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.add",
+            "payload": {
+              "expenseClaim": {
+                "ref": [
+                  "world",
+                  "expenseClaim"
+                ]
+              },
+              "expenseDate": "2026-11-19",
+              "expenseType": {
+                "ref": [
+                  "world",
+                  "expenseClaimType"
+                ]
+              },
+              "amount": "1000000",
+              "sanctionedAmount": "1000000"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ClaimNotDraft",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "a rejected claim sanctions nothing, and keeps what was claimed",
           "call": {
             "actor": "olga",
@@ -12462,6 +12637,19 @@
             {
               "kind": "expect-equal",
               "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "2026-11-20",
                 "30000000",
                 "0",
                 "rejected"
@@ -12500,7 +12688,7 @@
           ]
         }
       ],
-      "sourceHash": "4d974823348baecd22cd3323919659b44a6048e079b06a9d04ad5dfe675609b9"
+      "sourceHash": "8fdcf44f26763d8e08f70a09934f8a2a0650ce69608b0a06659cf6dd3e38fc89"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
@@ -15284,6 +15472,65 @@
           "ref": [
             "last",
             "employee"
+          ]
+        }
+      }
+    },
+    "an expense claim with two types": {
+      "name": "an expense claim with two types",
+      "file": "blueprint/starting-worlds/an-expense-claim-with-two-types.ts",
+      "from": "an expense claim",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "4746bcc31f615989fbb7a4ad5bf519116803e41a38ebb2a6e56145c0c24944aa",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "expense-claim-type.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "expenseType": "Lodging"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "employee": {
+          "ref": [
+            "world",
+            "employee"
+          ]
+        },
+        "expenseClaimType": {
+          "ref": [
+            "world",
+            "expenseClaimType"
+          ]
+        },
+        "lodging": {
+          "ref": [
+            "last",
+            "expenseClaimType"
+          ]
+        },
+        "expenseClaim": {
+          "ref": [
+            "world",
+            "expenseClaim"
           ]
         }
       }

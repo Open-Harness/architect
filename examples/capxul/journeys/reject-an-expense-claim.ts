@@ -4,6 +4,7 @@ import { Blueprint, emits, expect, noEvents, refuses } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
 import { ExpenseClaimRejected } from "../blueprint/things/expense-claim/events.ts";
 import { ClaimHasNoExpenses } from "../blueprint/things/expense-claim/errors.ts";
+import { ClaimNotDraft } from "../blueprint/things/expense/errors.ts";
 import { machine } from "../blueprint/things/expense-claim/machine.ts";
 import approve from "../blueprint/things/expense-claim/verbs/approve.ts";
 import reject from "../blueprint/things/expense-claim/verbs/reject.ts";
@@ -46,9 +47,28 @@ export default Blueprint.journey("reject an expense claim", {
       machine.isIn(s.world.expenseClaim, "rejected"),
     ),
     s.step(
+      "a rejected claim takes no more expenses",
+      s.ada.run(add, {
+        expenseClaim: s.world.expenseClaim,
+        expenseDate: "2026-11-19",
+        expenseType: s.world.expenseClaimType,
+        amount: 1000000n,
+        sanctionedAmount: 1000000n,
+      }),
+      refuses(ClaimNotDraft),
+      noEvents(),
+    ),
+    s.step(
       "a rejected claim sanctions nothing, and keeps what was claimed",
       s.olga.run(get, { id: s.world.expenseClaim }),
-      expect((a) => [a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([30000000n, 0n, "rejected"]),
+      expect((a) => [a.company, a.employee, a.postingDate, a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([
+        s.world.company,
+        s.world.employee,
+        "2026-11-20",
+        30000000n,
+        0n,
+        "rejected",
+      ]),
       noEvents(),
     ),
     s.step(

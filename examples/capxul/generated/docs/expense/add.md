@@ -51,24 +51,27 @@ Add one expense to a claim still in draft.
 
 ### claim expenses
 
-Starts from the world `an expense claim`.
+Starts from the world `an expense claim with two types`.
 
 - **Ada can't sanction more than was spent.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000001`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `45000000`.
 - **Ada adds a 45 USDC taxi, sanctioned in full.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000000`, and gets back [`45000000`, `45000000`] and gets back an answer matching `^exp_[0-9a-z]+$`.
-- **Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `120500000`, sanctionedAmount `100000000`, and gets back [`165500000`, `145000000`].
-- **an approved claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `1000000`, and is refused with ClaimNotDraft, EX-003.
+- **Ada adds a 120.50 USDC hotel as Lodging, sanctioning 100 USDC of it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's lodging, amount `120500000`, sanctionedAmount `100000000`, and gets back [`165500000`, `145000000`].
+- **a line is judged on its own amounts, not the claim's: 12 USDC can't be sanctioned on a 10 USDC lunch.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `10000000`, sanctionedAmount `12000000`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `10000000`.
+- **an approved claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `2000000`, and is refused with ClaimNotDraft, EX-003.
 
 ### expense claims stay in their company
 
 Starts from the world `an expense claim`.
 
 - **Ada can't put Bo's expense type on Olga's claim.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `5000000`, sanctionedAmount `5000000`, and is refused with ExpenseTypeNotInCompany, EX-002.
+- **Ada adds 5 USDC Olga spent before leaving, sanctioning none of it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `5000000`, sanctionedAmount `0`, and gets back [`5000000`, `0`].
 
 ### reject an expense claim
 
 Starts from the world `an expense claim`.
 
 - **Ada adds 30 USDC of lunches.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `30000000`, sanctionedAmount `30000000`, and gets back [`30000000`, `30000000`].
+- **a rejected claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `1000000`, and is refused with ClaimNotDraft, EX-003.
 
 ## How to call
 
