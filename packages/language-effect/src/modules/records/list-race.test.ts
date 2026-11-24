@@ -60,7 +60,6 @@ const served = (runs: Array<Run>, between: (id: string, attempt: number) => Effe
     })) as never,
   });
 const asks = (id: string, from: number, to: number, employee = "emp_ada") => ({ id, employee, from: BigInt(from), to: BigInt(to) });
-const yields = Effect.gen(function* () { for (let i = 0; i < 5; i++) yield* Effect.yieldNow; });
 /** A call that died (a missing `list`, a build's defect) is not a refusal: name it before judging the race. */
 const died = (exits: ReadonlyArray<Exit.Exit<any, any>>) => exits.flatMap((e) => (Exit.isFailure(e) && Cause.hasDies(e.cause) ? [String(Cause.squash(e.cause))] : []));
 
@@ -69,9 +68,13 @@ describe("two calls that each list, then insert (#764)", () => {
     // A cancelled application of ada's overlaps both: it is outside the listed state, so it refuses neither.
     const memory = storeMemory([row("lap_0", "emp_ada", 1, 30, "cancelled"), row("lap_9", "emp_bob", 1, 30)]);
     const runs: Array<Run> = [];
-    const s = served(runs, () => yields);
-    return Effect.runPromise(Effect.all([s.run(a as never, ada), s.run(b as never, ada)].map((c) => Effect.exit(c)), { concurrency: "unbounded" })
-      .pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))) as Effect.Effect<Array<Exit.Exit<any, any>>>)
+    return Effect.runPromise(Effect.gen(function* () {
+      // A barrier, not the scheduler: each call's first attempt waits until both have listed, so neither commits before the other has read.
+      const both = yield* Deferred.make<void>();
+      let listed = 0;
+      const s = served(runs, (_id, attempt) => (attempt > 1 ? Effect.void : Effect.suspend(() => (++listed === 2 ? Deferred.succeed(both, undefined) : Deferred.await(both)))));
+      return yield* Effect.all([s.run(a as never, ada), s.run(b as never, ada)].map((c) => Effect.exit(c)), { concurrency: "unbounded" });
+    }).pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))) as Effect.Effect<Array<Exit.Exit<any, any>>>)
       .then((exits) => ({ exits, runs, rows: memory.rows.map((r) => r.instance) }));
   };
 

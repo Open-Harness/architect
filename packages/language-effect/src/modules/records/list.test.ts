@@ -3,8 +3,9 @@
 // edits this file or `list-race.test.ts`, and only removes lines from `expected-failing/`.
 //
 // SURFACE PINNED HERE (asked of the author if a builder needs it changed): `records.list({ thing, where, state, order, limit, after })`, every field
-// given as `ListQuery` has it, answering `{ items, next }` as `Store.list` does. A row this call made comes after every stored row, as a row made later
-// would. `list` is reached through a cast so this file compiles before it exists.
+// given as `ListQuery` has it, answering `{ items, next }` as `Store.list` does. Rows are in the order they were made: a stored row this call moved into
+// the list keeps its place (so the store must be able to say where a row it didn't list sits; D1 has its `rowid`), and a row this call made comes after
+// every stored row, in the order made, as rows made later would. `list` is reached through a cast so this file compiles before it exists.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
