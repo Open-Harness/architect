@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/holiday/verbs/add.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/holiday/add.handler.ts";
+import { Holiday } from "../../blueprint/things/holiday/thing.ts";
+import { HolidayList } from "../../blueprint/things/holiday-list/thing.ts";
 
 const { HolidayOutsideList } = Errors.declared;
 
@@ -44,22 +46,32 @@ const { HolidayOutsideList } = Errors.declared;
  *   once it answers, it writes HolidayAdded: holiday from the answer, holidayList and holidayDate from the payload;
  *   the call is the span holiday.add, and its commit holiday.add.commit.
  */
-const add: Handler = (_payload, { steps, move, id }) =>
+const add: Handler = ({ holidayList, holidayDate, description }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span holiday.add.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // HolidayOutsideList: exit 42, HD-002.
-    if (yield* Handlers.blank<boolean>("refuse HolidayOutsideList when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why HolidayOutsideList was refused"));
-      return yield* new HolidayOutsideList({
-        fromDate: yield* Handlers.blank("HolidayOutsideList.fromDate, a Day"),
-        toDate: yield* Handlers.blank("HolidayOutsideList.toDate, a Day"),
-      });
+    // Step load: database, span holiday.add.load. The runtime read the list and hands it in; that read fixes the version
+    // the count's update below is guarded by.
+    const list = yield* steps.load(Effect.succeed(refs.holidayList));
+    if (!list) return yield* Effect.die(new Error(`holiday list ${holidayList} was read for the role check and then not found`));
+    const fromDate = list["fromDate"] as typeof holidayDate;
+    const toDate = list["toDate"] as typeof holidayDate;
+
+    // HolidayOutsideList: exit 42, HD-002. Days are YYYY-MM-DD, so they compare as text; both ends are inside.
+    if (holidayDate < fromDate || holidayDate > toDate) {
+      yield* Effect.logInfo(`${holidayDate} is outside the list's ${fromDate} to ${toDate}`);
+      return yield* new HolidayOutsideList({ fromDate, toDate });
     }
 
-    // Step insert: database, in the store holiday, holiday-list, span holiday.add.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span holiday.add.insert. The holiday, and its list's count, which follows its holidays as
+    // ERPNext's total_holidays does. A day the list already holds is the runtime's refusal (holiday.oneHolidayPerDay).
+    const totalHolidays = (list["totalHolidays"] as bigint) + 1n;
+    yield* steps.insert(
+      Effect.andThen(
+        records.insert(Holiday, { id, holidayList, holidayDate, description }),
+        records.update(HolidayList, holidayList, { totalHolidays }),
+      ),
+    );
 
     // The move add, to active.
     yield* move();
@@ -67,7 +79,7 @@ const add: Handler = (_payload, { steps, move, id }) =>
     return {
       // HolidayAdded needs holiday, and only the answer can give it.
       holiday: id,
-      totalHolidays: yield* Handlers.blank("totalHolidays, a HolidayCount"),
+      totalHolidays,
     };
   });
 
