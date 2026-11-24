@@ -54,7 +54,12 @@ const clerk = Blueprint.role(Staff, { rule: () => true });
 
 /** Each wrapper that takes a field, and what it leaves on the field it makes. */
 const wrappers: ReadonlyArray<readonly [string, (f: Field) => Field, (f: Field) => void]> = [
-  ["optional", optional, (f) => expect(f.value.optional).toBe(true)],
+  // Marked and able to be left out: a mark on a schema that still requires the field is not optional.
+  ["optional", optional, (f) => {
+    expect(f.value.optional).toBe(true);
+    expect(decodes(alone(f), {})).toBe("Success");
+    expect(decodes(alone(f), { f: "bil_7f3k" })).toBe("Failure");
+  }],
   ["visibility.secret", (f) => Blueprint.visibility.secret(f), (f) => expect(f.visibility).toBe("secret")],
   ["visibility.private", (f) => Blueprint.visibility.private(f, clerk), (f) => expect(f.visibility).toEqual({ kind: "private", to: [clerk] })],
   ["traced", (f) => Blueprint.traced(f), (f) => expect(f.traced).toBe(true)],
