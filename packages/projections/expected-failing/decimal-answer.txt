@@ -1,0 +1,3 @@
+# A decimal at the generated CLI (#742, item 5, after #959) is not built: output.ts prints a BigDecimal with String() and a JSON.stringify that knows only bigints. Clears with the decimal codegen build.
+src/modules/cli/decimal-answer.test.ts > Exact decimals: the generated CLI prints a decimal as it travels > prints a decimal in a --json answer as its text, in a list's items too
+src/modules/cli/decimal-answer.test.ts > Exact decimals: the generated CLI prints a decimal as it travels > prints a one-field decimal answer as its text

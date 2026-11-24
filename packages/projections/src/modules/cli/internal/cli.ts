@@ -104,11 +104,11 @@ const main = (model: Model, name: string): RenderedFile => {
       "",
       things.map((t) => {
         const subs = ops.filter((o) => o.thing === t).map(opVar);
-        return `const ${camel(t)} = Command.make("${t}").pipe(Command.withSubcommands([${subs.join(", ")}]));`;
+        return `const ${local(camel(t))} = Command.make("${t}").pipe(Command.withSubcommands([${subs.join(", ")}]));`;
       }),
       "",
       `Command.make("${name}").pipe(`,
-      `  Command.withSubcommands([${things.map(camel).join(", ")}]),`,
+      `  Command.withSubcommands([${things.map((t) => local(camel(t))).join(", ")}]),`,
       `  Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),`,
       "  Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),",
       `  Effect.provide(Sdk.layer(process.env["${env}_URL"] ?? "http://127.0.0.1:8787", process.env["${env}_TOKEN"])),`,

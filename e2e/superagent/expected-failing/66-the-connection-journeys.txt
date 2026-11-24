@@ -1,0 +1,2 @@
+# Slice 10 checks. Red until slice 9's journey surface (s.runner, s.clock.settle, outbox, Stand.command), slice 11's stand-in commands, doors and catch-up, and the starting worlds the journeys name exist (GOAL17-check-harness).
+superagent/66-the-connection-journeys.test.ts > 66 the connection journeys run through `ortho prove` > every journey passes, each of its steps, and none is skipped for want of an instrument or a world

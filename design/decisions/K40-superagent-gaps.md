@@ -64,11 +64,11 @@ events: { issueComment: Blueprint.event(IssueComment, {
 
 // the app: an outside account is a thing, and listing it is a move made in the portal
 export const Account = Blueprint.thing({
-  fields: { source: Source.fields.id, id: Blueprint.text(), login: Blueprint.text(), bot: Blueprint.bool() }, machine,
+  fields: { source: Source.fields.id, id: Blueprint.text(), login: Blueprint.text(), bot: Blueprint.bool() }, machine,   // Superseded by GOAL17-source-from, 22 November 2026: `source` is the mount's name, plus a `superagent` field; Superseded by GOAL17-account-key, 23 November 2026: the outside id is `external`, and `id` is the row's own
 });  // source: the connection it came through (its mount)
 // machine: seen → listed → unlisted
 export const listed = Blueprint.role(Account, {
-  actor: { mount: Account.fields.source, id: Account.fields.id }, while: [machine.states.listed],
+  actor: { mount: Account.fields.source, id: Account.fields.id }, while: [machine.states.listed],   // Superseded by GOAL17-source-from, 22 November 2026: it also takes `within: Account.fields.superagent`, so a listed account of one superagent is never admitted for another's call; Superseded by GOAL17-account-key, 23 November 2026: `id: Account.fields.external`
 });
 // blueprint/things/ticket/verbs/accept.ts
 allowed: [listed.of("account")],
@@ -190,6 +190,7 @@ a socket but can't spawn anything. The daemon speaks plain frames over a byte st
 // packages/sandbox (Blueprint.adapter): Pi's ExecutionEnv, over a socket an actor can open
 export default Blueprint.adapter({
   calls: { open, close },                       // one sandbox per agent, tagged, swept at the end
+  // Superseded by GOAL17-check-harness, 23 November 2026: calls are open, close, exec, write, read and list, with named refusals (call 4)
   env: (sandbox) => new RemoteExecutionEnv({ connection: socketConnection(sandbox.address), id: sandbox.id, cwd: "/work" }),
   standIn: Stand.process(bridge),               // on the Mac: listens on localhost, starts `pi-env serve` per sandbox in a temp folder
 });
@@ -215,7 +216,7 @@ so the comment would count twice.
 ```ts
 // packages/github (Blueprint.adapter)
 events: { issueComment: Blueprint.event(IssueComment, {
-  id: (e) => `comment:${e.comment.id}:${e.action}:${e.comment.updated_at}`,   // one change; the same from door and poll
+  id: (e) => `comment:${e.comment.id}:${e.action}:${e.comment.updated_at}`,   // one change; the same from door and poll   // Superseded by GOAL17-connections, 23 November 2026: no `e.action` (a poll's copy has none), and the kind and `e.repository.full_name` in front
 }) },
 catchUp: {
   every: "5 minutes",                                  // through Timers, and once when the world starts

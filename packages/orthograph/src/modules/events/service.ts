@@ -6,6 +6,7 @@ const names = new WeakMap<object, string>();
 
 export const Events: EventsApi = {
   event: (fields) => Object.freeze({ kind: "event", fields, schema: structOf(fields) }),
+  on: (event, map, options) => Object.freeze({ kind: "on", event, map: map as never, onRefused: options?.onRefused }),
 };
 
 export const EventNames: EventNaming = {

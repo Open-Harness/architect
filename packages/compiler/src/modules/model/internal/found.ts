@@ -11,7 +11,7 @@ export const NOT_FOUND_EXIT = 4;
 const isField = (x: unknown): x is Field => typeof x === "object" && x !== null && (x as { kind?: unknown }).kind === "field";
 
 /** The thing whose id a field holds: followed back to the `id` it was taken from, as the runtime's role check does. */
-const referenced = (field: unknown): Thing | undefined => {
+export const referenced = (field: unknown): Thing | undefined => {
   let f: Field | undefined = isField(field) ? field : undefined;
   while (f) {
     if (f.key === "id") return f.of;
@@ -75,7 +75,7 @@ export const foundModel = (op: Operation, nameOf: (t: Thing) => string | undefin
 
 /** An operation the runtime can serve: none of the parts the read needs is still `Blueprint.todo`. */
 export const missedBy = (d: Operation | { readonly kind: "read" }, blank: (x: unknown) => boolean): ReadonlyArray<Thing> =>
-  d.kind !== "operation" || [d.payload, d.allowed, d.move].some(blank) || Object.values(d.payload).some(blank)
+  d.kind !== "operation" || [d.payload, d.allowed, d.move].some(blank) || Object.values(d.payload).some(blank) || d.allowed.some(blank)
     ? [] : [...foundOf(d).notFound.values()];
 
 /** A creating move's field that carries the new id: the answer's, else the payload's, holding the thing's own `id`. */

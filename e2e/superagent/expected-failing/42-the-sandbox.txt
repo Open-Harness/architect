@@ -1,0 +1,4 @@
+# Slice 8's check (GOAL17-check-harness), red until slice 9 builds the agents, the sandbox, slots, pause and the harness's instruments; the surface (a builder's first pull request) comes before it.
+superagent/42-the-sandbox.test.ts > the sandbox > the journey "a blocked command fails by name" passes whole
+superagent/42-the-sandbox.test.ts > the sandbox > the journey "a write outside the sandbox is refused" passes whole
+superagent/42-the-sandbox.test.ts > the sandbox > the journey "no credential among the execution variables" passes whole
