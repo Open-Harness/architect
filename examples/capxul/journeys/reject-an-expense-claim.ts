@@ -124,20 +124,20 @@ export default Blueprint.journey("reject an expense claim", {
       expect((a) => a.expenseClaim).toMatch(/^ecl_[0-9a-z]+$/),
     ),
     s.step(
-      "Ada adds 4 USDC of lunches to it, all sanctioned",
+      "Ada adds 4 USDC of lunches to it, sanctioning 3",
       s.ada.run(add, {
         expenseClaim: s.last.expenseClaim,
         expenseDate: "2026-12-03",
         expenseType: s.world.expenseClaimType,
         amount: 4000000n,
-        sanctionedAmount: 4000000n,
+        sanctionedAmount: 3000000n,
       }),
-      expect((a) => [a.totalClaimedAmount, a.totalSanctionedAmount]).toEqual([4000000n, 4000000n]),
+      expect((a) => [a.totalClaimedAmount, a.totalSanctionedAmount]).toEqual([4000000n, 3000000n]),
     ),
     s.step(
       "the 4 USDC line reads back on the third claim",
       s.ada.run(getExpense, { id: s.last.expense }),
-      expect((a) => [a.expenseDate, a.amount, a.sanctionedAmount]).toEqual(["2026-12-03", 4000000n, 4000000n]),
+      expect((a) => [a.expenseDate, a.amount, a.sanctionedAmount]).toEqual(["2026-12-03", 4000000n, 3000000n]),
       noEvents(),
     ),
     s.step(
@@ -148,7 +148,7 @@ export default Blueprint.journey("reject an expense claim", {
       machine.isIn(s.last.expenseClaim, "rejected"),
     ),
     s.step(
-      "the third claim reads back rejected: it keeps its 4 USDC claimed and sanctions nothing",
+      "the third claim, partly sanctioned, reads back rejected: it keeps its 4 USDC claimed and sanctions nothing",
       s.olga.run(get, { id: s.last.expenseClaim }),
       expect((a) => [a.postingDate, a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual(["2026-12-03", 4000000n, 0n, "rejected"]),
       noEvents(),

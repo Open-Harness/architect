@@ -41,14 +41,14 @@ Starts from the world `an expense claim with two types`.
 - **the new claim reads back as Olga's, posted on 21 November.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-21`, `0`, `0`, `draft`].
 - **her first claim reads back with nothing claimed yet.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `0`, `0`, `draft`].
 - **Bo can't read Olga's claim.** `bo` (signed in) calls and sends id the world's expenseClaim, and is refused with NotAllowed, AR-001.
-- **the claim reads back with both totals.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`165500000`, `145000000`, `draft`].
-- **it still reads back with what was approved.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `165500000`, `145000000`, `approved`].
+- **the claim reads back with both totals.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`165500001`, `145000001`, `draft`].
+- **it still reads back with what was approved.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `165500001`, `145000001`, `approved`].
 
 ### expense claims stay in their company
 
 Starts from the world `an expense claim`.
 
-- **it reads back approved, owing nothing.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `500000`, `0`, `approved`].
+- **it reads back approved, owing nothing.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `1`, `0`, `approved`].
 
 ### reject an expense claim
 
@@ -56,7 +56,7 @@ Starts from the world `an expense claim`.
 
 - **a rejected claim sanctions nothing, and keeps what was claimed.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `30000000`, `0`, `rejected`].
 - **the second claim reads back rejected, on its own day.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [the world's company, the world's employee, `2026-12-02`, `0`, `0`, `rejected`].
-- **the third claim reads back rejected: it keeps its 4 USDC claimed and sanctions nothing.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [`2026-12-03`, `4000000`, `0`, `rejected`].
+- **the third claim, partly sanctioned, reads back rejected: it keeps its 4 USDC claimed and sanctions nothing.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [`2026-12-03`, `4000000`, `0`, `rejected`].
 
 ## How to call
 

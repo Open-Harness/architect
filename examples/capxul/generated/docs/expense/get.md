@@ -39,20 +39,21 @@ Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanc
 Starts from the world `an expense claim with two types`.
 
 - **the taxi reads back as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-18`, the world's expenseClaimType, `45000000`, `45000000`, `active`].
-- **the hotel reads back with what was spent and what was sanctioned.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's lodging, `120500000`, `100000000`].
+- **the hotel reads back with what was spent and what was sanctioned.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's lodging, `120500001`, `100000001`].
+- **that line reads back exactly.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`9007199254740993`, `9007199254740993`].
 
 ### expense claims stay in their company
 
 Starts from the world `an expense claim`.
 
-- **that line reads back on Olga's claim, sanctioned at nothing.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's expenseClaimType, `500000`, `0`, `active`].
+- **that line reads back on Olga's claim, sanctioned at nothing.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's expenseClaimType, `1`, `0`, `active`].
 
 ### reject an expense claim
 
 Starts from the world `an expense claim`.
 
 - **the lunches read back on Olga's claim.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's expenseClaimType, `30000000`, `30000000`, `active`].
-- **the 4 USDC line reads back on the third claim.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`2026-12-03`, `4000000`, `4000000`].
+- **the 4 USDC line reads back on the third claim.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`2026-12-03`, `4000000`, `3000000`].
 
 ## How to call
 
