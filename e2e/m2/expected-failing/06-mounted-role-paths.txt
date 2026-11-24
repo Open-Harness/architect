@@ -1,3 +1,0 @@
-# #767 is not built in main: `check` accepts an `allowed` role path that cannot walk to the role's thing. Clears with its build (#939).
-m2/06-mounted-role-paths.test.ts > 06 a mounted plugin's role path is walked by the plugin's own names > still refuses a mounted plugin's role path that walks to nothing, naming it
-m2/06-mounted-role-paths.test.ts > 06 a mounted plugin's role path is walked by the plugin's own names > refuses a mounted plugin's role path spelt with the mounted name, naming it
