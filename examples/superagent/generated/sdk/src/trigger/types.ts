@@ -18,8 +18,8 @@ export type Trigger = {
   readonly "thread": Of<Declared["thread"]>;
   readonly "kind": Of<Declared["kind"]>;
   readonly "text": Of<Declared["text"]>;
-  readonly "url": Of<Declared["url"]>;
-  readonly "author": Of<Declared["author"]>;
+  readonly "url"?: Of<Declared["url"]>;
+  readonly "author"?: Of<Declared["author"]>;
   readonly "channel": Of<Declared["channel"]>;
   readonly "state": TriggerState;
 };

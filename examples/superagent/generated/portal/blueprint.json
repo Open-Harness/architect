@@ -6527,12 +6527,13 @@
           }
         ],
         "agentTool": true,
+        "stale": "StaleRevision",
         "steps": {},
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "d4ace5c00b4f0164"
+        "hash": "7b4bf59640393b8e"
       },
       "policy.save": {
         "kind": "operation",
@@ -6635,12 +6636,13 @@
           }
         ],
         "agentTool": true,
+        "stale": "StaleRevision",
         "steps": {},
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "33c292fd382278c6"
+        "hash": "8a6519b3b07e834e"
       },
       "policy.sync": {
         "kind": "operation",
@@ -6941,12 +6943,13 @@
           }
         ],
         "agentTool": true,
+        "stale": "StaleRevision",
         "steps": {},
         "idempotent": null,
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "c383858d3e28f40c"
+        "hash": "183a8f8ca3111599"
       },
       "proposal.approve": {
         "kind": "operation",
@@ -14701,11 +14704,11 @@
       "thing:policy": "cb2866374f37c419"
     },
     "policy.restore": {
-      "operation:policy.restore": "d4ace5c00b4f0164",
+      "operation:policy.restore": "7b4bf59640393b8e",
       "thing:policy": "cb2866374f37c419"
     },
     "policy.save": {
-      "operation:policy.save": "33c292fd382278c6",
+      "operation:policy.save": "8a6519b3b07e834e",
       "thing:policy": "cb2866374f37c419"
     },
     "policy.sync": {
@@ -14725,7 +14728,7 @@
       "thing:prompt-set": "1a9041cb1424418f"
     },
     "prompt-set.save": {
-      "operation:prompt-set.save": "c383858d3e28f40c",
+      "operation:prompt-set.save": "183a8f8ca3111599",
       "thing:prompt-set": "1a9041cb1424418f"
     },
     "proposal.approve": {
@@ -15059,5 +15062,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "e2957b06c66cd18e9fd738832e8f807df7e08f680bbff5b28c73f5ca09a40b26"
+  "digest": "a4e8d02960e3c9b1e1a20deac0a06e8185af6d1de6ea36dd0d1cd3a57a056151"
 }
