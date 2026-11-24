@@ -35,8 +35,9 @@ const capxulWith = (verb: string, entries: string): string => {
 /** The model, or the reason there is none. */
 const described = async (root: string): Promise<Model> => {
   const exit = await modelOf(root);
-  if (Exit.isFailure(exit)) throw new Error(`no model: ${exit.cause.reasons.map((r) => { const x = r as { defect?: unknown; error?: unknown }; return String(x.defect ?? JSON.stringify(x.error)); }).join("; ")}`);
-  return exit.value as Model;
+  if (Exit.isSuccess(exit)) return exit.value as Model;
+  const reasons = exit.cause.reasons.map((r) => r as { readonly defect?: unknown; readonly error?: unknown });
+  throw new Error(`no model: ${reasons.map((r) => String(r.defect ?? JSON.stringify(r.error))).join("; ")}`);
 };
 
 describe("a Blueprint.todo inside allowed is a blank (#742, item 7)", () => {
