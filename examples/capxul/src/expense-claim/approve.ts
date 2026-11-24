@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/expense-claim/verbs/approve.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/expense-claim/approve.handler.ts";
 
@@ -43,27 +42,29 @@ const { ClaimHasNoExpenses } = Errors.declared;
  *   once it answers, it writes ExpenseClaimApproved: expenseClaim and totalSanctionedAmount from the answer;
  *   the call is the span expense-claim.approve, and its commit expense-claim.approve.commit.
  */
-const approve: Handler = (_payload, { steps, move }) =>
+const approve: Handler = ({ expenseClaim }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span expense-claim.approve.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    // Step load: database, span expense-claim.approve.load. The runtime read the claim for its role and state checks
+    // and hands it in, so this step only takes it.
+    const claim = yield* steps.load(Effect.succeed(subject));
+    if (!claim) return yield* Effect.die(new Error(`expense claim ${expenseClaim} was checked and then not found`));
+    const totalClaimedAmount = claim["totalClaimedAmount"] as bigint;
+    const totalSanctionedAmount = claim["totalSanctionedAmount"] as bigint;
 
-    // ClaimHasNoExpenses: exit 43, EC-003.
-    if (yield* Handlers.blank<boolean>("refuse ClaimHasNoExpenses when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ClaimHasNoExpenses was refused"));
+    // ClaimHasNoExpenses: exit 43, EC-003. Nothing claimed is a claimed total of 0 base units.
+    if (totalClaimedAmount === 0n) {
+      yield* Effect.logInfo("the claim has nothing claimed");
       return yield* new ClaimHasNoExpenses({});
     }
 
-    // Step update: database, span expense-claim.approve.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span expense-claim.approve.update. The totals already follow the claim's expenses, so
+    // the only change is its state, which the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move approve, from draft, to approved.
     yield* move();
 
-    return {
-      expenseClaim: yield* Handlers.blank("expenseClaim, an expense-claim.id"),
-      totalSanctionedAmount: yield* Handlers.blank("totalSanctionedAmount, an expense-claim.totalSanctionedAmount"),
-    };
+    return { expenseClaim, totalSanctionedAmount };
   });
 
 export default approve;

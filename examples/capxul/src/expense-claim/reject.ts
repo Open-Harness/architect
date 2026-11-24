@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/expense-claim/verbs/reject.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/expense-claim/reject.handler.ts";
+import { ExpenseClaim } from "../../blueprint/things/expense-claim/thing.ts";
 
 /**
  * expense-claim.reject: Reject a claim, so nothing of it is paid back.
@@ -38,17 +39,18 @@ import type { Handler } from "../../generated/api/src/expense-claim/reject.handl
  *   once it answers, it writes ExpenseClaimRejected: expenseClaim from the answer;
  *   the call is the span expense-claim.reject, and its commit expense-claim.reject.commit.
  */
-const reject: Handler = (_payload, { steps, move }) =>
+const reject: Handler = ({ expenseClaim }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span expense-claim.reject.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    const records = yield* Records;
+
+    // Step update: database, span expense-claim.reject.update. ERPNext sanctions nothing on a rejected claim, so its
+    // sanctioned total becomes 0; what was claimed stays. The expenses' own sanctioned amounts wait on #764.
+    yield* steps.update(records.update(ExpenseClaim, expenseClaim, { totalSanctionedAmount: 0n }));
 
     // The move reject, from draft, to rejected.
     yield* move();
 
-    return {
-      expenseClaim: yield* Handlers.blank("expenseClaim, an expense-claim.id"),
-    };
+    return { expenseClaim };
   });
 
 export default reject;
