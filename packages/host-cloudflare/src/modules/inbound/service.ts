@@ -101,9 +101,10 @@ const deliver = (door: Door, options: InboundOptions, request: Request): Effect.
     }
     const settled = yield* accept(options.db, { id: named.value.id, trace: traceOf(request), mount: door.mount, event: name, fields: parsed, actor: named.value.actor });
     // A repeat is compared on the event's object, never the envelope; the kept row is left as it came.
-    if (settled.settled === "seen" && settled.kept !== undefined && event.object !== undefined) {
-      const kept = objectOf(door, camel(settled.kept.event), settled.kept.fields);
-      if (!sameValue(kept, objectOf(door, name, parsed))) yield* mismatch(door.mount, named.value.id);
+    if (settled.settled === "seen" && event.object !== undefined) {
+      const keptEvent = settled.kept === undefined ? undefined : (door.adapter.events as Readonly<Record<string, AdapterEvent<unknown> | undefined>>)[camel(settled.kept.event)];
+      if (settled.kept === undefined) yield* Effect.logWarning(`in.${door.mount}: the kept row of ${named.value.id} could not be read, so its repeat was not compared`);
+      else if (keptEvent?.object !== undefined && !sameValue(objectOf(door, camel(settled.kept.event), settled.kept.fields), objectOf(door, name, parsed))) yield* mismatch(door.mount, named.value.id);
     }
     yield* outcome(door.mount, settled.settled);
     return json(settled.settled === "accepted" ? { accepted: true } : { seen: true });

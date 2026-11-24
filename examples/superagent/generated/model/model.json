@@ -5258,7 +5258,7 @@
         "version": "0.0.0",
         "thing": "eval"
       },
-      "description": "Give up on an eval that ran out of time: it is unavailable, and its triggers wait for another.",
+      "description": "Give up on an eval that ran out of time: it is unavailable, and keeps its triggers until a person reevaluates one.",
       "payload": {
         "eval": {
           "value": {
@@ -5303,7 +5303,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "34fb4eb71fe4941c"
+      "hash": "fbc92212ea424307"
     },
     "eval.read": {
       "kind": "operation",
@@ -14407,7 +14407,7 @@
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-CAUnDeUqjBpnYub4fXTsDFmVCSblbezu1as5rGcQwC8=",
+      "integrity": "sha256-hqTITl+czRSM8D2Njc+q/M/326YiOpfjdUwaF97i2kU=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -14435,23 +14435,23 @@
       "door": {
         "secret": "GITHUB_WEBHOOK_SIGNING"
       },
-      "hash": "e8baeb91fc9464a7"
+      "hash": "9ad0c365d45be62e"
     },
     "intake": {
       "kind": "feature",
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-FvLKUQ5w521yoIGkNVZjY1aNKSrDrEw5nbFgUDI6sfk=",
+      "integrity": "sha256-50XlvRmF1GW2EDpSZT+5Hixs0MrpNX+4UyjDTGEb4Ak=",
       "chosen": {},
-      "hash": "dd1d9924a3a3e185"
+      "hash": "ef29f74ace12494e"
     },
     "posthog": {
       "kind": "adapter",
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-f4GWwLntJhjpCWQOE37qqkVNMQM3BXVbJeErsxyVOoA=",
+      "integrity": "sha256-SKfuUXLhVKjLyOnECuQ8753/X3hBIvK0LfqtuZlMI8E=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
@@ -14466,7 +14466,7 @@
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "f0d93648359426f7"
+      "hash": "3b65a99f14bd7710"
     },
     "prompts": {
       "kind": "feature",
@@ -14482,7 +14482,7 @@
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-A81tsrSDlCfTfvb1eoiw4qh6jHWvCskP67AfhTtQtQA=",
+      "integrity": "sha256-iiGuKADBPcIp2uFz3oISjXmxgN8p1uLGSAycnFUciIA=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
@@ -14500,7 +14500,7 @@
       "door": {
         "secret": "SLACK_WEBHOOK_SIGNING"
       },
-      "hash": "e30078e58778c834"
+      "hash": "98ca38dacd83b3d9"
     },
     "superagent": {
       "kind": "feature",

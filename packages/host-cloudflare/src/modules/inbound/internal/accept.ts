@@ -33,5 +33,8 @@ export const accept = (db: D1Database, d: Delivery): Effect.Effect<Settled> =>
     result.meta.changes > 0
       ? Effect.succeed({ settled: "accepted" as const })
       : Effect.promise(() => db.prepare(`SELECT "event", "fields" FROM "_journal" WHERE "id" = ?`).bind(d.id).first<{ event: string; fields: string }>()).pipe(
-          Effect.map((row) => ({ settled: "seen" as const, kept: row === null ? undefined : { event: row.event, fields: JSON.parse(row.fields) as unknown } })),
+          Effect.flatMap((row) => row === null
+            ? Effect.succeed(undefined)
+            : Effect.try(() => ({ event: row.event, fields: JSON.parse(row.fields) as unknown })).pipe(Effect.orElseSucceed(() => undefined))),
+          Effect.map((kept) => ({ settled: "seen" as const, kept })),
         )));
