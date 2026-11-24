@@ -60,7 +60,7 @@ describe("Exact decimals: a tool's output schema says how a decimal is shown", (
     const item = itemPropertiesOf(schema);
     expect(item["value"]?.pattern).toBe(inputPattern(Rate.fields.value));
     expect(item["value"]?.description).toBe("The rate.");
-    for (const other of ["id", "name", "state"]) expect(item[other]?.pattern, other).not.toBe(inputPattern(Rate.fields.value));
+    for (const other of ["id", "name", "state"]) expect(item[other]?.pattern, other).toBeUndefined();
     expect(answerOf(schema).properties["items"]?.pattern).toBeUndefined();
   });
 });
