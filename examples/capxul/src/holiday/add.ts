@@ -46,13 +46,13 @@ const { HolidayOutsideList } = Errors.declared;
  *   once it answers, it writes HolidayAdded: holiday from the answer, holidayList and holidayDate from the payload;
  *   the call is the span holiday.add, and its commit holiday.add.commit.
  */
-const add: Handler = ({ holidayList, holidayDate, description }, { steps, move, id }) =>
+const add: Handler = ({ holidayList, holidayDate, description }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
     const records = yield* Records;
 
-    // Step load: database, span holiday.add.load. The list is read here, not taken from refs, so the count's update
-    // below is guarded by the version this call read.
-    const list = yield* steps.load(records.find(HolidayList, holidayList));
+    // Step load: database, span holiday.add.load. The runtime read the list and hands it in; that read fixes the version
+    // the count's update below is guarded by.
+    const list = yield* steps.load(Effect.succeed(refs.holidayList));
     if (!list) return yield* Effect.die(new Error(`holiday list ${holidayList} was read for the role check and then not found`));
     const fromDate = list["fromDate"] as typeof holidayDate;
     const toDate = list["toDate"] as typeof holidayDate;

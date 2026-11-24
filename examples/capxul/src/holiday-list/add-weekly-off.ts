@@ -94,6 +94,8 @@ const addWeeklyOff: Handler = ({ holidayList, weekday }, { steps, move, subject 
       Effect.gen(function* () {
         if (!subject) return yield* Effect.die(new Error(`holiday list ${holidayList} was checked and then not found`));
         const all = daysFalling(weekday, subject["fromDate"] as string, subject["toDate"] as string);
+        // A list that counts no holidays holds none of them, so it needs no lookups.
+        if (subject["totalHolidays"] === 0n) return { list: subject, days: all };
         const held = yield* Effect.forEach(all, (day) => records.findBy(oneHolidayPerDay, { holidayList, holidayDate: day as never }));
         return { list: subject, days: all.filter((_, i) => held[i] === undefined) };
       }),
