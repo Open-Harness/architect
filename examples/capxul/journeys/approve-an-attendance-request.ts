@@ -152,14 +152,19 @@ export default Blueprint.journey("approve an attendance request", {
       emits(AttendanceRequestApproved, { attendanceRequest: s.last.attendanceRequest, marked: 0n, changed: 2n }),
     ),
     s.step(
+      "Ada marks Olga a half day on Saturday 5 December",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-12-05", status: "Half Day" }),
+      expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/),
+    ),
+    s.step(
       "Olga asks to work from home from Friday 4 to Sunday 6 December, across a weekend",
       s.olga.run(create, { company: s.world.company, employee: s.world.employee, fromDate: "2026-12-04", toDate: "2026-12-06", reason: WFH }),
       expect((a) => a.attendanceRequest).toMatch(/^arq_[0-9a-z]+$/),
     ),
     s.step(
-      "approved, it marks all three, the Saturday and Sunday among them",
+      "approved, it marks the Friday and Sunday and changes the half-day Saturday",
       s.ada.run(approve, { attendanceRequest: s.last.attendanceRequest }),
-      expect((a) => [a.marked, a.changed]).toEqual([3n, 0n]),
+      expect((a) => [a.marked, a.changed]).toEqual([2n, 1n]),
     ),
     s.step(
       "Olga asks to work from home on 7 December alone",
@@ -193,14 +198,19 @@ export default Blueprint.journey("approve an attendance request", {
       expect((a) => [a.marked, a.changed]).toEqual([3n, 0n]),
     ),
     s.step(
+      "Ada marks Olga working from home on 29 February 2028",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2028-02-29", status: WFH }),
+      expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/),
+    ),
+    s.step(
       "Olga asks to be on duty from 28 February to 1 March 2028, a leap year",
       s.olga.run(create, { company: s.world.company, employee: s.world.employee, fromDate: "2028-02-28", toDate: "2028-03-01", reason: "On Duty" }),
       expect((a) => a.attendanceRequest).toMatch(/^arq_[0-9a-z]+$/),
     ),
     s.step(
-      "approved, it marks three days, 29 February among them",
+      "approved, it marks 28 February and 1 March and changes 29 February to present",
       s.ada.run(approve, { attendanceRequest: s.last.attendanceRequest }),
-      expect((a) => [a.marked, a.changed]).toEqual([3n, 0n]),
+      expect((a) => [a.marked, a.changed]).toEqual([2n, 1n]),
     ),
     s.step(
       "Ada finds 29 February present, in Acme Trading",

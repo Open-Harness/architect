@@ -37,6 +37,24 @@ export default Blueprint.journey("attendance stays in its company", {
       spans({ absent: ["attendance.mark.insert"] }),
     ),
     s.step(
+      "nor mark her absent there",
+      s.bo.run(mark, { company: s.last.company, employee: s.world.employee, attendanceDate: "2026-11-25", status: "Absent" }),
+      refuses(AttendeeNotInCompany),
+      noEvents(),
+    ),
+    s.step(
+      "nor mark her half day there",
+      s.bo.run(mark, { company: s.last.company, employee: s.world.employee, attendanceDate: "2026-11-25", status: "Half Day" }),
+      refuses(AttendeeNotInCompany),
+      noEvents(),
+    ),
+    s.step(
+      "nor mark her work from home there",
+      s.bo.run(mark, { company: s.last.company, employee: s.world.employee, attendanceDate: "2026-11-25", status: "Work From Home" }),
+      refuses(AttendeeNotInCompany),
+      noEvents(),
+    ),
+    s.step(
       "nor ask for her attendance there",
       s.bo.run(create, { company: s.last.company, employee: s.world.employee, fromDate: "2026-11-30", toDate: "2026-11-30", reason: "On Duty" }),
       refuses(RequesterNotInCompany),
@@ -44,8 +62,8 @@ export default Blueprint.journey("attendance stays in its company", {
       spans({ absent: ["attendance-request.create.insert"] }),
     ),
     s.step(
-      "Olga can't ask for herself in Bo's company either",
-      s.olga.run(create, { company: s.last.company, employee: s.world.employee, fromDate: "2026-11-30", toDate: "2026-11-30", reason: "On Duty" }),
+      "Olga can't ask to work from home in Bo's company either",
+      s.olga.run(create, { company: s.last.company, employee: s.world.employee, fromDate: "2026-11-30", toDate: "2026-11-30", reason: "Work From Home" }),
       refuses(RequesterNotInCompany),
       noEvents(),
     ),
@@ -85,6 +103,24 @@ export default Blueprint.journey("attendance stays in its company", {
       refuses(AttendeeHasLeft),
       noEvents(),
       spans({ absent: ["attendance.mark.insert"] }),
+    ),
+    s.step(
+      "nor mark her absent now she has left",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-11-25", status: "Absent" }),
+      refuses(AttendeeHasLeft),
+      noEvents(),
+    ),
+    s.step(
+      "nor mark her half day now she has left",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-11-25", status: "Half Day" }),
+      refuses(AttendeeHasLeft),
+      noEvents(),
+    ),
+    s.step(
+      "nor mark her work from home now she has left",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-11-25", status: "Work From Home" }),
+      refuses(AttendeeHasLeft),
+      noEvents(),
     ),
     s.step(
       "nor on a day before she joined",

@@ -9177,6 +9177,36 @@
             ]
           },
           {
+            "title": "Ada marks Olga a half day on Saturday 5 December",
+            "call": {
+              "actor": "ada",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-12-05",
+                "status": "Half Day"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^att_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
             "title": "Olga asks to work from home from Friday 4 to Sunday 6 December, across a weekend",
             "call": {
               "actor": "olga",
@@ -9208,7 +9238,7 @@
             ]
           },
           {
-            "title": "approved, it marks all three, the Saturday and Sunday among them",
+            "title": "approved, it marks the Friday and Sunday and changes the half-day Saturday",
             "call": {
               "actor": "ada",
               "operation": "attendance-request.approve",
@@ -9225,8 +9255,8 @@
               {
                 "kind": "expect-equal",
                 "value": [
-                  "3",
-                  "0"
+                  "2",
+                  "1"
                 ]
               }
             ]
@@ -9411,6 +9441,36 @@
             ]
           },
           {
+            "title": "Ada marks Olga working from home on 29 February 2028",
+            "call": {
+              "actor": "ada",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2028-02-29",
+                "status": "Work From Home"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^att_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
             "title": "Olga asks to be on duty from 28 February to 1 March 2028, a leap year",
             "call": {
               "actor": "olga",
@@ -9442,7 +9502,7 @@
             ]
           },
           {
-            "title": "approved, it marks three days, 29 February among them",
+            "title": "approved, it marks 28 February and 1 March and changes 29 February to present",
             "call": {
               "actor": "ada",
               "operation": "attendance-request.approve",
@@ -9459,8 +9519,8 @@
               {
                 "kind": "expect-equal",
                 "value": [
-                  "3",
-                  "0"
+                  "2",
+                  "1"
                 ]
               }
             ]
@@ -9908,7 +9968,7 @@
             ]
           }
         ],
-        "sourceHash": "b4fd27b082238c17b364cbdf9438c195797e92d0414f710034d6ba018a79015d"
+        "sourceHash": "4e76526eb48f12c2b50d3867a700c0520c4e222992df950a254c49ac2d925e55"
       },
       "journeys/attendance-stays-in-its-company.ts": {
         "name": "attendance stays in its company",
@@ -9988,6 +10048,105 @@
             ]
           },
           {
+            "title": "nor mark her absent there",
+            "call": {
+              "actor": "bo",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-11-25",
+                "status": "Absent"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendeeNotInCompany",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor mark her half day there",
+            "call": {
+              "actor": "bo",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-11-25",
+                "status": "Half Day"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendeeNotInCompany",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor mark her work from home there",
+            "call": {
+              "actor": "bo",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-11-25",
+                "status": "Work From Home"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendeeNotInCompany",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
             "title": "nor ask for her attendance there",
             "call": {
               "actor": "bo",
@@ -10029,7 +10188,7 @@
             ]
           },
           {
-            "title": "Olga can't ask for herself in Bo's company either",
+            "title": "Olga can't ask to work from home in Bo's company either",
             "call": {
               "actor": "olga",
               "operation": "attendance-request.create",
@@ -10048,7 +10207,7 @@
                 },
                 "fromDate": "2026-11-30",
                 "toDate": "2026-11-30",
-                "reason": "On Duty"
+                "reason": "Work From Home"
               }
             },
             "checks": [
@@ -10241,6 +10400,105 @@
                 "absent": [
                   "attendance.mark.insert"
                 ]
+              }
+            ]
+          },
+          {
+            "title": "nor mark her absent now she has left",
+            "call": {
+              "actor": "ada",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-11-25",
+                "status": "Absent"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendeeHasLeft",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor mark her half day now she has left",
+            "call": {
+              "actor": "ada",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-11-25",
+                "status": "Half Day"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendeeHasLeft",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor mark her work from home now she has left",
+            "call": {
+              "actor": "ada",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-11-25",
+                "status": "Work From Home"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendeeHasLeft",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
               }
             ]
           },
@@ -10536,7 +10794,7 @@
             ]
           }
         ],
-        "sourceHash": "d7666cbeed1ef8955b180870affcab1d251f37dc07733abd8e0eb561598411a0"
+        "sourceHash": "ad0a6df54a438e9a4ef23f396049b2008fdc38a8c0140314552680ec36ebbe33"
       },
       "journeys/branch-names-are-the-companys.ts": {
         "name": "branch names are the company's",
@@ -16895,6 +17153,111 @@
             ]
           },
           {
+            "title": "the day before she joined can't be marked absent either",
+            "call": {
+              "actor": "ada",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-01-04",
+                "status": "Absent"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendanceBeforeJoining",
+                "fields": {
+                  "dateOfJoining": "2026-01-05"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "the day before she joined can't be marked half day either",
+            "call": {
+              "actor": "ada",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-01-04",
+                "status": "Half Day"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendanceBeforeJoining",
+                "fields": {
+                  "dateOfJoining": "2026-01-05"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "the day before she joined can't be marked work from home either",
+            "call": {
+              "actor": "ada",
+              "operation": "attendance.mark",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "attendanceDate": "2026-01-04",
+                "status": "Work From Home"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AttendanceBeforeJoining",
+                "fields": {
+                  "dateOfJoining": "2026-01-05"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
             "title": "nor the last day of the year before",
             "call": {
               "actor": "ada",
@@ -17486,7 +17849,7 @@
             ]
           }
         ],
-        "sourceHash": "f440f21f31aec01dfa12f1d7646aae43458c400db25c6c9a05b4824605b56666"
+        "sourceHash": "733caf19590293106d500c97ad778f6867664e742fac2a9723a3b92975794372"
       },
       "journeys/reject-an-attendance-request.ts": {
         "name": "reject an attendance request",
@@ -18827,6 +19190,42 @@
             ]
           },
           {
+            "title": "nor to work from home from the day before she joined",
+            "call": {
+              "actor": "olga",
+              "operation": "attendance-request.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "fromDate": "2026-01-04",
+                "toDate": "2026-01-06",
+                "reason": "Work From Home"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "RequestBeforeJoining",
+                "fields": {
+                  "dateOfJoining": "2026-01-05"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
             "title": "nor a year before, later in its year",
             "call": {
               "actor": "olga",
@@ -19056,7 +19455,7 @@
             ]
           }
         ],
-        "sourceHash": "09ae4cd06f76077f1709a12b2b147a96aa08405a7fc6b6cdd228593a24078c9b"
+        "sourceHash": "52ab16f9a310d620c91b314afec48caf8168d6312313c8193276e03c02378ef7"
       },
       "journeys/set-up-a-company.ts": {
         "name": "set up a company",
@@ -21665,6 +22064,112 @@
             ]
           },
           {
+            "title": "an evening shift may end at midnight",
+            "call": {
+              "actor": "ada",
+              "operation": "shift-type.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "shiftTypeName": "Evening",
+                "startTime": "16:00",
+                "endTime": "00:00"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^sht_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "it reads back ending at midnight",
+            "call": {
+              "actor": "ada",
+              "operation": "shift-type.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "shiftType"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Evening",
+                  "16:00",
+                  "00:00"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a graveyard shift may start at midnight",
+            "call": {
+              "actor": "ada",
+              "operation": "shift-type.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "shiftTypeName": "Graveyard",
+                "startTime": "00:00",
+                "endTime": "08:00"
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^sht_[0-9a-z]+$",
+                "flags": ""
+              }
+            ]
+          },
+          {
+            "title": "it reads back starting at midnight",
+            "call": {
+              "actor": "ada",
+              "operation": "shift-type.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "shiftType"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "Graveyard",
+                  "00:00",
+                  "08:00"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
             "title": "Day can't be added to Acme Trading twice",
             "call": {
               "actor": "ada",
@@ -21886,7 +22391,7 @@
             ]
           }
         ],
-        "sourceHash": "38a8782845d32d38c5c120abfbc71fe5fa28947bb6100a665487d20819db776b"
+        "sourceHash": "6da266f9796f13feb3994f2e2560ad728051e2d0a2c6a31be5ad9d4cdae73847"
       },
       "journeys/weekly-offs.ts": {
         "name": "weekly offs",
@@ -29419,15 +29924,15 @@
     }
   },
   "docs": {
-    "attendance-request/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.approve\n\nApprove a request, marking each of its days.\n\n**Who may call:** the owner of its attendanceRequest.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n| marked | DayCount |\n| changed | DayCount |\n\n## Move\n\n`approve`: from draft to approved, emitting AttendanceRequestApproved.\n\n## Steps\n\n- `attendance-request.approve.load` (database)\n- `attendance-request.approve.mark` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttendanceAlreadyMarked | 44 | AN-004 | another attendance holds this employee and attendance date; by the rule attendance.oneAttendancePerDay, carrying attendanceDate |\n| AttendanceRequestNotDraft | 40 | AQ-900 | the attendance-request is in a state approve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its attendanceRequest.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Olga can't approve her own request.** `olga` (signed in) calls and sends attendanceRequest the world's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends attendanceRequest the world's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **Ada approves it: two days are new, the absent Tuesday and the present Wednesday change, and Thursday is left as it was.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and gets back [the world's attendanceRequest, `2`, `2`].\n- **it can't be approved twice.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `approved`.\n- **approved, the absent Monday and the half day change to present, and the present Tuesday is left: none is new.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`0`, `2`].\n- **approved, it marks all three, the Saturday and Sunday among them.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].\n- **approved, it marks that one day.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`1`, `0`].\n- **approved, it marks both, across the year's end.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `0`].\n- **approved, it marks three days, with no 29 February.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].\n- **approved, it marks three days, 29 February among them.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **the request she made before leaving is still approved, marking its days.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and gets back [the world's attendanceRequest, `4`, `1`].\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **it can't then be approved.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul attendance-request approve --attendanceRequest <attendanceRequest>\n```\n\nHTTP: `POST /attendance-request/approve` with the payload as JSON. SDK: `Sdk.attendance-request.approve(payload)`.\n",
-    "attendance-request/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.create\n\nAsk for an employee to be marked at work, from one day to another, and why.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | attendance-request.company |\n| employee | attendance-request.employee |\n| fromDate | attendance-request.fromDate |\n| toDate | attendance-request.toDate |\n| reason | attendance-request.reason |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting AttendanceRequested.\n\n## Steps\n\n- `attendance-request.create.load` (database)\n- `attendance-request.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RequesterNotInCompany | 41 | AQ-001 | declared in errors.ts |\n| RequesterHasLeft | 42 | AQ-002 | declared in errors.ts |\n| RequestEndsBeforeStart | 43 | AQ-003 | declared in errors.ts, carrying fromDate |\n| RequestBeforeJoining | 44 | AQ-004 | declared in errors.ts, carrying dateOfJoining |\n| CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Olga asks to be on duty from 30 November to 2 December, across the month's end.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-12-02`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home from Friday 4 to Sunday 6 December, across a weekend.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-04`, toDate `2026-12-06`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home on 7 December alone.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-07`, toDate `2026-12-07`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home on New Year's Eve and New Year's Day.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-31`, toDate `2027-01-01`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home from 27 February to 1 March 2027, a year with no leap day.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-02-27`, toDate `2027-03-01`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to be on duty from 28 February to 1 March 2028, a leap year.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2028-02-28`, toDate `2028-03-01`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **nor ask for her attendance there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequesterNotInCompany, AQ-001.\n- **Olga can't ask for herself in Bo's company either.** `olga` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequesterNotInCompany, AQ-001.\n- **nor ask for her there, ending before it starts.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2025-12-02`, toDate `2025-12-01`, reason `On Duty`, and is refused with RequesterNotInCompany, AQ-001.\n- **Ada can't ask for Olga's attendance now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequesterHasLeft, AQ-002.\n- **nor for days that end before they start, before she joined.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2025-12-02`, toDate `2025-12-01`, reason `On Duty`, and is refused with RequesterHasLeft, AQ-002.\n- **Olga can't ask for herself either.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `Work From Home`, and is refused with RequesterHasLeft, AQ-002.\n\n### request attendance\n\nStarts from the world `an employee`.\n\n- **Olga asks to be marked working from home, 2 to 4 November.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-02`, toDate `2026-11-04`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Ada asks for Olga on duty for the single day of 9 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-09`, toDate `2026-11-09`, reason `On Duty`, and is answered.\n- **a request can't end the day before it starts.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-10`, toDate `2026-11-09`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-11-10`.\n- **nor in the month before.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-01`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-12-01`.\n- **nor in the year before, later in its month.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-01-01`, toDate `2026-12-31`, reason `Work From Home`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2027-01-01`.\n- **a request can't start the day before Olga joined.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-04`, toDate `2026-01-06`, reason `On Duty`, and is refused with RequestBeforeJoining, AQ-004, carrying dateOfJoining `2026-01-05`.\n- **nor a year before, later in its year.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2025-03-01`, toDate `2026-01-06`, reason `On Duty`, and is refused with RequestBeforeJoining, AQ-004, carrying dateOfJoining `2026-01-05`.\n- **one that ends before it starts and starts before she joined is refused for its order first.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-04`, toDate `2026-01-03`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-01-04`.\n- **the day she joined may start one.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-05`, toDate `2026-01-06`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **days still to come may be asked for: HRMS's validate_dates runs with restrict_future_dates off.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-06-01`, toDate `2027-06-02`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Bo can't ask for Olga in Ada's company.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-16`, toDate `2026-11-17`, reason `On Duty`, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul attendance-request create --company <company> --employee <employee> --fromDate <fromDate> --toDate <toDate> --reason <reason>\n```\n\nHTTP: `POST /attendance-request/create` with the payload as JSON. SDK: `Sdk.attendance-request.create(payload)`.\n",
+    "attendance-request/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.approve\n\nApprove a request, marking each of its days.\n\n**Who may call:** the owner of its attendanceRequest.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n| marked | DayCount |\n| changed | DayCount |\n\n## Move\n\n`approve`: from draft to approved, emitting AttendanceRequestApproved.\n\n## Steps\n\n- `attendance-request.approve.load` (database)\n- `attendance-request.approve.mark` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttendanceAlreadyMarked | 44 | AN-004 | another attendance holds this employee and attendance date; by the rule attendance.oneAttendancePerDay, carrying attendanceDate |\n| AttendanceRequestNotDraft | 40 | AQ-900 | the attendance-request is in a state approve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its attendanceRequest.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Olga can't approve her own request.** `olga` (signed in) calls and sends attendanceRequest the world's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends attendanceRequest the world's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **Ada approves it: two days are new, the absent Tuesday and the present Wednesday change, and Thursday is left as it was.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and gets back [the world's attendanceRequest, `2`, `2`].\n- **it can't be approved twice.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `approved`.\n- **approved, the absent Monday and the half day change to present, and the present Tuesday is left: none is new.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`0`, `2`].\n- **approved, it marks the Friday and Sunday and changes the half-day Saturday.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `1`].\n- **approved, it marks that one day.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`1`, `0`].\n- **approved, it marks both, across the year's end.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `0`].\n- **approved, it marks three days, with no 29 February.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].\n- **approved, it marks 28 February and 1 March and changes 29 February to present.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `1`].\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **the request she made before leaving is still approved, marking its days.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and gets back [the world's attendanceRequest, `4`, `1`].\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **it can't then be approved.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul attendance-request approve --attendanceRequest <attendanceRequest>\n```\n\nHTTP: `POST /attendance-request/approve` with the payload as JSON. SDK: `Sdk.attendance-request.approve(payload)`.\n",
+    "attendance-request/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.create\n\nAsk for an employee to be marked at work, from one day to another, and why.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | attendance-request.company |\n| employee | attendance-request.employee |\n| fromDate | attendance-request.fromDate |\n| toDate | attendance-request.toDate |\n| reason | attendance-request.reason |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting AttendanceRequested.\n\n## Steps\n\n- `attendance-request.create.load` (database)\n- `attendance-request.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RequesterNotInCompany | 41 | AQ-001 | declared in errors.ts |\n| RequesterHasLeft | 42 | AQ-002 | declared in errors.ts |\n| RequestEndsBeforeStart | 43 | AQ-003 | declared in errors.ts, carrying fromDate |\n| RequestBeforeJoining | 44 | AQ-004 | declared in errors.ts, carrying dateOfJoining |\n| CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Olga asks to be on duty from 30 November to 2 December, across the month's end.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-12-02`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home from Friday 4 to Sunday 6 December, across a weekend.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-04`, toDate `2026-12-06`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home on 7 December alone.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-07`, toDate `2026-12-07`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home on New Year's Eve and New Year's Day.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-31`, toDate `2027-01-01`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home from 27 February to 1 March 2027, a year with no leap day.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-02-27`, toDate `2027-03-01`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to be on duty from 28 February to 1 March 2028, a leap year.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2028-02-28`, toDate `2028-03-01`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **nor ask for her attendance there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequesterNotInCompany, AQ-001.\n- **Olga can't ask to work from home in Bo's company either.** `olga` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `Work From Home`, and is refused with RequesterNotInCompany, AQ-001.\n- **nor ask for her there, ending before it starts.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2025-12-02`, toDate `2025-12-01`, reason `On Duty`, and is refused with RequesterNotInCompany, AQ-001.\n- **Ada can't ask for Olga's attendance now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequesterHasLeft, AQ-002.\n- **nor for days that end before they start, before she joined.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2025-12-02`, toDate `2025-12-01`, reason `On Duty`, and is refused with RequesterHasLeft, AQ-002.\n- **Olga can't ask for herself either.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `Work From Home`, and is refused with RequesterHasLeft, AQ-002.\n\n### request attendance\n\nStarts from the world `an employee`.\n\n- **Olga asks to be marked working from home, 2 to 4 November.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-02`, toDate `2026-11-04`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Ada asks for Olga on duty for the single day of 9 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-09`, toDate `2026-11-09`, reason `On Duty`, and is answered.\n- **a request can't end the day before it starts.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-10`, toDate `2026-11-09`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-11-10`.\n- **nor in the month before.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-01`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-12-01`.\n- **nor in the year before, later in its month.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-01-01`, toDate `2026-12-31`, reason `Work From Home`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2027-01-01`.\n- **a request can't start the day before Olga joined.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-04`, toDate `2026-01-06`, reason `On Duty`, and is refused with RequestBeforeJoining, AQ-004, carrying dateOfJoining `2026-01-05`.\n- **nor to work from home from the day before she joined.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-04`, toDate `2026-01-06`, reason `Work From Home`, and is refused with RequestBeforeJoining, AQ-004, carrying dateOfJoining `2026-01-05`.\n- **nor a year before, later in its year.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2025-03-01`, toDate `2026-01-06`, reason `On Duty`, and is refused with RequestBeforeJoining, AQ-004, carrying dateOfJoining `2026-01-05`.\n- **one that ends before it starts and starts before she joined is refused for its order first.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-04`, toDate `2026-01-03`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-01-04`.\n- **the day she joined may start one.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-05`, toDate `2026-01-06`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **days still to come may be asked for: HRMS's validate_dates runs with restrict_future_dates off.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-06-01`, toDate `2027-06-02`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Bo can't ask for Olga in Ada's company.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-16`, toDate `2026-11-17`, reason `On Duty`, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul attendance-request create --company <company> --employee <employee> --fromDate <fromDate> --toDate <toDate> --reason <reason>\n```\n\nHTTP: `POST /attendance-request/create` with the payload as JSON. SDK: `Sdk.attendance-request.create(payload)`.\n",
     "attendance-request/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.get\n\nRead one attendance-request by its id: company, employee, fromDate, toDate, reason, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | attendance-request.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | attendance-request.company |\n| employee | attendance-request.employee |\n| fromDate | attendance-request.fromDate |\n| toDate | attendance-request.toDate |\n| reason | attendance-request.reason |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **the request reads back approved, as she asked it.** `olga` (signed in) calls and sends id the world's attendanceRequest, and gets back [the world's company, the world's employee, `2026-11-23`, `2026-11-27`, `Work From Home`, `approved`].\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **it reads back rejected, as she asked it.** `olga` (signed in) calls and sends id the world's attendanceRequest, and gets back [the world's company, the world's employee, `2026-11-23`, `2026-11-27`, `Work From Home`, `rejected`].\n\n### request attendance\n\nStarts from the world `an employee`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **it reads back as she typed it, a draft.** `olga` (signed in) calls and sends id the last call's attendanceRequest, and gets back [the world's company, the world's employee, `2026-11-02`, `2026-11-04`, `Work From Home`, `draft`].\n- **Ada reads it back on duty, a draft.** `ada` (role company.owner) calls and sends id the last call's attendanceRequest, and gets back [the world's company, the world's employee, `2026-11-09`, `2026-11-09`, `On Duty`, `draft`].\n- **it reads back from the day she joined.** `olga` (signed in) calls and sends id the last call's attendanceRequest, and gets back [`2026-01-05`, `2026-01-06`, `On Duty`, `draft`].\n\n## How to call\n\n```sh\ncapxul attendance-request get --id <id>\n```\n\nHTTP: `POST /attendance-request/get` with the payload as JSON. SDK: `Sdk.attendance-request.get(payload)`.\n",
     "attendance-request/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request\n\nAn employee's ask to be marked at work on days the office didn't see them.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| employee | employee.id |\n| fromDate | Day |\n| toDate | Day |\n| reason | AttendanceReason |\n\n## Machine\n\nStates: draft, approved, rejected. A move from the wrong state is refused AttendanceRequestNotDraft (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | draft | AttendanceRequested |\n| approve | draft | approved | AttendanceRequestApproved |\n| reject | draft | rejected | AttendanceRequestRejected |\n\n## Events\n\n- `AttendanceRequestApproved`: carries attendanceRequest (attendance-request.id), marked (DayCount), changed (DayCount); emitted by the move approve\n- `AttendanceRequestRejected`: carries attendanceRequest (attendance-request.id); emitted by the move reject\n- `AttendanceRequested`: carries attendanceRequest (attendance-request.id), company (attendance-request.company), employee (attendance-request.employee); emitted by the move create\n\n## Operations\n\n- [attendance-request.approve](approve.md): Approve a request, marking each of its days.\n- [attendance-request.create](create.md): Ask for an employee to be marked at work, from one day to another, and why.\n- [attendance-request.get](get.md): Read one attendance-request by its id: company, employee, fromDate, toDate, reason, state.\n- [attendance-request.reject](reject.md): Reject a request, marking none of its days.\n",
     "attendance-request/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.reject\n\nReject a request, marking none of its days.\n\n**Who may call:** the owner of its attendanceRequest.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n\n## Move\n\n`reject`: from draft to rejected, emitting AttendanceRequestRejected.\n\n## Steps\n\n- `attendance-request.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttendanceRequestNotDraft | 40 | AQ-900 | the attendance-request is in a state reject can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its attendanceRequest.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **nor rejected once approved.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `approved`.\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Olga can't reject her own request.** `olga` (signed in) calls and sends attendanceRequest the world's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends attendanceRequest the world's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **Ada rejects it.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and gets back the world's attendanceRequest.\n- **nor rejected again.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul attendance-request reject --attendanceRequest <attendanceRequest>\n```\n\nHTTP: `POST /attendance-request/reject` with the payload as JSON. SDK: `Sdk.attendance-request.reject(payload)`.\n",
     "attendance/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance.get\n\nRead one attendance by its id: company, employee, attendanceDate, status, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | attendance.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | attendance.company |\n| employee | attendance.employee |\n| attendanceDate | attendance.attendanceDate |\n| status | attendance.status |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### mark attendance\n\nStarts from the world `an employee`.\n\n- **Olga reads it back.** `olga` (signed in) calls and sends id the last call's attendance, and gets back [the world's company, the world's employee, `2026-11-02`, `Present`, `marked`].\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's attendance, and is refused with NotAllowed, AR-001.\n- **Ada reads it back absent.** `ada` (role company.owner) calls and sends id the last call's attendance, and gets back [the world's company, the world's employee, `2026-11-03`, `Absent`, `marked`].\n- **it reads back a half day.** `olga` (signed in) calls and sends id the last call's attendance, and gets back [`2026-11-04`, `Half Day`].\n- **it reads back working from home.** `olga` (signed in) calls and sends id the last call's attendance, and gets back [`2026-11-05`, `Work From Home`].\n- **Olga can't read Bo's.** `olga` (signed in) calls and sends id the last call's attendance, and is refused with NotAllowed, AR-001.\n- **Bo reads his own, absent on 2 November.** `bo` (signed in) calls and sends id the last call's attendance, and gets back [the world's company, `2026-11-02`, `Absent`, `marked`].\n\n## How to call\n\n```sh\ncapxul attendance get --id <id>\n```\n\nHTTP: `POST /attendance/get` with the payload as JSON. SDK: `Sdk.attendance.get(payload)`.\n",
     "attendance/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance\n\nWhether an employee was at work on one day.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| employee | employee.id |\n| attendanceDate | Day |\n| status | AttendanceStatus |\n\n## Machine\n\nStates: marked. A move from the wrong state is refused AttendanceNotMarked (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| mark | (creates) | marked | AttendanceMarked |\n\n## Invariants\n\n- `attendance.oneAttendancePerDay`: another attendance holds this employee and attendance date. Unique on employee, attendanceDate, in every state; refused AttendanceAlreadyMarked.\n\n## Events\n\n- `AttendanceMarked`: carries attendance (attendance.id), employee (attendance.employee), attendanceDate (attendance.attendanceDate), status (attendance.status); emitted by the move mark\n\n## Operations\n\n- [attendance.get](get.md): Read one attendance by its id: company, employee, attendanceDate, status, state.\n- [attendance.list](list.md): List attendances, oldest first, 50 to a page, filtered by employee, attendanceDate.\n- [attendance.mark](mark.md): Mark whether an employee was at work on a day.\n",
     "attendance/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance.list\n\nList attendances, oldest first, 50 to a page, filtered by employee, attendanceDate.\n\n**Who may call:** the self of its employee, or the owner of its employee.company.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by employee, attendanceDate; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employee (optional) | attendance.employee |\n| attendanceDate (optional) | attendance.attendanceDate |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its employee.company; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Olga's week reads working from home each day of the request, and the days either side as they were.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[`2026-11-22`, `Present`, the world's company, the world's employee, `marked`], [`2026-11-23`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-24`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-25`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-26`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-27`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-28`, `Absent`, the world's company, the world's employee, `marked`]] and gets back [the world's attendance].\n- **Bo can't list them.** `bo` (signed in) calls and sends employee the world's employee, and is refused with NotAllowed, AR-001.\n- **Ada finds 29 February present, in Acme Trading.** `ada` (role company.owner) calls and sends employee the world's employee, attendanceDate `2028-02-29`, and gets back [[the world's company, the world's employee, `2028-02-29`, `Present`, `marked`]].\n- **every day Olga was marked, each with the status its request or Ada gave it.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[`2026-11-22`, `Present`, the world's company, the world's employee, `marked`], [`2026-11-23`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-24`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-25`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-26`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-27`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-11-28`, `Absent`, the world's company, the world's employee, `marked`], [`2026-11-30`, `Present`, the world's company, the world's employee, `marked`], [`2026-12-01`, `Present`, the world's company, the world's employee, `marked`], [`2026-12-02`, `Present`, the world's company, the world's employee, `marked`], [`2026-12-04`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-12-05`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-12-06`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-12-07`, `Work From Home`, the world's company, the world's employee, `marked`], [`2026-12-31`, `Work From Home`, the world's company, the world's employee, `marked`], [`2027-01-01`, `Work From Home`, the world's company, the world's employee, `marked`], [`2027-02-27`, `Work From Home`, the world's company, the world's employee, `marked`], [`2027-02-28`, `Work From Home`, the world's company, the world's employee, `marked`], [`2027-03-01`, `Work From Home`, the world's company, the world's employee, `marked`], [`2028-02-28`, `Present`, the world's company, the world's employee, `marked`], [`2028-02-29`, `Present`, the world's company, the world's employee, `marked`], [`2028-03-01`, `Present`, the world's company, the world's employee, `marked`]].\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **every day it marked is Olga's, in Ada's company.** `ada` (role company.owner) calls and sends employee the world's employee, and gets back [[the world's company, the world's employee, `2026-11-23`, `Work From Home`], [the world's company, the world's employee, `2026-11-24`, `Work From Home`], [the world's company, the world's employee, `2026-11-25`, `Work From Home`], [the world's company, the world's employee, `2026-11-26`, `Work From Home`], [the world's company, the world's employee, `2026-11-27`, `Work From Home`]].\n\n### mark attendance\n\nStarts from the world `an employee`.\n\n- **Olga's attendances list every day marked, each as it was marked.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[`2026-01-05`, `Present`, the world's company, the world's employee, `marked`], [`2026-11-02`, `Present`, the world's company, the world's employee, `marked`], [`2026-11-03`, `Absent`, the world's company, the world's employee, `marked`], [`2026-11-04`, `Half Day`, the world's company, the world's employee, `marked`], [`2026-11-05`, `Work From Home`, the world's company, the world's employee, `marked`], [`2027-03-01`, `Absent`, the world's company, the world's employee, `marked`]].\n- **Bo can't list them.** `bo` (signed in) calls and sends employee the world's employee, and is refused with NotAllowed, AR-001.\n- **Olga's 2 November is still present, and hers alone.** `ada` (role company.owner) calls and sends employee the world's employee, attendanceDate `2026-11-02`, and gets back [[the world's employee, `2026-11-02`, `Present`]].\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **it marked nothing, and left the absent Tuesday absent and the Wednesday present.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[`2026-11-24`, `Absent`], [`2026-11-25`, `Present`]] and gets back [the world's attendance].\n\n### request attendance\n\nStarts from the world `an employee`.\n\n- **a request in draft marks no day.** `olga` (signed in) calls and sends employee the world's employee, and gets back 0.\n\n## How to call\n\n```sh\ncapxul attendance list [--employee <employee>] [--attendanceDate <attendanceDate>] [--cursor <cursor>]\n```\n\nHTTP: `POST /attendance/list` with the payload as JSON. SDK: `Sdk.attendance.list(payload)`.\n",
-    "attendance/mark.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance.mark\n\nMark whether an employee was at work on a day.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | attendance.company |\n| employee | attendance.employee |\n| attendanceDate | attendance.attendanceDate |\n| status | attendance.status |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendance | attendance.id |\n\n## Move\n\n`mark`: from nothing (it creates) to marked, emitting AttendanceMarked.\n\n## Steps\n\n- `attendance.mark.load` (database)\n- `attendance.mark.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttendeeNotInCompany | 41 | AN-001 | declared in errors.ts |\n| AttendeeHasLeft | 42 | AN-002 | declared in errors.ts |\n| AttendanceBeforeJoining | 43 | AN-003 | declared in errors.ts, carrying dateOfJoining |\n| AttendanceAlreadyMarked | 44 | AN-004 | another attendance holds this employee and attendance date; by the rule attendance.oneAttendancePerDay, carrying attendanceDate |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Ada marks Olga working from home on the Thursday already.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-26`, status `Work From Home`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and present on the Sunday before the request.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-22`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and present on the Wednesday, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and absent on the Saturday after it.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-28`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **a day it marked can't be marked again.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Absent`, and is refused with AttendanceAlreadyMarked, AN-004, carrying attendanceDate `2026-11-25`.\n- **Ada marks Olga absent on Monday 30 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-30`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and present on Tuesday 1 December, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-01`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and a half day on Wednesday 2 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-02`, status `Half Day`, and gets back an answer matching `^att_[0-9a-z]+$`.\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **Bo can't mark Olga in his company: she works for Ada.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with AttendeeNotInCompany, AN-001.\n- **Bo can't mark Olga in Ada's company.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with NotAllowed, AR-001.\n- **Bo can't mark Olga in it now she has left.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2025-12-01`, status `Present`, and is refused with AttendeeNotInCompany, AN-001.\n- **Ada can't mark Olga now she has left, even on a day she was at work.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with AttendeeHasLeft, AN-002.\n- **nor on a day before she joined.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-12-01`, status `Present`, and is refused with AttendeeHasLeft, AN-002.\n\n### mark attendance\n\nStarts from the world `an employee`.\n\n- **Ada marks Olga present on Monday 2 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-02`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **Ada marks her absent on the Tuesday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-03`, status `Absent`, and is answered.\n- **a half day on the Wednesday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-04`, status `Half Day`, and is answered.\n- **working from home on the Thursday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-05`, status `Work From Home`, and is answered.\n- **2 November can't be marked again, even with another status.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-02`, status `Absent`, and is refused with AttendanceAlreadyMarked, AN-004, carrying attendanceDate `2026-11-02`.\n- **the day before Olga joined can't be marked.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **nor the last day of the year before.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-12-31`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **nor a day in the year before that falls later in its month.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-02-10`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **the day she joined can.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-05`, status `Present`, and is answered.\n- **and so can a day still to come: HRMS has no check on it at 46b38904.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2027-03-01`, status `Absent`, and is answered.\n- **Olga can't mark herself.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-06`, status `Present`, and is refused with NotAllowed, AR-001.\n- **Bo can't mark her.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-06`, status `Present`, and is refused with NotAllowed, AR-001.\n- **Bo can't be marked on a day Olga had joined but he hadn't.** `ada` (role company.owner) calls and sends company the world's company, employee the last call's employee, attendanceDate `2026-01-20`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-02-01`.\n- **Bo is marked on a day Olga was marked too: the rule is one a day for each employee.** `ada` (role company.owner) calls and sends company the world's company, employee the last call's employee, attendanceDate `2026-11-02`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Ada marks Olga present on the Wednesday, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **so Ada may mark the Thursday present.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-26`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul attendance mark --company <company> --employee <employee> --attendanceDate <attendanceDate> --status <status>\n```\n\nHTTP: `POST /attendance/mark` with the payload as JSON. SDK: `Sdk.attendance.mark(payload)`.\n",
+    "attendance/mark.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance.mark\n\nMark whether an employee was at work on a day.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | attendance.company |\n| employee | attendance.employee |\n| attendanceDate | attendance.attendanceDate |\n| status | attendance.status |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendance | attendance.id |\n\n## Move\n\n`mark`: from nothing (it creates) to marked, emitting AttendanceMarked.\n\n## Steps\n\n- `attendance.mark.load` (database)\n- `attendance.mark.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttendeeNotInCompany | 41 | AN-001 | declared in errors.ts |\n| AttendeeHasLeft | 42 | AN-002 | declared in errors.ts |\n| AttendanceBeforeJoining | 43 | AN-003 | declared in errors.ts, carrying dateOfJoining |\n| AttendanceAlreadyMarked | 44 | AN-004 | another attendance holds this employee and attendance date; by the rule attendance.oneAttendancePerDay, carrying attendanceDate |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Ada marks Olga working from home on the Thursday already.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-26`, status `Work From Home`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and present on the Sunday before the request.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-22`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and present on the Wednesday, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and absent on the Saturday after it.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-28`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **a day it marked can't be marked again.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Absent`, and is refused with AttendanceAlreadyMarked, AN-004, carrying attendanceDate `2026-11-25`.\n- **Ada marks Olga absent on Monday 30 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-30`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and present on Tuesday 1 December, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-01`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **and a half day on Wednesday 2 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-02`, status `Half Day`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **Ada marks Olga a half day on Saturday 5 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-05`, status `Half Day`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **Ada marks Olga working from home on 29 February 2028.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2028-02-29`, status `Work From Home`, and gets back an answer matching `^att_[0-9a-z]+$`.\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **Bo can't mark Olga in his company: she works for Ada.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with AttendeeNotInCompany, AN-001.\n- **nor mark her absent there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Absent`, and is refused with AttendeeNotInCompany, AN-001.\n- **nor mark her half day there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Half Day`, and is refused with AttendeeNotInCompany, AN-001.\n- **nor mark her work from home there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Work From Home`, and is refused with AttendeeNotInCompany, AN-001.\n- **Bo can't mark Olga in Ada's company.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with NotAllowed, AR-001.\n- **Bo can't mark Olga in it now she has left.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2025-12-01`, status `Present`, and is refused with AttendeeNotInCompany, AN-001.\n- **Ada can't mark Olga now she has left, even on a day she was at work.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with AttendeeHasLeft, AN-002.\n- **nor mark her absent now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Absent`, and is refused with AttendeeHasLeft, AN-002.\n- **nor mark her half day now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Half Day`, and is refused with AttendeeHasLeft, AN-002.\n- **nor mark her work from home now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Work From Home`, and is refused with AttendeeHasLeft, AN-002.\n- **nor on a day before she joined.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-12-01`, status `Present`, and is refused with AttendeeHasLeft, AN-002.\n\n### mark attendance\n\nStarts from the world `an employee`.\n\n- **Ada marks Olga present on Monday 2 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-02`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **Ada marks her absent on the Tuesday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-03`, status `Absent`, and is answered.\n- **a half day on the Wednesday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-04`, status `Half Day`, and is answered.\n- **working from home on the Thursday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-05`, status `Work From Home`, and is answered.\n- **2 November can't be marked again, even with another status.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-02`, status `Absent`, and is refused with AttendanceAlreadyMarked, AN-004, carrying attendanceDate `2026-11-02`.\n- **the day before Olga joined can't be marked.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **the day before she joined can't be marked absent either.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Absent`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **the day before she joined can't be marked half day either.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Half Day`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **the day before she joined can't be marked work from home either.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Work From Home`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **nor the last day of the year before.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-12-31`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **nor a day in the year before that falls later in its month.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-02-10`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.\n- **the day she joined can.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-05`, status `Present`, and is answered.\n- **and so can a day still to come: HRMS has no check on it at 46b38904.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2027-03-01`, status `Absent`, and is answered.\n- **Olga can't mark herself.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-06`, status `Present`, and is refused with NotAllowed, AR-001.\n- **Bo can't mark her.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-06`, status `Present`, and is refused with NotAllowed, AR-001.\n- **Bo can't be marked on a day Olga had joined but he hadn't.** `ada` (role company.owner) calls and sends company the world's company, employee the last call's employee, attendanceDate `2026-01-20`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-02-01`.\n- **Bo is marked on a day Olga was marked too: the rule is one a day for each employee.** `ada` (role company.owner) calls and sends company the world's company, employee the last call's employee, attendanceDate `2026-11-02`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Ada marks Olga present on the Wednesday, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n- **so Ada may mark the Thursday present.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-26`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul attendance mark --company <company> --employee <employee> --attendanceDate <attendanceDate> --status <status>\n```\n\nHTTP: `POST /attendance/mark` with the payload as JSON. SDK: `Sdk.attendance.mark(payload)`.\n",
     "bank-account/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account.close\n\nClose a company's bank account; it takes no more deposits.\n\n**Who may call:** the owner of its account.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 800ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| account | bank-account.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| account | bank-account.id |\n\n## Move\n\n`close`: from open to closed, emitting BankAccountClosed.\n\n## Steps\n\n- `bank-account.close.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| BankAccountNotOpen | 40 | BA-900 | the bank-account is in a state close can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its account.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### bridge: a bank account closes\n\nStarts from the world `two bank accounts`.\n\n- **Bo can't close it.** `bo` (signed in) calls and sends account the world's account, and is refused with NotAllowed, AR-001.\n- **Ada closes it.** `ada` (role company.owner) calls and sends account the world's account, and gets back the world's account.\n- **it can't be closed twice.** `ada` (role company.owner) calls and sends account the world's account, and is refused with BankAccountNotOpen, BA-900, carrying state `closed`.\n\n## How to call\n\n```sh\ncapxul bank-account close --account <account>\n```\n\nHTTP: `POST /bank-account/close` with the payload as JSON. SDK: `Sdk.bank-account.close(payload)`.\n",
     "bank-account/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account.get\n\nRead one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | bank-account.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | bank-account.company |  |\n| business | bank-account.business | The company's approved KYB the account is opened on. |\n| accountName | bank-account.accountName | What the company calls the account (ERPNext's `account_name`). |\n| currency | bank-account.currency | The currency it takes deposits in. |\n| bankName | bank-account.bankName | The bank that holds it, as Bridge names it. |\n| accountNumber | bank-account.accountNumber | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | bank-account.routingNumber | Its routing number, or BIC, as Bridge gives it. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### bridge: a bank account closes\n\nStarts from the world `two bank accounts`.\n\n- **Ada reads it back with the deposit details she was given.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].\n- **the new account is a different one.** `ada` (role company.owner) calls and sends id the last call's account, and gets back `open`.\n- **and the old one stays closed.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `closed`].\n- **the euro account is untouched, with the details it was opened with.** `ada` (role company.owner) calls and sends id the world's payroll, and gets back [the world's company, the world's business, `Payroll`, `EUR`, the world's payrollBankName, the world's payrollAccountNumber, the world's payrollRoutingNumber, `open`].\n\n### bridge: a reopened account is its own\n\nStarts from the world `a reopened account`.\n\n- **the new account reads back with the details its opening answered.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].\n- **the old one is closed, and keeps its own number.** `ada` (role company.owner) calls and sends id the world's old, and gets back [the world's oldAccountNumber, `closed`].\n\n### bridge: open a bank account\n\nStarts from the world `kyb approved`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's account, and is refused with NotAllowed, AR-001.\n- **it reads back as the second account, not the first.** `ada` (role company.owner) calls and sends id the last call's account, and gets back [the world's company, the world's business, `Payroll`, `EUR`, `open`] and gets back an answer matching `^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$`.\n\n## How to call\n\n```sh\ncapxul bank-account get --id <id>\n```\n\nHTTP: `POST /bank-account/get` with the payload as JSON. SDK: `Sdk.bank-account.get(payload)`.\n",
     "bank-account/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# bank-account\n\nA bank account a company holds through Bridge, which takes deposits in one currency.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| business | bridge-business.id | The company's approved KYB the account is opened on. |\n| accountName | Name | What the company calls the account (ERPNext's `account_name`). |\n| currency | AccountCurrency | The currency it takes deposits in. |\n| bankName | DepositDetail | The bank that holds it, as Bridge names it. |\n| accountNumber | DepositDetail | Its account number, or IBAN, as Bridge gives it. |\n| routingNumber | DepositDetail | Its routing number, or BIC, as Bridge gives it. |\n\n## Machine\n\nStates: open, closed. A move from the wrong state is refused BankAccountNotOpen (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | open | BankAccountOpened |\n| close | open | closed | BankAccountClosed |\n\n## Invariants\n\n- `bank-account.oneAccountPerNumber`: another bank account holds this account number. Unique on accountNumber, in every state; refuses nothing, a break is a defect.\n- `bank-account.oneNamePerCompany`: another open bank account holds this company and account name. Unique on company, accountName, while open; refused BankAccountNameTaken.\n\n## Events\n\n- `BankAccountClosed`: carries account (bank-account.id); emitted by the move close\n- `BankAccountOpened`: carries account (bank-account.id), company (bank-account.company), business (bank-account.business: The company's approved KYB the account is opened on.), currency (bank-account.currency: The currency it takes deposits in.); emitted by the move open\n\n## Operations\n\n- [bank-account.close](close.md): Close a company's bank account; it takes no more deposits.\n- [bank-account.get](get.md): Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.\n- [bank-account.open](open.md): Open a bank account for a company whose KYB Bridge approved: answers where to send deposits.\n",
@@ -29482,8 +29987,8 @@
     "holiday/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday.add\n\nAdd one day off to a holiday list.\n\n**Who may call:** the owner of its holidayList.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| holidayList | holiday.holidayList |\n| holidayDate | holiday.holidayDate |\n| description | holiday.description |\n\n## Answer\n\n| field | value |\n|---|---|\n| holiday | holiday.id |\n| totalHolidays | HolidayCount |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting HolidayAdded.\n\n## Steps\n\n- `holiday.add.load` (database)\n- `holiday.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayOutsideList | 42 | HD-002 | declared in errors.ts, carrying fromDate, toDate |\n| HolidayDateTaken | 41 | HD-001 | another holiday holds this holiday list and holiday date; by the rule holiday.oneHolidayPerDay, carrying holidayDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### a one-day list\n\nStarts from the world `a one-day list`.\n\n- **the day before its only day is outside it.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-13`, description `Too early`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2028-08-14`, toDate `2028-08-14`.\n- **so is the day after.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-15`, description `Too late`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2028-08-14`, toDate `2028-08-14`.\n- **that day is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-08-14`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-08-14`.\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **Ada adds the list's first day.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `New Year's Day`, and gets back [`1`] and gets back an answer matching `^hol_[0-9a-z]+$`.\n- **the same day can't be added twice.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `Again`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-01-01`.\n- **a day before the list starts is refused.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2026-12-31`, description `Too early`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2027-01-01`, toDate `2027-12-31`.\n- **so is a day after it ends.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-01-01`, description `Too late`, and is refused with HolidayOutsideList, HD-002, carrying fromDate `2027-01-01`, toDate `2027-12-31`.\n- **Bo can't add a day to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, holidayDate `2027-05-01`, description `Bo's day`, and is refused with NotAllowed, AR-001.\n- **the list's last day may be a holiday too.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-31`, description `New Year's Eve`, and gets back [`2`].\n\n### every weekday\n\nStarts from the world `a leap fortnight`.\n\n- **the leap day is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-02-29`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-02-29`.\n- **the first of March is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-03-01`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-03-01`.\n- **the second of March is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-03-02`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-03-02`.\n- **the fourth of March is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-03-04`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-03-04`.\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **a day in the middle of the year is now taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-06-13`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-06-13`.\n- **and so is the last one of the year.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-26`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-12-26`.\n- **the first day is taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-01`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-01-01`.\n- **and so is the last.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-12-31`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2027-12-31`.\n- **a day of another weekday may still be added.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2027-01-04`, description `Picnic`, and gets back [`106`].\n\n## How to call\n\n```sh\ncapxul holiday add --holidayList <holidayList> --holidayDate <holidayDate> --description <description>\n```\n\nHTTP: `POST /holiday/add` with the payload as JSON. SDK: `Sdk.holiday.add(payload)`.\n",
     "holiday/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday.get\n\nRead one holiday by its id: holidayList, holidayDate, description, state.\n\n**Who may call:** the owner of its holidayList.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | holiday.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday.holidayList |\n| holidayDate | holiday.holidayDate |\n| description | holiday.description |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n\n## Worked examples\n\n### add holidays\n\nStarts from the world `a holiday list`.\n\n- **Bo can't read the new holiday.** `bo` (signed in) calls and sends id the last call's holiday, and is refused with NotAllowed, AR-001.\n- **the holiday reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's holiday, and gets back [the world's holidayList, `2027-01-01`, `New Year's Day`, `active`].\n- **that one reads back with its own day and name.** `ada` (role company.owner) calls and sends id the last call's holiday, and gets back [the world's holidayList, `2027-12-31`, `New Year's Eve`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **the day it held keeps its own name.** `ada` (role company.owner) calls and sends id the world's holiday, and gets back [`2027-01-03`, `Founders' Day`].\n\n## How to call\n\n```sh\ncapxul holiday get --id <id>\n```\n\nHTTP: `POST /holiday/get` with the payload as JSON. SDK: `Sdk.holiday.get(payload)`.\n",
     "holiday/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday\n\nOne day off in a holiday list.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| holidayList | holiday-list.id |\n| holidayDate | Day |\n| description | HolidayName |\n\n## Machine\n\nStates: active. A move from the wrong state is refused HolidayNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| add | (creates) | active | HolidayAdded |\n\n## Invariants\n\n- `holiday.oneHolidayPerDay`: another holiday holds this holiday list and holiday date. Unique on holidayList, holidayDate, in every state; refused HolidayDateTaken.\n\n## Events\n\n- `HolidayAdded`: carries holiday (holiday.id), holidayList (holiday.holidayList), holidayDate (holiday.holidayDate); emitted by the move add\n\n## Operations\n\n- [holiday.add](add.md): Add one day off to a holiday list.\n- [holiday.get](get.md): Read one holiday by its id: holidayList, holidayDate, description, state.\n",
-    "shift-type/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# shift-type.create\n\nAdd a working shift to a company, from its start time to its end time.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | shift-type.company |\n| shiftTypeName | shift-type.shiftTypeName |\n| startTime | shift-type.startTime |\n| endTime | shift-type.endTime |\n\n## Answer\n\n| field | value |\n|---|---|\n| shiftType | shift-type.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting ShiftTypeCreated.\n\n## Steps\n\n- `shift-type.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ShiftStartsWhenItEnds | 42 | SH-002 | declared in errors.ts |\n| ShiftTypeNameTaken | 41 | SH-001 | another shift type holds this company and shift type name; by the rule shift-type.oneNamePerCompany, carrying shiftTypeName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up shift types\n\nStarts from the world `three companies`.\n\n- **Ada adds a day shift, nine to five.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Day`, startTime `09:00`, endTime `17:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **a night shift may end the morning after it starts.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Night`, startTime `22:00`, endTime `06:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **a shift can't start when it ends.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Nothing`, startTime `08:00`, endTime `08:00`, and is refused with ShiftStartsWhenItEnds, SH-002.\n- **nor at midnight, when it ends at midnight.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Midnight`, startTime `00:00`, endTime `00:00`, and is refused with ShiftStartsWhenItEnds, SH-002.\n- **a name already taken, with the same start and end, is refused for its times first.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Day`, startTime `07:30`, endTime `07:30`, and is refused with ShiftStartsWhenItEnds, SH-002.\n- **a shift one minute long is allowed.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Handover`, startTime `08:00`, endTime `08:01`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **a shift exactly twelve hours long is allowed, eight in the morning to eight at night.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Twelve`, startTime `08:00`, endTime `20:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **Day can't be added to Acme Trading twice.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Day`, startTime `08:00`, endTime `16:00`, and is refused with ShiftTypeNameTaken, SH-001, carrying shiftTypeName `Day`.\n- **Bo can't add a shift to Ada's company.** `bo` (signed in) calls and sends company the world's company, shiftTypeName `Early`, startTime `06:00`, endTime `14:00`, and is refused with NotAllowed, AR-001.\n- **Acme Logistics may have a Day shift of its own, with other times.** `ada` (role company.owner) calls and sends company the world's otherCompany, shiftTypeName `Day`, startTime `08:00`, endTime `16:30`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **Bo adds a Day shift to Bo Ltd.** `bo` (signed in) calls and sends company the world's boCompany, shiftTypeName `Day`, startTime `09:00`, endTime `17:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul shift-type create --company <company> --shiftTypeName <shiftTypeName> --startTime <startTime> --endTime <endTime>\n```\n\nHTTP: `POST /shift-type/create` with the payload as JSON. SDK: `Sdk.shift-type.create(payload)`.\n",
-    "shift-type/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# shift-type.get\n\nRead one shift-type by its id: company, shiftTypeName, startTime, endTime, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | shift-type.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | shift-type.company |\n| shiftTypeName | shift-type.shiftTypeName |\n| startTime | shift-type.startTime |\n| endTime | shift-type.endTime |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up shift types\n\nStarts from the world `three companies`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's shiftType, and is refused with NotAllowed, AR-001.\n- **it reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [the world's company, `Day`, `09:00`, `17:00`, `active`].\n- **it reads back starting at ten and ending at six.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [the world's company, `Night`, `22:00`, `06:00`, `active`].\n- **it reads back a minute long.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Handover`, `08:00`, `08:01`].\n- **it reads back twelve hours long.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Twelve`, `08:00`, `20:00`].\n- **it reads back in Acme Logistics with its own times.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [the world's otherCompany, `Day`, `08:00`, `16:30`, `active`].\n- **it reads back in Bo Ltd.** `bo` (signed in) calls and sends id the last call's shiftType, and gets back [the world's boCompany, `Day`, `09:00`, `17:00`].\n\n## How to call\n\n```sh\ncapxul shift-type get --id <id>\n```\n\nHTTP: `POST /shift-type/get` with the payload as JSON. SDK: `Sdk.shift-type.get(payload)`.\n",
+    "shift-type/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# shift-type.create\n\nAdd a working shift to a company, from its start time to its end time.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | shift-type.company |\n| shiftTypeName | shift-type.shiftTypeName |\n| startTime | shift-type.startTime |\n| endTime | shift-type.endTime |\n\n## Answer\n\n| field | value |\n|---|---|\n| shiftType | shift-type.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting ShiftTypeCreated.\n\n## Steps\n\n- `shift-type.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ShiftStartsWhenItEnds | 42 | SH-002 | declared in errors.ts |\n| ShiftTypeNameTaken | 41 | SH-001 | another shift type holds this company and shift type name; by the rule shift-type.oneNamePerCompany, carrying shiftTypeName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up shift types\n\nStarts from the world `three companies`.\n\n- **Ada adds a day shift, nine to five.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Day`, startTime `09:00`, endTime `17:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **a night shift may end the morning after it starts.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Night`, startTime `22:00`, endTime `06:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **a shift can't start when it ends.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Nothing`, startTime `08:00`, endTime `08:00`, and is refused with ShiftStartsWhenItEnds, SH-002.\n- **nor at midnight, when it ends at midnight.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Midnight`, startTime `00:00`, endTime `00:00`, and is refused with ShiftStartsWhenItEnds, SH-002.\n- **a name already taken, with the same start and end, is refused for its times first.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Day`, startTime `07:30`, endTime `07:30`, and is refused with ShiftStartsWhenItEnds, SH-002.\n- **a shift one minute long is allowed.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Handover`, startTime `08:00`, endTime `08:01`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **a shift exactly twelve hours long is allowed, eight in the morning to eight at night.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Twelve`, startTime `08:00`, endTime `20:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **an evening shift may end at midnight.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Evening`, startTime `16:00`, endTime `00:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **a graveyard shift may start at midnight.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Graveyard`, startTime `00:00`, endTime `08:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **Day can't be added to Acme Trading twice.** `ada` (role company.owner) calls and sends company the world's company, shiftTypeName `Day`, startTime `08:00`, endTime `16:00`, and is refused with ShiftTypeNameTaken, SH-001, carrying shiftTypeName `Day`.\n- **Bo can't add a shift to Ada's company.** `bo` (signed in) calls and sends company the world's company, shiftTypeName `Early`, startTime `06:00`, endTime `14:00`, and is refused with NotAllowed, AR-001.\n- **Acme Logistics may have a Day shift of its own, with other times.** `ada` (role company.owner) calls and sends company the world's otherCompany, shiftTypeName `Day`, startTime `08:00`, endTime `16:30`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n- **Bo adds a Day shift to Bo Ltd.** `bo` (signed in) calls and sends company the world's boCompany, shiftTypeName `Day`, startTime `09:00`, endTime `17:00`, and gets back an answer matching `^sht_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul shift-type create --company <company> --shiftTypeName <shiftTypeName> --startTime <startTime> --endTime <endTime>\n```\n\nHTTP: `POST /shift-type/create` with the payload as JSON. SDK: `Sdk.shift-type.create(payload)`.\n",
+    "shift-type/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# shift-type.get\n\nRead one shift-type by its id: company, shiftTypeName, startTime, endTime, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | shift-type.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | shift-type.company |\n| shiftTypeName | shift-type.shiftTypeName |\n| startTime | shift-type.startTime |\n| endTime | shift-type.endTime |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up shift types\n\nStarts from the world `three companies`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's shiftType, and is refused with NotAllowed, AR-001.\n- **it reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [the world's company, `Day`, `09:00`, `17:00`, `active`].\n- **it reads back starting at ten and ending at six.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [the world's company, `Night`, `22:00`, `06:00`, `active`].\n- **it reads back a minute long.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Handover`, `08:00`, `08:01`].\n- **it reads back twelve hours long.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Twelve`, `08:00`, `20:00`].\n- **it reads back ending at midnight.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Evening`, `16:00`, `00:00`].\n- **it reads back starting at midnight.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Graveyard`, `00:00`, `08:00`].\n- **it reads back in Acme Logistics with its own times.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [the world's otherCompany, `Day`, `08:00`, `16:30`, `active`].\n- **it reads back in Bo Ltd.** `bo` (signed in) calls and sends id the last call's shiftType, and gets back [the world's boCompany, `Day`, `09:00`, `17:00`].\n\n## How to call\n\n```sh\ncapxul shift-type get --id <id>\n```\n\nHTTP: `POST /shift-type/get` with the payload as JSON. SDK: `Sdk.shift-type.get(payload)`.\n",
     "shift-type/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# shift-type\n\nA company's working shift, from the time it starts to the time it ends.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| shiftTypeName | Name |\n| startTime | TimeOfDay |\n| endTime | TimeOfDay |\n\n## Machine\n\nStates: active. A move from the wrong state is refused ShiftTypeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | ShiftTypeCreated |\n\n## Invariants\n\n- `shift-type.oneNamePerCompany`: another shift type holds this company and shift type name. Unique on company, shiftTypeName, in every state; refused ShiftTypeNameTaken.\n\n## Events\n\n- `ShiftTypeCreated`: carries shiftType (shift-type.id), company (shift-type.company); emitted by the move create\n\n## Operations\n\n- [shift-type.create](create.md): Add a working shift to a company, from its start time to its end time.\n- [shift-type.get](get.md): Read one shift-type by its id: company, shiftTypeName, startTime, endTime, state.\n"
   },
   "extensions": {
@@ -29500,5 +30005,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "fa6b17ab6263c382b0a52389fecf32720b53ac105fbb17705fe2da8361e11163"
+  "digest": "ed7706cda1ab589e9253e1bd89c3a4072a909caf752e3810d0acbe7b74eb8036"
 }

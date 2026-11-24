@@ -59,15 +59,23 @@ Starts from the world `an attendance request`.
 - **Ada marks Olga absent on Monday 30 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-30`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **and present on Tuesday 1 December, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-01`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **and a half day on Wednesday 2 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-02`, status `Half Day`, and gets back an answer matching `^att_[0-9a-z]+$`.
+- **Ada marks Olga a half day on Saturday 5 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-05`, status `Half Day`, and gets back an answer matching `^att_[0-9a-z]+$`.
+- **Ada marks Olga working from home on 29 February 2028.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2028-02-29`, status `Work From Home`, and gets back an answer matching `^att_[0-9a-z]+$`.
 
 ### attendance stays in its company
 
 Starts from the world `an attendance request`.
 
 - **Bo can't mark Olga in his company: she works for Ada.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with AttendeeNotInCompany, AN-001.
+- **nor mark her absent there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Absent`, and is refused with AttendeeNotInCompany, AN-001.
+- **nor mark her half day there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Half Day`, and is refused with AttendeeNotInCompany, AN-001.
+- **nor mark her work from home there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Work From Home`, and is refused with AttendeeNotInCompany, AN-001.
 - **Bo can't mark Olga in Ada's company.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with NotAllowed, AR-001.
 - **Bo can't mark Olga in it now she has left.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2025-12-01`, status `Present`, and is refused with AttendeeNotInCompany, AN-001.
 - **Ada can't mark Olga now she has left, even on a day she was at work.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with AttendeeHasLeft, AN-002.
+- **nor mark her absent now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Absent`, and is refused with AttendeeHasLeft, AN-002.
+- **nor mark her half day now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Half Day`, and is refused with AttendeeHasLeft, AN-002.
+- **nor mark her work from home now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Work From Home`, and is refused with AttendeeHasLeft, AN-002.
 - **nor on a day before she joined.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-12-01`, status `Present`, and is refused with AttendeeHasLeft, AN-002.
 
 ### mark attendance
@@ -80,6 +88,9 @@ Starts from the world `an employee`.
 - **working from home on the Thursday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-05`, status `Work From Home`, and is answered.
 - **2 November can't be marked again, even with another status.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-02`, status `Absent`, and is refused with AttendanceAlreadyMarked, AN-004, carrying attendanceDate `2026-11-02`.
 - **the day before Olga joined can't be marked.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.
+- **the day before she joined can't be marked absent either.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Absent`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.
+- **the day before she joined can't be marked half day either.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Half Day`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.
+- **the day before she joined can't be marked work from home either.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-04`, status `Work From Home`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.
 - **nor the last day of the year before.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-12-31`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.
 - **nor a day in the year before that falls later in its month.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2025-02-10`, status `Present`, and is refused with AttendanceBeforeJoining, AN-003, carrying dateOfJoining `2026-01-05`.
 - **the day she joined can.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-01-05`, status `Present`, and is answered.

@@ -52,11 +52,11 @@ Starts from the world `an attendance request`.
 - **Ada approves it: two days are new, the absent Tuesday and the present Wednesday change, and Thursday is left as it was.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and gets back [the world's attendanceRequest, `2`, `2`].
 - **it can't be approved twice.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `approved`.
 - **approved, the absent Monday and the half day change to present, and the present Tuesday is left: none is new.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`0`, `2`].
-- **approved, it marks all three, the Saturday and Sunday among them.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].
+- **approved, it marks the Friday and Sunday and changes the half-day Saturday.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `1`].
 - **approved, it marks that one day.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`1`, `0`].
 - **approved, it marks both, across the year's end.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `0`].
 - **approved, it marks three days, with no 29 February.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].
-- **approved, it marks three days, 29 February among them.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].
+- **approved, it marks 28 February and 1 March and changes 29 February to present.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `1`].
 
 ### attendance stays in its company
 

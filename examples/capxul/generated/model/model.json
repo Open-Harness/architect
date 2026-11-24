@@ -9173,6 +9173,36 @@
           ]
         },
         {
+          "title": "Ada marks Olga a half day on Saturday 5 December",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-12-05",
+              "status": "Half Day"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^att_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
           "title": "Olga asks to work from home from Friday 4 to Sunday 6 December, across a weekend",
           "call": {
             "actor": "olga",
@@ -9204,7 +9234,7 @@
           ]
         },
         {
-          "title": "approved, it marks all three, the Saturday and Sunday among them",
+          "title": "approved, it marks the Friday and Sunday and changes the half-day Saturday",
           "call": {
             "actor": "ada",
             "operation": "attendance-request.approve",
@@ -9221,8 +9251,8 @@
             {
               "kind": "expect-equal",
               "value": [
-                "3",
-                "0"
+                "2",
+                "1"
               ]
             }
           ]
@@ -9407,6 +9437,36 @@
           ]
         },
         {
+          "title": "Ada marks Olga working from home on 29 February 2028",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2028-02-29",
+              "status": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^att_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
           "title": "Olga asks to be on duty from 28 February to 1 March 2028, a leap year",
           "call": {
             "actor": "olga",
@@ -9438,7 +9498,7 @@
           ]
         },
         {
-          "title": "approved, it marks three days, 29 February among them",
+          "title": "approved, it marks 28 February and 1 March and changes 29 February to present",
           "call": {
             "actor": "ada",
             "operation": "attendance-request.approve",
@@ -9455,8 +9515,8 @@
             {
               "kind": "expect-equal",
               "value": [
-                "3",
-                "0"
+                "2",
+                "1"
               ]
             }
           ]
@@ -9904,7 +9964,7 @@
           ]
         }
       ],
-      "sourceHash": "b4fd27b082238c17b364cbdf9438c195797e92d0414f710034d6ba018a79015d"
+      "sourceHash": "4e76526eb48f12c2b50d3867a700c0520c4e222992df950a254c49ac2d925e55"
     },
     "journeys/attendance-stays-in-its-company.ts": {
       "name": "attendance stays in its company",
@@ -9984,6 +10044,105 @@
           ]
         },
         {
+          "title": "nor mark her absent there",
+          "call": {
+            "actor": "bo",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-25",
+              "status": "Absent"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor mark her half day there",
+          "call": {
+            "actor": "bo",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-25",
+              "status": "Half Day"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor mark her work from home there",
+          "call": {
+            "actor": "bo",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-25",
+              "status": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "nor ask for her attendance there",
           "call": {
             "actor": "bo",
@@ -10025,7 +10184,7 @@
           ]
         },
         {
-          "title": "Olga can't ask for herself in Bo's company either",
+          "title": "Olga can't ask to work from home in Bo's company either",
           "call": {
             "actor": "olga",
             "operation": "attendance-request.create",
@@ -10044,7 +10203,7 @@
               },
               "fromDate": "2026-11-30",
               "toDate": "2026-11-30",
-              "reason": "On Duty"
+              "reason": "Work From Home"
             }
           },
           "checks": [
@@ -10237,6 +10396,105 @@
               "absent": [
                 "attendance.mark.insert"
               ]
+            }
+          ]
+        },
+        {
+          "title": "nor mark her absent now she has left",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-25",
+              "status": "Absent"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendeeHasLeft",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor mark her half day now she has left",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-25",
+              "status": "Half Day"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendeeHasLeft",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor mark her work from home now she has left",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-25",
+              "status": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendeeHasLeft",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
             }
           ]
         },
@@ -10532,7 +10790,7 @@
           ]
         }
       ],
-      "sourceHash": "d7666cbeed1ef8955b180870affcab1d251f37dc07733abd8e0eb561598411a0"
+      "sourceHash": "ad0a6df54a438e9a4ef23f396049b2008fdc38a8c0140314552680ec36ebbe33"
     },
     "journeys/branch-names-are-the-companys.ts": {
       "name": "branch names are the company's",
@@ -16891,6 +17149,111 @@
           ]
         },
         {
+          "title": "the day before she joined can't be marked absent either",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-01-04",
+              "status": "Absent"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendanceBeforeJoining",
+              "fields": {
+                "dateOfJoining": "2026-01-05"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the day before she joined can't be marked half day either",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-01-04",
+              "status": "Half Day"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendanceBeforeJoining",
+              "fields": {
+                "dateOfJoining": "2026-01-05"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the day before she joined can't be marked work from home either",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-01-04",
+              "status": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendanceBeforeJoining",
+              "fields": {
+                "dateOfJoining": "2026-01-05"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "nor the last day of the year before",
           "call": {
             "actor": "ada",
@@ -17482,7 +17845,7 @@
           ]
         }
       ],
-      "sourceHash": "f440f21f31aec01dfa12f1d7646aae43458c400db25c6c9a05b4824605b56666"
+      "sourceHash": "733caf19590293106d500c97ad778f6867664e742fac2a9723a3b92975794372"
     },
     "journeys/reject-an-attendance-request.ts": {
       "name": "reject an attendance request",
@@ -18823,6 +19186,42 @@
           ]
         },
         {
+          "title": "nor to work from home from the day before she joined",
+          "call": {
+            "actor": "olga",
+            "operation": "attendance-request.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "fromDate": "2026-01-04",
+              "toDate": "2026-01-06",
+              "reason": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "RequestBeforeJoining",
+              "fields": {
+                "dateOfJoining": "2026-01-05"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "nor a year before, later in its year",
           "call": {
             "actor": "olga",
@@ -19052,7 +19451,7 @@
           ]
         }
       ],
-      "sourceHash": "09ae4cd06f76077f1709a12b2b147a96aa08405a7fc6b6cdd228593a24078c9b"
+      "sourceHash": "52ab16f9a310d620c91b314afec48caf8168d6312313c8193276e03c02378ef7"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
@@ -21661,6 +22060,112 @@
           ]
         },
         {
+          "title": "an evening shift may end at midnight",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "shiftTypeName": "Evening",
+              "startTime": "16:00",
+              "endTime": "00:00"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^sht_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "it reads back ending at midnight",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "shiftType"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Evening",
+                "16:00",
+                "00:00"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a graveyard shift may start at midnight",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "shiftTypeName": "Graveyard",
+              "startTime": "00:00",
+              "endTime": "08:00"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^sht_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "it reads back starting at midnight",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "shiftType"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Graveyard",
+                "00:00",
+                "08:00"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Day can't be added to Acme Trading twice",
           "call": {
             "actor": "ada",
@@ -21882,7 +22387,7 @@
           ]
         }
       ],
-      "sourceHash": "38a8782845d32d38c5c120abfbc71fe5fa28947bb6100a665487d20819db776b"
+      "sourceHash": "6da266f9796f13feb3994f2e2560ad728051e2d0a2c6a31be5ad9d4cdae73847"
     },
     "journeys/weekly-offs.ts": {
       "name": "weekly offs",

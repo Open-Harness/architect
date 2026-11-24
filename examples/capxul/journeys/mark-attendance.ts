@@ -100,6 +100,24 @@ export default Blueprint.journey("mark attendance", {
       spans({ absent: ["attendance.mark.insert"] }),
     ),
     s.step(
+      "the day before she joined can't be marked absent either",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-01-04", status: "Absent" }),
+      refuses(AttendanceBeforeJoining, { dateOfJoining: "2026-01-05" }),
+      noEvents(),
+    ),
+    s.step(
+      "the day before she joined can't be marked half day either",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-01-04", status: "Half Day" }),
+      refuses(AttendanceBeforeJoining, { dateOfJoining: "2026-01-05" }),
+      noEvents(),
+    ),
+    s.step(
+      "the day before she joined can't be marked work from home either",
+      s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-01-04", status: "Work From Home" }),
+      refuses(AttendanceBeforeJoining, { dateOfJoining: "2026-01-05" }),
+      noEvents(),
+    ),
+    s.step(
       "nor the last day of the year before",
       s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2025-12-31", status: "Present" }),
       refuses(AttendanceBeforeJoining, { dateOfJoining: "2026-01-05" }),
