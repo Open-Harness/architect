@@ -122,7 +122,8 @@ const reference: Gate = {
  * or a pair in both orders) × the mode × the bot list (empty, or the first bot) × each of the row's three cells (unset, explicit, inferred, none). The expected answer is
  * `reference`'s: the record's table written again, never the gate under test.
  */
-const everyCell = (() => {
+/** The crossed inputs, made one at a time as they are judged, so the whole product is never held (Codex on #940: about 1.4 GB held at once). */
+function* everyCell(): Generator<readonly [TriggerView, ReadonlyArray<TicketView>, PolicyView]> {
   // A person whose outside id is on the bot list is still a person.
   const authors: ReadonlyArray<Account | null> = [person("listed"), person("seen"), person("unlisted"), { ...person("seen"), external: "UB1" }, null, bot, { ...bot, external: "UB2" }];
   const tickets: ReadonlyArray<ReadonlyArray<TicketView>> = [[], ...(["own", "attached", "context", "bound"] as const).flatMap((mode) =>
@@ -137,7 +138,6 @@ const everyCell = (() => {
     [{ state: "ended", mode: "attached", stoppedBy: undefined }, { state: "open", mode: "own", stoppedBy: undefined }],
     [{ state: "open", mode: "context", stoppedBy: undefined }, { state: "stopped", mode: "own", stoppedBy: "person" }, { state: "open", mode: "bound", stoppedBy: undefined }]];
   const cells: ReadonlyArray<Strength | undefined> = [undefined, "explicit", "inferred", "none"];
-  const out: Array<readonly [TriggerView, ReadonlyArray<TicketView>, PolicyView]> = [];
   for (const own of ["C1", "C2"] as const) for (const author of authors) for (const addressed of [undefined, "mention", "direct"] as const) for (const observed of [true, false])
     for (const k of tickets) for (const mode of ["off", "observe", "auto"] as const) for (const bots of [[], ["UB1"]]) for (const listed of cells) for (const unlisted of cells) for (const unnamed of cells) {
       const row = { ...(listed ? { listed } : {}), ...(unlisted ? { unlisted } : {}), ...(unnamed ? { unnamed } : {}) };
@@ -146,16 +146,15 @@ const everyCell = (() => {
       const other = own === "C1" ? "C2" : "C1";
       const contrast = { listed: "none", unlisted: "explicit", unnamed: "inferred" } as const;
       // Both orders of the two rows, so a gate that reads the first or the last row is caught.
-      for (const admission of [{ [other]: contrast, [own]: row }, { [own]: row, [other]: contrast }]) out.push([{ ...trig(author, addressed, observed), row: own }, k, policy(mode, bots, admission)]);
+      for (const admission of [{ [other]: contrast, [own]: row }, { [own]: row, [other]: contrast }]) yield [{ ...trig(author, addressed, observed), row: own }, k, policy(mode, bots, admission)];
     }
-  return out;
-})();
+}
 const show = (t: TriggerView, k: ReadonlyArray<TicketView>, p: PolicyView) =>
   JSON.stringify({ row: t.row, author: t.author === null ? null : t.author.bot ? `bot ${t.author.external}` : t.author.state, addressed: t.addressed ?? null, observed: t.observed, tickets: k, mode: p.mode, bots: [...p.bots], admission: p.admission });
 /** Where `gate` and the table part, at most five named: an empty list is a gate right on every cell. */
 export const cellsWrong = (gate: Gate): ReadonlyArray<string> => {
   const wrong: Array<string> = [];
-  for (const [t, k, p] of everyCell) {
+  for (const [t, k, p] of everyCell()) {
     const want = reference.of(t, thread, k, p);
     const got = gate.of(t, thread, k, p);
     if (got.strength !== want.strength || got.basis !== want.basis) wrong.push(`${show(t, k, p)}: expected ${want.strength}/${want.basis}, got ${got.strength}/${got.basis}`);
@@ -170,7 +169,9 @@ describe("23 the gate: controls", () => {
   });
 
   it("the crossed inputs are every combination the table reads", () => {
-    expect(everyCell.length).toBe(2 * 2 * 7 * 3 * 2 * 34 * 3 * 2 * 4 * 4 * 4);
+    let n = 0;
+    for (const _ of everyCell()) n += 1;
+    expect(n).toBe(2 * 2 * 7 * 3 * 2 * 34 * 3 * 2 * 4 * 4 * 4);
   });
 
   const planted: ReadonlyArray<readonly [string, Gate]> = [
