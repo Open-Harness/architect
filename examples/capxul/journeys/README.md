@@ -125,7 +125,8 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
   ERPNext's `weekly_off` flag waits on booleans that round-trip (#742, item 2); colours and a country's public holidays
   wait on optional fields and a holiday source. A weekly off's description (its weekday) isn't checked until a list's
   holidays can be listed (#764). Deleting a day comes with a move that ends one.
-  A list's span has no upper limit, as in ERPNext; a weekly off costs a store read or two per day it adds (snag #920), so a
+  A list's span has no upper limit, as in ERPNext; a weekly off costs at least a store read or two per day it adds (snag #920, at commit), plus a lookup per day of the
+  span when the list already holds days, so a
   list of many years is slow until that lands. A weekly off emits one `WeeklyOffAdded` with its count and total, not a
   `HolidayAdded` per day, as ERPNext saves those rows in one go.
 - **Bridge, part two.** Not checked yet, each waiting on the adapter (#739 for its generator gaps): the call to Bridge
