@@ -1,0 +1,5 @@
+# Exact decimals' runtime (#742, item 5, after #943) is not built: a tool's input schema gives a decimal no pattern. Clears with the decimal runtime build.
+src/modules/mcp/decimal-input.test.ts > Exact decimals: a tool's input schema says how a decimal travels > agrees with the value: every text the pattern takes, the field decodes, and every one it refuses, the field refuses
+src/modules/mcp/decimal-input.test.ts > Exact decimals: a tool's input schema says how a decimal travels > bounds the digits after the point by the field's places
+src/modules/mcp/decimal-input.test.ts > Exact decimals: a tool's input schema says how a decimal travels > says the pattern of a decimal taken from a thing's field
+src/modules/mcp/decimal-input.test.ts > Exact decimals: a tool's input schema says how a decimal travels > takes plain decimal text and refuses exponents, signs, stray points, spaces and words
