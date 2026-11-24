@@ -56,14 +56,15 @@ const fieldsOf = (d: Description, schema: Node, seen = 0): { readonly properties
 const IDEMPOTENCY_KEY = /^idempotency-key$/i;
 
 /**
- * A body schema's fields. Of alternatives (`oneOf` / `anyOf`), every field any of them has, none required and each
+ * A body schema's fields. Of alternatives (`oneOf` / `anyOf`), every field any of them or the schema itself has, none required and each
  * judged only with the whole body (one alternative's `type: individual` is another's misfit); otherwise its properties.
  */
 const bodyOf = (d: Description, schema: Node, required: boolean): { readonly fields: ReadonlyArray<Param>; readonly body: Body | null } => {
   const node = deref(d, schema);
   const alternatives = (node["oneOf"] ?? node["anyOf"]) as ReadonlyArray<Node> | undefined;
   if (Array.isArray(alternatives)) {
-    const names = [...new Set(alternatives.flatMap((a) => Object.keys(fieldsOf(d, a).properties)))];
+    // the schema's own fields (its properties, an allOf's) are common to every alternative
+    const names = [...new Set([node, ...alternatives].flatMap((a) => Object.keys(fieldsOf(d, a).properties)))];
     return { fields: names.map((name) => ({ name, in: "body", required: false, schema: {} })), body: { schema, required } };
   }
   const { properties, required: needed } = fieldsOf(d, schema);
