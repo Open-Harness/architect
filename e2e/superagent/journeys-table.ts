@@ -8,7 +8,7 @@ export const JOURNEYS: ReadonlyArray<{ readonly file: string; readonly name: str
   { file: "a-kill-during-a-pause-loses-nothing", name: "a kill during a pause loses nothing", steps: 12 },
   { file: "a-kill-mid-push-leaves-one-branch-update-and-one-pull-request", name: "a kill mid-push leaves one branch update and one pull request", steps: 14 },
   { file: "a-kill-mid-turn-resumes-with-no-second-model-call", name: "a kill mid-turn resumes with no second committed model call", steps: 13 },
-  { file: "a-main-agents-configuration-change-only-records-a-proposal", name: "a main agent's configuration change only records a proposal", steps: 11 },
+  { file: "a-main-agents-configuration-change-only-records-a-proposal", name: "a main agent's configuration change only records a proposal", steps: 12 },
   { file: "a-message-routed-as-a-turn-ends-gets-a-new-seat", name: "a message routed as a turn ends gets a new seat", steps: 16 },
   { file: "a-message-while-it-works-steers-it", name: "a message while it works steers it", steps: 13 },
   { file: "a-persons-message-after-a-ci-result-promotes-the-pending-assignment", name: "a person's message after a CI result promotes the pending Assignment", steps: 14 },

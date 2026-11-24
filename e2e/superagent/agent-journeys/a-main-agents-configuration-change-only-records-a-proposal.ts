@@ -4,11 +4,11 @@
 // so a change applied as well as recorded passes the step that makes it; the later steps catch it, each by a person making the same change
 // herself and being answered as a world where nothing was applied would answer (#934). The tape names which later step catches each one.
 import { Blueprint, emits, expect } from "orthograph";
-import { superagentUpdate, policySave, policySync, accountList, settingsSave, proposalWaiting, ProposalRecorded, AccountSeen, AccountListed, itsMain } from "../kit/ops.ts";
+import { superagentUpdate, policySave, policySync, accountSeen, accountList, settingsSave, proposalWaiting, ProposalRecorded, AccountListed, itsMain } from "../kit/ops.ts";
 import { PLAYBOOK, CONNECTIONS } from "../kit/consts.ts";
 
 export default Blueprint.journey("a main agent's configuration change only records a proposal", {
-  cast: { main: itsMain, ann: Blueprint.signedIn },
+  cast: { main: itsMain, ann: Blueprint.signedIn, sys: Blueprint.system },
   starts: "an-account-was-seen",    // seen and not listed, so an applied `account.list` would show
   steps: (s) => [
     s.step("the main agent would raise the pool to nine seats: only a proposal is recorded", s.main.run(superagentUpdate, { superagent: s.world.superagent, base: 1n, name: "coder", purpose: "Takes asks.", connections: CONNECTIONS, playbook: PLAYBOOK, slots: 9n }),
@@ -31,9 +31,10 @@ export default Blueprint.journey("a main agent's configuration change only recor
     s.step("and settings: the same", s.ann.run(settingsSave, { base: 0n, variables: [], blocked: [] }), expect((a) => a.revision).toBe(1n)),
     s.step("ann lists the account herself: it was still seen, so the main agent's listing was not applied", s.ann.run(accountList, { account: s.world.account }),
       emits(AccountListed, { account: s.world.account })),
-    // The stand-in's roster is ann (GitHub 3, a person) and coder-bot (7, a bot), not the world's account (583231). A person's sync sees and lists
-    // its one person (GOAL17-person-sync): had the main agent's sync been applied, she would be listed already and this would emit nothing.
-    s.step("ann syncs the allowed list from GitHub herself: its one person is seen and listed now, so the main agent's sync was not applied", s.ann.run(policySync, { superagent: s.world.superagent, source: "github" }),
-      emits(AccountSeen, {}), emits(AccountListed, {})),
+    // An applied sync would have listed the stand-in's one person (GitHub 3; GOAL17-person-sync). The door's own `account.seen` answers a known
+    // account's id and keeps its state, so ann listing it then succeeds only if nobody listed it before.
+    s.step("the door sees the roster's person, GitHub 3", s.sys.run(accountSeen, { superagent: s.world.superagent, source: "github", external: "3", login: "ann", bot: false })),
+    s.step("ann lists that account herself: it was still seen, so the main agent's sync was not applied", s.ann.run(accountList, { account: s.last.account }),
+      emits(AccountListed, {})),
   ],
 });

@@ -12,13 +12,16 @@ journey "a main agent's configuration change only records a proposal" needs to k
 ## The call
 
 - **A source's `sync` names a roster:** the people and bots its service lists (a repository's collaborators, a user group).
-- **A person's `policy.sync`** lists each **person** on the roster. One the superagent has never seen is made `seen` first, as the door
-  makes one (`AccountSeen`), then listed (`AccountListed`); one already `seen` or `unlisted` is listed; one already `listed` changes nothing.
-  A bot on the roster is not listed: bots are admitted by `policy.bots`, which a person edits.
+- **A person's `policy.sync`** lists each **person** on the roster. It writes the accounts through its records, as `trigger.receive` makes
+  the accounts it meets: one the superagent has never seen is made `listed`; one `seen` or `unlisted` becomes `listed`; one `listed`
+  changes nothing. `policy.sync` has no move, so it journals no event of its own. A bot on the roster is not listed: bots are admitted by
+  `policy.bots`, which a person edits.
 - **A main agent's `policy.sync`** records one Proposal and lists nothing (17-superagent, unchanged).
 
-So in the journey, after the main agent's sync, ann's own sync lists the stand-in's one person (`ann`, GitHub 3) and emits `AccountSeen`
-and `AccountListed`. Had the main agent's sync been applied, ann's would find her listed and emit nothing.
+So the journey "a main agent's configuration change only records a proposal" reads an applied sync by its result, with moves that exist
+today: the door's `account.seen` for the stand-in's one person (GitHub 3) answers its account, made `seen` if new and kept as it was if
+known, and ann's `account.list` of it emits `AccountListed` only if nothing listed it before. Had the main agent's sync been applied, the
+listing would be refused (`list` moves from `seen` or `unlisted`).
 
 Why not proposals for a person's sync: a person is who approves a proposal, so a proposal they must then approve themselves is one step
 with two names. The portal's sync button is the person saying yes.

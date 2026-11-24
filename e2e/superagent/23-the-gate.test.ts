@@ -117,20 +117,26 @@ const reference: Gate = {
 
 /**
  * Every input the table reads, crossed (#932's second finding: the named cases alone let wrong gates through): the author (listed, seen,
- * unlisted, no sender, a bot on the list, a bot off it) × addressing (none, mention, direct) × `observed` × the thread's tickets (none, or one
- * of each mode × state × who stopped it) × the mode × the bot list (empty, or the first bot) × each of the row's three cells (unset, explicit, inferred, none). The expected answer is
+ * unlisted, no sender, a bot on the list, a bot off it) × addressing (none, mention, direct) × `observed` × the thread's tickets (none, one of each mode × state × who stopped it,
+ * or a pair in both orders) × the mode × the bot list (empty, or the first bot) × each of the row's three cells (unset, explicit, inferred, none). The expected answer is
  * `reference`'s: the record's table written again, never the gate under test.
  */
 const everyCell = (() => {
   const authors: ReadonlyArray<Account | null> = [person("listed"), person("seen"), person("unlisted"), null, bot, { ...bot, external: "UB2" }];
   const tickets: ReadonlyArray<ReadonlyArray<TicketView>> = [[], ...(["own", "attached", "context", "bound"] as const).flatMap((mode) =>
-    (["open", "ended", "stopped"] as const).flatMap((state) => ([undefined, "person"] as const).map((stoppedBy) => [{ state, mode, stoppedBy }])))];
+    (["open", "ended", "stopped"] as const).flatMap((state) => ([undefined, "person"] as const).map((stoppedBy) => [{ state, mode, stoppedBy }]))),
+    // A thread can hold several tickets: each pair in both orders, so a gate that reads only the first, only the last, or needs all of them is caught.
+    ...([[{ state: "open", mode: "context", stoppedBy: undefined }, { state: "open", mode: "own", stoppedBy: undefined }],
+      [{ state: "stopped", mode: "own", stoppedBy: "person" }, { state: "open", mode: "attached", stoppedBy: undefined }],
+      [{ state: "ended", mode: "bound", stoppedBy: undefined }, { state: "stopped", mode: "bound", stoppedBy: "person" }]] as const)
+      .flatMap((pair): ReadonlyArray<ReadonlyArray<TicketView>> => [pair, [...pair].reverse()])];
   const cells: ReadonlyArray<Strength | undefined> = [undefined, "explicit", "inferred", "none"];
   const out: Array<readonly [TriggerView, ReadonlyArray<TicketView>, PolicyView]> = [];
   for (const author of authors) for (const addressed of [undefined, "mention", "direct"] as const) for (const observed of [true, false])
     for (const k of tickets) for (const mode of ["off", "observe", "auto"] as const) for (const bots of [[], ["UB1"]]) for (const listed of cells) for (const unlisted of cells) for (const unnamed of cells) {
       const row = { ...(listed ? { listed } : {}), ...(unlisted ? { unlisted } : {}), ...(unnamed ? { unnamed } : {}) };
-      out.push([trig(author, addressed, observed), k, policy(mode, bots, { C1: row })]);
+      // Another row, every cell unlike its default, so a cell read from any row but the trigger's own is caught.
+      out.push([trig(author, addressed, observed), k, policy(mode, bots, { C1: row, C2: { listed: "none", unlisted: "explicit", unnamed: "inferred" } })]);
     }
   return out;
 })();
@@ -154,7 +160,7 @@ describe("23 the gate: controls", () => {
   });
 
   it("the crossed inputs are every combination the table reads", () => {
-    expect(everyCell.length).toBe(6 * 3 * 2 * 25 * 3 * 2 * 4 * 4 * 4);
+    expect(everyCell.length).toBe(6 * 3 * 2 * 31 * 3 * 2 * 4 * 4 * 4);
   });
 
   const planted: ReadonlyArray<readonly [string, Gate]> = [
@@ -194,6 +200,10 @@ describe("23 the gate: controls", () => {
     ["no sender, addressing, ignores off", { of: (t, th, k, p) => (t.author === null && t.addressed !== undefined ? reference.of(t, th, k, { ...p, mode: "observe" }) : reference.of(t, th, k, p)) }],
     ["row 5 before row 4 except on own tickets", { of: (t, th, k, p) => (t.author !== null && !t.author.bot && t.author.state !== "listed" && t.addressed !== undefined && !k.some((x) => x.mode === "own") ? reference.of(t, th, [], p) : reference.of(t, th, k, p)) }],
     ["an ended ticket does not follow", { of: (t, th, k, p) => reference.of(t, th, k.filter((x) => x.state !== "ended"), p) }],
+    ["only the first ticket counts", { of: (t, th, k, p) => reference.of(t, th, k.slice(0, 1), p) }],
+    ["only the last ticket counts", { of: (t, th, k, p) => reference.of(t, th, k.slice(-1), p) }],
+    ["every ticket must follow", { of: (t, th, k, p) => (k.length > 0 && !k.every((x) => x.mode !== "context" && x.state !== "stopped" && x.stoppedBy !== "person") ? reference.of(t, th, [], p) : reference.of(t, th, k, p)) }],
+    ["the cells are read from any row", { of: (t, th, k, p) => reference.of(t, th, k, { ...p, admission: { [t.row]: Object.assign({}, ...Object.values(p.admission)) } }) }],
     ["a direct message is not addressing", { of: (t, th, k, p) => reference.of(t.addressed === "direct" ? { ...t, addressed: undefined } : t, th, k, p) }],
   ];
   it.each(crossed)("a gate with %s is refused on the crossed inputs", (_why, gate) => {
