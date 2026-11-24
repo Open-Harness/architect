@@ -8,6 +8,8 @@ import * as Company from "../../../blueprint/things/company/errors.ts";
 import * as Department from "../../../blueprint/things/department/errors.ts";
 import * as Designation from "../../../blueprint/things/designation/errors.ts";
 import * as Employee from "../../../blueprint/things/employee/errors.ts";
+import * as Holiday from "../../../blueprint/things/holiday/errors.ts";
+import * as HolidayList from "../../../blueprint/things/holiday-list/errors.ts";
 
 /** Every refusal's code, its exit for the CLI and its HTTP status: one row each, read by the CLI, HTTP and MCP. */
 export const refusals = {
@@ -24,6 +26,10 @@ export const refusals = {
   DesignationNotInCompany: { code: "EM-003", exit: 43, status: 422 },
   JoinedBeforeBorn: { code: "EM-004", exit: 44, status: 422 },
   RelievedBeforeJoined: { code: "EM-005", exit: 45, status: 422 },
+  HolidayDateTaken: { code: "HD-001", exit: 41, status: 422 },
+  HolidayOutsideList: { code: "HD-002", exit: 42, status: 422 },
+  HolidayListNameTaken: { code: "HL-001", exit: 43, status: 422 },
+  HolidayListEndsBeforeStart: { code: "HL-002", exit: 44, status: 422 },
   BankAccountNotOpen: { code: "BA-900", exit: 40, status: 409 },
   BridgeBusinessNotStarted: { code: "KB-900", exit: 40, status: 409 },
   BridgeIndividualNotStarted: { code: "KC-900", exit: 40, status: 409 },
@@ -31,6 +37,8 @@ export const refusals = {
   DepartmentNotActive: { code: "DE-900", exit: 40, status: 409 },
   DesignationNotActive: { code: "DS-900", exit: 40, status: 409 },
   EmployeeNotActive: { code: "EM-900", exit: 40, status: 409 },
+  HolidayNotActive: { code: "HD-900", exit: 40, status: 409 },
+  HolidayListNotActive: { code: "HL-900", exit: 40, status: 409 },
   BridgeBusinessNotFound: { code: "KB-901", exit: 4, status: 404 },
   BridgeIndividualNotFound: { code: "KC-901", exit: 4, status: 404 },
   DepartmentNotFound: { code: "DE-901", exit: 4, status: 404 },
@@ -66,6 +74,14 @@ ErrorNames.name(Employee.JoinedBeforeBorn, "JoinedBeforeBorn");
 export class JoinedBeforeBorn extends Schema.TaggedError<JoinedBeforeBorn>()("JoinedBeforeBorn", { code: Schema.Literal(refusals.JoinedBeforeBorn.code), ...wireStruct(Employee.JoinedBeforeBorn.fields).fields }, { httpApiStatus: refusals.JoinedBeforeBorn.status }) { static readonly code = refusals.JoinedBeforeBorn.code; }
 ErrorNames.name(Employee.RelievedBeforeJoined, "RelievedBeforeJoined");
 export class RelievedBeforeJoined extends Schema.TaggedError<RelievedBeforeJoined>()("RelievedBeforeJoined", { code: Schema.Literal(refusals.RelievedBeforeJoined.code), ...wireStruct(Employee.RelievedBeforeJoined.fields).fields }, { httpApiStatus: refusals.RelievedBeforeJoined.status }) { static readonly code = refusals.RelievedBeforeJoined.code; }
+ErrorNames.name(Holiday.HolidayDateTaken, "HolidayDateTaken");
+export class HolidayDateTaken extends Schema.TaggedError<HolidayDateTaken>()("HolidayDateTaken", { code: Schema.Literal(refusals.HolidayDateTaken.code), ...wireStruct(Holiday.HolidayDateTaken.fields).fields }, { httpApiStatus: refusals.HolidayDateTaken.status }) { static readonly code = refusals.HolidayDateTaken.code; }
+ErrorNames.name(Holiday.HolidayOutsideList, "HolidayOutsideList");
+export class HolidayOutsideList extends Schema.TaggedError<HolidayOutsideList>()("HolidayOutsideList", { code: Schema.Literal(refusals.HolidayOutsideList.code), ...wireStruct(Holiday.HolidayOutsideList.fields).fields }, { httpApiStatus: refusals.HolidayOutsideList.status }) { static readonly code = refusals.HolidayOutsideList.code; }
+ErrorNames.name(HolidayList.HolidayListNameTaken, "HolidayListNameTaken");
+export class HolidayListNameTaken extends Schema.TaggedError<HolidayListNameTaken>()("HolidayListNameTaken", { code: Schema.Literal(refusals.HolidayListNameTaken.code), ...wireStruct(HolidayList.HolidayListNameTaken.fields).fields }, { httpApiStatus: refusals.HolidayListNameTaken.status }) { static readonly code = refusals.HolidayListNameTaken.code; }
+ErrorNames.name(HolidayList.HolidayListEndsBeforeStart, "HolidayListEndsBeforeStart");
+export class HolidayListEndsBeforeStart extends Schema.TaggedError<HolidayListEndsBeforeStart>()("HolidayListEndsBeforeStart", { code: Schema.Literal(refusals.HolidayListEndsBeforeStart.code), ...wireStruct(HolidayList.HolidayListEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.HolidayListEndsBeforeStart.status }) { static readonly code = refusals.HolidayListEndsBeforeStart.code; }
 export class BankAccountNotOpen extends Schema.TaggedError<BankAccountNotOpen>()("BankAccountNotOpen", { code: Schema.Literal(refusals.BankAccountNotOpen.code), ...{ state: Schema.Literals(["open", "closed"]) } }, { httpApiStatus: refusals.BankAccountNotOpen.status }) { static readonly code = refusals.BankAccountNotOpen.code; }
 export class BridgeBusinessNotStarted extends Schema.TaggedError<BridgeBusinessNotStarted>()("BridgeBusinessNotStarted", { code: Schema.Literal(refusals.BridgeBusinessNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeBusinessNotStarted.status }) { static readonly code = refusals.BridgeBusinessNotStarted.code; }
 export class BridgeIndividualNotStarted extends Schema.TaggedError<BridgeIndividualNotStarted>()("BridgeIndividualNotStarted", { code: Schema.Literal(refusals.BridgeIndividualNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeIndividualNotStarted.status }) { static readonly code = refusals.BridgeIndividualNotStarted.code; }
@@ -73,6 +89,8 @@ export class CompanyNotActive extends Schema.TaggedError<CompanyNotActive>()("Co
 export class DepartmentNotActive extends Schema.TaggedError<DepartmentNotActive>()("DepartmentNotActive", { code: Schema.Literal(refusals.DepartmentNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.DepartmentNotActive.status }) { static readonly code = refusals.DepartmentNotActive.code; }
 export class DesignationNotActive extends Schema.TaggedError<DesignationNotActive>()("DesignationNotActive", { code: Schema.Literal(refusals.DesignationNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.DesignationNotActive.status }) { static readonly code = refusals.DesignationNotActive.code; }
 export class EmployeeNotActive extends Schema.TaggedError<EmployeeNotActive>()("EmployeeNotActive", { code: Schema.Literal(refusals.EmployeeNotActive.code), ...{ state: Schema.Literals(["active", "left"]) } }, { httpApiStatus: refusals.EmployeeNotActive.status }) { static readonly code = refusals.EmployeeNotActive.code; }
+export class HolidayNotActive extends Schema.TaggedError<HolidayNotActive>()("HolidayNotActive", { code: Schema.Literal(refusals.HolidayNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.HolidayNotActive.status }) { static readonly code = refusals.HolidayNotActive.code; }
+export class HolidayListNotActive extends Schema.TaggedError<HolidayListNotActive>()("HolidayListNotActive", { code: Schema.Literal(refusals.HolidayListNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.HolidayListNotActive.status }) { static readonly code = refusals.HolidayListNotActive.code; }
 export class BridgeBusinessNotFound extends Schema.TaggedError<BridgeBusinessNotFound>()("BridgeBusinessNotFound", { code: Schema.Literal(refusals.BridgeBusinessNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeBusinessNotFound.status }) { static readonly code = refusals.BridgeBusinessNotFound.code; }
 export class BridgeIndividualNotFound extends Schema.TaggedError<BridgeIndividualNotFound>()("BridgeIndividualNotFound", { code: Schema.Literal(refusals.BridgeIndividualNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeIndividualNotFound.status }) { static readonly code = refusals.BridgeIndividualNotFound.code; }
 export class DepartmentNotFound extends Schema.TaggedError<DepartmentNotFound>()("DepartmentNotFound", { code: Schema.Literal(refusals.DepartmentNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.DepartmentNotFound.status }) { static readonly code = refusals.DepartmentNotFound.code; }
@@ -101,7 +119,11 @@ export const declared = {
   DesignationNotInCompany: Employee.DesignationNotInCompany,
   JoinedBeforeBorn: Employee.JoinedBeforeBorn,
   RelievedBeforeJoined: Employee.RelievedBeforeJoined,
+  HolidayDateTaken: Holiday.HolidayDateTaken,
+  HolidayOutsideList: Holiday.HolidayOutsideList,
+  HolidayListNameTaken: HolidayList.HolidayListNameTaken,
+  HolidayListEndsBeforeStart: HolidayList.HolidayListEndsBeforeStart,
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { KybNotApproved, BankAccountNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, BankAccountNotOpen, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, DepartmentNotFound, DesignationNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { KybNotApproved, BankAccountNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, BankAccountNotOpen, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, HolidayNotActive, HolidayListNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, DepartmentNotFound, DesignationNotFound, NotAllowed, IdempotencyConflict };
