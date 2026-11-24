@@ -1,6 +1,29 @@
 # #901 (from #747): red until the door compares a repeat's object with the kept one and records in.mismatch on the span (GOAL17-repeat-mismatch).
-superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: github > an edited review keeps its submitted_at, so its id: the edit is seen, and says in.mismatch (the reviewer's live case)
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its author_association changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its body changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its created_at changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its html_url changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its issue_url changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its minimized changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its node_id changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its performed_via_github_app changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its pin changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its reactions changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its url changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a comment re-sent with only its user changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its _links changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its author_association changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its body changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its commit_id changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its html_url changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its node_id changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its pull_request_url changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its state changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its updated_at changed says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: every field of a github object > a review re-sent with only its user changed says in.mismatch
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: github > a comment delivered again with the same id and change time but another body says in.mismatch
-superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts with other text says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: github > an edited review keeps its submitted_at, so its id: the edit is seen, and says in.mismatch (the reviewer's live case)
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: github > the same review delivered again with its body and submitted_at, so its id, but another state says in.mismatch
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts and text but in another thread says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts by another user says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts with other text says in.mismatch

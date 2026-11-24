@@ -6,6 +6,7 @@
 // 63 calls one event (another delivery id, sender, installation or action; a message delivered again as an app mention) say nothing.
 // Spans are read from the world's own Collector, by the trace each request carried: `in.mismatch` must carry a `defect` attribute, as every
 // defect on a span does. The kept row is read back by the first delivery's trace, and a repeat never changes it.
+// Every field of the GitHub object but its id and version, and Slack's user, text and thread, is varied one at a time.
 // CONTROLS (proved by hand on #901's pull request): today's door, which never compares, fails the three mismatches; a door that compares the
 // whole body fails the four repeats that are one event; a door that says `in.mismatch` on every `seen` fails the exact redelivery.
 import { mkdtempSync, rmSync } from "node:fs";
@@ -121,7 +122,48 @@ describe("27 a repeat that differs is not silent: github", () => {
   }
 });
 
+/**
+ * One field of an object changed and kept valid: a string gets a suffix (a URL a path, a time a minute later, a known enum another value), a number one more, a
+ * flag its opposite, and an object its first changeable field.
+ */
+const ENUMS: Readonly<Record<string, string>> = { author_association: "MEMBER", state: "changes_requested" };
+const changed = (k: string, v: unknown): unknown => {
+  if (ENUMS[k] !== undefined) return v === ENUMS[k] ? "COMMENTED" : ENUMS[k];
+  if (typeof v === "string" && /^\d{4}-\d\d-\d\dT/.test(v)) return new Date(Date.parse(v) + 60_000).toISOString();
+  if (typeof v === "string") return /^https?:/.test(v) ? `${v}/x` : `${v}-x`;
+  if (typeof v === "number") return v + 1;
+  if (typeof v === "boolean") return !v;
+  if (v !== null && typeof v === "object" && !Array.isArray(v)) {
+    const [first] = Object.entries(v as Obj).filter(([, x]) => x !== null);
+    return first === undefined ? v : { ...(v as Obj), [first[0]]: changed(first[0], first[1]) };
+  }
+  return v;
+};
+
+// Every field of the event's object but its id and version (GOAL17-connections A: they make the id) is compared (GOAL17-repeat-mismatch):
+// one case each, so a door that compares some of them only fails here (the second 🔍 of #941, the row "one required part left out").
+describe("27 a repeat that differs is not silent: every field of a github object", () => {
+  for (const [what, event, key, base, version, idAt] of [
+    ["review", "pull_request_review", "review", REVIEW_SUBMITTED, "submitted_at", 7800],
+    ["comment", "issue_comment", "comment", COMMENT_CREATED, "updated_at", 9800],
+  ] as const) {
+    const fields = Object.keys(base[key] as Obj).filter((k) => k !== "id" && k !== version);
+    fields.forEach((field, i) => {
+      it(`a ${what} re-sent with only its ${field} changed says in.mismatch`, async () => {
+        const kept = setAt(base, `${key}.id`, idAt + i);
+        const object = kept[key] as Obj;
+        await repeat(gh(event), "github", kept, { ...kept, [key]: { ...object, [field]: changed(field, object[field]) as never } }, true);
+      });
+    });
+  }
+});
+
 describe("27 a repeat that differs is not silent: slack", () => {
+  it("a message delivered again for one ts by another user says in.mismatch", async () => {
+    const first = setAt(setAt(USER_MESSAGE, "event.ts", "1700000027.000040"), "event_id", "Ev27G");
+    await repeat(sl, "slack", first, setAt(setAt(first, "event_id", "Ev27H"), "event.user", "U0OTHER01"), true);
+  });
+
   const ts = (n: number) => `1700000027.0000${n}`;
   it("a message delivered again for one ts with other text says in.mismatch", async () => {
     const first = setAt(setAt(USER_MESSAGE, "event.ts", ts(10)), "event_id", "Ev27A");
