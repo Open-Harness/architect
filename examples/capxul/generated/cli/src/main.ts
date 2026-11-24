@@ -30,6 +30,14 @@ import { hire as employeeHire } from "./employee/hire.ts";
 import { relieve as employeeRelieve } from "./employee/relieve.ts";
 import { create as employeeGradeCreate } from "./employee-grade/create.ts";
 import { get as employeeGradeGet } from "./employee-grade/get.ts";
+import { add as expenseAdd } from "./expense/add.ts";
+import { get as expenseGet } from "./expense/get.ts";
+import { approve as expenseClaimApprove } from "./expense-claim/approve.ts";
+import { create as expenseClaimCreate } from "./expense-claim/create.ts";
+import { get as expenseClaimGet } from "./expense-claim/get.ts";
+import { reject as expenseClaimReject } from "./expense-claim/reject.ts";
+import { create as expenseClaimTypeCreate } from "./expense-claim-type/create.ts";
+import { get as expenseClaimTypeGet } from "./expense-claim-type/get.ts";
 import { add as holidayAdd } from "./holiday/add.ts";
 import { get as holidayGet } from "./holiday/get.ts";
 import { addWeeklyOff as holidayListAddWeeklyOff } from "./holiday-list/add-weekly-off.ts";
@@ -48,11 +56,14 @@ const department = Command.make("department").pipe(Command.withSubcommands([depa
 const designation = Command.make("designation").pipe(Command.withSubcommands([designationCreate, designationGet]));
 const employee = Command.make("employee").pipe(Command.withSubcommands([employeeGet, employeeHire, employeeRelieve]));
 const employeeGrade = Command.make("employee-grade").pipe(Command.withSubcommands([employeeGradeCreate, employeeGradeGet]));
+const expense = Command.make("expense").pipe(Command.withSubcommands([expenseAdd, expenseGet]));
+const expenseClaim = Command.make("expense-claim").pipe(Command.withSubcommands([expenseClaimApprove, expenseClaimCreate, expenseClaimGet, expenseClaimReject]));
+const expenseClaimType = Command.make("expense-claim-type").pipe(Command.withSubcommands([expenseClaimTypeCreate, expenseClaimTypeGet]));
 const holiday = Command.make("holiday").pipe(Command.withSubcommands([holidayAdd, holidayGet]));
 const holidayList = Command.make("holiday-list").pipe(Command.withSubcommands([holidayListAddWeeklyOff, holidayListCreate, holidayListGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, holiday, holidayList]),
+  Command.withSubcommands([bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, expense, expenseClaim, expenseClaimType, holiday, holidayList]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),
