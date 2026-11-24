@@ -17,7 +17,7 @@ brief's `lead.harness` and `status`, the goal branches' last commits and the ope
 | 9, time | claude | parked | `goal/time`, 23 November 18:26 | not running |
 | 12, wallets | claude | parked | `goal/wallets`, 23 November 16:27 | not running |
 | 14, club | claude | parked | `goal/club`, 23 November 17:08 | not running |
-| 17, superagent | claude-code (its pull requests carry `harness:claude`; the brief still says `null`) | ready | `goal/superagent`, 24 November 00:25; #781 (draft) 03:09 | not running |
+| 17, superagent | claude (its brief on `goal/superagent`; `main`'s older copy says `null`) | running (on `goal/superagent`; `ready` on `main`) | `goal/superagent`, 24 November 00:25; #781 (draft) 03:09 | not running |
 | 18, framework | claude | running | #909 and #910 (open), 24 November 05:40 and 07:12 | not running |
 
 Goal 7 (Claude lead, Codex builder) is done. Goals 16 and 19 run in Amp.
@@ -48,6 +48,19 @@ Each is claimed by `lane:goal-16` on its issue and a Touches line, and by the la
 Goal 17's claim #758 keeps everything else it names. Goal 16 takes the two parts of it the items above need:
 `packages/language-effect/src/modules/{handler,records}/` and `packages/prove/src/modules/journeys/`.
 
+## The overlaps with Goal 17's claims
+
+Settling two lanes' overlaps is the framework goal's job (K42, section 3), and Goal 18 isn't running, so Goal 16 settles
+these under the same delegation:
+
+- **`webhook-doors` (Goal 17) and Goal 16's rows on `packages/host-cloudflare/src/modules/store`.** Goal 16 changes
+  only the store's columns, rows and list and unique queries. The doors' own module, `inbound/`, stays Goal 17's, and
+  with Goal 17 not running nothing edits the store from both lanes at once. A goal that restarts Goal 17 asks Goal 16
+  before touching the store.
+- **`adapters-from-spec` and Goal 17's superagent rows on `examples/superagent/plugins`.** Goal 16 takes only the
+  generator, `packages/cli` and `packages/generators`, so that path leaves the row's Touches. The superagent's plugins
+  stay Goal 17's.
+
 ## What an unset `writes` means
 
 #759 found two meanings in the compiler. `model/internal/stores.ts` reads a `database` step with no `writes` as writing
@@ -60,9 +73,11 @@ reads only. A step that writes any other thing names it, as `handle.claim` alrea
 
 Why this one: it is the meaning `stores.ts` already enforces for stores, and the only one under which #759's check can
 name an extra row. The examples that write another thing without naming it (`invitation.accept` and
-`organization.create` in acme and starter, `link.add` and `link.remove` in plugged-in) declare it. That changes acme's
+`organization.create` in acme and starter, `link.add`, `link.remove` and `link.order` in plugged-in) declare it. That changes acme's
 model, so it lands as a G12 pair, with #759's checks.
 
 ## Supersedes
 
-Nothing yet. `invariants.ts`'s comment and #759's eval change with the build.
+- `docs/canon/status.md`: "the five generator gaps in #739, which Goal 17 builds" → "the five generator gaps in #739, which Goal 16 now builds"
+
+`invariants.ts`'s comment and #759's eval change with the build.
