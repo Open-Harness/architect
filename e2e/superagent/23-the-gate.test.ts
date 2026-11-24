@@ -20,7 +20,8 @@ interface PolicyView { readonly mode: Mode; readonly bots: ReadonlySet<string>; 
 interface Out { readonly strength: Strength; readonly basis: "addressed" | "followup" | "admission" | "bot" }
 type Gate = { readonly of: (t: TriggerView, thread: { readonly key: string }, tickets: ReadonlyArray<TicketView>, p: PolicyView) => Out };
 
-const thread = { key: "C1:1.1" };
+// A thread key that starts with no row, so a gate that reads the row from the key is caught (on GitHub the row is the repository, the thread `issue/12`).
+const thread = { key: "T9:1.1" };
 const person = (state: Account["state"]): Account => ({ state, bot: false, external: "U1" });
 const bot: Account = { state: "seen", bot: true, external: "UB1" };
 const trig = (author: Account | null, addressed: TriggerView["addressed"], observed = true): TriggerView => ({ author, addressed, row: "C1", observed });
@@ -132,16 +133,18 @@ const everyCell = (() => {
       .flatMap((pair): ReadonlyArray<ReadonlyArray<TicketView>> => [pair, [...pair].reverse()])];
   const cells: ReadonlyArray<Strength | undefined> = [undefined, "explicit", "inferred", "none"];
   const out: Array<readonly [TriggerView, ReadonlyArray<TicketView>, PolicyView]> = [];
-  for (const author of authors) for (const addressed of [undefined, "mention", "direct"] as const) for (const observed of [true, false])
+  for (const own of ["C1", "C2"] as const) for (const author of authors) for (const addressed of [undefined, "mention", "direct"] as const) for (const observed of [true, false])
     for (const k of tickets) for (const mode of ["off", "observe", "auto"] as const) for (const bots of [[], ["UB1"]]) for (const listed of cells) for (const unlisted of cells) for (const unnamed of cells) {
       const row = { ...(listed ? { listed } : {}), ...(unlisted ? { unlisted } : {}), ...(unnamed ? { unnamed } : {}) };
       // Another row, every cell unlike its default, so a cell read from any row but the trigger's own is caught.
-      out.push([trig(author, addressed, observed), k, policy(mode, bots, { C1: row, C2: { listed: "none", unlisted: "explicit", unnamed: "inferred" } })]);
+      // The trigger's row is C1 or C2, and the other row is listed first: a gate that reads a fixed row, the first row, or another row is caught.
+      const other = own === "C1" ? "C2" : "C1";
+      out.push([{ ...trig(author, addressed, observed), row: own }, k, policy(mode, bots, { [other]: { listed: "none", unlisted: "explicit", unnamed: "inferred" }, [own]: row })]);
     }
   return out;
 })();
 const show = (t: TriggerView, k: ReadonlyArray<TicketView>, p: PolicyView) =>
-  JSON.stringify({ author: t.author === null ? null : t.author.bot ? `bot ${t.author.external}` : t.author.state, addressed: t.addressed ?? null, observed: t.observed, tickets: k, mode: p.mode, bots: [...p.bots], row: p.admission["C1"] });
+  JSON.stringify({ row: t.row, author: t.author === null ? null : t.author.bot ? `bot ${t.author.external}` : t.author.state, addressed: t.addressed ?? null, observed: t.observed, tickets: k, mode: p.mode, bots: [...p.bots], admission: p.admission });
 /** Where `gate` and the table part, at most five named: an empty list is a gate right on every cell. */
 export const cellsWrong = (gate: Gate): ReadonlyArray<string> => {
   const wrong: Array<string> = [];
@@ -160,7 +163,7 @@ describe("23 the gate: controls", () => {
   });
 
   it("the crossed inputs are every combination the table reads", () => {
-    expect(everyCell.length).toBe(6 * 3 * 2 * 31 * 3 * 2 * 4 * 4 * 4);
+    expect(everyCell.length).toBe(2 * 6 * 3 * 2 * 31 * 3 * 2 * 4 * 4 * 4);
   });
 
   const planted: ReadonlyArray<readonly [string, Gate]> = [
@@ -204,6 +207,9 @@ describe("23 the gate: controls", () => {
     ["only the last ticket counts", { of: (t, th, k, p) => reference.of(t, th, k.slice(-1), p) }],
     ["every ticket must follow", { of: (t, th, k, p) => (k.length > 0 && !k.every((x) => x.mode !== "context" && x.state !== "stopped" && x.stoppedBy !== "person") ? reference.of(t, th, [], p) : reference.of(t, th, k, p)) }],
     ["the cells are read from any row", { of: (t, th, k, p) => reference.of(t, th, k, { ...p, admission: { [t.row]: Object.assign({}, ...Object.values(p.admission)) } }) }],
+    ["the cells are always read from row C1", { of: (t, th, k, p) => reference.of({ ...t, row: "C1" }, th, k, p) }],
+    ["the row is read from the thread key", { of: (t, th, k, p) => reference.of({ ...t, row: th.key.split(":")[0]! }, th, k, p) }],
+    ["listed and unnamed are read from the policy's first row", { of: (t, th, k, p) => { const first = Object.values(p.admission)[0] ?? {}; const own = p.admission[t.row] ?? {}; return reference.of(t, th, k, { ...p, admission: { [t.row]: { ...own, ...(first.listed ? { listed: first.listed } : {}), ...(first.unnamed ? { unnamed: first.unnamed } : {}) } } }); } }],
     ["a direct message is not addressing", { of: (t, th, k, p) => reference.of(t.addressed === "direct" ? { ...t, addressed: undefined } : t, th, k, p) }],
   ];
   it.each(crossed)("a gate with %s is refused on the crossed inputs", (_why, gate) => {

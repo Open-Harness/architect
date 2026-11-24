@@ -29,3 +29,4 @@ with two names. The portal's sync button is the person saying yes.
 ## Supersedes
 
 - `design/decisions/GOAL17-source-from.md`: "`sync` makes `account.list` proposals from a collaborator list or a user group." → "`sync` names the roster that `policy.sync` lists: a person's sync lists each person on it, a main agent's records one proposal."
+- `design/goals/17-superagent.md`: "`list` move, from the portal or by `policy.sync` from a Slack user group or a repository's collaborators." → "`list` move from the portal; `policy.sync` lists the people of a Slack user group or a repository's collaborators through its records (GOAL17-person-sync)."

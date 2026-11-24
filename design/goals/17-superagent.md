@@ -270,7 +270,8 @@ superagent.create({
 
 The allowed list names accounts by their connection and stable outside id (K40 fix 1), so it is the superagent's
 own: each superagent has its own sources, and an account belongs to one source. Listing one is the `Account` thing's
-`list` move, from the portal or by `policy.sync` from a Slack user group or a repository's collaborators.
+`list` move from the portal; `policy.sync` lists the people of a Slack user group or a repository's collaborators
+through its records (GOAL17-person-sync).
 
 **What a main agent may change, and what it may only propose.** A main agent reads text from outside: an error's body,
 a stranger's issue that a listed bot quoted. So it can route, judge, reply and manage tickets itself, but every change
