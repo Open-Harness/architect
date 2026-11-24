@@ -1,14 +1,8 @@
 // What a span may say about a call, from the declaration's visibility and text opt-in (O2).
 import { BigDecimal } from "effect";
 import type { FieldsInput, Principal } from "orthograph";
+import { decimalText } from "orthograph/server";
 import { Audience, Visibility } from "#modules/visibility/service.js";
-
-/** A decimal as it travels: its own scale, trailing zeros and sign kept, no exponent (`BigDecimal.format` writes one from 16 digits of scale). */
-const decimalText = (n: BigDecimal.BigDecimal): string => {
-  if (n.scale <= 0) return n.value === 0n ? "0" : `${n.value}${"0".repeat(-n.scale)}`;
-  const digits = (n.value < 0n ? -n.value : n.value).toString().padStart(n.scale + 1, "0");
-  return `${n.value < 0n ? "-" : ""}${digits.slice(0, -n.scale)}.${digits.slice(-n.scale)}`;
-};
 
 // A bigint reads as its digits and a decimal as its wire text, also inside JSON. The replacer reads a decimal from its
 // holder, since the value it is given is already the BigDecimal's `toJSON` object.

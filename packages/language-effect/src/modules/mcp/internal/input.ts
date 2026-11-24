@@ -5,8 +5,8 @@ type Json = { readonly [key: string]: unknown };
 
 const UNSIGNED = "^(0|[1-9][0-9]*)$";
 const SIGNED = "^(0|-?[1-9][0-9]*)$";
-/** A decimal's text as its value takes it: no exponent, no `+`, no leading zero, at most `places` after the point (`-0` is left to the value). */
-const decimal = (places: number): string => `^-?(0|[1-9][0-9]*)${places > 0 ? `(\\.[0-9]{1,${places}})?` : ""}$`;
+/** A decimal's text as its value takes it (`values/internal/wire.ts`): no exponent, no `+`, no leading zero, no `-0`, at most `places` after the point. */
+const decimal = (places: number): string => `^(?!-0(\\.0*)?$)-?(0|[1-9][0-9]*)${places > 0 ? `(\\.[0-9]{1,${places}})?` : ""}$`;
 
 /** A payload field the caller may not give: declared, and not public. A tool never offers it and never takes it. */
 export const hiddenInputs = (payload: FieldsInput): ReadonlyArray<string> =>
