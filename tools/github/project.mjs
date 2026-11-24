@@ -6,6 +6,10 @@ import { issueOfRow } from "./boardPlan.mjs";
 
 export const PROJECT_TITLE = "Orthograph";
 
+const HARNESSES = ["claude", "amp", "codex", "opencode"];
+/** A brief's or a label's harness as the Harness field names it: an older brief's "claude-code" is "claude"; anything else unknown is no value. */
+export const harnessOf = (h) => (h === "claude-code" ? "claude" : HARNESSES.includes(h) ? h : null);
+
 const KINDS = ["goal", "slice", "snag", "ask", "decision", "gap", "capability", "grill"];
 const STATUSES = [
   ["Ready", "GREEN", "Can start: nothing it waits on is open"],
@@ -32,7 +36,7 @@ export const projectFields = (goals, rows) => [
   select("Kind", KINDS.map((k) => [k, "GRAY", ""])),
   select("Status", STATUSES),
   select("Release", ["preview", "beta", "1.0"].map((r) => [r, "GRAY", ""])),
-  select("Harness", ["claude", "amp", "codex", "opencode"].map((h) => [h, "GRAY", ""])),
+  select("Harness", HARNESSES.map((h) => [h, "GRAY", ""])),
   { name: "Model", dataType: "TEXT", options: [] },
   select("Lead role", ["lead", "author", "builder", "reviewer", "designer", "spike"].map((r) => [r, "GRAY", ""])),
   { name: "Start", dataType: "DATE", options: [] },
@@ -92,11 +96,11 @@ export const itemValues = (i, goal, issues) => {
   if (kind === "goal") {
     return {
       Goal: `Goal ${goal.number}`, Kind: "goal", Status: STATUS_OF_BRIEF[goal.status] ?? "Ready", Release: goal.release,
-      Harness: goal.lead?.harness ?? null, Model: goal.lead?.model ?? undefined, "Lead role": "lead", ...dates,
+      Harness: harnessOf(goal.lead?.harness), Model: goal.lead?.model ?? undefined, "Lead role": "lead", ...dates,
     };
   }
   const blocked = (i.blockedBy ?? []).some((n) => issues.some((x) => x.number === n && isOpen(x)));
-  const harness = label(i, "harness:");
+  const harness = harnessOf(label(i, "harness:"));
   return {
     Goal: `Goal ${goal.number}`, Kind: kind, Release: label(i, "release:") ?? goal.release, Harness: harness,
     Status: !isOpen(i) ? "Done" : blocked ? "Blocked" : harness ? "Running" : "Ready",
