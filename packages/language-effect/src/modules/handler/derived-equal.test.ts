@@ -13,7 +13,7 @@
 // Not judged here: whether `1.5` and `1.50` are one value. The records layer compares a stored decimal by its encoded
 // text, scale and all; every decimal below is written at one scale only, so no two of them differ by scale alone.
 import { Cause, Effect, Exit, Schema } from "effect";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { Blueprint } from "orthograph";
 import { Reads } from "#modules/handler/service.js";
 import { storeMemory } from "#modules/records/service.js";
@@ -144,16 +144,14 @@ describe("a caller's filter on a derived field keeps exactly the rows whose valu
 });
 
 describe("one read works each row out on each call", () => {
+  afterEach(() => { delete relabelled["ada"]; });
   it("keeps the rows whose value equals the filter now, after a row's value changed between two calls on one store", async () => {
     const store = stocked();
     expect(await ids(shared, { label: "Ann" }, store), "before: no shop is Ann").toEqual([]);
     relabelled["ada"] = "Ann";
-    try {
-      expect(await ids(shared, { label: "Ann" }, store), "after ada became Ann").toEqual(["shp_1", "shp_4"]);
-      expect(await ids(shared, { label: "Ada" }, store), "and is no longer Ada").toEqual([]);
-    } finally {
-      delete relabelled["ada"];
-    }
+    expect(await ids(shared, { label: "Ann" }, store), "after ada became Ann").toEqual(["shp_1", "shp_4"]);
+    expect(await ids(shared, { label: "Ada" }, store), "and is no longer Ada").toEqual([]);
+    delete relabelled["ada"];
     expect(await ids(shared, { label: "Ada" }, store), "back again").toEqual(["shp_1", "shp_4"]);
   });
 });

@@ -6,7 +6,8 @@
 // both) and `enum` hold, exactly (no slack for floats), on a required field or an optional one, in the
 // path, the query and the body. A string its number would be refused for is refused before anything is sent, naming the
 // field. A string that fits is sent as given, character for character (`007` stays `007`). Any other string on a numeric
-// field (`abc`, `0x10`, `1e2`, ` 5`, `5.`, `.5`, `+5`) is refused as it is today. Numbers given as numbers are the control. Each call is
+// field (`abc`, `0x10`, `1e2`, `-1`, `5.`, `.5`, `+5`, an empty string, a space or a newline around the digits) is refused as
+// it is today. Numbers given as numbers are the control. Each call is
 // judged on its own, every numeric string of it: one client takes every case below in turn, and two calls' fields of
 // one name keep their own rules. Written by the checks author before the build; red on
 // today's generator, listed in packages/generators/expected-failing/numeric-strings.txt (G11).
@@ -50,6 +51,8 @@ const spec = {
     } } } } } },
   },
 };
+/** A request as these checks judge it: its headers are another check's (gaps.test.ts). */
+const sansHeaders = ({ method, path, query, body }: ReturnType<typeof wire>) => ({ method, path, query, body });
 const clientAt = async (s: StandIn) => {
   const calls = (await plugin("t", spec)).client({ baseUrl: s.origin }).calls as Calls;
   return (name: string) => {
@@ -166,7 +169,7 @@ describe("a numeric string that fits is sent as given (the control)", () => {
     it(`${name} ${JSON.stringify(input)}`, async () => {
       const s = await serve();
       expect((await settle((await clientAt(s))(name)(input))).tag).toBe("ok");
-      expect(s.seen.map(wire).map(({ headers: _, ...r }) => r)).toEqual([request]);
+      expect(s.seen.map(wire).map(sansHeaders)).toEqual([request]);
     });
   }
 });
@@ -194,6 +197,6 @@ describe("one client judges each call on its own", () => {
       sent.push({ method: "GET", path: "/pages", query: "?limit=50", body: undefined });
       expect((await settle(call("samples.list")({ limit: "50" }))).tag, "samples.list limit 50").toBe("InputRefused");
     }
-    expect(s.seen.map(wire).map(({ headers: _, ...r }) => r)).toEqual(sent);
+    expect(s.seen.map(wire).map(sansHeaders)).toEqual(sent);
   });
 });
